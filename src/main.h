@@ -31,12 +31,22 @@ using namespace std;
 // © Степанов С. М. и товарищи 2010 - 2015
 // ----------------------------------------------------------
 
+// MyTetra - a program to accumulate meaningful information
+// Volgodonsk, 2010 - 2015 g.
+// Contact: xintrea@gmail.com, www.webhamster.ru
+// This source code is licensed under:
+// - GPL v.3
+// - Modified BSD
+// © Stepanov SM and fellow 2010 - 2015
+
 // Версия программы
+// Software Version
 #define APPLICATION_RELEASE_VERSION 1
 #define APPLICATION_RELEASE_SUBVERSION 32
 #define APPLICATION_RELEASE_MICROVERSION 163
 
 // Поддерживаемая версия формата базы (хранилища)
+// Format supported version of the database (repository)
 #define CURRENT_FORMAT_VERSION 1
 #define CURRENT_FORMAT_SUBVERSION 2
 
@@ -45,6 +55,7 @@ using namespace std;
 #define ADD_NEW_RECORD_AFTER 2
 
 // Прототипы функций, которые могут использоваться в других файлах
+// Function prototypes, which can be used in other files
 void logPrint(char *lpszText, ...);
 void criticalError(QString message);
 QString xmlNodeToString(QDomNode xmlData);
@@ -80,11 +91,11 @@ template <class X> inline X *find_object(QString objectName)
     extern QObject *pMainWindow;
 
     // Если запрошен сам корень
-    if (objectName == "mainwindow") {
+    if(objectName == "mainwindow") {
         QObject *mvp = qobject_cast<X *>(pMainWindow);
 
-        if (mvp->metaObject()->className() !=
-                pMainWindow->metaObject()->className()) {
+        if(mvp->metaObject()->className() !=
+           pMainWindow->metaObject()->className()) {
             // Если запрошенный класс объекта не является классом главного окна
             printf("find_object(): Can't find mainwindow object. Check <type> in "
                    "function call\n");
@@ -98,7 +109,7 @@ template <class X> inline X *find_object(QString objectName)
     // findObj=qFindChild<X *>(pMainWindow, objectName);
     findObj = pMainWindow->findChild<X *>(objectName);
 
-    if (findObj == NULL) {
+    if(findObj == NULL) {
         // Если объекта с указанным именем не найдено
         // print_object_tree();
         printf("find_object(): Can't find object with name %s\n",
@@ -119,7 +130,7 @@ template <class X> inline X *find_object(QString objectName)
         // к указателю c заданным в шаблоне типом
         X *obj = qobject_cast<X *>(findObj);
 
-        if (obj == 0) {
+        if(obj == 0) {
             // Если найденный объект не может быть преобразован к заданному в шаблоне
             // типу
             printf("find_object(): Object %s find, but can't convert type. Check "
@@ -147,5 +158,7 @@ public:
         QThread::sleep(secs);
     }
 };
+
+extern std::string getDifference(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 #endif // __MAIN_H__

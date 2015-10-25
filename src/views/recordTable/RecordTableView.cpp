@@ -29,13 +29,13 @@ extern AppConfig mytetraConfig;
 
 RecordTableView::RecordTableView(QWidget *parent) : QTableView(parent)
 {
-// Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
+    // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
     this->setSortingEnabled(false);
 
-// Настройка области виджета для кинетической прокрутки
-    setKineticScrollArea( qobject_cast<QAbstractItemView*>(this) );
+    // Настройка области виджета для кинетической прокрутки
+    setKineticScrollArea(qobject_cast<QAbstractItemView *>(this));
 
-// Разрешение принимать жест QTapAndHoldGesture
+    // Разрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);
 }
 
@@ -48,7 +48,7 @@ RecordTableView::~RecordTableView()
 
 void RecordTableView::setController(RecordTableController *pController)
 {
-    controller=pController;
+    controller = pController;
 }
 
 
@@ -68,13 +68,13 @@ void RecordTableView::init(void)
 
     restoreHeaderState();
 
-// Растягивание последней секции до размеров виджета
+    // Растягивание последней секции до размеров виджета
     horizontalHeader()->setStretchLastSection(true);
 
-// Заголовки не должны выглядеть нажатыми
+    // Заголовки не должны выглядеть нажатыми
     horizontalHeader()->setHighlightSections(false);
 
-// Горизонтальные заголовки делаются перемещяемыми
+    // Горизонтальные заголовки делаются перемещяемыми
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     horizontalHeader()->setMovable(true);
 #endif
@@ -82,26 +82,28 @@ void RecordTableView::init(void)
     horizontalHeader()->setSectionsMovable(true);
 #endif
 
-// Установка высоты строки с принудительной стилизацией (если это необходимо),
-// так как стилизация через QSS для элементов QTableView полноценно не работает
-// У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
-// При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
-    verticalHeader()->setDefaultSectionSize ( verticalHeader()->minimumSectionSize () );
-    int height=mytetraConfig.getUglyQssReplaceHeightForTableView();
-    if(height!=0)
-        verticalHeader()->setDefaultSectionSize( height );
-    if(mytetraConfig.getInterfaceMode()=="mobile")
-        verticalHeader()->setDefaultSectionSize( getCalculateIconSizePx() );
+    // Установка высоты строки с принудительной стилизацией (если это необходимо),
+    // так как стилизация через QSS для элементов QTableView полноценно не работает
+    // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
+    // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
+    verticalHeader()->setDefaultSectionSize(verticalHeader()->minimumSectionSize());
+    int height = mytetraConfig.getUglyQssReplaceHeightForTableView();
+
+    if(height != 0)
+        verticalHeader()->setDefaultSectionSize(height);
+
+    if(mytetraConfig.getInterfaceMode() == "mobile")
+        verticalHeader()->setDefaultSectionSize(getCalculateIconSizePx());
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     restoreColumnWidth();
 
-// Разрешается перемещать секции заголовка таблицы
-    enableMoveSection=true;
+    // Разрешается перемещать секции заголовка таблицы
+    enableMoveSection = true;
 
-// Нужно установить правила показа контекстного самодельного меню
-// чтобы оно могло вызываться
+    // Нужно установить правила показа контекстного самодельного меню
+    // чтобы оно могло вызываться
     assemblyContextMenu();
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
@@ -109,36 +111,37 @@ void RecordTableView::init(void)
 
 void RecordTableView::setupSignals(void)
 {
-// Сигнал чтобы показать контекстное меню по правому клику на списке записей
-    connect(this,SIGNAL(customContextMenuRequested(const QPoint &)),
-            this,SLOT(onCustomContextMenuRequested(const QPoint &)));
+    // Сигнал чтобы показать контекстное меню по правому клику на списке записей
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(onCustomContextMenuRequested(const QPoint &)));
 
-// Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
+    // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
     connect(this, SIGNAL(tapAndHoldGestureFinished(const QPoint &)),
             this, SLOT(onCustomContextMenuRequested(const QPoint &)));
 
-// Сигнал чтобы открыть на редактирование параметры записи при двойном клике
+    // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
+    // Signal to open for editing the parameters of the recording double click
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(loadUrl(void)));
 
-    if(mytetraConfig.getInterfaceMode()=="desktop")
-        connect(this, SIGNAL(listSelectionChanged ( const QItemSelection &, const QItemSelection &) ),
-                this, SLOT(onSelectionChanged ( const QItemSelection &, const QItemSelection &) ));
+    if(mytetraConfig.getInterfaceMode() == "desktop")
+        connect(this, SIGNAL(listSelectionChanged(const QItemSelection &, const QItemSelection &)),
+                this, SLOT(onSelectionChanged(const QItemSelection &, const QItemSelection &)));
 
-// Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
-// а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
-    if(mytetraConfig.getInterfaceMode()=="mobile")
-        connect(this, SIGNAL( clicked(const QModelIndex &) ),
-                this, SLOT( onClickToRecord(const QModelIndex &) ));
+    // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
+    // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
+    if(mytetraConfig.getInterfaceMode() == "mobile")
+        connect(this, SIGNAL(clicked(const QModelIndex &)),
+                this, SLOT(onClickToRecord(const QModelIndex &)));
 
-    RecordTableScreen *parentPointer=qobject_cast<RecordTableScreen *>(parent());
+    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
 
-// Сигналы для обновления панели инструментов при изменении в selectionModel()
-    connect(this->selectionModel(), SIGNAL(currentChanged (const QModelIndex&, const QModelIndex&)),
+    // Сигналы для обновления панели инструментов при изменении в selectionModel()
+    connect(this->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
             parentPointer, SLOT(toolsUpdate(void)));
-    connect(this->selectionModel(), SIGNAL(selectionChanged (const QItemSelection&, const QItemSelection&)),
+    connect(this->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
             parentPointer, SLOT(toolsUpdate(void)));
 
-// Сигналы для обновления панели инструментов
+    // Сигналы для обновления панели инструментов
     connect(this, SIGNAL(activated(const QModelIndex &)),
             parentPointer, SLOT(toolsUpdate(void)));
     connect(this, SIGNAL(clicked(const QModelIndex &)),
@@ -149,26 +152,26 @@ void RecordTableView::setupSignals(void)
             parentPointer, SLOT(toolsUpdate(void)));
     connect(this, SIGNAL(pressed(const QModelIndex &)),
             parentPointer, SLOT(toolsUpdate(void)));
-    connect(QApplication::clipboard(),SIGNAL(dataChanged()),
+    connect(QApplication::clipboard(), SIGNAL(dataChanged()),
             parentPointer, SLOT(toolsUpdate(void)));
 
-    connect(this->horizontalHeader(), SIGNAL( sectionMoved( int, int, int ) ),
-            this, SLOT( onSectionMoved( int, int, int ) ) );
-    connect(this->horizontalHeader(), SIGNAL( sectionResized( int, int, int ) ),
-            this, SLOT( onSectionResized( int, int, int ) ) );
+    connect(this->horizontalHeader(), SIGNAL(sectionMoved(int, int, int)),
+            this, SLOT(onSectionMoved(int, int, int)));
+    connect(this->horizontalHeader(), SIGNAL(sectionResized(int, int, int)),
+            this, SLOT(onSectionResized(int, int, int)));
 }
 
 
-void RecordTableView::restoreHeaderState( void )
+void RecordTableView::restoreHeaderState(void)
 {
     // Видимость горизонтальных заголовков
-    if(mytetraConfig.getRecordTableShowHorizontalHeaders()==false)
+    if(mytetraConfig.getRecordTableShowHorizontalHeaders() == false)
         horizontalHeader()->hide();
     else
         horizontalHeader()->show();
 
     // Видимость вертикальных заголовков
-    if(mytetraConfig.getRecordTableShowVerticalHeaders()==false)
+    if(mytetraConfig.getRecordTableShowVerticalHeaders() == false)
         verticalHeader()->hide();
     else
         verticalHeader()->show();
@@ -176,16 +179,16 @@ void RecordTableView::restoreHeaderState( void )
 
 
 void RecordTableView::onSelectionChanged(const QItemSelection &selected,
-        const QItemSelection &deselected )
+                                         const QItemSelection &deselected)
 {
     QModelIndex selectRecord;
     QModelIndex deselectRecord;
 
     if(!selected.indexes().isEmpty())
-        selectRecord=selected.indexes().at(0);
+        selectRecord = selected.indexes().at(0);
 
     if(!deselected.indexes().isEmpty())
-        deselectRecord=deselected.indexes().at(0);
+        deselectRecord = deselected.indexes().at(0);
 
     /*
     qDebug() << "RecordTableView::onSelectionChanged()";
@@ -219,9 +222,9 @@ void RecordTableView::clickToRecord(const QModelIndex &index)
 void RecordTableView::assemblyContextMenu(void)
 {
     // Конструирование меню
-    contextMenu=new QMenu(this);
+    contextMenu = new QMenu(this);
 
-    RecordTableScreen *parentPointer=qobject_cast<RecordTableScreen *>(parent());
+    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
 
     contextMenu->addAction(parentPointer->actionAddNewToEnd);
     contextMenu->addAction(parentPointer->actionAddNewBefore);
@@ -245,11 +248,11 @@ void RecordTableView::onCustomContextMenuRequested(const QPoint &pos)
 {
     qDebug() << "In on_customContextMenuRequested";
 
-    RecordTableScreen *parentPointer=qobject_cast<RecordTableScreen *>(parent());
+    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
 
 
     // Устанавливается надпись для пункта сортировки
-    if( !this->isSortingEnabled() )
+    if(!this->isSortingEnabled())
         parentPointer->actionSort->setText(tr("Enable sorting"));
     else
         parentPointer->actionSort->setText(tr("Disable sorting"));
@@ -257,12 +260,12 @@ void RecordTableView::onCustomContextMenuRequested(const QPoint &pos)
     // Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
     int n = this->horizontalHeader()->logicalIndexAt(pos);
     qDebug() << "Click on column number " << n;
-    parentPointer->actionSort->setData( n ); // Запоминается в объект действия для сортировки
+    parentPointer->actionSort->setData(n);   // Запоминается в объект действия для сортировки
 
 
     // Включение отображения меню на экране
     // menu.exec(event->globalPos());
-    contextMenu->exec( viewport()->mapToGlobal(pos) );
+    contextMenu->exec(viewport()->mapToGlobal(pos));
 }
 
 
@@ -271,15 +274,18 @@ void RecordTableView::loadUrl(void)
 {
     qDebug() << "In RecordTableView::editFieldContext";
 
-// Получение индекса выделенного элемента
-    QModelIndexList selectItems=selectionModel()->selectedIndexes();
-    QModelIndex index=selectItems.at(0);
+    // Получение индекса выделенного элемента
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
-    controller->openWebsite(index);    //controller->editFieldContext(index);
+    if(selectItems.size() > 0) {
+        QModelIndex index = selectItems.at(0);
 
-// Нужно перерисовать окно редактирования чтобы обновились инфополя
-// делается это путем "повторного" выбора текущего пункта
-    clickToRecord(index); // Раньше было select()
+        controller->openWebsite(index);    //controller->editFieldContext(index);
+
+        // Нужно перерисовать окно редактирования чтобы обновились инфополя
+        // делается это путем "повторного" выбора текущего пункта
+        clickToRecord(index); // Раньше было select()
+    }
 }
 
 
@@ -288,22 +294,22 @@ void RecordTableView::editFieldContext(void)
 {
     qDebug() << "In RecordTableView::editFieldContext";
 
-// Получение индекса выделенного элемента
-    QModelIndexList selectItems=selectionModel()->selectedIndexes();
-    QModelIndex index=selectItems.at(0);
+    // Получение индекса выделенного элемента
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
+    QModelIndex index = selectItems.at(0);
 
     controller->editFieldContext(index);
 
-// Нужно перерисовать окно редактирования чтобы обновились инфополя
-// делается это путем "повторного" выбора текущего пункта
+    // Нужно перерисовать окно редактирования чтобы обновились инфополя
+    // делается это путем "повторного" выбора текущего пункта
     clickToRecord(index); // Раньше было select()
 }
 
 // Получение номера первого выделенного элемента
 int RecordTableView::getFirstSelectionPos(void)
 {
-// Получение списка выделенных Item-элементов
-    QModelIndexList selectItems=selectionModel()->selectedIndexes();
+    // Получение списка выделенных Item-элементов
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
     if(selectItems.isEmpty())
         return -1; // Если ничего не выделено
@@ -316,7 +322,7 @@ int RecordTableView::getFirstSelectionPos(void)
 QString RecordTableView::getFirstSelectionId(void)
 {
     // Получение списка выделенных Item-элементов
-    QModelIndexList selectItems=selectionModel()->selectedIndexes();
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
     if(selectItems.isEmpty())
         return ""; // Если ничего не выделено
@@ -328,9 +334,9 @@ QString RecordTableView::getFirstSelectionId(void)
 // Получение модельного индекса первого выделенного элемента в Proxy модели
 QModelIndex RecordTableView::getFirstSelectionProxyIndex(void)
 {
-    int pos=getFirstSelectionPos();
+    int pos = getFirstSelectionPos();
 
-    if(pos==-1)
+    if(pos == -1)
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->index( pos, 0 );
@@ -343,7 +349,7 @@ QModelIndex RecordTableView::getFirstSelectionProxyIndex(void)
 // Получение модельного индекса первого выделенного элемента в Source модели
 QModelIndex RecordTableView::getFirstSelectionSourceIndex(void)
 {
-    QModelIndex proxyIndex=getFirstSelectionProxyIndex();
+    QModelIndex proxyIndex = getFirstSelectionProxyIndex();
 
     if(!proxyIndex.isValid())
         return QModelIndex();
@@ -357,14 +363,14 @@ QModelIndex RecordTableView::getFirstSelectionSourceIndex(void)
 
 bool RecordTableView::isSelectedSetToTop(void)
 {
-    if(getFirstSelectionPos()==0)return true;
+    if(getFirstSelectionPos() == 0)return true;
     else return false;
 }
 
 
 bool RecordTableView::isSelectedSetToBottom(void)
 {
-    if(getFirstSelectionPos()==model()->rowCount()-1)
+    if(getFirstSelectionPos() == model()->rowCount() - 1)
         return true;
     else
         return false;
@@ -374,18 +380,19 @@ bool RecordTableView::isSelectedSetToBottom(void)
 // Установка засветки в нужную строку на экране
 void RecordTableView::setSelectionToPos(int iPos)
 {
-    QModelIndex index=controller->convertPosToProxyIndex(iPos); // Модельный индекс в Proxy модели
-    int pos=index.row();
+    QModelIndex index = controller->convertPosToProxyIndex(iPos); // Модельный индекс в Proxy модели
+    int pos = index.row();
 
     // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    if(pos!=iPos) {
+    if(pos != iPos) {
         QMessageBox msgBox;
         msgBox.setText("In RecordTableView::setSelectionToPos() input pos not equal model pos");
         msgBox.exec();
     }
 
-    int rowCount=controller->getRowCount();
-    if(pos>(rowCount-1))
+    int rowCount = controller->getRowCount();
+
+    if(pos > (rowCount - 1))
         return;
 
     // Простой механизм выбора строки. Похоже, что его использовать не получится
@@ -396,10 +403,10 @@ void RecordTableView::setSelectionToPos(int iPos)
 
     // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
     // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-    if(mytetraConfig.getInterfaceMode()=="mobile")
+    if(mytetraConfig.getInterfaceMode() == "mobile")
         emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
-    scrollTo( currentIndex() ); // QAbstractItemView::PositionAtCenter
+    scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
 }
 
 
@@ -418,11 +425,11 @@ void RecordTableView::moveCursorToNewRecord(int mode, int pos)
     // Прокрутка к только что созданной строке через selectRow() показывает только
     // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
     // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-    if(mode==ADD_NEW_RECORD_TO_END ||
-            ( mode==ADD_NEW_RECORD_AFTER && pos>=(model()->rowCount()-1) ) )
+    if(mode == ADD_NEW_RECORD_TO_END ||
+       (mode == ADD_NEW_RECORD_AFTER && pos >= (model()->rowCount() - 1)))
         scrollToBottom();
 
-    int proxyPos=controller->convertPosToProxyIndex(pos).row();
+    int proxyPos = controller->convertPosToProxyIndex(pos).row();
 
     selectRow(proxyPos);
 }
@@ -432,9 +439,9 @@ void RecordTableView::moveCursorToNewRecord(int mode, int pos)
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
 bool RecordTableView::event(QEvent *event)
 {
-    if (event->type() == QEvent::Gesture) {
+    if(event->type() == QEvent::Gesture) {
         qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
-        return gestureEvent(static_cast<QGestureEvent*>(event));
+        return gestureEvent(static_cast<QGestureEvent *>(event));
     }
 
     return QTableView::event(event);
@@ -447,7 +454,7 @@ bool RecordTableView::gestureEvent(QGestureEvent *event)
 {
     qDebug() << "In gestureEvent()" << event;
 
-    if (QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))
+    if(QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))
         tapAndHoldGestureTriggered(static_cast<QTapAndHoldGesture *>(gesture));
 
     return true;
@@ -460,18 +467,18 @@ void RecordTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 {
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
-    if(gesture->state()==Qt::GestureFinished)
-        if(globalParameters.getTargetOs()=="android")
-            emit tapAndHoldGestureFinished( mapFromGlobal(gesture->position().toPoint()) );
+    if(gesture->state() == Qt::GestureFinished)
+        if(globalParameters.getTargetOs() == "android")
+            emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
 }
 
 
 // Реакция на нажатие кнопок мышки
 void RecordTableView::mousePressEvent(QMouseEvent *event)
 {
-// Если нажата левая кнопка мыши
+    // Если нажата левая кнопка мыши
     if(event->buttons() == Qt::LeftButton) {
-        mouseStartPos=event->pos();
+        mouseStartPos = event->pos();
     }
 
     QTableView::mousePressEvent(event);
@@ -481,12 +488,12 @@ void RecordTableView::mousePressEvent(QMouseEvent *event)
 // Реакция на движение мышкой
 void RecordTableView::mouseMoveEvent(QMouseEvent *event)
 {
-// Если при движении нажата левая кнопка мышки
+    // Если при движении нажата левая кнопка мышки
     if(event->buttons() & Qt::LeftButton) {
         // Выясняется расстояние от места начала нажатия
-        int distance=(event->pos() - mouseStartPos).manhattanLength();
+        int distance = (event->pos() - mouseStartPos).manhattanLength();
 
-        if(distance >= QApplication::startDragDistance()*2) {
+        if(distance >= QApplication::startDragDistance() * 2) {
             startDrag();
         }
     }
@@ -507,20 +514,20 @@ void RecordTableView::startDrag()
 {
     qDebug() << "Start record drag\n";
 
-// Если действительно выбрана строка
-    if( currentIndex().isValid() ) {
+    // Если действительно выбрана строка
+    if(currentIndex().isValid()) {
         // Перед переносом нужно запомнить текст последней редактируемой записи, чтобы не перенесся неотредактированный вариант
         find_object<MainWindow>("mainwindow")->saveTextarea();
 
         // Копирование выделенных строк в объект переноса
-        QDrag *drag=new QDrag(this);
-        drag->setMimeData( getSelectedRecords() );
+        QDrag *drag = new QDrag(this);
+        drag->setMimeData(getSelectedRecords());
 
         // Запуск операции перетаскивания объекта
-        unsigned int result=drag->exec(Qt::MoveAction);
+        unsigned int result = drag->exec(Qt::MoveAction);
 
         // Если перетаскивание завершено
-        if(result==0) {
+        if(result == 0) {
             // Сюда код дойдет после того, как перетаскивание будет закончено
             qDebug() << "Success drag and drop move record";
 
@@ -537,37 +544,44 @@ void RecordTableView::startDrag()
 
 ClipboardRecords *RecordTableView::getSelectedRecords(void)
 {
-// Получение списка Item-элементов, подлежащих копированию
-    QModelIndexList itemsForCopy=selectionModel()->selectedIndexes();
+    // Получение списка Item-элементов, подлежащих копированию
+    QModelIndexList itemsForCopy = selectionModel()->selectedIndexes();
 
-// В списке должны остаться только элементы столбца 0
-// (так как ранее одна строка была одним элементом списка,
-// а теперь используется таблица, и при одной выделенной строке
-// выделено несколько элементов)
+    // В списке должны остаться только элементы столбца 0
+    // (так как ранее одна строка была одним элементом списка,
+    // а теперь используется таблица, и при одной выделенной строке
+    // выделено несколько элементов)
+    // The list should only elements of the column 0
+    // (As earlier one line was one element of the list,
+    // And now uses a table, and a dedicated line
+    // Select multiple items)
     QMutableListIterator<QModelIndex> iterator(itemsForCopy);
-    while (iterator.hasNext()) {
+
+    while(iterator.hasNext()) {
         iterator.next();
 
-        QModelIndex index=iterator.value();
-        if(index.column()>0)
+        QModelIndex index = iterator.value();
+
+        if(index.column() > 0)
             iterator.remove();
     }
 
 
-// Список возвращается в произвольном порядке, не в таком как на экране
-// поэтому его нужно отсортировать по QModelIndex
-    qSort(itemsForCopy.begin(),itemsForCopy.end());
+    // Список возвращается в произвольном порядке, не в таком как на экране
+    // поэтому его нужно отсортировать по QModelIndex
+    qSort(itemsForCopy.begin(), itemsForCopy.end());
 
     qDebug() << "Get selected records";
-    for(int i=0; i<itemsForCopy.size(); ++i)
+
+    for(int i = 0; i < itemsForCopy.size(); ++i)
         qDebug() << itemsForCopy.at(i).data().toString();
 
 
-// Объект с данными для заполнения буфера обмена
-    ClipboardRecords *clipboardRecords=new ClipboardRecords();
+    // Объект с данными для заполнения буфера обмена
+    ClipboardRecords *clipboardRecords = new ClipboardRecords();
     clipboardRecords->clear();
 
-// Объект заполняется выбранными записями
+    // Объект заполняется выбранными записями
     controller->addRecordsToClipboard(clipboardRecords, itemsForCopy);
 
     return clipboardRecords;
@@ -576,19 +590,19 @@ ClipboardRecords *RecordTableView::getSelectedRecords(void)
 
 // Переопределенный сигнал (virtual protected slot)
 void RecordTableView::selectionChanged(const QItemSelection &selected,
-                                       const QItemSelection &deselected )
+                                       const QItemSelection &deselected)
 {
-// qDebug() << "RecordTableView::selectionChanged()";
+    // qDebug() << "RecordTableView::selectionChanged()";
 
     emit listSelectionChanged(selected, deselected);
 
-// Для корректной работы надо вызвать сигнал базового класса
+    // Для корректной работы надо вызвать сигнал базового класса
     QTableView::selectionChanged(selected, deselected);
 }
 
 
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
-void RecordTableView::onSectionMoved( int logicalIndex, int oldVisualIndex, int newVisualIndex )
+void RecordTableView::onSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex)
 {
     Q_UNUSED(logicalIndex);
 
@@ -603,27 +617,28 @@ void RecordTableView::onSectionMoved( int logicalIndex, int oldVisualIndex, int 
     */
 
     // Запоминается ширина столбцов
-    int oldVisualWidth=horizontalHeader()->sectionSize(oldVisualIndex);
-    int newVisualWidth=horizontalHeader()->sectionSize(newVisualIndex);
+    int oldVisualWidth = horizontalHeader()->sectionSize(oldVisualIndex);
+    int newVisualWidth = horizontalHeader()->sectionSize(newVisualIndex);
 
     // В настройках последовательность полей меняется
-    QStringList showFields=mytetraConfig.getRecordTableShowFields();
+    QStringList showFields = mytetraConfig.getRecordTableShowFields();
     showFields.move(oldVisualIndex, newVisualIndex);
     mytetraConfig.setRecordTableShowFields(showFields);
 
     qDebug() << "New show field sequence" << showFields;
 
-    enableMoveSection=false;
+    enableMoveSection = false;
 
     // Перемещение в данном представлении сбрасывается, так как модель берет последовательность полей из настроек
     // После это кода logicalIindex=visualIndex для всех полей
-    for(int logicalIdx=0; logicalIdx<showFields.size(); logicalIdx++) {
-        int visualIdx=horizontalHeader()->visualIndex( logicalIdx );
-        if( visualIdx != logicalIdx )
+    for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx++) {
+        int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
+
+        if(visualIdx != logicalIdx)
             horizontalHeader()->moveSection(visualIdx, logicalIdx); // Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
     }
 
-    enableMoveSection=true;
+    enableMoveSection = true;
 
     horizontalHeader()->reset();
 
@@ -635,7 +650,7 @@ void RecordTableView::onSectionMoved( int logicalIndex, int oldVisualIndex, int 
 }
 
 
-void RecordTableView::onSectionResized( int logicalIndex, int oldSize, int newSize )
+void RecordTableView::onSectionResized(int logicalIndex, int oldSize, int newSize)
 {
     Q_UNUSED(logicalIndex);
     Q_UNUSED(oldSize);
@@ -649,17 +664,17 @@ void RecordTableView::onSectionResized( int logicalIndex, int oldSize, int newSi
 void RecordTableView::saveColumnWidth(void)
 {
     // Выясняется количество полей
-    int count=mytetraConfig.getRecordTableShowFields().size();
+    int count = mytetraConfig.getRecordTableShowFields().size();
 
     QStringList columnWidthList;
 
-    for(int i=0; i<count; i++) {
+    for(int i = 0; i < count; i++) {
         QString width;
-        width.setNum( columnWidth(i) );
+        width.setNum(columnWidth(i));
         columnWidthList << width;
     }
 
-    mytetraConfig.setRecordTableFieldsWidth( columnWidthList );
+    mytetraConfig.setRecordTableFieldsWidth(columnWidthList);
 
     // qDebug() << "Save column width " << columnWidthList;
 }
@@ -668,13 +683,13 @@ void RecordTableView::saveColumnWidth(void)
 // Восстановление ширины колонок из конфигфайла
 void RecordTableView::restoreColumnWidth(void)
 {
-    QStringList columnWidthList=mytetraConfig.getRecordTableFieldsWidth();
+    QStringList columnWidthList = mytetraConfig.getRecordTableFieldsWidth();
 
     // qDebug() << "Restore column width " << columnWidthList;
 
     // Восстанавливается ширина всех колонок без последней
     // Чтобы последняя растягивалась по месту
-    for(int i=0; i<columnWidthList.size()-1; i++)
-        setColumnWidth( i, columnWidthList[i].toInt() );
+    for(int i = 0; i < columnWidthList.size() - 1; i++)
+        setColumnWidth(i, columnWidthList[i].toInt());
 }
 

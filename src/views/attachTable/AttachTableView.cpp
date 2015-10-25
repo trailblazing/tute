@@ -13,11 +13,11 @@ extern GlobalParameters globalParameters;
 
 AttachTableView::AttachTableView(QWidget *parent) : QTableView(parent)
 {
-    this->horizontalHeader()->setStretchLastSection( true );
+    this->horizontalHeader()->setStretchLastSection(true);
     this->setSelectionBehavior(QAbstractItemView::SelectRows); // Выделяется вся строка
 
     // Настройка области виджета для кинетической прокрутки
-    setKineticScrollArea( qobject_cast<QAbstractItemView*>(this) );
+    setKineticScrollArea(qobject_cast<QAbstractItemView *>(this));
 
     // Разрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);
@@ -42,33 +42,32 @@ void AttachTableView::init(void)
 void AttachTableView::setupSignals(void)
 {
     // Сигнал чтобы показать контекстное меню по правому клику на списке записей
-    connect(this,SIGNAL(customContextMenuRequested(const QPoint &)),
-            this,SLOT(onCustomContextMenuRequested(const QPoint &)));
+    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)),
+            this, SLOT(onCustomContextMenuRequested(const QPoint &)));
 
     // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
     connect(this, SIGNAL(tapAndHoldGestureFinished(const QPoint &)),
             this, SLOT(onCustomContextMenuRequested(const QPoint &)));
 
     // Сигнал чтобы открыть на просмотр/редактирование файл по двойному клику
-    connect(this, SIGNAL(doubleClicked(const QModelIndex &)),
-            controller, SLOT(onOpenAttach(void)));
+    connect(this, SIGNAL(doubleClicked(const QModelIndex &)), controller, SLOT(onOpenAttach(void)));
 }
 
 
 void AttachTableView::setController(AttachTableController *pController)
 {
-    controller=pController;
+    controller = pController;
 }
 
 
 void AttachTableView::assemblyContextMenu(void)
 {
     // Конструирование меню
-    contextMenu=new QMenu(this);
+    contextMenu = new QMenu(this);
 
     // find_object() не работает, потому что при инициализации еще не вызван метод assembly() у attachTableScreen, и этому объекту не задан родитель layout
     // AttachTableScreen *screenPointer=find_object<AttachTableScreen>("attachTableScreen");
-    AttachTableScreen *screenPointer=qobject_cast<AttachTableScreen *>(controller->parent());
+    AttachTableScreen *screenPointer = qobject_cast<AttachTableScreen *>(controller->parent());
 
     contextMenu->addAction(screenPointer->actionAddAttach);
     contextMenu->addAction(screenPointer->actionEditFileName);
@@ -82,9 +81,9 @@ void AttachTableView::assemblyContextMenu(void)
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
 bool AttachTableView::event(QEvent *event)
 {
-    if (event->type() == QEvent::Gesture) {
+    if(event->type() == QEvent::Gesture) {
         qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
-        return gestureEvent(static_cast<QGestureEvent*>(event));
+        return gestureEvent(static_cast<QGestureEvent *>(event));
     }
 
     return QTableView::event(event);
@@ -96,7 +95,7 @@ void AttachTableView::resizeEvent(QResizeEvent *event)
     // Первый столбец должен занимать 80% ширины при любом размере таблицы
     QRect viewRect = this->rect();
     float columnWidth = (float) viewRect.width() * 0.8;
-    this->setColumnWidth( 0, columnWidth );
+    this->setColumnWidth(0, columnWidth);
 
     // Отрисовка родительского класса
     QTableView::resizeEvent(event);
@@ -109,7 +108,7 @@ bool AttachTableView::gestureEvent(QGestureEvent *event)
 {
     qDebug() << "In gestureEvent()" << event;
 
-    if (QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))
+    if(QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))
         tapAndHoldGestureTriggered(static_cast<QTapAndHoldGesture *>(gesture));
 
     return true;
@@ -122,9 +121,9 @@ void AttachTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 {
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
-    if(gesture->state()==Qt::GestureFinished)
-        if(globalParameters.getTargetOs()=="android")
-            emit tapAndHoldGestureFinished( mapFromGlobal(gesture->position().toPoint()) );
+    if(gesture->state() == Qt::GestureFinished)
+        if(globalParameters.getTargetOs() == "android")
+            emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
 }
 
 
@@ -132,15 +131,15 @@ void AttachTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 void AttachTableView::onCustomContextMenuRequested(const QPoint &pos)
 {
     // Включение отображения меню на экране
-    contextMenu->exec( viewport()->mapToGlobal(pos) );
+    contextMenu->exec(viewport()->mapToGlobal(pos));
 }
 
 
 // Получение номера первого выделенного элемента
 int AttachTableView::getFirstSelectionPos(void)
 {
-// Получение списка выделенных Item-элементов
-    QModelIndexList selectItems=selectionModel()->selectedIndexes();
+    // Получение списка выделенных Item-элементов
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
     if(selectItems.isEmpty())
         return -1; // Если ничего не выделено

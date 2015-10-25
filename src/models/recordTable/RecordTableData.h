@@ -1,5 +1,5 @@
 #ifndef __RECORDTABLEDATA_H__
-#define	__RECORDTABLEDATA_H__
+#define __RECORDTABLEDATA_H__
 
 #include <QAbstractListModel>
 #include <QModelIndex>
@@ -26,7 +26,7 @@ public:
     // Установка текста и картинок указанной записи
     void setTextAndPictures(int pos,
                             const QString &text,
-                            const QMap<QString, QByteArray> &picturesFiles=(QMap<QString, QByteArray>()) );
+                            const QMap<QString, QByteArray> &picturesFiles = (QMap<QString, QByteArray>()));
 
     // Получение значения указанного поля для указанного элемента
     QString getField(QString name, int pos) const;
@@ -64,7 +64,8 @@ public:
     void deleteRecord(int i);
     void deleteRecordById(QString id);
 
-    bool isRecordExists(QString id);
+    bool isRecordExists(const QString &id);
+    bool isRecordExists(const QUrl &url);
 
     int getPosById(QString id);
 
@@ -94,6 +95,7 @@ private:
     void setupDataFromDom(QDomElement *domModel);
 
     // Таблица записей (в нормальном виде содержит только "легкие" объекты записей)
+    // Table entries (in the normal form contains only "light" objects records)
     QList< Record > tableData;
 
     // Ссылка на ветку, которой принадлежит данная таблица

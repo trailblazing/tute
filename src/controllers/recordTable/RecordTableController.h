@@ -21,6 +21,7 @@ public:
     void init(void);
 
     RecordTableView *getView(void);
+    RecordTableModel *getRecordTableModel() {return recordSourceModel;}
 
     void clickToRecord(const QModelIndex &index);
 
@@ -76,7 +77,7 @@ public slots:
     void addNewToEndContext(void);
     void addNewBeforeContext(void);
     void addNewAfterContext(void);
-    void autoAddNewAfterContext(void);
+    //void autoAddNewAfterContext(void);
 
     // Вызов действий из контекстного меню для удаления конечной записи
     void deleteContext(void);
@@ -100,13 +101,14 @@ protected:
 
     void initMetaEditorAtClickToRecord(const int pos);
     void initAttachTableAtClickToRecord(const int pos);
+    void updateBrowserView(const int pos);
 
     RecordTableView *view;
-    RecordTableModel *recordSourceModel; // Класс, расширенный от QAbstractTableModel
+    RecordTableModel *recordSourceModel; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
     RecordTableProxyModel *recordProxyModel;
 
     void addNewRecord(int mode);
-    void autoAddNewRecord(int mode);
+    //void autoAddNewRecord(int mode);
 
     void addNew(int mode, Record record);
 
@@ -115,7 +117,7 @@ protected:
                    QString author,
                    QString url,
                    QString tags);
-
+    friend class BrowserView;
 };
 
 #endif // __RECORDTABLECONTROLLER_H__

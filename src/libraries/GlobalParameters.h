@@ -1,5 +1,5 @@
 #ifndef __GLOBALPARAMETERS_H__
-#define	__GLOBALPARAMETERS_H__
+#define __GLOBALPARAMETERS_H__
 
 #include <QObject>
 #include <QStatusBar>
@@ -15,7 +15,7 @@ class GlobalParameters : public QObject {
     Q_OBJECT
 
 public:
-    GlobalParameters(QObject *pobj=0);
+    GlobalParameters(QObject *pobj = 0);
     virtual ~GlobalParameters();
 
     void setMainProgramFile(QString file);
@@ -32,7 +32,7 @@ public:
     TreeScreen *getTreeScreen();
 
     void setBrowserView(BrowserView *point);
-    BrowserView * getBrowserView();
+    BrowserView *getBrowserView();
 
     void setRecordTableScreen(RecordTableScreen *point);
     RecordTableScreen *getRecordTableScreen();
@@ -67,7 +67,7 @@ private:
     void createFirstProgramFiles(QString dirName);
 
     TreeScreen *pointTreeScreen;
-    BrowserView * browser_view;
+    BrowserView *browser_view;
     RecordTableScreen *pointRecordTableScreen;
     FindScreen *pointFindScreen;
     MetaEditor *pointMetaEditor;
@@ -80,5 +80,5 @@ private:
     QByteArray passwordHash;
 };
 
-#endif	/* __GLOBALPARAMETERS_H__ */
+#endif  /* __GLOBALPARAMETERS_H__ */
 

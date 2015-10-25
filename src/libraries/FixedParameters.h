@@ -6,7 +6,7 @@
 #include <QStringList>
 
 // Неизменяемые параметры, то есть параметры, которые заданы жестко в текущей версии MyTetra
-
+// Immutable parameters, ie parameters that are hard-coded in the current version MyTetra
 
 class FixedParameters : public QObject {
     Q_OBJECT

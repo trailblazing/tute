@@ -10,10 +10,15 @@
 #include "models/attachTable/AttachTableData.h"
 
 // Класс одной записи в таблице записей
+// Class entries in the table of records
 
 // В полях записей с crypt=0 хранятся незашифрованные данные
 // В полях записей с crypt=1 хранятся зашифрованные данные
 // Это необходимо, чтобы дерево знаний генерировалось в/из XML быстро и без шифрации
+
+// In the fields of records crypt = 0 are stored unencrypted data
+// In the fields of records crypt = 1 are stored encrypted data
+// It is necessary that the tree of knowledge was generated in / from XML quickly and without encryption
 
 // class Attach;
 // class AttachTableData;
@@ -40,7 +45,8 @@ public:
     void setField(QString name, QString value);
     bool isNaturalFieldExists(QString name) const;
 
-    // Установка и чтение данных без преобразований. Используется при генерации/чтении XML
+
+    // Setting and reading data without transformation. Used to generate / XML readers    // Установка и чтение данных без преобразований. Используется при генерации/чтении XML
     QString getNaturalFieldSource(QString name) const;
     void setNaturalFieldSource(QString name, QString value);
 
@@ -72,14 +78,16 @@ protected:
 
     // ---------------------------------------------------------------------
     // Свойства класса (не забыть перечислить все в конструкторе копривания)
+    // Class properties (do not forget to list all the constructor koprivaniya)
     // ---------------------------------------------------------------------
 
     bool liteFlag;
 
     // Установка содержимого свойств происходит в вышестоящем коде
+    // Set the properties of the contents occurs in the upstream code
 
-    // Легкие свойства
-    QMap<QString, QString> fieldList; // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
+    // Light properties // Легкие свойства
+    QMap<QString, QString> fieldList;   // // A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
 
     // Полновесные свойства
     QByteArray text; // Содержимое файла с текстом записи

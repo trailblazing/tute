@@ -1,5 +1,7 @@
 # Ignore directories
 /build
+/build-Debug
+/build-Release
 /release
 /misc
 /qtc-gdbmacros

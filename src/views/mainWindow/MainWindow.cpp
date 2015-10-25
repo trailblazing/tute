@@ -32,7 +32,7 @@ extern WalkHistory walkHistory;
 MainWindow::MainWindow() : QMainWindow()
 {
     extern QObject *pMainWindow;
-    pMainWindow=this;
+    pMainWindow = this;
     setObjectName("mainwindow");
 
     installEventFilter(this);
@@ -48,17 +48,18 @@ MainWindow::MainWindow() : QMainWindow()
     setupIconActions();
     createTrayIcon();
     setIcon();
+
     if(QSystemTrayIcon::isSystemTrayAvailable())
         trayIcon->show();
 
-// Инициализируется объект слежения за корзиной
+    // Инициализируется объект слежения за корзиной
     trashMonitoring.init(mytetraConfig.get_trashdir());
     trashMonitoring.update();
 
-// Закрывать ли по-настоящему окно при обнаружении сигнала closeEvent
-    enableRealClose=false;
+    // Закрывать ли по-настоящему окно при обнаружении сигнала closeEvent
+    enableRealClose = false;
 
-// Инициализация генератора случайных чисел
+    // Инициализация генератора случайных чисел
     init_random();
 }
 
@@ -81,33 +82,36 @@ void MainWindow::setupUI(void)
 {
     // При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
 
-    treeScreen=new TreeScreen;
+    treeScreen = new TreeScreen(this);
     treeScreen->setObjectName("treeScreen");
     globalParameters.setTreeScreen(treeScreen);
 
 
 
-    recordTableScreen=new RecordTableScreen();
+    recordTableScreen = new RecordTableScreen(this);
     recordTableScreen->setObjectName("recordTableScreen");
     globalParameters.setRecordTableScreen(recordTableScreen);
 
-    findScreenDisp=new FindScreen();
+    findScreenDisp = new FindScreen(this);
     findScreenDisp->setObjectName("findScreenDisp");
     globalParameters.setFindScreen(findScreenDisp);
+    findScreenDisp->hide();
 
-    editorScreen=new MetaEditor();
+    editorScreen = new MetaEditor();
     editorScreen->setObjectName("editorScreen");
     globalParameters.setMetaEditor(editorScreen);
+    editorScreen->hide();
 
-    statusBar=new QStatusBar();
+    statusBar = new QStatusBar(this);
     statusBar->setObjectName("statusBar");
     setStatusBar(statusBar);
     globalParameters.setStatusBar(statusBar);
 
     // Вспомогательный объект переключения окон, используется в мобильном интерфейсе
-    windowSwitcher=new WindowSwitcher();
+    windowSwitcher = new WindowSwitcher(this);
     windowSwitcher->setObjectName("windowSwitcher");
     globalParameters.setWindowSwitcher(windowSwitcher);
+    windowSwitcher->findInBaseClick();
 
     browser_view = new BrowserView(this);
     browser_view->setScrollbars(true);
@@ -120,14 +124,14 @@ void MainWindow::setupUI(void)
 
 void MainWindow::setupSignals(void)
 {
-    connect(editorScreen,SIGNAL(send_expand_edit_area(bool)), this, SLOT(onExpandEditArea(bool)));
+    connect(editorScreen, SIGNAL(send_expand_edit_area(bool)), this, SLOT(onExpandEditArea(bool)));
 
-// Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
-    connect(qApp, SIGNAL(commitDataRequest(QSessionManager&)), this, SLOT(commitData(QSessionManager&)));
+    // Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
+    connect(qApp, SIGNAL(commitDataRequest(QSessionManager &)), this, SLOT(commitData(QSessionManager &)));
 
-    connect(qApp, SIGNAL( focusChanged(QWidget *, QWidget *) ), this, SLOT( onFocusChanged(QWidget *, QWidget *) ));
+    connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
 
-// Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
+    // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
     connect(treeScreen->actionList["findInBase"], SIGNAL(triggered()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
     connect(browser_view->getactionFreeze(), SIGNAL(triggered()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
     connect(recordTableScreen->actionFindInBase, SIGNAL(triggered()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
@@ -137,43 +141,43 @@ void MainWindow::setupSignals(void)
 
 void MainWindow::assembly(void)
 {
-    vSplitter=new QSplitter(Qt::Vertical);
+    vSplitter = new QSplitter(Qt::Vertical);
     vSplitter->addWidget(browser_view);
 
     vSplitter->addWidget(editorScreen);             // Text entries // Текст записи
-    vSplitter->setCollapsible(0,false);             // The list of final entries can not link up    // Список конечных записей не может смыкаться
-    vSplitter->setCollapsible(1,false);             // The contents of the recording can not link up    // Содержимое записи не может смыкаться
+    vSplitter->setCollapsible(0, false);            // The list of final entries can not link up    // Список конечных записей не может смыкаться
+    vSplitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
 
 
-    findSplitter=new QSplitter(Qt::Vertical);
+    findSplitter = new QSplitter(Qt::Vertical);
     findSplitter->addWidget(vSplitter);             //findSplitter->addWidget(hSplitter);
     findSplitter->addWidget(findScreenDisp);
-    findSplitter->setCollapsible(0,false);          // Верхняя часть не должна смыкаться
-    findSplitter->setCollapsible(1,false);          // Часть для поиска не должна смыкаться
+    findSplitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
+    findSplitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
     findSplitter->setObjectName("findsplitter");
 
 
-    v_left_splitter=new QSplitter(Qt::Vertical);
+    v_left_splitter = new QSplitter(Qt::Vertical);
     v_left_splitter->addWidget(treeScreen);
     v_left_splitter->addWidget(recordTableScreen);
-    v_left_splitter->setCollapsible(0,false);
-    v_left_splitter->setCollapsible(1,false);
+    v_left_splitter->setCollapsible(0, false);
+    v_left_splitter->setCollapsible(1, false);
 
-    hSplitter=new QSplitter(Qt::Horizontal);
+    hSplitter = new QSplitter(Qt::Horizontal);
     hSplitter->addWidget(v_left_splitter);
     //hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
     //hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
     hSplitter->addWidget(findSplitter);             //hSplitter->addWidget(vSplitter);
-    hSplitter->setCollapsible(0,false);             // Дерево веток не может смыкаться
-    hSplitter->setCollapsible(1,false);             // Столбец со списком и содержимым записи не может смыкаться
-    hSplitter->setObjectName("findsplitter");
+    hSplitter->setCollapsible(0, false);            // Дерево веток не может смыкаться
+    hSplitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
+    hSplitter->setObjectName("hsplitter");
 
-//    findSplitter=new QSplitter(Qt::Vertical);
-//    findSplitter->addWidget(hSplitter);
-//    findSplitter->addWidget(findScreenDisp);
-//    findSplitter->setCollapsible(0,false);        // Верхняя часть не должна смыкаться
-//    findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
-//    findSplitter->setObjectName("findsplitter");
+    //    findSplitter=new QSplitter(Qt::Vertical);
+    //    findSplitter->addWidget(hSplitter);
+    //    findSplitter->addWidget(findScreenDisp);
+    //    findSplitter->setCollapsible(0,false);        // Верхняя часть не должна смыкаться
+    //    findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
+    //    findSplitter->setObjectName("findsplitter");
 
     setCentralWidget(hSplitter);                    //setCentralWidget(findSplitter);
 
@@ -182,23 +186,23 @@ void MainWindow::assembly(void)
 
 void MainWindow::saveAllState(void)
 {
-// Сохранение данных в поле редактирования
+    // Сохранение данных в поле редактирования
     saveTextarea();
 
-// Сохраняются данные сеанса работы
+    // Сохраняются данные сеанса работы
     saveGeometry();
     saveTreePosition();
     saveRecordTablePosition();
     saveEditorCursorPosition();
     saveEditorScrollBarPosition();
 
-// Синхронизируется с диском конфиг программы
+    // Синхронизируется с диском конфиг программы
     mytetraConfig.sync();
 }
 
 
 // Слот, срабатывающий когда происходит выход из оконной системы
-void MainWindow::commitData(QSessionManager& manager)
+void MainWindow::commitData(QSessionManager &manager)
 {
     Q_UNUSED(manager);
     qDebug() << "Session manager send commit data signal.";
@@ -210,16 +214,16 @@ void MainWindow::commitData(QSessionManager& manager)
 // Восстанавливается геометрия окна и позиции основных разделителей
 void MainWindow::restoreGeometry(void)
 {
-    if(globalParameters.getTargetOs()=="android")
+    if(globalParameters.getTargetOs() == "android")
         setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
     else {
-        QRect rect=mytetraConfig.get_mainwingeometry();
+        QRect rect = mytetraConfig.get_mainwingeometry();
         resize(rect.size());
         move(rect.topLeft());
     }
 
-// move(rect.topLeft());
-// resize(rect.size());
+    // move(rect.topLeft());
+    // resize(rect.size());
 
     vSplitter->setSizes(mytetraConfig.get_vspl_size_list());
     hSplitter->setSizes(mytetraConfig.get_hspl_size_list());
@@ -237,19 +241,19 @@ void MainWindow::saveGeometry(void)
     mytetraConfig.set_mainwingeometry(geom.x(), geom.y(),
                                       geom.width(), geom.height());
 
-// mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
-//                                   geometry().width(), geometry().height());
+    // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
+    //                                   geometry().width(), geometry().height());
 
     mytetraConfig.set_vspl_size_list(vSplitter->sizes());
     mytetraConfig.set_hspl_size_list(hSplitter->sizes());
 
 
-// Запоминается размер сплиттера только при видимом виджете поиска,
-// т.к. если виджета поиска невидно, будет запомнен нуливой размер
+    // Запоминается размер сплиттера только при видимом виджете поиска,
+    // т.к. если виджета поиска невидно, будет запомнен нуливой размер
 
-// if(findScreenDisp->isVisible()) - так делать нельзя, т.к.
-// данный метод вызывается из декструктора главного окна, и к этому моменту
-// виджет уже невиден
+    // if(findScreenDisp->isVisible()) - так делать нельзя, т.к.
+    // данный метод вызывается из декструктора главного окна, и к этому моменту
+    // виджет уже невиден
 
     if(mytetraConfig.get_findscreen_show())
         mytetraConfig.set_findsplitter_size_list(findSplitter->sizes());
@@ -258,8 +262,8 @@ void MainWindow::saveGeometry(void)
 
 void MainWindow::restoreTreePosition(void)
 {
-// Путь к последнему выбранному в дереве элементу
-    QStringList path=mytetraConfig.get_tree_position();
+    // Путь к последнему выбранному в дереве элементу
+    QStringList path = mytetraConfig.get_tree_position();
 
     qDebug() << "MainWindow::restoreTreePosition() : " << path;
 
@@ -269,45 +273,45 @@ void MainWindow::restoreTreePosition(void)
 
 void MainWindow::saveTreePosition(void)
 {
-// Получение QModelIndex выделенного в дереве элемента
-    QModelIndex index=treeScreen->getCurrentItemIndex();
+    // Получение QModelIndex выделенного в дереве элемента
+    QModelIndex index = treeScreen->getCurrentItemIndex();
 
-// Получаем указатель вида TreeItem
-    TreeItem *item =treeScreen->knowTreeModel->getItem(index);
+    // Получаем указатель вида TreeItem
+    TreeItem *item = treeScreen->knowTreeModel->getItem(index);
 
-// Сохраняем путь к элементу item
+    // Сохраняем путь к элементу item
     mytetraConfig.set_tree_position(item->getPath());
 }
 
 
 void MainWindow::setTreePosition(QStringList path)
 {
-    if(treeScreen->knowTreeModel->isItemValid(path)==false)
+    if(treeScreen->knowTreeModel->isItemValid(path) == false)
         return;
 
-// Получаем указатель на элемент вида TreeItem, используя путь
-    TreeItem *item =treeScreen->knowTreeModel->getItem(path);
+    // Получаем указатель на элемент вида TreeItem, используя путь
+    TreeItem *item = treeScreen->knowTreeModel->getItem(path);
 
     qDebug() << "Set tree position to " << item->getField("name") << " id " << item->getField("id");
 
-// Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto=treeScreen->knowTreeModel->getIndexByItem(item);
+    // Из указателя на элемент TreeItem получаем QModelIndex
+    QModelIndex setto = treeScreen->knowTreeModel->getIndexByItem(item);
 
-// Курсор устанавливается в нужную позицию
+    // Курсор устанавливается в нужную позицию
     treeScreen->setCursorToIndex(setto);
 }
 
 
 bool MainWindow::isTreePositionCrypt()
 {
-    QStringList path=mytetraConfig.get_tree_position();
+    QStringList path = mytetraConfig.get_tree_position();
 
-    if(treeScreen->knowTreeModel->isItemValid(path)==false) return false;
+    if(treeScreen->knowTreeModel->isItemValid(path) == false) return false;
 
-// Получаем указатель на элемент вида TreeItem, используя путь
-    TreeItem *item =treeScreen->knowTreeModel->getItem(path);
+    // Получаем указатель на элемент вида TreeItem, используя путь
+    TreeItem *item = treeScreen->knowTreeModel->getItem(path);
 
-    if(item->getField("crypt")=="1")
+    if(item->getField("crypt") == "1")
         return true;
     else
         return false;
@@ -316,16 +320,16 @@ bool MainWindow::isTreePositionCrypt()
 
 void MainWindow::restoreRecordTablePosition(void)
 {
-    QString id=mytetraConfig.get_recordtable_selected_record_id();
+    QString id = mytetraConfig.get_recordtable_selected_record_id();
 
-    if(id.length()>0)
+    if(id.length() > 0)
         setRecordtablePositionById(id);
 }
 
 
 void MainWindow::saveRecordTablePosition(void)
 {
-    QString id=recordTableScreen->getFirstSelectionId();
+    QString id = recordTableScreen->getFirstSelectionId();
 
     mytetraConfig.set_recordtable_selected_record_id(id);
 }
@@ -339,7 +343,7 @@ void MainWindow::setRecordtablePositionById(QString id)
 
 void MainWindow::saveEditorCursorPosition(void)
 {
-    int n=editorScreen->getCursorPosition();
+    int n = editorScreen->getCursorPosition();
 
     mytetraConfig.setEditorCursorPosition(n);
 }
@@ -347,7 +351,7 @@ void MainWindow::saveEditorCursorPosition(void)
 
 void MainWindow::restoreEditorCursorPosition(void)
 {
-    int n=mytetraConfig.getEditorCursorPosition();
+    int n = mytetraConfig.getEditorCursorPosition();
 
     editorScreen->setCursorPosition(n);
 }
@@ -355,7 +359,7 @@ void MainWindow::restoreEditorCursorPosition(void)
 
 void MainWindow::saveEditorScrollBarPosition(void)
 {
-    int n=editorScreen->getScrollBarPosition();
+    int n = editorScreen->getScrollBarPosition();
 
     mytetraConfig.setEditorScrollBarPosition(n);
 }
@@ -363,7 +367,7 @@ void MainWindow::saveEditorScrollBarPosition(void)
 
 void MainWindow::restoreEditorScrollBarPosition(void)
 {
-    int n=mytetraConfig.getEditorScrollBarPosition();
+    int n = mytetraConfig.getEditorScrollBarPosition();
 
     editorScreen->setScrollBarPosition(n);
 }
@@ -371,10 +375,10 @@ void MainWindow::restoreEditorScrollBarPosition(void)
 
 void MainWindow::restoreFindOnBaseVisible(void)
 {
-    bool n=mytetraConfig.get_findscreen_show();
+    bool n = mytetraConfig.get_findscreen_show();
 
-// Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel=find_object<FindScreen>("findScreenDisp");
+    // Определяется ссылка на виджет поиска
+    FindScreen *findScreenRel = find_object<FindScreen>("findScreenDisp");
 
     if(n)
         findScreenRel->show();
@@ -472,7 +476,7 @@ void MainWindow::initToolsMenu(void)
     menu->addSeparator();
 
 
-    if(mytetraConfig.getInterfaceMode()=="desktop") {
+    if(mytetraConfig.getInterfaceMode() == "desktop") {
         a = new QAction(tr("&Preferences"), this);
         connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
         menu->addAction(a);
@@ -564,7 +568,7 @@ void MainWindow::filePrint(void)
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
     dlg->setWindowTitle(tr("Print Document"));
 
-    if (dlg->exec() == QDialog::Accepted)
+    if(dlg->exec() == QDialog::Accepted)
         editorScreen->get_textarea_document()->print(&printer);
 
     delete dlg;
@@ -588,8 +592,9 @@ void MainWindow::filePrintPdf(void)
 {
 #ifndef QT_NO_PRINTER
     QString fileName = QFileDialog::getSaveFileName(this, "Export PDF",
-                       QString(), "*.pdf");
-    if (!fileName.isEmpty()) {
+                                                    QString(), "*.pdf");
+
+    if(!fileName.isEmpty()) {
         if(QFileInfo(fileName).suffix().isEmpty())
             fileName.append(".pdf");
 
@@ -598,6 +603,7 @@ void MainWindow::filePrintPdf(void)
         printer.setOutputFileName(fileName);
         editorScreen->get_textarea_document()->print(&printer);
     }
+
 #endif
 }
 
@@ -607,14 +613,14 @@ void MainWindow::applicationExit(void)
 {
     saveAllState();
 
-// Если в конфиге настроено, что нужно синхронизироваться при выходе
-// И задана команда синхронизации
+    // Если в конфиге настроено, что нужно синхронизироваться при выходе
+    // И задана команда синхронизации
     if(mytetraConfig.get_synchroonexit())
-        if(mytetraConfig.get_synchrocommand().trimmed().length()>0)
+        if(mytetraConfig.get_synchrocommand().trimmed().length() > 0)
             synchronization();
 
-// Запуск выхода из программы
-    enableRealClose=true;
+    // Запуск выхода из программы
+    enableRealClose = true;
     emit close();
 }
 
@@ -624,18 +630,18 @@ void MainWindow::applicationFastExit(void)
 {
     saveAllState();
 
-// Запуск выхода из программы
-    enableRealClose=true;
+    // Запуск выхода из программы
+    enableRealClose = true;
     emit close();
 }
 
 
 void MainWindow::toolsFind(void)
 {
-// Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel=find_object<FindScreen>("findScreenDisp");
+    // Определяется ссылка на виджет поиска
+    FindScreen *findScreenRel = find_object<FindScreen>("findScreenDisp");
 
-    if( !(findScreenRel->isVisible()) )
+    if(!(findScreenRel->isVisible()))
         findScreenRel->show();
     else
         findScreenRel->hide();
@@ -646,7 +652,7 @@ void MainWindow::editor_switch(void)
 
     MetaEditor *editorScreen = find_object<MetaEditor>("editorScreen");
 
-    if( !(editorScreen->isVisible()) )
+    if(!(editorScreen->isVisible()))
         editorScreen->show();
     else
         editorScreen->hide();
@@ -654,7 +660,7 @@ void MainWindow::editor_switch(void)
 
 void MainWindow::toolsPreferences(void)
 {
-// Создается окно настроек, после выхода из этой функции окно удалится
+    // Создается окно настроек, после выхода из этой функции окно удалится
     AppConfigDialog dialog("");
     dialog.show();
 }
@@ -680,7 +686,7 @@ void MainWindow::onExpandEditArea(bool flag)
 
 void MainWindow::onClickHelpAboutMyTetra(void)
 {
-    QString version=QString::number(APPLICATION_RELEASE_VERSION)+"."+QString::number(APPLICATION_RELEASE_SUBVERSION)+"."+QString::number(APPLICATION_RELEASE_MICROVERSION);
+    QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
 
     QString infoProgramName;
     QString infoVersion;
@@ -695,39 +701,39 @@ void MainWindow::onClickHelpAboutMyTetra(void)
     QString infoPhysicalDpiX;
     QString infoPhysicalDpiY;
 
-    infoProgramName="<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
-    infoVersion="v."+version+"<br/><br/>";
-    infoAuthor="Author: Sergey M. Stepanov<br/>";
-    infoEmail="Author Email:<i>xintrea@gmail.com</i><br/><br/>";
-    infoLicense="GNU General Public License v.3.0<br/><br/>";
-    infoTargetOs="Target OS: "+globalParameters.getTargetOs()+"<br/>";
-    infoProgramFile="Program file: "+globalParameters.getMainProgramFile()+"<br/>";
-    infoWorkDirectory="Work directory: "+globalParameters.getWorkDirectory()+"<br/>";
+    infoProgramName = "<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
+    infoVersion = "v." + version + "<br/><br/>";
+    infoAuthor = "Author: Sergey M. Stepanov<br/>";
+    infoEmail = "Author Email:<i>xintrea@gmail.com</i><br/><br/>";
+    infoLicense = "GNU General Public License v.3.0<br/><br/>";
+    infoTargetOs = "Target OS: " + globalParameters.getTargetOs() + "<br/>";
+    infoProgramFile = "Program file: " + globalParameters.getMainProgramFile() + "<br/>";
+    infoWorkDirectory = "Work directory: " + globalParameters.getWorkDirectory() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-    infoDevicePixelRatio="Device pixel ratio: "+(QString::number( qApp->devicePixelRatio(), 'f', 8 ))+"<br/>";
-    infoPhysicalDpi="Physical DPI (from screen): "+(QString::number( QApplication::screens().at(0)->physicalDotsPerInch(), 'f', 8 ))+"<br/>";
+    infoDevicePixelRatio = "Device pixel ratio: " + (QString::number(qApp->devicePixelRatio(), 'f', 8)) + "<br/>";
+    infoPhysicalDpi = "Physical DPI (from screen): " + (QString::number(QApplication::screens().at(0)->physicalDotsPerInch(), 'f', 8)) + "<br/>";
 #endif
 
-    infoPhysicalDpiX="Physical DPI X (from desktop): "+(QString::number( qApp->desktop()->physicalDpiX(), 'f', 8 ))+"<br/>";
-    infoPhysicalDpiY="Physical DPI Y (from desktop): "+(QString::number( qApp->desktop()->physicalDpiY(), 'f', 8 ))+"<br/>";
+    infoPhysicalDpiX = "Physical DPI X (from desktop): " + (QString::number(qApp->desktop()->physicalDpiX(), 'f', 8)) + "<br/>";
+    infoPhysicalDpiY = "Physical DPI Y (from desktop): " + (QString::number(qApp->desktop()->physicalDpiY(), 'f', 8)) + "<br/>";
 
-    QString info=infoProgramName+
-                 infoVersion+
-                 infoAuthor+
-                 infoEmail+
-                 infoLicense+
-                 infoTargetOs+
-                 infoProgramFile+
-                 infoWorkDirectory+
-                 infoDevicePixelRatio+
-                 infoPhysicalDpi+
-                 infoPhysicalDpiX+
-                 infoPhysicalDpiY;
+    QString info = infoProgramName +
+                   infoVersion +
+                   infoAuthor +
+                   infoEmail +
+                   infoLicense +
+                   infoTargetOs +
+                   infoProgramFile +
+                   infoWorkDirectory +
+                   infoDevicePixelRatio +
+                   infoPhysicalDpi +
+                   infoPhysicalDpiX +
+                   infoPhysicalDpiY;
 
     QMessageBox *msgBox = new QMessageBox(this);
     msgBox->about(this,
-                  "MyTetra v."+version,
+                  "MyTetra v." + version,
                   info);
 }
 
@@ -741,20 +747,20 @@ void MainWindow::onClickHelpAboutQt(void)
 
 void MainWindow::synchronization(void)
 {
-// Сохраняются данные в поле редактирования
+    // Сохраняются данные в поле редактирования
     saveTextarea();
 
-// Сохраняются данные о курсорах в дереве и таблице конечных записей
+    // Сохраняются данные о курсорах в дереве и таблице конечных записей
     saveTreePosition();
     saveRecordTablePosition();
     saveEditorCursorPosition();
     saveEditorScrollBarPosition();
 
-// Считывается команда синхронизации
-    QString command=mytetraConfig.get_synchrocommand();
+    // Считывается команда синхронизации
+    QString command = mytetraConfig.get_synchrocommand();
 
-// Если команда синхронизации пуста
-    if(command.trimmed().length()==0) {
+    // Если команда синхронизации пуста
+    if(command.trimmed().length() == 0) {
         QMessageBox::warning(this,
                              tr("MyTetra: can't synchronization"),
                              tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu"),
@@ -763,14 +769,14 @@ void MainWindow::synchronization(void)
     }
 
 
-// Макрос %a заменяется на путь к директории базы данных
-// QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
-    QDir databaseDir( mytetraConfig.get_tetradir() );
-    QString databasePath=databaseDir.canonicalPath();
+    // Макрос %a заменяется на путь к директории базы данных
+    // QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
+    QDir databaseDir(mytetraConfig.get_tetradir());
+    QString databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
 
-// Запуск команды синхронизации
+    // Запуск команды синхронизации
     ExecuteCommand cons;
     cons.setWindowTitle(tr("MyTetra synchronization"));
     cons.setMessageText(tr("Synchronization in progress, please wait..."));
@@ -778,17 +784,17 @@ void MainWindow::synchronization(void)
     cons.setCommand(command);
     cons.run();
 
-// Блокируется история
+    // Блокируется история
     walkHistory.setDrop(true);
 
-// Заново считываются данные в дерево
+    // Заново считываются данные в дерево
     treeScreen->reloadKnowTree();
     restoreTreePosition();
     restoreRecordTablePosition();
     restoreEditorCursorPosition();
     restoreEditorScrollBarPosition();
 
-// Разблокируется история посещений элементов
+    // Разблокируется история посещений элементов
     walkHistory.setDrop(false);
 }
 
@@ -832,26 +838,27 @@ void MainWindow::setIcon(void)
     trayIcon->setIcon(icon);
     setWindowIcon(icon);
 
-// tray_icon->setToolTip(iconComboBox->itemText(index));
+    // tray_icon->setToolTip(iconComboBox->itemText(index));
 }
 
 
 void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 {
-    if(QSystemTrayIcon::isSystemTrayAvailable()==false) return;
+    if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
 
-    switch (reason) {
-    case QSystemTrayIcon::Trigger:
-    case QSystemTrayIcon::DoubleClick:
-        if(isVisible()) {
-            if(isMinimized()) showNormal();
-            else hide();
-        } else {
-            if(isMinimized()) showNormal();
-            else show();
-        }
-    default:
-        ;
+    switch(reason) {
+        case QSystemTrayIcon::Trigger:
+        case QSystemTrayIcon::DoubleClick:
+            if(isVisible()) {
+                if(isMinimized()) showNormal();
+                else hide();
+            } else {
+                if(isMinimized()) showNormal();
+                else show();
+            }
+
+        default:
+            ;
     }
 }
 
@@ -859,8 +866,8 @@ void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
 // Слот закрытия окна
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-    if(enableRealClose==false) {
-        if(QSystemTrayIcon::isSystemTrayAvailable()==false) return;
+    if(enableRealClose == false) {
+        if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
 
         // При приходе события закрыть окно, событие игнорируется
         // и окно просто делается невидимым. Это нужно чтобы при закрытии окна
@@ -873,7 +880,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 }
 
 
-bool MainWindow::eventFilter( QObject * o, QEvent * e )
+bool MainWindow::eventFilter(QObject *o, QEvent *e)
 {
     Q_UNUSED(o);
 
@@ -881,7 +888,7 @@ bool MainWindow::eventFilter( QObject * o, QEvent * e )
 
     // Отлавливание потери фокуса
     // QEvent::ActivationChange
-    if( e->type() == QEvent::WindowDeactivate) {
+    if(e->type() == QEvent::WindowDeactivate) {
         qDebug() << "Main window focus deactivate, save all state.";
         saveAllState();
     }
@@ -894,7 +901,7 @@ void MainWindow::goWalkHistoryPrevious(void)
 {
     editorScreen->save_textarea();
 
-    QString id=editorScreen->getMiscField("id");
+    QString id = editorScreen->getMiscField("id");
     walkHistory.add(id,
                     editorScreen->getCursorPosition(),
                     editorScreen->getScrollBarPosition(),
@@ -909,7 +916,7 @@ void MainWindow::goWalkHistoryNext(void)
 {
     editorScreen->save_textarea();
 
-    QString id=editorScreen->getMiscField("id");
+    QString id = editorScreen->getMiscField("id");
     walkHistory.add(id,
                     editorScreen->getCursorPosition(),
                     editorScreen->getScrollBarPosition(),
@@ -922,29 +929,29 @@ void MainWindow::goWalkHistoryNext(void)
 
 void MainWindow::goWalkHistory(void)
 {
-// Выясняется идентификатор записи, на которую надо переключиться
-    QString id=walkHistory.getId();
+    // Выясняется идентификатор записи, на которую надо переключиться
+    QString id = walkHistory.getId();
 
-    if(id.length()==0) {
+    if(id.length() == 0) {
         walkHistory.setDrop(false);
         return;
     }
 
-// Выясняется путь к ветке, где находится данная запись
-    QStringList path=treeScreen->knowTreeModel->getRecordPath(id);
+    // Выясняется путь к ветке, где находится данная запись
+    QStringList path = treeScreen->knowTreeModel->getRecordPath(id);
 
-// Проверяем, есть ли такая ветка
-    if(treeScreen->knowTreeModel->isItemValid(path)==false) {
+    // Проверяем, есть ли такая ветка
+    if(treeScreen->knowTreeModel->isItemValid(path) == false) {
         walkHistory.setDrop(false);
         return;
     }
 
 
-// Выясняется позицию записи в таблице конечных записей
-    TreeItem *item =treeScreen->knowTreeModel->getItem(path);
+    // Выясняется позицию записи в таблице конечных записей
+    TreeItem *item = treeScreen->knowTreeModel->getItem(path);
 
-// Проверяем, есть ли такая позиция
-    if(item->recordtableGetTableData()->isRecordExists(id)==false) {
+    // Проверяем, есть ли такая позиция
+    if(item->recordtableGetTableData()->isRecordExists(id) == false) {
         walkHistory.setDrop(false);
         return;
     }
@@ -953,8 +960,8 @@ void MainWindow::goWalkHistory(void)
     setRecordtablePositionById(id);
 
     if(mytetraConfig.getRememberCursorAtHistoryNavigation()) {
-        editorScreen->setCursorPosition( walkHistory.getCursorPosition(id) );
-        editorScreen->setScrollBarPosition( walkHistory.getScrollBarPosition(id) );
+        editorScreen->setCursorPosition(walkHistory.getCursorPosition(id));
+        editorScreen->setScrollBarPosition(walkHistory.getScrollBarPosition(id));
     }
 
     walkHistory.setDrop(false);
@@ -966,7 +973,7 @@ void MainWindow::goWalkHistory(void)
 // текст редактируемой записи
 void MainWindow::saveTextarea(void)
 {
-    QString id=editorScreen->getMiscField("id");
+    QString id = editorScreen->getMiscField("id");
 
     qDebug() << "MainWindow::saveTextarea() : id :" << id;
 
@@ -981,9 +988,9 @@ void MainWindow::saveTextarea(void)
 // Слот, обрабатывающий смену фокуса на виджетах
 void MainWindow::onFocusChanged(QWidget *widgetFrom, QWidget *widgetTo)
 {
-    Q_UNUSED (widgetFrom);
+    Q_UNUSED(widgetFrom);
 
-    if(widgetTo==NULL)
+    if(widgetTo == NULL)
         return;
 
     qDebug() << "MainWindow::onFocusChanged() to " << widgetTo->objectName();

@@ -22,24 +22,27 @@ class RecordTableModel : public QAbstractTableModel {
     friend class RecordTableController;
 
 public:
-    RecordTableModel(QObject *pobj=0);
+    RecordTableModel(QObject *pobj = 0);
     ~RecordTableModel();
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
     // Интерфейс модели, предоставление данных по указанному индексу
+    // Interface models to provide data at the specified index
     QVariant data(const QModelIndex &index, int role) const;
 
     // Интерфейс модели, сохранение вводимых данных по указанному индексу
+    // Interface model, saving data entry at the specified index
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
+    RecordTableData *getRecordTableData() {return table;}
     // Интерфейс модели, сколько записей в таблице
-    int rowCount(const QModelIndex &parent=QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
     // Интерфейс модели, сколько столбцов в таблице
-    int columnCount(const QModelIndex &parent=QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-    bool removeRows(int row, int count, const QModelIndex &parent=QModelIndex());
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
 
 public slots:

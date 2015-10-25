@@ -43,7 +43,7 @@ Attach::~Attach()
 
 void Attach::init(AttachTableData *iParentTable)
 {
-    liteFlag=true; // По-умолчанию легкий объект
+    liteFlag=true;  // By default, a light object    // По-умолчанию легкий объект
     parentTable=iParentTable;
     fileContent.clear();
 }

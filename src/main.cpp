@@ -54,6 +54,34 @@ WalkHistory walkHistory;
 QObject *pMainWindow;
 
 
+std::string getDifference(const std::string &url_compare_stored, const std::string &url_compare_get)
+{
+    std::string compare = "";
+
+    if(url_compare_stored.size() >= url_compare_get.size()) {
+        for(std::string::size_type i = 0; i < url_compare_get.size(); i ++) { //url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+            if(url_compare_stored.at(i) != url_compare_get.at(i))compare += url_compare_stored.at(i); //url_compare_stored.erase(i, 1);
+        }
+
+        for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++)
+            compare += url_compare_stored.at(i);
+    } else {
+        //url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
+        for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++) { //url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+            if(url_compare_stored.at(i) == url_compare_get.at(i))compare += url_compare_get.at(i); //url_compare_get.erase(i, 1);
+        }
+
+        for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++)
+            compare += url_compare_get.at(i);
+    }
+
+    std::string::size_type pos;
+
+    while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
+
+    return compare;
+}
+
 void logPrint(char *lpszText, ...)
 {
     va_list argList;
@@ -95,7 +123,7 @@ void criticalError(QString message)
     qDebug() << " ";
 
     QMessageBox::critical(qobject_cast<QWidget *>(pMainWindow), "Critical error",
-                          message+"\n\nProgramm was closed.",
+                          message + "\n\nProgramm was closed.",
                           QMessageBox::Ok);
 
     exit(1);
@@ -128,7 +156,7 @@ QString xmlNodeToString(QDomNode xmlData)
 
 
 // Преобразование из QString в обычный char
-char* fromQStringToChar( const QString& str )
+char *fromQStringToChar(const QString &str)
 {
     /*
     char *tmpC=new char [str.size() + 1];
@@ -152,23 +180,24 @@ char* fromQStringToChar( const QString& str )
 // Рекурсивная печать дерева объектов, т.к. dumpObjectInfo() и dumpObjectTree() не работают
 void print_object_tree_recurse(QObject *pobj)
 {
-    static int indent=0;
+    static int indent = 0;
 
     QObjectList olist;
 
-    olist=pobj->children();
+    olist = pobj->children();
 
-    for(int i=0; i<olist.size(); ++i) {
+    for(int i = 0; i < olist.size(); ++i) {
         QObject *currobj;
-        currobj=olist.at(i);
+        currobj = olist.at(i);
 
-        QString indentline=".";
-        for(int j=0; j<indent; j++)indentline=indentline+".";
+        QString indentline = ".";
 
-        if((currobj->objectName()).length()==0)
-            qDebug("%s%s",fromQStringToChar(indentline), currobj->metaObject()->className() );
+        for(int j = 0; j < indent; j++)indentline = indentline + ".";
+
+        if((currobj->objectName()).length() == 0)
+            qDebug("%s%s", fromQStringToChar(indentline), currobj->metaObject()->className());
         else
-            qDebug("%s%s, NAME %s",fromQStringToChar(indentline), currobj->metaObject()->className(), fromQStringToChar(currobj->objectName()) );
+            qDebug("%s%s, NAME %s", fromQStringToChar(indentline), currobj->metaObject()->className(), fromQStringToChar(currobj->objectName()));
 
         indent++;
         print_object_tree_recurse(currobj);
@@ -196,39 +225,39 @@ bool compare_QStringList_len(const QStringList &list1, const QStringList &list2)
 void insertActionAsButton(QToolBar *tools_line, QAction *action)
 {
     tools_line->addAction(action);
-    qobject_cast<QToolButton*>(tools_line->widgetForAction(action))->setAutoRaise(false);
+    qobject_cast<QToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(false);
 }
 
 
 int imax(int x1, int x2)
 {
-    if(x1>x2)return x1;
+    if(x1 > x2)return x1;
     else return x2;
 }
 
 
 int imin(int x1, int x2)
 {
-    if(x1<x2)return x1;
+    if(x1 < x2)return x1;
     else return x2;
 }
 
 
 void smartPrintDebugMessage(QString msg)
 {
-    if(globalParameters.getTargetOs()=="any" ||
-            globalParameters.getTargetOs()=="meego") {
+    if(globalParameters.getTargetOs() == "any" ||
+       globalParameters.getTargetOs() == "meego") {
         QTime currTime = QTime::currentTime();
-        QString timeText=currTime.toString("hh:mm:ss");
-        msg=timeText+" "+msg;
+        QString timeText = currTime.toString("hh:mm:ss");
+        msg = timeText + " " + msg;
 
-        unsigned int messageLen=msg.toLocal8Bit().size();
+        unsigned int messageLen = msg.toLocal8Bit().size();
         // printf("Len of line: %d\n", messageLen);
 
         fwrite(msg.toLocal8Bit().data(), sizeof(char), messageLen, stderr);
     }
 
-// В Android пока неясно, как смотреть поток ошибок, для андроида qDebug() не переопределяется
+    // В Android пока неясно, как смотреть поток ошибок, для андроида qDebug() не переопределяется
 }
 
 
@@ -244,41 +273,45 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
     Q_UNUSED(context);
 #endif
 
-// #if DEBUG_PRINT==1
+    // #if DEBUG_PRINT==1
 
 #if QT_VERSION < 0x050000
-    QString msgText( QString::fromUtf8(msg) );
+    QString msgText(QString::fromUtf8(msg));
 #endif
 
 
     if(!mytetraConfig.is_init()) {
-        smartPrintDebugMessage("[INF] "+msgText+"\n");
+        smartPrintDebugMessage("[INF] " + msgText + "\n");
         return;
     }
 
-// Если в конфигурации запрещен вывод отладочных сообщений
+    // Если в конфигурации запрещен вывод отладочных сообщений
     if(!mytetraConfig.get_printdebugmessages())
         return;
 
-    switch (type) {
-    case QtInfoMsg:
-        smartPrintDebugMessage("[INF] "+msgText+"\n");
-        break;
-    case QtDebugMsg:
-        smartPrintDebugMessage("[DBG] "+msgText+"\n");
-        break;
-    case QtWarningMsg:
-        smartPrintDebugMessage("[WRN] "+msgText+"\n");
-        break;
-    case QtCriticalMsg:
-        smartPrintDebugMessage("[CRERR] "+msgText+"\n");
-        break;
-    case QtFatalMsg:
-        smartPrintDebugMessage("[FTERR] "+msgText+"\n");
-        abort();
+    switch(type) {
+        case QtInfoMsg:
+            smartPrintDebugMessage("[INF] " + msgText + "\n");
+            break;
+
+        case QtDebugMsg:
+            smartPrintDebugMessage("[DBG] " + msgText + "\n");
+            break;
+
+        case QtWarningMsg:
+            smartPrintDebugMessage("[WRN] " + msgText + "\n");
+            break;
+
+        case QtCriticalMsg:
+            smartPrintDebugMessage("[CRERR] " + msgText + "\n");
+            break;
+
+        case QtFatalMsg:
+            smartPrintDebugMessage("[FTERR] " + msgText + "\n");
+            abort();
     }
 
-// #endif
+    // #endif
 }
 
 
@@ -286,10 +319,10 @@ void setDebugMessageHandler()
 {
     qDebug() << "Debug message before set message handler for target OS: " << globalParameters.getTargetOs();
 
-// Для десктопных операционок можно переустановить обработчик qDebug()
-// Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
-    if(globalParameters.getTargetOs()=="any" ||
-            globalParameters.getTargetOs()=="meego") {
+    // Для десктопных операционок можно переустановить обработчик qDebug()
+    // Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
+    if(globalParameters.getTargetOs() == "any" ||
+       globalParameters.getTargetOs() == "meego") {
         qDebug() << "Set alternative handler myMessageOutput() for debug message";
 
 #if QT_VERSION < 0x050000
@@ -315,11 +348,11 @@ void showMessageBox(QString message)
 int getScreenSizeY(void)
 {
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
-    int size=(qApp->desktop()->availableGeometry()).height();
+    int size = (qApp->desktop()->availableGeometry()).height();
 #endif
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-    int size=(QApplication::screens().at(0)->availableGeometry()).height();
+    int size = (QApplication::screens().at(0)->availableGeometry()).height();
 #endif
 
     return size;
@@ -329,11 +362,11 @@ int getScreenSizeY(void)
 int getScreenSizeX(void)
 {
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
-    int size=(qApp->desktop()->availableGeometry()).width();
+    int size = (qApp->desktop()->availableGeometry()).width();
 #endif
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-    int size=(QApplication::screens().at(0)->availableGeometry()).width();
+    int size = (QApplication::screens().at(0)->availableGeometry()).width();
 #endif
 
     return size;
@@ -343,18 +376,18 @@ int getScreenSizeX(void)
 qreal getCalculateIconSizePx(void)
 {
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
-    qreal dpiX=qApp->desktop()->physicalDpiX();
-    qreal dpiY=qApp->desktop()->physicalDpiY();
-    qreal dpi=(dpiX+dpiY)/2;
+    qreal dpiX = qApp->desktop()->physicalDpiX();
+    qreal dpiY = qApp->desktop()->physicalDpiY();
+    qreal dpi = (dpiX + dpiY) / 2;
 #endif
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-    qreal dpi=QApplication::screens().at(0)->physicalDotsPerInch();
+    qreal dpi = QApplication::screens().at(0)->physicalDotsPerInch();
 #endif
 
-    qreal iconSizeMm=6; // Размер иконки в миллиметрах (рекомендованный)
-    qreal iconSizeInch=iconSizeMm/25.4; // Размер иконки в дюймах
-    qreal iconSizePx=iconSizeInch*dpi;
+    qreal iconSizeMm = 6; // Размер иконки в миллиметрах (рекомендованный)
+    qreal iconSizeInch = iconSizeMm / 25.4; // Размер иконки в дюймах
+    qreal iconSizePx = iconSizeInch * dpi;
 
     return iconSizePx;
 }
@@ -363,12 +396,12 @@ qreal getCalculateIconSizePx(void)
 // Замена в CSS-стиле все вхождения подстроки META_ICON_SIZE на вычисленный размер иконки в пикселях
 QString replaceCssMetaIconSize(QString styleText)
 {
-    styleText.replace( "META_ICON_SIZE", QString::number( (int) getCalculateIconSizePx() ) );
-    styleText.replace( "META_ICON_HALF_SIZE", QString::number( (int)getCalculateIconSizePx()/2 ) );
-    styleText.replace( "META_ICON_TWO_THIRDS_SIZE", QString::number( ((int)getCalculateIconSizePx()*2)/3 ) );
-    styleText.replace( "META_ICON_QUARTER_SIZE", QString::number( (int)getCalculateIconSizePx()/4 ) );
-    styleText.replace( "META_ICON_FIFTH_SIZE", QString::number( (int)getCalculateIconSizePx()/5 ) );
-    styleText.replace( "META_ICON_SIXTH_SIZE", QString::number( (int)getCalculateIconSizePx()/6 ) );
+    styleText.replace("META_ICON_SIZE", QString::number((int) getCalculateIconSizePx()));
+    styleText.replace("META_ICON_HALF_SIZE", QString::number((int)getCalculateIconSizePx() / 2));
+    styleText.replace("META_ICON_TWO_THIRDS_SIZE", QString::number(((int)getCalculateIconSizePx() * 2) / 3));
+    styleText.replace("META_ICON_QUARTER_SIZE", QString::number((int)getCalculateIconSizePx() / 4));
+    styleText.replace("META_ICON_FIFTH_SIZE", QString::number((int)getCalculateIconSizePx() / 5));
+    styleText.replace("META_ICON_SIXTH_SIZE", QString::number((int)getCalculateIconSizePx() / 6));
 
     return styleText;
 }
@@ -376,17 +409,18 @@ QString replaceCssMetaIconSize(QString styleText)
 
 void setCssStyle()
 {
-    QString csspath = globalParameters.getWorkDirectory()+"/stylesheet.css";
+    QString csspath = globalParameters.getWorkDirectory() + "/stylesheet.css";
 
     QFile css(csspath);
 
-    bool openResult=css.open(QIODevice::ReadOnly | QIODevice::Text);
+    bool openResult = css.open(QIODevice::ReadOnly | QIODevice::Text);
 
     // Если файла не существует
     if(!openResult) {
         qDebug() << "Stylesheet not found in " << csspath << ". Create new css file.";
-        globalParameters.createStyleSheetFile( globalParameters.getWorkDirectory() );
+        globalParameters.createStyleSheetFile(globalParameters.getWorkDirectory());
     }
+
     css.close();
 
     // Заново открывается файл
@@ -394,7 +428,7 @@ void setCssStyle()
         qDebug() << "Stylesheet success loaded from" << csspath;
         QString style = QTextStream(&css).readAll();
 
-        style=replaceCssMetaIconSize(style);
+        style = replaceCssMetaIconSize(style);
 
         qApp->setStyleSheet(style);
     }
@@ -410,10 +444,10 @@ void setKineticScrollArea(QAbstractItemView *object)
 
 #else
 
-    if(object==NULL)
+    if(object == NULL)
         return;
 
-    if(globalParameters.getTargetOs()=="android") {
+    if(globalParameters.getTargetOs() == "android") {
         // Настройка жестов прокрутки
         QScroller *scroller = QScroller::scroller(object);
 
@@ -439,8 +473,8 @@ void setKineticScrollArea(QAbstractItemView *object)
         // background: transparent; background-color:transparent;
         // "QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}"
         object->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {width:3px; border: none; background: transparent; margin: 0;}"
-                "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
-                "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
+                                                   "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
+                                                   "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
 
 
 
@@ -463,15 +497,15 @@ void setKineticScrollArea(QAbstractItemView *object)
 
 QStringList text_delimiter_decompose(QString text)
 {
-    text.replace('"',' ');
-    text.replace("'"," ");
-    text.replace('.',' ');
-    text.replace(',',' ');
-    text.replace(';',' ');
-    text.replace(':',' ');
-    text.replace('-',' ');
-    text.replace('?',' ');
-    text.replace('!',' ');
+    text.replace('"', ' ');
+    text.replace("'", " ");
+    text.replace('.', ' ');
+    text.replace(',', ' ');
+    text.replace(';', ' ');
+    text.replace(':', ' ');
+    text.replace('-', ' ');
+    text.replace('?', ' ');
+    text.replace('!', ' ');
 
     QStringList list = text.split(QRegExp("\\W+"), QString::SkipEmptyParts);
 
@@ -482,25 +516,25 @@ QStringList text_delimiter_decompose(QString text)
 // Функция всегда возвращает уникальный идентификатор
 QString get_unical_id(void)
 {
-// Уникальный идентификатор состоит из 10 цифр количества секунд с эпохи UNIX
-// и 10 случайных символов 0-9 a-z
+    // Уникальный идентификатор состоит из 10 цифр количества секунд с эпохи UNIX
+    // и 10 случайных символов 0-9 a-z
 
-// Количество секунд как число
+    // Количество секунд как число
     long seconds;
-    seconds=(long)time(NULL);
+    seconds = (long)time(NULL);
 
-// Количество секунд как строка
-    QString secondsLine=QString::number(seconds, 10);
-    secondsLine=secondsLine.rightJustified(10, '0');
+    // Количество секунд как строка
+    QString secondsLine = QString::number(seconds, 10);
+    secondsLine = secondsLine.rightJustified(10, '0');
 
-// Строка из 10 случайных символов
-    QString symbols="0123456789abcdefghijklmnopqrstuvwxyz";
+    // Строка из 10 случайных символов
+    QString symbols = "0123456789abcdefghijklmnopqrstuvwxyz";
     QString line;
 
-    for(int i=0; i<10; i++)
-        line+=symbols.mid(rand()%symbols.length(), 1);
+    for(int i = 0; i < 10; i++)
+        line += symbols.mid(rand() % symbols.length(), 1);
 
-    QString result=secondsLine+line;
+    QString result = secondsLine + line;
 
     return result;
 }
@@ -512,7 +546,7 @@ int get_milli_count(void)
     // It rolls over every ~ 12.1 days (0x100000/24/60/60)
     // Use getMilliSpan to correct for rollover
     timeb tb;
-    ftime( &tb );
+    ftime(&tb);
     int nCount = tb.millitm + (tb.time & 0xfffff) * 1000;
     return nCount;
 }
@@ -522,45 +556,46 @@ void init_random(void)
 {
     qDebug() << "Init random generator";
 
-    unsigned int seed1=get_milli_count();
+    unsigned int seed1 = get_milli_count();
     srand(seed1);
 
-    unsigned int delay=rand()%1000;
-    unsigned int r=0;
-    for(unsigned int i=0; i<delay; i++) r=r+rand();
+    unsigned int delay = rand() % 1000;
+    unsigned int r = 0;
 
-    seed1=seed1-get_milli_count()+r;
+    for(unsigned int i = 0; i < delay; i++) r = r + rand();
 
-    unsigned int seed2=time(NULL);
-    unsigned int seed3=seed1+seed2;
-    unsigned int seed=seed3;
+    seed1 = seed1 - get_milli_count() + r;
 
-    srand( seed );
+    unsigned int seed2 = time(NULL);
+    unsigned int seed3 = seed1 + seed2;
+    unsigned int seed = seed3;
+
+    srand(seed);
 }
 
 
-int main(int argc, char ** argv)
+int main(int argc, char **argv)
 {
     printf("\n\rStart MyTetra v.%d.%d.%d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
 
     Q_INIT_RESOURCE(mytetra);
 
-// Начальные инициализации основных объектов
+    // Начальные инициализации основных объектов
 
-// Запоминается имя файла запущенного бинарника
-// Файл запущенной программы (нулевой аргумент функции main)
-    QString mainProgramFile=QString::fromLatin1( argv[0] ); // todo: Этот код наверно некорректно работает с путями в UTF8
+    // Запоминается имя файла запущенного бинарника
+    // Файл запущенной программы (нулевой аргумент функции main)
+    QString mainProgramFile = QString::fromLatin1(argv[0]); // todo: Этот код наверно некорректно работает с путями в UTF8
     qDebug() << "Set main program file to " << mainProgramFile;
     globalParameters.setMainProgramFile(mainProgramFile);
 
-// Перехват отладочных сообщений
+    // Перехват отладочных сообщений
     setDebugMessageHandler();
 
     QtSingleApplication app(argc, argv);
 
-// Не запущен ли другой экземпляр
+    // Не запущен ли другой экземпляр
     if(app.isRunning()) {
-        QString message="Another MyTetra exemplar is running.\n";
+        QString message = "Another MyTetra exemplar is running.\n";
 
         printf(message.toLocal8Bit());
 
@@ -573,9 +608,11 @@ int main(int argc, char ** argv)
     }
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-// Установка увеличенного разрешения для дисплеев с большим DPI (Retina)
-    if( qApp->devicePixelRatio() > 1.0 )
+
+    // Установка увеличенного разрешения для дисплеев с большим DPI (Retina)
+    if(qApp->devicePixelRatio() > 1.0)
         qApp->setAttribute(Qt::AA_UseHighDpiPixmaps);
+
 #endif
 
 #if QT_VERSION < 0x050000
@@ -583,29 +620,30 @@ int main(int argc, char ** argv)
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 #endif
 
-// Инициализация глобальных параметров,
-// внутри происходит установка рабочей директории
+    // Инициализация глобальных параметров,
+    // внутри происходит установка рабочей директории
     globalParameters.init();
 
-// Инициализация основных конфигурирующих программу переменных
+    // Инициализация основных конфигурирующих программу переменных
     mytetraConfig.init();
 
-// Инициализация переменных, отвечающих за хранилище данных
+    // Инициализация переменных, отвечающих за хранилище данных
     dataBaseConfig.init();
 
-// Установка CSS-оформления
+    // Установка CSS-оформления
     setCssStyle();
 
 
-// Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
+    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
     QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
+
     if(mytetraConfig.getShowSplashScreen())
         splash.show();
 
 
-// Подключение перевода интерфейса
-// QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
-    QString langFileName=":/resource/translations/mytetra_"+mytetraConfig.get_interfacelanguage()+".qm";
+    // Подключение перевода интерфейса
+    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
+    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
     qDebug() << "Use language file " << langFileName;
 
     QTranslator langTranslator;
@@ -613,24 +651,25 @@ int main(int argc, char ** argv)
     app.installTranslator(&langTranslator);
 
 
-// Создание объекта главного окна
+    // Создание объекта главного окна
     MainWindow win;
     win.setWindowTitle("MyTetra");
-    if(globalParameters.getTargetOs()=="android")
+
+    if(globalParameters.getTargetOs() == "android")
         win.show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else {
-        if(mytetraConfig.get_runinminimizedwindow()==false)
+        if(mytetraConfig.get_runinminimizedwindow() == false)
             win.show();
         else
             win.hide();
     }
 
-// win.setObjectName("mainwindow");
-// pMainWindow=&win; // Запоминается указатель на основное окно
+    // win.setObjectName("mainwindow");
+    // pMainWindow=&win; // Запоминается указатель на основное окно
 
-// После создания окна восстанавливается вид окна в предыдущий запуск
-// Эти действия нельзя делать в конструкторе главного окна,
-// т.к. окно еще не создано
+    // После создания окна восстанавливается вид окна в предыдущий запуск
+    // Эти действия нельзя делать в конструкторе главного окна,
+    // т.к. окно еще не создано
     globalParameters.getWindowSwitcher()->disableSwitch();
     win.restoreFindOnBaseVisible();
     win.restoreGeometry();
@@ -640,55 +679,55 @@ int main(int argc, char ** argv)
     win.restoreEditorScrollBarPosition();
     globalParameters.getWindowSwitcher()->enableSwitch();
 
-    if(mytetraConfig.getInterfaceMode()=="mobile")
+    if(mytetraConfig.getInterfaceMode() == "mobile")
         globalParameters.getWindowSwitcher()->restoreFocusWidget();
 
     qDebug() << "Restore session succesfull";
 
-// После восстановления последней редактируемой записи
-// история перехода очищается, так как в не может попасть
-// первая запись в востаналиваемой ветке и сама восстанавливаемая запись
+    // После восстановления последней редактируемой записи
+    // история перехода очищается, так как в не может попасть
+    // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
     walkHistory.clear();
 
 
-// Если в конфиге настроено, что нужно синхронизироваться при старте
-// И задана команда синхронизации
+    // Если в конфиге настроено, что нужно синхронизироваться при старте
+    // И задана команда синхронизации
     if(mytetraConfig.get_synchroonstartup())
-        if(mytetraConfig.get_synchrocommand().trimmed().length()>0)
+        if(mytetraConfig.get_synchrocommand().trimmed().length() > 0)
             win.synchronization();
 
 
-// Если настроено в конфиге, сразу запрашивается пароль доступа
-// к зашифрованным данным
-// И если есть хоть какие-то зашифрованные данные
-    if(mytetraConfig.get_howpassrequest()=="atStartProgram")
-        if(globalParameters.getCryptKey().length()==0)
-            if(dataBaseConfig.get_crypt_mode()>0) {
+    // Если настроено в конфиге, сразу запрашивается пароль доступа
+    // к зашифрованным данным
+    // И если есть хоть какие-то зашифрованные данные
+    if(mytetraConfig.get_howpassrequest() == "atStartProgram")
+        if(globalParameters.getCryptKey().length() == 0)
+            if(dataBaseConfig.get_crypt_mode() > 0) {
                 // Запрашивается пароль только в том случае, если ветка,
                 // на которую установливается курсор при старте, незашифрована
                 // Если ветка зашифрована, пароль и так будет запрошен автоматически
-                if(win.isTreePositionCrypt()==false) {
+                if(win.isTreePositionCrypt() == false) {
                     Password password;
                     password.retrievePassword();
                 }
             }
 
 
-// Если в общем конфиге стоит опция хранения пароля
-// И хранимый пароль (точнее его хеш) заполнен
-    if(globalParameters.getCryptKey().length()==0)
-        if(dataBaseConfig.get_crypt_mode()>0)
+    // Если в общем конфиге стоит опция хранения пароля
+    // И хранимый пароль (точнее его хеш) заполнен
+    if(globalParameters.getCryptKey().length() == 0)
+        if(dataBaseConfig.get_crypt_mode() > 0)
             if(mytetraConfig.getPasswordSaveFlag())
-                if(mytetraConfig.getPasswordMiddleHash().length()>0) {
+                if(mytetraConfig.getPasswordMiddleHash().length() > 0) {
                     // При запросе пароля ключ шифрования будет восстановлен автоматически
                     Password password;
                     password.retrievePassword();
                 }
 
-// Распечатывается дерево сгенерированных объектов
-// print_object_tree();
+    // Распечатывается дерево сгенерированных объектов
+    // print_object_tree();
 
-// Проверяется наличие системного трея
+    // Проверяется наличие системного трея
     /*
     if(!QSystemTrayIcon::isSystemTrayAvailable()) {
      QMessageBox::critical(0, QObject::tr("Systray"),
@@ -697,17 +736,17 @@ int main(int argc, char ** argv)
     }
     */
 
-// При закрытии окна не выходить из программы.
-// Окно программы может быть снова открыто из трея
+    // При закрытии окна не выходить из программы.
+    // Окно программы может быть снова открыто из трея
     QApplication::setQuitOnLastWindowClosed(false);
 
 
-// win.show();
-    app.connect(&app, SIGNAL( lastWindowClosed() ), &app, SLOT( quit() ) );
+    // win.show();
+    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 
-// app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win.commitData(QSessionManager)));
+    // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win.commitData(QSessionManager)));
 
-// Окно сплеш-скрина скрывается
+    // Окно сплеш-скрина скрывается
     if(mytetraConfig.getShowSplashScreen())
         splash.finish(&win);
 
