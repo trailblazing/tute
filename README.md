@@ -1,4 +1,6 @@
 mytetra_dev
+
+A Knowledge management system with web browser functions inside.
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development. 
