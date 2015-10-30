@@ -408,7 +408,7 @@ void FindScreen::findStart(void)
 
         // Количество элементов (веток) во всем дереве
         totalRec = searchModel->getAllRecordCount();
-    } else if(mytetraConfig.getFindScreenTreeSearchArea() == 1) { // Если нужен поиск в текущей ветке
+    } else if(mytetraConfig.getFindScreenTreeSearchArea() == 1) {   // If you want to search the current branch // Если нужен поиск в текущей ветке
         // Индекс текущей выбранной ветки
         QModelIndex currentItemIndex = find_object<TreeScreen>("treeScreen")->getCurrentItemIndex();
 
@@ -432,27 +432,32 @@ void FindScreen::findStart(void)
         return;
     }
 
+    if(0 != totalRec) {
+        // Показывается виджет линейки наполняемости
+        progress->reset();
+        progress->setLabelText(tr("Search..."));
+        progress->setRange(0, totalRec);
+        progress->setModal(true);
+        progress->setMinimumDuration(0);
+        progress->show();
 
-    // Показывается виджет линейки наполняемости
-    progress->reset();
-    progress->setLabelText(tr("Search..."));
-    progress->setRange(0, totalRec);
-    progress->setModal(true);
-    progress->setMinimumDuration(0);
-    progress->show();
+        // Обнуляется счетчик обработанных конечных записей
+        totalProgressCounter = 0;
+        cancelFlag = 0;
 
-    // Обнуляется счетчик обработанных конечных записей
-    totalProgressCounter = 0;
-    cancelFlag = 0;
+        //Вызывается рекурсивный поиск в дереве
+        findRecurse(startItem);
 
-    //Вызывается рекурсивный поиск в дереве
-    findRecurse(startItem);
+        // После вставки всех данных подгоняется ширина колонок
+        findTable->updateColumnsWidth();
 
-    // После вставки всех данных подгоняется ширина колонок
-    findTable->updateColumnsWidth();
-
-    // Виджет линейки наполняемости скрывается
-    progress->hide();
+        // Виджет линейки наполняемости скрывается
+        progress->hide();
+    } else {
+        // create a new note and open in browser
+        // if it is a web address, open it
+        // else, open from search engine
+    }
 }
 
 

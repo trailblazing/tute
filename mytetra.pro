@@ -26,7 +26,7 @@ QT = gui \
     network
 QT += widgets
 QT += network webkit
-QT += webkitwidgets
+QT += webenginewidgets
 
 
 CONFIG += qt \
@@ -34,6 +34,7 @@ CONFIG += qt \
     console \
     debug
 CONFIG += c++11
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets \
                                         printsupport
@@ -298,6 +299,7 @@ SOURCES+=\
     src/libraries/MtTableWidget.cpp \
     src/views/tree/KnowTreeView.cpp \
     src/libraries/MtStyledItemDelegate.cpp
+
 
 wince* { 
     CONFIG(debug, release|debug):addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll

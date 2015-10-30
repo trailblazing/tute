@@ -1,8 +1,13 @@
 #include "main.h"
-#include <QWebView> //#include <QtWebKitWidgets/QWebView>
+#include <QWebEngineView>   //#include <QWebView> //#include <QtWebKitWidgets/QWebView>
+
 #include <QWebElement>
-#include <QWebPage>
-#include <QWebFrame>
+#include <QWebEnginePage>   //#include <QWebPage>
+#include <QtWebEngineWidgets>
+
+
+
+//#include <QWebFrame>
 #include <QVBoxLayout>
 #include <QNetworkDiskCache>
 #include <QDesktopServices>
@@ -40,7 +45,7 @@
 struct BrowserViewPrivate {
     //Q_OBJECT
 public:
-    QWebView *view;
+    QWebEngineView *view;
     QNetworkAccessManager *nam;
     QMap<QPair<QString, int>, QByteArray> exceptions;
     bool msgShown;
@@ -236,11 +241,11 @@ BrowserView::BrowserView(QWidget *parent)
     , d(new BrowserViewPrivate)
       //, current_record(nullptr)
 {
-    d->view = new QWebView(this);
-    d->view->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
-    d->view->page()->mainFrame()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
-    d->view->settings()->setAttribute(QWebSettings::JavascriptEnabled, true);
-    d->view->settings()->setAttribute(QWebSettings::JavascriptCanOpenWindows, true);
+    d->view = new QWebEngineView(this);
+    //d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAlwaysOff);
+    //d->view->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAlwaysOff);
+    d->view->page()->settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+    d->view->page()->settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
 
     d->msgShown = false;
 
@@ -257,11 +262,11 @@ BrowserView::BrowserView(QWidget *parent)
 
     setupSignals();
 
-    d->nam = d->view->page()->networkAccessManager();
+    //d->nam = d->view->page()->networkAccessManager();
 
-    connect(d->nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(finished(QNetworkReply *)));
+    //connect(d->nam, SIGNAL(finished(QNetworkReply *)), this, SLOT(finished(QNetworkReply *)));
 
-    connect(d->nam, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)), this, SLOT(sslErrors(QNetworkReply *, const QList<QSslError> &)));
+    //connect(d->nam, SIGNAL(sslErrors(QNetworkReply *, const QList<QSslError> &)), this, SLOT(sslErrors(QNetworkReply *, const QList<QSslError> &)));
 
 
 }
@@ -304,7 +309,7 @@ void BrowserView::setupSignals(void)
     //    QObject::disconnect(_connection);
 
     //_connection =  //QWebView::
-    QWebView::connect
+    QWebEngineView::connect
     //                   <
     //                   void (QWebView::*)(bool)
     //                   , void (RecordTableController::*)(void)
@@ -312,7 +317,7 @@ void BrowserView::setupSignals(void)
     (
         d->view
         //, &BrowserView::urlChanged//, &QWebView::urlChanged  //
-        , &QWebView::loadFinished
+        , &QWebEngineView::loadFinished
         , this//globalParameters.getRecordTableScreen()->getRecordTableController()
         //, &BrowserView::onUrlChanged//&RecordTableController::autoAddNewAfterContext
         , &BrowserView::onLoadFinished//
@@ -324,10 +329,10 @@ void BrowserView::setupSignals(void)
     //                          , &RecordTableController::autoAddNewAfterContext);
 
     //void (BrowserView::*lU)(const QUrl &) = &BrowserView::loadUrl;
-    _connection = QWebView::connect <
-                  void (QWebView::*)(const QUrl &)
+    _connection = QWebEngineView::connect <
+                  void (QWebEngineView::*)(const QUrl &)
                   , void (BrowserView::*)(const QUrl &)
-                  > (d->view, &QWebView::urlChanged, this
+                  > (d->view, &QWebEngineView::urlChanged, this
                      //, &BrowserView::loadUrl //
                      , &BrowserView::onUrlChanged
                     );
@@ -346,8 +351,8 @@ void BrowserView::setUrl(const QUrl &_url)
 void BrowserView::setScrollbars(bool hide)
 {
     if(!hide) {
-        d->view->page()->mainFrame()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
-        d->view->page()->mainFrame()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
+        //d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
+        //d->view->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
     }
 }
 
@@ -368,9 +373,9 @@ void BrowserView::onLoadFinished(bool finished)
 {
     if(finished) {
 
-        QWebFrame *frame = d->view->page()->mainFrame();
-        QWebElement dom_title(frame->findFirstElement("title"));
-        QString title = dom_title.evaluateJavaScript("this.text").toString();
+        //QWebFrame *frame = d->view->page()->mainFrame();
+        //QWebElement dom_title(frame->findFirstElement("title"));
+        QString title = d->view->title();   //dom_title.evaluateJavaScript("this.text").toString();
 
         RecordTableController *recordTableController = globalParameters.getRecordTableScreen()->getRecordTableController();
 
@@ -378,7 +383,7 @@ void BrowserView::onLoadFinished(bool finished)
 
         int pos = recordTableController->getFirstSelectionPos();
         Record *previous_record = recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-        previous_record->setNaturalFieldSource("name", title);
+        if(previous_record)previous_record->setNaturalFieldSource("name", title);
     }
 }
 
@@ -395,19 +400,20 @@ void BrowserView::onUrlChanged(const QUrl &_url)
 
         int pos = recordTableController->getFirstSelectionPos();
         Record *previous_record = recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+        if(previous_record){
+            Record record;
 
-        Record record;
+            if(record.isLite())record.switchToFat();
 
-        if(record.isLite())record.switchToFat();
+            //QString title = d->view->title(); // not ready yet
+            record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));
+            record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
+            record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
+            record.setNaturalFieldSource("url",    _url.toString());    // only changed
+            record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
 
-        //QString title = d->view->title(); // not ready yet
-        record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));
-        record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
-        record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
-        record.setNaturalFieldSource("url",    _url.toString());    // only changed
-        record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
-
-        recordTableController->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+            recordTableController->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+        }
     }
 
     //    Record *previous_record = recordTableController->getRecordTableModel()->getRecordTableData()->getRecord(pos);
