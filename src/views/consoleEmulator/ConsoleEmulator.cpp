@@ -5,8 +5,10 @@
 #include "main.h"
 #include "models/appConfig/AppConfig.h"
 #include "views/findInBaseScreen/FindScreen.h"
+#include "libraries/FlatControl.h"
 
-extern AppConfig mytetraConfig;
+
+extern AppConfig appconfig;
 
 
 ConsoleEmulator::ConsoleEmulator(QWidget *parent) : QDialog(parent)
@@ -34,7 +36,7 @@ void ConsoleEmulator::setupUI(void)
 {
     messageLabel=new QLabel(this);
 
-    buttonDetails=new QToolButton(this);
+    buttonDetails=new FlatToolButton(this);
     buttonDetails->setIcon(QIcon(":/resource/pic/expand_console.svg"));
 
     buttonCancel=new QPushButton(this);
@@ -44,7 +46,7 @@ void ConsoleEmulator::setupUI(void)
     consoleOutput=new QTextEdit(this);
     consoleOutput->setReadOnly(true);
     consoleOutput->setFontFamily("monospace");
-    if(mytetraConfig.getSyncroConsoleDetails()==false)
+    if(appconfig.getSyncroConsoleDetails()==false)
         consoleOutput->hide();
 
     waitClock=new WaitClock(this);
@@ -136,10 +138,10 @@ void ConsoleEmulator::onDetailsClick(void)
 {
     if(consoleOutput->isHidden()) {
         consoleOutput->show();
-        mytetraConfig.setSyncroConsoleDetails(true);
+        appconfig.setSyncroConsoleDetails(true);
     } else {
         consoleOutput->hide();
-        mytetraConfig.setSyncroConsoleDetails(false);
+        appconfig.setSyncroConsoleDetails(false);
     }
 
     this->adjustSize();

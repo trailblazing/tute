@@ -2,7 +2,6 @@
 #define _EDITOR_H_
 
 #include <QBoxLayout>
-#include <QToolButton>
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QTextEdit>
@@ -17,7 +16,7 @@
 #include "EditorShowText.h"
 
 // Fix ugly Qt QSS bug
-#include "libraries/MtComboBox.h"
+//#include "libraries/FlatControl.h"
 
 
 // ----------------------------------------------------------
@@ -85,88 +84,97 @@
 #define MINIMUM_ALLOWED_FONT_SIZE 5
 #define MAXIMUM_ALLOWED_FONT_SIZE 100
 
+class GlobalParameters;
+extern GlobalParameters globalparameters;
+
+
 class EditorConfig;
 class EditorTextEdit;
 class EditorContextMenu;
 class EditorTextArea;
 class IndentSlider;
+class FlatToolButton;
+class FlatComboBox;
+class FlatFontComboBox;
+class FlatToolButton;
 
 class Editor : public QWidget {
     Q_OBJECT
 
 public:
-    Editor(QWidget *parent=0);
+    Editor(QWidget *parent = 0);
     ~Editor(void);
 
-    EditorConfig  *editorConfig=NULL;
+    EditorConfig  *editorConfig = NULL;
 
-// Кнопки форматирования текста
-    QToolButton   *bold=NULL;
-    QToolButton   *italic=NULL;
-    QToolButton   *underline=NULL;
-    QToolButton   *monospace=NULL;
-    QToolButton   *code=NULL;
-    QToolButton   *clear=NULL;
+    // Кнопки форматирования текста
+    FlatToolButton   *bold = NULL;
+    FlatToolButton   *italic = NULL;
+    FlatToolButton   *underline = NULL;
+    FlatToolButton   *monospace = NULL;
+    FlatToolButton   *code = NULL;
+    FlatToolButton   *clear = NULL;
 
-    QToolButton   *numericList=NULL;
-    QToolButton   *dotList=NULL;
+    FlatToolButton   *numericList = NULL;
+    FlatToolButton   *dotList = NULL;
 
-    QToolButton   *indentPlus=NULL;
-    QToolButton   *indentMinus=NULL;
+    FlatToolButton   *indentPlus = NULL;
+    FlatToolButton   *indentMinus = NULL;
 
-    QToolButton   *alignLeft=NULL;
-    QToolButton   *alignCenter=NULL;
-    QToolButton   *alignRight=NULL;
-    QToolButton   *alignWidth=NULL;
+    FlatToolButton   *alignLeft = NULL;
+    FlatToolButton   *alignCenter = NULL;
+    FlatToolButton   *alignRight = NULL;
+    FlatToolButton   *alignWidth = NULL;
 
-    QToolButton   *settings=NULL;
+    FlatToolButton   *settings = NULL;
 
-    QFontComboBox *fontSelect=NULL;
-    MtComboBox    *fontSize=NULL;
-    QToolButton   *fontColor=NULL;
+    // QFontComboBox
+    FlatFontComboBox *fontSelect = NULL;
+    FlatComboBox     *fontSize = NULL;
+    FlatToolButton   *fontColor = NULL;
 
-    QToolButton   *showHtml=NULL;
+    FlatToolButton   *showHtml = NULL;
 
-    QToolButton   *findText=NULL;
+    FlatToolButton   *findText = NULL;
 
-    QToolButton   *showFormatting=NULL;
+    FlatToolButton   *showFormatting = NULL;
 
-    QToolButton   *createTable=NULL;
-    QToolButton   *tableRemoveRow=NULL;
-    QToolButton   *tableRemoveCol=NULL;
-    QToolButton   *tableAddRow=NULL;
-    QToolButton   *tableAddCol=NULL;
-    QToolButton   *tableMergeCells=NULL;
-    QToolButton   *tableSplitCell=NULL;
+    FlatToolButton   *createTable = NULL;
+    FlatToolButton   *tableRemoveRow = NULL;
+    FlatToolButton   *tableRemoveCol = NULL;
+    FlatToolButton   *tableAddRow = NULL;
+    FlatToolButton   *tableAddCol = NULL;
+    FlatToolButton   *tableMergeCells = NULL;
+    FlatToolButton   *tableSplitCell = NULL;
 
-    QToolButton   *insertImageFromFile=NULL;
-    QToolButton   *expandEditArea=NULL;
-    QToolButton   *expandToolsLines=NULL;
-    QToolButton   *save=NULL;
+    FlatToolButton   *insertImageFromFile = NULL;
+    FlatToolButton   *expandEditArea = NULL;
+    FlatToolButton   *expandToolsLines = NULL;
+    FlatToolButton   *save = NULL;
 
-    QToolButton   *back=NULL;
-    QToolButton   *actionFreeze=NULL;
-    QToolButton   *findInBase=NULL;
+    FlatToolButton   *back = NULL;
+    FlatToolButton   *actionFreeze = NULL;
+    FlatToolButton   *findInBase = NULL;
 
-    QToolButton   *showText=NULL;
+    FlatToolButton   *showText = NULL;
 
-    QToolButton   *toAttach=NULL;
+    FlatToolButton   *toAttach = NULL;
     QIcon         iconAttachExists; // Иконка, когда аттачи есть
     QIcon         iconAttachNotExists; // Иконка, когда аттачей нет
 
-    IndentSlider  *indentSlider=NULL;
+    IndentSlider  *indentSlider = NULL;
 
-// Горизонтальная линейка, содержащая кнопки форматирования
-    QVBoxLayout *textformatButtonsLayout=NULL;
-    QToolBar    *toolsLine1=NULL;
-    QToolBar    *toolsLine2=NULL;
+    // Горизонтальная линейка, содержащая кнопки форматирования
+    QVBoxLayout *textformatButtonsLayout = NULL;
+    QToolBar    *toolsLine1 = NULL;
+    QToolBar    *toolsLine2 = NULL;
     void insert_button_to_tools_line(QString toolName, QToolBar *line);
 
-// Вертикальная группировалка линеек кнопок и области редактирования
-    QVBoxLayout   *buttonsAndEditLayout=NULL;
+    // Вертикальная группировалка линеек кнопок и области редактирования
+    QVBoxLayout   *buttonsAndEditLayout = NULL;
 
-// Контекстное меню редактора
-    EditorContextMenu *editorContextMenu=NULL;
+    // Контекстное меню редактора
+    EditorContextMenu *editorContextMenu = NULL;
 
     const char *getVersion(void);
 
@@ -175,7 +183,7 @@ public:
     void initEnableRandomSeed(bool flag);
     void init(int mode);
 
-// Методы работы с textarea
+    // Методы работы с textarea
     void set_textarea(QString text);
     void set_textarea_editable(bool editable);
     QString get_textarea(void);
@@ -183,13 +191,13 @@ public:
     void set_textarea_modified(bool modify);
     bool get_textarea_modified(void);
 
-// Абсолютный или относительный путь (т.е. директория),
-// куда будет сохраняться текст. Без завершающего слеша
+    // Абсолютный или относительный путь (т.е. директория),
+    // куда будет сохраняться текст. Без завершающего слеша
     bool set_work_directory(QString dirName);
     QString get_work_directory(void);
 
-// Имя файла, куда должен сохраняться текст
-// Без пути, только имя
+    // Имя файла, куда должен сохраняться текст
+    // Без пути, только имя
     void set_file_name(QString fileName);
     QString get_file_name(void);
 
@@ -198,18 +206,18 @@ public:
     bool save_textarea_images(int mode);
     bool load_textarea();
 
-// Методы установки нестандартных процедур чтения и сохранения текста
+    // Методы установки нестандартных процедур чтения и сохранения текста
     void set_save_callback(void (*func)(QObject *editor, QString saveString));
     void set_load_callback(void (*func)(QObject *editor, QString &loadString));
 
-// Метод установки функции переключения на предыдущее окно (для мобильного интерфейса)
+    // Метод установки функции переключения на предыдущее окно (для мобильного интерфейса)
     void set_back_callback(void (*func)(void));
 
-// Метод установки функции нажатия на кнопку Attach
+    // Метод установки функции нажатия на кнопку Attach
     void set_attach_callback(void (*func)(void));
 
-// Методы установки и чтения произвольных нестандартных данных
-// которые может хранить объект редактора
+    // Методы установки и чтения произвольных нестандартных данных
+    // которые может хранить объект редактора
     void setMiscField(QString name, QString value);
     QString getMiscField(QString name);
     void clearAllMiscField(void);
@@ -219,7 +227,7 @@ public:
     void setDirFileEmptyReaction(int mode);
     int  getDirFileEmptyReaction(void);
 
-// Метод позволяющий управлять доступностью инструментов редактирования
+    // Метод позволяющий управлять доступностью инструментов редактирования
     void setDisableToolList(QStringList toolNames);
 
     int  getCursorPosition(void);
@@ -230,8 +238,8 @@ public:
 
 
     enum {
-        SAVE_IMAGES_SIMPLE=0,
-        SAVE_IMAGES_REMOVE_UNUSED=1
+        SAVE_IMAGES_SIMPLE = 0,
+        SAVE_IMAGES_REMOVE_UNUSED = 1
     };
 
     enum {
@@ -240,14 +248,14 @@ public:
     };
 
     enum {
-        WYEDIT_DESKTOP_MODE=0,
-        WYEDIT_MOBILE_MODE=1
+        WYEDIT_DESKTOP_MODE = 0,
+        WYEDIT_MOBILE_MODE = 1
     };
 
 signals:
 
-// Сигналы установки отступов на линейке с движками
-// согласно текущему форматированию
+    // Сигналы установки отступов на линейке с движками
+    // согласно текущему форматированию
     void send_set_textindent_pos(int i);
     void send_set_leftindent_pos(int i);
     void send_set_rightindent_pos(int i);
@@ -262,7 +270,7 @@ public slots:
 
 private slots:
 
-// Действия в области редактирования
+    // Действия в области редактирования
     void on_bold_clicked(void);
     void on_italic_clicked(void);
     void on_underline_clicked(void);
@@ -305,6 +313,7 @@ private slots:
     void on_expand_tools_lines_clicked(void);
     void on_save_clicked(void);
     void on_back_clicked(void);
+    void on_freeze_clicked(void);
     void on_find_in_base_clicked(void);
     void on_show_text_clicked(void);
     void on_to_attach_clicked(void);
@@ -320,22 +329,22 @@ private slots:
 
     void on_findtext_signal_detect(const QString &text, QTextDocument::FindFlags flags);
 
-// Слоты обработки перемещения движков настройки отступов
+    // Слоты обработки перемещения движков настройки отступов
     void on_indentline_change_textindent_pos(int i);
     void on_indentline_change_leftindent_pos(int i);
     void on_indentline_change_rightindent_pos(int i);
     void on_indentline_mouse_release(void);
 
-// Открытие контекстного меню
+    // Открытие контекстного меню
     void on_customContextMenuRequested(const QPoint &pos);
 
     void on_context_menu_edit_image_properties(void);
 
-// void onModificationChanged(bool flag);
+    // void onModificationChanged(bool flag);
 
 protected:
 
-// Область редактирования текста
+    // Область редактирования текста
     EditorTextArea *textArea;
 
 
@@ -345,8 +354,8 @@ private:
     QString initDataConfigFileName;
     bool    initDataEnableRandomSeed;
 
-// Рабочая директория редактора и файл текста
-// Используется при сохранении текста на диск
+    // Рабочая директория редактора и файл текста
+    // Используется при сохранении текста на диск
     QString workDirectory;
     QString workFileName;
 
@@ -380,16 +389,21 @@ private:
     void set_outline_button_higlight(int button, bool active);
     bool is_key_for_tool_line_update(QKeyEvent *event);
 
-// Метод, переключающий состояние видимости полной панели инструментов
-// Если вызывается без параметра, метод сам переключает
-// Параметр 1 - включить полную видимость
-// Параметр -1 - выключить полную видимость
-    void switch_expand_tools_lines(int flag=0);
+    // Метод, переключающий состояние видимости полной панели инструментов
+    // Если вызывается без параметра, метод сам переключает
+    // Параметр 1 - включить полную видимость
+    // Параметр -1 - выключить полную видимость
+    void switch_expand_tools_lines(int flag = 0);
 
-// Переопределяется слот обработки клавиш
-// нужен для определения момента undo/redo
-    virtual void keyPressEvent(QKeyEvent * event);
-    virtual void keyReleaseEvent(QKeyEvent * event);
+    // Переопределяется слот обработки клавиш
+    // нужен для определения момента undo/redo
+    virtual void keyPressEvent(QKeyEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
+
+    void setup_closebutton(void);
+    void assembly_closebutton(void);
+    void widget_hide(bool);
+
 
     QString currentFontFamily;
     int     currentFontSize;
@@ -405,19 +419,19 @@ private:
 
     bool expand_edit_area_flag; // Распахнуто ли на максимум окно редактора
 
-// Указатели на переопределенные функции записи и чтения редактируемого текста
+    // Указатели на переопределенные функции записи и чтения редактируемого текста
     void (*save_callback_func)(QObject *editor, QString saveString);
     void (*load_callback_func)(QObject *editor, QString &loadString);
 
-// Указатель на функцию переключения на предыдущее окно (для мобильного интерфейса)
+    // Указатель на функцию переключения на предыдущее окно (для мобильного интерфейса)
     void (*back_callback_func)(void);
 
-// Указатель на функцию открытия присоединенных файлов
+    // Указатель на функцию открытия присоединенных файлов
     void (*attach_callback_func)(void);
 
-// Поля для хранения произвольных данных
-// Обычно используются для запоминания нестандартного набора данных
-// в объекте редактора, и считываются из функции обратного вызова
+    // Поля для хранения произвольных данных
+    // Обычно используются для запоминания нестандартного набора данных
+    // в объекте редактора, и считываются из функции обратного вызова
     QMap<QString, QString> miscFields;
 
     int dirFileEmptyReaction;
@@ -425,8 +439,10 @@ private:
     QStringList toolsListInLine1;
     QStringList toolsListInLine2;
 
-// Список инструментов, которые ненужно подгружать
+    // Список инструментов, которые ненужно подгружать
     QStringList disableToolList;
+    FlatToolButton *_closebutton;
+    QVBoxLayout *_toolsarea_closebutton;
 
     enum {
         BT_BOLD,

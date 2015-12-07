@@ -89,7 +89,7 @@ namespace QtLP_Private {
         bool waitMutex(Qt::HANDLE mutex, bool doBlock);
 
 #endif
-        LockMode m_lock_mode;
+        LockMode _lockmode;
     };
 }
 #endif

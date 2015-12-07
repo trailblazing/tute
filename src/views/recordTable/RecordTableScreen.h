@@ -20,24 +20,25 @@ class RecordTableScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordTableScreen(QWidget *parent=0);
+    RecordTableScreen(QWidget *parent = 0);
     virtual ~RecordTableScreen();
 
     int     getFirstSelectionPos(void);
     QString getFirstSelectionId(void);
-    void    setSelectionToPos(int pos);
-    void    setSelectionToId(QString id);
+    void    select_pos(int pos);
+    void    select_id(QString id);
 
     void setTreePath(QString path);
     QString getTreePath(void);
 
-    inline RecordTableController*
+    inline RecordTableController *
     getRecordTableController()
     {
         return recordTableController;
     }
 
-// Действия, используемые как на тулбаре, так и в контекстном меню списка записей
+    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
+    QAction *_actionpin;
     QAction *actionAddNewToEnd;
     QAction *actionAddNewBefore;
     QAction *actionAddNewAfter;
@@ -54,7 +55,7 @@ public:
 
 public slots:
 
-// Обновление панели инструментов
+    // Обновление панели инструментов
     void toolsUpdate(void);
 
 private slots:

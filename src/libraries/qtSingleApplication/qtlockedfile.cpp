@@ -80,120 +80,131 @@
     \value NoLock Neither a read lock nor a write lock.
 */
 
-/*!
-    Constructs an unlocked \e QtLockedFile object. This constructor
-    behaves in the same way as \e QFile::QFile().
 
-    \sa QFile::QFile()
-*/
-QtLockedFile::QtLockedFile()
-    : QFile()
-{
+namespace qt4 {
+
+
+    /*!
+        Constructs an unlocked \e QtLockedFile object. This constructor
+        behaves in the same way as \e QFile::QFile().
+
+        \sa QFile::QFile()
+    */
+    QtLockedFile::QtLockedFile()
+        : QFile()
+    {
 #ifdef Q_OS_WIN
-    wmutex = 0;
-    rmutex = 0;
+        wmutex = 0;
+        rmutex = 0;
 #endif
-    m_lock_mode = NoLock;
-}
-
-/*!
-    Constructs an unlocked QtLockedFile object with file \a name. This
-    constructor behaves in the same way as \e QFile::QFile(const
-    QString&).
-
-    \sa QFile::QFile()
-*/
-QtLockedFile::QtLockedFile(const QString &name)
-    : QFile(name)
-{
-#ifdef Q_OS_WIN
-    wmutex = 0;
-    rmutex = 0;
-#endif
-    m_lock_mode = NoLock;
-}
-
-/*!
-  Opens the file in OpenMode \a mode.
-
-  This is identical to QFile::open(), with the one exception that the
-  Truncate mode flag is disallowed. Truncation would conflict with the
-  advisory file locking, since the file would be modified before the
-  write lock is obtained. If truncation is required, use resize(0)
-  after obtaining the write lock.
-
-  Returns true if successful; otherwise false.
-
-  \sa QFile::open(), QFile::resize()
-*/
-bool QtLockedFile::open(OpenMode mode)
-{
-    if (mode & QIODevice::Truncate) {
-        qWarning("QtLockedFile::open(): Truncate mode not allowed.");
-        return false;
+        _lockmode = NoLock;
     }
-    return QFile::open(mode);
+
+    /*!
+        Constructs an unlocked QtLockedFile object with file \a name. This
+        constructor behaves in the same way as \e QFile::QFile(const
+        QString&).
+
+        \sa QFile::QFile()
+    */
+    QtLockedFile::QtLockedFile(const QString &name)
+        : QFile(name)
+    {
+#ifdef Q_OS_WIN
+        wmutex = 0;
+        rmutex = 0;
+#endif
+        _lockmode = NoLock;
+    }
+
+    /*!
+      Opens the file in OpenMode \a mode.
+
+      This is identical to QFile::open(), with the one exception that the
+      Truncate mode flag is disallowed. Truncation would conflict with the
+      advisory file locking, since the file would be modified before the
+      write lock is obtained. If truncation is required, use resize(0)
+      after obtaining the write lock.
+
+      Returns true if successful; otherwise false.
+
+      \sa QFile::open(), QFile::resize()
+    */
+    bool QtLockedFile::open(OpenMode mode)
+    {
+        if(mode & QIODevice::Truncate) {
+            qWarning("QtLockedFile::open(): Truncate mode not allowed.");
+            return false;
+        }
+
+        return QFile::open(mode);
+    }
+
+    /*!
+        Returns \e true if this object has a in read or write lock;
+        otherwise returns \e false.
+
+        \sa lockMode()
+    */
+    bool QtLockedFile::isLocked() const
+    {
+        return _lockmode != NoLock;
+    }
+
+    /*!
+        Returns the type of lock currently held by this object, or \e
+        QtLockedFile::NoLock.
+
+        \sa isLocked()
+    */
+    QtLockedFile::LockMode QtLockedFile::lockMode() const
+    {
+        return _lockmode;
+    }
+
+    /*!
+        \fn bool QtLockedFile::lock(LockMode mode, bool block = true)
+
+        Obtains a lock of type \a mode. The file must be opened before it
+        can be locked.
+
+        If \a block is true, this function will block until the lock is
+        aquired. If \a block is false, this function returns \e false
+        immediately if the lock cannot be aquired.
+
+        If this object already has a lock of type \a mode, this function
+        returns \e true immediately. If this object has a lock of a
+        different type than \a mode, the lock is first released and then a
+        new lock is obtained.
+
+        This function returns \e true if, after it executes, the file is
+        locked by this object, and \e false otherwise.
+
+        \sa unlock(), isLocked(), lockMode()
+    */
+
+    /*!
+        \fn bool QtLockedFile::unlock()
+
+        Releases a lock.
+
+        If the object has no lock, this function returns immediately.
+
+        This function returns \e true if, after it executes, the file is
+        not locked by this object, and \e false otherwise.
+
+        \sa lock(), isLocked(), lockMode()
+    */
+
+    /*!
+        \fn QtLockedFile::~QtLockedFile()
+
+        Destroys the \e QtLockedFile object. If any locks were held, they
+        are released.
+    */
+
+
 }
 
-/*!
-    Returns \e true if this object has a in read or write lock;
-    otherwise returns \e false.
 
-    \sa lockMode()
-*/
-bool QtLockedFile::isLocked() const
-{
-    return m_lock_mode != NoLock;
-}
 
-/*!
-    Returns the type of lock currently held by this object, or \e
-    QtLockedFile::NoLock.
-
-    \sa isLocked()
-*/
-QtLockedFile::LockMode QtLockedFile::lockMode() const
-{
-    return m_lock_mode;
-}
-
-/*!
-    \fn bool QtLockedFile::lock(LockMode mode, bool block = true)
-
-    Obtains a lock of type \a mode. The file must be opened before it
-    can be locked.
-
-    If \a block is true, this function will block until the lock is
-    aquired. If \a block is false, this function returns \e false
-    immediately if the lock cannot be aquired.
-
-    If this object already has a lock of type \a mode, this function
-    returns \e true immediately. If this object has a lock of a
-    different type than \a mode, the lock is first released and then a
-    new lock is obtained.
-
-    This function returns \e true if, after it executes, the file is
-    locked by this object, and \e false otherwise.
-
-    \sa unlock(), isLocked(), lockMode()
-*/
-
-/*!
-    \fn bool QtLockedFile::unlock()
-
-    Releases a lock.
-
-    If the object has no lock, this function returns immediately.
-
-    This function returns \e true if, after it executes, the file is
-    not locked by this object, and \e false otherwise.
-
-    \sa lock(), isLocked(), lockMode()
-*/
-
-/*!
-    \fn QtLockedFile::~QtLockedFile()
-
-    Destroys the \e QtLockedFile object. If any locks were held, they
-    are released.
-*/

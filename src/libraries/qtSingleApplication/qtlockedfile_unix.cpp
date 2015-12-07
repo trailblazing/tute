@@ -61,10 +61,10 @@ bool QtLockedFile::lock(LockMode mode, bool block)
     if (mode == NoLock)
         return unlock();
 
-    if (mode == m_lock_mode)
+    if (mode == _lockmode)
         return true;
 
-    if (m_lock_mode != NoLock)
+    if (_lockmode != NoLock)
         unlock();
 
     struct flock fl;
@@ -82,7 +82,7 @@ bool QtLockedFile::lock(LockMode mode, bool block)
     }
 
 
-    m_lock_mode = mode;
+    _lockmode = mode;
     return true;
 }
 
@@ -109,7 +109,7 @@ bool QtLockedFile::unlock()
         return false;
     }
 
-    m_lock_mode = NoLock;
+    _lockmode = NoLock;
     return true;
 }
 

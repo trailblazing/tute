@@ -16,6 +16,7 @@
 #include "views/recordTable/RecordTableScreen.h"
 #include "views/findInBaseScreen/FindScreen.h"
 #include "libraries/WindowSwitcher.h"
+#include "views/browser/entrance.h"
 
 GlobalParameters::GlobalParameters(QObject *pobj)
 {
@@ -44,7 +45,7 @@ QString GlobalParameters::getMainProgramFile(void)
 void GlobalParameters::init(void)
 {
     pointTreeScreen = NULL;
-    browser_view = NULL;
+    _browsermanager = NULL;
     pointRecordTableScreen = NULL;
     pointFindScreen = NULL;
     pointMetaEditor = NULL;
@@ -158,7 +159,7 @@ void GlobalParameters::initWorkDirectory(void)
 
     }
 
-    // Заново запускается поиск рабочей директории
+    // Search restarts working directory    // Заново запускается поиск рабочей директории
     workDirectory = "";
     findWorkDirectory();
 }
@@ -217,8 +218,8 @@ void GlobalParameters::createFirstProgramFiles(QString dirName)
     QFile::copy(":/resource/standartconfig/" + targetOs + "/editorconf.ini", dirName + "/editorconf.ini");
     QFile::setPermissions(dirName + "/editorconf.ini", QFile::ReadUser | QFile::WriteUser);
 
-    QFile::copy(":/resource/standartconfig/" + targetOs + "/browser_config.ini", dirName + "/browser_config.ini");
-    QFile::setPermissions(dirName + "/browser_config.ini", QFile::ReadUser | QFile::WriteUser);
+    QFile::copy(":/resource/standartconfig/" + targetOs + "/entrance.ini", dirName + "/entrance.ini");
+    QFile::setPermissions(dirName + "/entrance.ini", QFile::ReadUser | QFile::WriteUser);
 
     createStyleSheetFile(dirName);
 
@@ -422,14 +423,14 @@ TreeScreen *GlobalParameters::getTreeScreen()
 }
 
 
-BrowserView *GlobalParameters::getBrowserView()
+browser::Entrance *GlobalParameters::entrance()
 {
-    return browser_view;
+    return _browsermanager;
 }
 
-void GlobalParameters::setBrowserView(BrowserView *point)
+void GlobalParameters::entrance(browser::Entrance *&b)
 {
-    browser_view = point;
+    _browsermanager = b;
 }
 
 

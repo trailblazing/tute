@@ -18,7 +18,7 @@ class RecordTableData;
 class RecordTableModel : public QAbstractTableModel {
     Q_OBJECT
 
-    // К закрытым (private) функциям модели может иметь доступ контроллер
+    // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
     friend class RecordTableController;
 
 public:

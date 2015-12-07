@@ -8,7 +8,7 @@
 #include "controllers/attachTable/AttachTableController.h"
 #include "libraries/GlobalParameters.h"
 
-extern GlobalParameters globalParameters;
+extern GlobalParameters globalparameters;
 
 
 AttachTableView::AttachTableView(QWidget *parent) : QTableView(parent)
@@ -122,7 +122,7 @@ void AttachTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
     if(gesture->state() == Qt::GestureFinished)
-        if(globalParameters.getTargetOs() == "android")
+        if(globalparameters.getTargetOs() == "android")
             emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
 }
 

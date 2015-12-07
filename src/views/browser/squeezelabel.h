@@ -44,16 +44,33 @@
 
 #include <QtWidgets/QLabel>
 
-class SqueezeLabel : public QLabel
-{
-    Q_OBJECT
 
-public:
-    SqueezeLabel(QWidget *parent = 0);
+QT_BEGIN_NAMESPACE
 
-protected:
-    void paintEvent(QPaintEvent *event);
 
-};
+namespace browser {
+
+
+
+    class SqueezeLabel : public QLabel {
+        Q_OBJECT
+
+    public:
+        SqueezeLabel(QWidget *parent = 0);
+
+    protected:
+        void paintEvent(QPaintEvent *event);
+
+    };
+
+
+}
+
+
+QT_END_NAMESPACE
 
 #endif // SQUEEZELABEL_H
+
+
+
+

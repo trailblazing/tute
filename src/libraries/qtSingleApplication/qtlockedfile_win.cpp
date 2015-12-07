@@ -113,10 +113,10 @@ bool QtLockedFile::lock(LockMode mode, bool block)
     if (mode == NoLock)
         return unlock();
 
-    if (mode == m_lock_mode)
+    if (mode == _lockmode)
         return true;
 
-    if (m_lock_mode != NoLock)
+    if (_lockmode != NoLock)
         unlock();
 
     if (!wmutex && !(wmutex = getMutexHandle(-1, true)))
@@ -163,14 +163,14 @@ bool QtLockedFile::lock(LockMode mode, bool block)
             if (res != WAIT_OBJECT_0 && res != WAIT_ABANDONED) {
                 if (res != WAIT_TIMEOUT)
                     qErrnoWarning("QtLockedFile::lock(): WaitForMultipleObjects failed");
-                m_lock_mode = WriteLock;  // trick unlock() to clean up - semiyucky
+                _lockmode = WriteLock;  // trick unlock() to clean up - semiyucky
                 unlock();
                 return false;
             }
         }
     }
 
-    m_lock_mode = mode;
+    _lockmode = mode;
     return true;
 }
 
@@ -184,7 +184,7 @@ bool QtLockedFile::unlock()
     if (!isLocked())
         return true;
 
-    if (m_lock_mode == ReadLock) {
+    if (_lockmode == ReadLock) {
         ReleaseMutex(rmutex);
         CloseHandle(rmutex);
         rmutex = 0;
@@ -197,7 +197,7 @@ bool QtLockedFile::unlock()
         ReleaseMutex(wmutex);
     }
 
-    m_lock_mode = QtLockedFile::NoLock;
+    _lockmode = QtLockedFile::NoLock;
     return true;
 }
 

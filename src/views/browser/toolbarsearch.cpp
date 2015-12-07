@@ -39,10 +39,12 @@
 **
 ****************************************************************************/
 
+#include <cassert>
 #include "toolbarsearch.h"
 #include "autosaver.h"
-#include "browserapplication.h"
 
+#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "views/findInBaseScreen/FindTableWidget.h"
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
@@ -50,114 +52,225 @@
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QMenu>
 #include <QtCore/QStringListModel>
-
+#include <QtWidgets/QStackedWidget>
 #include <QWebEngineSettings>
+//#include "views/browser/chasewidget.h"
+#include "views/browser/tabwidget.h"
+#include "views/browser/entrance.h"
+#include "views/findInBaseScreen/FindScreen.h"
 
-/*
-    ToolbarSearch is a very basic search widget that also contains a small history.
-    Searches are turned into urls that use Google to perform search
- */
-ToolbarSearch::ToolbarSearch(QWidget *parent)
-    : SearchLineEdit(parent)
-    , m_autosaver(new AutoSaver(this))
-    , m_maxSavedSearches(10)
-    , m_stringListModel(new QStringListModel(this))
-{
-    QMenu *m = menu();
-    connect(m, SIGNAL(aboutToShow()), this, SLOT(aboutToShowMenu()));
-    connect(m, SIGNAL(triggered(QAction*)), this, SLOT(triggeredMenuAction(QAction*)));
+namespace browser {
 
-    QCompleter *completer = new QCompleter(m_stringListModel, this);
-    completer->setCompletionMode(QCompleter::InlineCompletion);
-    lineEdit()->setCompleter(completer);
 
-    connect(lineEdit(), SIGNAL(returnPressed()), SLOT(searchNow()));
-    setInactiveText(tr("Google"));
-    load();
-}
 
-ToolbarSearch::~ToolbarSearch()
-{
-    m_autosaver->saveIfNeccessary();
-}
+    /*
+        ToolbarSearch is a very basic search widget that also contains a small history.
+        Searches are turned into urls that use Google to perform search
+     */
+    ToolbarSearch::ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,
+        QWidget *parent)
+        : SearchLineEdit(parent)
+        , _autosaver(new AutoSaver(this))
+        , _maxsavedsearches(10)
+        , _stringlistmodel(new QStringListModel(this))
+        , _lineedits(new QStackedWidget(this))  // , _lineedits(lineedits)
+        , _findtext(new QLineEdit(this))        // , _findtext(findtext)
+    {
+        _lineedits->setVisible(false);
+        _findtext->setVisible(false);
 
-void ToolbarSearch::save()
-{
-    QSettings settings;
-    settings.beginGroup(QLatin1String("toolbarsearch"));
-    settings.setValue(QLatin1String("recentSearches"), m_stringListModel->stringList());
-    settings.setValue(QLatin1String("maximumSaved"), m_maxSavedSearches);
-    settings.endGroup();
-}
+        QMenu *m = menu();
+        connect(m, SIGNAL(aboutToShow()), this, SLOT(aboutToShowMenu()));
+        connect(m, SIGNAL(triggered(QAction *)), this, SLOT(triggeredMenuAction(QAction *)));
 
-void ToolbarSearch::load()
-{
-    QSettings settings;
-    settings.beginGroup(QLatin1String("toolbarsearch"));
-    QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
-    m_maxSavedSearches = settings.value(QLatin1String("maximumSaved"), m_maxSavedSearches).toInt();
-    m_stringListModel->setStringList(list);
-    settings.endGroup();
-}
+        QCompleter *completer = new QCompleter(_stringlistmodel, this);
+        completer->setCompletionMode(QCompleter::InlineCompletion);
+        lineEdit()->setCompleter(completer);
 
-void ToolbarSearch::searchNow()
-{
-    QString searchText = lineEdit()->text();
-    QStringList newList = m_stringListModel->stringList();
-    if (newList.contains(searchText))
-        newList.removeAt(newList.indexOf(searchText));
-    newList.prepend(searchText);
-    if (newList.size() >= m_maxSavedSearches)
-        newList.removeLast();
+        connect(lineEdit(), SIGNAL(returnPressed()), SLOT(searchNow()));
+        connect(this, &SearchLineEdit::textChanged/*(const QString &text)*/, _findtext, [&](const QString & text) {_findtext->setText(text);});
+        //connect(this, &ToolbarSearch::returnPressed, _tabmanager, &TabManager::lineEditReturnPressed);
+        connect(this, &ToolbarSearch::returnPressed, _findtext, &QLineEdit::returnPressed);
 
-    if (!BrowserApplication::instance()->privateBrowsing()) {
-        m_stringListModel->setStringList(newList);
-        m_autosaver->changeOccurred();
+        setInactiveText(tr("Google"));
+        load();
     }
 
-    QUrl url(QLatin1String("http://www.google.com/search"));
-    QUrlQuery urlQuery;
-    urlQuery.addQueryItem(QLatin1String("q"), searchText);
-    urlQuery.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-    urlQuery.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-    urlQuery.addQueryItem(QLatin1String("client"), QLatin1String("qtdemobrowser"));
-    url.setQuery(urlQuery);
-    emit search(url);
-}
-
-void ToolbarSearch::aboutToShowMenu()
-{
-    lineEdit()->selectAll();
-    QMenu *m = menu();
-    m->clear();
-    QStringList list = m_stringListModel->stringList();
-    if (list.isEmpty()) {
-        m->addAction(tr("No Recent Searches"));
-        return;
+    ToolbarSearch::~ToolbarSearch()
+    {
+        _autosaver->saveIfNeccessary();
     }
 
-    QAction *recent = m->addAction(tr("Recent Searches"));
-    recent->setEnabled(false);
-    for (int i = 0; i < list.count(); ++i) {
-        QString text = list.at(i);
-        m->addAction(text)->setData(text);
+    void ToolbarSearch::save()
+    {
+        QSettings settings;
+        settings.beginGroup(QLatin1String("toolbarsearch"));
+        settings.setValue(QLatin1String("recentSearches"), _stringlistmodel->stringList());
+        settings.setValue(QLatin1String("maximumSaved"), _maxsavedsearches);
+        settings.endGroup();
     }
-    m->addSeparator();
-    m->addAction(tr("Clear Recent Searches"), this, SLOT(clear()));
+
+    void ToolbarSearch::load()
+    {
+        QSettings settings;
+        settings.beginGroup(QLatin1String("toolbarsearch"));
+        QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
+        _maxsavedsearches = settings.value(QLatin1String("maximumSaved"), _maxsavedsearches).toInt();
+        _stringlistmodel->setStringList(list);
+        settings.endGroup();
+    }
+
+    void ToolbarSearch::searchNow()
+    {
+        QString searchText = lineEdit()->text();
+
+        globalparameters.getFindScreen()->findClicked();
+
+        QUrl url = QUrl(searchText);
+
+        // if(url.host().isSimpleText());
+
+        //        bool url_isRelative = url.isRelative();
+        //        bool url_isValid = url.isValid();
+        //        bool host_not_null = !url.host().isNull();
+        //        bool host_isDetached = url.host().isDetached();
+        //        bool host_isEmpty = url.host().isEmpty();
+        //        bool host_isSimpleText = url.host().isSimpleText();
+
+        //        bool path_empty = url.path().isEmpty();
+        //        bool path_null = url.path().isNull();
+        //        QString path = url.path();
+
+        //        if( // !url.host().isEmpty() &&
+        //            url.isValid()
+        //        ) {
+        //            if(url.scheme().isEmpty()    //url.scheme().isNull()
+        //               // && url.isRelative() //&& !url.host().isNull()
+        //              ) {
+        //                //url = QUrl("http://" + searchText);
+        //                url.setScheme(QLatin1String("https"));
+        //            }
+
+        //            if(url.path().isEmpty()
+        //              ) {
+        //                url.setPath(QLatin1String("//"));
+        //            }
+        //        }
+
+
+        // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
+        if(!url.isEmpty()
+           // && !url.host().isNull()
+           && url.isValid()
+           && !url.scheme().isEmpty()
+           // && url != QUrl(DockedWindow::_defaulthome) //&& !url.host().isNull()
+          ) {
+            //QLineEdit *lineedit =
+
+            //            globalparameters.entrance()->active_record(request_record(url));
+            auto ara = boost::make_shared<browser::Entrance::active_record_alternative>(globalparameters.entrance());
+            request_record(
+                url
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+                    ""
+                    , &browser::Entrance::active_record_alternative::generator
+                    , ara
+                )
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                    ""
+                    , &browser::Entrance::active_record_alternative::activator
+                    , ara
+                )
+            );
+
+
+            QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+
+            if(line_edit)line_edit->setText(searchText);
+
+            //globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
+
+            //globalparameters.entrance()->activebrowser()->tabWidget()->new_view(register_record(url));
+
+            //currentLineEdit();  // lineEditReturnPressed();
+            //assert(lineedit);
+            //lineedit->setText(searchText);
+            //lineedit->returnPressed();
+        } else {
+
+            QStringList newList = _stringlistmodel->stringList();
+
+            if(newList.contains(searchText))
+                newList.removeAt(newList.indexOf(searchText));
+
+            newList.prepend(searchText);
+
+            if(newList.size() >= _maxsavedsearches)
+                newList.removeLast();
+
+            if(!QtSingleApplication::instance()->privateBrowsing()) {
+                _stringlistmodel->setStringList(newList);
+                _autosaver->changeOccurred();
+            }
+
+            QUrl url(QLatin1String("https://www.google.com/search"));
+            QUrlQuery urlQuery;
+            urlQuery.addQueryItem(QLatin1String("q"), searchText);
+            urlQuery.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+            urlQuery.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+            urlQuery.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
+            // urlQuery.addQueryItem();
+            url.setQuery(urlQuery);
+            // QString u = url.toString();
+            emit search(url);
+        }
+    }
+
+    void ToolbarSearch::aboutToShowMenu()
+    {
+        lineEdit()->selectAll();
+        QMenu *m = menu();
+        m->clear();
+        QStringList list = _stringlistmodel->stringList();
+
+        if(list.isEmpty()) {
+            m->addAction(tr("No Recent Searches"));
+            return;
+        }
+
+        QAction *recent = m->addAction(tr("Recent Searches"));
+        recent->setEnabled(false);
+
+        for(int i = 0; i < list.count(); ++i) {
+            QString text = list.at(i);
+            m->addAction(text)->setData(text);
+        }
+
+        m->addSeparator();
+        m->addAction(tr("Clear Recent Searches"), this, SLOT(clear()));
+    }
+
+    void ToolbarSearch::triggeredMenuAction(QAction *action)
+    {
+        QVariant v = action->data();
+
+        if(v.canConvert<QString>()) {
+            QString text = v.toString();
+            lineEdit()->setText(text);
+            searchNow();
+        }
+    }
+
+    void ToolbarSearch::clear()
+    {
+        _stringlistmodel->setStringList(QStringList());
+        _autosaver->changeOccurred();;
+    }
+
+    void ToolbarSearch::setText(const QString &text) {_findtext->setText(text);}
+    QString ToolbarSearch::text() const {return _findtext->text();}
+
 }
 
-void ToolbarSearch::triggeredMenuAction(QAction *action)
-{
-    QVariant v = action->data();
-    if (v.canConvert<QString>()) {
-        QString text = v.toString();
-        lineEdit()->setText(text);
-        searchNow();
-    }
-}
 
-void ToolbarSearch::clear()
-{
-    m_stringListModel->setStringList(QStringList());
-    m_autosaver->changeOccurred();;
-}
+

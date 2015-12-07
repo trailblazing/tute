@@ -50,65 +50,82 @@ QT_BEGIN_NAMESPACE
 class QLineEdit;
 QT_END_NAMESPACE
 
-class ClearButton;
-class ExLineEdit : public QWidget
-{
-    Q_OBJECT
 
-public:
-    ExLineEdit(QWidget *parent = 0);
+QT_BEGIN_NAMESPACE
 
-    inline QLineEdit *lineEdit() const { return m_lineEdit; }
 
-    void setLeftWidget(QWidget *widget);
-    QWidget *leftWidget() const;
+namespace browser {
 
-    QSize sizeHint() const;
 
-    QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
-protected:
-    void focusInEvent(QFocusEvent *event);
-    void focusOutEvent(QFocusEvent *event);
-    void keyPressEvent(QKeyEvent *event);
-    void paintEvent(QPaintEvent *event);
-    void resizeEvent(QResizeEvent *event);
-    void inputMethodEvent(QInputMethodEvent *e);
-    bool event(QEvent *event);
+    class TabWidget;
+    class ClearButton;
 
-protected:
-    void updateGeometries();
-    void initStyleOption(QStyleOptionFrameV2 *option) const;
+    // addressbar
+    class ExLineEdit : public QWidget {
+        Q_OBJECT
 
-    QWidget *m_leftWidget;
-    QLineEdit *m_lineEdit;
-    ClearButton *m_clearButton;
-};
+    public:
+        ExLineEdit(QWidget *parent = 0);
 
-class UrlIconLabel;
-class WebView;
-class UrlLineEdit : public ExLineEdit
-{
-    Q_OBJECT
+        inline QLineEdit *lineEdit() const { return _lineedit; }
 
-public:
-    UrlLineEdit(QWidget *parent = 0);
-    void setWebView(WebView *webView);
+        void setLeftWidget(QWidget *widget);
+        QWidget *leftWidget() const;
 
-protected:
-    void paintEvent(QPaintEvent *event);
-    void focusOutEvent(QFocusEvent *event);
+        QSize sizeHint() const;
 
-private slots:
-    void webViewUrlChanged(const QUrl &url);
-    void webViewIconChanged();
+        QVariant inputMethodQuery(Qt::InputMethodQuery property) const;
+    protected:
+        void focusInEvent(QFocusEvent *event);
+        void focusOutEvent(QFocusEvent *event);
+        void keyPressEvent(QKeyEvent *event);
+        void paintEvent(QPaintEvent *event);
+        void resizeEvent(QResizeEvent *event);
+        void inputMethodEvent(QInputMethodEvent *e);
+        bool event(QEvent *event);
 
-private:
-    QLinearGradient generateGradient(const QColor &color) const;
-    WebView *m_webView;
-    UrlIconLabel *m_iconLabel;
-    QColor m_defaultBaseColor;
+    protected:
+        void updateGeometries();
+        void initStyleOption(QStyleOptionFrameV2 *option) const;
 
-};
+        QWidget *_leftwidget;
+        QLineEdit *_lineedit;
+        ClearButton *_clearbutton;
+    };
 
+    class UrlIconLabel;
+    class WebView;
+
+    class UrlLineEdit : public ExLineEdit {
+        Q_OBJECT
+
+    public:
+        UrlLineEdit(QWidget *parent = 0);
+        void setWebView(WebView *webView);
+
+    protected:
+        void paintEvent(QPaintEvent *event);
+        void focusOutEvent(QFocusEvent *event);
+
+    private slots:
+        void webViewUrlChanged(const QUrl &url);
+        void webViewIconChanged();
+
+    private:
+        QLinearGradient generateGradient(const QColor &color) const;
+        WebView *_webview;
+        UrlIconLabel *_iconlabel;
+        QColor _defaultbasecolor;
+
+    };
+
+
+}
+
+
+QT_END_NAMESPACE
 
 #endif // URLLINEEDIT_H
+
+
+

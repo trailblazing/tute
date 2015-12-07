@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Settings</class>
- <widget class="QDialog" name="Settings">
+ <class>browser::Settings</class>
+ <widget class="QDialog" name="browser::Settings">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>657</width>
-    <height>322</height>
+    <height>325</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -543,7 +543,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>Settings</receiver>
+   <receiver>browser::Settings</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -559,7 +559,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>Settings</receiver>
+   <receiver>browser::Settings</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

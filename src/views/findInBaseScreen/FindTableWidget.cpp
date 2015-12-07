@@ -18,13 +18,18 @@
 #include "views/mainWindow/MainWindow.h"
 #include "models/appConfig/AppConfig.h"
 
-#define USER_ROLE_PATH      Qt::UserRole
-#define USER_ROLE_RECORD_ID Qt::UserRole+1
+#define USER_ROLE_PIN       Qt::UserRole
+#define USER_ROLE_PATH      Qt::UserRole+1
+#define USER_ROLE_RECORD_ID Qt::UserRole+2
 
-extern AppConfig mytetraConfig;
+
+extern AppConfig appconfig;
 
 
-FindTableWidget::FindTableWidget(QWidget *parent) : QWidget(parent)
+FindTableWidget::FindTableWidget(QWidget *parent)
+    : QWidget(parent)
+    , _findtableview(new QTableView(this))
+    , _findtablemodel(new QStandardItemModel(this))
 {
     setupUI();
     setupModels();
@@ -43,56 +48,58 @@ FindTableWidget::~FindTableWidget(void)
 
 void FindTableWidget::setupUI(void)
 {
-    findTableView=new QTableView(this);
-    findTableView->setObjectName("findTableView");
-    findTableView->setMinimumSize(1,1);
-    findTableView->horizontalHeader()->hide();
+    //findTableView = new QTableView(this);
+    _findtableview->setObjectName("findTableView");
+    _findtableview->setMinimumSize(1, 1);
+    _findtableview->horizontalHeader()->hide();
 
-// Установка высоты строки с принудительной стилизацией (если это необходимо),
-// так как стилизация через QSS для элементов QTableView полноценно не работает
-// У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
-// При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
-    findTableView->verticalHeader()->setDefaultSectionSize ( findTableView->verticalHeader()->minimumSectionSize () );
-    int height=mytetraConfig.getUglyQssReplaceHeightForTableView();
-    if(height!=0)
-        findTableView->verticalHeader()->setDefaultSectionSize( height );
-    if(mytetraConfig.getInterfaceMode()=="mobile")
-        findTableView->verticalHeader()->setDefaultSectionSize( getCalculateIconSizePx() );
+    // Установка высоты строки с принудительной стилизацией (если это необходимо),
+    // так как стилизация через QSS для элементов QTableView полноценно не работает
+    // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
+    // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
+    _findtableview->verticalHeader()->setDefaultSectionSize(_findtableview->verticalHeader()->minimumSectionSize());
+    int height = appconfig.getUglyQssReplaceHeightForTableView();
 
-// Устанавливается режим что могут выделяться только строки
-// а не отдельный item таблицы
-    findTableView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    if(height != 0)
+        _findtableview->verticalHeader()->setDefaultSectionSize(height);
 
-// Устанавливается режим что редактирование невозможно
-    findTableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    if(appconfig.getInterfaceMode() == "mobile")
+        _findtableview->verticalHeader()->setDefaultSectionSize(getCalculateIconSizePx());
 
-// Настройка области виджета для кинетической прокрутки
-    setKineticScrollArea( qobject_cast<QAbstractItemView*>(findTableView) );
+    // Устанавливается режим что могут выделяться только строки
+    // а не отдельный item таблицы
+    _findtableview->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    // Устанавливается режим что редактирование невозможно
+    _findtableview->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    // Настройка области виджета для кинетической прокрутки
+    setKineticScrollArea(qobject_cast<QAbstractItemView *>(_findtableview));
 }
 
 
 void FindTableWidget::setupModels(void)
 {
-// Создается модель табличных данных
-    findTableModel=new QStandardItemModel(this);
+    // Создается модель табличных данных
+    //_findtablemodel = new QStandardItemModel(this);
 
-// Модель привязывается к виду
-    findTableView->setModel(findTableModel);
+    // Модель привязывается к виду
+    _findtableview->setModel(_findtablemodel);
 }
 
 
 void FindTableWidget::setupSignals(void)
 {
-    connect(findTableView, SIGNAL( activated(const QModelIndex &) ), this, SLOT( selectCell(const QModelIndex &) ));
+    connect(_findtableview, SIGNAL(activated(const QModelIndex &)), this, SLOT(selectCell(const QModelIndex &)));
 }
 
 
 void FindTableWidget::assembly(void)
 {
-    QHBoxLayout *central_layout=new QHBoxLayout();
+    QHBoxLayout *central_layout = new QHBoxLayout();
 
-    central_layout->addWidget(findTableView);
-    central_layout->setContentsMargins(0,0,0,0); // Границы убираются
+    central_layout->addWidget(_findtableview);
+    central_layout->setContentsMargins(0, 0, 0, 0); // Границы убираются
 
     this->setLayout(central_layout);
 }
@@ -100,94 +107,134 @@ void FindTableWidget::assembly(void)
 
 void FindTableWidget::updateColumnsWidth(void)
 {
-    findTableView->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    findTableView->hide();
-    findTableView->show();
+    _findtableview->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    _findtableview->hide();
+    _findtableview->show();
 }
 
 
 void FindTableWidget::clearAll(void)
 {
-// Модель таблицы очищается
-    findTableModel->setRowCount(0);
-    findTableModel->setColumnCount(0);
+    // Модель таблицы очищается
+    _findtablemodel->setRowCount(0);
+    _findtablemodel->setColumnCount(0);
 
     // В модели таблицы устанавливаются две колонки Path и Title
-    findTableModel->setColumnCount(2);
+    _findtablemodel->setColumnCount(2);
 
-// В модели устанавливаются заголовки колонок
+    // В модели устанавливаются заголовки колонок
     QStringList list;
     list << tr("Title") << tr("Details");
-    findTableModel->setHorizontalHeaderLabels(list);
+    _findtablemodel->setHorizontalHeaderLabels(list);
 
-    findTableView->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
-    findTableView->horizontalHeader()->setStretchLastSection(true);
+    _findtableview->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
+    _findtableview->horizontalHeader()->setStretchLastSection(true);
 }
 
 
-void FindTableWidget::addRow(QString title, QString branchName, QString tags, QStringList path, QString recordId)
+void FindTableWidget::addRow(QString title, QString pin, QString branchName, QString tags, QStringList path, QString recordId)
 {
-    int i=findTableModel->rowCount();
+    int i = _findtablemodel->rowCount();
 
-    findTableModel->insertRow(i);
+    _findtablemodel->insertRow(i);
 
-// Принудительная стилизация, так как стилизация через QSS для элементов QTableView полноценно не работает
-// int height=mytetraconfig.getUglyQssReplaceHeightForTableView();
-// if(height!=0)
-//  findTableView->setRowHeight(i, height);
+    // Принудительная стилизация, так как стилизация через QSS для элементов QTableView полноценно не работает
+    // int height=mytetraconfig.getUglyQssReplaceHeightForTableView();
+    // if(height!=0)
+    //  findTableView->setRowHeight(i, height);
 
-// Заголовок (название) записи
-    QStandardItem *item_title=new QStandardItem();
+    // Заголовок (название) записи
+    QStandardItem *item_title = new QStandardItem();
     item_title->setText(title);
 
-// В ячейке заголовка также хранится информация о пути к ветке
-// и номере записи в таблице конечных записей
+    // В ячейке заголовка также хранится информация о пути к ветке
+    // и номере записи в таблице конечных записей
     qDebug() << "Path to record" << path;
+
+    item_title->setData(QVariant(pin), USER_ROLE_PIN);
     item_title->setData(QVariant(path), USER_ROLE_PATH);
     item_title->setData(QVariant(recordId), USER_ROLE_RECORD_ID);
 
-// Информация о записи
-    QStandardItem *item_info=new QStandardItem();
-    QString info;
-    tags=tags.trimmed();
-    if(tags.length()>0)
-        item_info->setText(branchName+" ("+tags+")");
+
+    //    QStandardItem *item_pin = new QStandardItem();
+    //    item_pin->setText(pin);
+    // Информация о записи
+    QStandardItem *item_info = new QStandardItem();
+    //    QString info;
+
+    tags = tags.trimmed();
+
+    if(tags.length() > 0)
+        item_info->setText(branchName + " (" + tags + ")");
     else
         item_info->setText(branchName);
 
-    findTableModel->setItem(i, 0, item_title);
-    findTableModel->setItem(i, 1, item_info);
+    //_findtablemodel->setItem(i, 0, item_pin);
+    _findtablemodel->setItem(i, 0, item_title);
+    _findtablemodel->setItem(i, 1, item_info);
 
-    qDebug() << "In findtablewidget add_row() row count " << findTableModel->rowCount();
+
+    qDebug() << "In findtablewidget add_row() row count " << _findtablemodel->rowCount();
 }
 
 
-bool FindTableWidget::eventFilter( QObject * o, QEvent * e )
+bool FindTableWidget::eventFilter(QObject *o, QEvent *e)
 {
-    if ( o == findTableView->viewport() && e->type() == QEvent::Paint ) {
-        QPaintEvent * pe = static_cast<QPaintEvent*>( e );
+    if(o == _findtableview->viewport() && e->type() == QEvent::Paint) {
+        QPaintEvent *pe = static_cast<QPaintEvent *>(e);
         qDebug() << "Rect to paint:" << pe->rect();
-        qDebug() << "Visible rect:" << (findTableView->viewport()->visibleRegion()).boundingRect();
+        qDebug() << "Visible rect:" << (_findtableview->viewport()->visibleRegion()).boundingRect();
         qDebug() << " ";
         return false;
     }
+
     return false;
 }
 
 
 // void FindTableWidget::selectCell(int row, int column)
-void FindTableWidget::selectCell(const QModelIndex & index)
+void FindTableWidget::selectCell(const QModelIndex &index)
 {
-    QStandardItem *clickItem=findTableModel->itemFromIndex(index);
-    QStandardItem *item=findTableModel->item(clickItem->row(), 0); // Данные находятся в самом левом столбце с индексом 0
+    QStandardItem *clickItem = _findtablemodel->itemFromIndex(index);
+    QStandardItem *item = _findtablemodel->item(clickItem->row(), 0); // // These are located in the left column at index 0 // Данные находятся в самом левом столбце с индексом 0
 
-// Выясняется путь к ветке и номер в таблице конечных записей
-    QStringList path=item->data(USER_ROLE_PATH).toStringList();
-    QString recordId=item->data(USER_ROLE_RECORD_ID).toString();
+    // Выясняется путь к ветке и номер в таблице конечных записей
+    QStringList path = item->data(USER_ROLE_PATH).toStringList();
+    QString recordId = item->data(USER_ROLE_RECORD_ID).toString();
 
     qDebug() << "Get path to record:" << path;
 
-    find_object<MainWindow>("mainwindow")->setTreePosition(path);
-    find_object<MainWindow>("mainwindow")->setRecordtablePositionById(recordId);
+    find_object<MainWindow>("mainwindow")->set_tree_position(path);
+    find_object<MainWindow>("mainwindow")->select_id(recordId);
 }
+
+void FindTableWidget::remove_id(const QString &id)
+{
+    QList<QStandardItem *> items = _findtablemodel->findItems(QString(USER_ROLE_RECORD_ID));
+    //QStandardItem *id_item = _findtablemodel->item(items->row(), 0);
+    QStandardItem *checked = nullptr;
+    //QString recordId = id_item->data(USER_ROLE_RECORD_ID).toString();
+
+    for(auto item : items) {
+        QString recordId = item->data(USER_ROLE_RECORD_ID).toString();
+
+        if(recordId == id) {checked = item; break;}
+    }
+
+    if(checked) {
+        _findtablemodel->removeRow(checked->row(), QModelIndex());
+        _findtableview->reset();
+        _findtableview->setModel(_findtablemodel);
+    }
+}
+
+void FindTableWidget::remove_row(const int row)
+{
+    Q_UNUSED(row);
+}
+
+
+
+
+
 

@@ -8,7 +8,9 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
-#include <QToolButton>
+
+
+class FlatToolButton;
 
 #include "views/appConfigWindow/ConfigPage.h"
 
@@ -52,7 +54,7 @@ private:
     QCheckBox     *codeIndentsizeapply;
     QSpinBox      *codeIndentsize;
     QLabel        *codeSelectColorLabel;
-    QToolButton   *codeSelectColorButton;
+    FlatToolButton   *codeSelectColorButton;
     QColor        *codeColor;
 
     EditorConfig *conf;

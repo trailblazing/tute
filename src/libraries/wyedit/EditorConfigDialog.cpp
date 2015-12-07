@@ -11,12 +11,12 @@
 
 EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent)
 {
-    configDialog=new ConfigDialog();
+    configDialog = new ConfigDialog();
 
     configDialog->set_window_title(tr("Editor settings"));
 
-    configDialog->add_widget(new EditorConfigFont(this),tr("Fonts"));
-    configDialog->add_widget(new EditorConfigMisc(this),tr("Misc"));
+    configDialog->add_widget(new EditorConfigFont(this), tr("Fonts"));
+    configDialog->add_widget(new EditorConfigMisc(this), tr("Misc"));
 
     configDialog->exec();
 }

@@ -29,7 +29,7 @@ public:
 
     void clear(void);
 
-    void add(QString id, int cursorPosition, int scrollBarPosition, int mode=WALK_HISTORY_GO_NONE);
+    void add(QString id, int cursorPosition, int scrollBarPosition, int mode = WALK_HISTORY_GO_NONE);
 
     QString getId();
     int getCursorPosition(QString id);

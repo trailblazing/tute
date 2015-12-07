@@ -2,7 +2,7 @@
 #define __MAIN_H__
 
 #include <stdio.h>
-
+#include <cassert>
 #include <QApplication>
 #include <QClipboard>
 #include <QObject>
@@ -18,6 +18,10 @@
 #include <QToolBar>
 #include <QAbstractItemView>
 #include <QThread>
+#include "utility/delegate.h"
+#include "models/recordTable/Record.h"
+#include "libraries/GlobalParameters.h"
+#include "views/recordTable/RecordTableScreen.h"
 
 using namespace std;
 
@@ -43,7 +47,7 @@ using namespace std;
 // Software Version
 #define APPLICATION_RELEASE_VERSION 1
 #define APPLICATION_RELEASE_SUBVERSION 32
-#define APPLICATION_RELEASE_MICROVERSION 163
+#define APPLICATION_RELEASE_MICROVERSION 164
 
 // Поддерживаемая версия формата базы (хранилища)
 // Format supported version of the database (repository)
@@ -53,7 +57,7 @@ using namespace std;
 #define ADD_NEW_RECORD_TO_END 0
 #define ADD_NEW_RECORD_BEFORE 1
 #define ADD_NEW_RECORD_AFTER 2
-
+extern const int add_new_record_after;
 // Прототипы функций, которые могут использоваться в других файлах
 // Function prototypes, which can be used in other files
 void logPrint(char *lpszText, ...);
@@ -61,8 +65,7 @@ void criticalError(QString message);
 QString xmlNodeToString(QDomNode xmlData);
 
 void print_object_tree(void);
-bool compare_QStringList_len(const QStringList &list1,
-                             const QStringList &list2);
+bool compare_QStringList_len(const QStringList &list1, const QStringList &list2);
 void insertActionAsButton(QToolBar *tools_line, QAction *action);
 int imax(int x1, int x2);
 int imin(int x1, int x2);
@@ -80,6 +83,11 @@ qreal getCalculateIconSizePx(void);
 
 void
 showMessageBox(QString message); // Выдача на экран простого окна с сообщением
+extern void setCssStyle();
+class WalkHistory;
+extern WalkHistory walkhistory;
+class GlobalParameters;
+extern GlobalParameters globalparameters;
 
 // template <class X> inline X *find_object(QString n);
 
@@ -88,26 +96,26 @@ template <class X> inline X *find_object(QString objectName)
 {
     QObject *findObj;
 
-    extern QObject *pMainWindow;
+    extern QObject *mainwindow;
 
     // Если запрошен сам корень
     if(objectName == "mainwindow") {
-        QObject *mvp = qobject_cast<X *>(pMainWindow);
+        QObject *mvp = qobject_cast<X *>(mainwindow);
 
         if(mvp->metaObject()->className() !=
-           pMainWindow->metaObject()->className()) {
+           mainwindow->metaObject()->className()) {
             // Если запрошенный класс объекта не является классом главного окна
             printf("find_object(): Can't find mainwindow object. Check <type> in "
                    "function call\n");
             exit(1);
             return NULL;
         } else
-            return qobject_cast<X *>(pMainWindow);
+            return qobject_cast<X *>(mainwindow);
     }
 
     // Запрошен обычный объект, надо его найти
-    // findObj=qFindChild<X *>(pMainWindow, objectName);
-    findObj = pMainWindow->findChild<X *>(objectName);
+    // findObj=qFindChild<X *>(mainwindow, objectName);
+    findObj = mainwindow->findChild<X *>(objectName);
 
     if(findObj == NULL) {
         // Если объекта с указанным именем не найдено
@@ -118,7 +126,7 @@ template <class X> inline X *find_object(QString objectName)
         print_object_tree();
 
         /*
-        QList<QWidget *> widgets = pMainWindow->findChildren<QWidget *>();
+        QList<QWidget *> widgets = mainwindow->findChildren<QWidget *>();
         foreach (QWidget* b, widgets)
           printf("Obj: %s\n", qPrintable( b->objectName() ) );
         */
@@ -159,6 +167,32 @@ public:
     }
 };
 
+class Record;
+
 extern std::string getDifference(const std::string &url_compare_stored, const std::string &url_compare_get);
+
+//extern Record *register_record(const QUrl &_url
+//                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
+//                               , RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController());
+
+extern Record *register_record(Record const &record
+                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                               , RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController());
+extern Record *check_record(const QUrl &_url);
+
+namespace browser {
+    class DockedWindow;
+    class WebView;
+}
+
+template<typename>
+struct active_record;
+
+extern Record *request_record(const QUrl &_url
+                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
+                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator);
+extern Record *request_record(Record *const record
+                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const> > generator
+                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator);
 
 #endif // __MAIN_H__

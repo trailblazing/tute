@@ -138,6 +138,8 @@
     \sa QtSingleCoreApplication
 */
 
+namespace qt4 {
+
 
 void QtSingleApplication::sysInit(const QString &appId)
 {
@@ -349,3 +351,7 @@ void QtSingleApplication::activateWindow()
 
     \obsolete
 */
+
+}
+
+

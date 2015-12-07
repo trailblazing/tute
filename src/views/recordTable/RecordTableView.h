@@ -21,14 +21,14 @@ class RecordTableView : public QTableView {
     Q_OBJECT
 
 public:
-    RecordTableView(QWidget *parent=0);
+    RecordTableView(QWidget *parent = 0);
     virtual ~RecordTableView();
 
     void setController(RecordTableController *pController);
 
     void init(void);
 
-    void restoreHeaderState( void );
+    void restoreHeaderState(void);
     void restoreColumnWidth(void);
 
     int getFirstSelectionPos(void);
@@ -55,25 +55,25 @@ signals:
 
 public slots:
 
-// Открытие контекстного меню
+    // Открытие контекстного меню
     void onCustomContextMenuRequested(const QPoint &pos);
 
-// Слот, срабатывающий после перетаскивания колонки
-    void onSectionMoved( int logicalIndex, int oldVisualIndex, int newVisualIndex );
-    void onSectionResized( int logicalIndex, int oldSize, int newSize );
+    // Слот, срабатывающий после перетаскивания колонки
+    void onSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex);
+    void onSectionResized(int logicalIndex, int oldSize, int newSize);
 
-// Вызов действий из контекстного меню или из контроллера для редактирования инфополей записи
+    // Вызов действий из контекстного меню или из контроллера для редактирования инфополей записи
     void editFieldContext(void);
-    void loadUrl(void);
+    void on_doubleclick(const QModelIndex &index);
 
 protected slots:
 
-// Реакия на сдвиг засветки клавишами или мышкой
-    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected );
+    // Реакия на сдвиг засветки клавишами или мышкой
+    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-// Слот, который автоматически срабатыват при изменении selection в списке
-// Этот слот нигде не надо прописывать через connect(), так как он
-// является переопределенным, так как его тип virtual protected slot
+    // Слот, который автоматически срабатыват при изменении selection в списке
+    // Этот слот нигде не надо прописывать через connect(), так как он
+    // является переопределенным, так как его тип virtual protected slot
     virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
     void onClickToRecord(const QModelIndex &index);
@@ -95,7 +95,8 @@ protected:
 
     void deleteRecords(void);
 
-// Реакия на выбор записи мышкой или клавишами
+    // Реакия на выбор записи мышкой или клавишами
+    // The response to the record selection with the mouse or keys
     void clickToRecord(const QModelIndex &index);
 
     bool event(QEvent *event);

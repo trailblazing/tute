@@ -45,23 +45,42 @@
 
 #include <QStatusBar>
 
-class BrowserView;
+
+//#include "libraries/GlobalParameters.h"
+//#include "models/appConfig/AppConfig.h"
+//#include "models/dataBaseConfig/DataBaseConfig.h"
+
+
+
+
+namespace browser {
+    class Entrance;
+    class DockedWindow;
+}
+
 class TreeScreen;
 class MetaEditor;
 class RecordTableScreen;
 class FindScreen;
 class WindowSwitcher;
+class QtSingleApplication;
+class RecordTableController;
+class GlobalParameters;
+class AppConfig;
+class DataBaseConfig;
 
 
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow();
+    MainWindow(GlobalParameters &globalparameters
+               , const AppConfig &appconfig
+               , const DataBaseConfig &databaseconfig);
     ~MainWindow();
 
     TreeScreen *treeScreen;
-    BrowserView *browser_view;
+    browser::Entrance *browserentrance;
     RecordTableScreen *recordTableScreen;
     MetaEditor *editorScreen;
     FindScreen *findScreenDisp;
@@ -69,16 +88,16 @@ public:
     WindowSwitcher *windowSwitcher;
 
     void restoreGeometry(void);
-    void restoreTreePosition(void);
-    void restoreRecordTablePosition(void);
+    void restore_tree_position(void);
+    void restore_recordtable_position(void);
     void restoreEditorCursorPosition(void);
     void restoreEditorScrollBarPosition(void);
     void restoreFindOnBaseVisible(void);
 
-    void setTreePosition(QStringList path);
+    void set_tree_position(QStringList path);
     bool isTreePositionCrypt();
 
-    void setRecordtablePositionById(QString id);
+    void select_id(QString id);
 
     void synchronization(void);
 
@@ -89,10 +108,16 @@ public:
 
     void saveAllState(void);
 
+
+    QMenu *filemenu() {return _filemenu;}
+    QMenu *toolsmenu() {return _toolsmenu;}
+    QMenu *helpmenu() {return _helpmenu;}
+
 public slots:
     void applicationExit(void);
     void applicationFastExit(void);
-    void commitData(QSessionManager& manager);
+    void commitData(QSessionManager &manager);
+    void editor_switch(void);
 
 private slots:
     void fileNew(void);
@@ -104,7 +129,7 @@ private slots:
     void filePrintPdf(void);
 
     void toolsFind(void);
-    void editor_switch(void);
+    //    void editor_switch(void);
     void toolsPreferences(void);
 
     void onExpandEditArea(bool flag);
@@ -134,10 +159,16 @@ private:
     void setIcon(void);
 
     void saveGeometry(void);
-    void saveTreePosition(void);
-    void saveRecordTablePosition(void);
+    void save_tree_position(void);
+    void save_recordtable_position(void);
     void saveEditorCursorPosition(void);
     void saveEditorScrollBarPosition(void);
+
+    GlobalParameters &_globalparameters;
+    const AppConfig &_appconfig;
+    const DataBaseConfig &_databaseconfig;
+
+    RecordTableController *_recordtablecontroller;
 
     QAction *actionTrayRestore;
     QAction *actionTrayMaximize;
@@ -152,16 +183,23 @@ private:
     QSplitter *hSplitter;
     QSplitter *findSplitter;
 
+    QMenu *_filemenu;
+    QMenu *_toolsmenu;
+    QMenu *_helpmenu;
+
 protected:
+
+
 
     void closeEvent(QCloseEvent *event);
 
-    bool eventFilter( QObject * o, QEvent * e ); // Отслеживание прочих событий
+    bool eventFilter(QObject *o, QEvent *e);     // Отслеживание прочих событий
 
     void goWalkHistory(void);
 
     bool enableRealClose;
 
+    friend class browser::DockedWindow;
 
 };
 #endif

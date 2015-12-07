@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mytetradoc>
+<root>
+ <format subversion="2" version="1"/>
+ <content>
+  <node name="Rename me" id="1">
+   <recordtable>
+    <record ctime="20151201051312" author="" name="How to Use Google Maps Offline Mode" url="https://www.yahoo.com/tech/how-to-use-google-maps-offline-mode-170420779.html" file="text.html" pin="" tags="" id="1448968392e7xzysc2ct" dir="1448968392whlh6gnb0z"/>
+    <record ctime="20151202211957" author="" name="" url="about:blank" file="text.html" pin="" tags="" id="1449112797dh4p1v0lfw" dir="1449112797iljmwc4ft5"/>
+    <record ctime="20151201051503" author="" name="Why I Ditched Evernote for Apple Notes — and How You Can Too" url="https://www.yahoo.com/tech/why-i-ditched-evernote-for-1286074947960886.html" file="text.html" pin="✅" tags="" id="1448968503hfm46xi3cp" dir="14489685036kl6i0g5ka"/>
+    <record ctime="20081210124656" author="" name="Welcome to MyTetra!" url="http://www.google.com" file="text.html" tags="MyTetra, Qt" id="1" dir="0000000001"/>
+   </recordtable>
+  </node>
+ </content>
+</root>

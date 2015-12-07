@@ -51,7 +51,7 @@ void ConfigDialog::setup_signals(void)
 
     connect(contentsWidget,
             SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-            this, SLOT(change_page(QListWidgetItem *, QListWidgetItem*)));
+            this, SLOT(change_page(QListWidgetItem *, QListWidgetItem *)));
 
 }
 
@@ -82,7 +82,7 @@ void ConfigDialog::assembly(void)
 
 void ConfigDialog::set_window_title(QString title)
 {
-// Строка в заголовке окна
+    // Строка в заголовке окна
     setWindowTitle(title);
 }
 
@@ -109,7 +109,7 @@ QListWidgetItem *ConfigDialog::create_items(QString name)
 // Приватный слот, переключение виджета настройки при клике по списку настроечных виджетов
 void ConfigDialog::change_page(QListWidgetItem *current, QListWidgetItem *previous)
 {
-    if (!current)
+    if(!current)
         current = previous;
 
     pagesWidget->setCurrentIndex(contentsWidget->row(current));
@@ -132,33 +132,33 @@ void ConfigDialog::updateListWidth(void)
     contentsWidget->updateGeometry();
     contentsWidget->update();
 
-// scrollArea->adjustSize();
+    // scrollArea->adjustSize();
 }
 
 
 void ConfigDialog::apply_changes(void)
 {
-    int difficult_flag=0;
+    int difficult_flag = 0;
 
-// Перебираются виджеты настройки
-    for(int i=0; i<pagesWidget->count(); i++) {
+    // Перебираются виджеты настройки
+    for(int i = 0; i < pagesWidget->count(); i++) {
         // Выясняется указатель на виджет
-        ConfigPage *cnpg=qobject_cast<ConfigPage *>(pagesWidget->widget(i));
+        ConfigPage *cnpg = qobject_cast<ConfigPage *>(pagesWidget->widget(i));
 
         // Вызывается метод apply_changes() для текущего перебираемого виджета
-        if( cnpg->apply_changes()==1 )
-            difficult_flag=1;
+        if(cnpg->apply_changes() == 1)
+            difficult_flag = 1;
     }
 
-// Если требуется перезапустить программу для принятия изменений
-    if(difficult_flag==1) {
+    // Если требуется перезапустить программу для принятия изменений
+    if(difficult_flag == 1) {
         QMessageBox::warning(this, tr("Warning"),
                              tr("The program will have to be restarted for changes to take effect."),
                              QMessageBox::Ok);
         exit(0);
     }
 
-// Диалог настройки закрывается
+    // Диалог настройки закрывается
     close();
 }
 

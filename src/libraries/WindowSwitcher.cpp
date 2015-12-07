@@ -8,36 +8,36 @@
 #include "views/recordTable/RecordTableScreen.h"
 #include "views/findInBaseScreen/FindScreen.h"
 
-extern AppConfig mytetraConfig;
-extern GlobalParameters globalParameters;
+extern AppConfig appconfig;
+extern GlobalParameters globalparameters;
 
 
 WindowSwitcher::WindowSwitcher(QObject *parent) : QObject(parent)
 {
     enableSwitch();
 
-// Редактор является встраиваемым, поэтому работа кнопки Back у него идет через callback функцию
-// MetaEditor *edView=find_object<MetaEditor>("editorScreen"); // Выясняется указатель на объект редактирования текста записи
-    MetaEditor *metaEditor=globalParameters.getMetaEditor();
-    metaEditor->set_back_callback( this->switchFromRecordToRecordtable ); // Устанавливается функция обратного вызова при клике на кнопку Back
+    // Редактор является встраиваемым, поэтому работа кнопки Back у него идет через callback функцию
+    // MetaEditor *edView=find_object<MetaEditor>("editorScreen"); // Выясняется указатель на объект редактирования текста записи
+    MetaEditor *metaEditor = globalparameters.getMetaEditor();
+    metaEditor->set_back_callback(this->switchFromRecordToRecordtable);   // Устанавливается функция обратного вызова при клике на кнопку Back
 }
 
 
 void WindowSwitcher::enableSwitch(void)
 {
-// Для десктопа переключение окон виджетов вообще не должно включаться
-    if(mytetraConfig.getInterfaceMode()=="desktop") {
-        enableSwitcher=false;
+    // Для десктопа переключение окон виджетов вообще не должно включаться
+    if(appconfig.getInterfaceMode() == "desktop") {
+        enableSwitcher = false;
         return;
     }
 
-    enableSwitcher=true;
+    enableSwitcher = true;
 }
 
 
 void WindowSwitcher::disableSwitch(void)
 {
-    enableSwitcher=false;
+    enableSwitcher = false;
 }
 
 
@@ -52,14 +52,14 @@ void WindowSwitcher::switchFromTreeToRecordtable(void)
     if(!enableSwitcher)
         return;
 
-// Скрываются все прочие области
-    globalParameters.getTreeScreen()->hide();
-    globalParameters.getMetaEditor()->hide();
-// globalParameters.getFindScreen()->hide();
+    // Скрываются все прочие области
+    globalparameters.getTreeScreen()->hide();
+    globalparameters.getMetaEditor()->hide();
+    // globalParameters.getFindScreen()->hide();
 
-    QWidget *object=static_cast<QWidget *>( globalParameters.getRecordTableScreen() );
+    QWidget *object = static_cast<QWidget *>(globalparameters.getRecordTableScreen());
     object->show();
-    mytetraConfig.setFocusWidget(object->objectName());
+    appconfig.setFocusWidget(object->objectName());
 }
 
 
@@ -74,24 +74,24 @@ void WindowSwitcher::switchFromTreeToFindInBase(void)
 // Статическая функция, используется редактором как callback функция при нажатии кнопки back в редакторе конечной записи
 void WindowSwitcher::switchFromRecordToRecordtable(void)
 {
-    if(globalParameters.getWindowSwitcher()==NULL)
+    if(globalparameters.getWindowSwitcher() == NULL)
         return;
 
-// Если переключение запрещено
-    if(!globalParameters.getWindowSwitcher()->getSwitchStatus())
+    // Если переключение запрещено
+    if(!globalparameters.getWindowSwitcher()->getSwitchStatus())
         return;
 
-    if(mytetraConfig.getInterfaceMode()!="mobile") // В статическом методе использовать нестатическую переменну enableSwitcher нельзя
+    if(appconfig.getInterfaceMode() != "mobile") // В статическом методе использовать нестатическую переменну enableSwitcher нельзя
         return;
 
-// Скрываются все прочие области
-    globalParameters.getTreeScreen()->hide();
-    globalParameters.getMetaEditor()->hide();
-// globalParameters.getFindScreen()->hide();
+    // Скрываются все прочие области
+    globalparameters.getTreeScreen()->hide();
+    globalparameters.getMetaEditor()->hide();
+    // globalParameters.getFindScreen()->hide();
 
-    QWidget *object=static_cast<QWidget *>( globalParameters.getRecordTableScreen() );
+    QWidget *object = static_cast<QWidget *>(globalparameters.getRecordTableScreen());
     object->show();
-    mytetraConfig.setFocusWidget(object->objectName());
+    appconfig.setFocusWidget(object->objectName());
 }
 
 
@@ -108,14 +108,14 @@ void WindowSwitcher::switchFromRecordtableToRecord(void)
     if(!enableSwitcher)
         return;
 
-// Скрываются все прочие области
-    globalParameters.getTreeScreen()->hide();
-    globalParameters.getRecordTableScreen()->hide();
-// globalParameters.getFindScreen()->hide();
+    // Скрываются все прочие области
+    globalparameters.getTreeScreen()->hide();
+    globalparameters.getRecordTableScreen()->hide();
+    // globalParameters.getFindScreen()->hide();
 
-    QWidget *object=static_cast<QWidget *>( globalParameters.getMetaEditor() );
+    QWidget *object = static_cast<QWidget *>(globalparameters.getMetaEditor());
     object->show();
-    mytetraConfig.setFocusWidget(object->objectName());
+    appconfig.setFocusWidget(object->objectName());
 }
 
 
@@ -132,14 +132,14 @@ void WindowSwitcher::switchFromRecordtableToTree(void)
     if(!enableSwitcher)
         return;
 
-// Скрываются все прочие области
-    globalParameters.getMetaEditor()->hide();
-    globalParameters.getRecordTableScreen()->hide();
-// globalParameters.getFindScreen()->hide();
+    // Скрываются все прочие области
+    globalparameters.getMetaEditor()->hide();
+    globalparameters.getRecordTableScreen()->hide();
+    // globalParameters.getFindScreen()->hide();
 
-    QWidget *object=static_cast<QWidget *>( globalParameters.getTreeScreen() );
+    QWidget *object = static_cast<QWidget *>(globalparameters.getTreeScreen());
     object->show();
-    mytetraConfig.setFocusWidget(object->objectName());
+    appconfig.setFocusWidget(object->objectName());
 }
 
 
@@ -156,10 +156,10 @@ void WindowSwitcher::closeFindInBase(void)
 void WindowSwitcher::findInBaseClick(void)
 {
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen=find_object<FindScreen>("findScreenDisp");
+    FindScreen *findScreen = find_object<FindScreen>("findScreenDisp");
 
     // Если виджет не показан, он выводится на экран, и наоборот
-    if(findScreen->isVisible()==false)
+    if(findScreen->isVisible() == false)
         findScreen->widgetShow();
     else
         findScreen->widgetHide();
@@ -172,41 +172,41 @@ void WindowSwitcher::restoreFocusWidget()
         return;
 
     // Скрываются все прочие области
-    globalParameters.getTreeScreen()->hide();
-    globalParameters.getRecordTableScreen()->hide();
-    globalParameters.getMetaEditor()->hide();
+    globalparameters.getTreeScreen()->hide();
+    globalparameters.getRecordTableScreen()->hide();
+    globalparameters.getMetaEditor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    QString widgetName=mytetraConfig.getFocusWidget();
+    QString widgetName = appconfig.getFocusWidget();
 
     // Оформить через case
-    if(widgetName=="treeScreen") {
-        globalParameters.getTreeScreen()->show();
-        globalParameters.getTreeScreen()->setFocus();
+    if(widgetName == "treeScreen") {
+        globalparameters.getTreeScreen()->show();
+        globalparameters.getTreeScreen()->setFocus();
         return;
     }
 
-    if(widgetName=="recordTableScreen") {
-        globalParameters.getRecordTableScreen()->show();
-        globalParameters.getRecordTableScreen()->setFocus();
+    if(widgetName == "recordTableScreen") {
+        globalparameters.getRecordTableScreen()->show();
+        globalparameters.getRecordTableScreen()->setFocus();
         return;
     }
 
-    if(widgetName=="editorScreen") {
-        globalParameters.getMetaEditor()->show();
-        globalParameters.getMetaEditor()->setFocus();
+    if(widgetName == "editorScreen") {
+        globalparameters.getMetaEditor()->show();
+        globalparameters.getMetaEditor()->setFocus();
         return;
     }
 
     // Доработать
-    if(widgetName=="findTableView") {
-        globalParameters.getFindScreen()->show();
-        globalParameters.getFindScreen()->setFocus();
+    if(widgetName == "findTableView") {
+        globalparameters.getFindScreen()->show();
+        globalparameters.getFindScreen()->setFocus();
         return;
     }
 
 
     // Остальные случаи - активируется дерево записей
-    globalParameters.getTreeScreen()->show();
-    globalParameters.getTreeScreen()->setFocus();
+    globalparameters.getTreeScreen()->show();
+    globalparameters.getTreeScreen()->setFocus();
 }

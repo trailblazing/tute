@@ -12,7 +12,7 @@
 
 class TreeItem;
 class Record;
-
+class MetaEditor;
 
 class RecordTableData {
 
@@ -38,6 +38,8 @@ public:
     Record getRecordLite(int pos);
     Record getRecordFat(int pos);
     Record *getRecord(int pos);
+    Record *find(const QUrl &url);
+    Record *find(Record *const r);
 
     // Первичное заполнение таблицы конечных записей
     void init(TreeItem *item, QDomElement domModel);
@@ -92,6 +94,7 @@ public:
 private:
 
     // Функция заполнения таблицы из DOM-документа
+    // Function to populate a table of DOM-document
     void setupDataFromDom(QDomElement *domModel);
 
     // Таблица записей (в нормальном виде содержит только "легкие" объекты записей)
@@ -99,10 +102,13 @@ private:
     QList< Record > tableData;
 
     // Ссылка на ветку, которой принадлежит данная таблица
+    // Link to the branch that owns the table
     TreeItem *treeItem;
 
     // Номер записи, с которой работал пользователь
+    // Number of entries with which the user works
     int workPos;
+    friend class MetaEditor;
 };
 
 

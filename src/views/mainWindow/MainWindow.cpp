@@ -5,7 +5,7 @@
 
 #include "main.h"
 #include "models/appConfig/AppConfig.h"
-#include "views/browser/BrowserView.h"
+#include "views/browser/entrance.h"
 #include "MainWindow.h"
 #include "views/printPreview/PrintPreview.h"
 #include "views/appConfigWindow/AppConfigDialog.h"
@@ -22,28 +22,47 @@
 #include "libraries/WindowSwitcher.h"
 
 #include "libraries/wyedit/EditorTextArea.h"
+#include "views/browser/dockedwindow.h"
+#include "libraries/qtSingleApplication5/qtsingleapplication.h"
 
-extern AppConfig mytetraConfig;
-extern TrashMonitoring trashMonitoring;
-extern GlobalParameters globalParameters;
-extern WalkHistory walkHistory;
+extern AppConfig appconfig;
+extern TrashMonitoring trashmonitoring;
+extern GlobalParameters globalparameters;
+extern WalkHistory walkhistory;
 
 
-MainWindow::MainWindow() : QMainWindow()
+MainWindow::MainWindow(
+    GlobalParameters &globalparameters
+    , const AppConfig &appconfig
+    , const DataBaseConfig &databaseconfig)
+    : QMainWindow()
+    , _globalparameters(globalparameters)
+    , _appconfig(appconfig)
+    , _databaseconfig(databaseconfig)
+    , _recordtablecontroller(nullptr)
+    , _filemenu(new QMenu(tr("&File"), this))
+    , _toolsmenu(new QMenu(tr("&Tools"), this))
+    , _helpmenu(new QMenu(tr("&Help"), this))
 {
-    extern QObject *pMainWindow;
-    pMainWindow = this;
+    _globalparameters.mainwindow(this);
+
+    extern QObject *mainwindow;
+    mainwindow = this;
     setObjectName("mainwindow");
 
     installEventFilter(this);
+
+    initFileMenu();
+    initToolsMenu();
+    //    initHelpMenu();
 
     setupUI();
     setupSignals();
     assembly();
 
-    initFileMenu();
-    initToolsMenu();
-    initHelpMenu();
+    //    initFileMenu();
+    //    initToolsMenu();
+    //    initHelpMenu();
 
     setupIconActions();
     createTrayIcon();
@@ -53,14 +72,16 @@ MainWindow::MainWindow() : QMainWindow()
         trayIcon->show();
 
     // Инициализируется объект слежения за корзиной
-    trashMonitoring.init(mytetraConfig.get_trashdir());
-    trashMonitoring.update();
+    trashmonitoring.init(_appconfig.get_trashdir());
+    trashmonitoring.update();
 
     // Закрывать ли по-настоящему окно при обнаружении сигнала closeEvent
     enableRealClose = false;
 
     // Инициализация генератора случайных чисел
     init_random();
+
+
 }
 
 
@@ -69,7 +90,7 @@ MainWindow::~MainWindow()
     saveAllState();
 
     delete treeScreen;
-    delete browser_view;
+    delete browserentrance;
     delete recordTableScreen;
     delete findScreenDisp;
     delete editorScreen;
@@ -82,41 +103,48 @@ void MainWindow::setupUI(void)
 {
     // При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
 
-    treeScreen = new TreeScreen(this);
+    treeScreen = new TreeScreen(_appconfig, this);
     treeScreen->setObjectName("treeScreen");
-    globalParameters.setTreeScreen(treeScreen);
-
+    _globalparameters.setTreeScreen(treeScreen);
 
 
     recordTableScreen = new RecordTableScreen(this);
     recordTableScreen->setObjectName("recordTableScreen");
-    globalParameters.setRecordTableScreen(recordTableScreen);
+    _globalparameters.setRecordTableScreen(recordTableScreen);
 
     findScreenDisp = new FindScreen(this);
     findScreenDisp->setObjectName("findScreenDisp");
-    globalParameters.setFindScreen(findScreenDisp);
-    findScreenDisp->hide();
+    _globalparameters.setFindScreen(findScreenDisp);
+    //findScreenDisp->hide();
 
     editorScreen = new MetaEditor();
     editorScreen->setObjectName("editorScreen");
-    globalParameters.setMetaEditor(editorScreen);
-    editorScreen->hide();
+    _globalparameters.setMetaEditor(editorScreen);
+
+    if(!_appconfig.get_editor_show())
+        editorScreen->hide();
 
     statusBar = new QStatusBar(this);
     statusBar->setObjectName("statusBar");
     setStatusBar(statusBar);
-    globalParameters.setStatusBar(statusBar);
+    _globalparameters.setStatusBar(statusBar);
 
     // Вспомогательный объект переключения окон, используется в мобильном интерфейсе
     windowSwitcher = new WindowSwitcher(this);
     windowSwitcher->setObjectName("windowSwitcher");
-    globalParameters.setWindowSwitcher(windowSwitcher);
+    _globalparameters.setWindowSwitcher(windowSwitcher);
     windowSwitcher->findInBaseClick();
 
-    browser_view = new BrowserView(this);
-    browser_view->setScrollbars(true);
-    browser_view->setObjectName("browser_view");
-    globalParameters.setBrowserView(browser_view);
+    browserentrance = new browser::Entrance(
+        _recordtablecontroller = recordTableScreen->getRecordTableController()
+                                 , _globalparameters.style_source()
+        , this, Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
+    );
+    //    browsermanager->adjustSize();
+    browserentrance->setScrollbars(true);
+    browserentrance->setObjectName("entrance");
+    _globalparameters.entrance(browserentrance);
+
     // todo: Для проверки, почему то в этом месте поиск объекта по имени не работает, разобраться.
     // MetaEditor *edView=find_object<MetaEditor>("editorScreen");
 }
@@ -132,17 +160,17 @@ void MainWindow::setupSignals(void)
     connect(qApp, SIGNAL(focusChanged(QWidget *, QWidget *)), this, SLOT(onFocusChanged(QWidget *, QWidget *)));
 
     // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
-    connect(treeScreen->actionList["findInBase"], SIGNAL(triggered()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
-    connect(browser_view->getactionFreeze(), SIGNAL(triggered()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
-    connect(recordTableScreen->actionFindInBase, SIGNAL(triggered()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
-    connect(editorScreen, SIGNAL(wyeditFindInBaseClicked()), globalParameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+    connect(treeScreen->_actionlist["findInBase"], SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+    connect(browserentrance->getactionFreeze(), SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+    connect(recordTableScreen->actionFindInBase, SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+    connect(editorScreen, SIGNAL(wyeditFindInBaseClicked()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
 }
 
 
 void MainWindow::assembly(void)
 {
     vSplitter = new QSplitter(Qt::Vertical);
-    vSplitter->addWidget(browser_view);
+    vSplitter->addWidget(browserentrance);
 
     vSplitter->addWidget(editorScreen);             // Text entries // Текст записи
     vSplitter->setCollapsible(0, false);            // The list of final entries can not link up    // Список конечных записей не может смыкаться
@@ -191,13 +219,13 @@ void MainWindow::saveAllState(void)
 
     // Сохраняются данные сеанса работы
     saveGeometry();
-    saveTreePosition();
-    saveRecordTablePosition();
+    save_tree_position();
+    save_recordtable_position();
     saveEditorCursorPosition();
     saveEditorScrollBarPosition();
 
     // Синхронизируется с диском конфиг программы
-    mytetraConfig.sync();
+    appconfig.sync();
 }
 
 
@@ -214,10 +242,10 @@ void MainWindow::commitData(QSessionManager &manager)
 // Восстанавливается геометрия окна и позиции основных разделителей
 void MainWindow::restoreGeometry(void)
 {
-    if(globalParameters.getTargetOs() == "android")
+    if(globalparameters.getTargetOs() == "android")
         setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
     else {
-        QRect rect = mytetraConfig.get_mainwingeometry();
+        QRect rect = appconfig.mainwin_geometry();
         resize(rect.size());
         move(rect.topLeft());
     }
@@ -225,9 +253,10 @@ void MainWindow::restoreGeometry(void)
     // move(rect.topLeft());
     // resize(rect.size());
 
-    vSplitter->setSizes(mytetraConfig.get_vspl_size_list());
-    hSplitter->setSizes(mytetraConfig.get_hspl_size_list());
-    findSplitter->setSizes(mytetraConfig.get_findsplitter_size_list());
+    vSplitter->setSizes(appconfig.vspl_sizelist());
+    hSplitter->setSizes(appconfig.hspl_sizelist());
+    v_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
+    findSplitter->setSizes(appconfig.findsplitter_sizelist());
 }
 
 
@@ -238,15 +267,15 @@ void MainWindow::saveGeometry(void)
 
     QRect geom(pos(), size());
 
-    mytetraConfig.set_mainwingeometry(geom.x(), geom.y(),
-                                      geom.width(), geom.height());
+    appconfig.mainwin_geometry(geom.x(), geom.y(),
+                                  geom.width(), geom.height());
 
     // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
     //                                   geometry().width(), geometry().height());
 
-    mytetraConfig.set_vspl_size_list(vSplitter->sizes());
-    mytetraConfig.set_hspl_size_list(hSplitter->sizes());
-
+    appconfig.vspl_sizelist(vSplitter->sizes());
+    appconfig.hspl_sizelist(hSplitter->sizes());
+    appconfig.v_leftsplitter_sizelist(v_left_splitter->sizes());
 
     // Запоминается размер сплиттера только при видимом виджете поиска,
     // т.к. если виджета поиска невидно, будет запомнен нуливой размер
@@ -255,47 +284,47 @@ void MainWindow::saveGeometry(void)
     // данный метод вызывается из декструктора главного окна, и к этому моменту
     // виджет уже невиден
 
-    if(mytetraConfig.get_findscreen_show())
-        mytetraConfig.set_findsplitter_size_list(findSplitter->sizes());
+    if(appconfig.get_findscreen_show())
+        appconfig.findsplitter_sizelist(findSplitter->sizes());
 }
 
 
-void MainWindow::restoreTreePosition(void)
+void MainWindow::restore_tree_position(void)
 {
     // Путь к последнему выбранному в дереве элементу
-    QStringList path = mytetraConfig.get_tree_position();
+    QStringList path = appconfig.get_tree_position();
 
     qDebug() << "MainWindow::restoreTreePosition() : " << path;
 
-    setTreePosition(path);
+    set_tree_position(path);
 }
 
 
-void MainWindow::saveTreePosition(void)
+void MainWindow::save_tree_position(void)
 {
     // Получение QModelIndex выделенного в дереве элемента
     QModelIndex index = treeScreen->getCurrentItemIndex();
 
     // Получаем указатель вида TreeItem
-    TreeItem *item = treeScreen->knowTreeModel->getItem(index);
+    TreeItem *item = treeScreen->_knowtreemodel->getItem(index);
 
     // Сохраняем путь к элементу item
-    mytetraConfig.set_tree_position(item->getPath());
+    appconfig.set_tree_position(item->getPath());
 }
 
 
-void MainWindow::setTreePosition(QStringList path)
+void MainWindow::set_tree_position(QStringList path)
 {
-    if(treeScreen->knowTreeModel->isItemValid(path) == false)
+    if(treeScreen->_knowtreemodel->isItemValid(path) == false)
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    TreeItem *item = treeScreen->knowTreeModel->getItem(path);
+    TreeItem *item = treeScreen->_knowtreemodel->getItem(path);
 
     qDebug() << "Set tree position to " << item->getField("name") << " id " << item->getField("id");
 
     // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = treeScreen->knowTreeModel->getIndexByItem(item);
+    QModelIndex setto = treeScreen->_knowtreemodel->getIndexByItem(item);
 
     // Курсор устанавливается в нужную позицию
     treeScreen->setCursorToIndex(setto);
@@ -304,12 +333,12 @@ void MainWindow::setTreePosition(QStringList path)
 
 bool MainWindow::isTreePositionCrypt()
 {
-    QStringList path = mytetraConfig.get_tree_position();
+    QStringList path = appconfig.get_tree_position();
 
-    if(treeScreen->knowTreeModel->isItemValid(path) == false) return false;
+    if(treeScreen->_knowtreemodel->isItemValid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    TreeItem *item = treeScreen->knowTreeModel->getItem(path);
+    TreeItem *item = treeScreen->_knowtreemodel->getItem(path);
 
     if(item->getField("crypt") == "1")
         return true;
@@ -318,26 +347,26 @@ bool MainWindow::isTreePositionCrypt()
 }
 
 
-void MainWindow::restoreRecordTablePosition(void)
+void MainWindow::restore_recordtable_position(void)
 {
-    QString id = mytetraConfig.get_recordtable_selected_record_id();
+    QString id = appconfig.get_recordtable_selected_record_id();
 
     if(id.length() > 0)
-        setRecordtablePositionById(id);
+        select_id(id);
 }
 
 
-void MainWindow::saveRecordTablePosition(void)
+void MainWindow::save_recordtable_position(void)
 {
     QString id = recordTableScreen->getFirstSelectionId();
 
-    mytetraConfig.set_recordtable_selected_record_id(id);
+    appconfig.set_recordtable_selected_record_id(id);
 }
 
 
-void MainWindow::setRecordtablePositionById(QString id)
+void MainWindow::select_id(QString id)
 {
-    recordTableScreen->setSelectionToId(id);
+    recordTableScreen->select_id(id);
 }
 
 
@@ -345,13 +374,13 @@ void MainWindow::saveEditorCursorPosition(void)
 {
     int n = editorScreen->getCursorPosition();
 
-    mytetraConfig.setEditorCursorPosition(n);
+    appconfig.setEditorCursorPosition(n);
 }
 
 
 void MainWindow::restoreEditorCursorPosition(void)
 {
-    int n = mytetraConfig.getEditorCursorPosition();
+    int n = appconfig.getEditorCursorPosition();
 
     editorScreen->setCursorPosition(n);
 }
@@ -361,13 +390,13 @@ void MainWindow::saveEditorScrollBarPosition(void)
 {
     int n = editorScreen->getScrollBarPosition();
 
-    mytetraConfig.setEditorScrollBarPosition(n);
+    appconfig.setEditorScrollBarPosition(n);
 }
 
 
 void MainWindow::restoreEditorScrollBarPosition(void)
 {
-    int n = mytetraConfig.getEditorScrollBarPosition();
+    int n = appconfig.getEditorScrollBarPosition();
 
     editorScreen->setScrollBarPosition(n);
 }
@@ -375,7 +404,7 @@ void MainWindow::restoreEditorScrollBarPosition(void)
 
 void MainWindow::restoreFindOnBaseVisible(void)
 {
-    bool n = mytetraConfig.get_findscreen_show();
+    bool n = appconfig.get_findscreen_show();
 
     // Определяется ссылка на виджет поиска
     FindScreen *findScreenRel = find_object<FindScreen>("findScreenDisp");
@@ -391,8 +420,8 @@ void MainWindow::restoreFindOnBaseVisible(void)
 void MainWindow::initFileMenu(void)
 {
     // Создание меню
-    QMenu *menu = new QMenu(tr("&File"), this);
-    menuBar()->addMenu(menu);
+    //    _filemenu = new QMenu(tr("&File"), this);
+    menuBar()->addMenu(_filemenu);
 
     // Создание тулбара
     /*
@@ -435,24 +464,25 @@ void MainWindow::initFileMenu(void)
     a->setShortcut(QKeySequence::Print);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrint()));
     // tb->addAction(a);
-    menu->addAction(a);
+    _filemenu->addAction(a);
 
     a = new QAction(tr("Print Preview..."), this);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrintPreview()));
-    menu->addAction(a);
+    _filemenu->addAction(a);
 
     a = new QAction(tr("&Export PDF..."), this);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
     connect(a, SIGNAL(triggered()), this, SLOT(filePrintPdf()));
     // tb->addAction(a);
-    menu->addAction(a);
+    _filemenu->addAction(a);
 
-    menu->addSeparator();
+    _filemenu->addSeparator();
 
-    a = new QAction(tr("&Quit"), this);
-    a->setShortcut(Qt::CTRL + Qt::Key_Q);
-    connect(a, SIGNAL(triggered()), this, SLOT(applicationExit()));
-    menu->addAction(a);
+    //    a = new QAction(tr("&Quit"), this);
+    //    a->setShortcut(Qt::CTRL + Qt::Key_Q);
+    //    connect(a, SIGNAL(triggered()), this, SLOT(applicationExit()));
+    //    _filemenu->addAction(a);
+
 }
 
 
@@ -460,29 +490,29 @@ void MainWindow::initFileMenu(void)
 void MainWindow::initToolsMenu(void)
 {
     // Создание меню
-    QMenu *menu = new QMenu(tr("&Tools"), this);
-    menuBar()->addMenu(menu);
+    //_toolsmenu = new QMenu(tr("&Tools"), this);
+    menuBar()->addMenu(_toolsmenu);
 
     QAction *a;
 
     a = new QAction(tr("Find in ba&se"), this);
     connect(a, SIGNAL(triggered()), this, SLOT(toolsFind()));
-    menu->addAction(a);
+    _toolsmenu->addAction(a);
 
     auto b = new QAction(tr("Editor"), this);
     connect(b, SIGNAL(triggered()), this, SLOT(editor_switch()));
-    menu->addAction(b);
+    _toolsmenu->addAction(b);
 
-    menu->addSeparator();
+    _toolsmenu->addSeparator();
 
 
-    if(mytetraConfig.getInterfaceMode() == "desktop") {
-        a = new QAction(tr("&Preferences"), this);
+    if(appconfig.getInterfaceMode() == "desktop") {
+        a = new QAction(tr("Main &preferences"), this);
         connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
-        menu->addAction(a);
+        _toolsmenu->addAction(a);
     } else {
         // Создание подменю
-        QMenu *menu = new QMenu(tr("&Preferences"), this);
+        QMenu *menu = new QMenu(tr("Main &preferences"), this);
         initPreferencesMenu(menu);
     }
 }
@@ -519,18 +549,18 @@ void MainWindow::initPreferencesMenu(QMenu *menu)
 void MainWindow::initHelpMenu(void)
 {
     // Создание меню
-    QMenu *menu = new QMenu(tr("&Help"), this);
-    menuBar()->addMenu(menu);
+    //_helpmenu = new QMenu(tr("&Help"), this);
+    menuBar()->addMenu(_helpmenu);
 
     QAction *a;
 
     a = new QAction(tr("About MyTetra"), this);
     connect(a, SIGNAL(triggered()), this, SLOT(onClickHelpAboutMyTetra()));
-    menu->addAction(a);
+    _helpmenu->addAction(a);
 
     a = new QAction(tr("About Qt"), this);
     connect(a, SIGNAL(triggered()), this, SLOT(onClickHelpAboutQt()));
-    menu->addAction(a);
+    _helpmenu->addAction(a);
 }
 
 
@@ -615,8 +645,8 @@ void MainWindow::applicationExit(void)
 
     // Если в конфиге настроено, что нужно синхронизироваться при выходе
     // И задана команда синхронизации
-    if(mytetraConfig.get_synchroonexit())
-        if(mytetraConfig.get_synchrocommand().trimmed().length() > 0)
+    if(appconfig.get_synchroonexit())
+        if(appconfig.get_synchrocommand().trimmed().length() > 0)
             synchronization();
 
     // Запуск выхода из программы
@@ -652,10 +682,13 @@ void MainWindow::editor_switch(void)
 
     MetaEditor *editorScreen = find_object<MetaEditor>("editorScreen");
 
-    if(!(editorScreen->isVisible()))
+    if(!(editorScreen->isVisible())) {
         editorScreen->show();
-    else
+        appconfig.set_editor_show(true);
+    } else {
         editorScreen->hide();
+        appconfig.set_editor_show(false);
+    }
 }
 
 void MainWindow::toolsPreferences(void)
@@ -673,13 +706,13 @@ void MainWindow::toolsPreferences(void)
 void MainWindow::onExpandEditArea(bool flag)
 {
     if(flag) {
-        globalParameters.getTreeScreen()->hide();
-        globalParameters.getBrowserView()->hide();
-        globalParameters.getRecordTableScreen()->hide();
+        globalparameters.getTreeScreen()->hide();
+        globalparameters.entrance()->hide();
+        globalparameters.getRecordTableScreen()->hide();
     } else {
-        globalParameters.getTreeScreen()->show();
-        globalParameters.getBrowserView()->show();
-        globalParameters.getRecordTableScreen()->show();
+        globalparameters.getTreeScreen()->show();
+        globalparameters.entrance()->show();
+        globalparameters.getRecordTableScreen()->show();
     }
 }
 
@@ -706,9 +739,9 @@ void MainWindow::onClickHelpAboutMyTetra(void)
     infoAuthor = "Author: Sergey M. Stepanov<br/>";
     infoEmail = "Author Email:<i>xintrea@gmail.com</i><br/><br/>";
     infoLicense = "GNU General Public License v.3.0<br/><br/>";
-    infoTargetOs = "Target OS: " + globalParameters.getTargetOs() + "<br/>";
-    infoProgramFile = "Program file: " + globalParameters.getMainProgramFile() + "<br/>";
-    infoWorkDirectory = "Work directory: " + globalParameters.getWorkDirectory() + "<br/>";
+    infoTargetOs = "Target OS: " + globalparameters.getTargetOs() + "<br/>";
+    infoProgramFile = "Program file: " + globalparameters.getMainProgramFile() + "<br/>";
+    infoWorkDirectory = "Work directory: " + globalparameters.getWorkDirectory() + "<br/>";
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     infoDevicePixelRatio = "Device pixel ratio: " + (QString::number(qApp->devicePixelRatio(), 'f', 8)) + "<br/>";
@@ -751,13 +784,13 @@ void MainWindow::synchronization(void)
     saveTextarea();
 
     // Сохраняются данные о курсорах в дереве и таблице конечных записей
-    saveTreePosition();
-    saveRecordTablePosition();
+    save_tree_position();
+    save_recordtable_position();
     saveEditorCursorPosition();
     saveEditorScrollBarPosition();
 
     // Считывается команда синхронизации
-    QString command = mytetraConfig.get_synchrocommand();
+    QString command = appconfig.get_synchrocommand();
 
     // Если команда синхронизации пуста
     if(command.trimmed().length() == 0) {
@@ -771,7 +804,7 @@ void MainWindow::synchronization(void)
 
     // Макрос %a заменяется на путь к директории базы данных
     // QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
-    QDir databaseDir(mytetraConfig.get_tetradir());
+    QDir databaseDir(appconfig.get_tetradir());
     QString databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
@@ -785,17 +818,17 @@ void MainWindow::synchronization(void)
     cons.run();
 
     // Блокируется история
-    walkHistory.setDrop(true);
+    walkhistory.setDrop(true);
 
     // Заново считываются данные в дерево
     treeScreen->reloadKnowTree();
-    restoreTreePosition();
-    restoreRecordTablePosition();
+    restore_tree_position();
+    restore_recordtable_position();
     restoreEditorCursorPosition();
     restoreEditorScrollBarPosition();
 
     // Разблокируется история посещений элементов
-    walkHistory.setDrop(false);
+    walkhistory.setDrop(false);
 }
 
 
@@ -902,11 +935,11 @@ void MainWindow::goWalkHistoryPrevious(void)
     editorScreen->save_textarea();
 
     QString id = editorScreen->getMiscField("id");
-    walkHistory.add(id,
+    walkhistory.add(id,
                     editorScreen->getCursorPosition(),
                     editorScreen->getScrollBarPosition(),
                     WALK_HISTORY_GO_PREVIOUS);
-    walkHistory.setDrop(true);
+    walkhistory.setDrop(true);
 
     goWalkHistory();
 }
@@ -917,11 +950,11 @@ void MainWindow::goWalkHistoryNext(void)
     editorScreen->save_textarea();
 
     QString id = editorScreen->getMiscField("id");
-    walkHistory.add(id,
+    walkhistory.add(id,
                     editorScreen->getCursorPosition(),
                     editorScreen->getScrollBarPosition(),
                     WALK_HISTORY_GO_NEXT);
-    walkHistory.setDrop(true);
+    walkhistory.setDrop(true);
 
     goWalkHistory();
 }
@@ -930,41 +963,41 @@ void MainWindow::goWalkHistoryNext(void)
 void MainWindow::goWalkHistory(void)
 {
     // Выясняется идентификатор записи, на которую надо переключиться
-    QString id = walkHistory.getId();
+    QString id = walkhistory.getId();
 
     if(id.length() == 0) {
-        walkHistory.setDrop(false);
+        walkhistory.setDrop(false);
         return;
     }
 
     // Выясняется путь к ветке, где находится данная запись
-    QStringList path = treeScreen->knowTreeModel->getRecordPath(id);
+    QStringList path = treeScreen->_knowtreemodel->getRecordPath(id);
 
     // Проверяем, есть ли такая ветка
-    if(treeScreen->knowTreeModel->isItemValid(path) == false) {
-        walkHistory.setDrop(false);
+    if(treeScreen->_knowtreemodel->isItemValid(path) == false) {
+        walkhistory.setDrop(false);
         return;
     }
 
 
     // Выясняется позицию записи в таблице конечных записей
-    TreeItem *item = treeScreen->knowTreeModel->getItem(path);
+    TreeItem *item = treeScreen->_knowtreemodel->getItem(path);
 
     // Проверяем, есть ли такая позиция
     if(item->recordtableGetTableData()->isRecordExists(id) == false) {
-        walkHistory.setDrop(false);
+        walkhistory.setDrop(false);
         return;
     }
 
-    setTreePosition(path);
-    setRecordtablePositionById(id);
+    set_tree_position(path);
+    select_id(id);
 
-    if(mytetraConfig.getRememberCursorAtHistoryNavigation()) {
-        editorScreen->setCursorPosition(walkHistory.getCursorPosition(id));
-        editorScreen->setScrollBarPosition(walkHistory.getScrollBarPosition(id));
+    if(appconfig.getRememberCursorAtHistoryNavigation()) {
+        editorScreen->setCursorPosition(walkhistory.getCursorPosition(id));
+        editorScreen->setScrollBarPosition(walkhistory.getScrollBarPosition(id));
     }
 
-    walkHistory.setDrop(false);
+    walkhistory.setDrop(false);
 }
 
 
@@ -979,7 +1012,7 @@ void MainWindow::saveTextarea(void)
 
     editorScreen->save_textarea();
 
-    walkHistory.add(id,
+    walkhistory.add(id,
                     editorScreen->getCursorPosition(),
                     editorScreen->getScrollBarPosition());
 }

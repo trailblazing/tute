@@ -1,12 +1,13 @@
 #ifndef _FINDSCREEN_H_
-#define	_FINDSCREEN_H_
+#define _FINDSCREEN_H_
 
 #include <QMap>
 #include <QWidget>
+#include <QToolBar>
 
 class QLineEdit;
-class QPushButton;
-class QToolButton;
+// class QPushButton;
+class FlatToolButton;
 class QHBoxLayout;
 class QVBoxLayout;
 class QGridLayout;
@@ -20,6 +21,14 @@ class TreeItem;
 class FindTableWidget;
 
 class MtComboBox;
+class FlatComboBox;
+class QStackedWidget;
+
+
+namespace browser {
+    class ChaseWidget;
+    class ToolbarSearch;
+}
 
 // Виджет поиска по базе
 
@@ -27,8 +36,23 @@ class FindScreen : public QWidget {
     Q_OBJECT
 
 public:
-    FindScreen(QWidget *parent=0);
+    FindScreen(QWidget *parent = 0);
     virtual ~FindScreen(void);
+    //QToolBar *navigater() {return _navigater;}
+
+    void toolbarsearch(browser::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
+    browser::ToolbarSearch *toolbarsearch() {return _toolbarsearch;}
+
+    FlatToolButton *findstartbutton() {return _findstartbutton;}
+
+    QAction *historyback() {return _historyback;}
+    QAction *historyforward() {return _historyforward;}
+    QAction *historyhome() {return _historyhome;}
+    QAction *stopreload() {return _stopreload;}
+    browser::ChaseWidget *chasewidget() {return _chasewidget;}
+    void remove_id(const QString &id);
+    void remove_row(const int row);
+
 
 public slots:
 
@@ -48,39 +72,60 @@ private slots:
     void changedHowExtract(int pos);
     void changedTreeSearchArea(int pos);
 
+    void changedFindInPin(int state);
     void changedFindInName(int state);
     void changedFindInAuthor(int state);
+    void changedFindInHome(int state);
     void changedFindInUrl(int state);
     void changedFindInTags(int state);
     void changedFindInText(int state);
 
 signals:
 
-// Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
-// был изменен текст для поиска
-    void textChangedFromAnother(const QString&);
+    // Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
+    // был изменен текст для поиска
+    void textChangedFromAnother(const QString &);
 
     void findClickedAfterAnotherTextChanged(void);
 
 private:
 
+    //    QIcon _reloadicon;
+    //    QIcon _stopicon;
+
+    QToolBar *_navigater;
+
+    //    //    QHBoxLayout *_navigater;
+    //    //    FlatToolButton *historyback_;
+    QAction *_historyback;
+    QAction *_historyforward;
+    QAction *_historyhome;
+    QAction *_stopreload;
+    //    FlatToolButton *_history_back;
+    //    FlatToolButton *_history_forward;
+    //    FlatToolButton *_history_home;
+    //    FlatToolButton *_stop_reload;
+    browser::ChaseWidget *_chasewidget;
+
     QHBoxLayout *toolsAreaFindTextAndButton;
-    QLineEdit *findText;
-    QPushButton *findStartButton;
-    QToolButton *toolsExpand;
+
+    FlatToolButton *_findstartbutton;   // QPushButton
+    FlatToolButton *toolsExpand;
 
     QVBoxLayout *toolsAreaCloseButton;
-    QToolButton *closeButton;
+    FlatToolButton *closeButton;
 
     QHBoxLayout *toolsAreaComboOption;
-    MtComboBox *wordRegard;
-    MtComboBox *howExtract;
-    MtComboBox *treeSearchArea;
+    FlatComboBox *wordRegard;
+    FlatComboBox *howExtract;
+    FlatComboBox *treeSearchArea;
 
     QHBoxLayout *whereFindLine;
     QLabel *whereFindLabel;
+    QCheckBox *findInPin;
     QCheckBox *findInName;
     QCheckBox *findInAuthor;
+    QCheckBox *findInHome;
     QCheckBox *findInUrl;
     QCheckBox *findInTags;
     QCheckBox *findInText;
@@ -90,9 +135,14 @@ private:
 
     QVBoxLayout *centralDesktopLayout;
 
-    FindTableWidget *findTable;
+    QProgressDialog *_progress;
+    //    QLineEdit *_findtext;
+    //    QStackedWidget *_lineedits;
+    FindTableWidget *_findtable;    // result of finding?
+    browser::ToolbarSearch *_toolbarsearch;
 
-    QProgressDialog *progress;
+    void setup_navigate(void);
+    void assembly_navigate(void);
 
     void setupFindTextAndButton(void);
     void assemblyFindTextAndButton(void);
@@ -115,20 +165,21 @@ private:
 
     void findStart(void);
     void findRecurse(TreeItem *curritem);
-    bool findInTextProcess(const QString& text);
+    bool findInTextProcess(const QString &text);
 
     void switchToolsExpand(bool flag);
 
-// Поля, где нужно искать (Заголовок, текст, теги...)
+    // Поля, где нужно искать (Заголовок, текст, теги...)
     QMap<QString, bool> searchArea;
 
-// Список слов, которые нужно искать
+    // Список слов, которые нужно искать
     QStringList searchWordList;
 
     int totalProgressCounter;
 
     int cancelFlag;
+
 };
 
-#endif	/* _FINDSCREEN_H_ */
+#endif  /* _FINDSCREEN_H_ */
 

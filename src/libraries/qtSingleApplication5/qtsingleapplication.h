@@ -41,6 +41,11 @@
 #define QTSINGLEAPPLICATION_H
 
 #include <QApplication>
+#include "libraries/GlobalParameters.h"
+#include "models/appConfig/AppConfig.h"
+#include "models/dataBaseConfig/DataBaseConfig.h"
+#include "views/browser/dockedwindow.h"
+#include <memory>
 
 class QtLocalPeer;
 
@@ -60,28 +65,68 @@ class QtLocalPeer;
 #  define QT_QTSINGLEAPPLICATION_EXPORT
 #endif
 
+#include <QtWidgets/QApplication>
 
-class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication : public QApplication {
+#include <QtCore/QUrl>
+#include <QtCore/QPointer>
+
+#include <QtGui/QIcon>
+//#include "qtsingleapplication.h"
+
+QT_BEGIN_NAMESPACE
+class QLocalServer;
+class QNetworkAccessManager;
+class QWebEngineProfile;
+QT_END_NAMESPACE
+
+namespace browser {
+    class BookmarksManager;
+    class DockedWindow;
+    class CookieJar;
+    class DownloadManager;
+    class HistoryManager;
+}
+
+class MainWindow;
+
+class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication //: public BrowserApplication { //
+    : public QApplication {
+
     Q_OBJECT
 
 public:
-    QtSingleApplication(int &argc, char **argv, bool GUIenabled = true);
-    QtSingleApplication(const QString &id, int &argc, char **argv);
-
+    //    typedef BrowserApplication BaseType;
+    QtSingleApplication(int &argc
+                        , char **argv
+                        , GlobalParameters &globalparameters
+                        , AppConfig &appconfig
+                        , DataBaseConfig &databaseconfig
+                        , bool GUIenabled = true);
+    QtSingleApplication(const QString &id
+                        , int &argc
+                        , char **argv
+                        , GlobalParameters &globalparameters
+                        , AppConfig &appconfig
+                        , DataBaseConfig &databaseconfig
+                       );
+    ~QtSingleApplication();
     // Comment by Xi
     // QtSingleApplication(int &argc, char **argv, Type type);
 
+    //    static QtSingleApplication *instance();
+
+
 #if defined(Q_WS_X11)
-    QtSingleApplication(Display* dpy, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
-    QtSingleApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap= 0);
-    QtSingleApplication(Display* dpy, const QString &appId, int argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
+    QtSingleApplication(Display *dpy, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
+    QtSingleApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE cmap = 0);
+    QtSingleApplication(Display *dpy, const QString &appId, int argc, char **argv, Qt::HANDLE visual = 0, Qt::HANDLE colormap = 0);
 #endif
 
     bool isRunning();
     QString id() const;
 
-    void setActivationWindow(QWidget* aw, bool activateOnMessage = true);
-    QWidget* activationWindow() const;
+    void setActivationWindow(QWidget *aw, bool activateOnMessage = true);
+    QWidget *activationWindow() const;
 
     // Obsolete:
     void initialize(bool dummy = true)
@@ -100,9 +145,85 @@ Q_SIGNALS:
 
 
 private:
-    void sysInit(const QString &appId = QString());
+    void sys_init();
+    void main_window();
+    void browser_init();
     QtLocalPeer *peer;
     QWidget *actWin;
+    bool GUIenabled;
+    std::shared_ptr<MainWindow> win;
+    //private slots:
+    //    void newLocalSocketConnection();
+
+    // copy paste
+
+public:
+
+    //    BrowserApplication(int &argc, char **argv);
+
+    //    ~BrowserApplication();
+
+    static QtSingleApplication *instance();    // move to derived class
+    void loadSettings();
+
+    //    bool isTheOnlyBrowser() const;
+    //    BrowserWindow *mainWindow();
+    //    QList<BrowserWindow *> mainWindows();
+    QIcon icon(const QUrl &url) const;
+    QIcon defaultIcon() const;
+
+    void saveSession();
+    bool canRestoreSession() const;
+    bool privateBrowsing() const { return _privateBrowsing; }
+
+    static browser::HistoryManager *historyManager();
+    static browser::CookieJar *cookieJar();
+    static browser::DownloadManager *downloadManager();
+    static QNetworkAccessManager *networkAccessManager();
+    static browser::BookmarksManager *bookmarksManager();
+
+    void installTranslator(const QString &name);
+
+#if defined(Q_OS_OSX)
+    bool event(QEvent *event);
+#endif
+
+public slots:
+    //    BrowserWindow *newMainWindow();
+    void restoreLastSession();
+#if defined(Q_OS_OSX)
+    void lastWindowClosed();
+    void quitBrowser();
+#endif
+    void setPrivateBrowsing(bool);
+
+signals:
+    void privateBrowsingChanged(bool);
+
+private slots:
+    void postLaunch();
+    //    void openUrl(const QUrl &url);
+    void newLocalSocketConnection();
+
+private:
+    //    void clean();
+    //    void installTranslator(const QString &name);
+
+    static browser::HistoryManager *_historymanager;
+    static browser::DownloadManager *_downloadmanager;
+    static QNetworkAccessManager *_networkaccessmanager;
+    static browser::BookmarksManager *_bookmarksmanager;
+
+    //    QList<QPointer<BrowserWindow> > _mainWindows;
+    QLocalServer *_localserver;
+    QByteArray _lastSession;
+    QWebEngineProfile *_privateProfile;
+    bool _privateBrowsing;
+    mutable QIcon _defaultIcon;
+
+    GlobalParameters &_globalparameters;
+    AppConfig &_appconfig;
+    DataBaseConfig &_databaseconfig;
 };
 
 #endif // QTSINGLEAPPLICATION_H

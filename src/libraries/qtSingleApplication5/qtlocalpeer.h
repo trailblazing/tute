@@ -57,6 +57,7 @@ public:
     {
         return id;
     }
+    QLocalServer *server() {return _server;}
 
 Q_SIGNALS:
     void messageReceived(const QString &message);
@@ -67,11 +68,11 @@ protected Q_SLOTS:
 protected:
     QString id;
     QString socketName;
-    QLocalServer* server;
+    QLocalServer *_server;
     QtLP_Private::QtLockedFile lockFile;
 
 private:
-    static const char* ack;
+    static const char *ack;
 };
 
 #endif // QTLOCALPEER_H

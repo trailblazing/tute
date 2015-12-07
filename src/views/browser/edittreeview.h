@@ -44,17 +44,28 @@
 
 #include <QtWidgets/QTreeView>
 
-class EditTreeView : public QTreeView
-{
-    Q_OBJECT
+QT_BEGIN_NAMESPACE
 
-public:
-    EditTreeView(QWidget *parent = 0);
-    void keyPressEvent(QKeyEvent *event);
+namespace browser {
 
-public slots:
-    void removeOne();
-    void removeAll();
-};
+    class EditTreeView : public QTreeView {
+        Q_OBJECT
+
+    public:
+        EditTreeView(QWidget *parent = 0);
+        void keyPressEvent(QKeyEvent *event);
+
+    public slots:
+        void removeOne();
+        void removeAll();
+    };
+
+
+}
+
+QT_END_NAMESPACE
 
 #endif // EDITTREEVIEW_H
+
+
+

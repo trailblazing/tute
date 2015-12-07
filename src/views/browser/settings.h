@@ -45,29 +45,45 @@
 #include <QtWidgets/QDialog>
 #include "ui_settings.h"
 
-class SettingsDialog : public QDialog, public Ui_Settings
-{
-    Q_OBJECT
+QT_BEGIN_NAMESPACE
 
-public:
-    SettingsDialog(QWidget *parent = 0);
-    void accept();
 
-private slots:
-    void loadDefaults();
-    void loadFromSettings();
-    void saveToSettings();
+namespace browser {
 
-    void setHomeToCurrentPage();
-    void showCookies();
-    void showExceptions();
 
-    void chooseFont();
-    void chooseFixedFont();
 
-private:
-    QFont standardFont;
-    QFont fixedFont;
-};
+    class SettingsDialog : public QDialog, public Ui_Settings {
+        Q_OBJECT
+
+    public:
+        SettingsDialog(QWidget *parent = 0);
+        void accept();
+
+    private slots:
+        void loadDefaults();
+        void loadFromSettings();
+        void saveToSettings();
+
+        void setHomeToCurrentPage();
+        void showCookies();
+        void showExceptions();
+
+        void chooseFont();
+        void chooseFixedFont();
+
+    private:
+        QFont standardFont;
+        QFont fixedFont;
+    };
+
+
+}
+
+
+QT_END_NAMESPACE
+
 
 #endif // SETTINGS_H
+
+
+

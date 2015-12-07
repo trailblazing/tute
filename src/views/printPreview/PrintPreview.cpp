@@ -12,7 +12,7 @@
 #include <QDebug>
 #include <QPageSetupDialog>
 #include <QStatusBar>
-#include <QToolButton>
+#include "libraries/FlatControl.h"
 
 #include "PreviewView.h"
 #include "PrintPreview.h"
@@ -57,28 +57,28 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
 
 
     // Кнопки на панели инструментов
-    QToolButton *button_print=new QToolButton(this);
+    FlatToolButton *button_print=new FlatToolButton(this);
     button_print->setText(tr("&Print..."));
     button_print->setShortcut(Qt::CTRL + Qt::Key_P);
     button_print->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_print, SIGNAL(clicked()), this, SLOT(print()));
 
-    QToolButton *button_page_setup=new QToolButton(this);
+    FlatToolButton *button_page_setup=new FlatToolButton(this);
     button_page_setup->setText(tr("Page Setup..."));
     button_page_setup->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_page_setup, SIGNAL(clicked()), this, SLOT(pageSetup()));
 
-    QToolButton *button_zoom_in=new QToolButton(this);
+    FlatToolButton *button_zoom_in=new FlatToolButton(this);
     button_zoom_in->setText(tr("Zoom In"));
     button_zoom_in->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_zoom_in, SIGNAL(clicked()), view, SLOT(zoomIn()));
 
-    QToolButton *button_zoom_out=new QToolButton(this);
+    FlatToolButton *button_zoom_out=new FlatToolButton(this);
     button_zoom_out->setText(tr("Zoom Out"));
     button_zoom_out->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_zoom_out, SIGNAL(clicked()), view, SLOT(zoomOut()));
 
-    QToolButton *button_close=new QToolButton(this);
+    FlatToolButton *button_close=new FlatToolButton(this);
     button_close->setText(tr("&Close"));
     button_close->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_close, SIGNAL(clicked()), this, SLOT(close()));

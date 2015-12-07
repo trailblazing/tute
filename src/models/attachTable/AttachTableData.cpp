@@ -11,10 +11,10 @@
 
 AttachTableData::AttachTableData(Record *iRecord)
 {
-    liteFlag=true;
+    liteFlag = true;
     attachTable.clear();
-    record=iRecord;
-    relatedAttachTableModel=NULL;
+    record = iRecord;
+    relatedAttachTableModel = NULL;
 }
 
 
@@ -31,10 +31,10 @@ AttachTableData::AttachTableData(const AttachTableData &obj)
 // Пустой конструктор, он требуется для Q_DECLARE_METATYPE в QMimeData
 AttachTableData::AttachTableData()
 {
-    liteFlag=true;
+    liteFlag = true;
     attachTable.clear();
-    record=NULL;
-    relatedAttachTableModel=NULL;
+    record = NULL;
+    relatedAttachTableModel = NULL;
 }
 
 
@@ -48,7 +48,7 @@ AttachTableData::~AttachTableData()
 void AttachTableData::setupDataFromDom(QDomElement iDomElement)
 {
     // Первый файл
-    QDomElement currentFile=iDomElement.firstChildElement("file");
+    QDomElement currentFile = iDomElement.firstChildElement("file");
 
     // Перебор тегов <file ...>
     while(!currentFile.isNull()) {
@@ -60,7 +60,7 @@ void AttachTableData::setupDataFromDom(QDomElement iDomElement)
         // После размещения в памяти инициализируется начальными данными
         attachTable.last().setupDataFromDom(currentFile);
 
-        currentFile=currentFile.nextSiblingElement("file");
+        currentFile = currentFile.nextSiblingElement("file");
     }
 }
 
@@ -68,14 +68,14 @@ void AttachTableData::setupDataFromDom(QDomElement iDomElement)
 QDomElement AttachTableData::exportDataToDom(QDomDocument *doc) const
 {
     // Если у записи нет таблицы приаттаченных файлов
-    if(attachTable.size()==0)
+    if(attachTable.size() == 0)
         return QDomElement();
 
-    QDomElement attachTableDom=doc->createElement("files");
+    QDomElement attachTableDom = doc->createElement("files");
 
     // Пробегаются все приаттаченные файлы
-    for(int i=0; i<attachTable.size(); i++)
-        attachTableDom.appendChild( attachTable.at(i).exportDataToDom( doc ) ); // К элементу files прикрепляются элементы file
+    for(int i = 0; i < attachTable.size(); i++)
+        attachTableDom.appendChild(attachTable.at(i).exportDataToDom(doc));     // К элементу files прикрепляются элементы file
 
     return attachTableDom;
 }
@@ -84,7 +84,7 @@ QDomElement AttachTableData::exportDataToDom(QDomDocument *doc) const
 void AttachTableData::setRelatedAttachTableModel(AttachTableModel *model)
 {
     // Запоминание указателя на модель
-    relatedAttachTableModel=model;
+    relatedAttachTableModel = model;
 
     // В модели устанавливается указатель на текущие данные (перекрестная ссылка)
     relatedAttachTableModel->setData(QModelIndex(), QVariant::fromValue(this), ATTACHTABLE_ROLE_TABLE_DATA_ONLY);
@@ -93,13 +93,13 @@ void AttachTableData::setRelatedAttachTableModel(AttachTableModel *model)
 
 void AttachTableData::setRelatedAttachTableModelOnly(AttachTableModel *model)
 {
-    relatedAttachTableModel=model;
+    relatedAttachTableModel = model;
 }
 
 
 bool AttachTableData::isEmpty() const
 {
-    if(attachTable.size()==0)
+    if(attachTable.size() == 0)
         return true;
     else
         return false;
@@ -114,15 +114,15 @@ bool AttachTableData::isLite() const
 
 void AttachTableData::setRecord(Record *iRecord)
 {
-    record=iRecord; // Запоминается ссылка на запись, которой принадлежит данная таблица файлов
+    record = iRecord; // Запоминается ссылка на запись, которой принадлежит данная таблица файлов
 }
 
 
 void AttachTableData::clear()
 {
     attachTable.clear();
-    record=NULL;
-    liteFlag=true;
+    record = NULL;
+    liteFlag = true;
 }
 
 
@@ -138,10 +138,10 @@ int AttachTableData::size() const
 // Получение объекта аттача
 Attach AttachTableData::getAttach(QString id)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row<0)
-        criticalError("Attach with ID: "+id+" not found");
+    if(row < 0)
+        criticalError("Attach with ID: " + id + " not found");
 
     return attachTable.at(row);
 }
@@ -150,13 +150,13 @@ Attach AttachTableData::getAttach(QString id)
 // Добавление аттача
 void AttachTableData::addAttach(Attach attach)
 {
-    if(relatedAttachTableModel!=NULL)
+    if(relatedAttachTableModel != NULL)
         relatedAttachTableModel->setData(QModelIndex(), QVariant(), ATTACHTABLE_COMMAND_BEGIN_RESET_MODEL);
 
     // Аттач добавляется в таблицу приаттаченных файлов
     attachTable.append(attach);
 
-    if(relatedAttachTableModel!=NULL)
+    if(relatedAttachTableModel != NULL)
         relatedAttachTableModel->setData(QModelIndex(), QVariant(), ATTACHTABLE_COMMAND_END_RESET_MODEL);
 }
 
@@ -164,28 +164,28 @@ void AttachTableData::addAttach(Attach attach)
 // Изменение данных аттача
 void AttachTableData::modifyAttach(QString id, Attach iAttach)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row<0)
+    if(row < 0)
         return;
 
-    attachTable[row]=iAttach;
+    attachTable[row] = iAttach;
 }
 
 
 // Удаление аттача
 void AttachTableData::deleteAttach(QString id)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row<0)
+    if(row < 0)
         return;
 
     // Сначала уничтожается файл
     attachTable[row].removeFile();
 
     // Если связанной модели нет
-    if(relatedAttachTableModel==NULL) {
+    if(relatedAttachTableModel == NULL) {
         attachTable.removeAt(row); // Просто удаляется запись в данных
         return;
     } else {
@@ -200,8 +200,8 @@ void AttachTableData::deleteAttach(QString id)
 
 int AttachTableData::getRowById(QString id)
 {
-    for(int i=0; i<attachTable.size(); i++)
-        if(attachTable.at(i).getField("id")==id)
+    for(int i = 0; i < attachTable.size(); i++)
+        if(attachTable.at(i).getField("id") == id)
             return i;
 
     return -1;
@@ -224,9 +224,9 @@ QString AttachTableData::getFileName(int row)
 // Видимое имя файла без пути по Id
 QString AttachTableData::getFileNameById(QString id)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row>=0)
+    if(row >= 0)
         return getFileName(row);
     else
         return "";
@@ -243,9 +243,9 @@ QString AttachTableData::getInnerFileName(int row)
 // Внутреннее имя файла без пути по Id
 QString AttachTableData::getInnerFileNameById(QString id)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row>=0)
+    if(row >= 0)
         return getInnerFileName(row);
     else
         return "";
@@ -262,9 +262,9 @@ QString AttachTableData::getFullInnerFileName(int row)
 // Внутреннее имя файла с путем по Id
 QString AttachTableData::getFullInnerFileNameById(QString id)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row>=0)
+    if(row >= 0)
         return getFullInnerFileName(row);
     else
         return "";
@@ -281,9 +281,9 @@ QString AttachTableData::getAbsoluteInnerFileName(int row)
 // Внутреннее имя файла с абсолютным путем по Id
 QString AttachTableData::getAbsoluteInnerFileNameById(QString id)
 {
-    int row=getRowById(id);
+    int row = getRowById(id);
 
-    if(row>=0)
+    if(row >= 0)
         return getAbsoluteInnerFileName(row);
     else
         return "";
@@ -299,7 +299,7 @@ qint64 AttachTableData::getFileSize(int row)
 // Пачать содержимого таблицы конечных файлов
 void AttachTableData::print()
 {
-    for(int i=0; i<attachTable.size(); ++i) {
+    for(int i = 0; i < attachTable.size(); ++i) {
         qDebug() << "File: " << attachTable.at(i).getField("id") << " Type: " << attachTable.at(i).getField("type");
     }
 }
@@ -308,42 +308,42 @@ void AttachTableData::print()
 void AttachTableData::switchToLite()
 {
     // Переключение возможно только из полновесного состояния
-    if(liteFlag==true)
+    if(liteFlag == true)
         criticalError("Can't switch attach table to lite state");
 
-    for(int i=0; i<attachTable.size(); ++i) {
+    for(int i = 0; i < attachTable.size(); ++i) {
         // Тяжелые данные сохраняются на диск
-        if(attachTable[i].getField("type")=="file")
+        if(attachTable[i].getField("type") == "file")
             attachTable[i].pushFatDataToDisk();
 
         attachTable[i].switchToLite();
     }
 
-    liteFlag=true;
+    liteFlag = true;
 }
 
 
 void AttachTableData::switchToFat()
 {
     // Переключение возможно только из легкого состояния
-    if(liteFlag!=true)
+    if(liteFlag != true)
         criticalError("Unavailable switching attach table to fat state");
 
-    for(int i=0; i<attachTable.size(); ++i) {
+    for(int i = 0; i < attachTable.size(); ++i) {
         attachTable[i].switchToFat();
 
         // Тяжелые данные засасываются с диска в память
-        if(attachTable[i].getField("type")=="file")
+        if(attachTable[i].getField("type") == "file")
             attachTable[i].popFatDataFromDisk();
     }
 
-    liteFlag=false;
+    liteFlag = false;
 }
 
 
 bool AttachTableData::isRecordCrypt()
 {
-    if( record->getField("crypt")=="1" )
+    if(record->getField("crypt") == "1")
         return true;
     else
         return false;
@@ -352,22 +352,22 @@ bool AttachTableData::isRecordCrypt()
 
 void AttachTableData::encrypt(unsigned int area)
 {
-    for(int i=0; i<attachTable.size(); ++i)
+    for(int i = 0; i < attachTable.size(); ++i)
         attachTable[i].encrypt(area);
 }
 
 
 void AttachTableData::decrypt(unsigned int area)
 {
-    for(int i=0; i<attachTable.size(); ++i)
+    for(int i = 0; i < attachTable.size(); ++i)
         attachTable[i].decrypt(area);
 }
 
 
 void AttachTableData::saveAttachFilesToDirectory(QString dirName)
 {
-    for(int i=0; i<attachTable.size(); ++i)
-        if(attachTable.at(i).getField("type")=="file") // Сохраняются только файлы, не линки
+    for(int i = 0; i < attachTable.size(); ++i)
+        if(attachTable.at(i).getField("type") == "file") // Сохраняются только файлы, не линки
             if(!attachTable.at(i).isLite())
                 attachTable[i].pushFatDataToDirectory(dirName);
 }
@@ -376,6 +376,6 @@ void AttachTableData::saveAttachFilesToDirectory(QString dirName)
 // Обновление ссылок на таблицу аттачей внутри объектов-аттачей
 void AttachTableData::updateAttachTableBackLink()
 {
-    for(int i=0; i<attachTable.size(); ++i)
+    for(int i = 0; i < attachTable.size(); ++i)
         attachTable[i].setParentTable(this);
 }

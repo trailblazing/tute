@@ -43,41 +43,87 @@
 #define TOOLBARSEARCH_H
 
 #include "searchlineedit.h"
+#include <QLineEdit>
 
 QT_BEGIN_NAMESPACE
 class QUrl;
 class QAction;
 class QStringListModel;
+class QLineEdit;
 QT_END_NAMESPACE
 
-class AutoSaver;
 
-class ToolbarSearch : public SearchLineEdit
-{
-    Q_OBJECT
+QT_BEGIN_NAMESPACE
+class QCompleter;
+class QLineEdit;
+class QMenu;
+class QStackedWidget;
+class FindTableWidget;
+QT_END_NAMESPACE
 
-signals:
-    void search(const QUrl &url);
 
-public:
-    ToolbarSearch(QWidget *parent = 0);
-    ~ToolbarSearch();
+namespace browser {
 
-public slots:
-    void clear();
-    void searchNow();
+    class ChaseWidget;
+}
 
-private slots:
-    void save();
-    void aboutToShowMenu();
-    void triggeredMenuAction(QAction *action);
+QT_BEGIN_NAMESPACE
 
-private:
-    void load();
 
-    AutoSaver *m_autosaver;
-    int m_maxSavedSearches;
-    QStringListModel *m_stringListModel;
-};
+namespace browser {
+
+
+
+    class AutoSaver;
+
+    class ToolbarSearch : public SearchLineEdit {
+        Q_OBJECT
+
+    signals:
+        void search(const QUrl &url);
+        void returnPressed();
+    public:
+        ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,
+            QWidget *parent = 0);
+        ~ToolbarSearch();
+        void setText(const QString &text);
+        QString text() const;
+
+        QLineEdit *findtext() {return _findtext;}
+        void findtext(QLineEdit *findtext) {_findtext = findtext;}
+
+        QStackedWidget *lineedits() {return _lineedits;}
+        void lineedits(QStackedWidget *lineedits) { _lineedits = lineedits;}
+
+    public slots:
+        void clear();
+        void searchNow();
+
+    private slots:
+        void save();
+        void aboutToShowMenu();
+        void triggeredMenuAction(QAction *action);
+
+    private:
+        void load();
+
+        AutoSaver           *_autosaver;
+        int                 _maxsavedsearches;
+        QStringListModel    *_stringlistmodel;
+        QStackedWidget      *_lineedits;
+        QLineEdit           *_findtext;
+        // TabManager           *_tabmanager;
+        // browser::ChaseWidget *_chasewidget;
+
+    };
+
+
+}
+
+
+QT_END_NAMESPACE
 
 #endif // TOOLBARSEARCH_H
+
+
+

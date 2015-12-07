@@ -17,24 +17,25 @@
 #include "views/tree/KnowTreeView.h"
 #include "libraries/crypt/CryptService.h"
 #include "libraries/DiskHelper.h"
-
+#include "views/browser/webview.h"
+#include "views/browser/tabwidget.h"
 #include "libraries/wyedit/Editor.h"
 
-extern AppConfig mytetraConfig;
-extern GlobalParameters globalParameters;
-extern WalkHistory walkHistory;
+extern AppConfig appconfig;
+extern GlobalParameters globalparameters;
+extern WalkHistory walkhistory;
 
 
 // Это набор данных конечной таблицы, с которыми удобно работать
 
 // Конструктор
-RecordTableData::RecordTableData(void)
+RecordTableData::RecordTableData(void): treeItem(nullptr), workPos(-1)
 {
-    treeItem = NULL;
+    //    treeItem = NULL;
 
-    workPos = -1;
+    //    workPos = -1;
 
-    return;
+    //    return;
 }
 
 
@@ -60,6 +61,37 @@ QString RecordTableData::getField(QString name, int pos) const
     return tableData.at(pos).getField(name);
 }
 
+Record *RecordTableData::find(const QUrl &url)
+{
+    Record *record = nullptr;
+
+    for(auto &i : tableData) {
+        // QString _u = i.getNaturalFieldSource("url") ;
+
+        if(i.getNaturalFieldSource("url") == url.toString()) {
+            record = &i;
+            break;
+        }
+    }
+
+    return record;
+}
+
+Record *RecordTableData::find(Record *const r)
+{
+    Record *record = nullptr;
+
+    for(auto &i : tableData) {
+        // QString _u = i.getNaturalFieldSource("url") ;
+
+        if(i.getNaturalFieldSource("id") == r->getNaturalFieldSource("id")) {
+            record = &i;
+            break;
+        }
+    }
+
+    return record;
+}
 
 // Установка значения указанного поля для указанного элемента
 void RecordTableData::setField(QString name, QString value, int pos)
@@ -109,7 +141,7 @@ void RecordTableData::editorLoadCallback(QObject *editor,
 
     if(currEditor->getMiscField("crypt") == "1") {
         // Если не установлено ключа шифрации
-        if(globalParameters.getCryptKey().length() == 0) {
+        if(globalparameters.getCryptKey().length() == 0) {
             loadText = "";
             return;
         }
@@ -134,7 +166,7 @@ void RecordTableData::editorLoadCallback(QObject *editor,
     if(workWithCrypt == false)
         loadText = QString::fromUtf8(f.readAll());
     else
-        loadText = CryptService::decryptStringFromByteArray(globalParameters.getCryptKey(), f.readAll()); // Если зашифровано
+        loadText = CryptService::decryptStringFromByteArray(globalparameters.getCryptKey(), f.readAll()); // Если зашифровано
 }
 
 
@@ -156,7 +188,7 @@ void RecordTableData::editorSaveCallback(QObject *editor,
 
     if(currEditor->getMiscField("crypt") == "1") {
         // Если не установлено ключа шифрации
-        if(globalParameters.getCryptKey().length() == 0)
+        if(globalparameters.getCryptKey().length() == 0)
             return;
 
         workWithCrypt = true;
@@ -177,7 +209,7 @@ void RecordTableData::editorSaveCallback(QObject *editor,
         out << saveText;
     } else {
         // Текст шифруется
-        QByteArray encryptData = CryptService::encryptStringToByteArray(globalParameters.getCryptKey(), saveText);
+        QByteArray encryptData = CryptService::encryptStringToByteArray(globalparameters.getCryptKey(), saveText);
 
         // В файл сохраняются зашифрованные данные
         QFile wfile(fileName);
@@ -229,7 +261,7 @@ Record RecordTableData::getRecordFat(int pos)
     resultRecord.setText(getText(pos));
 
     // Добавление бинарных образов файлов картинок
-    QString directory = mytetraConfig.get_tetradir() + "/base/" + resultRecord.getField("dir");
+    QString directory = appconfig.get_tetradir() + "/base/" + resultRecord.getField("dir");
     resultRecord.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
     return resultRecord;
@@ -273,21 +305,28 @@ void RecordTableData::setupDataFromDom(QDomElement *domModel)
         return;
 
     // Определяется указатель на первый элемент с записью
+    // Define a pointer to the first element of the recording
     QDomElement currentRecordDom = domModel->firstChildElement("record");
 
     while(!currentRecordDom.isNull()) {
         // Структура, куда будет помещена текущая запись
+        // The structure, which will put the current record
         Record currentRecord;
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
+        // The current record is added to the final table of records (and located at a certain address in memory)
         tableData << currentRecord;
 
         // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
         // чтобы в подчиненных объектах прописались правильные указатели на данную запись
+        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
+        // Order in subordinate objects have registered a valid pointer to this entry
         (tableData.last()).setupDataFromDom(currentRecordDom);
 
         currentRecordDom = currentRecordDom.nextSiblingElement("record");
-    } // Закрылся цикл перебора тегов <record ...>
+    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
+
+
 
     return;
 }
@@ -326,7 +365,7 @@ int RecordTableData::insertNewRecord(int mode,
                                      int pos,
                                      Record record)
 {
-    qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
+    if(treeItem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
 
     // Мотод должен принять полновесный объект записи
     if(record.isLite() == true)
@@ -366,7 +405,7 @@ int RecordTableData::insertNewRecord(int mode,
 
     if(treeItem != NULL)
         if(treeItem->getField("crypt") == "1") {
-            if(globalParameters.getCryptKey().length() > 0)
+            if(globalparameters.getCryptKey().length() > 0)
                 isCrypt = true;
             else
                 criticalError("RecordTableData::insertNewRecord() : Can not insert data to crypt branch. Password not setted.");
@@ -386,13 +425,13 @@ int RecordTableData::insertNewRecord(int mode,
     // Запись добавляется в таблицу конечных записей
     int insertPos = -1;
 
-    if(mode == ADD_NEW_RECORD_TO_END) { // В конец списка
+    if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
         tableData << record;
         insertPos = tableData.size() - 1;
-    } else if(mode == ADD_NEW_RECORD_BEFORE) { // Перед указанной позицией
+    } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
         tableData.insert(pos, record);
         insertPos = pos;
-    } else if(mode == ADD_NEW_RECORD_AFTER) { // После указанной позиции
+    } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
         tableData.insert(pos + 1, record);
         insertPos = pos + 1;
     }
@@ -432,7 +471,7 @@ void RecordTableData::deleteRecord(int i)
         return;
 
     // Удаление директории и файлов внутри, с сохранением в резервной директории
-    QString dirForDelete = mytetraConfig.get_tetradir() + "/base/" + getField("dir", i);
+    QString dirForDelete = appconfig.get_tetradir() + "/base/" + getField("dir", i);
     qDebug() << "Remove dir " << dirForDelete;
     DiskHelper::removeDirectoryToTrash(dirForDelete);
 
@@ -441,7 +480,13 @@ void RecordTableData::deleteRecord(int i)
     QString id = getField("id", i);
 
     if(id.length() > 0)
-        walkHistory.removeHistoryData(id);
+        walkhistory.removeHistoryData(id);
+
+
+    //    //
+    //    Record record = tableData.at(i);
+    //    browser::PageView *view = record.view();
+    //    //
 
     // Начинается удаление записи
     // beginRemoveRows(QModelIndex(),i,i);
@@ -449,6 +494,12 @@ void RecordTableData::deleteRecord(int i)
     // Удаляется элемент
     tableData.removeAt(i); // Было takeAt
     qDebug() << "Delete record succesfull";
+
+    //    //
+    //    browser::TabManager *tabmanager = view->tabmanager();
+    //    tabmanager->closeTab(tabmanager->webViewIndex(view));
+    //    //
+
 
     // Удаление записи закончено
     // endRemoveRows();

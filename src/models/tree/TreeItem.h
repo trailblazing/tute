@@ -122,13 +122,13 @@ private:
     QStringList fieldNameAvailableList(void) const;
     QStringList fieldNameForCryptList(void) const;
 
-    QList<TreeItem*> childItems; // Список ссылок на потомков
-    TreeItem *parentItem;      // Ссылка на родителя
+    QList<TreeItem*> childItems;    // Список ссылок на потомков
+    TreeItem *parentItem;           // Ссылка на родителя
 
     // Таблица инфополей данной ветки
     QMap<QString, QString> fieldsTable;
 
-    // Каждая ветка может содержать таблицу конечных записей
+    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
     RecordTableData recordsTable;
 };
 

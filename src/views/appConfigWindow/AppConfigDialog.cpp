@@ -12,12 +12,12 @@
 #include "AppConfigPage_RecordTable.h"
 #include "models/appConfig/AppConfig.h"
 
-extern AppConfig mytetraConfig;
+extern AppConfig appconfig;
 
 
 AppConfigDialog::AppConfigDialog(QString firstPageName="") : QWidget()
 {
-    if(mytetraConfig.getInterfaceMode()=="mobile") { // if(true)
+    if(appconfig.getInterfaceMode()=="mobile") { // if(true)
         qDebug() << "Screen size X Y: " << getScreenSizeX() << getScreenSizeY();
         this->setMinimumSize(getScreenSizeX(), getScreenSizeY());
         this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);

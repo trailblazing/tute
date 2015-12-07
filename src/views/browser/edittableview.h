@@ -44,17 +44,30 @@
 
 #include <QtWidgets/QTableView>
 
-class EditTableView : public QTableView
-{
-    Q_OBJECT
+QT_BEGIN_NAMESPACE
 
-public:
-    EditTableView(QWidget *parent = 0);
-    void keyPressEvent(QKeyEvent *event);
 
-public slots:
-    void removeOne();
-    void removeAll();
-};
+namespace browser {
+
+    class EditTableView : public QTableView {
+        Q_OBJECT
+
+    public:
+        EditTableView(QWidget *parent = 0);
+        void keyPressEvent(QKeyEvent *event);
+
+    public slots:
+        void removeOne();
+        void removeAll();
+    };
+
+
+}
+
+
+QT_END_NAMESPACE
 
 #endif // EDITTABLEVIEW_H
+
+
+

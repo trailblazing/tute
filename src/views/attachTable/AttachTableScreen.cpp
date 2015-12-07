@@ -14,7 +14,7 @@ AttachTableScreen::AttachTableScreen(QWidget *parent) : QWidget(parent)
     setupActions();
 
     // Инициализируется контроллер списка файлов
-    attachTableController=new AttachTableController(this);
+    attachTableController = new AttachTableController(this);
     attachTableController->setObjectName("attachTableController");
 
     setupUI();
@@ -77,7 +77,7 @@ void AttachTableScreen::setupActions(void)
 void AttachTableScreen::setupUI(void)
 {
     // Создание тулбара
-    toolsLine=new QToolBar(this);
+    toolsLine = new QToolBar(this);
 
     // Создание кнопок на тулбаре
     insertActionAsButton(toolsLine, actionAddAttach);
@@ -113,7 +113,7 @@ void AttachTableScreen::setupSignals(void)
 void AttachTableScreen::assembly(void)
 {
 
-    screenLayout=new QVBoxLayout(); // todo: Добавить this?
+    screenLayout = new QVBoxLayout(); // todo: Добавить this?
 
     screenLayout->addWidget(toolsLine);
     screenLayout->addWidget(attachTableController->getView());
@@ -122,8 +122,8 @@ void AttachTableScreen::assembly(void)
 
     // Границы убираются, так как данный объект будет использоваться как виджет
     QLayout *lt;
-    lt=layout();
-    lt->setContentsMargins(0,0,0,0);
+    lt = layout();
+    lt->setContentsMargins(0, 0, 0, 0);
 }
 
 

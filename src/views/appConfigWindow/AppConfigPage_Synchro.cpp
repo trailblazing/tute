@@ -5,7 +5,7 @@
 #include "AppConfigPage_Synchro.h"
 #include "models/appConfig/AppConfig.h"
 
-extern AppConfig mytetraConfig;
+extern AppConfig appconfig;
 
 
 AppConfigPage_Synchro::AppConfigPage_Synchro(QWidget *parent) : ConfigPage(parent)
@@ -13,17 +13,17 @@ AppConfigPage_Synchro::AppConfigPage_Synchro(QWidget *parent) : ConfigPage(paren
     qDebug() << "Create synchro config page";
 
     synchroCommand=new QLineEdit(this);
-    synchroCommand->setText(mytetraConfig.get_synchrocommand());
+    synchroCommand->setText(appconfig.get_synchrocommand());
     synchroCommand->setCursorPosition(0);
 
 
     synchroOnStartup=new QCheckBox(this);
     synchroOnStartup->setText(tr("Synchronize at MyTetra startup"));
-    synchroOnStartup->setChecked(mytetraConfig.get_synchroonstartup());
+    synchroOnStartup->setChecked(appconfig.get_synchroonstartup());
 
     synchroOnExit=new QCheckBox(this);
     synchroOnExit->setText(tr("Synchronize when exit from MyTetra"));
-    synchroOnExit->setChecked(mytetraConfig.get_synchroonexit());
+    synchroOnExit->setChecked(appconfig.get_synchroonexit());
 
 
     // Собирается основной слой
@@ -70,16 +70,16 @@ int AppConfigPage_Synchro::apply_changes(void)
     qDebug() << "Apply changes synchro";
 
 // Сохраняется строка с командой синхронизации
-    if(mytetraConfig.get_synchrocommand()!=synchroCommand->text())
-        mytetraConfig.set_synchrocommand(synchroCommand->text());
+    if(appconfig.get_synchrocommand()!=synchroCommand->text())
+        appconfig.set_synchrocommand(synchroCommand->text());
 
 // Сохраняется настройка запуска синхронизации при старте
-    if(mytetraConfig.get_synchroonstartup()!=synchroOnStartup->isChecked())
-        mytetraConfig.set_synchroonstartup(synchroOnStartup->isChecked());
+    if(appconfig.get_synchroonstartup()!=synchroOnStartup->isChecked())
+        appconfig.set_synchroonstartup(synchroOnStartup->isChecked());
 
 // Сохраняется настройка запуска синхронизации при выходе
-    if(mytetraConfig.get_synchroonexit()!=synchroOnExit->isChecked())
-        mytetraConfig.set_synchroonexit(synchroOnExit->isChecked());
+    if(appconfig.get_synchroonexit()!=synchroOnExit->isChecked())
+        appconfig.set_synchroonexit(synchroOnExit->isChecked());
 
     return 0;
 }

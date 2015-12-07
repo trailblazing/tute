@@ -46,264 +46,274 @@
 #include <QtCore/QAbstractItemModel>
 
 #include <QtWidgets/QUndoCommand>
+#include "modelmenu.h"
+#include <QtCore/QSortFilterProxyModel>
+#include "ui_addbookmarkdialog.h"
+#include "ui_bookmarks.h"
+#include <QtWidgets/QToolBar>
 
-/*!
-    Bookmark manager, owner of the bookmarks, loads, saves and basic tasks
-  */
-class AutoSaver;
-class BookmarkNode;
-class BookmarksModel;
-class BookmarksManager : public QObject
-{
-    Q_OBJECT
+class FlatToolButton;
 
-signals:
-    void entryAdded(BookmarkNode *item);
-    void entryRemoved(BookmarkNode *parent, int row, BookmarkNode *item);
-    void entryChanged(BookmarkNode *item);
+QT_BEGIN_NAMESPACE
 
-public:
-    BookmarksManager(QObject *parent = 0);
-    ~BookmarksManager();
+namespace browser {
 
-    void addBookmark(BookmarkNode *parent, BookmarkNode *node, int row = -1);
-    void removeBookmark(BookmarkNode *node);
-    void setTitle(BookmarkNode *node, const QString &newTitle);
-    void setUrl(BookmarkNode *node, const QString &newUrl);
-    void changeExpanded();
+    /*!
+        Bookmark manager, owner of the bookmarks, loads, saves and basic tasks
+      */
+    class AutoSaver;
+    class BookmarkNode;
+    class BookmarksModel;
 
-    BookmarkNode *bookmarks();
-    BookmarkNode *menu();
-    BookmarkNode *toolbar();
+    class BookmarksManager : public QObject {
+        Q_OBJECT
 
-    BookmarksModel *bookmarksModel();
-    QUndoStack *undoRedoStack() { return &m_commands; };
+    signals:
+        void entryAdded(BookmarkNode *item);
+        void entryRemoved(BookmarkNode *parent, int row, BookmarkNode *item);
+        void entryChanged(BookmarkNode *item);
 
-public slots:
-    void importBookmarks();
-    void exportBookmarks();
+    public:
+        BookmarksManager(QObject *parent = 0);
+        ~BookmarksManager();
 
-private slots:
-    void save() const;
+        void addBookmark(BookmarkNode *parent, BookmarkNode *node, int row = -1);
+        void removeBookmark(BookmarkNode *node);
+        void setTitle(BookmarkNode *node, const QString &newTitle);
+        void setUrl(BookmarkNode *node, const QString &newUrl);
+        void changeExpanded();
 
-private:
-    void load();
+        BookmarkNode *bookmarks();
+        BookmarkNode *menu();
+        BookmarkNode *toolbar();
 
-    bool m_loaded;
-    AutoSaver *m_saveTimer;
-    BookmarkNode *m_bookmarkRootNode;
-    BookmarksModel *m_bookmarkModel;
-    QUndoStack m_commands;
+        BookmarksModel *bookmarksModel();
+        QUndoStack *undoRedoStack() { return &_commands; };
 
-    friend class RemoveBookmarksCommand;
-    friend class ChangeBookmarkCommand;
-};
+    public slots:
+        void importBookmarks();
+        void exportBookmarks();
 
-class RemoveBookmarksCommand : public QUndoCommand
-{
+    private slots:
+        void save() const;
 
-public:
-    RemoveBookmarksCommand(BookmarksManager *m_bookmarkManagaer, BookmarkNode *parent, int row);
-    ~RemoveBookmarksCommand();
-    void undo();
-    void redo();
+    private:
+        void load();
 
-protected:
-    int m_row;
-    BookmarksManager *m_bookmarkManagaer;
-    BookmarkNode *m_node;
-    BookmarkNode *m_parent;
-    bool m_done;
-};
+        bool _loaded;
+        AutoSaver *_savetimer;
+        BookmarkNode *_bookmarkrootnode;
+        BookmarksModel *_bookmarkmodel;
+        QUndoStack _commands;
 
-class InsertBookmarksCommand : public RemoveBookmarksCommand
-{
-
-public:
-    InsertBookmarksCommand(BookmarksManager *m_bookmarkManagaer,
-        BookmarkNode *parent, BookmarkNode *node, int row);
-    void undo() { RemoveBookmarksCommand::redo(); }
-    void redo() { RemoveBookmarksCommand::undo(); }
-
-};
-
-class ChangeBookmarkCommand : public QUndoCommand
-{
-
-public:
-    ChangeBookmarkCommand(BookmarksManager *m_bookmarkManagaer,
-        BookmarkNode *node, const QString &newValue, bool title);
-    void undo();
-    void redo();
-
-private:
-    BookmarksManager *m_bookmarkManagaer;
-    bool m_title;
-    QString m_oldValue;
-    QString m_newValue;
-    BookmarkNode *m_node;
-};
-
-/*!
-    BookmarksModel is a QAbstractItemModel wrapper around the BookmarkManager
-  */
-class BookmarksModel : public QAbstractItemModel
-{
-    Q_OBJECT
-
-public slots:
-    void entryAdded(BookmarkNode *item);
-    void entryRemoved(BookmarkNode *parent, int row, BookmarkNode *item);
-    void entryChanged(BookmarkNode *item);
-
-public:
-    enum Roles {
-        TypeRole = Qt::UserRole + 1,
-        UrlRole = Qt::UserRole + 2,
-        UrlStringRole = Qt::UserRole + 3,
-        SeparatorRole = Qt::UserRole + 4
+        friend class RemoveBookmarksCommand;
+        friend class ChangeBookmarkCommand;
     };
 
-    BookmarksModel(BookmarksManager *bookmarkManager, QObject *parent = 0);
-    inline BookmarksManager *bookmarksManager() const { return m_bookmarksManager; }
+    class RemoveBookmarksCommand : public QUndoCommand {
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
-    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex index(int, int, const QModelIndex& = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex& index= QModelIndex()) const;
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    Qt::DropActions supportedDropActions () const;
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
-    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
-    QMimeData *mimeData(const QModelIndexList &indexes) const;
-    QStringList mimeTypes() const;
-    bool dropMimeData(const QMimeData *data,
-        Qt::DropAction action, int row, int column, const QModelIndex &parent);
-    bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
+    public:
+        RemoveBookmarksCommand(BookmarksManager *_bookmarkmanagaer, BookmarkNode *parent, int row);
+        ~RemoveBookmarksCommand();
+        void undo();
+        void redo();
 
-    BookmarkNode *node(const QModelIndex &index) const;
-    QModelIndex index(BookmarkNode *node) const;
+    protected:
+        int _row;
+        BookmarksManager *_bookmarkmanagaer;
+        BookmarkNode *_node;
+        BookmarkNode *_parent;
+        bool _done;
+    };
 
-private:
+    class InsertBookmarksCommand : public RemoveBookmarksCommand {
 
-    bool m_endMacro;
-    BookmarksManager *m_bookmarksManager;
-};
+    public:
+        InsertBookmarksCommand(BookmarksManager *_bookmarkmanagaer,
+                               BookmarkNode *parent, BookmarkNode *node, int row);
+        void undo() { RemoveBookmarksCommand::redo(); }
+        void redo() { RemoveBookmarksCommand::undo(); }
 
-// Menu that is dynamically populated from the bookmarks
-#include "modelmenu.h"
-class BookmarksMenu : public ModelMenu
-{
-    Q_OBJECT
+    };
 
-signals:
-    void openUrl(const QUrl &url);
+    class ChangeBookmarkCommand : public QUndoCommand {
 
-public:
-     BookmarksMenu(QWidget *parent = 0);
-     void setInitialActions(QList<QAction*> actions);
+    public:
+        ChangeBookmarkCommand(BookmarksManager *_bookmarkmanagaer,
+                              BookmarkNode *node, const QString &newValue, bool title);
+        void undo();
+        void redo();
 
-protected:
-    bool prePopulated();
+    private:
+        BookmarksManager *_bookmarkmanagaer;
+        bool _title;
+        QString _oldvalue;
+        QString _newvalue;
+        BookmarkNode *_node;
+    };
 
-private slots:
-    void activated(const QModelIndex &index);
+    /*!
+        BookmarksModel is a QAbstractItemModel wrapper around the BookmarkManager
+      */
+    class BookmarksModel : public QAbstractItemModel {
+        Q_OBJECT
 
-private:
-    BookmarksManager *m_bookmarksManager;
-    QList<QAction*> m_initialActions;
-};
+    public slots:
+        void entryAdded(BookmarkNode *item);
+        void entryRemoved(BookmarkNode *parent, int row, BookmarkNode *item);
+        void entryChanged(BookmarkNode *item);
 
-/*
-    Proxy model that filters out the bookmarks so only the folders
-    are left behind.  Used in the add bookmark dialog combobox.
- */
-#include <QtCore/QSortFilterProxyModel>
-class AddBookmarkProxyModel : public QSortFilterProxyModel
-{
-    Q_OBJECT
-public:
-    AddBookmarkProxyModel(QObject * parent = 0);
-    int columnCount(const QModelIndex & parent = QModelIndex()) const;
+    public:
+        enum Roles {
+            TypeRole = Qt::UserRole + 1,
+            UrlRole = Qt::UserRole + 2,
+            UrlStringRole = Qt::UserRole + 3,
+            SeparatorRole = Qt::UserRole + 4
+        };
 
-protected:
-    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
-};
+        BookmarksModel(BookmarksManager *bookmarkManager, QObject *parent = 0);
+        inline BookmarksManager *bookmarksManager() const { return _bookmarksmanager; }
 
-/*!
-    Add bookmark dialog
- */
-#include "ui_addbookmarkdialog.h"
-class AddBookmarkDialog : public QDialog, public Ui_AddBookmarkDialog
-{
-    Q_OBJECT
+        QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
+        QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+        int columnCount(const QModelIndex &parent = QModelIndex()) const;
+        int rowCount(const QModelIndex &parent = QModelIndex()) const;
+        QModelIndex index(int, int, const QModelIndex & = QModelIndex()) const;
+        QModelIndex parent(const QModelIndex &index = QModelIndex()) const;
+        Qt::ItemFlags flags(const QModelIndex &index) const;
+        Qt::DropActions supportedDropActions() const;
+        bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+        bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole);
+        QMimeData *mimeData(const QModelIndexList &indexes) const;
+        QStringList mimeTypes() const;
+        bool dropMimeData(const QMimeData *data,
+                          Qt::DropAction action, int row, int column, const QModelIndex &parent);
+        bool hasChildren(const QModelIndex &parent = QModelIndex()) const;
 
-public:
-    AddBookmarkDialog(const QString &url, const QString &title, QWidget *parent = 0, BookmarksManager *bookmarkManager = 0);
+        BookmarkNode *node(const QModelIndex &index) const;
+        QModelIndex index(BookmarkNode *node) const;
 
-private slots:
-    void accept();
+    private:
 
-private:
-    QString m_url;
-    BookmarksManager *m_bookmarksManager;
-    AddBookmarkProxyModel *m_proxyModel;
-};
+        bool _endmacro;
+        BookmarksManager *_bookmarksmanager;
+    };
 
-#include "ui_bookmarks.h"
-class TreeProxyModel;
-class BookmarksDialog : public QDialog, public Ui_BookmarksDialog
-{
-    Q_OBJECT
+    // Menu that is dynamically populated from the bookmarks
+//#include "modelmenu.h"
+    class BookmarksMenu : public ModelMenu {
+        Q_OBJECT
 
-signals:
-    void openUrl(const QUrl &url);
+    signals:
+        void openUrl(const QUrl &url);
 
-public:
-    BookmarksDialog(QWidget *parent = 0, BookmarksManager *manager = 0);
-    ~BookmarksDialog();
+    public:
+        BookmarksMenu(QWidget *parent = 0);
+        void setInitialActions(QList<QAction *> actions);
 
-private slots:
-    void customContextMenuRequested(const QPoint &pos);
-    void open();
-    void newFolder();
+    protected:
+        bool prePopulated();
 
-private:
-    void expandNodes(BookmarkNode *node);
-    bool saveExpandedNodes(const QModelIndex &parent);
+    private slots:
+        void activated(const QModelIndex &index);
 
-    BookmarksManager *m_bookmarksManager;
-    BookmarksModel *m_bookmarksModel;
-    TreeProxyModel *m_proxyModel;
-};
+    private:
+        BookmarksManager *_bookmarksmanager;
+        QList<QAction *> _initialactions;
+    };
 
-#include <QtWidgets/QToolBar>
-class BookmarksToolBar : public QToolBar
-{
-    Q_OBJECT
+    /*
+        Proxy model that filters out the bookmarks so only the folders
+        are left behind.  Used in the add bookmark dialog combobox.
+     */
+//#include <QtCore/QSortFilterProxyModel>
+    class AddBookmarkProxyModel : public QSortFilterProxyModel {
+        Q_OBJECT
+    public:
+        AddBookmarkProxyModel(QObject *parent = 0);
+        int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-signals:
-    void openUrl(const QUrl &url);
+    protected:
+        bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const;
+    };
 
-public:
-    BookmarksToolBar(BookmarksModel *model, QWidget *parent = 0);
-    void setRootIndex(const QModelIndex &index);
-    QModelIndex rootIndex() const;
+    /*!
+        Add bookmark dialog
+     */
+//#include "ui_addbookmarkdialog.h"
+    class AddBookmarkDialog : public QDialog, public Ui_AddBookmarkDialog {
+        Q_OBJECT
 
-protected:
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dropEvent(QDropEvent *event);
+    public:
+        AddBookmarkDialog(const QString &url, const QString &title, QWidget *parent = 0, BookmarksManager *bookmarkManager = 0);
 
-private slots:
-    void triggered(QAction *action);
-    void activated(const QModelIndex &index);
-    void build();
+    private slots:
+        void accept();
 
-private:
-    BookmarksModel *m_bookmarksModel;
-    QPersistentModelIndex m_root;
-};
+    private:
+        QString _url;
+        BookmarksManager *_bookmarksmanager;
+        AddBookmarkProxyModel *_proxymodel;
+    };
+
+//#include "ui_bookmarks.h"
+    class TreeProxyModel;
+    class BookmarksDialog : public QDialog, public Ui_BookmarksDialog {
+        Q_OBJECT
+
+    signals:
+        void openUrl(const QUrl &url);
+
+    public:
+        BookmarksDialog(QWidget *parent = 0, BookmarksManager *manager = 0);
+        ~BookmarksDialog();
+
+    private slots:
+        void customContextMenuRequested(const QPoint &pos);
+        void open();
+        void newFolder();
+
+    private:
+        void expandNodes(BookmarkNode *node);
+        bool saveExpandedNodes(const QModelIndex &parent);
+
+        BookmarksManager *_bookmarksmanager;
+        BookmarksModel *_bookmarksmodel;
+        TreeProxyModel *_proxymodel;
+    };
+
+//#include <QtWidgets/QToolBar>
+    class BookmarksToolBar : public QToolBar {
+        Q_OBJECT
+
+    signals:
+        void openUrl(const QUrl &url);
+
+    public:
+        BookmarksToolBar(BookmarksModel *model, QWidget *parent = 0);
+        void setRootIndex(const QModelIndex &index);
+        QModelIndex rootIndex() const;
+
+    protected:
+        void dragEnterEvent(QDragEnterEvent *event);
+        void dropEvent(QDropEvent *event);
+
+    private slots:
+        void triggered(QAction *action);
+        void activated(const QModelIndex &index);
+        void build();
+
+    private:
+        BookmarksModel *_bookmarksmodel;
+        QPersistentModelIndex _root;
+    };
+
+
+}
+
+
+QT_END_NAMESPACE
 
 #endif // BOOKMARKS_H
+
+

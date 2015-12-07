@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mytetradoc>
+<root>
+ <format subversion="2" version="1"/>
+ <content>
+  <node name="Rename me" id="1">
+   <recordtable>
+    <record name="" tags="" file="text.html" author="" dir="1448968392whlh6gnb0z" ctime="20151201051312" pin="" url="https://www.google.com/search?q=www.google.com&amp;ie=UTF-8&amp;oe=UTF-8&amp;client=mytetra" id="1448968392e7xzysc2ct"/>
+    <record name="Welcome to MyTetra!" tags="MyTetra, Qt" file="text.html" author="" dir="0000000001" ctime="20081210124656" url="http://www.google.com" id="1"/>
+   </recordtable>
+  </node>
+ </content>
+</root>

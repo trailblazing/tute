@@ -8,6 +8,7 @@
 
 class PreviewView;
 class QTextDocument;
+class FlatToolButton;
 
 class PrintPreview : public QDialog {
     Q_OBJECT

@@ -10,13 +10,20 @@
 #include <QScrollBar>
 #endif
 
+#include <qtwebenginewidgetsglobal.h>
+
 #include "main.h"
-#include "views/mainWindow/MainWindow.h"
-#include "models/appConfig/AppConfig.h"
-#include "libraries/ClipboardRecords.h"
-#include "libraries/TrashMonitoring.h"
-#include "libraries/FixedParameters.h"
-#include "libraries/GlobalParameters.h"
+
+#include "views/browser/dockedwindow.h"
+#include "views/browser/webview.h"
+#include "views/record/InfoFieldEnter.h"
+
+
+#include <qversiontagging.h>
+
+#ifndef QT_VERSION
+#define QT_VERSION 0x050600
+#endif
 
 #if QT_VERSION < 0x050000
 #include "libraries/qtSingleApplication/qtsingleapplication.h"
@@ -24,34 +31,47 @@
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
 #endif
 
-#include "models/dataBaseConfig/DataBaseConfig.h"
+#include "views/mainWindow/MainWindow.h"
+#include "models/appConfig/AppConfig.h"
+#include "libraries/DiskHelper.h"
+#include "libraries/ClipboardRecords.h"
+#include "libraries/TrashMonitoring.h"
+#include "libraries/FixedParameters.h"
+#include "libraries/GlobalParameters.h"
 #include "libraries/WalkHistory.h"
 #include "libraries/WindowSwitcher.h"
 #include "libraries/crypt/RC5Simple.h"
 #include "libraries/crypt/Password.h"
+#include "libraries/GlobalParameters.h"
+#include "views/recordTable/RecordTableScreen.h"
+#include "models/dataBaseConfig/DataBaseConfig.h"
+#include "models/recordTable/RecordTableModel.h"
+#include "models/recordTable/RecordTableData.h"
+#include "controllers/recordTable/RecordTableController.h"
 
+const int add_new_record_after = 2;
 using namespace std;
 
 // Фиксированные параметры программы (жестко заданные в текущей версии MyTetra)
-FixedParameters fixedParameters;
+FixedParameters fixedparameters;
 
 // Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
-GlobalParameters globalParameters;
+GlobalParameters globalparameters;
 
 // Конфигурация программы (считанная из файла конфигурации)
-AppConfig mytetraConfig;
+AppConfig appconfig;
 
 // Конфигурация данных
-DataBaseConfig dataBaseConfig;
+DataBaseConfig databaseconfig;
 
 // Объект слежения за состоянием корзины
-TrashMonitoring trashMonitoring;
+TrashMonitoring trashmonitoring;
 
 // Объект с историей посещаемых записей
-WalkHistory walkHistory;
+WalkHistory walkhistory;
 
 // Указатель на основное окно программы
-QObject *pMainWindow;
+QObject *mainwindow;
 
 
 std::string getDifference(const std::string &url_compare_stored, const std::string &url_compare_get)
@@ -122,7 +142,7 @@ void criticalError(QString message)
     qDebug() << "---------------";
     qDebug() << " ";
 
-    QMessageBox::critical(qobject_cast<QWidget *>(pMainWindow), "Critical error",
+    QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error",
                           message + "\n\nProgramm was closed.",
                           QMessageBox::Ok);
 
@@ -211,7 +231,7 @@ void print_object_tree(void)
 {
     qDebug() << "Object tree";
 
-    print_object_tree_recurse(pMainWindow);
+    print_object_tree_recurse(mainwindow);
 }
 
 
@@ -225,7 +245,9 @@ bool compare_QStringList_len(const QStringList &list1, const QStringList &list2)
 void insertActionAsButton(QToolBar *tools_line, QAction *action)
 {
     tools_line->addAction(action);
-    qobject_cast<QToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(false);
+    qobject_cast<QToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(
+        true    //false
+    );
 }
 
 
@@ -245,8 +267,8 @@ int imin(int x1, int x2)
 
 void smartPrintDebugMessage(QString msg)
 {
-    if(globalParameters.getTargetOs() == "any" ||
-       globalParameters.getTargetOs() == "meego") {
+    if(globalparameters.getTargetOs() == "any" ||
+       globalparameters.getTargetOs() == "meego") {
         QTime currTime = QTime::currentTime();
         QString timeText = currTime.toString("hh:mm:ss");
         msg = timeText + " " + msg;
@@ -280,13 +302,13 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 #endif
 
 
-    if(!mytetraConfig.is_init()) {
+    if(!appconfig.is_init()) {
         smartPrintDebugMessage("[INF] " + msgText + "\n");
         return;
     }
 
     // Если в конфигурации запрещен вывод отладочных сообщений
-    if(!mytetraConfig.get_printdebugmessages())
+    if(!appconfig.get_printdebugmessages())
         return;
 
     switch(type) {
@@ -317,12 +339,12 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 void setDebugMessageHandler()
 {
-    qDebug() << "Debug message before set message handler for target OS: " << globalParameters.getTargetOs();
+    qDebug() << "Debug message before set message handler for target OS: " << globalparameters.getTargetOs();
 
     // Для десктопных операционок можно переустановить обработчик qDebug()
     // Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
-    if(globalParameters.getTargetOs() == "any" ||
-       globalParameters.getTargetOs() == "meego") {
+    if(globalparameters.getTargetOs() == "any" ||
+       globalparameters.getTargetOs() == "meego") {
         qDebug() << "Set alternative handler myMessageOutput() for debug message";
 
 #if QT_VERSION < 0x050000
@@ -409,7 +431,7 @@ QString replaceCssMetaIconSize(QString styleText)
 
 void setCssStyle()
 {
-    QString csspath = globalParameters.getWorkDirectory() + "/stylesheet.css";
+    QString csspath = globalparameters.getWorkDirectory() + "/stylesheet.css";
 
     QFile css(csspath);
 
@@ -418,7 +440,7 @@ void setCssStyle()
     // Если файла не существует
     if(!openResult) {
         qDebug() << "Stylesheet not found in " << csspath << ". Create new css file.";
-        globalParameters.createStyleSheetFile(globalParameters.getWorkDirectory());
+        globalparameters.createStyleSheetFile(globalparameters.getWorkDirectory());
     }
 
     css.close();
@@ -447,7 +469,7 @@ void setKineticScrollArea(QAbstractItemView *object)
     if(object == NULL)
         return;
 
-    if(globalParameters.getTargetOs() == "android") {
+    if(globalparameters.getTargetOs() == "android") {
         // Настройка жестов прокрутки
         QScroller *scroller = QScroller::scroller(object);
 
@@ -457,7 +479,9 @@ void setKineticScrollArea(QAbstractItemView *object)
 
         // Поведение прокрутки на краях списка (сейчас не пружинит)
         QScrollerProperties properties = scroller->scrollerProperties();
-        QVariant overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::OvershootAlwaysOff);
+        QVariant overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::
+                                   OvershootWhenScrollable    // OvershootAlwaysOff
+                                                                                            );
         properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
         properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, overshootPolicy);
         scroller->setScrollerProperties(properties); // QScrollerProperties::OvershootAlwaysOff
@@ -472,22 +496,175 @@ void setKineticScrollArea(QAbstractItemView *object)
         // QScrollBar::add-line:vertical { border: none; background: none; height: 0px; } QScrollBar::sub-line:vertical { border: none; background: none; height: 0px; }
         // background: transparent; background-color:transparent;
         // "QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}"
+
         object->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {width:3px; border: none; background: transparent; margin: 0;}"
                                                    "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
                                                    "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
 
 
 
-        /*
-        object->horizontalScrollBar()->setStyleSheet("QScrollBar:horizontal {border: 2px solid black; background: grey; height: 15px;}"
-                                                     "QScrollBar::add-line:horizontal {border none; background: none;}"
-                                                     "QScrollBar::sub-line:horizontal {border none; background: none;}"
-                                                     );
-        */
+
+
+        //        object->horizontalScrollBar()->setStyleSheet("QScrollBar:horizontal {border: 2px solid black; background: grey; height: 15px;}"
+        //                                                     "QScrollBar::add-line:horizontal {border none; background: none;}"
+        //                                                     "QScrollBar::sub-line:horizontal {border none; background: none;}"
+        //                                                     );
+
+
 
         object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-        // setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+        //        object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+    } else {
+
+        object->verticalScrollBar()->setStyleSheet(
+            QString::fromUtf8(
+                "QScrollBar:vertical {"
+                "    border: 1px solid #aaaaaa;"
+                "    background: #eeeeee;"    // white;"
+                "    width:10px;    "
+                "    margin: 0px 0px 0px 0px;"
+                "}"
+                "QScrollBar::handle:vertical {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "    stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    min-height: 0px;"
+                ""
+                "}"
+                "QScrollBar::add-line:vertical {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "    stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    height: px;"
+                "    subcontrol-position: bottom;"
+                "    subcontrol-origin: margin;"
+                "}"
+                "QScrollBar::sub-line:vertical {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "    stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    height: 0px;"
+                "    subcontrol-position: top;"
+                "    subcontrol-origin: margin;"
+                "}"
+                ""
+
+                //                "QScrollBar: vertical {"
+                //                                  "border-color: rgb(227, 227, 227);"
+                //                                  "border-width: 1px;"
+                //                                  "border-style: solid;"
+                //                                  "background-color: rgb(240, 240, 240);"
+                //                                  "width: 15px;"
+                //                                  "margin: 21px 0 21px 0;"
+                //                              "}"
+
+                //                "QScrollBar::handle: vertical {"
+                //                              "background-color: rgb(200, 200, 200);"
+                //                              "min-height: 25px;"
+                //                              "}"
+
+                //                "QScrollBar::add-line: vertical {"
+                //                              "border: 1px solid grey;"
+                //                              "background-color: rgb(241, 241, 241);"
+                //                              "height: 20px;"
+                //                              "subcontrol-position: bottom;"
+                //                              "subcontrol-origin: margin;"
+                //                              "}"
+
+                //                "QScrollBar::sub-line: vertical {"
+                //                              "border: 1px solid grey;"
+                //                              "background-color: rgb(241, 241, 241);"
+                //                              "height: 20px;"
+                //                              "subcontrol-position: top;"
+                //                              "subcontrol-origin: margin;"
+                //                              "}"
+
+
+                //                "QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {"
+                //                              "background: none;"
+                //                              "}"
+
+                //                "QScrollBar::up-arrow: vertical {"
+                //                              "image: url(:/BarIcon/Icons/uparrow.png);"
+                //                              "}"
+
+                //                "QScrollBar::down-arrow: vertical {"
+                //                              "image: url(:/BarIcon/Icons/downarrow.png);"
+                //                              "}"
+            )
+        );
+
+
+
+        object->horizontalScrollBar()->setStyleSheet(
+            QString::fromUtf8(
+                "QScrollBar:horizontal {"
+                "    border: 1px solid #999999;"
+                "    background: #333333;"
+                "    width:10px;    "
+                "    margin: 0px 0px 0px 0px;"
+                "}"
+                "QScrollBar::handle:horizontal {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    min-height: 10px;"
+                ""
+                "}"
+                "QScrollBar::add-line:horizontal {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    width: 10px;"  // "    height: px;"
+                "    subcontrol-position: right;"
+                "    subcontrol-origin: margin;"
+                "}"
+                "QScrollBar::sub-line:horizontal {"
+                "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    width: 10px;"  // "    height: 0px;"
+                "    subcontrol-position: left;"
+                "    subcontrol-origin: margin;"
+                "}"
+                ""
+                "QScrollBar:horizontal {\
+                                    border-color: rgb(227, 227, 227);\
+                                    border-width: 1px;\
+                                    border-style: solid;\
+                                    background-color: rgb(240, 240, 240);\
+                                    width: 15px;\
+                                    margin: 0px 21px 0 21px;\
+                                }"
+                "QScrollBar::handle:horizontal {\
+                                    background-color: rgb(200, 200, 200);\
+                                    min-height: 25px;\
+                                }"
+                "QScrollBar::add-line:horizontal {\
+                                    border: 1px solid grey;\
+                                    background-color: rgb(241, 241, 241);\
+                                    width: 20px;\
+                                    subcontrol-position: right;\
+                                    subcontrol-origin: margin;\
+                                }"
+                "QScrollBar::sub-line:horizontal {\
+                                    border: 1px solid grey;\
+                                    background-color: rgb(241, 241, 241);\
+                                    width: 20px;\
+                                    subcontrol-position: left;\
+                                    subcontrol-origin: margin;\
+                                }"
+                "QScrollBar:left-arrow:horizontal\
+                                {\
+                                    image: url(:/BarIcon/Icons/leftarrow.png);\
+                                }"
+                "QScrollBar::right-arrow:horizontal \
+                                {\
+                                    image: url(:/BarIcon/Icons/rightarrow.png);\
+                                }"
+                "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {\
+                                     background: none;\
+                                }"
+            )
+        );
+        object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+
+        object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     }
 
 #endif
@@ -574,42 +751,311 @@ void init_random(void)
 }
 
 
+Record *register_record(Record const &record
+                        , RecordTableController *_recordtablecontroller)
+{
+    assert(_recordtablecontroller);
+    RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+    assert(recordtabledata);
+
+    //    Record record;
+
+    //    if(record.isLite())record.switchToFat();
+    assert(!record.isLite());
+    int source_position = _recordtablecontroller->new_record(record, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
+
+    //    Record *_record = nullptr;
+    //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
+
+    //                int pos = _recordtablecontroller->getFirstSelectionPos();
+    auto record_ = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(source_position);
+
+    //assert(record_ == _record);
+    assert(record_->getNaturalFieldSource("url") == record.getNaturalFieldSource("url"));
+    //            }
+    //assert(_record);
+    return record_; //_record;
+}
+
+//Record *register_record(const QUrl &_url
+//                        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+//                        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> activator
+//                        , RecordTableController *_recordtablecontroller)
+//{
+
+//    assert(_recordtablecontroller);
+//    RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+//    assert(recordtabledata);
+
+//    Record record;
+
+//    if(record.isLite())record.switchToFat();
+
+//    //                QString title = _url.toString(); // not ready yet
+
+//    record.setNaturalFieldSource("pin",     "");
+//    record.setNaturalFieldSource("name",    "");
+//    record.setNaturalFieldSource("author",  "");
+//    record.setNaturalFieldSource("home",    _url.toString());
+//    record.setNaturalFieldSource("url",     _url.toString());    // only changed
+//    record.setNaturalFieldSource("tags",    "");
+
+//    int source_position = _recordtablecontroller->new_record(_url, ADD_NEW_RECORD_AFTER, generator); //recordTableController->autoAddNewAfterContext();
+
+//    //    Record *_record = nullptr;
+//    //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
+
+//    //                int pos = _recordtablecontroller->getFirstSelectionPos();
+//    auto record_ = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(source_position);
+
+//    //assert(record_ == _record);
+//    assert(record_->getNaturalFieldSource("url") == _url.toString());
+//    //            }
+//    //assert(_record);
+//    return record_; //_record;
+//}
+
+Record *check_record(const QUrl &_url)
+{
+    Record *_record = nullptr;
+
+
+    RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    assert(_recordtablecontroller);
+
+    if(_recordtablecontroller) {
+        RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        assert(recordtabledata);
+
+        if(recordtabledata) {
+            _record = recordtabledata->find(_url);
+        }
+    }
+
+    return _record;
+}
+
+namespace browser {
+    class DockedWindow;
+    class WebView;
+}
+
+Record *request_record(Record *const record
+                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator
+                      )
+{
+    Record *_record = nullptr;
+    RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    assert(_recordtablecontroller);
+
+    if(_recordtablecontroller) {
+        RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        assert(recordtabledata);
+
+        if(recordtabledata) {
+            _record = recordtabledata->find(record);
+
+            if(_record == nullptr) {
+                record->generator(generator);
+                record->activator(activator);
+                _record = register_record(*record, _recordtablecontroller);
+
+                assert(_record);
+                //                _record->active_immediately(active_immediately);
+                //                _record->generator(generator);
+
+            } else {
+                _record->generator(generator);
+                _record->activator(activator);
+                _record->generate();
+            }
+
+            assert(_record);
+
+        }
+    }
+
+    //    }
+
+    //    assert(_record);
+
+    return _record;
+
+}
+
+Record *request_record(const QUrl &_url
+                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, void> > activator
+                      )
+{
+    Record *_record = nullptr;
+
+    //    QString l = _url.toString();
+
+    //    if(_url.toString() == browser::DockedWindow::_defaulthome) {
+    //        if(default_record == nullptr) {
+    //            default_record = new Record();
+
+    //            if(default_record && default_record->isLite())default_record->switchToFat();
+
+    //            //                QString title = _url.toString(); // not ready yet
+    //            if(default_record) {
+    //                default_record->setNaturalFieldSource("pin",   "");
+    //                default_record->setNaturalFieldSource("name",   "");
+    //                default_record->setNaturalFieldSource("author", "");
+    //                default_record->setNaturalFieldSource("url",    _url.toString());    // only changed
+    //                default_record->setNaturalFieldSource("tags",   "");
+    //            }
+    //        }
+
+    //        _record = default_record;
+
+    //    } else {
+
+    RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    assert(_recordtablecontroller);
+
+    if(_recordtablecontroller) {
+        RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        assert(recordtabledata);
+
+        if(recordtabledata) {
+            _record = recordtabledata->find(_url);
+
+            if(_record == nullptr) {
+
+                //                int pos = _recordtablecontroller->getFirstSelectionPos();
+                //                Record *previous_record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+
+                //                if(previous_record) {
+
+                //                    Record record;
+
+                //                    if(record.isLite())record.switchToFat();
+
+                //                    //QString title = d->view->title(); // not ready yet
+                //                    //record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));   // id concept?
+                //                    record.setNaturalFieldSource("pin",   "");
+                //                    record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
+                //                    record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
+                //                    record.setNaturalFieldSource("url",    _url.toString());    // only changed
+                //                    record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
+
+                //                    _recordtablecontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+                //                    _record = recordtabledata->getRecordByUrl(_url);
+                //                    //                int pos = _recordtablecontroller->getFirstSelectionPos();
+                //                    //                _record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+                //                } else {
+
+
+
+
+                //    record.generator(generator);
+
+
+                // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+                QString directory = DiskHelper::createTempDirectory();  //
+
+                Record record;
+
+                //                if(record.isLite())
+                record.switchToFat();
+
+                //                QString title = _url.toString(); // not ready yet
+
+                record.setNaturalFieldSource("pin",     _check_state[Qt::Unchecked]);
+                record.setNaturalFieldSource("name",    "");
+                record.setNaturalFieldSource("author",  "");
+                record.setNaturalFieldSource("home",    _url.toString());    // only changed
+                record.setNaturalFieldSource("url",     _url.toString());    // only changed
+                record.setNaturalFieldSource("tags",    "");
+
+                //                _recordtablecontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+                //                _record = recordtabledata->getRecordByUrl(_url);
+                //                //                int pos = _recordtablecontroller->getFirstSelectionPos();
+                //                //                _record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+
+                //                //            }
+                record.generator(generator);
+                record.activator(activator);
+
+                record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+
+
+                // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+                // Запись должна быть создана, потом можно аттачить файлы.
+                // Это ограничение для "ленивого" программинга, но пока так
+                // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
+
+                // Временная директория с картинками и приаттаченными файлами удаляется
+                DiskHelper::removeDirectory(directory);
+
+                _record = register_record(record, _recordtablecontroller);
+
+                assert(_record);
+                //                _record->active_immediately(active_immediately);
+                //                _record->generator(generator);
+
+            } else {
+                _record->generator(generator);
+                _record->activator(activator);
+                _record->generate();
+            }
+
+            assert(_record);
+
+        }
+    }
+
+    //    }
+
+    //    assert(_record);
+
+    return _record;
+}
+
 int main(int argc, char **argv)
 {
     printf("\n\rStart MyTetra v.%d.%d.%d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
 
+    Q_INIT_RESOURCE(data);  // added by hughvonyoung@gmail.com
     Q_INIT_RESOURCE(mytetra);
 
     // Начальные инициализации основных объектов
 
     // Запоминается имя файла запущенного бинарника
     // Файл запущенной программы (нулевой аргумент функции main)
-    QString mainProgramFile = QString::fromLatin1(argv[0]); // todo: Этот код наверно некорректно работает с путями в UTF8
+    // Store the file name running binaries
+    // File running program (a zero argument to main)
+    QString mainProgramFile = QString::fromLatin1(argv[0]); // Todo: This code must not work correctly with ways to UTF 8   // todo: Этот код наверно некорректно работает с путями в UTF8
     qDebug() << "Set main program file to " << mainProgramFile;
-    globalParameters.setMainProgramFile(mainProgramFile);
+    globalparameters.setMainProgramFile(mainProgramFile);
 
     // Перехват отладочных сообщений
     setDebugMessageHandler();
 
-    QtSingleApplication app(argc, argv);
 
-    // Не запущен ли другой экземпляр
-    if(app.isRunning()) {
-        QString message = "Another MyTetra exemplar is running.\n";
+    //    QtSingleApplication application(argc, argv);
 
-        printf(message.toLocal8Bit());
+    //    // Do not run another copy    // Не запущен ли другой экземпляр
+    //    if(application.isRunning() || !application.isTheOnlyBrowser()) {
+    //        QString message = "Another MyTetra exemplar is running.\n";
 
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText(message);
-        msgBox.exec();
+    //        printf(message.toLocal8Bit());
 
-        exit(0);
-    }
+    //        QMessageBox msgBox;
+    //        msgBox.setIcon(QMessageBox::Warning);
+    //        msgBox.setText(message);
+    //        msgBox.exec();
+
+    //        exit(0);
+    //    }
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
 
     // Установка увеличенного разрешения для дисплеев с большим DPI (Retina)
+    // Set the increased resolution for displays with lots DPI (Retina)
     if(qApp->devicePixelRatio() > 1.0)
         qApp->setAttribute(Qt::AA_UseHighDpiPixmaps);
 
@@ -620,135 +1066,154 @@ int main(int argc, char **argv)
     QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
 #endif
 
-    // Инициализация глобальных параметров,
-    // внутри происходит установка рабочей директории
-    globalParameters.init();
+    //    // Инициализация глобальных параметров,
+    //    // внутри происходит установка рабочей директории
+    //    // Initialize global parameters,
+    //    // Is being installed inside the working directory
+    //    globalparameters.init();
 
-    // Инициализация основных конфигурирующих программу переменных
-    mytetraConfig.init();
+    //    // Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
+    //    appconfig.init();
 
-    // Инициализация переменных, отвечающих за хранилище данных
-    dataBaseConfig.init();
+    //    // Инициализация переменных, отвечающих за хранилище данных
+    //    databaseconfig.init();
 
-    // Установка CSS-оформления
-    setCssStyle();
+    //    QtSingleApplication application(argc, argv, globalparameters, appconfig, databaseconfig);
 
+    //    // Do not run another copy    // Не запущен ли другой экземпляр
+    //    if(application.isRunning()) {
+    //        QString message = "Another MyTetra exemplar is running.\n";
 
-    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
-    QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
+    //        printf(message.toLocal8Bit());
 
-    if(mytetraConfig.getShowSplashScreen())
-        splash.show();
+    //        QMessageBox msgBox;
+    //        msgBox.setIcon(QMessageBox::Warning);
+    //        msgBox.setText(message);
+    //        msgBox.exec();
 
+    //        exit(0);
+    //    }
 
-    // Подключение перевода интерфейса
-    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
-    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
-    qDebug() << "Use language file " << langFileName;
+    //    // Установка CSS-оформления
+    //    setCssStyle();
 
-    QTranslator langTranslator;
-    langTranslator.load(langFileName);
-    app.installTranslator(&langTranslator);
+    //    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
+    //    QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
 
-
-    // Создание объекта главного окна
-    MainWindow win;
-    win.setWindowTitle("MyTetra");
-
-    if(globalParameters.getTargetOs() == "android")
-        win.show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
-    else {
-        if(mytetraConfig.get_runinminimizedwindow() == false)
-            win.show();
-        else
-            win.hide();
-    }
-
-    // win.setObjectName("mainwindow");
-    // pMainWindow=&win; // Запоминается указатель на основное окно
-
-    // После создания окна восстанавливается вид окна в предыдущий запуск
-    // Эти действия нельзя делать в конструкторе главного окна,
-    // т.к. окно еще не создано
-    globalParameters.getWindowSwitcher()->disableSwitch();
-    win.restoreFindOnBaseVisible();
-    win.restoreGeometry();
-    win.restoreTreePosition();
-    win.restoreRecordTablePosition();
-    win.restoreEditorCursorPosition();
-    win.restoreEditorScrollBarPosition();
-    globalParameters.getWindowSwitcher()->enableSwitch();
-
-    if(mytetraConfig.getInterfaceMode() == "mobile")
-        globalParameters.getWindowSwitcher()->restoreFocusWidget();
-
-    qDebug() << "Restore session succesfull";
-
-    // После восстановления последней редактируемой записи
-    // история перехода очищается, так как в не может попасть
-    // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
-    walkHistory.clear();
+    //    if(mytetraConfig.getShowSplashScreen())
+    //        splash.show();
 
 
-    // Если в конфиге настроено, что нужно синхронизироваться при старте
-    // И задана команда синхронизации
-    if(mytetraConfig.get_synchroonstartup())
-        if(mytetraConfig.get_synchrocommand().trimmed().length() > 0)
-            win.synchronization();
+    //    //    // Подключение перевода интерфейса
+    //    //    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
+    //    //    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
+    //    //    qDebug() << "Use language file " << langFileName;
+
+    //    //    //QTranslator langTranslator;
+    //    //    //langTranslator.load(langFileName);
+    //    //    application.installTranslator(
+    //    //        langFileName    //&langTranslator
+    //    //    );
 
 
-    // Если настроено в конфиге, сразу запрашивается пароль доступа
-    // к зашифрованным данным
-    // И если есть хоть какие-то зашифрованные данные
-    if(mytetraConfig.get_howpassrequest() == "atStartProgram")
-        if(globalParameters.getCryptKey().length() == 0)
-            if(dataBaseConfig.get_crypt_mode() > 0) {
-                // Запрашивается пароль только в том случае, если ветка,
-                // на которую установливается курсор при старте, незашифрована
-                // Если ветка зашифрована, пароль и так будет запрошен автоматически
-                if(win.isTreePositionCrypt() == false) {
-                    Password password;
-                    password.retrievePassword();
-                }
-            }
+    //    // Создание объекта главного окна
+    //    MainWindow win;
+    //    win.setWindowTitle("MyTetra");
+
+    //    if(globalParameters.getTargetOs() == "android")
+    //        win.show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    //    else {
+    //        if(mytetraConfig.get_runinminimizedwindow() == false)
+    //            win.show();
+    //        else
+    //            win.hide();
+    //    }
+
+    //    // win.setObjectName("mainwindow");
+    //    // pMainWindow=&win; // Запоминается указатель на основное окно
+
+    //    // После создания окна восстанавливается вид окна в предыдущий запуск
+    //    // Эти действия нельзя делать в конструкторе главного окна,
+    //    // т.к. окно еще не создано
+    //    globalParameters.getWindowSwitcher()->disableSwitch();
+    //    win.restoreFindOnBaseVisible();
+    //    win.restoreGeometry();
+    //    win.restoreTreePosition();
+    //    win.restoreRecordTablePosition();
+    //    win.restoreEditorCursorPosition();
+    //    win.restoreEditorScrollBarPosition();
+    //    globalParameters.getWindowSwitcher()->enableSwitch();
+
+    //    if(mytetraConfig.getInterfaceMode() == "mobile")
+    //        globalParameters.getWindowSwitcher()->restoreFocusWidget();
+
+    //    qDebug() << "Restore session succesfull";
+
+    //    // После восстановления последней редактируемой записи
+    //    // история перехода очищается, так как в не может попасть
+    //    // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
+    //    walkHistory.clear();
 
 
-    // Если в общем конфиге стоит опция хранения пароля
-    // И хранимый пароль (точнее его хеш) заполнен
-    if(globalParameters.getCryptKey().length() == 0)
-        if(dataBaseConfig.get_crypt_mode() > 0)
-            if(mytetraConfig.getPasswordSaveFlag())
-                if(mytetraConfig.getPasswordMiddleHash().length() > 0) {
-                    // При запросе пароля ключ шифрования будет восстановлен автоматически
-                    Password password;
-                    password.retrievePassword();
-                }
-
-    // Распечатывается дерево сгенерированных объектов
-    // print_object_tree();
-
-    // Проверяется наличие системного трея
-    /*
-    if(!QSystemTrayIcon::isSystemTrayAvailable()) {
-     QMessageBox::critical(0, QObject::tr("Systray"),
-                           QObject::tr("I couldn't detect any system tray on this system."));
-     exit(1);
-    }
-    */
-
-    // При закрытии окна не выходить из программы.
-    // Окно программы может быть снова открыто из трея
-    QApplication::setQuitOnLastWindowClosed(false);
+    //    // Если в конфиге настроено, что нужно синхронизироваться при старте
+    //    // И задана команда синхронизации
+    //    if(mytetraConfig.get_synchroonstartup())
+    //        if(mytetraConfig.get_synchrocommand().trimmed().length() > 0)
+    //            win.synchronization();
 
 
-    // win.show();
-    app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
+    //    // Если настроено в конфиге, сразу запрашивается пароль доступа
+    //    // к зашифрованным данным
+    //    // И если есть хоть какие-то зашифрованные данные
+    //    if(mytetraConfig.get_howpassrequest() == "atStartProgram")
+    //        if(globalParameters.getCryptKey().length() == 0)
+    //            if(dataBaseConfig.get_crypt_mode() > 0) {
+    //                // Запрашивается пароль только в том случае, если ветка,
+    //                // на которую установливается курсор при старте, незашифрована
+    //                // Если ветка зашифрована, пароль и так будет запрошен автоматически
+    //                if(win.isTreePositionCrypt() == false) {
+    //                    Password password;
+    //                    password.retrievePassword();
+    //                }
+    //            }
 
-    // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win.commitData(QSessionManager)));
 
-    // Окно сплеш-скрина скрывается
-    if(mytetraConfig.getShowSplashScreen())
-        splash.finish(&win);
+    //    // Если в общем конфиге стоит опция хранения пароля
+    //    // И хранимый пароль (точнее его хеш) заполнен
+    //    if(globalParameters.getCryptKey().length() == 0)
+    //        if(dataBaseConfig.get_crypt_mode() > 0)
+    //            if(mytetraConfig.getPasswordSaveFlag())
+    //                if(mytetraConfig.getPasswordMiddleHash().length() > 0) {
+    //                    // При запросе пароля ключ шифрования будет восстановлен автоматически
+    //                    Password password;
+    //                    password.retrievePassword();
+    //                }
 
-    return app.exec();
+    //    // Распечатывается дерево сгенерированных объектов
+    //    // print_object_tree();
+
+    //    // Проверяется наличие системного трея
+    //    /*
+    //    if(!QSystemTrayIcon::isSystemTrayAvailable()) {
+    //     QMessageBox::critical(0, QObject::tr("Systray"),
+    //                           QObject::tr("I couldn't detect any system tray on this system."));
+    //     exit(1);
+    //    }
+    //    */
+
+    //    // При закрытии окна не выходить из программы.
+    //    // Окно программы может быть снова открыто из трея
+    //    QApplication::setQuitOnLastWindowClosed(false);
+
+
+    //    // win.show();
+    //    application.connect(&application, SIGNAL(lastWindowClosed()), &application, SLOT(quit()));
+
+    //    // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win.commitData(QSessionManager)));
+
+    //    // Окно сплеш-скрина скрывается
+    //    if(mytetraConfig.getShowSplashScreen())
+    //        splash.finish(&win);
+
+    return QtSingleApplication(argc, argv, globalparameters, appconfig, databaseconfig).exec();     // application.exec();
 }

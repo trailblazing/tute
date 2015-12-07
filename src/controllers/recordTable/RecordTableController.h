@@ -3,6 +3,11 @@
 
 #include <QObject>
 #include <QModelIndexList>
+#include "utility/delegate.h"
+
+//#include <boost/serialization/strong_typedef.hpp>
+
+extern const int add_new_record_after;
 
 class Record;
 class RecordTableView;
@@ -10,6 +15,16 @@ class RecordTableData;
 class RecordTableModel;
 class RecordTableProxyModel;
 class ClipboardRecords;
+
+namespace browser {
+    class Entrance;
+    class DockedWindow;
+    class WebView;
+    // extern constexpr const char * DockedWindow::_defaulthome;
+}
+
+
+//BOOST_STRONG_TYPEDEF(QString, Id_T)
 
 
 class RecordTableController : public QObject {
@@ -26,7 +41,7 @@ public:
     void clickToRecord(const QModelIndex &index);
 
     bool isTableNotExists(void);
-    void setTableData(RecordTableData *rtData);
+    void set_table_data(RecordTableData *rtData);
 
     int getRowCount(void);
 
@@ -36,23 +51,23 @@ public:
     // Действия при редактировании инфополей записи из контекстного меню
     void editFieldContext(QModelIndex proxyIndex);
 
-    QModelIndex convertPosToProxyIndex(int pos);
-    QModelIndex convertPosToSourceIndex(int pos);
-    int         convertProxyIndexToPos(QModelIndex index);
-    int         convertSourceIndexToPos(QModelIndex index);
-    QModelIndex convertProxyIndexToSourceIndex(QModelIndex proxyIndex);
-    QModelIndex convertSourceIndexToProxyIndex(QModelIndex sourceIndex);
-    int         convertSourcePosToProxyPos(int sourcePos);
-    int         convertProxyPosToSourcePos(int proxyPos);
-    QModelIndex convertIdToSourceIndex(QString id);
-    QModelIndex convertIdToProxyIndex(QString id);
+    QModelIndex pos_to_proxyindex(int pos);
+    QModelIndex pos_to_sourceindex(int pos);
+    int         proxyindex_to_pos(QModelIndex index);
+    int         sourceindex_to_pos(QModelIndex index);
+    QModelIndex proxyindex_to_sourceindex(QModelIndex proxyIndex);
+    QModelIndex sourceindex_to_proxyindex(QModelIndex sourceIndex);
+    int         sourcepos_to_proxypos(int sourcePos);
+    int         proxypos_to_sourcepos(int proxyPos);
+    QModelIndex id_to_sourceindex(QString id);
+    QModelIndex id_to_proxyindex(QString id);
 
     int     getFirstSelectionPos(void);
     QString getFirstSelectionId(void);
-    void    setSelectionToPos(int pos);
-    void    setSelectionToId(QString id);
+    void    select_pos(int pos);
+    void    select_id(QString id);
 
-    // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
+    // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
     void removeRowById(QString delId);
     void removeRowsByIdList(QVector<QString> delIds);
 
@@ -101,23 +116,42 @@ protected:
 
     void initMetaEditorAtClickToRecord(const int pos);
     void initAttachTableAtClickToRecord(const int pos);
-    void updateBrowserView(const int pos);
+    void update_browser(const int source_pos);
 
     RecordTableView *view;
     RecordTableModel *recordSourceModel; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
     RecordTableProxyModel *recordProxyModel;
 
     void addNewRecord(int mode);
-    //void autoAddNewRecord(int mode);
 
-    void addNew(int mode, Record record);
+    int new_record(
+        const QUrl &url
+        , const int mode
+        = add_new_record_after
+    );
 
-    void editField(int pos,
-                   QString name,
-                   QString author,
-                   QString url,
-                   QString tags);
-    friend class BrowserView;
+    int new_record(Record const &record
+                   , const int mode
+                   = add_new_record_after
+                  );
+
+    int addNew(int mode, Record record);
+
+    void editField(int pos
+                   , QString pin
+                   , QString name
+                   , QString author
+                   , QString home, QString url
+                   , QString tags
+                  );
+    friend class browser::Entrance;
+    //friend class WebView;
+    //    friend Record *register_record(const QUrl &_url, std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator, RecordTableController *_recordtablecontroller);
+    friend Record *register_record(Record const &record
+                                   //                                   , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                                   , RecordTableController *_recordtablecontroller);
+
+    //    friend Record *register_record(const QUrl &_url);
 };
 
 #endif // __RECORDTABLECONTROLLER_H__

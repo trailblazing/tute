@@ -4,6 +4,13 @@
 # ANDROID_OS - for Android
 TARGET_OS=ANY_OS
 
+lessThan(QT_VERSION, 5.6) {
+    error("mytetra requires at least Qt 5.6!")
+}
+
+lessThan(QT.webengine.VERSION, 5.6) {
+    error("mytetra requires at least QtWebEngine 5.6!")
+}
 
 # Flags for profile application
 # QMAKE_CXXFLAGS_DEBUG += -pg
@@ -14,25 +21,33 @@ DEFINES+="ANY_OS=1"
 DEFINES+="MEEGO_OS=2"
 DEFINES+="ANDROID_OS=3"
 DEFINES+="TARGET_OS=$${TARGET_OS}"
+#DEFINES+="QT_NO_VERSION_TAGGING"
 
 message(Building running in Qt major version: $${QT_MAJOR_VERSION})
 message(Value of QT_NO_SESSIONMANAGER is: $${QT_NO_SESSIONMANAGER})
 
 TEMPLATE = app
-QT = gui \
-    core \
-    xml \
-    svg \
+
+QT = gui    \
+    core    \
+    xml     \
+    svg     \
     network
+
 QT += widgets
-QT += network webkit
-QT += webenginewidgets
+#QT += network webkit
+QT += webenginewidgets network
 
+qtHaveModule(uitools):!embedded: QT += uitools
+else: DEFINES += QT_NO_UITOOLS
 
-CONFIG += qt \
-    warn_on \
-    console \
-    debug
+CONFIG += qt    \
+    warn_on     \
+    console     \
+    debug       \
+    exception   \
+    console
+
 CONFIG += c++11
 
 
@@ -50,7 +65,10 @@ VERSION = 0.0.1
 DEFINES += APP_VERSION=\\\"$$VERSION\\\"
 
 TARGET = mytetra
-RESOURCES = bin/mytetra.qrc
+RESOURCES = bin/mytetra.qrc \
+    src/views/browser/data/data.qrc \
+    src/views/browser/htmls/htmls.qrc
+
 TRANSLATIONS = bin/resource/translations/mytetra_ru.ts
 CODECFORTR  = utf8
 
@@ -75,6 +93,15 @@ contains(TARGET_OS, ANDROID_OS){
  BINARY_INSTALL_PATH=/
 }
 
+contains(DEFINES, QWEBENGINEPAGE_SETNETWORKACCESSMANAGER) {
+    HEADERS += networkaccessmanager.h
+    SOURCES += networkaccessmanager.cpp
+}
+
+build_all:!build_pass {
+    CONFIG -= build_all
+    CONFIG += release
+}
 
 message(Set installation directory for binary file to $${BINARY_INSTALL_PATH})
 
@@ -168,8 +195,37 @@ HEADERS = src/main.h \
     src/views/dialog/OverTextToolButton.h \
     src/libraries/crypt/CryptService.h \
     src/libraries/DiskHelper.h \
-    src/views/browser/BrowserView.h \
-    src/views/browser/browser_config.h
+    src/views/browser/autosaver.h \
+    src/views/browser/bookmarks.h \
+    src/views/browser/chasewidget.h \
+    src/views/browser/downloadmanager.h \
+    src/views/browser/edittableview.h \
+    src/views/browser/edittreeview.h \
+    src/views/browser/featurepermissionbar.h \
+    src/views/browser/fullscreennotification.h \
+    src/views/browser/history.h \
+    src/views/browser/modelmenu.h \
+    src/views/browser/networkaccessmanager.h \
+    src/views/browser/searchlineedit.h \
+    src/views/browser/settings.h \
+    src/views/browser/squeezelabel.h \
+    src/views/browser/tabwidget.h \
+    src/views/browser/toolbarsearch.h \
+    src/views/browser/urllineedit.h \
+    src/views/browser/webview.h \
+    src/views/browser/xbel.h \
+    src/views/browser/dockedwindow.h \
+    src/views/browser/entrance.h \
+    src/views/browser/entranceinfo.h \
+    src/libraries/FlatControl.h \
+    src/utility/delegate.h
+
+#    browserapplication.h \
+#    browsermainwindow.h \
+
+
+
+
 
 lessThan(QT_MAJOR_VERSION,5) {
 HEADERS+=src/libraries/qtSingleApplication/qtsingleapplication.h \
@@ -196,7 +252,6 @@ HEADERS+=\
     src/libraries/crypt/Pbkdf2Qt.h \
     src/libraries/crypt/RC5Simple.h \
     src/libraries/crypt/Password.h \
-    src/libraries/MtComboBox.h \
     src/libraries/MtTableWidget.h \
     src/views/tree/KnowTreeView.h \
     src/libraries/MtStyledItemDelegate.h
@@ -264,7 +319,33 @@ SOURCES = src/main.cpp \
     src/views/dialog/OverTextToolButton.cpp \
     src/libraries/crypt/CryptService.cpp \
     src/libraries/DiskHelper.cpp \
-    src/views/browser/BrowserView.cpp
+    src/views/browser/autosaver.cpp \
+    src/views/browser/bookmarks.cpp \
+    src/views/browser/chasewidget.cpp \
+    src/views/browser/downloadmanager.cpp \
+    src/views/browser/edittableview.cpp \
+    src/views/browser/edittreeview.cpp \
+    src/views/browser/featurepermissionbar.cpp \
+    src/views/browser/fullscreennotification.cpp \
+    src/views/browser/history.cpp \
+    src/views/browser/modelmenu.cpp \
+    src/views/browser/networkaccessmanager.cpp \
+    src/views/browser/searchlineedit.cpp \
+    src/views/browser/settings.cpp \
+    src/views/browser/squeezelabel.cpp \
+    src/views/browser/tabwidget.cpp \
+    src/views/browser/toolbarsearch.cpp \
+    src/views/browser/urllineedit.cpp \
+    src/views/browser/webview.cpp \
+    src/views/browser/xbel.cpp \
+    src/views/browser/dockedwindow.cpp \
+    src/views/browser/entrance.cpp \
+    src/libraries/FlatControl.cpp
+
+#    browserapplication.cpp \
+#    browsermainwindow.cpp \
+#    main.cpp
+
 
 lessThan(QT_MAJOR_VERSION,5) {
 SOURCES+=src/libraries/qtSingleApplication/qtsingleapplication.cpp \
@@ -295,7 +376,6 @@ SOURCES+=\
     src/libraries/crypt/Pbkdf2Qt.cpp \
     src/libraries/crypt/RC5Simple.cpp \
     src/libraries/crypt/Password.cpp \
-    src/libraries/MtComboBox.cpp \
     src/libraries/MtTableWidget.cpp \
     src/views/tree/KnowTreeView.cpp \
     src/libraries/MtStyledItemDelegate.cpp
@@ -308,10 +388,91 @@ wince* {
     DEPLOYMENT += addPlugins
 }
 
+win32 {
+   RC_FILE = browser.rc
+}
+
+mac {
+    ICON = browser.icns
+    QMAKE_INFO_PLIST = Info_mac.plist
+    TARGET = mytetra
+}
+
 ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
 
 OTHER_FILES += \
     android/AndroidManifest.xml
 
 DISTFILES += \
-    src/uncrustify.cfg
+    src/uncrustify.cfg \
+    src/views/browser/browser.ico \
+    src/views/browser/browser.icns \
+    src/views/browser/data/defaultbookmarks.xbel \
+    src/views/browser/data/loading.gif \
+    src/views/browser/data/addtab.png \
+    src/views/browser/data/closetab.png \
+    src/views/browser/data/defaulticon.png \
+    src/views/browser/data/history.png \
+    src/views/browser/data/browser.svg \
+    src/views/browser/htmls/notfound.html \
+    src/views/browser/browser.rc \
+    src/views/browser/Info_mac.plist \
+    bin/resource/pic/home_blue.svg
+
+FORMS += \
+    src/views/browser/addbookmarkdialog.ui \
+    src/views/browser/bookmarks.ui \
+    src/views/browser/cookies.ui \
+    src/views/browser/cookiesexceptions.ui \
+    src/views/browser/downloaditem.ui \
+    src/views/browser/downloads.ui \
+    src/views/browser/history.ui \
+    src/views/browser/passworddialog.ui \
+    src/views/browser/proxy.ui \
+    src/views/browser/settings.ui
+
+
+unix{
+INCLUDEPATH += src/views/browser
+}
+
+##win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../usr/lib64/release/ -lboost_thread
+##else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../usr/lib64/debug/ -lboost_thread
+##else:unix: LIBS += -L$$PWD/../../../../../usr/lib64/ -lboost_thread
+
+##INCLUDEPATH += $$PWD/../../../../../usr/lib64
+##DEPENDPATH += $$PWD/../../../../../usr/lib64
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Core
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Core
+#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Core
+
+#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+
+##link_directories("${QTXDG_LIBRARY_DIRS}")
+##include_directories("${QTXDG_INCLUDE_DIRS}")
+##find_package(QT5XDG REQUIRED)
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Quick
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Quick
+#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Quick
+
+#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Gui
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Gui
+#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Gui
+
+#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Qml
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Qml
+#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Qml
+
+#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
+
+EXAMPLE_FILES = Info_mac.plist browser.icns browser.ico browser.rc

@@ -6,8 +6,11 @@
 #include <QByteArray>
 #include <QDomElement>
 
+#include "utility/delegate.h"
 #include "models/attachTable/Attach.h"
 #include "models/attachTable/AttachTableData.h"
+#include "views/browser/dockedwindow.h"
+
 
 // Класс одной записи в таблице записей
 // Class entries in the table of records
@@ -23,6 +26,13 @@
 // class Attach;
 // class AttachTableData;
 
+namespace browser {
+    class DockedWindow;
+    class WebView;
+    class WebPage;
+}
+
+
 class Record {
 
     // К закрытым функциям может иметь доступ объекты приаттаченного файла
@@ -32,7 +42,11 @@ class Record {
 public:
     Record();
     Record(const Record &obj);
+
     virtual ~Record();
+
+
+    browser::WebPage *binded_only_page();   // const; // {return _page;}
 
     void setupDataFromDom(QDomElement iDomElement);
     QDomElement exportDataToDom(QDomDocument *doc) const;
@@ -73,9 +87,21 @@ public:
     void switchToDecryptAndSaveFat(void);
 
     void pushFatAttributes();
+    bool is_holder();
+    void active_request(int pos, int openLinkIn);
+    //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
+    //    bool active_immediately() {return _active_immediately;}
 
+    void generator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> g) {_generator = g;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator() const {return _generator;}
+
+    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> a) {_activator = a;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator() const {return _activator;}
+
+    browser::WebView *generate();
 protected:
 
+    browser::WebPage *_page;
     // ---------------------------------------------------------------------
     // Свойства класса (не забыть перечислить все в конструкторе копривания)
     // Class properties (do not forget to list all the constructor koprivaniya)
@@ -120,7 +146,17 @@ protected:
 
     QString getNaturalField(QString name) const;
     QString getCalculableField(QString name) const;
+private:
+    Record *bind_page(browser::WebPage *bind_page);  // {_page = page; _page->record(this);}
+    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
+    friend browser::WebPage;
 
+    bool    _active_request = false;
+    int     _position = -1;
+    int     _openlinkinnewwindow = 0;
+    //    bool    _active_immediately = false;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> _generator;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> _activator;
 };
 
 #endif // __RECORD_H__

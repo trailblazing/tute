@@ -5,13 +5,14 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
-#include <QToolButton>
+
 #include <QTextEdit>
 #include <QCloseEvent>
 #include <QShortcut>
 
 #include "views/waitClock/WaitClock.h"
 
+class FlatToolButton;
 
 // Виджет, показывающий окно с консольным выводом
 // Выглядит так:
@@ -67,7 +68,7 @@ private:
     WaitClock *waitClock;
     QLabel *messageLabel;
     QPushButton *buttonCancel;
-    QToolButton *buttonDetails;
+    FlatToolButton *buttonDetails;
 
 // Верхний блок вида "Картинка |Тут какая-то надпись| [v] | [Cancel]"
     QHBoxLayout *upToolbar;

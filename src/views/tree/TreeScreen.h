@@ -1,5 +1,5 @@
 #ifndef _TREESCREEN_H_
-#define	_TREESCREEN_H_
+#define _TREESCREEN_H_
 
 #include <QtGlobal>
 #include <QWidget>
@@ -9,22 +9,32 @@
 #include <QVBoxLayout>
 #include <QToolBar>
 #include <QInputDialog>
+#include <QMenuBar>
 
 class KnowTreeModel;
 class KnowTreeView;
 class ClipboardBranch;
+class AppConfig;
+class QMenuBar;
+class QWidgetAction;
+
+
+
+namespace  browser {
+    class WebPage;
+}
 
 
 class TreeScreen : public QWidget {
     Q_OBJECT
 
 public:
-    TreeScreen(QWidget *parent=0);
+    TreeScreen(const AppConfig &appconfig, QWidget *parent = 0);
     virtual ~TreeScreen();
 
-    QMap<QString, QAction *> actionList;
+    QMap<QString, QAction *> _actionlist;
 
-    KnowTreeModel *knowTreeModel;
+    KnowTreeModel *_knowtreemodel;
 
     void saveKnowTree(void);
     void reloadKnowTree(void);
@@ -36,10 +46,12 @@ public:
 
     QItemSelectionModel *getSelectionModel(void);
 
-// Установка курсора на указанный элемент
+    // Установка курсора на указанный элемент
     void setCursorToIndex(QModelIndex index);
 
     void updateBranchOnScreen(const QModelIndex &index);
+
+    QMenu *buttonmenu() {return _menus_in_button;}
 
 private slots:
 
@@ -50,7 +62,7 @@ private slots:
     void ins_branch(void);
     void edit_branch(void);
 
-    void del_branch(QString mode="delete");
+    void del_branch(QString mode = "delete");
     void del_one_branch(QModelIndex index);
 
     void move_up_branch(void);
@@ -63,18 +75,26 @@ private slots:
     void encrypt_branch(void);
     void decrypt_branch(void);
 
-// Действия при клике на ветку дерева
+    // Действия при клике на ветку дерева
     void on_knowtree_clicked(const QModelIndex &index);
 
-// Открытие контекстного меню
+    // Открытие контекстного меню
     void on_customContextMenuRequested(const QPoint &pos);
 
 private:
-    QToolBar *toolsLine;
 
-    KnowTreeView  *knowTreeView;
+    QToolBar        *_toolsline;
+    QToolBar        *_menubar; // QMenuBar *_menubar;
+    QMenu           *_menus_in_button;
+    QPushButton     *_menubutton;
+    QWidgetAction   *_menuaction;
 
-    QVBoxLayout *treeScreenLayout;
+
+    KnowTreeView    *_knowtreeview;
+    QHBoxLayout     *_toolslayout;
+    QVBoxLayout     *_treescreenlayout;
+
+    const AppConfig &_appconfig;
 
     void setupUI(void);
     void setupModels(void);
@@ -97,8 +117,10 @@ private:
 
     void encryptBranchItem(void);
     void decryptBranchItem(void);
+    friend class browser::WebPage;
+    // friend void browser::WebPage::onUrlChanged(const QUrl &url);
 };
 
 
-#endif	// _TREESCREEN_H_
+#endif  // _TREESCREEN_H_
 

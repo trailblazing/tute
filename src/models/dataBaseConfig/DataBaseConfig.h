@@ -21,26 +21,26 @@ public:
     bool is_init(void);
 
     // Версия формата конфигфайла
-    int get_config_version(void);
+    int get_config_version(void)const;
     void set_config_version(int i);
 
 
-    int get_crypt_mode(void);
+    int get_crypt_mode(void) const;
     void set_crypt_mode(int mode);
 
-    QString get_crypt_check_salt(void);
+    QString get_crypt_check_salt(void)const;
     void set_crypt_check_salt(QString salt);
 
-    QString get_crypt_check_hash(void);
+    QString get_crypt_check_hash(void)const;
     void set_crypt_check_hash(QString hash);
 
-    QString get_middle_hash_check_data(void);
+    QString get_middle_hash_check_data(void)const;
     void set_middle_hash_check_data(QString hash);
 
 private:
 
     QSettings *conf;
-    QString get_parameter(QString name);
+    QString get_parameter(QString name) const;
 
     bool is_init_flag;
 };

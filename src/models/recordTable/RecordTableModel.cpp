@@ -8,19 +8,25 @@
 #include "models/appConfig/AppConfig.h"
 #include "views/mainWindow/MainWindow.h"
 #include "libraries/FixedParameters.h"
+#include "views/recordTable/RecordTableView.h"
+#include "views/findInBaseScreen/FindScreen.h"
 
-extern FixedParameters fixedParameters;
-extern AppConfig mytetraConfig;
+extern FixedParameters fixedparameters;
+extern AppConfig appconfig;
 
 
 // Конструктор модели
-RecordTableModel::RecordTableModel(QObject *pobj) : QAbstractTableModel(pobj)
+RecordTableModel::RecordTableModel(QObject *pobj)
+    : QAbstractTableModel(pobj)
+    , table(new RecordTableData())
 {
     // При создании модели она должна брать данные как минимум из
     // пустой таблицы данных
-    table = new RecordTableData();
+    // When you create a model, it has to take the data from at least
+    // Empty data table
+    //    table = new RecordTableData();
 
-    return;
+    //    return;
 }
 
 
@@ -51,7 +57,7 @@ QVariant RecordTableModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается текст строки для отрисовки или для редактирования
     if(role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE) {
-        QStringList showFields = mytetraConfig.getRecordTableShowFields();
+        QStringList showFields = appconfig.getRecordTableShowFields();
 
         // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
         if(index.column() < showFields.size()) {
@@ -67,10 +73,10 @@ QVariant RecordTableModel::data(const QModelIndex &index, int role) const
                 // Преобразование временного штампа в дату и время
                 QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
 
-                if(mytetraConfig.getEnableCustomDateTimeFormat() == false)
+                if(appconfig.getEnableCustomDateTimeFormat() == false)
                     return fieldDateTime.toString(Qt::SystemLocaleDate);
                 else
-                    return fieldDateTime.toString(mytetraConfig.getCustomDateTimeFormat());
+                    return fieldDateTime.toString(appconfig.getCustomDateTimeFormat());
             } else if(role == Qt::DisplayRole && fieldName == "hasAttach") { // Наличие аттачей
                 if(field == "0")
                     return ""; // Если аттачей нет, выводится пустая строка. Это повышает читабельность
@@ -105,7 +111,7 @@ QVariant RecordTableModel::data(const QModelIndex &index, int role) const
 }
 
 
-// Сохранение вводимых данных по указанному индексу
+// Save the input data at the specified index   // Сохранение вводимых данных по указанному индексу
 bool RecordTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     // Если таблица данных не создана
@@ -123,7 +129,7 @@ bool RecordTableModel::setData(const QModelIndex &index, const QVariant &value, 
     // Если происходит редактирование
     if(role == Qt::EditRole) {
         // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-        QStringList showFields = mytetraConfig.getRecordTableShowFields();
+        QStringList showFields = appconfig.getRecordTableShowFields();
 
         // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
         if(index.column() < showFields.size()) {
@@ -167,9 +173,9 @@ bool RecordTableModel::setData(const QModelIndex &index, const QVariant &value, 
 QVariant RecordTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-    QStringList showFields = mytetraConfig.getRecordTableShowFields();
+    QStringList showFields = appconfig.getRecordTableShowFields();
 
-    QMap<QString, QString> descriptionFields = fixedParameters.recordFieldDescription(showFields);
+    QMap<QString, QString> descriptionFields = fixedparameters.recordFieldDescription(showFields);
 
     // Если ни один столбец не показывается (чего, впринципе не может быть)
     if(showFields.size() == 0)
@@ -215,7 +221,7 @@ int RecordTableModel::columnCount(const QModelIndex &parent) const
 
     static int previousColumnCount = 0;
 
-    int currentColumnCount = mytetraConfig.getRecordTableShowFields().size();
+    int currentColumnCount = appconfig.getRecordTableShowFields().size();
 
     if(currentColumnCount != previousColumnCount) {
         qDebug() << "Column count change. New column count: " << currentColumnCount;
@@ -229,6 +235,9 @@ int RecordTableModel::columnCount(const QModelIndex &parent) const
 // Удаление строк в таблице
 // note: Переопределение метода removeRows() влияет и на метод removeRow(),
 // так как он просто вызывает removeRows() для удаления одной строки
+// Delete rows in the table
+// Note: Override removeRows () method affects the removeRow (),
+// Because it simply calls removeRows () to remove a single line
 bool RecordTableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent);
@@ -239,13 +248,22 @@ bool RecordTableModel::removeRows(int row, int count, const QModelIndex &parent)
         return false;
     }
 
+    //QModelIndex index = createIndex(row, 0);
 
-    beginRemoveRows(QModelIndex(), row, row + count - 1);
+    auto view = globalparameters.getRecordTableScreen()->getRecordTableController()->getView();
+
+    beginRemoveRows(//index   //
+        QModelIndex()
+        , row, row + count - 1);
+
 
     // Удаляются строки непосредственно в таблице
-    for(int i = row; i < row + count; ++i)
+    for(int i = row; i < row + count; ++i) {
         table->deleteRecord(i);
-
+        globalparameters.getFindScreen()->remove_row(row);
+    }
+    view->reset();
+    view->setModel(this);
     endRemoveRows();
 
     return true;
@@ -273,16 +291,12 @@ RecordTableData *RecordTableModel::getTableData(void)
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int RecordTableModel::addTableData(int mode,
-                                   QModelIndex posIndex,
-                                   Record record)
+int RecordTableModel::addTableData(int mode, QModelIndex posIndex, Record record)
 {
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
     // Вставка новых данных в таблицу конечных записей
-    int selPos = table->insertNewRecord(mode,
-                                        posIndex.row(),
-                                        record);
+    int selPos = table->insertNewRecord(mode, posIndex.row(), record);
 
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 

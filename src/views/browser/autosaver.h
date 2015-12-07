@@ -46,30 +46,42 @@
 #include <QtCore/QBasicTimer>
 #include <QtCore/QTime>
 
-/*
-    This class will call the save() slot on the parent object when the parent changes.
-    It will wait several seconds after changed() to combining multiple changes and
-    prevent continuous writing to disk.
-  */
-class AutoSaver : public QObject {
+QT_BEGIN_NAMESPACE
 
-Q_OBJECT
+namespace browser {
 
-public:
-    AutoSaver(QObject *parent);
-    ~AutoSaver();
-    void saveIfNeccessary();
+    /*
+        This class will call the save() slot on the parent object when the parent changes.
+        It will wait several seconds after changed() to combining multiple changes and
+        prevent continuous writing to disk.
+      */
+    class AutoSaver : public QObject {
 
-public slots:
-    void changeOccurred();
+        Q_OBJECT
 
-protected:
-    void timerEvent(QTimerEvent *event);
+    public:
+        AutoSaver(QObject *parent);
+        ~AutoSaver();
+        void saveIfNeccessary();
 
-private:
-    QBasicTimer m_timer;
-    QTime m_firstChange;
+    public slots:
+        void changeOccurred();
 
-};
+    protected:
+        void timerEvent(QTimerEvent *event);
+
+    private:
+        QBasicTimer _timer;
+        QTime _firstchange;
+
+    };
+
+
+}
+
+QT_END_NAMESPACE
 
 #endif // AUTOSAVER_H
+
+
+

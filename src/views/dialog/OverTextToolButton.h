@@ -1,14 +1,16 @@
 #ifndef __OVERTEXTTOOLBUTTON_H__
 #define __OVERTEXTTOOLBUTTON_H__
 
-#include <QToolButton>
+
 #include <QPaintEvent>
+#include "libraries/FlatControl.h"
+
+class FlatToolButton;
+
+// Виджет, похожий на FlatToolButton, но позволяющий писать поверх иконки
 
 
-// Виджет, похожий на QToolButton, но позволяющий писать поверх иконки
-
-
-class OverTextToolButton : public QToolButton {
+class OverTextToolButton : public FlatToolButton {
     Q_OBJECT
 
 public:

@@ -1,0 +1,68 @@
+#ifndef _BROWSERVIEW_H_
+#define _BROWSERVIEW_H_
+
+#include <QWidget>
+#include <QList>
+#include <QUrl>
+#include <QDockWidget>
+#include "models/recordTable/Record.h"
+#include "libraries/GlobalParameters.h"
+#include "browserwindow.h"
+
+class QNetworkReply;
+class QSslError;
+class QtSingleApplication;
+extern GlobalParameters globalParameters;
+class RecordTableController;
+
+// browsersmanager
+class BrowsersManager : public QWidget {
+    Q_OBJECT
+public:
+    BrowsersManager(RecordTableController *recordtablecontroller, QWidget *parent = 0);
+    ~BrowsersManager();
+    //    BrowserWindow *getBrowserWindow() {return mainWindow();}
+    void setupDynamicSignals(void);
+
+    BrowserWindow *mainWindow();
+    QList<BrowserWindow *> mainWindows();
+
+public slots:
+    void setUrl(const QUrl &url);
+    void initSetting(void);
+    void loadUrl(Record *record);
+    void loadUrl(const int pos);
+
+    void setScrollbars(bool hide);
+    void setCache(bool cache, int cacheSize);
+    void finished(QNetworkReply *reply);
+    void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
+    QAction *getactionFreeze() { return _actionFreeze; }
+    void openLinkInNewTab();
+    void onLoadFinished(bool);
+    void setupActions(void);
+    BrowserWindow *newMainWindow();
+#if defined(Q_OS_OSX)
+    void lastWindowClosed();
+#endif
+
+private slots:
+    void openUrl(const QUrl &url);
+
+private:
+    void clean();
+    void setupUI(void);
+    void setupSignals(void);
+    void assembly(void);
+
+    RecordTableController *_recordtablecontroller;
+    //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
+    QAction *_actionFreeze;
+    //struct BrowserViewPrivate *d;
+    QDockWidget *_dock_widget;
+    //BrowserWindow *browser;
+    QList<QPointer<BrowserWindow> > _mainWindows;
+    friend class QtSingleApplication;
+};
+
+#endif // _BROWSERVIEW_H_

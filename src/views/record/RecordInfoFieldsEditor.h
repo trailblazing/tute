@@ -16,9 +16,9 @@ class RecordInfoFieldsEditor : public QDialog {
 
 public:
 #if QT_VERSION < 0x050000
-    RecordInfoFieldsEditor( QWidget * parent = 0, Qt::WFlags f = 0 );
+    RecordInfoFieldsEditor(QWidget *parent = 0, Qt::WFlags f = 0);
 #else
-    RecordInfoFieldsEditor( QWidget * parent = 0, Qt::WindowFlags f = 0 );
+    RecordInfoFieldsEditor(QWidget *parent = 0, Qt::WindowFlags f = 0);
 #endif
 
     ~RecordInfoFieldsEditor();
@@ -32,7 +32,7 @@ private slots:
 
 private:
 
-// Виджет ввода инфополей записи
+    // Widget input information field recording // Виджет ввода инфополей записи
     InfoFieldEnter *infoField;
 
     QDialogButtonBox *buttonBox;

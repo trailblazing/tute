@@ -13,7 +13,8 @@
 #include "views/tree/TreeScreen.h"
 #include "views/record/RecordInfoFieldsEditor.h"
 #include "views/appConfigWindow/AppConfigDialog.h"
-#include "views/browser/BrowserView.h"
+#include "views/browser/entrance.h"
+#include "views/browser/tabwidget.h"
 #include "models/recordTable/Record.h"
 #include "models/recordTable/RecordTableData.h"
 #include "models/recordTable/RecordTableModel.h"
@@ -26,10 +27,14 @@
 #include "libraries/ClipboardRecords.h"
 #include "libraries/DiskHelper.h"
 #include <cassert>
+#include "views/browser/webview.h"
+#include "views/findInBaseScreen/FindScreen.h"
+#include "libraries/FlatControl.h"
 
-extern GlobalParameters globalParameters;
-extern AppConfig mytetraConfig;
-extern WalkHistory walkHistory;
+
+extern GlobalParameters globalparameters;
+extern AppConfig appconfig;
+extern WalkHistory walkhistory;
 
 
 RecordTableController::RecordTableController(QObject *parent) : QObject(parent)
@@ -75,25 +80,25 @@ RecordTableView *RecordTableController::getView(void)
 void RecordTableController::clickToRecord(const QModelIndex &index)
 {
     // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
-    QModelIndex sourceIndex = convertProxyIndexToSourceIndex(index);
+    QModelIndex sourceIndex = proxyindex_to_sourceindex(index);
 
     // Позиция записи в списке
-    int pos = sourceIndex.row();
-    qDebug() << "RecordTableView::onClickToRecord() : current item num " << pos;
+    int source_pos = sourceIndex.row();
+    qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
 
-    initMetaEditorAtClickToRecord(pos);
-    initAttachTableAtClickToRecord(pos);
-    updateBrowserView(pos); // if new one, create it? no, you can't click a record which does not exist.
+    initMetaEditorAtClickToRecord(source_pos);
+    initAttachTableAtClickToRecord(source_pos);
+    update_browser(source_pos); // if new one, create it? no, you can't click a record which does not exist.
 
 }
 
 // you can't click a record which does not exist.
 // you can switch between two already existing record from this
-void RecordTableController::updateBrowserView(const int pos)
+void RecordTableController::update_browser(const int source_pos)
 {
     //RecordTableData *table = recordSourceModel->getTableData();
-    BrowserView *browser_view = globalParameters.getBrowserView();
+    browser::Entrance *entrance = globalparameters.entrance();
     //Record *current_record = browser_view->getCurrentRecord();
 
 
@@ -136,7 +141,68 @@ void RecordTableController::updateBrowserView(const int pos)
     //        //this->current_record->setNaturalFieldSource("url", url.toString());
     //        //this->loadChanged();
     //    } else {
-    browser_view->loadUrl(pos);
+
+
+
+
+    Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(source_pos);
+    record->active_request(source_pos, 0);
+
+    //    if(record->generator())record->generate();
+    //    else if(entrance) entrance->active_record(record);
+
+
+
+
+
+    //    entrance->activebrowser()->tabWidget()->view_index();
+    //    if(record->page() == nullptr || record->page()->view() == nullptr)
+
+    QString url = record->getNaturalFieldSource("url");
+
+    //    browser::WebPage *page = record->binded_only_page();
+    //    Record *old_record = nullptr;
+    //    if(page)old_record = page->current_record();
+
+    // assert(url != "");
+
+    //    if(record != old_record) {
+
+    if(url != ""
+       && url != browser::DockedWindow::_defaulthome
+       //       && record->active_immediately()
+      ) {
+
+        //        // back compatible
+        //        //record->setNaturalFieldSource("url", browser::DockedWindow::_defaulthome);
+        //        if(// (!page && url != "")
+        //            // || (page && url != "" && url != page->url().toString())  // page redirect to new record already!
+        //            // || (page && !page->view()->hasFocus())
+        //            (old_record && _state_check[old_record->getNaturalFieldSource("pin")] == Qt::Unchecked)
+        //            || (page && !old_record)
+        //        ) {
+        //            page->load(record);
+        //        } else
+
+        if(record->generator())record->generate();
+        else if(entrance) entrance->active_record(record);
+    }
+
+    //    } else {
+    //        browser::TabWidget *tabwidget = entrance->activebrowser()->tabWidget();
+
+    //        if(tabwidget->currentWebView() != page->view()) {
+    //            tabwidget->setCurrentIndex(tabwidget->webViewIndex(page->view()));
+    //            // page->load(record);
+    //            page->view()->show();
+    //        }
+
+
+
+    //    }
+
+    //    loadUrl(pos);
+
     //    }
 
     //    if(browser_view->getCurrentRecord()->getNaturalFieldSource("url") != table->getField("url", pos))
@@ -144,6 +210,11 @@ void RecordTableController::updateBrowserView(const int pos)
     //} else {
     //    browser_view->loadUrl(pos);
     //}
+
+    //    Record *_record = getRecordTableModel()->getRecordTableData()->getRecord(pos);
+    //    WebView *view = globalParameters.getBrowserView()->getBrowserWindow()->currentTab();
+    //    view->bindRecord(_record);
+
 }
 
 void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
@@ -172,13 +243,13 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
     // Для новой выбраной записи выясняется директория и основной файл
     QString currentDir = table->getField("dir", pos);
     QString currentFile = table->getField("file", pos);
-    QString fullDir = mytetraConfig.get_tetradir() + "/base/" + currentDir;
+    QString fullDir = appconfig.get_tetradir() + "/base/" + currentDir;
     QString fullFileName = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
 
     // Если в окне содержимого записи уже находится выбираемая запись
     if(edView->get_work_directory() == fullDir && edView->get_file_name() == currentFile) {
-        globalParameters.getWindowSwitcher()->switchFromRecordtableToRecord();
+        globalparameters.getWindowSwitcher()->switchFromRecordtableToRecord();
         return;
     }
 
@@ -217,6 +288,7 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
     // Заполняются прочие инфо-поля
     edView->setName(table->getField("name", pos));
     edView->setAuthor(table->getField("author", pos));
+    edView->setHome(table->getField("home", pos));
     edView->setUrl(table->getField("url", pos));
     edView->setTags(table->getField("tags", pos));
 
@@ -229,13 +301,13 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
     QString path = qobject_cast<RecordTableScreen *>(parent())->getTreePath();
 
     // В мобильном интерфейсе редактор должен показывать путь до записи
-    if(mytetraConfig.getInterfaceMode() == "mobile")
+    if(appconfig.getInterfaceMode() == "mobile")
         edView->setTreePath(path);
 
     // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
-    if(mytetraConfig.getRememberCursorAtOrdinarySelection()) {
-        edView->setCursorPosition(walkHistory.getCursorPosition(id));
-        edView->setScrollBarPosition(walkHistory.getScrollBarPosition(id));
+    if(appconfig.getRememberCursorAtOrdinarySelection()) {
+        edView->setCursorPosition(walkhistory.getCursorPosition(id));
+        edView->setScrollBarPosition(walkhistory.getScrollBarPosition(id));
     }
 
     // Обновление иконки аттачей
@@ -266,8 +338,8 @@ bool RecordTableController::isTableNotExists(void)
 }
 
 
-// Установка нового набора данных для списка записей
-void RecordTableController::setTableData(RecordTableData *rtData)
+// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
+void RecordTableController::set_table_data(RecordTableData *rtData)
 {
     qDebug() << "In RecordTableView setTableData() start";
 
@@ -277,7 +349,7 @@ void RecordTableController::setTableData(RecordTableData *rtData)
     // qApp->setOverrideCursor(cursor_wait);
     find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
 
-    // Указатель на данные сообщается источнику данных
+    // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
     recordSourceModel->setTableData(rtData);
 
     // Надо обязательно сбросить selection model
@@ -301,7 +373,7 @@ void RecordTableController::setTableData(RecordTableData *rtData)
         }
     }
 
-    // Если выделение устанавливать ненужно
+    // If the selection does not need to install    // Если выделение устанавливать ненужно
     if(removeSelection) {
         // Надо очистить поля области редактировния
         find_object<MetaEditor>("editorScreen")->clearAll();
@@ -322,6 +394,8 @@ void RecordTableController::setTableData(RecordTableData *rtData)
 
 // Заполнение переданного объекта буфера обмена данными из указанных записей
 // Индексы QModelIndexList передаются от Proxy модели
+// Fill the object passed clipboard data from these records
+// Index QModelIndexList transferred from the Proxy pattern
 void RecordTableController::addRecordsToClipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy)
 {
     // Выясняется ссылка на таблицу конечных данных
@@ -329,9 +403,9 @@ void RecordTableController::addRecordsToClipboard(ClipboardRecords *clipboardRec
 
     // Перебираются записи и вносятся в буфер обмена
     for(int i = 0; i < itemsForCopy.size(); ++i) {
-        QModelIndex index = convertProxyIndexToSourceIndex(itemsForCopy.at(i));
+        QModelIndex index = proxyindex_to_sourceindex(itemsForCopy.at(i));
 
-        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
+        // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
         Record record = table->getRecordFat(index.row());
 
         clipboardRecords->addRecord(record);
@@ -345,7 +419,7 @@ int RecordTableController::getRowCount(void)
 }
 
 
-// Получение номера первого выделенного элемента на экране
+// Get the number of the first highlighted item on the screen   // Получение номера первого выделенного элемента на экране
 int RecordTableController::getFirstSelectionPos(void)
 {
     return view->getFirstSelectionPos();
@@ -359,13 +433,13 @@ QString RecordTableController::getFirstSelectionId(void)
 }
 
 
-void RecordTableController::setSelectionToPos(int pos)
+void RecordTableController::select_pos(int pos)
 {
     view->setSelectionToPos(pos);
 }
 
 
-void RecordTableController::setSelectionToId(QString id)
+void RecordTableController::select_id(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
     RecordTableData *table = recordSourceModel->getTableData();
@@ -376,12 +450,12 @@ void RecordTableController::setSelectionToId(QString id)
         // Номер записи в Source данных
         int pos = table->getPosById(id);
 
-        view->setSelectionToPos(convertSourcePosToProxyPos(pos));
+        view->setSelectionToPos(sourcepos_to_proxypos(pos));
     }
 }
 
 
-QModelIndex RecordTableController::convertIdToSourceIndex(QString id)
+QModelIndex RecordTableController::id_to_sourceindex(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
     RecordTableData *table = recordSourceModel->getTableData();
@@ -389,24 +463,24 @@ QModelIndex RecordTableController::convertIdToSourceIndex(QString id)
     // Номер записи в Source данных
     int sourcePos = table->getPosById(id);
 
-    return convertPosToSourceIndex(sourcePos);
+    return pos_to_sourceindex(sourcePos);
 }
 
 
-QModelIndex RecordTableController::convertIdToProxyIndex(QString id)
+QModelIndex RecordTableController::id_to_proxyindex(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
     RecordTableData *table = recordSourceModel->getTableData();
 
     // Номер записи в Source данных
     int sourcePos = table->getPosById(id);
-    int proxyPos = convertSourcePosToProxyPos(sourcePos);
+    int proxyPos = sourcepos_to_proxypos(sourcePos);
 
-    return convertPosToProxyIndex(proxyPos);
+    return pos_to_proxyindex(proxyPos);
 }
 
 
-QModelIndex RecordTableController::convertPosToProxyIndex(int pos)
+QModelIndex RecordTableController::pos_to_proxyindex(int pos)
 {
     if(pos < 0 || pos >= recordProxyModel->rowCount())
         return QModelIndex();
@@ -417,12 +491,12 @@ QModelIndex RecordTableController::convertPosToProxyIndex(int pos)
 }
 
 
-QModelIndex RecordTableController::convertPosToSourceIndex(int pos)
+QModelIndex RecordTableController::pos_to_sourceindex(int pos)
 {
     if(pos < 0 || pos >= recordProxyModel->rowCount())
         return QModelIndex();
 
-    QModelIndex proxyIndex = convertPosToProxyIndex(pos);
+    QModelIndex proxyIndex = pos_to_proxyindex(pos);
     QModelIndex index = recordProxyModel->mapToSource(proxyIndex);
 
     return index;
@@ -430,7 +504,7 @@ QModelIndex RecordTableController::convertPosToSourceIndex(int pos)
 
 
 // Преобразование Proxy индекса в позицию на экране (так, как это будет выглядеть при Proxy модели)
-int RecordTableController::convertProxyIndexToPos(QModelIndex index)
+int RecordTableController::proxyindex_to_pos(QModelIndex index)
 {
     if(!index.isValid())
         return -1;
@@ -440,7 +514,7 @@ int RecordTableController::convertProxyIndexToPos(QModelIndex index)
 
 
 // Преобразование Source индекса в позицию на экране (так, как это будет выглядеть при Source модели)
-int RecordTableController::convertSourceIndexToPos(QModelIndex index)
+int RecordTableController::sourceindex_to_pos(QModelIndex index)
 {
     if(!index.isValid())
         return -1;
@@ -449,7 +523,7 @@ int RecordTableController::convertSourceIndexToPos(QModelIndex index)
 }
 
 
-QModelIndex RecordTableController::convertProxyIndexToSourceIndex(QModelIndex proxyIndex)
+QModelIndex RecordTableController::proxyindex_to_sourceindex(QModelIndex proxyIndex)
 {
     if(!proxyIndex.isValid())
         return QModelIndex();
@@ -460,7 +534,7 @@ QModelIndex RecordTableController::convertProxyIndexToSourceIndex(QModelIndex pr
 }
 
 
-QModelIndex RecordTableController::convertSourceIndexToProxyIndex(QModelIndex sourceIndex)
+QModelIndex RecordTableController::sourceindex_to_proxyindex(QModelIndex sourceIndex)
 {
     if(!sourceIndex.isValid())
         return QModelIndex();
@@ -471,14 +545,14 @@ QModelIndex RecordTableController::convertSourceIndexToProxyIndex(QModelIndex so
 }
 
 
-int RecordTableController::convertSourcePosToProxyPos(int sourcePos)
+int RecordTableController::sourcepos_to_proxypos(int sourcePos)
 {
     QModelIndex proxyIndex = recordProxyModel->mapFromSource(recordSourceModel->index(sourcePos, 0));
     return proxyIndex.row();
 }
 
 
-int RecordTableController::convertProxyPosToSourcePos(int proxyPos)
+int RecordTableController::proxypos_to_sourcepos(int proxyPos)
 {
     QModelIndex sourceIndex = recordProxyModel->mapToSource(recordProxyModel->index(proxyPos, 0));
     return sourceIndex.row();
@@ -507,7 +581,7 @@ void RecordTableController::copy(void)
 }
 
 
-// Вставка записей из буфера обмена
+// Insert records from the clipboard    // Вставка записей из буфера обмена
 void RecordTableController::paste(void)
 {
     // Проверяется, содержит ли буфер обмена данные нужного формата
@@ -650,27 +724,39 @@ void RecordTableController::addNewRecord(int mode)
 {
     qDebug() << "In add_new_record()";
 
-    // Создается окно ввода данных
-    // При клике Ok внутри этого окна, будет создана временная директория
-    // с картинками, содержащимися в тексте
-    AddNewRecord addNewRecordWin;
-    int i = addNewRecordWin.exec();
+    //    // Создается окно ввода данных
+    //    // При клике Ok внутри этого окна, будет создана временная директория
+    //    // с картинками, содержащимися в тексте
+    //    AddNewRecord addNewRecordWin;
 
-    if(i == QDialog::Rejected)
-        return; // Была нажата отмена, ничего ненужно делать
+    //    int i = addNewRecordWin.exec();
+
+
+    //    if(i == QDialog::Rejected)
+    //        return; // Была нажата отмена, ничего ненужно делать
 
     // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-    QString directory = addNewRecordWin.getImagesDirectory();
+    QString directory = DiskHelper::createTempDirectory();  //
+    // addNewRecordWin.getImagesDirectory();
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
     Record record;
     record.switchToFat();
-    record.setText(addNewRecordWin.getField("text"));
-    record.setField("name",   addNewRecordWin.getField("name"));
-    record.setField("author", addNewRecordWin.getField("author"));
-    record.setField("url",    addNewRecordWin.getField("url"));
-    record.setField("tags",   addNewRecordWin.getField("tags"));
+    //    record.setText(addNewRecordWin.getField("text"));
+    //    record.setField("pin",   addNewRecordWin.getField("pin"));
+    //    record.setField("name",   addNewRecordWin.getField("name"));
+    //    record.setField("author", addNewRecordWin.getField("author"));
+    //    record.setField("url",    addNewRecordWin.getField("url"));
+    //    record.setField("tags",   addNewRecordWin.getField("tags"));
+    record.setText("");
+    record.setField("pin",   _check_state[Qt::Unchecked]);
+    record.setField("name",   "");
+    record.setField("author", "");
+    record.setField("home",   browser::DockedWindow::_defaulthome);
+    record.setField("url",    browser::DockedWindow::_defaulthome);
+    record.setField("tags",   "");
+
     record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
     // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
@@ -686,22 +772,170 @@ void RecordTableController::addNewRecord(int mode)
 }
 
 
+// Вызов окна добавления данных в таблицу конечных записей
+// Call window to add data to a table of final entries
+int RecordTableController::new_record(Record const &record
+                                      , const int mode
+                                      //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                                     )
+{
+    qDebug() << "In add_new_record()";
+
+    //    // Создается окно ввода данных
+    //    // При клике Ok внутри этого окна, будет создана временная директория
+    //    // с картинками, содержащимися в тексте
+    //    AddNewRecord addNewRecordWin;
+
+    //    int i = addNewRecordWin.exec();
+
+
+    //    if(i == QDialog::Rejected)
+    //        return; // Была нажата отмена, ничего ненужно делать
+
+    // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+    QString directory = DiskHelper::createTempDirectory();  //
+    // addNewRecordWin.getImagesDirectory();
+
+    // todo: сделать заполнение таблицы приаттаченных файлов
+
+    //    Record record;
+
+    //    if(record.isLite())record.switchToFat();
+    assert(!record.isLite());
+    //    record.setText(addNewRecordWin.getField("text"));
+    //    record.setField("pin",   addNewRecordWin.getField("pin"));
+    //    record.setField("name",   addNewRecordWin.getField("name"));
+    //    record.setField("author", addNewRecordWin.getField("author"));
+    //    record.setField("url",    addNewRecordWin.getField("url"));
+    //    record.setField("tags",   addNewRecordWin.getField("tags"));
+
+    //    record.setText("");
+    //    record.setField("pin",   _check_state[Qt::Unchecked]);
+    //    record.setField("name",   "");
+    //    record.setField("author", "");
+    //    record.setField("home",   url.toString());
+    //    record.setField("url",    url.toString());
+    //    record.setField("tags",   "");
+
+    //    record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+
+    //    record->generator(generator);
+
+    // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+    // Запись должна быть создана, потом можно аттачить файлы.
+    // Это ограничение для "ленивого" программинга, но пока так
+    // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
+
+    // Временная директория с картинками и приаттаченными файлами удаляется
+    DiskHelper::removeDirectory(directory);
+
+    // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
+    return addNew(mode, record);
+}
+
+// Вызов окна добавления данных в таблицу конечных записей
+// Call window to add data to a table of final entries
+int RecordTableController::new_record(
+    const QUrl &url
+    , const int mode
+    //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+)
+{
+    qDebug() << "In add_new_record()";
+
+    //    // Создается окно ввода данных
+    //    // При клике Ok внутри этого окна, будет создана временная директория
+    //    // с картинками, содержащимися в тексте
+    //    AddNewRecord addNewRecordWin;
+
+    //    int i = addNewRecordWin.exec();
+
+
+    //    if(i == QDialog::Rejected)
+    //        return; // Была нажата отмена, ничего ненужно делать
+
+    // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+    QString directory = DiskHelper::createTempDirectory();  //
+    // addNewRecordWin.getImagesDirectory();
+
+    // todo: сделать заполнение таблицы приаттаченных файлов
+
+    Record record;
+    record.switchToFat();
+    //    record.setText(addNewRecordWin.getField("text"));
+    //    record.setField("pin",   addNewRecordWin.getField("pin"));
+    //    record.setField("name",   addNewRecordWin.getField("name"));
+    //    record.setField("author", addNewRecordWin.getField("author"));
+    //    record.setField("url",    addNewRecordWin.getField("url"));
+    //    record.setField("tags",   addNewRecordWin.getField("tags"));
+    record.setText("");
+    record.setField("pin",   _check_state[Qt::Unchecked]);
+    record.setField("name",   "");
+    record.setField("author", "");
+    record.setField("home",   url.toString());
+    record.setField("url",    url.toString());
+    record.setField("tags",   "");
+
+    record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+
+    //    record.generator(generator);
+
+    // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+    // Запись должна быть создана, потом можно аттачить файлы.
+    // Это ограничение для "ленивого" программинга, но пока так
+    // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
+
+    // Временная директория с картинками и приаттаченными файлами удаляется
+    DiskHelper::removeDirectory(directory);
+
+    // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
+    return addNew(mode, record);
+}
+
+
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-void RecordTableController::addNew(int mode, Record record)
+int RecordTableController::addNew(int mode, Record record)
 {
     qDebug() << "In add_new()";
 
     // Получение Source-индекса первой выделенной строки
     QModelIndex posIndex = view->getFirstSelectionSourceIndex();
 
+    //    //    assert(posIndex.isValid());
+    //    if(!posIndex.isValid()) {
+    //        posIndex = view->getFirstSelectionProxyIndex();
+    //    }
+
+    //    if(posIndex.isValid() //   // do not need? yeah, I am sure. hughvonyoung@gmail.com
+    //       //       && record.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
+    //      ) {
+
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
     int selPos = recordSourceModel->addTableData(mode, posIndex, record);
 
-    view->moveCursorToNewRecord(mode, convertSourcePosToProxyPos(selPos));
+    view->moveCursorToNewRecord(mode, sourcepos_to_proxypos(selPos));
 
     // Сохранение дерева веток
     find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    //    }
+
+    //    else {
+    //        // Add a record in the database // Добавление записи в базу
+    //        RecordTableData *table = nullptr;
+    //        table = recordSourceModel->getRecordTableData();
+
+    //        //        if(table == nullptr) {}
+
+    //        int selPos = table->insertNewRecord(ADD_NEW_RECORD_TO_END, 0, record);
+
+    //        view->moveCursorToNewRecord(mode, convertSourcePosToProxyPos(selPos));
+
+    //        // Сохранение дерева веток
+    //        find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    //    }
+
+    return selPos;
 }
 
 
@@ -715,21 +949,28 @@ void RecordTableController::openWebsite(QModelIndex proxyIndex)
 {
     qDebug() << "RecordTableController::editFieldContext()";
 
-    QModelIndex sourceIndex = convertProxyIndexToSourceIndex(proxyIndex);
+    QModelIndex sourceIndex = proxyindex_to_sourceindex(proxyIndex);
     int pos = sourceIndex.row(); // Номер строки в базе
 
     // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
     //RecordInfoFieldsEditor editRecordWin;
-    auto browser_view = globalParameters.getBrowserView();
+    auto entrance = globalparameters.entrance();
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    //    RecordTableData *table = recordSourceModel->getTableData();
 
     // Поля окна заполняются начальными значениями
     //editRecordWin.setField("name",  table->getField("name",   pos) );
     //editRecordWin.setField("author",table->getField("author", pos) );
     //editRecordWin.setField("url",   table->getField("url",    pos) );
     //editRecordWin.setField("tags",  table->getField("tags",   pos) );
-    browser_view->loadUrl(table->getField("url", pos));
+
+    //    browser_view->loadUrl(pos);   //table->getField("url", pos)
+
+    Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+
+    //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
+    if(record->generator())record->generate();
+    else if(entrance) entrance->active_record(record);
 
     //    int i = editRecordWin.exec();
     //    if(i == QDialog::Rejected)
@@ -749,7 +990,7 @@ void RecordTableController::editFieldContext(QModelIndex proxyIndex)
 {
     qDebug() << "RecordTableController::editFieldContext()";
 
-    QModelIndex sourceIndex = convertProxyIndexToSourceIndex(proxyIndex);
+    QModelIndex sourceIndex = proxyindex_to_sourceindex(proxyIndex);
     int pos = sourceIndex.row(); // Номер строки в базе
 
     // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
@@ -759,10 +1000,12 @@ void RecordTableController::editFieldContext(QModelIndex proxyIndex)
     RecordTableData *table = recordSourceModel->getTableData();
 
     // Поля окна заполняются начальными значениями
-    editRecordWin.setField("name",  table->getField("name",   pos));
-    editRecordWin.setField("author", table->getField("author", pos));
-    editRecordWin.setField("url",   table->getField("url",    pos));
-    editRecordWin.setField("tags",  table->getField("tags",   pos));
+    editRecordWin.setField("pin",       table->getField("pin",   pos));
+    editRecordWin.setField("name",      table->getField("name",   pos));
+    editRecordWin.setField("author",    table->getField("author", pos));
+    editRecordWin.setField("home",      table->getField("home",    pos));
+    editRecordWin.setField("url",       table->getField("url",    pos));
+    editRecordWin.setField("tags",      table->getField("tags",   pos));
 
 
     int i = editRecordWin.exec();
@@ -772,19 +1015,24 @@ void RecordTableController::editFieldContext(QModelIndex proxyIndex)
 
     // Измененные данные записываются
     editField(pos,
+              editRecordWin.getField("pin"),
               editRecordWin.getField("name"),
               editRecordWin.getField("author"),
+              editRecordWin.getField("home"),
               editRecordWin.getField("url"),
               editRecordWin.getField("tags"));
 }
 
 
 // Функция сохранения отредактированных полей записи в таблицу конечных записей
-void RecordTableController::editField(int pos,
-                                      QString name,
-                                      QString author,
-                                      QString url,
-                                      QString tags)
+void RecordTableController::editField(int pos
+                                      , QString pin
+                                      , QString name
+                                      , QString author
+                                      , QString home
+                                      , QString url
+                                      , QString tags
+                                     )
 {
     qDebug() << "In edit_field()";
 
@@ -793,8 +1041,10 @@ void RecordTableController::editField(int pos,
 
     // Переданные отредактированные поля преобразуются в вид имя-значение
     QMap<QString, QString> editData;
+    editData["pin"] = pin;
     editData["name"] = name;
     editData["author"] = author;
+    editData["home"] = home;
     editData["url"] = url;
     editData["tags"] = tags;
 
@@ -803,6 +1053,7 @@ void RecordTableController::editField(int pos,
 
     // Обновление инфополей в области редактирования записи
     MetaEditor *metaEditor = find_object<MetaEditor>("editorScreen");
+    metaEditor->setPin(pin);
     metaEditor->setName(name);
     metaEditor->setAuthor(author);
     metaEditor->setUrl(url);
@@ -922,7 +1173,7 @@ void RecordTableController::removeRowById(QString delId)
 }
 
 
-// Удаление записей по указанному списку идентификаторов
+// Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
 void RecordTableController::removeRowsByIdList(QVector<QString> delIds)
 {
     qDebug() << "Remove rows by ID list: " << delIds;
@@ -935,11 +1186,14 @@ void RecordTableController::removeRowsByIdList(QVector<QString> delIds)
 
     for(int i = 0; i < delIds.count(); i++) {
         QString id = delIds[i];
-        QModelIndex idx = convertIdToProxyIndex(id);
+        QModelIndex idx = id_to_proxyindex(id);
 
         // Удаляется строка в Proxy модели
         // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
         recordProxyModel->removeRow(idx.row());
+        view->reset();
+        view->setModel(recordProxyModel);
+        globalparameters.getFindScreen()->remove_id(id);
     }
 }
 

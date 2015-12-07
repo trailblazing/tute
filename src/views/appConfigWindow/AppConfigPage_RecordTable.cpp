@@ -11,40 +11,42 @@
 #include "models/recordTable/RecordTableModel.h"
 #include "controllers/recordTable/RecordTableController.h"
 
-extern AppConfig mytetraConfig;
-extern FixedParameters fixedParameters;
+extern AppConfig appconfig;
+extern FixedParameters fixedparameters;
 
 
 AppConfigPage_RecordTable::AppConfigPage_RecordTable(QWidget *parent) : ConfigPage(parent)
 {
     qDebug() << "Create record table config page";
 
-    QStringList allFieldNames=fixedParameters.recordFieldAvailableList;
-    QMap<QString, QString> descriptionFields=fixedParameters.recordFieldDescription( allFieldNames );
-    QStringList showFields=mytetraConfig.getRecordTableShowFields();
+    QStringList allFieldNames = fixedparameters.recordFieldAvailableList;
+    QMap<QString, QString> descriptionFields = fixedparameters.recordFieldDescription(allFieldNames);
+    QStringList showFields = appconfig.getRecordTableShowFields();
 
     // Создаются чекбоксы для каждого поля, хранимого в записи
-    for(int i=0; i<allFieldNames.size(); i++) {
-        QString name=allFieldNames[i];
-        fields[ name ]=new QCheckBox(this);
+    for(int i = 0; i < allFieldNames.size(); i++) {
+        QString name = allFieldNames[i];
+        fields[ name ] = new QCheckBox(this);
 
-        fields[ name ]->setText( tr(descriptionFields.value(name).toLocal8Bit().data()) );
+        fields[ name ]->setText(tr(descriptionFields.value(name).toLocal8Bit().data()));
 
-        if( showFields.contains(name) )
-            fields[ name ]->setCheckState( Qt::Checked );
+        if(showFields.contains(name))
+            fields[ name ]->setCheckState(Qt::Checked);
     }
 
 
     // Область настройки видимости заголовков
-    showHorizontalHeader=new QCheckBox(this);
-    showHorizontalHeader->setText( tr("Show horisontal header") );
-    if(mytetraConfig.getRecordTableShowHorizontalHeaders())
-        showHorizontalHeader->setCheckState( Qt::Checked );
+    showHorizontalHeader = new QCheckBox(this);
+    showHorizontalHeader->setText(tr("Show horisontal header"));
 
-    showVerticalHeader=new QCheckBox(this);
-    showVerticalHeader->setText( tr("Show row number") );
-    if(mytetraConfig.getRecordTableShowVerticalHeaders())
-        showVerticalHeader->setCheckState( Qt::Checked );
+    if(appconfig.getRecordTableShowHorizontalHeaders())
+        showHorizontalHeader->setCheckState(Qt::Checked);
+
+    showVerticalHeader = new QCheckBox(this);
+    showVerticalHeader->setText(tr("Show row number"));
+
+    if(appconfig.getRecordTableShowVerticalHeaders())
+        showVerticalHeader->setCheckState(Qt::Checked);
 
     QVBoxLayout *vboxVisibleHeaders = new QVBoxLayout;
     vboxVisibleHeaders->addWidget(showHorizontalHeader);
@@ -56,15 +58,16 @@ AppConfigPage_RecordTable::AppConfigPage_RecordTable(QWidget *parent) : ConfigPa
 
     // Область настройки видимости столбцов
     QVBoxLayout *vboxVisibleColumns = new QVBoxLayout;
+
     foreach(QCheckBox *currentCheckBox, fields)
-    vboxVisibleColumns->addWidget(currentCheckBox);
+        vboxVisibleColumns->addWidget(currentCheckBox);
 
     QGroupBox *groupBoxVisibleColumns = new QGroupBox(tr("Columns visible"));
     groupBoxVisibleColumns->setLayout(vboxVisibleColumns);
 
 
     // Собирается основной слой
-    QVBoxLayout *central_layout=new QVBoxLayout();
+    QVBoxLayout *central_layout = new QVBoxLayout();
 
     central_layout->addWidget(groupBoxVisibleHeaders);
     central_layout->addWidget(groupBoxVisibleColumns);
@@ -80,7 +83,8 @@ AppConfigPage_RecordTable::AppConfigPage_RecordTable(QWidget *parent) : ConfigPa
 void AppConfigPage_RecordTable::setupSignals(void)
 {
     QMapIterator<QString, QCheckBox *> i(fields);
-    while (i.hasNext()) {
+
+    while(i.hasNext()) {
         i.next();
         connect(i.value(), SIGNAL(toggled(bool)),
                 this, SLOT(onFieldToggle(bool)));
@@ -88,7 +92,7 @@ void AppConfigPage_RecordTable::setupSignals(void)
 
 
     // Указатель на контроллер таблицы конечных записей
-    RecordTableController *recordTableController=find_object<RecordTableController>("recordTableController");
+    RecordTableController *recordTableController = find_object<RecordTableController>("recordTableController");
 
     // При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
     connect(this, SIGNAL(recordTableConfigChange()),
@@ -101,10 +105,11 @@ void AppConfigPage_RecordTable::onFieldToggle(bool flag)
 {
     Q_UNUSED(flag);
 
-    int count=0;
+    int count = 0;
 
     QMapIterator<QString, QCheckBox *> i(fields);
-    while (i.hasNext()) {
+
+    while(i.hasNext()) {
         i.next();
 
         if(i.value()->isChecked())
@@ -113,12 +118,12 @@ void AppConfigPage_RecordTable::onFieldToggle(bool flag)
 
 
     // Если пользователь снял флажки со всех полей
-    if(count==0) {
+    if(count == 0) {
         QMessageBox msgBox;
         msgBox.setText("Can't check off all fields.");
         msgBox.exec();
 
-        fields["name"]->setCheckState( Qt::Checked );
+        fields["name"]->setCheckState(Qt::Checked);
     }
 
 }
@@ -131,119 +136,122 @@ int AppConfigPage_RecordTable::apply_changes(void)
 {
     qDebug() << "Apply changes record table";
 
-// Запоминается ширина полей
-// Это надо сделать в первую очередь, потому что в дальнейшем после перечитывания модели и
-// установки заголовков таблицы конечных записей слетают ширины полей (устанавливаюся в 100 px самим Qt)
-    QStringList showFields=mytetraConfig.getRecordTableShowFields();
-    QStringList fieldsWidth=mytetraConfig.getRecordTableFieldsWidth();
+    // Запоминается ширина полей
+    // Это надо сделать в первую очередь, потому что в дальнейшем после перечитывания модели и
+    // установки заголовков таблицы конечных записей слетают ширины полей (устанавливаюся в 100 px самим Qt)
+    QStringList showFields = appconfig.getRecordTableShowFields();
+    QStringList fieldsWidth = appconfig.getRecordTableFieldsWidth();
     qDebug() << "showFields" << showFields;
     qDebug() << "fieldsWidth" << fieldsWidth;
 
 
-// Запоминание в конфигурацию отображения горизонтальных заголовков
-    if(mytetraConfig.getRecordTableShowHorizontalHeaders()!=showHorizontalHeader->isChecked())
-        mytetraConfig.setRecordTableShowHorizontalHeaders(showHorizontalHeader->isChecked());
+    // Запоминание в конфигурацию отображения горизонтальных заголовков
+    if(appconfig.getRecordTableShowHorizontalHeaders() != showHorizontalHeader->isChecked())
+        appconfig.setRecordTableShowHorizontalHeaders(showHorizontalHeader->isChecked());
 
-// Запоминание в конфигурацию отображения нумерации строк
-    if(mytetraConfig.getRecordTableShowVerticalHeaders()!=showVerticalHeader->isChecked())
-        mytetraConfig.setRecordTableShowVerticalHeaders(showVerticalHeader->isChecked());
+    // Запоминание в конфигурацию отображения нумерации строк
+    if(appconfig.getRecordTableShowVerticalHeaders() != showVerticalHeader->isChecked())
+        appconfig.setRecordTableShowVerticalHeaders(showVerticalHeader->isChecked());
 
 
     QStringList addFieldsList; // Список полей, которые добавились в результате настройки
     QStringList removeFieldsList; // Список полей, которые должны удалиться в результате настройки
 
-// Определение, какие поля нужно добавить, какие удалить
+    // Определение, какие поля нужно добавить, какие удалить
     QMapIterator<QString, QCheckBox *> i(fields);
-    while (i.hasNext()) {
+
+    while(i.hasNext()) {
         i.next();
 
         // Если поле добавилось
-        if( !showFields.contains(i.key()) && i.value()->isChecked())
+        if(!showFields.contains(i.key()) && i.value()->isChecked())
             addFieldsList << i.key();
 
         // Если поле удалилось
-        if( showFields.contains(i.key()) && !i.value()->isChecked() )
+        if(showFields.contains(i.key()) && !i.value()->isChecked())
             removeFieldsList << i.key();
     }
 
     qDebug() << "addFieldsList" << addFieldsList;
     qDebug() << "removeFieldsList" << removeFieldsList;
 
-// Результирующий список полей
+    // Результирующий список полей
     QStringList newShowFields;
 
-// Добавление полей в результирующий список
-    newShowFields=showFields+addFieldsList;
+    // Добавление полей в результирующий список
+    newShowFields = showFields + addFieldsList;
 
-// Удаление полей в результирующем списке
+    // Удаление полей в результирующем списке
     foreach(QString removeFieldName, removeFieldsList)
-    newShowFields.removeAll(removeFieldName);
+        newShowFields.removeAll(removeFieldName);
 
     qDebug() << "newShowFields" << newShowFields;
 
-// Установка имен полей в конфигурацию
-    mytetraConfig.setRecordTableShowFields(newShowFields);
+    // Установка имен полей в конфигурацию
+    appconfig.setRecordTableShowFields(newShowFields);
 
 
-// Если полей становится больше чем было
-    if( newShowFields.size() > showFields.size() ) {
+    // Если полей становится больше чем было
+    if(newShowFields.size() > showFields.size()) {
         qDebug() << "Add fields width process...";
 
         // Ширина всех полей
-        float fullWidth=0.0;
+        float fullWidth = 0.0;
+
         foreach(QString currentWidth, fieldsWidth)
-        fullWidth+=currentWidth.toFloat();
+            fullWidth += currentWidth.toFloat();
 
         qDebug() << "fullWidth" << fullWidth;
 
         // Уменьшается ширина существующих полей
         QStringList newFieldsWidth;
-        float insertFieldWidth=100.0;
-        float insertFullWidth=insertFieldWidth * ( newShowFields.size() - showFields.size() );
-        float coefficient=(fullWidth-insertFullWidth)/fullWidth;
+        float insertFieldWidth = 100.0;
+        float insertFullWidth = insertFieldWidth * (newShowFields.size() - showFields.size());
+        float coefficient = (fullWidth - insertFullWidth) / fullWidth;
+
         foreach(QString currentWidth, fieldsWidth)
-        newFieldsWidth << QString::number( (int)(currentWidth.toFloat()*coefficient) );
+            newFieldsWidth << QString::number((int)(currentWidth.toFloat()*coefficient));
 
         qDebug() << "insertFullWidth" << insertFullWidth;
         qDebug() << "coefficient" << coefficient;
         qDebug() << "newFieldsWidth" << newFieldsWidth;
 
         // Добавляются ширины добавленных полей
-        for(int n=0; n<(newShowFields.size() - showFields.size()); n++)
-            newFieldsWidth << QString::number( (int)insertFieldWidth );
+        for(int n = 0; n < (newShowFields.size() - showFields.size()); n++)
+            newFieldsWidth << QString::number((int)insertFieldWidth);
 
         qDebug() << "newFieldsWidth" << newFieldsWidth;
 
         // Новые ширины полей запомниаются в конфигурацию
-        mytetraConfig.setRecordTableFieldsWidth(newFieldsWidth);
+        appconfig.setRecordTableFieldsWidth(newFieldsWidth);
     }
 
 
-// Если полей становится меньше чем было
-    if( newShowFields.size() < showFields.size() ) {
+    // Если полей становится меньше чем было
+    if(newShowFields.size() < showFields.size()) {
         qDebug() << "Remove fields width process...";
 
-        QStringList newFieldsWidth=fieldsWidth;
+        QStringList newFieldsWidth = fieldsWidth;
 
         qDebug() << "newFieldsWidth" << newFieldsWidth;
 
-        for(int n=0; n<(newShowFields.size() - showFields.size()); n++)
+        for(int n = 0; n < (newShowFields.size() - showFields.size()); n++)
             newFieldsWidth.removeLast();
 
         qDebug() << "newFieldsWidth in result" << newFieldsWidth;
 
         // Установка новых ширин полей в конфигурацию
-        mytetraConfig.setRecordTableFieldsWidth(newFieldsWidth);
+        appconfig.setRecordTableFieldsWidth(newFieldsWidth);
     }
 
 
-// Если полей столько же сколько и было
-    if( newShowFields.size() == showFields.size() ) {
+    // Если полей столько же сколько и было
+    if(newShowFields.size() == showFields.size()) {
         qDebug() << "Count of field not changed. Set previous fields width" << fieldsWidth;
 
         // Установка запомненных ширин полей в конфигурацию
         // Так как это значение в конфигурации было искажено в момент переподключения модели
-        mytetraConfig.setRecordTableFieldsWidth(fieldsWidth);
+        appconfig.setRecordTableFieldsWidth(fieldsWidth);
     }
 
     emit recordTableConfigChange();

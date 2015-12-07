@@ -86,7 +86,7 @@ QtLockedFile::QtLockedFile()
     wmutex = 0;
     rmutex = 0;
 #endif
-    m_lock_mode = NoLock;
+    _lockmode = NoLock;
 }
 
 /*!
@@ -103,7 +103,7 @@ QtLockedFile::QtLockedFile(const QString &name)
     wmutex = 0;
     rmutex = 0;
 #endif
-    m_lock_mode = NoLock;
+    _lockmode = NoLock;
 }
 
 /*!
@@ -136,7 +136,7 @@ bool QtLockedFile::open(OpenMode mode)
 */
 bool QtLockedFile::isLocked() const
 {
-    return m_lock_mode != NoLock;
+    return _lockmode != NoLock;
 }
 
 /*!
@@ -147,7 +147,7 @@ bool QtLockedFile::isLocked() const
 */
 QtLockedFile::LockMode QtLockedFile::lockMode() const
 {
-    return m_lock_mode;
+    return _lockmode;
 }
 
 /*!

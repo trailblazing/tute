@@ -39,11 +39,15 @@
 **
 ****************************************************************************/
 
-#include "browsermainwindow.h"
+
+#include <cassert>
+#include "utility/delegate.h"
+#include "dockedwindow.h"
 
 #include "autosaver.h"
 #include "bookmarks.h"
-#include "browserapplication.h"
+#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+
 #include "chasewidget.h"
 #include "downloadmanager.h"
 #include "history.h"
@@ -70,913 +74,1317 @@
 #include <QWebEngineHistory>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
-
+#include <QDockWidget>
 #include <QtCore/QDebug>
 
-template<typename Arg, typename R, typename C>
-struct InvokeWrapper {
-    R *receiver;
-    void (C::*memberFun)(Arg);
-    void operator()(Arg result) {
-        (receiver->*memberFun)(result);
+
+#include "main.h"
+#include "models/recordTable/RecordTableModel.h"
+#include "models/recordTable/RecordTableData.h"
+#include "models/recordTable/Record.h"
+#include "views/recordTable/RecordTableView.h"
+#include "libraries/GlobalParameters.h"
+#include "views/browser/entrance.h"
+#include "views/recordTable/RecordTableScreen.h"
+#include "controllers/recordTable/RecordTableController.h"
+#include "views/browser/tabwidget.h"
+#include "views/mainWindow/MainWindow.h"
+#include "views/findInBaseScreen/FindScreen.h"
+#include "views/tree/TreeScreen.h"
+
+extern GlobalParameters globalparameters;
+//Record *default_record = nullptr;
+
+
+namespace browser {
+
+    template<typename Arg, typename R, typename C>
+    struct InvokeWrapper {
+        R *receiver;
+        void (C::*memberFun)(Arg);
+        void operator()(Arg result)
+        {
+            (receiver->*memberFun)(result);
+        }
+    };
+
+    template<typename Arg, typename R, typename C>
+    InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
+    {
+        InvokeWrapper<Arg, R, C> wrapper = {receiver, memberFun};
+        return wrapper;
     }
-};
 
-template<typename Arg, typename R, typename C>
-InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
-{
-    InvokeWrapper<Arg, R, C> wrapper = {receiver, memberFun};
-    return wrapper;
-}
+    // const char *DockedWindow::_defaulthome = "about:blank";
 
-const char *BrowserMainWindow::defaultHome = "http://qt.io/";
+    DockedWindow::~DockedWindow()
+    {
 
-BrowserMainWindow::BrowserMainWindow(QWidget *parent, Qt::WindowFlags flags)
-    : QMainWindow(parent, flags)
-    , m_tabWidget(new TabWidget(this))
-    , m_autoSaver(new AutoSaver(this))
-    , m_historyBack(0)
-    , m_historyForward(0)
-    , m_stop(0)
-    , m_reload(0)
-{
-    setToolButtonStyle(Qt::ToolButtonFollowStyle);
-    setAttribute(Qt::WA_DeleteOnClose, true);
-    statusBar()->setSizeGripEnabled(true);
-    setupMenu();
-    setupToolBar();
+        _autosaver->changeOccurred();
+        _autosaver->saveIfNeccessary();
+        delete _autosaver;
+        delete _bookmarkstoolbar;
+        delete _tabmanager;
+        //    delete dock_widget;
+        delete _layout;
+        delete _centralwidget;
 
-    QWidget *centralWidget = new QWidget(this);
-    BookmarksModel *bookmarksModel = BrowserApplication::bookmarksManager()->bookmarksModel();
-    m_bookmarksToolbar = new BookmarksToolBar(bookmarksModel, this);
-    connect(m_bookmarksToolbar, SIGNAL(openUrl(QUrl)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
-    connect(m_bookmarksToolbar->toggleViewAction(), SIGNAL(toggled(bool)),
-            this, SLOT(updateBookmarksToolbarActionText(bool)));
+    }
 
-    QVBoxLayout *layout = new QVBoxLayout;
-    layout->setSpacing(0);
-    layout->setMargin(0);
+    void DockedWindow::init(QUrl const &url, const QString &style_source)
+    {
+        //        browser->setWidget(this);
+        //        this->setParent(browser);
+        setWebAttribute(QWebEngineSettings::JavascriptEnabled, true);
+        setWebAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+        setWebAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        setWebAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        setWebAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+
+        setToolButtonStyle(Qt::ToolButtonFollowStyle);
+        setAttribute(Qt::WA_DeleteOnClose, true);
+        //statusBar()
+        status_bar()->setSizeGripEnabled(true);
+        setupMenu();
+        setupToolBar();
+
+        //        QWidget *_centralwidget = new QWidget(this);
+        //        BookmarksModel *bookmarksModel = QtSingleApplication::bookmarksManager()->bookmarksModel();
+        //        _bookmarkstoolbar = new BookmarksToolBar(bookmarksModel, this);
+        connect(_bookmarkstoolbar, SIGNAL(openUrl(QUrl)), _tabmanager, SLOT(loadUrlInCurrentTab(QUrl)));
+        connect(_bookmarkstoolbar->toggleViewAction(), SIGNAL(toggled(bool)), this, SLOT(updateBookmarksToolbarActionText(bool)));
+
+        //        QVBoxLayout *_layout = new QVBoxLayout;
+        _layout->setSpacing(0);
+        _layout->setMargin(0);
 #if defined(Q_OS_OSX)
-    layout->addWidget(m_bookmarksToolbar);
-    layout->addWidget(new QWidget); // <- OS X tab widget style bug
+        layout->addWidget(_bookmarkstoolbar);
+        layout->addWidget(new QWidget); // <- OS X tab widget style bug
 #else
-    addToolBarBreak();
-    addToolBar(m_bookmarksToolbar);
+        addToolBarBreak();
+        addToolBar(_bookmarkstoolbar);
 #endif
-    layout->addWidget(m_tabWidget);
-    centralWidget->setLayout(layout);
-    setCentralWidget(centralWidget);
+        _layout->addWidget(_tabmanager);
+        _centralwidget->setLayout(_layout);
+        setCentralWidget(_centralwidget);
 
-    connect(m_tabWidget, SIGNAL(loadPage(QString)),
-        this, SLOT(loadPage(QString)));
-    connect(m_tabWidget, SIGNAL(setCurrentTitle(QString)),
-        this, SLOT(slotUpdateWindowTitle(QString)));
-    connect(m_tabWidget, SIGNAL(showStatusBarMessage(QString)),
-            statusBar(), SLOT(showMessage(QString)));
-    connect(m_tabWidget, SIGNAL(linkHovered(QString)),
-            statusBar(), SLOT(showMessage(QString)));
-    connect(m_tabWidget, SIGNAL(loadProgress(int)),
-            this, SLOT(slotLoadProgress(int)));
-    connect(m_tabWidget, SIGNAL(tabsChanged()),
-            m_autoSaver, SLOT(changeOccurred()));
-    connect(m_tabWidget, SIGNAL(geometryChangeRequested(QRect)),
-            this, SLOT(geometryChangeRequested(QRect)));
+        connect(_tabmanager, SIGNAL(loadPage(QString)), this, SLOT(loadPage(QString)));
+        connect(_tabmanager, SIGNAL(setCurrentTitle(QString)), this, SLOT(slotUpdateWindowTitle(QString)));
+        connect(_tabmanager, SIGNAL(showStatusBarMessage(QString)), status_bar(), SLOT(showMessage(QString)));
+        connect(_tabmanager, SIGNAL(linkHovered(QString)), status_bar(), SLOT(showMessage(QString)));
+        connect(_tabmanager, SIGNAL(loadProgress(int)), this, SLOT(slotLoadProgress(int)));
+        connect(_tabmanager, SIGNAL(tabsChanged()), _autosaver, SLOT(changeOccurred()));
+        connect(_tabmanager, SIGNAL(geometryChangeRequested(QRect)), this, SLOT(geometryChangeRequested(QRect)));
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
-    connect(m_tabWidget, SIGNAL(printRequested(QWebEngineFrame*)),
-            this, SLOT(printRequested(QWebEngineFrame*)));
+        connect(_tabwidget, SIGNAL(printRequested(QWebEngineFrame *)), this, SLOT(printRequested(QWebEngineFrame *)));
 #endif
-    connect(m_tabWidget, SIGNAL(menuBarVisibilityChangeRequested(bool)),
-            menuBar(), SLOT(setVisible(bool)));
-    connect(m_tabWidget, SIGNAL(statusBarVisibilityChangeRequested(bool)),
-            statusBar(), SLOT(setVisible(bool)));
-    connect(m_tabWidget, SIGNAL(toolBarVisibilityChangeRequested(bool)),
-            m_navigationBar, SLOT(setVisible(bool)));
-    connect(m_tabWidget, SIGNAL(toolBarVisibilityChangeRequested(bool)),
-            m_bookmarksToolbar, SLOT(setVisible(bool)));
+        connect(_tabmanager, SIGNAL(menuBarVisibilityChangeRequested(bool)), menuBar(), SLOT(setVisible(bool)));
+        connect(_tabmanager, SIGNAL(statusBarVisibilityChangeRequested(bool)), status_bar(), SLOT(setVisible(bool)));
+        //        connect(_tabmanager, SIGNAL(toolBarVisibilityChangeRequested(bool)), navigater, SLOT(setVisible(bool)));
+        connect(_tabmanager, SIGNAL(toolBarVisibilityChangeRequested(bool)), _bookmarkstoolbar, SLOT(setVisible(bool)));
 #if defined(Q_OS_OSX)
-    connect(m_tabWidget, SIGNAL(lastTabClosed()),
-            this, SLOT(close()));
+        connect(_tabwidget, SIGNAL(lastTabClosed()), this, SLOT(close()));
 #else
-    connect(m_tabWidget, SIGNAL(lastTabClosed()),
-            m_tabWidget, SLOT(newTab()));
+        connect(
+            _tabmanager
+            , &TabWidget::lastTabClosed
+            , _tabmanager
+        , [this]() ->void {
+            //            _tabmanager->newTab(request_record(QUrl(DockedWindow::_defaulthome)));
+            //            WebView *view = nullptr;
+            //            sd::method(
+            //                ""  //std::string _method_name
+            //                , &TabWidget::newTab    //return_type(object_type::*f)(Arg...)          //  f can be std::function<> template?
+            //                , view  //return_type *r            // = (return_type *)0
+            //                , _tabmanager   //typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+            //                , Arg &&... arg
+            //            );
+            auto arint = boost::make_shared<TabWidget::active_record_in_new_tab>(_tabmanager, true);
+            request_record(
+                QUrl(DockedWindow::_defaulthome)
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+                    ""
+                    , &TabWidget::active_record_in_new_tab::generator
+                    , arint
+                )
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                    ""
+                    , &TabWidget::active_record_in_new_tab::activator
+                    , arint
+                )
+            );
+        });
 #endif
 
-    slotUpdateWindowTitle();
-    loadDefaultState();
-    m_tabWidget->newTab();
+        slotUpdateWindowTitle();
+        loadDefaultState();
+        //Record *_backup = record;
+        //PageView *new_view =
 
-    int size = m_tabWidget->lineEditStack()->sizeHint().height();
-    m_navigationBar->setIconSize(QSize(size, size));
+        //        _tabmanager->newTab(url);  // , false
+        auto arint = boost::make_shared<TabWidget::active_record_in_new_tab>(_tabmanager, true);
+        Record *record = request_record(    // why do this?
+                             url
+                             , std::make_shared <
+                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const >> (
+                                 ""
+                                 , &TabWidget::active_record_in_new_tab::generator
+                                 , arint
+                             )
+                             , std::make_shared <
+                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void >> (
+                                 ""
+                                 , &TabWidget::active_record_in_new_tab::activator
+                                 , arint
+                             )
+                         );
 
-}
+        //assert(new_view->page());
+        //record->page(new_view->page());
+        //assert(_backup->page());
 
-BrowserMainWindow::~BrowserMainWindow()
-{
-    m_autoSaver->changeOccurred();
-    m_autoSaver->saveIfNeccessary();
-}
+        assert(record->binded_only_page());
 
-void BrowserMainWindow::loadDefaultState()
-{
-    QSettings settings;
-    settings.beginGroup(QLatin1String("BrowserMainWindow"));
-    QByteArray data = settings.value(QLatin1String("defaultState")).toByteArray();
-    restoreState(data);
-    settings.endGroup();
-}
+        //        int size = _tabmanager->lineEditStack()->sizeHint().height();
 
-QSize BrowserMainWindow::sizeHint() const
-{
-    QRect desktopRect = QApplication::desktop()->screenGeometry();
-    QSize size = desktopRect.size() * qreal(0.9);
-    return size;
-}
+        //        navigater->setIconSize(QSize(size, size));
 
-void BrowserMainWindow::save()
-{
-    BrowserApplication::instance()->saveSession();
+        //    initUrl();
+        //dock_widget->setWidget(this);
+        //setParent(dock_widget);
 
-    QSettings settings;
-    settings.beginGroup(QLatin1String("BrowserMainWindow"));
-    QByteArray data = saveState(false);
-    settings.setValue(QLatin1String("defaultState"), data);
-    settings.endGroup();
-}
+        //        connect(globalparameters.mainwindow(), &MainWindow::setEnabled, this, &DockedWindow::setEnabled);
+        //        connect(globalparameters.mainwindow(), &MainWindow::blockSignals, this, &DockedWindow::blockSignals);
 
-static const qint32 BrowserMainWindowMagic = 0xba;
+        QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
+    }
 
-QByteArray BrowserMainWindow::saveState(bool withTabs) const
-{
-    int version = 2;
-    QByteArray data;
-    QDataStream stream(&data, QIODevice::WriteOnly);
+    DockedWindow::DockedWindow(
+        const QByteArray &state
+        , RecordTableController *recordtablecontroller
+        , Entrance *entrance   //, QDockWidget *parent
+        , const QString &style_source
+        , Qt::WindowFlags flags
+    ) : QMainWindow(0, flags)
+        , _recordtablecontroller(recordtablecontroller)
+        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _tabmanager(new TabWidget(recordtablecontroller, this))
+        , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
+        , _chasewidget(globalparameters.getFindScreen()->chasewidget())
+        , _autosaver(new AutoSaver(this))
+        , _historyhome(globalparameters.getFindScreen()->historyhome())
+        , _historyback(globalparameters.getFindScreen()->historyback())
+        , _historyforward(globalparameters.getFindScreen()->historyforward())
+        , _stop(0)
+        , _reload(0)
+        , _stopreload(globalparameters.getFindScreen()->stopreload())
+        , _centralwidget(new QWidget(this))
+        , _layout(new QVBoxLayout)
+    {
+        init(QUrl(DockedWindow::_defaulthome), style_source);
+        this->restore_state(state);
+        QMainWindow::setWindowFlags(
+            //Qt::Window |
+            Qt::FramelessWindowHint);
+        QMainWindow::menuBar()->hide();
+        QMainWindow::statusBar()->hide();
+        show();
+    }
 
-    stream << qint32(BrowserMainWindowMagic);
-    stream << qint32(version);
+    DockedWindow::DockedWindow(const QUrl &url
+                               , RecordTableController *recordtablecontroller
+                               , Entrance *entrance   //, QDockWidget *parent
+                               , const QString &style_source
+                               , Qt::WindowFlags flags
+                              )
+        : QMainWindow(0, flags)
+        , _recordtablecontroller(recordtablecontroller)
+        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _tabmanager(new TabWidget(recordtablecontroller, this))
+        , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
+        , _chasewidget(globalparameters.getFindScreen()->chasewidget())
+        , _autosaver(new AutoSaver(this))
+        , _historyhome(globalparameters.getFindScreen()->historyhome())
+        , _historyback(globalparameters.getFindScreen()->historyback())
+        , _historyforward(globalparameters.getFindScreen()->historyforward())
+        , _stop(0)
+        , _reload(0)
+        , _stopreload(globalparameters.getFindScreen()->stopreload())
+        , _centralwidget(new QWidget(this))
+        , _layout(new QVBoxLayout)
+    {
+        init(url, style_source);
+        //        assert(record->linkpage());
+        QMainWindow::setWindowFlags(
+            //Qt::Window |
+            Qt::FramelessWindowHint);
+        QMainWindow::menuBar()->hide();
+        QMainWindow::statusBar()->hide();
+        show();
+    }
 
-    stream << size();
-    stream << !m_navigationBar->isHidden();
-    stream << !m_bookmarksToolbar->isHidden();
-    stream << !statusBar()->isHidden();
-    if (withTabs)
-        stream << tabWidget()->saveState();
-    else
-        stream << QByteArray();
-    return data;
-}
+    void DockedWindow::activateWindow()
+    {
+        _entrance->setWidget(this);
+        this->setParent(_entrance);
+        QMainWindow::activateWindow();
+    }
 
-bool BrowserMainWindow::restoreState(const QByteArray &state)
-{
-    int version = 2;
-    QByteArray sd = state;
-    QDataStream stream(&sd, QIODevice::ReadOnly);
-    if (stream.atEnd())
-        return false;
+    void DockedWindow::loadDefaultState()
+    {
+        QSettings settings;
+        settings.beginGroup(QLatin1String("DockedWindow"));
+        QByteArray data = settings.value(QLatin1String("defaultState")).toByteArray();
+        restore_state(data);
+        settings.endGroup();
+    }
 
-    qint32 marker;
-    qint32 v;
-    stream >> marker;
-    stream >> v;
-    if (marker != BrowserMainWindowMagic || v != version)
-        return false;
+    QSize DockedWindow::sizeHint() const
+    {
+        QRect desktopRect = QApplication::desktop()->screenGeometry();
+        QSize size = desktopRect.size() * qreal(0.9);
+        return size;
+    }
 
-    QSize size;
-    bool showToolbar;
-    bool showBookmarksBar;
-    bool showStatusbar;
-    QByteArray tabState;
+    void DockedWindow::save()
+    {
+        QtSingleApplication::instance()->saveSession();
 
-    stream >> size;
-    stream >> showToolbar;
-    stream >> showBookmarksBar;
-    stream >> showStatusbar;
-    stream >> tabState;
+        QSettings settings;
+        settings.beginGroup(QLatin1String("DockedWindow"));
+        QByteArray data = save_state(false);
+        settings.setValue(QLatin1String("defaultState"), data);
+        settings.endGroup();
+    }
 
-    resize(size);
+    static const qint32 DockedWindowMagic = 0xba;
 
-    m_navigationBar->setVisible(showToolbar);
-    updateToolbarActionText(showToolbar);
+    QByteArray DockedWindow::save_state(bool withTabs) const
+    {
+        FindScreen *findscreen = globalparameters.getFindScreen();
+        assert(findscreen);
+        //        QToolBar *navigater = findscreen->navigater();
+        //        assert(navigater);
 
-    m_bookmarksToolbar->setVisible(showBookmarksBar);
-    updateBookmarksToolbarActionText(showBookmarksBar);
+        int version = 2;
+        QByteArray data;
+        QDataStream stream(&data, QIODevice::WriteOnly);
 
-    statusBar()->setVisible(showStatusbar);
-    updateStatusbarActionText(showStatusbar);
+        stream << qint32(DockedWindowMagic);
+        stream << qint32(version);
 
-    if (!tabWidget()->restoreState(tabState))
-        return false;
+        stream << size();
+        stream << menuBar()->isVisible();
+        stream << !findscreen->isHidden();
+        stream << !_bookmarkstoolbar->isHidden();
+        stream << !status_bar()->isHidden();
 
-    return true;
-}
+        if(withTabs)
+            stream << tabWidget()->saveState();
+        else
+            stream << QByteArray();
 
-void BrowserMainWindow::runScriptOnOpenViews(const QString &source)
-{
-    for (int i =0; i < tabWidget()->count(); ++i)
-        tabWidget()->webView(i)->page()->runJavaScript(source);
-}
+        return data;
+    }
 
-void BrowserMainWindow::setupMenu()
-{
-    new QShortcut(QKeySequence(Qt::Key_F6), this, SLOT(slotSwapFocus()));
+    bool DockedWindow::restore_state(const QByteArray &state)
+    {
+        FindScreen *findscreen = globalparameters.getFindScreen();
+        assert(findscreen);
+        //        QToolBar *navigater = findscreen->navigater();
+        //        assert(navigater);
 
-    // File
-    QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
+        int version = 2;
+        QByteArray sd = state;
+        QDataStream stream(&sd, QIODevice::ReadOnly);
 
-    fileMenu->addAction(tr("&New Window"), this, SLOT(slotFileNew()), QKeySequence::New);
-    fileMenu->addAction(m_tabWidget->newTabAction());
-    fileMenu->addAction(tr("&Open File..."), this, SLOT(slotFileOpen()), QKeySequence::Open);
-    fileMenu->addAction(tr("Open &Location..."), this,
-                SLOT(slotSelectLineEdit()), QKeySequence(Qt::ControlModifier + Qt::Key_L));
-    fileMenu->addSeparator();
-    fileMenu->addAction(m_tabWidget->closeTabAction());
-    fileMenu->addSeparator();
+        if(stream.atEnd())
+            return false;
+
+        qint32 marker;
+        qint32 v;
+        stream >> marker;
+        stream >> v;
+
+        if(marker != DockedWindowMagic || v != version)
+            return false;
+
+        QSize size;
+        bool showMenuBar;
+        bool showToolbar;
+        bool showBookmarksBar;
+        bool showStatusbar;
+        QByteArray tabState;
+
+        stream >> size;
+        stream >> showMenuBar;
+        stream >> showToolbar;
+        stream >> showBookmarksBar;
+        stream >> showStatusbar;
+        stream >> tabState;
+
+        resize(size);
+
+        findscreen->setVisible(showToolbar);
+        updateToolbarActionText(showToolbar);
+
+        globalparameters.mainwindow()->menuBar()->setVisible(showMenuBar);
+        [this](bool show) {_viewmenubar->setText(show ? tr("Hide Menu bar") : tr("Show Menu bar"));}(showMenuBar);
+
+        _bookmarkstoolbar->setVisible(showBookmarksBar);
+        updateBookmarksToolbarActionText(showBookmarksBar);
+
+        status_bar()->setVisible(showStatusbar);
+        updateStatusbarActionText(showStatusbar);
+
+        if(!tabWidget()->restoreState(tabState))
+            return false;
+
+        return true;
+    }
+
+    void DockedWindow::runScriptOnOpenViews(const QString &source)
+    {
+        for(int i = 0; i < tabWidget()->count(); ++i) {
+            auto browserview = tabWidget()->webView(i);
+
+            if(browserview != nullptr)
+                browserview->page()->runJavaScript(source);
+        }
+    }
+
+    void DockedWindow::setupMenu()
+    {
+        new QShortcut(QKeySequence(Qt::Key_F6), this, SLOT(slotSwapFocus()));
+
+        // File
+        QMenu *filemenu = globalparameters.mainwindow()->filemenu();    //menuBar()->addMenu(tr("&File"));
+
+        filemenu->addAction(tr("&New Window"), this, SLOT(slotFileNew()), QKeySequence::New);
+        filemenu->addAction(_tabmanager->newTabAction());
+        filemenu->addAction(tr("&Open File..."), this, SLOT(slotFileOpen()), QKeySequence::Open);
+        filemenu->addAction(tr("Open &Location..."), this,
+                            SLOT(slotSelectLineEdit()), QKeySequence(Qt::ControlModifier + Qt::Key_L));
+        filemenu->addSeparator();
+        filemenu->addAction(_tabmanager->closeTabAction());
+        filemenu->addSeparator();
 #if defined(QWEBENGINE_SAVE_AS_FILE)
-    fileMenu->addAction(tr("&Save As..."), this,
-                SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
-    fileMenu->addSeparator();
+        fileMenu->addAction(tr("&Save As..."), this,
+                            SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
+        fileMenu->addSeparator();
 #endif
-    BookmarksManager *bookmarksManager = BrowserApplication::bookmarksManager();
-    fileMenu->addAction(tr("&Import Bookmarks..."), bookmarksManager, SLOT(importBookmarks()));
-    fileMenu->addAction(tr("&Export Bookmarks..."), bookmarksManager, SLOT(exportBookmarks()));
-    fileMenu->addSeparator();
+        BookmarksManager *bookmarksManager = QtSingleApplication::bookmarksManager();
+        filemenu->addAction(tr("&Import Bookmarks..."), bookmarksManager, SLOT(importBookmarks()));
+        filemenu->addAction(tr("&Export Bookmarks..."), bookmarksManager, SLOT(exportBookmarks()));
+        filemenu->addSeparator();
 #if defined(QWEBENGINEPAGE_PRINT)
-    fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
-    fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
-    fileMenu->addSeparator();
+        fileMenu->addAction(tr("P&rint Preview..."), this, SLOT(slotFilePrintPreview()));
+        fileMenu->addAction(tr("&Print..."), this, SLOT(slotFilePrint()), QKeySequence::Print);
+        fileMenu->addSeparator();
 #endif
-    QAction *action = fileMenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
-    action->setCheckable(true);
-    action->setChecked(BrowserApplication::instance()->privateBrowsing());
-    connect(BrowserApplication::instance(), SIGNAL(privateBrowsingChanged(bool)), action, SLOT(setChecked(bool)));
-    fileMenu->addSeparator();
+        QAction *action = filemenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
+        action->setCheckable(true);
+        action->setChecked(QtSingleApplication::instance()->privateBrowsing());
+        connect(QtSingleApplication::instance(), SIGNAL(privateBrowsingChanged(bool)), action, SLOT(setChecked(bool)));
+        filemenu->addSeparator();
 
-#if defined(Q_OS_OSX)
-    fileMenu->addAction(tr("&Quit"), BrowserApplication::instance(), SLOT(quitBrowser()), QKeySequence(Qt::CTRL | Qt::Key_Q));
-#else
-    fileMenu->addAction(tr("&Quit"), this, SLOT(close()), QKeySequence(Qt::CTRL | Qt::Key_Q));
-#endif
+        //#if defined(Q_OS_OSX)
+        //        fileMenu->addAction(tr("&Quit"), QtSingleApplication::instance(), SLOT(quitBrowser()), QKeySequence(Qt::CTRL | Qt::Key_Q));
+        //#else
+        //        fileMenu->addAction(tr("&Quit"), this, SLOT(close()), QKeySequence(Qt::CTRL | Qt::Key_Q));
+        //#endif
 
-    // Edit
-    QMenu *editMenu = menuBar()->addMenu(tr("&Edit"));
-    QAction *m_undo = editMenu->addAction(tr("&Undo"));
-    m_undo->setShortcuts(QKeySequence::Undo);
-    m_tabWidget->addWebAction(m_undo, QWebEnginePage::Undo);
-    QAction *m_redo = editMenu->addAction(tr("&Redo"));
-    m_redo->setShortcuts(QKeySequence::Redo);
-    m_tabWidget->addWebAction(m_redo, QWebEnginePage::Redo);
-    editMenu->addSeparator();
-    QAction *m_cut = editMenu->addAction(tr("Cu&t"));
-    m_cut->setShortcuts(QKeySequence::Cut);
-    m_tabWidget->addWebAction(m_cut, QWebEnginePage::Cut);
-    QAction *m_copy = editMenu->addAction(tr("&Copy"));
-    m_copy->setShortcuts(QKeySequence::Copy);
-    m_tabWidget->addWebAction(m_copy, QWebEnginePage::Copy);
-    QAction *m_paste = editMenu->addAction(tr("&Paste"));
-    m_paste->setShortcuts(QKeySequence::Paste);
-    m_tabWidget->addWebAction(m_paste, QWebEnginePage::Paste);
-    editMenu->addSeparator();
 
-    QAction *m_find = editMenu->addAction(tr("&Find"));
-    m_find->setShortcuts(QKeySequence::Find);
-    connect(m_find, SIGNAL(triggered()), this, SLOT(slotEditFind()));
-    new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
+        QAction *quit = new QAction(tr("&Quit"), globalparameters.mainwindow());
+        quit->setShortcut(Qt::CTRL + Qt::Key_Q);
+        connect(quit, SIGNAL(triggered()), globalparameters.mainwindow(), SLOT(applicationExit()));
+        filemenu->addAction(quit);
 
-    QAction *m_findNext = editMenu->addAction(tr("&Find Next"));
-    m_findNext->setShortcuts(QKeySequence::FindNext);
-    connect(m_findNext, SIGNAL(triggered()), this, SLOT(slotEditFindNext()));
+        // Edit
+        QMenu *editMenu = globalparameters.mainwindow()->menuBar()->addMenu(tr("&Edit"));
+        QAction *undo_ = editMenu->addAction(tr("&Undo"));
+        undo_->setShortcuts(QKeySequence::Undo);
+        _tabmanager->addWebAction(undo_, QWebEnginePage::Undo);
+        QAction *redo_ = editMenu->addAction(tr("&Redo"));
+        redo_->setShortcuts(QKeySequence::Redo);
+        _tabmanager->addWebAction(redo_, QWebEnginePage::Redo);
+        editMenu->addSeparator();
+        QAction *cut_ = editMenu->addAction(tr("Cu&t"));
+        cut_->setShortcuts(QKeySequence::Cut);
+        _tabmanager->addWebAction(cut_, QWebEnginePage::Cut);
+        QAction *copy_ = editMenu->addAction(tr("&Copy"));
+        copy_->setShortcuts(QKeySequence::Copy);
+        _tabmanager->addWebAction(copy_, QWebEnginePage::Copy);
+        QAction *paste_ = editMenu->addAction(tr("&Paste"));
+        paste_->setShortcuts(QKeySequence::Paste);
+        _tabmanager->addWebAction(paste_, QWebEnginePage::Paste);
+        editMenu->addSeparator();
 
-    QAction *m_findPrevious = editMenu->addAction(tr("&Find Previous"));
-    m_findPrevious->setShortcuts(QKeySequence::FindPrevious);
-    connect(m_findPrevious, SIGNAL(triggered()), this, SLOT(slotEditFindPrevious()));
-    editMenu->addSeparator();
+        QAction *find_ = editMenu->addAction(tr("&Find"));
+        find_->setShortcuts(QKeySequence::Find);
+        connect(find_, SIGNAL(triggered()), this, SLOT(slotEditFind()));
+        new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
 
-    editMenu->addAction(tr("&Preferences"), this, SLOT(slotPreferences()), tr("Ctrl+,"));
+        QAction *findnext_ = editMenu->addAction(tr("&Find Next"));
+        findnext_->setShortcuts(QKeySequence::FindNext);
+        connect(findnext_, SIGNAL(triggered()), this, SLOT(slotEditFindNext()));
 
-    // View
-    QMenu *viewMenu = menuBar()->addMenu(tr("&View"));
+        QAction *findprevious_ = editMenu->addAction(tr("&Find Previous"));
+        findprevious_->setShortcuts(QKeySequence::FindPrevious);
+        connect(findprevious_, SIGNAL(triggered()), this, SLOT(slotEditFindPrevious()));
+        editMenu->addSeparator();
 
-    m_viewBookmarkBar = new QAction(this);
-    updateBookmarksToolbarActionText(true);
-    m_viewBookmarkBar->setShortcut(tr("Shift+Ctrl+B"));
-    connect(m_viewBookmarkBar, SIGNAL(triggered()), this, SLOT(slotViewBookmarksBar()));
-    viewMenu->addAction(m_viewBookmarkBar);
+        editMenu->addAction(tr("&Browser preferences"), this, SLOT(slotPreferences()), tr("Ctrl+,"));
 
-    m_viewToolbar = new QAction(this);
-    updateToolbarActionText(true);
-    m_viewToolbar->setShortcut(tr("Ctrl+|"));
-    connect(m_viewToolbar, SIGNAL(triggered()), this, SLOT(slotViewToolbar()));
-    viewMenu->addAction(m_viewToolbar);
+        globalparameters.getTreeScreen()->buttonmenu()->addMenu(editMenu);
 
-    m_viewStatusbar = new QAction(this);
-    updateStatusbarActionText(true);
-    m_viewStatusbar->setShortcut(tr("Ctrl+/"));
-    connect(m_viewStatusbar, SIGNAL(triggered()), this, SLOT(slotViewStatusbar()));
-    viewMenu->addAction(m_viewStatusbar);
+        // View
+        QMenu *viewMenu = globalparameters.mainwindow()->menuBar()->addMenu(tr("&View"));
 
-    viewMenu->addSeparator();
+        _viewmenubar = new QAction(this);
+        //updateMenuBarActionText(true);
+        _viewmenubar->setText(tr("Hide Menu bar"));
+        _viewmenubar->setShortcut(tr("Shift+Ctrl+M"));
+        connect(_viewmenubar, &QAction::triggered, this
+                //&DockedWindow::slotViewMenuBar
+        , [this]() {
+            if(globalparameters.mainwindow()->menuBar()->isVisible()) {
+                _viewmenubar->setText(tr("Show Menu bar"));    //updateMenuBarActionText(false);
+                //globalparameters.mainwindow()->menuBar()->hide();
+                globalparameters.mainwindow()->menuBar()->close();
+            } else {
+                _viewmenubar->setText(tr("Hide Menu bar"));    //updateMenuBarActionText(true);
+                globalparameters.mainwindow()->menuBar()->show();
+            }
 
-    m_stop = viewMenu->addAction(tr("&Stop"));
-    QList<QKeySequence> shortcuts;
-    shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Period));
-    shortcuts.append(Qt::Key_Escape);
-    m_stop->setShortcuts(shortcuts);
-    m_tabWidget->addWebAction(m_stop, QWebEnginePage::Stop);
+            _autosaver->changeOccurred();
+        }
+               );
 
-    m_reload = viewMenu->addAction(tr("Reload Page"));
-    m_reload->setShortcuts(QKeySequence::Refresh);
-    m_tabWidget->addWebAction(m_reload, QWebEnginePage::Reload);
+        viewMenu->addAction(_viewmenubar);
 
-    viewMenu->addAction(tr("Zoom &In"), this, SLOT(slotViewZoomIn()), QKeySequence(Qt::CTRL | Qt::Key_Plus));
-    viewMenu->addAction(tr("Zoom &Out"), this, SLOT(slotViewZoomOut()), QKeySequence(Qt::CTRL | Qt::Key_Minus));
-    viewMenu->addAction(tr("Reset &Zoom"), this, SLOT(slotViewResetZoom()), QKeySequence(Qt::CTRL | Qt::Key_0));
+        _viewbookmarkbar = new QAction(this);
+        updateBookmarksToolbarActionText(true);
+        _viewbookmarkbar->setShortcut(tr("Shift+Ctrl+B"));
+        connect(_viewbookmarkbar, SIGNAL(triggered()), this, SLOT(slotViewBookmarksBar()));
+        viewMenu->addAction(_viewbookmarkbar);
 
-    viewMenu->addSeparator();
-    viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
-    QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
-    a->setCheckable(true);
+        _viewtoolbar = new QAction(this);
+        updateToolbarActionText(true);
+        _viewtoolbar->setShortcut(tr("Ctrl+|"));
+        connect(_viewtoolbar, SIGNAL(triggered()), this, SLOT(slotViewToolbar()));
+        viewMenu->addAction(_viewtoolbar);
 
-    // History
-    HistoryMenu *historyMenu = new HistoryMenu(this);
-    connect(historyMenu, SIGNAL(openUrl(QUrl)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
-    connect(historyMenu, SIGNAL(hovered(QString)), this,
-            SLOT(slotUpdateStatusbar(QString)));
-    historyMenu->setTitle(tr("Hi&story"));
-    menuBar()->addMenu(historyMenu);
-    QList<QAction*> historyActions;
+        _viewstatusbar = new QAction(this);
+        updateStatusbarActionText(true);
+        _viewstatusbar->setShortcut(tr("Ctrl+/"));
+        connect(_viewstatusbar, SIGNAL(triggered()), this, SLOT(slotViewStatusbar()));
+        viewMenu->addAction(_viewstatusbar);
 
-    m_historyBack = new QAction(tr("Back"), this);
-    m_tabWidget->addWebAction(m_historyBack, QWebEnginePage::Back);
-    m_historyBack->setShortcuts(QKeySequence::Back);
-    m_historyBack->setIconVisibleInMenu(false);
-    historyActions.append(m_historyBack);
+        viewMenu->addSeparator();
 
-    m_historyForward = new QAction(tr("Forward"), this);
-    m_tabWidget->addWebAction(m_historyForward, QWebEnginePage::Forward);
-    m_historyForward->setShortcuts(QKeySequence::Forward);
-    m_historyForward->setIconVisibleInMenu(false);
-    historyActions.append(m_historyForward);
+        _stop = viewMenu->addAction(tr("&Stop"));
+        QList<QKeySequence> shortcuts;
+        shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Period));
+        shortcuts.append(Qt::Key_Escape);
+        _stop->setShortcuts(shortcuts);
+        _tabmanager->addWebAction(_stop, QWebEnginePage::Stop);
 
-    QAction *m_historyHome = new QAction(tr("Home"), this);
-    connect(m_historyHome, SIGNAL(triggered()), this, SLOT(slotHome()));
-    m_historyHome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
-    historyActions.append(m_historyHome);
+        _reload = viewMenu->addAction(tr("Reload Page"));
+        _reload->setShortcuts(QKeySequence::Refresh);
+        _tabmanager->addWebAction(_reload, QWebEnginePage::Reload);
+
+        viewMenu->addAction(tr("Zoom &In"), this, SLOT(slotViewZoomIn()), QKeySequence(Qt::CTRL | Qt::Key_Plus));
+        viewMenu->addAction(tr("Zoom &Out"), this, SLOT(slotViewZoomOut()), QKeySequence(Qt::CTRL | Qt::Key_Minus));
+        viewMenu->addAction(tr("Reset &Zoom"), this, SLOT(slotViewResetZoom()), QKeySequence(Qt::CTRL | Qt::Key_0));
+
+        viewMenu->addSeparator();
+        viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
+        QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
+        a->setCheckable(true);
+
+        globalparameters.getTreeScreen()->buttonmenu()->addMenu(viewMenu);
+
+        // History
+        HistoryMenu *historyMenu = new HistoryMenu(
+            globalparameters.mainwindow()   //this
+        );
+        connect(historyMenu, SIGNAL(openUrl(QUrl)), _tabmanager, SLOT(loadUrlInCurrentTab(QUrl)));
+        connect(historyMenu, SIGNAL(hovered(QString)), this, SLOT(slotUpdateStatusbar(QString)));
+        historyMenu->setTitle(tr("Hi&story"));
+
+        globalparameters.mainwindow()->menuBar()->addMenu(historyMenu);
+
+        globalparameters.getTreeScreen()->buttonmenu()->addMenu(historyMenu);
+
+        QList<QAction *> historyActions;
+
+        //_historyback = new QAction(tr("Back"), this);
+        _tabmanager->addWebAction(_historyback, QWebEnginePage::Back);
+        _historyback->setShortcuts(QKeySequence::Back);
+        _historyback->setIconVisibleInMenu(false);
+        historyActions.append(_historyback);
+
+        //_historyforward = new QAction(tr("Forward"), this);
+        _tabmanager->addWebAction(_historyforward, QWebEnginePage::Forward);
+        _historyforward->setShortcuts(QKeySequence::Forward);
+        _historyforward->setIconVisibleInMenu(false);
+        historyActions.append(_historyforward);
+
+        //QAction *_historyhome = new QAction(tr("Home"), this);
+        //connect(_historyhome, SIGNAL(triggered()), this, SLOT(slotHome()));
+
+        //        connect(_historyhome, &QAction::triggered, this, &DockedWindow::slotHome);
+
+        _historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
+
+        historyActions.append(_historyhome);
 
 #if defined(QWEBENGINEHISTORY_RESTORESESSION)
-    m_restoreLastSession = new QAction(tr("Restore Last Session"), this);
-    connect(m_restoreLastSession, SIGNAL(triggered()), BrowserApplication::instance(), SLOT(restoreLastSession()));
-    m_restoreLastSession->setEnabled(BrowserApplication::instance()->canRestoreSession());
-    historyActions.append(m_tabWidget->recentlyClosedTabsAction());
-    historyActions.append(m_restoreLastSession);
+        _restorelastsession = new QAction(tr("Restore Last Session"), this);
+        connect(_restorelastsession, SIGNAL(triggered()), QtSingleApplication::instance(), SLOT(restoreLastSession()));
+        _restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
+        historyActions.append(_tabwidget->recentlyClosedTabsAction());
+        historyActions.append(_restorelastsession);
 #endif
 
-    historyMenu->setInitialActions(historyActions);
+        historyMenu->setInitialActions(historyActions);
 
-    // Bookmarks
-    BookmarksMenu *bookmarksMenu = new BookmarksMenu(this);
-    connect(bookmarksMenu, SIGNAL(openUrl(QUrl)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
-    connect(bookmarksMenu, SIGNAL(hovered(QString)),
-            this, SLOT(slotUpdateStatusbar(QString)));
-    bookmarksMenu->setTitle(tr("&Bookmarks"));
-    menuBar()->addMenu(bookmarksMenu);
+        // Bookmarks
+        BookmarksMenu *bookmarksMenu = new BookmarksMenu(
+            globalparameters.mainwindow()   //this
+        );
+        connect(bookmarksMenu, SIGNAL(openUrl(QUrl)), _tabmanager, SLOT(loadUrlInCurrentTab(QUrl)));
+        connect(bookmarksMenu, SIGNAL(hovered(QString)), this, SLOT(slotUpdateStatusbar(QString)));
+        bookmarksMenu->setTitle(tr("&Bookmarks"));
+        globalparameters.mainwindow()->menuBar()->addMenu(bookmarksMenu);
 
-    QList<QAction*> bookmarksActions;
+        QList<QAction *> bookmarksActions;
 
-    QAction *showAllBookmarksAction = new QAction(tr("Show All Bookmarks"), this);
-    connect(showAllBookmarksAction, SIGNAL(triggered()), this, SLOT(slotShowBookmarksDialog()));
-    m_addBookmark = new QAction(QIcon(QLatin1String(":addbookmark.png")), tr("Add Bookmark..."), this);
-    m_addBookmark->setIconVisibleInMenu(false);
+        QAction *showAllBookmarksAction = new QAction(tr("Show All Bookmarks"), this);
+        connect(showAllBookmarksAction, SIGNAL(triggered()), this, SLOT(slotShowBookmarksDialog()));
+        _addbookmark = new QAction(QIcon(QLatin1String(":addbookmark.png")), tr("Add Bookmark..."), this);
+        _addbookmark->setIconVisibleInMenu(false);
 
-    connect(m_addBookmark, SIGNAL(triggered()), this, SLOT(slotAddBookmark()));
-    m_addBookmark->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
+        connect(_addbookmark, SIGNAL(triggered()), this, SLOT(slotAddBookmark()));
+        _addbookmark->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_D));
 
-    bookmarksActions.append(showAllBookmarksAction);
-    bookmarksActions.append(m_addBookmark);
-    bookmarksMenu->setInitialActions(bookmarksActions);
+        bookmarksActions.append(showAllBookmarksAction);
+        bookmarksActions.append(_addbookmark);
+        bookmarksMenu->setInitialActions(bookmarksActions);
 
-    // Window
-    m_windowMenu = menuBar()->addMenu(tr("&Window"));
-    connect(m_windowMenu, SIGNAL(aboutToShow()),
-            this, SLOT(slotAboutToShowWindowMenu()));
-    slotAboutToShowWindowMenu();
+        globalparameters.getTreeScreen()->buttonmenu()->addMenu(bookmarksMenu);
 
-    QMenu *toolsMenu = menuBar()->addMenu(tr("&Tools"));
-    toolsMenu->addAction(tr("Web &Search"), this, SLOT(slotWebSearch()), QKeySequence(tr("Ctrl+K", "Web Search")));
+        // Window
+        _windowmenu = globalparameters.mainwindow()->menuBar()->addMenu(tr("&Window"));
+        connect(_windowmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowWindowMenu()));
+        slotAboutToShowWindowMenu();
+
+        globalparameters.getTreeScreen()->buttonmenu()->addMenu(_windowmenu);
+
+        QMenu *toolsMenu = globalparameters.mainwindow()->toolsmenu();  //menuBar()->addMenu(tr("&Tools"));
+        toolsMenu->addAction(tr("Web &Search"), this, SLOT(slotWebSearch()), QKeySequence(tr("Ctrl+K", "Web Search")));
 #if defined(QWEBENGINEINSPECTOR)
-    a = toolsMenu->addAction(tr("Enable Web &Inspector"), this, SLOT(slotToggleInspector(bool)));
-    a->setCheckable(true);
+        a = toolsMenu->addAction(tr("Enable Web &Inspector"), this, SLOT(slotToggleInspector(bool)));
+        a->setCheckable(true);
 #endif
+        globalparameters.mainwindow()->initHelpMenu();
+        assert(globalparameters.mainwindow()->helpmenu());
+        QMenu *helpMenu = globalparameters.mainwindow()->helpmenu();  //menuBar()->addMenu(tr("&Help"));
+        //        helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
+        helpMenu->addAction(tr("About &Embedded Browser"), this, SLOT(slotAboutApplication()));
 
-    QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
-    helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
-    helpMenu->addAction(tr("About &Demo Browser"), this, SLOT(slotAboutApplication()));
-}
-
-void BrowserMainWindow::setupToolBar()
-{
-    m_navigationBar = addToolBar(tr("Navigation"));
-    connect(m_navigationBar->toggleViewAction(), SIGNAL(toggled(bool)),
-            this, SLOT(updateToolbarActionText(bool)));
-
-    m_historyBack->setIcon(style()->standardIcon(QStyle::SP_ArrowBack, 0, this));
-    m_historyBackMenu = new QMenu(this);
-    m_historyBack->setMenu(m_historyBackMenu);
-    connect(m_historyBackMenu, SIGNAL(aboutToShow()),
-            this, SLOT(slotAboutToShowBackMenu()));
-    connect(m_historyBackMenu, SIGNAL(triggered(QAction*)),
-            this, SLOT(slotOpenActionUrl(QAction*)));
-    m_navigationBar->addAction(m_historyBack);
-
-    m_historyForward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
-    m_historyForwardMenu = new QMenu(this);
-    connect(m_historyForwardMenu, SIGNAL(aboutToShow()),
-            this, SLOT(slotAboutToShowForwardMenu()));
-    connect(m_historyForwardMenu, SIGNAL(triggered(QAction*)),
-            this, SLOT(slotOpenActionUrl(QAction*)));
-    m_historyForward->setMenu(m_historyForwardMenu);
-    m_navigationBar->addAction(m_historyForward);
-
-    m_stopReload = new QAction(this);
-    m_reloadIcon = style()->standardIcon(QStyle::SP_BrowserReload);
-    m_stopReload->setIcon(m_reloadIcon);
-
-    m_navigationBar->addAction(m_stopReload);
-
-    m_navigationBar->addWidget(m_tabWidget->lineEditStack());
-
-    m_toolbarSearch = new ToolbarSearch(m_navigationBar);
-    m_navigationBar->addWidget(m_toolbarSearch);
-    connect(m_toolbarSearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));
-
-    m_chaseWidget = new ChaseWidget(this);
-    m_navigationBar->addWidget(m_chaseWidget);
-}
-
-void BrowserMainWindow::slotShowBookmarksDialog()
-{
-    BookmarksDialog *dialog = new BookmarksDialog(this);
-    connect(dialog, SIGNAL(openUrl(QUrl)),
-            m_tabWidget, SLOT(loadUrlInCurrentTab(QUrl)));
-    dialog->show();
-}
-
-void BrowserMainWindow::slotAddBookmark()
-{
-    WebView *webView = currentTab();
-    QString url = webView->url().toString();
-    QString title = webView->title();
-    AddBookmarkDialog dialog(url, title);
-    dialog.exec();
-}
-
-void BrowserMainWindow::slotViewToolbar()
-{
-    if (m_navigationBar->isVisible()) {
-        updateToolbarActionText(false);
-        m_navigationBar->close();
-    } else {
-        updateToolbarActionText(true);
-        m_navigationBar->show();
+        globalparameters.getTreeScreen()->buttonmenu()->addMenu(helpMenu);
     }
-    m_autoSaver->changeOccurred();
-}
 
-void BrowserMainWindow::slotViewBookmarksBar()
-{
-    if (m_bookmarksToolbar->isVisible()) {
-        updateBookmarksToolbarActionText(false);
-        m_bookmarksToolbar->close();
-    } else {
-        updateBookmarksToolbarActionText(true);
-        m_bookmarksToolbar->show();
+    void DockedWindow::setupToolBar()
+    {
+        //auto mainwindow = globalparameters.mainwindow();
+        FindScreen *findscreen = globalparameters.getFindScreen();
+        assert(findscreen);
+        //        QToolBar *navigater = findscreen->navigater();
+        //        assert(navigater);
+        //        navigater = addToolBar(tr("Navigation"));  //mainwindow->addToolBar(tr("Navigation"));
+        //        connect(navigater->toggleViewAction(), SIGNAL(toggled(bool)), this, SLOT(updateToolbarActionText(bool)));
+
+        //_historyback = findscreen->historyback();
+
+        _historyback->setIcon(style()->standardIcon(QStyle::SP_ArrowBack, 0, findscreen)); //this
+
+        _historybackmenu = new QMenu(this);
+        _historyback->setMenu(_historybackmenu);
+        connect(_historybackmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowBackMenu()));
+        connect(_historybackmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
+
+        //navigater->addAction(_historyback);
+
+        _historyforward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, findscreen)); //this
+
+        _historyforwardmenu = new QMenu(this);
+        connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
+        connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
+        _historyforward->setMenu(_historyforwardmenu);
+
+        //navigater->addAction(_historyforward);
+
+        //_stopreload = new QAction(navigater); //this
+
+        _reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
+        _stopreload->setIcon(_reloadicon);
+
+
+        //navigater->addAction(_stopreload);
+
+
+        //navigater->addWidget(_tabmanager->lineEditStack());
+        _toolbarsearch = findscreen->toolbarsearch();
+
+        if(_tabmanager->lineEditStack() == nullptr)
+            _tabmanager->lineEditStack(findscreen->toolbarsearch()->lineedits());
+
+        //_toolbarsearch = new ToolbarSearch(_tabmanager->lineEditStack(), findscreen->findtable(), navigater);
+
+        //navigater->addWidget(_toolbarsearch);
+
+        //connect(_toolbarsearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));   // move to Entrance
+
+        //_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
+        //navigater->addWidget(_chasewidget);
     }
-    m_autoSaver->changeOccurred();
-}
 
-void BrowserMainWindow::updateStatusbarActionText(bool visible)
-{
-    m_viewStatusbar->setText(!visible ? tr("Show Status Bar") : tr("Hide Status Bar"));
-}
-
-void BrowserMainWindow::handleFindTextResult(bool found)
-{
-    if (!found)
-        slotUpdateStatusbar(tr("\"%1\" not found.").arg(m_lastSearch));
-}
-
-void BrowserMainWindow::updateToolbarActionText(bool visible)
-{
-    m_viewToolbar->setText(!visible ? tr("Show Toolbar") : tr("Hide Toolbar"));
-}
-
-void BrowserMainWindow::updateBookmarksToolbarActionText(bool visible)
-{
-    m_viewBookmarkBar->setText(!visible ? tr("Show Bookmarks bar") : tr("Hide Bookmarks bar"));
-}
-
-void BrowserMainWindow::slotViewStatusbar()
-{
-    if (statusBar()->isVisible()) {
-        updateStatusbarActionText(false);
-        statusBar()->close();
-    } else {
-        updateStatusbarActionText(true);
-        statusBar()->show();
+    void DockedWindow::slotShowBookmarksDialog()
+    {
+        BookmarksDialog *dialog = new BookmarksDialog(this);
+        connect(dialog, SIGNAL(openUrl(QUrl)), _tabmanager, SLOT(loadUrlInCurrentTab(QUrl)));
+        dialog->show();
     }
-    m_autoSaver->changeOccurred();
-}
 
-void BrowserMainWindow::loadUrl(const QUrl &url)
-{
-    if (!currentTab() || !url.isValid())
-        return;
-
-    m_tabWidget->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
-    m_tabWidget->loadUrlInCurrentTab(url);
-}
-
-void BrowserMainWindow::slotDownloadManager()
-{
-    BrowserApplication::downloadManager()->show();
-}
-
-void BrowserMainWindow::slotSelectLineEdit()
-{
-    m_tabWidget->currentLineEdit()->selectAll();
-    m_tabWidget->currentLineEdit()->setFocus();
-}
-
-void BrowserMainWindow::slotFileSaveAs()
-{
-    // not implemented yet.
-}
-
-void BrowserMainWindow::slotPreferences()
-{
-    SettingsDialog *s = new SettingsDialog(this);
-    s->show();
-}
-
-void BrowserMainWindow::slotUpdateStatusbar(const QString &string)
-{
-    statusBar()->showMessage(string, 2000);
-}
-
-void BrowserMainWindow::slotUpdateWindowTitle(const QString &title)
-{
-    if (title.isEmpty()) {
-        setWindowTitle(tr("Qt Demo Browser"));
-    } else {
-#if defined(Q_OS_OSX)
-        setWindowTitle(title);
-#else
-        setWindowTitle(tr("%1 - Qt Demo Browser", "Page title and Browser name").arg(title));
-#endif
+    void DockedWindow::slotAddBookmark()
+    {
+        WebView *webView = currentTab();
+        QString url = webView->page()->url().toString();
+        QString title = webView->title();
+        AddBookmarkDialog dialog(url, title);
+        dialog.exec();
     }
-}
 
-void BrowserMainWindow::slotAboutApplication()
-{
-    QMessageBox::about(this, tr("About"), tr(
-        "Version %1"
-        "<p>This demo demonstrates the facilities "
-        "of Qt WebEngine in action, providing an example "
-        "browser for you to experiment with.<p>"
-        "<p>Qt WebEngine is based on the Chromium open source project "
-        "developed at <a href=\"http://www.chromium.org/\">http://www.chromium.org/</a>."
-        ).arg(QCoreApplication::applicationVersion()));
-}
+    void DockedWindow::slotViewToolbar()
+    {
+        FindScreen *findscreen = globalparameters.getFindScreen();
+        assert(findscreen);
+        //        QToolBar *navigater = findscreen->navigater();
+        //        assert(navigater);
 
-void BrowserMainWindow::slotFileNew()
-{
-    BrowserApplication::instance()->newMainWindow();
-    BrowserMainWindow *mw = BrowserApplication::instance()->mainWindow();
-    mw->slotHome();
-}
+        if(findscreen->isVisible()) {
+            updateToolbarActionText(false);
+            findscreen->close();
+        } else {
+            updateToolbarActionText(true);
+            findscreen->show();
+        }
 
-void BrowserMainWindow::slotFileOpen()
-{
-    QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString(),
-            tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
-
-    if (file.isEmpty())
-        return;
-
-    loadPage(file);
-}
-
-void BrowserMainWindow::slotFilePrintPreview()
-{
-#ifndef QT_NO_PRINTPREVIEWDIALOG
-    if (!currentTab())
-        return;
-    QPrintPreviewDialog *dialog = new QPrintPreviewDialog(this);
-    connect(dialog, SIGNAL(paintRequested(QPrinter*)),
-            currentTab(), SLOT(print(QPrinter*)));
-    dialog->exec();
-#endif
-}
-
-void BrowserMainWindow::slotFilePrint()
-{
-#if defined(QWEBENGINEPAGE_PRINT)
-    if (!currentTab())
-        return;
-    printRequested(currentTab()->page()->mainFrame());
-#endif
-}
-
-#if defined(QWEBENGINEPAGE_PRINT)
-void BrowserMainWindow::printRequested(QWebEngineFrame *frame)
-{
-#ifndef QT_NO_PRINTDIALOG
-    QPrinter printer;
-    QPrintDialog *dialog = new QPrintDialog(&printer, this);
-    dialog->setWindowTitle(tr("Print Document"));
-    if (dialog->exec() != QDialog::Accepted)
-        return;
-    frame->print(&printer);
-#endif
-}
-#endif
-
-void BrowserMainWindow::slotPrivateBrowsing()
-{
-    if (!BrowserApplication::instance()->privateBrowsing()) {
-        QString title = tr("Are you sure you want to turn on private browsing?");
-        QString text = tr("<b>%1</b><br><br>"
-            "This action will reload all open tabs.<br>"
-            "When private browsing in turned on,"
-            " webpages are not added to the history,"
-            " items are automatically removed from the Downloads window," \
-            " new cookies are not stored, current cookies can't be accessed," \
-            " site icons wont be stored, session wont be saved, " \
-            " and searches are not added to the pop-up menu in the Google search box." \
-            "  Until you close the window, you can still click the Back and Forward buttons" \
-            " to return to the webpages you have opened.").arg(title);
-
-        QMessageBox::StandardButton button = QMessageBox::question(this, QString(), text,
-                               QMessageBox::Ok | QMessageBox::Cancel,
-                               QMessageBox::Ok);
-
-        if (button == QMessageBox::Ok)
-            BrowserApplication::instance()->setPrivateBrowsing(true);
-    } else {
-        // TODO: Also ask here
-        BrowserApplication::instance()->setPrivateBrowsing(false);
+        _autosaver->changeOccurred();
     }
-}
 
-void BrowserMainWindow::closeEvent(QCloseEvent *event)
-{
-    if (m_tabWidget->count() > 1) {
-        int ret = QMessageBox::warning(this, QString(),
-                           tr("Are you sure you want to close the window?"
-                              "  There are %1 tabs open").arg(m_tabWidget->count()),
-                           QMessageBox::Yes | QMessageBox::No,
-                           QMessageBox::No);
-        if (ret == QMessageBox::No) {
-            event->ignore();
+    void DockedWindow::slotViewBookmarksBar()
+    {
+        if(_bookmarkstoolbar->isVisible()) {
+            updateBookmarksToolbarActionText(false);
+            _bookmarkstoolbar->close();
+        } else {
+            updateBookmarksToolbarActionText(true);
+            _bookmarkstoolbar->show();
+        }
+
+        _autosaver->changeOccurred();
+    }
+
+    void DockedWindow::updateStatusbarActionText(bool visible)
+    {
+        _viewstatusbar->setText(!visible ? tr("Show Status Bar") : tr("Hide Status Bar"));
+    }
+
+    void DockedWindow::handleFindTextResult(bool found)
+    {
+        if(!found)
+            slotUpdateStatusbar(tr("\"%1\" not found.").arg(_lastsearch));
+    }
+
+    void DockedWindow::updateToolbarActionText(bool visible)
+    {
+        _viewtoolbar->setText(!visible ? tr("Show Find in base") : tr("Hide Find in base"));
+    }
+
+    void DockedWindow::updateBookmarksToolbarActionText(bool visible)
+    {
+        _viewbookmarkbar->setText(!visible ? tr("Show Bookmarks bar") : tr("Hide Bookmarks bar"));
+    }
+
+    void DockedWindow::slotViewStatusbar()
+    {
+        if(status_bar()->isVisible()) {
+            updateStatusbarActionText(false);
+            status_bar()->close();
+        } else {
+            updateStatusbarActionText(true);
+            status_bar()->show();
+        }
+
+        _autosaver->changeOccurred();
+    }
+
+    void DockedWindow::loadUrl(const QUrl &url)
+    {
+        if(!currentTab() || !url.isValid())
             return;
-        }
+
+        _tabmanager->currentLineEdit()->setText(QString::fromUtf8(url.toEncoded()));
+        _tabmanager->loadUrlInCurrentTab(url);
     }
-    event->accept();
-    deleteLater();
-}
 
-void BrowserMainWindow::slotEditFind()
-{
-    if (!currentTab())
-        return;
-    bool ok;
-    QString search = QInputDialog::getText(this, tr("Find"),
-                                          tr("Text:"), QLineEdit::Normal,
-                                          m_lastSearch, &ok);
-    if (ok && !search.isEmpty()) {
-        m_lastSearch = search;
-        currentTab()->findText(m_lastSearch, 0, invoke(this, &BrowserMainWindow::handleFindTextResult));
+    void DockedWindow::slotDownloadManager()
+    {
+        QtSingleApplication::downloadManager()->show();
     }
-}
 
-void BrowserMainWindow::slotEditFindNext()
-{
-    if (!currentTab() && !m_lastSearch.isEmpty())
-        return;
-    currentTab()->findText(m_lastSearch);
-}
-
-void BrowserMainWindow::slotEditFindPrevious()
-{
-    if (!currentTab() && !m_lastSearch.isEmpty())
-        return;
-    currentTab()->findText(m_lastSearch, QWebEnginePage::FindBackward);
-}
-
-void BrowserMainWindow::slotViewZoomIn()
-{
-    if (!currentTab())
-        return;
-    currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
-}
-
-void BrowserMainWindow::slotViewZoomOut()
-{
-    if (!currentTab())
-        return;
-    currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
-}
-
-void BrowserMainWindow::slotViewResetZoom()
-{
-    if (!currentTab())
-        return;
-    currentTab()->setZoomFactor(1.0);
-}
-
-void BrowserMainWindow::slotViewFullScreen(bool makeFullScreen)
-{
-    if (makeFullScreen) {
-        showFullScreen();
-    } else {
-        if (isMinimized())
-            showMinimized();
-        else if (isMaximized())
-            showMaximized();
-        else showNormal();
+    void DockedWindow::slotSelectLineEdit()
+    {
+        _tabmanager->currentLineEdit()->selectAll();
+        _tabmanager->currentLineEdit()->setFocus();
     }
-}
 
-void BrowserMainWindow::slotViewPageSource()
-{
-    if (!currentTab())
-        return;
-
-    QPlainTextEdit *view = new QPlainTextEdit;
-    view->setWindowTitle(tr("Page Source of %1").arg(currentTab()->title()));
-    view->setMinimumWidth(640);
-    view->setAttribute(Qt::WA_DeleteOnClose);
-    view->show();
-
-    currentTab()->page()->toHtml(invoke(view, &QPlainTextEdit::setPlainText));
-}
-
-void BrowserMainWindow::slotHome()
-{
-    QSettings settings;
-    settings.beginGroup(QLatin1String("MainWindow"));
-    QString home = settings.value(QLatin1String("home"), QLatin1String(defaultHome)).toString();
-    loadPage(home);
-}
-
-void BrowserMainWindow::slotWebSearch()
-{
-    m_toolbarSearch->lineEdit()->selectAll();
-    m_toolbarSearch->lineEdit()->setFocus();
-}
-
-void BrowserMainWindow::slotToggleInspector(bool enable)
-{
-#if defined(QWEBENGINEINSPECTOR)
-    QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, enable);
-    if (enable) {
-        int result = QMessageBox::question(this, tr("Web Inspector"),
-                                           tr("The web inspector will only work correctly for pages that were loaded after enabling.\n"
-                                           "Do you want to reload all pages?"),
-                                           QMessageBox::Yes | QMessageBox::No);
-        if (result == QMessageBox::Yes) {
-            m_tabWidget->reloadAllTabs();
-        }
+    void DockedWindow::slotFileSaveAs()
+    {
+        // not implemented yet.
     }
+
+    void DockedWindow::slotPreferences()
+    {
+        SettingsDialog *s = new SettingsDialog(this);
+        s->show();
+    }
+
+    void DockedWindow::slotUpdateStatusbar(const QString &string)
+    {
+        status_bar()->showMessage(string, 2000);
+    }
+
+    void DockedWindow::slotUpdateWindowTitle(const QString &title)
+    {
+        if(title.isEmpty()) {
+            setWindowTitle(tr("MyTetra"));
+        } else {
+#if defined(Q_OS_OSX)
+            setWindowTitle(title);
 #else
-    Q_UNUSED(enable);
+            setWindowTitle(tr("%1 - MyTetra", "Page title and Browser name").arg(title));
 #endif
-}
-
-void BrowserMainWindow::slotSwapFocus()
-{
-    if (currentTab()->hasFocus())
-        m_tabWidget->currentLineEdit()->setFocus();
-    else
-        currentTab()->setFocus();
-}
-
-void BrowserMainWindow::loadPage(const QString &page)
-{
-    QUrl url = QUrl::fromUserInput(page);
-    loadUrl(url);
-}
-
-TabWidget *BrowserMainWindow::tabWidget() const
-{
-    return m_tabWidget;
-}
-
-WebView *BrowserMainWindow::currentTab() const
-{
-    return m_tabWidget->currentWebView();
-}
-
-void BrowserMainWindow::slotLoadProgress(int progress)
-{
-    if (progress < 100 && progress > 0) {
-        m_chaseWidget->setAnimated(true);
-        disconnect(m_stopReload, SIGNAL(triggered()), m_reload, SLOT(trigger()));
-        if (m_stopIcon.isNull())
-            m_stopIcon = style()->standardIcon(QStyle::SP_BrowserStop);
-        m_stopReload->setIcon(m_stopIcon);
-        connect(m_stopReload, SIGNAL(triggered()), m_stop, SLOT(trigger()));
-        m_stopReload->setToolTip(tr("Stop loading the current page"));
-    } else {
-        m_chaseWidget->setAnimated(false);
-        disconnect(m_stopReload, SIGNAL(triggered()), m_stop, SLOT(trigger()));
-        m_stopReload->setIcon(m_reloadIcon);
-        connect(m_stopReload, SIGNAL(triggered()), m_reload, SLOT(trigger()));
-        m_stopReload->setToolTip(tr("Reload the current page"));
-    }
-}
-
-void BrowserMainWindow::slotAboutToShowBackMenu()
-{
-    m_historyBackMenu->clear();
-    if (!currentTab())
-        return;
-    QWebEngineHistory *history = currentTab()->history();
-    int historyCount = history->count();
-    for (int i = history->backItems(historyCount).count() - 1; i >= 0; --i) {
-        QWebEngineHistoryItem item = history->backItems(history->count()).at(i);
-        QAction *action = new QAction(this);
-        action->setData(-1*(historyCount-i-1));
-        QIcon icon = BrowserApplication::instance()->icon(item.url());
-        action->setIcon(icon);
-        action->setText(item.title());
-        m_historyBackMenu->addAction(action);
-    }
-}
-
-void BrowserMainWindow::slotAboutToShowForwardMenu()
-{
-    m_historyForwardMenu->clear();
-    if (!currentTab())
-        return;
-    QWebEngineHistory *history = currentTab()->history();
-    int historyCount = history->count();
-    for (int i = 0; i < history->forwardItems(history->count()).count(); ++i) {
-        QWebEngineHistoryItem item = history->forwardItems(historyCount).at(i);
-        QAction *action = new QAction(this);
-        action->setData(historyCount-i);
-        QIcon icon = BrowserApplication::instance()->icon(item.url());
-        action->setIcon(icon);
-        action->setText(item.title());
-        m_historyForwardMenu->addAction(action);
-    }
-}
-
-void BrowserMainWindow::slotAboutToShowWindowMenu()
-{
-    m_windowMenu->clear();
-    m_windowMenu->addAction(m_tabWidget->nextTabAction());
-    m_windowMenu->addAction(m_tabWidget->previousTabAction());
-    m_windowMenu->addSeparator();
-    m_windowMenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
-    m_windowMenu->addSeparator();
-
-    QList<BrowserMainWindow*> windows = BrowserApplication::instance()->mainWindows();
-    for (int i = 0; i < windows.count(); ++i) {
-        BrowserMainWindow *window = windows.at(i);
-        QAction *action = m_windowMenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
-        action->setData(i);
-        action->setCheckable(true);
-        if (window == this)
-            action->setChecked(true);
-    }
-}
-
-void BrowserMainWindow::slotShowWindow()
-{
-    if (QAction *action = qobject_cast<QAction*>(sender())) {
-        QVariant v = action->data();
-        if (v.canConvert<int>()) {
-            int offset = qvariant_cast<int>(v);
-            QList<BrowserMainWindow*> windows = BrowserApplication::instance()->mainWindows();
-            windows.at(offset)->activateWindow();
-            windows.at(offset)->currentTab()->setFocus();
         }
     }
+
+    void DockedWindow::slotAboutApplication()
+    {
+        QMessageBox::about(this, tr("About"), tr(
+                               "Version %1"
+                               "<p>This demo demonstrates the facilities "
+                               "of Qt WebEngine in action, providing an note with "
+                               "browser for you to experiment with.<p>"
+                               "<p>Qt WebEngine is based on the Chromium open source project "
+                               "developed at <a href=\"http://www.chromium.org/\">http://www.chromium.org/</a>."
+                           ).arg(QCoreApplication::applicationVersion()));
+    }
+
+    void DockedWindow::slotFileNew()
+    {
+        //QtSingleApplication::instance()->
+        //        _browser->new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));
+        DockedWindow *mw = _entrance->active_record().first;    //QtSingleApplication::instance()->mainWindow();
+        mw->slotHome();
+    }
+
+    void DockedWindow::slotFileOpen()
+    {
+        QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString(),
+                                                    tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
+
+        if(file.isEmpty())
+            return;
+
+        loadPage(file);
+    }
+
+    void DockedWindow::slotFilePrintPreview()
+    {
+#ifndef QT_NO_PRINTPREVIEWDIALOG
+
+        if(!currentTab())
+            return;
+
+        QPrintPreviewDialog *dialog = new QPrintPreviewDialog(this);
+        connect(dialog, SIGNAL(paintRequested(QPrinter *)),
+                currentTab(), SLOT(print(QPrinter *)));
+        dialog->exec();
+#endif
+    }
+
+    void DockedWindow::slotFilePrint()
+    {
+#if defined(QWEBENGINEPAGE_PRINT)
+
+        if(!currentTab())
+            return;
+
+        printRequested(currentTab()->page()->mainFrame());
+#endif
+    }
+
+#if defined(QWEBENGINEPAGE_PRINT)
+    void BrowserWindow::printRequested(QWebEngineFrame *frame)
+    {
+#ifndef QT_NO_PRINTDIALOG
+        QPrinter printer;
+        QPrintDialog *dialog = new QPrintDialog(&printer, this);
+        dialog->setWindowTitle(tr("Print Document"));
+
+        if(dialog->exec() != QDialog::Accepted)
+            return;
+
+        frame->print(&printer);
+#endif
+    }
+#endif
+
+    void DockedWindow::slotPrivateBrowsing()
+    {
+        if(!QtSingleApplication::instance()->privateBrowsing()) {
+            QString title = tr("Are you sure you want to turn on private browsing?");
+            QString text = tr("<b>%1</b><br><br>"
+                              "This action will reload all open tabs.<br>"
+                              "When private browsing in turned on,"
+                              " webpages are not added to the history,"
+                              " items are automatically removed from the Downloads window," \
+                              " new cookies are not stored, current cookies can't be accessed," \
+                              " site icons wont be stored, session wont be saved, " \
+                              " and searches are not added to the pop-up menu in the Google search box." \
+                              "  Until you close the window, you can still click the Back and Forward buttons" \
+                              " to return to the webpages you have opened.").arg(title);
+
+            QMessageBox::StandardButton button = QMessageBox::question(this, QString(), text,
+                                                                       QMessageBox::Ok | QMessageBox::Cancel,
+                                                                       QMessageBox::Ok);
+
+            if(button == QMessageBox::Ok)
+                QtSingleApplication::instance()->setPrivateBrowsing(true);
+        } else {
+            // TODO: Also ask here
+            QtSingleApplication::instance()->setPrivateBrowsing(false);
+        }
+    }
+
+    void DockedWindow::closeEvent(QCloseEvent *event)
+    {
+        if(_tabmanager->count() > 1) {
+            int ret = QMessageBox::warning(this, QString(),
+                                           tr("Are you sure you want to close the window?"
+                                              "  There are %1 tabs open").arg(_tabmanager->count()),
+                                           QMessageBox::Yes | QMessageBox::No,
+                                           QMessageBox::No);
+
+            if(ret == QMessageBox::No) {
+                event->ignore();
+                return;
+            }
+        }
+
+        event->accept();
+        deleteLater();
+    }
+
+    void DockedWindow::slotEditFind()
+    {
+        if(!currentTab())
+            return;
+
+        bool ok;
+        QString search = QInputDialog::getText(this, tr("Find"),
+                                               tr("Text:"), QLineEdit::Normal,
+                                               _lastsearch, &ok);
+
+        if(ok && !search.isEmpty()) {
+            _lastsearch = search;
+            currentTab()->findText(_lastsearch, 0, invoke(this, &DockedWindow::handleFindTextResult));
+        }
+    }
+
+    void DockedWindow::slotEditFindNext()
+    {
+        if(!currentTab() && !_lastsearch.isEmpty())
+            return;
+
+        currentTab()->findText(_lastsearch);
+    }
+
+    void DockedWindow::slotEditFindPrevious()
+    {
+        if(!currentTab() && !_lastsearch.isEmpty())
+            return;
+
+        currentTab()->findText(_lastsearch, QWebEnginePage::FindBackward);
+    }
+
+    void DockedWindow::slotViewZoomIn()
+    {
+        if(!currentTab())
+            return;
+
+        currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
+    }
+
+    void DockedWindow::slotViewZoomOut()
+    {
+        if(!currentTab())
+            return;
+
+        currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
+    }
+
+    void DockedWindow::slotViewResetZoom()
+    {
+        if(!currentTab())
+            return;
+
+        currentTab()->setZoomFactor(1.0);
+    }
+
+    void DockedWindow::slotViewFullScreen(bool makeFullScreen)
+    {
+        if(makeFullScreen) {
+            showFullScreen();
+        } else {
+            if(isMinimized())
+                showMinimized();
+            else if(isMaximized())
+                showMaximized();
+            else showNormal();
+        }
+    }
+
+    void DockedWindow::slotViewPageSource()
+    {
+        if(!currentTab())
+            return;
+
+        QPlainTextEdit *view = new QPlainTextEdit;
+        view->setWindowTitle(tr("Page Source of %1").arg(currentTab()->title()));
+        view->setMinimumWidth(640);
+        view->setAttribute(Qt::WA_DeleteOnClose);
+        view->show();
+
+        currentTab()->page()->toHtml(invoke(view, &QPlainTextEdit::setPlainText));
+    }
+
+    void DockedWindow::slotHome()
+    {
+        QSettings settings;
+        settings.beginGroup(QLatin1String("MainWindow"));
+        QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
+        //loadPage(home);
+        auto ara = boost::make_shared<Entrance::active_record_alternative>(_entrance);
+        request_record(
+            QUrl(home)
+            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+                ""
+                , &Entrance::active_record_alternative::generator
+                , ara
+            )
+            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                ""
+                , &Entrance::active_record_alternative::activator
+                , ara
+            )
+        );
+
+    }
+
+    void DockedWindow::slotWebSearch()
+    {
+        _toolbarsearch->lineEdit()->selectAll();
+        _toolbarsearch->lineEdit()->setFocus();
+    }
+
+    void DockedWindow::slotToggleInspector(bool enable)
+    {
+#if defined(QWEBENGINEINSPECTOR)
+        QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, enable);
+
+        if(enable) {
+            int result = QMessageBox::question(this, tr("Web Inspector"),
+                                               tr("The web inspector will only work correctly for pages that were loaded after enabling.\n"
+                                                  "Do you want to reload all pages?"),
+                                               QMessageBox::Yes | QMessageBox::No);
+
+            if(result == QMessageBox::Yes) {
+                _tabwidget->reloadAllTabs();
+            }
+        }
+
+#else
+        Q_UNUSED(enable);
+#endif
+    }
+
+    void DockedWindow::slotSwapFocus()
+    {
+        if(currentTab()->hasFocus())
+            _tabmanager->currentLineEdit()->setFocus();
+        else
+            currentTab()->setFocus();
+    }
+
+    void DockedWindow::loadPage(const QString &page)
+    {
+        QUrl url = QUrl::fromUserInput(page);
+        loadUrl(url);
+    }
+
+    //    BrowserTabManager *BrowserWindow::tabWidget() const
+    //    {
+    //        return _tabwidget;
+    //    }
+
+    WebView *DockedWindow::currentTab() const
+    {
+        return _tabmanager->currentWebView();
+    }
+
+    void DockedWindow::slotLoadProgress(int progress)
+    {
+        if(progress < 100 && progress > 0) {
+            _chasewidget->setAnimated(true);
+            disconnect(_stopreload, SIGNAL(triggered()), _reload, SLOT(trigger()));
+
+            if(_stopicon.isNull())
+                _stopicon = style()->standardIcon(QStyle::SP_BrowserStop);
+
+            _stopreload->setIcon(_stopicon);
+            connect(_stopreload, SIGNAL(triggered()), _stop, SLOT(trigger()));
+            _stopreload->setToolTip(tr("Stop loading the current page"));
+        } else {
+            _chasewidget->setAnimated(false);
+            disconnect(_stopreload, SIGNAL(triggered()), _stop, SLOT(trigger()));
+            _stopreload->setIcon(_reloadicon);
+            connect(_stopreload, SIGNAL(triggered()), _reload, SLOT(trigger()));
+            _stopreload->setToolTip(tr("Reload the current page"));
+        }
+    }
+
+    void DockedWindow::slotAboutToShowBackMenu()
+    {
+        _historybackmenu->clear();
+
+        if(!currentTab())
+            return;
+
+        QWebEngineHistory *history = currentTab()->history();
+        int historyCount = history->count();
+
+        for(int i = history->backItems(historyCount).count() - 1; i >= 0; --i) {
+            QWebEngineHistoryItem item = history->backItems(history->count()).at(i);
+            QAction *action = new QAction(this);
+            action->setData(-1 * (historyCount - i - 1));
+            QIcon icon = QtSingleApplication::instance()->icon(item.url());
+            action->setIcon(icon);
+            action->setText(item.title());
+            _historybackmenu->addAction(action);
+        }
+    }
+
+    void DockedWindow::slotAboutToShowForwardMenu()
+    {
+        _historyforwardmenu->clear();
+
+        if(!currentTab())
+            return;
+
+        QWebEngineHistory *history = currentTab()->history();
+        int historyCount = history->count();
+
+        for(int i = 0; i < history->forwardItems(history->count()).count(); ++i) {
+            QWebEngineHistoryItem item = history->forwardItems(historyCount).at(i);
+            QAction *action = new QAction(this);
+            action->setData(historyCount - i);
+            QIcon icon = QtSingleApplication::instance()->icon(item.url());
+            action->setIcon(icon);
+            action->setText(item.title());
+            _historyforwardmenu->addAction(action);
+        }
+    }
+
+    void DockedWindow::slotAboutToShowWindowMenu()
+    {
+        _windowmenu->clear();
+        _windowmenu->addAction(_tabmanager->nextTabAction());
+        _windowmenu->addAction(_tabmanager->previousTabAction());
+        _windowmenu->addSeparator();
+        _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
+        _windowmenu->addSeparator();
+
+        QList<QPointer<DockedWindow > > windows = _entrance->window_list();  //QtSingleApplication::instance()->mainWindows();
+
+        for(int i = 0; i < windows.count(); ++i) {
+            QPointer<DockedWindow> window = windows.at(i);
+            QAction *action = _windowmenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
+            action->setData(i);
+            action->setCheckable(true);
+
+            if(window == this)
+                action->setChecked(true);
+        }
+    }
+
+    void DockedWindow::slotShowWindow()
+    {
+        if(QAction *action = qobject_cast<QAction *>(sender())) {
+            QVariant v = action->data();
+
+            if(v.canConvert<int>()) {
+                int offset = qvariant_cast<int>(v);
+                QList<QPointer<DockedWindow> > windows = _entrance->window_list();   //QtSingleApplication::instance()->mainWindows();
+                windows.at(offset)->activateWindow();
+                windows.at(offset)->currentTab()->setFocus();
+            }
+        }
+    }
+
+    void DockedWindow::slotOpenActionUrl(QAction *action)
+    {
+        int offset = action->data().toInt();
+        QWebEngineHistory *history = currentTab()->history();
+
+        if(offset < 0)
+            history->goToItem(history->backItems(-1 * offset).first()); // back
+        else if(offset > 0)
+            history->goToItem(history->forwardItems(history->count() - offset + 1).back()); // forward
+    }
+
+    void DockedWindow::geometryChangeRequested(const QRect &geometry)
+    {
+        setGeometry(geometry);
+    }
+
+
+    //void DockedWindow::initUrl()
+    //{
+
+    //    // newMainWindow() needs to be called in main() for this to happen
+    //    //    if(_browser->mainWindows().count() > 0) {
+    //    //        QStringList args = QCoreApplication::arguments();
+
+    //    //        if(args.count() > 1)
+    //    //            loadPage(args.last());
+    //    //        else
+    //    //            slotHome();
+    //    //    }
+    //}
+
+    QStatusBar *DockedWindow::status_bar()
+    {
+        return globalparameters.getStatusBar();
+    }
+
+    QStatusBar *DockedWindow::status_bar() const
+    {
+        return globalparameters.getStatusBar();
+    }
+
+
+
+    WebView *DockedWindow::invoke_page(Record *const record)
+    {
+        // clean();
+
+        WebView *view = nullptr;
+
+        //        if(_mainWindows.isEmpty()) {
+        //            dp = new_dockedwindow(record);
+        //        } else
+        //        {
+        //        for(auto &i : _mainWindows) {
+        view = tabWidget()->find(record->getNaturalFieldSource("url"));
+
+        if(view != nullptr) {
+            //            dp.first = i.data();
+
+            if(!isVisible()) {
+                raise();
+                activateWindow();
+            }
+
+            //            break;
+        }
+
+        //            else if(isVisible()) {
+        //                dp.first = i.data();
+        //            }
+        //        }
+
+        //        if(dp.first == nullptr) {
+        //            dp.first = _mainWindows[0].data();
+        //        }
+
+        //        assert(dp.first);
+        //        }
+
+
+        //        const DockedWindow *w = dp.first;
+        TabWidget *const tab = tabWidget();
+
+        if(view == nullptr
+           // && w != nullptr
+          ) {
+
+            // Record *blank_url = check_register_record(QUrl(DockedWindow::_defaulthome));
+
+            //            if(blank.isLite())blank.switchToFat();
+            //            blank.setNaturalFieldSource("url", DockedWindow::_defaulthome);
+
+            WebView *blankview = nullptr;
+            blankview = tab->find(QUrl(DockedWindow::_defaulthome));
+            //PageView *no_pin = nullptr;
+            WebView *nopin_view = tab->find_nopin();
+            // assert(dp.first);
+
+            if(blankview != nullptr) {
+                view = blankview;
+                view->page()->load(record);
+            } else if(nopin_view != nullptr) {   // no_pin
+                view = nopin_view;
+
+                if(view->page()->url().toString() != record->getNaturalFieldSource("url")) {
+
+                    view->page()->load(record);
+                }
+            } else {
+                view = tab->newTab(record);  // , false
+                // auto load
+            }
+
+            //            tab->setCurrentWidget(dp.second);   // tab->setCurrentIndex(tab->webViewIndex(dp.second));
+            //            dp.second->show();
+        }
+
+        //        tab->setCurrentWidget(dp.second);
+        //        dp.second->show();
+        //        assert(dp.first);
+        assert(view);
+        return view;  //_mainWindows[0];
+    }
+
+
 }
 
-void BrowserMainWindow::slotOpenActionUrl(QAction *action)
-{
-    int offset = action->data().toInt();
-    QWebEngineHistory *history = currentTab()->history();
-    if (offset < 0)
-        history->goToItem(history->backItems(-1*offset).first()); // back
-    else if (offset > 0)
-        history->goToItem(history->forwardItems(history->count() - offset + 1).back()); // forward
-}
 
-void BrowserMainWindow::geometryChangeRequested(const QRect &geometry)
-{
-    setGeometry(geometry);
-}
+
+
+
+

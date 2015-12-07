@@ -44,6 +44,24 @@
 
 #include <QIcon>
 #include <QWebEngineView>
+#include <QLineEdit>
+#include <QNetworkReply>
+#include <QClipboard>
+
+
+
+#include "models/recordTable/Record.h"
+#include "controllers/recordTable/RecordTableController.h"
+#include "views/recordTable/RecordTableScreen.h"
+#include "models/recordTable/Record.h"
+#include "libraries/GlobalParameters.h"
+//#include "tabwidget.h"
+#include "views/browser/featurepermissionbar.h"
+#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "views/recordTable/RecordTableView.h"
+//#include "tabwidget.h"
+#include "models/recordTable/Record.h"
+
 
 QT_BEGIN_NAMESPACE
 class QAuthenticator;
@@ -53,82 +71,233 @@ class QNetworkReply;
 class QSslError;
 QT_END_NAMESPACE
 
-class BrowserMainWindow;
-class WebPage : public QWebEnginePage {
-    Q_OBJECT
+extern GlobalParameters globalparameters;
+extern Record *check_record(const QUrl &_url);
 
-signals:
-    void loadingUrl(const QUrl &url);
+class Record;
 
-public:
-    WebPage(QWebEngineProfile *profile, QObject *parent = 0);
-    BrowserMainWindow *mainWindow();
+QT_BEGIN_NAMESPACE
 
-protected:
-    bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
-    QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type);
+
+namespace browser {
+
+    class DockedWindow;
+    class PopupWindow;
+    class WebView;
+    class TabWidget;
+
+    class WebPage : public QWebEnginePage {
+        Q_OBJECT
+
+    signals:
+        void loadingUrl(const QUrl &url);
+
+    public:
+        ~WebPage()
+        {
+            //            if(_record) {
+            //                _record->page(nullptr); // globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
+            //                _record = nullptr;
+            //            }
+            QSet<Record *> records = binded_records();
+
+            for(auto i : records) {
+                if(i->binded_only_page() == this)
+                    i->page_to_nullptr();
+            }
+        }
+
+        WebPage(QWebEngineProfile *profile
+                , Record *const record
+                // , bool openinnewtab
+                , RecordTableController *_recordtablecontroller
+                , WebView *parent = 0
+               );
+        //        WebView *(*_load_record)(Record *const record);
+        DockedWindow *dockedwindow();
+        WebView *view() {return _pageview;}
+        QSet<Record *> binded_records()const;
+
+        void active();
+        WebView *load(Record *const record, bool checked = true);
+        void load(const QUrl &url) = delete;
+
+        //        void synchronize_title_to_record()
+        //        {
+        //            this->update_record();
+        //            //if(_record)_record->setNaturalFieldSource("name", webPage()->title());
+        //        }
+
+        Record *current_record()const {return _record;}
+
+        struct active_record {
+            WebPage *_the;
+            bool _make_current;
+            //            RecordTableController *_recordtablecontroller;
+            active_record(WebPage *the, bool make_current
+                          = true
+                            //                            , RecordTableController *recordtablecontroller
+                            //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
+                         )
+                : _the(the)
+                , _make_current(make_current)
+                  //              , _recordtablecontroller(recordtablecontroller)
+            {}
+
+            WebView *generator(Record *const record)
+            {
+                return _the->load(record, _make_current);
+                                  //                                    , _recordtablecontroller
+
+            }
+
+            void activator()
+            {
+                _the->active();
+            }
+        };
+
+    protected:
+
+        bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
+        QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type);
 #if !defined(QT_NO_UITOOLS)
-    QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
+        QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif
-    virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
+        virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-private slots:
+        Record *bind_record(Record *const binded_records);
+        void break_record_which_page_point_to_me();    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        void update_record(const QUrl &url
+                           // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
+                           , const QString &title
+                           // = title()
+                           , bool make_current = true
+                          );
+
+    private slots:
+
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-    void handleUnsupportedContent(QNetworkReply *reply);
+        void handleUnsupportedContent(QNetworkReply *reply);
 #endif
-    void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
-    void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
+        void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
+        void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
 
-private:
-    friend class WebView;
+        void onUrlChanged(const QUrl &url);
+        void onTitleChanged(const QString &title);
 
-    // set the webview mousepressedevent
-    Qt::KeyboardModifiers m_keyboardModifiers;
-    Qt::MouseButtons m_pressedButtons;
-    bool m_openInNewTab;
-    QUrl m_loadingUrl;
-};
 
-class WebView : public QWebEngineView {
-    Q_OBJECT
+    private:
+        friend class WebView;
+        friend class Record;
+        QSet<Record *> _records;
+        Record  *_record;
 
-public:
-    WebView(QWidget *parent = 0);
-    WebPage *webPage() const { return m_page; }
-    void setPage(WebPage *page);
+        WebView *_pageview;
+        // set the webview mousepressedevent
+        Qt::KeyboardModifiers _keyboardmodifiers;
+        Qt::MouseButtons _pressedbuttons;
+        // bool _openinnewtab;
+        QUrl    _loadingurl;
+        //bool _create_window_generated;
+        RecordTableController *_recordtablecontroller;
+        QMetaObject::Connection _home_connection;    // for disconnect
 
-    void loadUrl(const QUrl &url);
-    QUrl url() const;
-    QIcon icon() const;
+        void record(Record *const record) {_record = record;}
+        friend class Record;
+        friend void Record::page_to_nullptr();
+        friend Record::Record(const Record &obj);
+        friend Record::~Record();
+        friend Record *Record::bind_page(WebPage *page);
+        friend WebPage *Record::binded_only_page();
+        friend bool Record::is_holder();
+    };
 
-    QString lastStatusBarText() const;
-    inline int progress() const { return m_progress; }
 
-protected:
-    void mousePressEvent(QMouseEvent *event);
-    void mouseReleaseEvent(QMouseEvent *event);
-    void contextMenuEvent(QContextMenuEvent *event);
-    void wheelEvent(QWheelEvent *event);
+    // template Q_ONJECT
+    // https://doc.qt.io/archives/qq/qq16-dynamicqobject.html
+    // browserview
+    // template<typename T>
+    class WebView : public QWebEngineView {
+        Q_OBJECT
 
-signals:
-    void iconChanged();
+    public:
+        WebView(Record *const record
+                , QWebEngineProfile *profile
+                // , bool openinnewtab
+                , TabWidget *parent
+                , RecordTableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController()
+               );
 
-private slots:
-    void setProgress(int progress);
-    void loadFinished(bool success);
-    void setStatusBarText(const QString &string);
-    void openLinkInNewTab();
-    void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
-    void onIconUrlChanged(const QUrl &url);
-    void iconLoaded();
+        ~WebView();
+        WebPage *page() const { return _page; }
+        void page(WebPage *page);
 
-private:
-    QString m_statusBarText;
-    QUrl m_initialUrl;
-    int m_progress;
-    WebPage *m_page;
-    QIcon m_icon;
-    QNetworkReply *m_iconReply;
-};
+
+        WebView *load(Record *const record);
+        QUrl url() const = delete;
+        QIcon icon() const;
+
+        QString lastStatusBarText() const;
+        inline int progress() const { return _progress; }
+
+        RecordTableController *recordtablecontroller() {return _recordtablecontroller;}
+        void bind_recordtabcontroller(RecordTableController *recordtablecontroller) {_recordtablecontroller  = recordtablecontroller ;}
+        //        Record *const &record()const {return _record;}
+        //        void record(Record *record) {if(record) {_record = record; _record->view(this);}}
+
+        void switch_show();
+
+        TabWidget *const &tabmanager()const {return _tabmanager;}
+    protected:
+        void loadUrl(const QUrl &url);
+
+        void mousePressEvent(QMouseEvent *event);
+        void mouseReleaseEvent(QMouseEvent *event);
+        void contextMenuEvent(QContextMenuEvent *event);
+        void wheelEvent(QWheelEvent *event);
+
+    signals:
+        void iconChanged();
+
+    public slots:
+        //    void loadFinished(bool success);
+        //    void openLinkInNewTab();
+
+    private slots:
+        void setProgress(int progress);
+
+        void setStatusBarText(const QString &string);
+        void openLinkInNewTab();
+        void openLinkInNewTab(const QUrl &url);
+        void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
+        void onIconUrlChanged(const QUrl &url);
+        void iconLoaded();
+        void onLoadFinished(bool success);
+
+        //    void onCloseTab(int index);
+    private:
+        TabWidget   *_tabmanager;
+        //        Record *_record;
+        RecordTableController *_recordtablecontroller;
+        WebPage     *_page;
+        QString     _statusbartext;
+        //        QUrl _initialurl;
+        int         _progress;
+        QIcon       _icon;
+        QNetworkReply   *_iconreply;
+
+        //friend class TabWidget;
+    };
+
+
+
+
+}
+
+
+QT_END_NAMESPACE
 
 #endif
+
+

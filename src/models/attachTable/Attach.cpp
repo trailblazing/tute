@@ -12,7 +12,7 @@
 #include "libraries/GlobalParameters.h"
 #include "libraries/DiskHelper.h"
 
-extern GlobalParameters globalParameters;
+extern GlobalParameters globalparameters;
 
 
 // Конструктор прикрепляемого файла
@@ -164,7 +164,7 @@ QString Attach::getField(QString name) const
     if(fieldCryptedList().contains(name))
         if(fields.contains("crypt"))
             if(fields["crypt"]=="1")
-                if(globalParameters.getCryptKey().length()==0)
+                if(globalparameters.getCryptKey().length()==0)
                     return QString();
 
     bool isCrypt=false;
@@ -183,7 +183,7 @@ QString Attach::getField(QString name) const
     if(isCrypt==false)
         return fields[name]; // Возвращается значение поля
     else
-        return CryptService::decryptString(globalParameters.getCryptKey(), fields[name]); // Поле расшифровывается
+        return CryptService::decryptString(globalparameters.getCryptKey(), fields[name]); // Поле расшифровывается
 }
 
 
@@ -240,7 +240,7 @@ void Attach::setField(QString name, QString value)
         if(fields.contains("crypt"))
             if(fields["crypt"]=="1")
                 if(value.length()>0) {
-                    if(globalParameters.getCryptKey().length()>0)
+                    if(globalparameters.getCryptKey().length()>0)
                         isCrypt=true;
                     else
                         criticalError("In Attach::setField() can not set data to crypt field "+name+". Password not setted");
@@ -248,7 +248,7 @@ void Attach::setField(QString name, QString value)
 
     // Если нужно шифровать, значение поля шифруется
     if(isCrypt==true)
-        value=CryptService::encryptString(globalParameters.getCryptKey(), value);
+        value=CryptService::encryptString(globalparameters.getCryptKey(), value);
 
     // Устанавливается значение поля
     fields.insert(name, value);
@@ -458,12 +458,12 @@ void Attach::encrypt(unsigned int area)
     // Шифруется файл
     if(area & areaFile)
         if(getField("type")=="file")
-            CryptService::encryptFile(globalParameters.getCryptKey(), getFullInnerFileName());
+            CryptService::encryptFile(globalparameters.getCryptKey(), getFullInnerFileName());
 
     // Шифруется содержимое файла в памяти, если таковое есть
     if(area & areaMemory)
         if(liteFlag==false && fileContent.length()>0)
-            fileContent=CryptService::encryptByteArray(globalParameters.getCryptKey(), fileContent);
+            fileContent=CryptService::encryptByteArray(globalparameters.getCryptKey(), fileContent);
 
 
     // Шифруются поля, которые подлежат шифрованию
@@ -474,7 +474,7 @@ void Attach::encrypt(unsigned int area)
 
         // Если поле с указанным именем существует
         if(getField(fieldName).length()>0)
-            setFieldSource(fieldName, CryptService::encryptString( globalParameters.getCryptKey(), getField(fieldName)));
+            setFieldSource(fieldName, CryptService::encryptString( globalparameters.getCryptKey(), getField(fieldName)));
     }
 
     // Устанавливается флаг, что запись зашифрована
@@ -492,12 +492,12 @@ void Attach::decrypt(unsigned int area)
     // Расшифровывается файл
     if(area & areaFile)
         if(getField("type")=="file")
-            CryptService::decryptFile(globalParameters.getCryptKey(), getFullInnerFileName());
+            CryptService::decryptFile(globalparameters.getCryptKey(), getFullInnerFileName());
 
     // Расшифровывается содержимое файла в памяти, если таковое есть
     if(area & areaMemory)
         if(liteFlag==false && fileContent.length()>0)
-            fileContent=CryptService::decryptByteArray(globalParameters.getCryptKey(), fileContent);
+            fileContent=CryptService::decryptByteArray(globalparameters.getCryptKey(), fileContent);
 
     // Расшифровываются поля, которые подлежат шифрованию
     foreach( QString fieldName, fieldCryptedList() ) {
@@ -507,7 +507,7 @@ void Attach::decrypt(unsigned int area)
 
         // Если поле с указанным именем существует и содержит данные, оно расшифровывается из исходных зашифрованных данных
         if(getField(fieldName).length()>0)
-            setFieldSource(fieldName, CryptService::decryptString( globalParameters.getCryptKey(), fields[fieldName]));
+            setFieldSource(fieldName, CryptService::decryptString( globalparameters.getCryptKey(), fields[fieldName]));
     }
 
     // Устанавливается флаг, что запись не зашифрована

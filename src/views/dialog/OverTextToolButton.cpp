@@ -2,9 +2,10 @@
 #include <QPen>
 
 #include "OverTextToolButton.h"
+#include "libraries/FlatControl.h"
 
 
-OverTextToolButton::OverTextToolButton(QWidget *parent) : QToolButton(parent)
+OverTextToolButton::OverTextToolButton(QWidget *parent) : FlatToolButton(parent)
 {
     overText="";
 }
@@ -20,7 +21,7 @@ void OverTextToolButton::setOverText(QString iText)
 
 void OverTextToolButton::paintEvent(QPaintEvent *event)
 {
-    QToolButton::paintEvent(event);
+    FlatToolButton::paintEvent(event);
 
     QPainter painter(this); // Создаём новый объект рисовальщика
 

@@ -1,7 +1,7 @@
-#ifndef _SYSTEMCONF_H_
-#define _SYSTEMCONF_H_
+#ifndef _BROWSERVIEWINFO_H_
+#define _BROWSERVIEWINFO_H_
 
-#define SETTINGS_FILE "browser_config.ini"
+#define SETTINGS_FILE "entrance.ini"
 #define SETTINGS_SECTION "system"
 
-#endif // _SYSTEMCONF_H_
+#endif // _BROWSERVIEWINFO_H_

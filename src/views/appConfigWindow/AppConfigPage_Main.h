@@ -7,10 +7,12 @@
 #include <QGroupBox>
 #include <QRadioButton>
 #include <QLabel>
-#include <QToolButton>
+
+
+class FlatToolButton;
 
 #include "ConfigPage.h"
-#include "libraries/MtComboBox.h"
+#include "libraries/FlatControl.h"
 
 
 class AppConfigPage_Main : public ConfigPage {
@@ -38,11 +40,11 @@ private:
 
     QLabel *tetradirLabel;
     QLineEdit *tetradirInput;
-    QToolButton *tetradirButton;
+    FlatToolButton *tetradirButton;
 
     QLabel *trashdirLabel;
     QLineEdit *trashdirInput;
-    QToolButton *trashdirButton;
+    FlatToolButton *trashdirButton;
 
     QLabel *trashsizeLabel;
     QSpinBox  *trashsizeInput;
@@ -60,7 +62,7 @@ private:
     QRadioButton *disableCustomDateTimeFormat;
     QRadioButton *enableCustomDateTimeFormat;
     QLineEdit *customDateTimeFormat;
-    QToolButton *dateTimeFormatHelpButton;
+    FlatToolButton *dateTimeFormatHelpButton;
 };
 
 

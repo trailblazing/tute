@@ -3,15 +3,23 @@
 
 #include <QWidget>
 #include <QLabel>
+#include <QCheckBox>
 #include <QTextCodec>
 
 #include "libraries/wyedit/Editor.h"
+
+
+extern QMap<Qt::CheckState, QString> _check_state;
+extern QMap<QString, Qt::CheckState> _state_check;
+
 
 class QHBoxLayout;
 class QGridLayout;
 class QScrollArea;
 class QSplitter;
 class AttachTableScreen;
+
+
 
 class MetaEditor: public Editor {
     Q_OBJECT
@@ -24,7 +32,7 @@ public slots:
 
 
 signals:
-// Сигнал вырабатывается при клике на текстовой метке
+    // Сигнал вырабатывается при клике на текстовой метке
     void setFindTextSignal(QString text);
 
 public:
@@ -32,10 +40,13 @@ public:
     ~MetaEditor(void);
 
     void setTreePath(QString path);
-    void setName    (QString name);
-    void setAuthor  (QString author);
-    void setUrl     (QString url);
-    void setTags    (QString tags);
+    void setPin(QString pin);
+    void switch_pin();
+    void setName(QString name);
+    void setAuthor(QString author);
+    void setHome(QString url);
+    void setUrl(QString url);
+    void setTags(QString tags);
 
     static void toAttachCallback(void);
 
@@ -48,32 +59,37 @@ private:
     void metaAssembly(void);
     void setupSignals(void);
 
-    QLabel *treePath; // Надпись Path (только для мобильного интерфейса)
+    QLabel *treePath;       // Надпись Path (только для мобильного интерфейса)
 
-    QLabel *recordName; // Надпись Title
-    QLabel *recordAuthor; // Надпись Author(s)
+    QCheckBox *recordPin;
 
-    QLabel *labelUrl; // Надпись "Url"
+    QLabel *recordName;     // Надпись Title
+    QLabel *recordAuthor;   // Надпись Author(s)
+
+    QLabel *labelHome;       // Inscription    // Надпись "Url"
+    QLabel *recordHome;
+
+    QLabel *labelUrl;       // Inscription    // Надпись "Url"
     QLabel *recordUrl;
 
-    QLabel *labelTags; // Надпись "Tags"
+    QLabel *labelTags;      // Надпись "Tags"
     QWidget *recordTagsContainer;
     QHBoxLayout *recordTagsLayout;
     QScrollArea *recordTagsScrollArea;
     QString recordTagsText;
     QStringList recordTagsTextList;
-    QList<QLabel*> recordTagsLabels;
+    QList<QLabel *> recordTagsLabels;
 
     QSplitter *editorAndFileTableSplitter;
 
-// Виджет слоя прикрепляемых файлов
+    // Виджет слоя прикрепляемых файлов
     AttachTableScreen *attachTableScreen;
 
-// Виджет слоя редактирования текста
+    // Виджет слоя редактирования текста
     QGridLayout *editorMainLayer;
     QWidget *editorMainScreen;
 
-// Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
+    // Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
     QVBoxLayout *metaEditorJoinLayer;
 
 };

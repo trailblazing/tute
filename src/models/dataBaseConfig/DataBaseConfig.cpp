@@ -9,8 +9,8 @@
 #include "models/appConfig/AppConfigUpdater.h"
 #include "libraries/GlobalParameters.h"
 
-extern AppConfig mytetraConfig;
-extern GlobalParameters globalParameters;
+extern AppConfig appconfig;
+extern GlobalParameters globalparameters;
 
 
 // Объект для работы с конфигурацией (с настройками) базы данных
@@ -25,7 +25,7 @@ DataBaseConfig::DataBaseConfig(QObject *pobj)
 {
     Q_UNUSED(pobj);
 
-    is_init_flag=false;
+    is_init_flag = false;
 }
 
 
@@ -41,12 +41,13 @@ DataBaseConfig::~DataBaseConfig()
 
 void DataBaseConfig::init(void)
 {
-// Создается имя файла конфигурации
-// QString configFileName=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir()+"/database.ini";
-    QString configFileName=mytetraConfig.get_tetradir()+"/database.ini";
+    // Создается имя файла конфигурации
+    // QString configFileName=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir()+"/database.ini";
+    QString configFileName = appconfig.get_tetradir() + "/database.ini";
 
-// Проверяется, есть ли файл конфигурации
+    // Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);
+
     if(!confFile.exists()) {
         // Если файла нет, создается конфигфайл с начальным содержимым
         QSettings tempConf(configFileName, QSettings::IniFormat);
@@ -60,12 +61,12 @@ void DataBaseConfig::init(void)
         tempConf.sync();
     }
 
-// Создается указатель на объект хранилища конфигурации
-    conf=new QSettings(configFileName, QSettings::IniFormat);
+    // Создается указатель на объект хранилища конфигурации
+    conf = new QSettings(configFileName, QSettings::IniFormat);
 
     conf->sync();
 
-    is_init_flag=true;
+    is_init_flag = true;
 }
 
 
@@ -76,18 +77,18 @@ bool DataBaseConfig::is_init(void)
 
 
 // Получение параметра по имени в виде строки с проверкой его существования
-QString DataBaseConfig::get_parameter(QString name)
+QString DataBaseConfig::get_parameter(QString name)const
 {
-    QString t=conf->value(name).toString();
+    QString t = conf->value(name).toString();
 
-    if(t.length()==0)
+    if(t.length() == 0)
         criticalError("In database config not found parameter " + name);
 
     return t;
 }
 
 
-int DataBaseConfig::get_crypt_mode(void)
+int DataBaseConfig::get_crypt_mode(void)const
 {
     return conf->value("crypt_mode", 0).toInt();
 }
@@ -99,7 +100,7 @@ void DataBaseConfig::set_crypt_mode(int mode)
 }
 
 
-QString DataBaseConfig::get_crypt_check_salt(void)
+QString DataBaseConfig::get_crypt_check_salt(void)const
 {
     return get_parameter("crypt_check_salt");
 }
@@ -111,7 +112,7 @@ void DataBaseConfig::set_crypt_check_salt(QString salt)
 }
 
 
-QString DataBaseConfig::get_crypt_check_hash(void)
+QString DataBaseConfig::get_crypt_check_hash(void)const
 {
     return get_parameter("crypt_check_hash");
 }
@@ -122,7 +123,7 @@ void DataBaseConfig::set_crypt_check_hash(QString hash)
 }
 
 
-QString DataBaseConfig::get_middle_hash_check_data(void)
+QString DataBaseConfig::get_middle_hash_check_data(void)const
 {
     return get_parameter("middle_hash_check_data");
 }
@@ -138,7 +139,7 @@ void DataBaseConfig::set_middle_hash_check_data(QString hash)
 // Номер версии конфига
 // --------------------
 
-int DataBaseConfig::get_config_version(void)
+int DataBaseConfig::get_config_version(void)const
 {
     if(conf->contains("version"))
         return conf->value("version").toInt();

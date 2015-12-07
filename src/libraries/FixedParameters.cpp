@@ -9,35 +9,44 @@ FixedParameters::FixedParameters(QObject *parent) : QObject(parent)
 {
     Q_UNUSED(parent);
 
-    recordFieldAvailableList = (QStringList() << "id" \
-                                << "name" \
-                                << "author" \
-                                << "url" \
-                                << "tags" \
-                                << "ctime" \
-                                << "dir" \
-                                << "file" \
-                                << "crypt" \
-                                \
-                                << "hasAttach" \
+    recordFieldAvailableList = (QStringList()   \
+                                << "id"         \
+                                << "pin"        \
+                                << "name"       \
+                                << "author"     \
+                                << "home"       \
+                                << "url"        \
+                                << "tags"       \
+                                << "ctime"      \
+                                << "dir"        \
+                                << "file"       \
+                                << "crypt"      \
+                                << "hasAttach"  \
                                 << "attachCount");
 
-    recordNaturalFieldAvailableList = (QStringList() << "id" \
-                                       << "name" \
-                                       << "author" \
-                                       << "url" \
-                                       << "tags" \
-                                       << "ctime" \
-                                       << "dir" \
-                                       << "file" \
-                                       << "crypt" );
+    recordNaturalFieldAvailableList = (QStringList()\
+                                       << "id"      \
+                                       << "pin"     \
+                                       << "name"    \
+                                       << "author"  \
+                                       << "home"    \
+                                       << "url"     \
+                                       << "tags"    \
+                                       << "ctime"   \
+                                       << "dir"     \
+                                       << "file"    \
+                                       << "crypt");
 
-    recordCalculableFieldAvailableList = (QStringList() << "hasAttach" \
+    recordCalculableFieldAvailableList = (QStringList()     \
+                                          << "hasAttach"    \
                                           << "attachCount");
 
-    recordFieldCryptedList = (QStringList() << "name" \
-                              << "author" \
-                              << "url" \
+    recordFieldCryptedList = (QStringList() \
+                              << "pin"      \
+                              << "name"     \
+                              << "author"   \
+                              << "home"     \
+                              << "url"      \
                               << "tags");
 }
 
@@ -127,8 +136,10 @@ QMap<QString, QString> FixedParameters::recordFieldDescription(QStringList list)
     QMap<QString, QString> names;
 
     names["id"] = tr("ID");
+    names["pin"] = tr("Pin");
     names["name"] = tr("Title");
     names["author"] = tr("Author");
+    names["home"] = tr("Home");
     names["url"] = tr("Url");
     names["tags"] = tr("Tags");
     names["ctime"] = tr("Create time");
@@ -139,12 +150,13 @@ QMap<QString, QString> FixedParameters::recordFieldDescription(QStringList list)
     names["attachCount"] = tr("Attachs count");
 
 
-// Удаляются строчки, которых нет в переданном списке
+    // Удаляются строчки, которых нет в переданном списке
     QMutableMapIterator<QString, QString> iterator(names);
-    while (iterator.hasNext()) {
+
+    while(iterator.hasNext()) {
         iterator.next();
 
-        if( list.contains( iterator.key() ) == false )
+        if(list.contains(iterator.key()) == false)
             iterator.remove();
     }
 
