@@ -1,6 +1,8 @@
-mytetra_dev
+mytetra_webengine
 
-A Knowledge management system with web browser functions inside.
+A Knowledge management system with embedded web browser functions (derived from Qt::WebEngine Demo Browser) inside.
+A light wight browser embedded in a note management application provide an easy way to combine the tab management, bookmarks, history, internal and external search together.
+The next step, I aim to append some collaborative editing function.
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development. 

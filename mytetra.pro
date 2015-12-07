@@ -417,7 +417,8 @@ DISTFILES += \
     src/views/browser/htmls/notfound.html \
     src/views/browser/browser.rc \
     src/views/browser/Info_mac.plist \
-    bin/resource/pic/home_blue.svg
+    bin/resource/pic/home_blue.svg \
+    README.md
 
 FORMS += \
     src/views/browser/addbookmarkdialog.ui \
