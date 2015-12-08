@@ -98,7 +98,9 @@ void RecordTableController::clickToRecord(const QModelIndex &index)
 void RecordTableController::update_browser(const int source_pos)
 {
     //RecordTableData *table = recordSourceModel->getTableData();
+
     browser::Entrance *entrance = globalparameters.entrance();
+
     //Record *current_record = browser_view->getCurrentRecord();
 
 
@@ -184,7 +186,8 @@ void RecordTableController::update_browser(const int source_pos)
         //            page->load(record);
         //        } else
 
-        if(record->generator())record->generate();
+        if(record->generator() && !record->binded_only_page())record->generate();
+        else if(record->activator() && record->binded_only_page())(*record->activator())();  // if(entrance) entrance->active_record(record);
         else if(entrance) entrance->active_record(record);
     }
 

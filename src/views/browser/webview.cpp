@@ -194,6 +194,7 @@ namespace browser {
 
     WebView *WebPage::load(Record *const record, bool checked)
     {
+        Q_UNUSED(checked)
         assert(record);
 
         //        if(_record)
@@ -739,8 +740,11 @@ namespace browser {
 
                 _home_connection = QObject::connect(findscreen->historyhome(), &QAction::triggered, this, [this](bool checked = true) {
                     Q_UNUSED(checked)
-                    _record->setNaturalFieldSource("url", _record->getNaturalFieldSource("home"));
-                    load(_record, true);
+
+                    if(_record->getNaturalFieldSource("home") != "") {
+                        _record->setNaturalFieldSource("url", _record->getNaturalFieldSource("home"));
+                        load(_record, true);
+                    }
                 }
                                                    );
             }

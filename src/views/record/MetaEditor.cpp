@@ -107,7 +107,7 @@ void MetaEditor::setupLabels(void)
 
     // Url
     labelHome = new QLabel(this);
-    labelHome->setText(tr("<B>Url:</B> "));
+    labelHome->setText(tr("<B>Home:</B> "));
     labelHome->setVisible(false);
 
 
