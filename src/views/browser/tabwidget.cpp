@@ -278,7 +278,7 @@ namespace browser {
             _tabbar
             , &TabBar::newTab   //                , this
         , [this]() {
-            auto arint = boost::make_shared<active_record_in_new_tab>(this, true);
+            auto arint = boost::make_shared<NewTab>(this, true);
             request_record(
                 QUrl(DockedWindow::_defaulthome)
 
@@ -287,9 +287,9 @@ namespace browser {
                 //            }   // nested    //
                 //                [this](Record * const record)-> WebView * {return this->newTab(record);}
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
-                    "", &active_record_in_new_tab::generator, arint)  //                _active
+                    "", &NewTab::generator, arint)  //                _active
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                    "", &active_record_in_new_tab::activator, arint)
+                    "", &NewTab::activator, arint)
             );
         });
         connect(_tabbar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
@@ -310,13 +310,13 @@ namespace browser {
             _newtabaction
             , &QAction::triggered   //                , this
         , [this](bool make_current) {
-            auto arint = boost::make_shared<active_record_in_new_tab>(this, make_current);
+            auto arint = boost::make_shared<NewTab>(this, make_current);
             request_record(
                 QUrl(DockedWindow::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
-                    "", &active_record_in_new_tab::generator, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
+                    "", &NewTab::generator, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                    "", &active_record_in_new_tab::activator, arint)
+                    "", &NewTab::activator, arint)
             );
         });
 
@@ -959,12 +959,12 @@ namespace browser {
             //                   // , false
             //                  );
 
-            auto arint = boost::make_shared<active_record_in_new_tab>(this, true);
+            auto arint = boost::make_shared<NewTab>(this, true);
             request_record(QUrl(DockedWindow::_defaulthome)
                            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
-                               "", &active_record_in_new_tab::generator, arint)
+                               "", &NewTab::generator, arint)
                            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                               "", &active_record_in_new_tab::activator, arint)
+                               "", &NewTab::activator, arint)
                           );
             return;
         }
@@ -996,12 +996,12 @@ namespace browser {
                 //                                          // , false
                 //                                         );
                 //                webView->setUrl(url);
-                auto arint = boost::make_shared<active_record_in_new_tab>(this, true);
+                auto arint = boost::make_shared<NewTab>(this, true);
                 request_record(url
                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
-                                   "", &active_record_in_new_tab::generator, arint)
+                                   "", &NewTab::generator, arint)
                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                                   "", &active_record_in_new_tab::activator, arint)
+                                   "", &NewTab::activator, arint)
                               );
             }
         }
@@ -1025,21 +1025,21 @@ namespace browser {
                 //                // record.setNaturalFieldSource("url", url.toString());
                 //                webView->page()->load(record);    //webView->load(record); //loadUrl(url);
                 //                webView->setFocus();
-                auto ar = boost::make_shared<WebPage::active_record>(webView->page(), true);
+                auto ar = boost::make_shared<WebPage::ActiveRecord>(webView->page(), true);
                 request_record(
                     url
                     , std::make_shared <
                     sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, Record *const>
                     > (
                         std::string("")
-                        , &WebPage::active_record::generator
+                        , &WebPage::ActiveRecord::generator
                         , ar
                     )
                     , std::make_shared <
                     sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
                     > (
                         ""
-                        , &WebPage::active_record::activator
+                        , &WebPage::ActiveRecord::activator
                         , ar
                     )
                 );
@@ -1134,33 +1134,33 @@ namespace browser {
                 //                       // , false
                 //                      );                    //, globalParameters.getRecordTableScreen()->getRecordTableController()
                 //                //v->load_record(_record);
-                auto arint = boost::make_shared<active_record_in_new_tab>(this, true);
+                auto arint = boost::make_shared<NewTab>(this, true);
                 request_record(url
                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
-                                   "", &active_record_in_new_tab::generator, arint)
+                                   "", &NewTab::generator, arint)
                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                                   "", &active_record_in_new_tab::activator, arint)
+                                   "", &NewTab::activator, arint)
                               );
 
 
             } else {
                 if(webView(0)->page()->url() != url) {
                     //                    webView(0)->load(_record);    //loadUrl(_url);
-                    auto ar = boost::make_shared<WebPage::active_record>(webView(0)->page(), true);
+                    auto ar = boost::make_shared<WebPage::ActiveRecord>(webView(0)->page(), true);
                     request_record(
                         url
                         , std::make_shared <
                         sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>
                         > (
                             ""
-                            , &WebPage::active_record::generator
+                            , &WebPage::ActiveRecord::generator
                             , ar
                         )
                         , std::make_shared <
                         sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
                         > (
                             ""
-                            , &WebPage::active_record::activator
+                            , &WebPage::ActiveRecord::activator
                             , ar
                         )
                     );

@@ -87,9 +87,10 @@ void RecordTableController::clickToRecord(const QModelIndex &index)
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
 
-    initMetaEditorAtClickToRecord(source_pos);
-    initAttachTableAtClickToRecord(source_pos);
+    sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
+    sychronize_attachtable_to_record(source_pos);
     update_browser(source_pos); // if new one, create it? no, you can't click a record which does not exist.
+
 
 }
 
@@ -188,7 +189,7 @@ void RecordTableController::update_browser(const int source_pos)
 
         if(record->generator() && !record->binded_only_page())record->generate();
         else if(record->activator() && record->binded_only_page())(*record->activator())();  // if(entrance) entrance->active_record(record);
-        else if(entrance) entrance->active_record(record);
+        else if(entrance) entrance->active_chain(record);
     }
 
     //    } else {
@@ -220,12 +221,17 @@ void RecordTableController::update_browser(const int source_pos)
 
 }
 
-void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
+void RecordTableController::sychronize_metaeditor_to_record(const int pos)
 {
+
+    Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+    assert(record);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
     // Выясняется указатель на объект редактирования текста записи
-    MetaEditor *edView = find_object<MetaEditor>("editorScreen");
+    MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+    assert(metaeditor);
+    metaeditor->bind(record);
 
     // Выясняется ссылка на таблицу конечных данных
     RecordTableData *table = recordSourceModel->getTableData();
@@ -237,7 +243,7 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
 
 
     // Устанавливается функция обратного вызова для записи данных
-    edView->set_save_callback(table->editorSaveCallback);
+    metaeditor->set_save_callback(table->editorSaveCallback);
 
     // Сохраняется текст и картинки в окне редактирования
     find_object<MainWindow>("mainwindow")->saveTextarea();
@@ -250,8 +256,10 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
     QString fullFileName = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
 
-    // Если в окне содержимого записи уже находится выбираемая запись
-    if(edView->get_work_directory() == fullDir && edView->get_file_name() == currentFile) {
+    // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
+    if(metaeditor->get_work_directory() == fullDir
+       && metaeditor->get_file_name() == currentFile
+      ) {
         globalparameters.getWindowSwitcher()->switchFromRecordtableToRecord();
         return;
     }
@@ -264,8 +272,8 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
 
     // Редактору задаются имя файла и директории
     // И дается команда загрузки файла
-    edView->set_work_directory(fullDir);
-    edView->set_file_name(currentFile);
+    metaeditor->set_work_directory(fullDir);
+    metaeditor->set_file_name(currentFile);
 
     // Если идет работа с зашифрованной записью
     // И если имя директории или имя файла пусты, то это означает что
@@ -277,51 +285,51 @@ void RecordTableController::initMetaEditorAtClickToRecord(const int pos)
 
     if(table->getField("crypt", pos) == "1")
         if(fullDir.length() == 0 || currentFile.length() == 0)
-            edView->setDirFileEmptyReaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+            metaeditor->setDirFileEmptyReaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
     // В редактор заносится информация, идет ли работа с зашифрованным текстом
-    edView->setMiscField("crypt", table->getField("crypt", pos));
+    metaeditor->setMiscField("crypt", table->getField("crypt", pos));
 
     // В редакторе устанавливается функция обратного вызова для чтения данных
-    edView->set_load_callback(table->editorLoadCallback);
+    metaeditor->set_load_callback(table->editorLoadCallback);
 
-    edView->load_textarea();
+    metaeditor->load_textarea();
     // edView->set_textarea(table->get_text(index.row()));
 
     // Заполняются прочие инфо-поля
-    edView->setName(table->getField("name", pos));
-    edView->setAuthor(table->getField("author", pos));
-    edView->setHome(table->getField("home", pos));
-    edView->setUrl(table->getField("url", pos));
-    edView->setTags(table->getField("tags", pos));
+    metaeditor->setName(table->getField("name", pos));
+    metaeditor->setAuthor(table->getField("author", pos));
+    metaeditor->setHome(table->getField("home", pos));
+    metaeditor->setUrl(table->getField("url", pos));
+    metaeditor->setTags(table->getField("tags", pos));
 
     QString id = table->getField("id", pos);
-    edView->setMiscField("id", id);
+    metaeditor->setMiscField("id", id);
 
-    edView->setMiscField("title", table->getField("name", pos));
+    metaeditor->setMiscField("title", table->getField("name", pos));
 
     // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
     QString path = qobject_cast<RecordTableScreen *>(parent())->getTreePath();
 
     // В мобильном интерфейсе редактор должен показывать путь до записи
     if(appconfig.getInterfaceMode() == "mobile")
-        edView->setTreePath(path);
+        metaeditor->setTreePath(path);
 
     // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
     if(appconfig.getRememberCursorAtOrdinarySelection()) {
-        edView->setCursorPosition(walkhistory.getCursorPosition(id));
-        edView->setScrollBarPosition(walkhistory.getScrollBarPosition(id));
+        metaeditor->setCursorPosition(walkhistory.getCursorPosition(id));
+        metaeditor->setScrollBarPosition(walkhistory.getScrollBarPosition(id));
     }
 
     // Обновление иконки аттачей
     if(table->getRecord(pos)->getAttachTablePointer()->size() == 0)
-        edView->toAttach->setIcon(edView->iconAttachNotExists);   // Если нет приаттаченных файлов
+        metaeditor->toAttach->setIcon(metaeditor->iconAttachNotExists);   // Если нет приаттаченных файлов
     else
-        edView->toAttach->setIcon(edView->iconAttachExists);   // Есть приаттаченные файлы
+        metaeditor->toAttach->setIcon(metaeditor->iconAttachExists);   // Есть приаттаченные файлы
 }
 
 
-void RecordTableController::initAttachTableAtClickToRecord(const int pos)
+void RecordTableController::sychronize_attachtable_to_record(const int pos)
 {
     // Выясняется ссылка на таблицу конечных данных
     RecordTableData *table = recordSourceModel->getTableData();
@@ -973,7 +981,7 @@ void RecordTableController::openWebsite(QModelIndex proxyIndex)
 
     //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
     if(record->generator())record->generate();
-    else if(entrance) entrance->active_record(record);
+    else if(entrance) entrance->active_chain(record);
 
     //    int i = editRecordWin.exec();
     //    if(i == QDialog::Rejected)

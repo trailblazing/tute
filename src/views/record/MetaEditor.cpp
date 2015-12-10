@@ -20,10 +20,15 @@
 #include "models/recordTable/RecordTableModel.h"
 #include "models/recordTable/RecordTableData.h"
 #include "libraries/FlatControl.h"
+#include "views/browser/webview.h"
+
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
+namespace browser{
+    class WebPage;
+}
 
 MetaEditor::MetaEditor(void) : Editor()
 {
@@ -116,8 +121,8 @@ void MetaEditor::setupLabels(void)
     labelUrl->setText(tr("<B>Url:</B> "));
     labelUrl->setVisible(false);
 
-    recordHome = new QLabel(this);
-    recordHome->setOpenExternalLinks(true);
+    recordHome = new ClickableLabel(this);
+    //    recordHome->setOpenExternalLinks(true);
     recordHome->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                         Qt::TextSelectableByKeyboard |
                                         Qt::LinksAccessibleByMouse |
@@ -125,14 +130,15 @@ void MetaEditor::setupLabels(void)
     recordHome->setVisible(false);
     recordHome->setWordWrap(true);
 
-    recordUrl = new QLabel(this);
-    recordUrl->setOpenExternalLinks(true);
+    recordUrl = new ClickableLabel(this);
+    //    recordUrl->setOpenExternalLinks(true);
     recordUrl->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                        Qt::TextSelectableByKeyboard |
                                        Qt::LinksAccessibleByMouse |
                                        Qt::LinksAccessibleByKeyboard);
     recordUrl->setVisible(false);
     recordUrl->setWordWrap(true);
+
 
     // Текстовые метки
     labelTags = new QLabel(this);
@@ -141,6 +147,41 @@ void MetaEditor::setupLabels(void)
 }
 
 
+void MetaEditor::bind(Record *r)
+{
+    _record = r;
+    assert(_record);
+
+
+    QObject::disconnect(_url_connection);
+
+    _url_connection = QObject::connect(recordUrl, &ClickableLabel::mousePressEvent
+                                       // linkActivated
+                                       //            , _record->binded_only_page()
+    , [this](QMouseEvent * ev) {
+        Q_UNUSED(ev)
+        assert(_record->binded_only_page());
+        _record->active();
+    });
+
+    QObject::disconnect(_home_connection);
+    _home_connection = QObject::connect(recordHome, &ClickableLabel::mousePressEvent
+                                        //            , _record->binded_only_page()
+    , [this](QMouseEvent * ev) {
+        Q_UNUSED(ev)
+        //            Q_UNUSED(home)
+        browser::WebPage *page = _record->binded_only_page();
+        assert(page);
+        QString home = _record->getNaturalFieldSource("home");
+
+        if(_record->getNaturalFieldSource("url") != home)
+            _record->setNaturalFieldSource("url", home);
+
+        page->load(_record, true);
+        //        _record->active();
+    });
+
+}
 void MetaEditor::setupUI(void)
 {
     // Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...
@@ -301,17 +342,22 @@ void MetaEditor::switch_pin()
             // Переданные отредактированные поля преобразуются в вид имя-значение
             QMap<QString, QString> editData;
 
-
             if(recordPin->checkState() == Qt::CheckState::Checked) {
                 recordPin->setCheckState(Qt::CheckState::Unchecked);
+
                 setPin(pin = _check_state[Qt::CheckState::Unchecked]);
+
                 editData["pin"] = pin;
+
             } else {
                 recordPin->setCheckState(Qt::CheckState::Checked);
+
                 setPin(pin = _check_state[Qt::CheckState::Checked]);
+                setHome(home);
+
                 editData["pin"] = pin;
                 editData["home"] = home;
-                setHome(home);
+
             }
 
             //            // Переданные отредактированные поля преобразуются в вид имя-значение
@@ -325,6 +371,7 @@ void MetaEditor::switch_pin()
 
             // Обновление новых данных в таблице конечных записей
             table->editRecordFields(pos, editData);
+
 
             // Сохранение дерева веток
             //find_object<TreeScreen>("treeScreen")->saveKnowTree();

@@ -251,16 +251,17 @@ namespace browser {
         WebView *find_nopin()const;
         DockedWindow *window() {return _window;}
 
-        struct active_record_in_new_tab {
+        struct NewTab {
             TabWidget *_the;
             bool _make_current;
             RecordTableController *_recordtablecontroller;
             WebView *view;
-            active_record_in_new_tab(TabWidget *the, bool make_current
-                                     = true
-                                       , RecordTableController *recordtablecontroller
-                                     = globalparameters.getRecordTableScreen()->getRecordTableController()
-                                    ): _the(the) , _make_current(make_current), _recordtablecontroller(recordtablecontroller), view(nullptr) {}
+            NewTab(TabWidget *the
+                   , bool make_current
+                   = true
+                     , RecordTableController *recordtablecontroller
+                   = globalparameters.getRecordTableScreen()->getRecordTableController()
+                  ): _the(the) , _make_current(make_current), _recordtablecontroller(recordtablecontroller), view(nullptr) {}
             WebView *generator(Record *const record)
             {
                 return view = _the->newTab(record, _make_current, _recordtablecontroller);

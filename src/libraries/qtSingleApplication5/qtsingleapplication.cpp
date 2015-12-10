@@ -1146,7 +1146,7 @@ void QtSingleApplication::restoreLastSession()
     for(int i = 0; i < historywindows.count(); ++i) {
         //        browser::BrowserWindow *newWindow = 0;
         QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
-        browser::DockedWindow *current_window = globalparameters.entrance()->active_record().first;
+        browser::DockedWindow *current_window = globalparameters.entrance()->active_chain().first;
 
         assert(current_window->currentTab()->page()->url() == QUrl());
 

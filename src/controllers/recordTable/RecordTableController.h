@@ -114,8 +114,8 @@ public slots:
 
 protected:
 
-    void initMetaEditorAtClickToRecord(const int pos);
-    void initAttachTableAtClickToRecord(const int pos);
+    void sychronize_metaeditor_to_record(const int pos);
+    void sychronize_attachtable_to_record(const int pos);
     void update_browser(const int source_pos);
 
     RecordTableView *view;

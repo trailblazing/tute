@@ -140,9 +140,9 @@ Record *Record::bind_page(browser::WebPage *page)
 
 void Record::active_request(int pos, int openLinkIn)
 {
-    _active_request = true;
+    //    _active_request = true;
     _position = pos;
-    _openlinkinnewwindow = openLinkIn;
+    _open_link_in_new_window = openLinkIn;
 }
 
 bool Record::is_holder()
@@ -1021,7 +1021,12 @@ void Record::checkAndCreateTextFile()
     }
 }
 
-browser::WebView* Record::generate(){
-
+browser::WebView *Record::generate()
+{
     return (*generator())(this);
+}
+
+void Record::active()
+{
+    (*activator())();
 }

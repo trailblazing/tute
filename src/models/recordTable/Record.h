@@ -99,6 +99,7 @@ public:
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator() const {return _activator;}
 
     browser::WebView *generate();
+    void active();
 protected:
 
     browser::WebPage *_page;
@@ -151,9 +152,9 @@ private:
     void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
     friend browser::WebPage;
 
-    bool    _active_request = false;
+    //    bool    _active_request = false;
     int     _position = -1;
-    int     _openlinkinnewwindow = 0;
+    int     _open_link_in_new_window = 0;
     //    bool    _active_immediately = false;
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> _generator;
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> _activator;

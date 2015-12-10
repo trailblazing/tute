@@ -61,14 +61,14 @@ namespace browser {
 
         std::pair<DockedWindow *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(BrowserWindow::defaultHome))
 
-        std::pair<DockedWindow *, WebView *> active_record(Record *const record = nullptr);
+        std::pair<DockedWindow *, WebView *> active_chain(Record *const record = nullptr);
         //        WebView *active_record_alternative(Record *const record) ;
 
         struct active_record_alternative {
             Entrance *_the;
             WebView *_view;
             active_record_alternative(Entrance *the): _the(the), _view(nullptr) {}
-            WebView *generator(Record *const record) {return _view = _the->active_record(record).second;}
+            WebView *generator(Record *const record) {return _view = _the->active_chain(record).second;}
             void activator() {_view->page()->active();}
         };
 
@@ -104,7 +104,7 @@ namespace browser {
         std::pair<DockedWindow *, WebView *> new_dockedwindow(QUrl const &url);
         DockedWindow *new_dockedwindow(const QByteArray &state);
         Entrance *prepend(DockedWindow *);
-
+        void on_activate_window();
 
 #if defined(Q_OS_OSX)
         void lastWindowClosed();
@@ -133,7 +133,7 @@ namespace browser {
         //        QDockWidget *_dockwidget;
         //        DockedWindow *_browser;
         QWidget *_hidetitlebar;
-
+        QMetaObject::Connection _home_connection;    // for disconnect
         friend class QtSingleApplication;
     };
 

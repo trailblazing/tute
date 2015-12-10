@@ -18,8 +18,17 @@ class QGridLayout;
 class QScrollArea;
 class QSplitter;
 class AttachTableScreen;
+class Record;
 
+class ClickableLabel: public QLabel {
+    Q_OBJECT
+public:
+    ClickableLabel(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(parent, f) {}
+    ClickableLabel(const QString &text, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(text, parent, f) {}
+Q_SIGNALS:
+    void mousePressEvent(QMouseEvent *ev);
 
+};
 
 class MetaEditor: public Editor {
     Q_OBJECT
@@ -52,6 +61,7 @@ public:
 
     void switchToEditorLayout(void);
     void switchToAttachLayout(void);
+    void bind(Record *r);   // {_record = r;}
 
 private:
     void setupLabels(void);
@@ -67,10 +77,10 @@ private:
     QLabel *recordAuthor;   // Надпись Author(s)
 
     QLabel *labelHome;       // Inscription    // Надпись "Url"
-    QLabel *recordHome;
+    ClickableLabel *recordHome;
 
     QLabel *labelUrl;       // Inscription    // Надпись "Url"
-    QLabel *recordUrl;
+    ClickableLabel *recordUrl;
 
     QLabel *labelTags;      // Надпись "Tags"
     QWidget *recordTagsContainer;
@@ -91,7 +101,9 @@ private:
 
     // Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
     QVBoxLayout *metaEditorJoinLayer;
-
+    QMetaObject::Connection _home_connection;    // for disconnect
+    QMetaObject::Connection _url_connection;    // for disconnect
+    Record *_record;
 };
 
 #endif /* _METAEDITOR_H_ */

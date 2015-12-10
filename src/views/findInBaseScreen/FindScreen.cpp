@@ -375,7 +375,7 @@ void FindScreen::setupSignals(void)
 
     // При нажатии кнопки закрытия
     connect(closeButton, &FlatToolButton::clicked, this, &FindScreen::widgetHide);
-    connect(closeButton, &FlatToolButton::clicked, [] {globalparameters.entrance()->active_record().first->updateToolbarActionText(false);});
+    connect(closeButton, &FlatToolButton::clicked, [] {globalparameters.entrance()->active_chain().first->updateToolbarActionText(false);});
 
 
     // Сигналы для запоминания состояния интерфейса

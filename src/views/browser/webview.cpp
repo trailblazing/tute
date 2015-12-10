@@ -62,6 +62,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
 
+
 #if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 #include <QWebEngineHitTestResult>
 #endif
@@ -142,21 +143,21 @@ namespace browser {
         //        if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
         //        if(url != nullptr) {
-        auto ar = boost::make_shared<WebPage::active_record>(this, true);
+        auto ar = boost::make_shared<WebPage::ActiveRecord>(this, true);
         _record = request_record(
                       record
                       , std::make_shared <
                       sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>
                       > (
                           ""
-                          , &WebPage::active_record::generator
+                          , &WebPage::ActiveRecord::generator
                           , ar  // boost::make_shared<WebPage::active_record>(this, true)
                       )
                       , std::make_shared <
                       sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
                       > (
                           ""
-                          , &WebPage::active_record::activator
+                          , &WebPage::ActiveRecord::activator
                           , ar  // boost::make_shared<WebPage::active_record>(this, true)
                       )
                   );
@@ -176,7 +177,7 @@ namespace browser {
         //            w = w->parent();
         //        }
 
-        return globalparameters.entrance()->active_record().first;    //QtSingleApplication::instance()->mainWindow();
+        return globalparameters.entrance()->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
     }
 
 
@@ -201,7 +202,8 @@ namespace browser {
         //            if(_record->getNaturalFieldSource("url") != DockedWindow::_defaulthome) {
         // _record = record;
         if(
-            (_record != record) || ((_record == record) && (_record->_page != record->_page))
+            (_record != record)
+            //            || ((_record == record) && (_record->_page != record->_page))
             //            (!_record)
             //            || (
             //                _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
@@ -236,17 +238,18 @@ namespace browser {
 
     void WebPage::active()
     {
-        this->view()->setFocus();   // make upate validate
 
-        //        if(checked) // globalparameters.mainwindow()
-        _recordtablecontroller->select_id(_record->getNaturalFieldSource("id"));
 
-        if(_record->_active_request) {
-            if(_record->_openlinkinnewwindow == 1) {
+        if(_record
+           // ->_active_request
+          ) {
+
+            if(_record->_open_link_in_new_window == 1) {
 
             }
 
             DockedWindow *win = view()->tabmanager()->window();
+            assert(win);
 
             if(!win->isActiveWindow() || !win->isVisible()) {
                 win->raise();
@@ -255,6 +258,9 @@ namespace browser {
 
             view()->tabmanager()->setCurrentWidget(view());
             view()->show();
+            //        if(checked) // globalparameters.mainwindow()
+            this->view()->setFocus();   // make upate validate
+            _recordtablecontroller->select_id(_record->getNaturalFieldSource("id"));
         }
     }
 
@@ -366,17 +372,17 @@ namespace browser {
 
             if(view) {
                 //                return view->page();
-                auto ar = boost::make_shared<WebPage::active_record>(view->page(), true);
+                auto ar = boost::make_shared<WebPage::ActiveRecord>(view->page(), true);
                 request_record(
                     QUrl(DockedWindow::_defaulthome)
                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                         ""
-                        , &WebPage::active_record::generator
+                        , &WebPage::ActiveRecord::generator
                         , ar
                     )
                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                         ""
-                        , &WebPage::active_record::activator
+                        , &WebPage::ActiveRecord::activator
                         , ar
                     )
                 );
@@ -387,17 +393,17 @@ namespace browser {
                 // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                 // page->bind_record(new_record);  //Record *record = request_record(page->url());
                 // page->update_record(page->url(), page->title());
-                auto arint = boost::make_shared<TabWidget::active_record_in_new_tab>(this->dockedwindow()->tabWidget(), true);
+                auto arint = boost::make_shared<TabWidget::NewTab>(this->dockedwindow()->tabWidget(), true);
                 Record *r = request_record(
                                 QUrl(DockedWindow::_defaulthome)
                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                                     ""
-                                    , &TabWidget::active_record_in_new_tab::generator
+                                    , &TabWidget::NewTab::generator
                                     , arint
                                 )
                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                                     ""
-                                    , &TabWidget::active_record_in_new_tab::activator
+                                    , &TabWidget::NewTab::activator
                                     , arint
                                 )
                             );
@@ -414,7 +420,7 @@ namespace browser {
         } else if(type == QWebEnginePage::WebBrowserWindow) {
 
             globalparameters.entrance()->new_dockedwindow(QUrl(DockedWindow::_defaulthome));                   // QtSingleApplication::instance()->newMainWindow();
-            DockedWindow *mainWindow = globalparameters.entrance()->active_record().first;  // QtSingleApplication::instance()->mainWindow();
+            DockedWindow *mainWindow = globalparameters.entrance()->active_chain().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
             page = mainWindow->currentTab()->page();
 
@@ -503,7 +509,7 @@ namespace browser {
 
     void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
     {
-        DockedWindow *mainWindow = globalparameters.entrance()->active_record().first;    //QtSingleApplication::instance()->mainWindow();
+        DockedWindow *mainWindow = globalparameters.entrance()->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(mainWindow);
         dialog.setWindowFlags(Qt::Sheet);
@@ -528,7 +534,7 @@ namespace browser {
     void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
     {
         Q_UNUSED(requestUrl);
-        DockedWindow *mainWindow = globalparameters.entrance()->active_record().first;    //QtSingleApplication::instance()->mainWindow();
+        DockedWindow *mainWindow = globalparameters.entrance()->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(mainWindow);
         dialog.setWindowFlags(Qt::Sheet);
@@ -730,23 +736,9 @@ namespace browser {
                 _record->bind_page(this);  // record->breakpage();
                 // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
                 _records.insert(_record);
-                FindScreen *findscreen = globalparameters.getFindScreen();
-
-
-                //…
-                //    _home_connection = QObject::connect(…);
-                //…
-                QObject::disconnect(_home_connection);
-
-                _home_connection = QObject::connect(findscreen->historyhome(), &QAction::triggered, this, [this](bool checked = true) {
-                    Q_UNUSED(checked)
-
-                    if(_record->getNaturalFieldSource("home") != "") {
-                        _record->setNaturalFieldSource("url", _record->getNaturalFieldSource("home"));
-                        load(_record, true);
-                    }
-                }
-                                                   );
+                //                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+                //                assert(metaeditor);
+                //                metaeditor->bind(_record);
             }
         }
 
@@ -784,13 +776,16 @@ namespace browser {
 
                 //                update_record(url(), title, true);
 
+                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+                assert(metaeditor);
+
                 if(title != ""
                    && title != _record->getNaturalFieldSource("name")
                    //                   && !QUrl(title).isValid()
                   ) {
 
                     _record->setNaturalFieldSource("name", title);
-                    //metaeditor->setName(title);
+                    metaeditor->setName(title);
                 }
 
                 //                }
@@ -935,9 +930,13 @@ namespace browser {
 
                 //                //if(this->record())
                 // setUrl(url); // recursive
+                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+                assert(metaeditor);
 
-                if(url.toString() != "")
+                if(url.toString() != "") {
                     _record->setNaturalFieldSource("url", url.toString());
+                    metaeditor->setUrl(url.toString());
+                }
 
                 //                    update_record(url, title(), true);
 
@@ -997,6 +996,13 @@ namespace browser {
             //            int position = _recordtablecontroller->convertProxyIndexToPos(proxyindex);
             //            //                // QString page_title = webPage()->title();    // same as this->title()
 
+
+            // Выясняется указатель на объект редактирования текста записи
+            MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+
+            // Выясняется ссылка на таблицу конечных данных
+            //                RecordTableData *table = recordSourceModel->getTableData();
+
             if(title != ""
                && title != _record->getNaturalFieldSource("name")
                //                   && !QUrl(title).isValid()
@@ -1004,10 +1010,17 @@ namespace browser {
 
                 _record->setNaturalFieldSource("name", title);
                 //metaeditor->setName(title);
+
+
+                //                table->setWorkPos(pos);
+                metaeditor->setName(title);
             }
 
-            if(url.toString() != "")
+            if(url.toString() != "") {
                 _record->setNaturalFieldSource("url", url.toString());
+                metaeditor->setUrl(url.toString());
+
+            }
 
             //metaeditor->setUrl(url.toString());
 
@@ -1027,10 +1040,10 @@ namespace browser {
 
 
 
-            //            this->view()->setFocus();   // make upate validate
+            this->view()->setFocus();   // make upate validate
 
-            //            if(make_current) // globalparameters.mainwindow()
-            //                _recordtablecontroller->select_id(_record->getNaturalFieldSource("id"));
+            if(make_current) // globalparameters.mainwindow()
+                _recordtablecontroller->select_id(_record->getNaturalFieldSource("id"));
 
             //            if(_record->_active_request) {
             //                if(_record->_openlinkinnewwindow == 1) {

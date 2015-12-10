@@ -130,11 +130,11 @@ namespace browser {
 
         Record *current_record()const {return _record;}
 
-        struct active_record {
+        struct ActiveRecord {
             WebPage *_the;
             bool _make_current;
             //            RecordTableController *_recordtablecontroller;
-            active_record(WebPage *the, bool make_current
+            ActiveRecord(WebPage *the, bool make_current
                           = true
                             //                            , RecordTableController *recordtablecontroller
                             //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
@@ -201,7 +201,7 @@ namespace browser {
         QUrl    _loadingurl;
         //bool _create_window_generated;
         RecordTableController *_recordtablecontroller;
-        QMetaObject::Connection _home_connection;    // for disconnect
+
 
         void record(Record *const record) {_record = record;}
         friend class Record;

@@ -302,6 +302,36 @@ namespace browser {
         return this;
     }
 
+    void Entrance::on_activate_window()
+    {
+
+        FindScreen *findscreen = globalparameters.getFindScreen();
+
+        assert(findscreen);
+        assert(findscreen->historyhome());
+
+        QObject::disconnect(_home_connection);
+
+        _home_connection = QObject::connect(findscreen->historyhome(), &QAction::triggered, this, [this](bool checked = true) {
+            Q_UNUSED(checked)
+            WebPage *page = active_chain().second->page();
+            assert(page);
+            Record *record = page->current_record();
+            assert(record);
+            QString home = record->getNaturalFieldSource("home");
+            QUrl homeurl = QUrl(home);
+
+            if(homeurl.isValid()
+               && homeurl != page->url()
+              ) {
+                record->setNaturalFieldSource("url", home);
+                page->load(record, true);
+            }
+        }
+                                           );
+
+    }
+
     DockedWindow *Entrance::new_dockedwindow(const QByteArray &state)
     {
 
@@ -671,6 +701,7 @@ namespace browser {
         auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
         connect(_toolbarsearch, &ToolbarSearch::search, this, &Entrance::active_url);
         connect(this->_actionFreeze, SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+
     }
 
     void Entrance::assembly(void)
@@ -881,7 +912,7 @@ namespace browser {
 
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
-    std::pair<DockedWindow *, WebView *> Entrance::active_record(Record *const record)
+    std::pair<DockedWindow *, WebView *> Entrance::active_chain(Record *const record)
     {
         clean();
         //DockedWindow *w = nullptr;
@@ -1132,7 +1163,7 @@ namespace browser {
 
     bool Entrance::restore_state(const QByteArray &state)
     {
-        return active_record().first->restore_state(state);
+        return active_chain().first->restore_state(state);
     }
 
     //    std::pair<DockedWindow *, WebView *> Entrance::active_record(Record *const record)

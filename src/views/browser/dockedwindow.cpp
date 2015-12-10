@@ -199,17 +199,17 @@ namespace browser {
             //                , _tabmanager   //typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
             //                , Arg &&... arg
             //            );
-            auto arint = boost::make_shared<TabWidget::active_record_in_new_tab>(_tabmanager, true);
+            auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
             request_record(
                 QUrl(DockedWindow::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                     ""
-                    , &TabWidget::active_record_in_new_tab::generator
+                    , &TabWidget::NewTab::generator
                     , arint
                 )
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                     ""
-                    , &TabWidget::active_record_in_new_tab::activator
+                    , &TabWidget::NewTab::activator
                     , arint
                 )
             );
@@ -218,23 +218,26 @@ namespace browser {
 
         slotUpdateWindowTitle();
         loadDefaultState();
+
+        //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
+
         //Record *_backup = record;
         //PageView *new_view =
 
         //        _tabmanager->newTab(url);  // , false
-        auto arint = boost::make_shared<TabWidget::active_record_in_new_tab>(_tabmanager, true);
+        auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
         Record *record = request_record(    // why do this?
                              url
                              , std::make_shared <
                              sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const >> (
                                  ""
-                                 , &TabWidget::active_record_in_new_tab::generator
+                                 , &TabWidget::NewTab::generator
                                  , arint
                              )
                              , std::make_shared <
                              sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void >> (
                                  ""
-                                 , &TabWidget::active_record_in_new_tab::activator
+                                 , &TabWidget::NewTab::activator
                                  , arint
                              )
                          );
@@ -327,6 +330,8 @@ namespace browser {
     {
         _entrance->setWidget(this);
         this->setParent(_entrance);
+        _entrance->on_activate_window();
+
         QMainWindow::activateWindow();
     }
 
@@ -898,7 +903,7 @@ namespace browser {
     {
         //QtSingleApplication::instance()->
         //        _browser->new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));
-        DockedWindow *mw = _entrance->active_record().first;    //QtSingleApplication::instance()->mainWindow();
+        DockedWindow *mw = _entrance->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
         mw->slotHome();
     }
 
@@ -1083,6 +1088,7 @@ namespace browser {
         currentTab()->page()->toHtml(invoke(view, &QPlainTextEdit::setPlainText));
     }
 
+    // deprecated by record::preoperty::home
     void DockedWindow::slotHome()
     {
         QSettings settings;
