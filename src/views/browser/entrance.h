@@ -8,7 +8,7 @@
 #include "utility/delegate.h"
 #include "models/recordTable/Record.h"
 #include "libraries/GlobalParameters.h"
-#include "dockedwindow.h"
+#include "browser.h"
 #include "webview.h"
 
 
@@ -33,13 +33,13 @@ namespace browser {
     // Architecture:
     // Entrance(<=>DockWidget)__DockedWindow(s)
     //               |
-    //               |____DockedWindow
+    //               |____Browser
     //                         |
-    //                         |____TabManager
+    //                         |____TabWidget
     //                                  |
-    //                                  |____PageView(s)
+    //                                  |____WebView(s)
     //                                           |
-    //                                           |____Page
+    //                                           |____WebPage
 
 
     //    class DockWidget : public QDockWidget {
@@ -59,27 +59,27 @@ namespace browser {
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
         //        void setupDynamicSignals(void);
 
-        std::pair<DockedWindow *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(BrowserWindow::defaultHome))
+        std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
 
-        std::pair<DockedWindow *, WebView *> active_chain(Record *const record = nullptr);
+        std::pair<Browser *, WebView *> equip_registered(Record *const record = nullptr);
         //        WebView *active_record_alternative(Record *const record) ;
 
-        struct active_record_alternative {
-            Entrance *_the;
-            WebView *_view;
-            active_record_alternative(Entrance *the): _the(the), _view(nullptr) {}
-            WebView *generator(Record *const record) {return _view = _the->active_chain(record).second;}
+        struct ActiveRecordBinder {
+            Entrance    *_the;
+            WebView     *_view;
+            ActiveRecordBinder(Entrance *the): _the(the), _view(nullptr) {}
+            WebView *generator(Record *const record) {return _view = _the->equip_registered(record).second;}
             void activator() {_view->page()->active();}
         };
 
-        //        DockedWindow *activebrowser();
-        QList<QPointer<DockedWindow> > &window_list();  //        QList<DockedWindow*> window_raw_list();
+        std::pair<Browser *, WebView *> activiated_registered();
+        QList<QPointer<Browser> > &window_list();  //        QList<DockedWindow*> window_raw_list();
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
         void active_url(const QUrl &url);
         bool restore_state(const QByteArray &state);
-        std::pair<DockedWindow *, WebView *> find_record_in_browser(Record *const record);
-        std::pair<DockedWindow *, WebView *> find(QUrl url);
+        std::pair<Browser *, WebView *> find(Record *const record);
+        std::pair<Browser *, WebView *> find(QUrl url);
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
@@ -100,10 +100,11 @@ namespace browser {
         void setupActions(void);
 
         //        WebView *new_dockedwindow(Record *const record);
-        WebView *new_dockedwindow_view(QUrl const &url);
-        std::pair<DockedWindow *, WebView *> new_dockedwindow(QUrl const &url);
-        DockedWindow *new_dockedwindow(const QByteArray &state);
-        Entrance *prepend(DockedWindow *);
+        WebView *new_view(QUrl const &url);
+        std::pair<Browser *, WebView *> new_dockedwindow(QUrl const &url);
+        std::pair<Browser *, WebView *> new_dockedwindow(Record *const record);
+        Browser *new_dockedwindow(const QByteArray &state);
+        Entrance *prepend(Browser *);
         void on_activate_window();
 
 #if defined(Q_OS_OSX)
@@ -124,7 +125,7 @@ namespace browser {
         void setupSignals(void);
         void assembly(void);
 
-        QList<QPointer<DockedWindow> > _mainWindows;
+        QList<QPointer<Browser> > _mainWindows;
         RecordTableController *_recordtablecontroller;
         QString _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}

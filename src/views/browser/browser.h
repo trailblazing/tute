@@ -77,11 +77,11 @@ namespace browser {
 
         Handles the tab widget and all the actions
      */
-    class DockedWindow : public QMainWindow {
+    class Browser : public QMainWindow {
         Q_OBJECT
 
     public:
-        DockedWindow(
+        Browser(
             QUrl const &url         // Record *const record
             , RecordTableController *recordtablecontroller
             , Entrance *_entrance   //, QDockWidget *parent
@@ -89,7 +89,8 @@ namespace browser {
             , Qt::WindowFlags flags = 0
         );
 
-        DockedWindow(
+
+        Browser(
             const QByteArray &state
             , RecordTableController *recordtablecontroller
             , Entrance *_entrance   //, QDockWidget *parent
@@ -97,7 +98,15 @@ namespace browser {
             , Qt::WindowFlags flags = 0
         );
 
-        ~DockedWindow();
+        Browser(
+            Record *const record
+            , RecordTableController *recordtablecontroller
+            , Entrance *entrance   //, QDockWidget *parent
+            , const QString &style_source
+            , Qt::WindowFlags flags = 0
+        );
+
+        ~Browser();
         QSize sizeHint() const;
 
         static constexpr const char *_defaulthome = "about:blank";
@@ -179,7 +188,10 @@ namespace browser {
         void updateBookmarksToolbarActionText(bool visible);
 
     private:
-        void init(const QUrl &url, const QString &style_source);
+        void init();
+        void register_url(QUrl const &url);
+        void equip_registered(Record *const record);
+        void run_script(const QString &style_source);
         void loadDefaultState();
         void setupMenu();
         void setupToolBar();

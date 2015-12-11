@@ -18,7 +18,7 @@ class ClipboardRecords;
 
 namespace browser {
     class Entrance;
-    class DockedWindow;
+    class Browser;
     class WebView;
     // extern constexpr const char * DockedWindow::_defaulthome;
 }
@@ -38,7 +38,7 @@ public:
     RecordTableView *getView(void);
     RecordTableModel *getRecordTableModel() {return recordSourceModel;}
 
-    void clickToRecord(const QModelIndex &index);
+    void click_record(const QModelIndex &index);
 
     bool isTableNotExists(void);
     void set_table_data(RecordTableData *rtData);
@@ -135,7 +135,7 @@ protected:
                    = add_new_record_after
                   );
 
-    int addNew(int mode, Record record);
+    int addNew(int mode, const Record &record);
 
     void editField(int pos
                    , QString pin

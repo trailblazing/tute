@@ -9,7 +9,7 @@
 #include "utility/delegate.h"
 #include "models/attachTable/Attach.h"
 #include "models/attachTable/AttachTableData.h"
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 
 
 // Класс одной записи в таблице записей
@@ -27,7 +27,7 @@
 // class AttachTableData;
 
 namespace browser {
-    class DockedWindow;
+    class Browser;
     class WebView;
     class WebPage;
 }

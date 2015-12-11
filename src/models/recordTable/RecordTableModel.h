@@ -59,7 +59,7 @@ private:
     // Добавление записей
     int addTableData(int mode,
                      QModelIndex posIndex,
-                     Record record);
+                     const Record &record);
 
     void onRecordTableConfigChange(void);
 

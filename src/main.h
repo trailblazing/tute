@@ -181,7 +181,7 @@ extern Record *register_record(Record const &record
 extern Record *check_record(const QUrl &_url);
 
 namespace browser {
-    class DockedWindow;
+    class Browser;
     class WebView;
 }
 

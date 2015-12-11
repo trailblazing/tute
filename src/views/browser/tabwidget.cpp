@@ -44,7 +44,7 @@
 
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
 
-#include "dockedwindow.h"
+#include "browser.h"
 #include "downloadmanager.h"
 #include "fullscreennotification.h"
 #include "history.h"
@@ -248,7 +248,7 @@ namespace browser {
 
     }
 
-    TabWidget::TabWidget(RecordTableController *recordtablecontroller, DockedWindow *parent)
+    TabWidget::TabWidget(RecordTableController *recordtablecontroller, Browser *parent)
         : QTabWidget(parent)
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
@@ -280,7 +280,7 @@ namespace browser {
         , [this]() {
             auto arint = boost::make_shared<NewTab>(this, true);
             request_record(
-                QUrl(DockedWindow::_defaulthome)
+                QUrl(Browser::_defaulthome)
 
                 //            [this](Record * const record)-> WebView * {
                 //                return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);
@@ -312,7 +312,7 @@ namespace browser {
         , [this](bool make_current) {
             auto arint = boost::make_shared<NewTab>(this, make_current);
             request_record(
-                QUrl(DockedWindow::_defaulthome)
+                QUrl(Browser::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                     "", &NewTab::generator, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
@@ -960,7 +960,7 @@ namespace browser {
             //                  );
 
             auto arint = boost::make_shared<NewTab>(this, true);
-            request_record(QUrl(DockedWindow::_defaulthome)
+            request_record(QUrl(Browser::_defaulthome)
                            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                                "", &NewTab::generator, arint)
                            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
@@ -1025,21 +1025,21 @@ namespace browser {
                 //                // record.setNaturalFieldSource("url", url.toString());
                 //                webView->page()->load(record);    //webView->load(record); //loadUrl(url);
                 //                webView->setFocus();
-                auto ar = boost::make_shared<WebPage::ActiveRecord>(webView->page(), true);
+                auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page(), true);
                 request_record(
                     url
                     , std::make_shared <
                     sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, Record *const>
                     > (
                         std::string("")
-                        , &WebPage::ActiveRecord::generator
+                        , &WebPage::ActiveRecordBinder::generator
                         , ar
                     )
                     , std::make_shared <
                     sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
                     > (
                         ""
-                        , &WebPage::ActiveRecord::activator
+                        , &WebPage::ActiveRecordBinder::activator
                         , ar
                     )
                 );
@@ -1146,21 +1146,21 @@ namespace browser {
             } else {
                 if(webView(0)->page()->url() != url) {
                     //                    webView(0)->load(_record);    //loadUrl(_url);
-                    auto ar = boost::make_shared<WebPage::ActiveRecord>(webView(0)->page(), true);
+                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page(), true);
                     request_record(
                         url
                         , std::make_shared <
                         sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>
                         > (
                             ""
-                            , &WebPage::ActiveRecord::generator
+                            , &WebPage::ActiveRecordBinder::generator
                             , ar
                         )
                         , std::make_shared <
                         sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
                         > (
                             ""
-                            , &WebPage::ActiveRecord::activator
+                            , &WebPage::ActiveRecordBinder::activator
                             , ar
                         )
                     );
@@ -1410,7 +1410,7 @@ namespace browser {
 
     };
 
-    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, RecordTableController *recordtablecontroller, DockedWindow *parent)
+    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, RecordTableController *recordtablecontroller, Browser *parent)
         : TabWidget(recordtablecontroller, parent)
         , _addressbar(new QLineEdit(this))
         , _view(

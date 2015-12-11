@@ -42,7 +42,7 @@
 
 #include <cassert>
 #include "utility/delegate.h"
-#include "dockedwindow.h"
+#include "browser.h"
 
 #include "autosaver.h"
 #include "bookmarks.h"
@@ -117,7 +117,7 @@ namespace browser {
 
     // const char *DockedWindow::_defaulthome = "about:blank";
 
-    DockedWindow::~DockedWindow()
+    Browser::~Browser()
     {
 
         _autosaver->changeOccurred();
@@ -131,7 +131,8 @@ namespace browser {
 
     }
 
-    void DockedWindow::init(QUrl const &url, const QString &style_source)
+    void Browser::init(// QUrl const &url,
+    )
     {
         //        browser->setWidget(this);
         //        this->setParent(browser);
@@ -201,7 +202,7 @@ namespace browser {
             //            );
             auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
             request_record(
-                QUrl(DockedWindow::_defaulthome)
+                QUrl(Browser::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                     ""
                     , &TabWidget::NewTab::generator
@@ -218,6 +219,60 @@ namespace browser {
 
         slotUpdateWindowTitle();
         loadDefaultState();
+
+
+
+
+        //        int size = _tabmanager->lineEditStack()->sizeHint().height();
+
+        //        navigater->setIconSize(QSize(size, size));
+
+        //    initUrl();
+        //dock_widget->setWidget(this);
+        //setParent(dock_widget);
+
+        //        connect(globalparameters.mainwindow(), &MainWindow::setEnabled, this, &DockedWindow::setEnabled);
+        //        connect(globalparameters.mainwindow(), &MainWindow::blockSignals, this, &DockedWindow::blockSignals);
+    }
+
+    void Browser::run_script(const QString &style_source)
+    {
+        QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
+    }
+
+    void Browser::equip_registered(Record *const record)
+    {
+        auto generator = [](boost::shared_ptr<TabWidget::NewTab> ar) {
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> (
+                       ""
+                       , &TabWidget::NewTab::generator
+                       , ar
+                   );
+        };
+        auto activator = [](boost::shared_ptr<TabWidget::NewTab> ar) {
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> (
+                       ""
+                       , &TabWidget::NewTab::activator
+                       , ar
+                   );
+        };
+
+        // registered record, but have no generator:
+        boost::shared_ptr<TabWidget::NewTab> ar = boost::make_shared<TabWidget::NewTab>(_tabmanager);
+        record->generator(
+            generator(ar)
+        );
+
+        record->activator(
+            activator(ar)
+        );
+
+        //        _tabmanager->newTab(record);
+        //        assert(record->binded_only_page());
+    }
+
+    void Browser::register_url(QUrl const &url)
+    {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
 
@@ -245,24 +300,10 @@ namespace browser {
         //assert(new_view->page());
         //record->page(new_view->page());
         //assert(_backup->page());
-
         assert(record->binded_only_page());
-
-        //        int size = _tabmanager->lineEditStack()->sizeHint().height();
-
-        //        navigater->setIconSize(QSize(size, size));
-
-        //    initUrl();
-        //dock_widget->setWidget(this);
-        //setParent(dock_widget);
-
-        //        connect(globalparameters.mainwindow(), &MainWindow::setEnabled, this, &DockedWindow::setEnabled);
-        //        connect(globalparameters.mainwindow(), &MainWindow::blockSignals, this, &DockedWindow::blockSignals);
-
-        QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    DockedWindow::DockedWindow(
+    Browser::Browser(
         const QByteArray &state
         , RecordTableController *recordtablecontroller
         , Entrance *entrance   //, QDockWidget *parent
@@ -284,7 +325,9 @@ namespace browser {
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
     {
-        init(QUrl(DockedWindow::_defaulthome), style_source);
+        init();
+        register_url(QUrl(Browser::_defaulthome));
+        run_script(style_source);
         this->restore_state(state);
         QMainWindow::setWindowFlags(
             //Qt::Window |
@@ -294,12 +337,12 @@ namespace browser {
         show();
     }
 
-    DockedWindow::DockedWindow(const QUrl &url
-                               , RecordTableController *recordtablecontroller
-                               , Entrance *entrance   //, QDockWidget *parent
-                               , const QString &style_source
-                               , Qt::WindowFlags flags
-                              )
+    Browser::Browser(const QUrl &url
+                     , RecordTableController *recordtablecontroller
+                     , Entrance *entrance   //, QDockWidget *parent
+                     , const QString &style_source
+                     , Qt::WindowFlags flags
+                    )
         : QMainWindow(0, flags)
         , _recordtablecontroller(recordtablecontroller)
         , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
@@ -316,7 +359,9 @@ namespace browser {
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
     {
-        init(url, style_source);
+        init();
+        register_url(url);
+        run_script(style_source);
         //        assert(record->linkpage());
         QMainWindow::setWindowFlags(
             //Qt::Window |
@@ -326,7 +371,53 @@ namespace browser {
         show();
     }
 
-    void DockedWindow::activateWindow()
+
+    Browser::Browser(
+        Record *const record
+        , RecordTableController *recordtablecontroller
+        , Entrance *entrance   //, QDockWidget *parent
+        , const QString &style_source
+        , Qt::WindowFlags flags
+    )
+        : QMainWindow(0, flags)
+        , _recordtablecontroller(recordtablecontroller)
+        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _tabmanager(new TabWidget(recordtablecontroller, this))
+        , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
+        , _chasewidget(globalparameters.getFindScreen()->chasewidget())
+        , _autosaver(new AutoSaver(this))
+        , _historyhome(globalparameters.getFindScreen()->historyhome())
+        , _historyback(globalparameters.getFindScreen()->historyback())
+        , _historyforward(globalparameters.getFindScreen()->historyforward())
+        , _stop(0)
+        , _reload(0)
+        , _stopreload(globalparameters.getFindScreen()->stopreload())
+        , _centralwidget(new QWidget(this))
+        , _layout(new QVBoxLayout)
+    {
+        init();
+        equip_registered(record);
+
+        if(record->generator()) {
+            record->generate();
+            record->active();
+        }
+
+        assert(record->binded_only_page());
+
+        run_script(style_source);
+        //        assert(record->linkpage());
+        QMainWindow::setWindowFlags(
+            //Qt::Window |
+            Qt::FramelessWindowHint);
+        QMainWindow::menuBar()->hide();
+        QMainWindow::statusBar()->hide();
+        show();
+
+    }
+
+
+    void Browser::activateWindow()
     {
         _entrance->setWidget(this);
         this->setParent(_entrance);
@@ -335,7 +426,7 @@ namespace browser {
         QMainWindow::activateWindow();
     }
 
-    void DockedWindow::loadDefaultState()
+    void Browser::loadDefaultState()
     {
         QSettings settings;
         settings.beginGroup(QLatin1String("DockedWindow"));
@@ -344,14 +435,14 @@ namespace browser {
         settings.endGroup();
     }
 
-    QSize DockedWindow::sizeHint() const
+    QSize Browser::sizeHint() const
     {
         QRect desktopRect = QApplication::desktop()->screenGeometry();
         QSize size = desktopRect.size() * qreal(0.9);
         return size;
     }
 
-    void DockedWindow::save()
+    void Browser::save()
     {
         QtSingleApplication::instance()->saveSession();
 
@@ -364,7 +455,7 @@ namespace browser {
 
     static const qint32 DockedWindowMagic = 0xba;
 
-    QByteArray DockedWindow::save_state(bool withTabs) const
+    QByteArray Browser::save_state(bool withTabs) const
     {
         FindScreen *findscreen = globalparameters.getFindScreen();
         assert(findscreen);
@@ -392,7 +483,7 @@ namespace browser {
         return data;
     }
 
-    bool DockedWindow::restore_state(const QByteArray &state)
+    bool Browser::restore_state(const QByteArray &state)
     {
         FindScreen *findscreen = globalparameters.getFindScreen();
         assert(findscreen);
@@ -448,7 +539,7 @@ namespace browser {
         return true;
     }
 
-    void DockedWindow::runScriptOnOpenViews(const QString &source)
+    void Browser::runScriptOnOpenViews(const QString &source)
     {
         for(int i = 0; i < tabWidget()->count(); ++i) {
             auto browserview = tabWidget()->webView(i);
@@ -458,7 +549,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::setupMenu()
+    void Browser::setupMenu()
     {
         new QShortcut(QKeySequence(Qt::Key_F6), this, SLOT(slotSwapFocus()));
 
@@ -702,7 +793,7 @@ namespace browser {
         globalparameters.getTreeScreen()->buttonmenu()->addMenu(helpMenu);
     }
 
-    void DockedWindow::setupToolBar()
+    void Browser::setupToolBar()
     {
         //auto mainwindow = globalparameters.mainwindow();
         FindScreen *findscreen = globalparameters.getFindScreen();
@@ -757,14 +848,14 @@ namespace browser {
         //navigater->addWidget(_chasewidget);
     }
 
-    void DockedWindow::slotShowBookmarksDialog()
+    void Browser::slotShowBookmarksDialog()
     {
         BookmarksDialog *dialog = new BookmarksDialog(this);
         connect(dialog, SIGNAL(openUrl(QUrl)), _tabmanager, SLOT(loadUrlInCurrentTab(QUrl)));
         dialog->show();
     }
 
-    void DockedWindow::slotAddBookmark()
+    void Browser::slotAddBookmark()
     {
         WebView *webView = currentTab();
         QString url = webView->page()->url().toString();
@@ -773,7 +864,7 @@ namespace browser {
         dialog.exec();
     }
 
-    void DockedWindow::slotViewToolbar()
+    void Browser::slotViewToolbar()
     {
         FindScreen *findscreen = globalparameters.getFindScreen();
         assert(findscreen);
@@ -791,7 +882,7 @@ namespace browser {
         _autosaver->changeOccurred();
     }
 
-    void DockedWindow::slotViewBookmarksBar()
+    void Browser::slotViewBookmarksBar()
     {
         if(_bookmarkstoolbar->isVisible()) {
             updateBookmarksToolbarActionText(false);
@@ -804,28 +895,28 @@ namespace browser {
         _autosaver->changeOccurred();
     }
 
-    void DockedWindow::updateStatusbarActionText(bool visible)
+    void Browser::updateStatusbarActionText(bool visible)
     {
         _viewstatusbar->setText(!visible ? tr("Show Status Bar") : tr("Hide Status Bar"));
     }
 
-    void DockedWindow::handleFindTextResult(bool found)
+    void Browser::handleFindTextResult(bool found)
     {
         if(!found)
             slotUpdateStatusbar(tr("\"%1\" not found.").arg(_lastsearch));
     }
 
-    void DockedWindow::updateToolbarActionText(bool visible)
+    void Browser::updateToolbarActionText(bool visible)
     {
         _viewtoolbar->setText(!visible ? tr("Show Find in base") : tr("Hide Find in base"));
     }
 
-    void DockedWindow::updateBookmarksToolbarActionText(bool visible)
+    void Browser::updateBookmarksToolbarActionText(bool visible)
     {
         _viewbookmarkbar->setText(!visible ? tr("Show Bookmarks bar") : tr("Hide Bookmarks bar"));
     }
 
-    void DockedWindow::slotViewStatusbar()
+    void Browser::slotViewStatusbar()
     {
         if(status_bar()->isVisible()) {
             updateStatusbarActionText(false);
@@ -838,7 +929,7 @@ namespace browser {
         _autosaver->changeOccurred();
     }
 
-    void DockedWindow::loadUrl(const QUrl &url)
+    void Browser::loadUrl(const QUrl &url)
     {
         if(!currentTab() || !url.isValid())
             return;
@@ -847,34 +938,34 @@ namespace browser {
         _tabmanager->loadUrlInCurrentTab(url);
     }
 
-    void DockedWindow::slotDownloadManager()
+    void Browser::slotDownloadManager()
     {
         QtSingleApplication::downloadManager()->show();
     }
 
-    void DockedWindow::slotSelectLineEdit()
+    void Browser::slotSelectLineEdit()
     {
         _tabmanager->currentLineEdit()->selectAll();
         _tabmanager->currentLineEdit()->setFocus();
     }
 
-    void DockedWindow::slotFileSaveAs()
+    void Browser::slotFileSaveAs()
     {
         // not implemented yet.
     }
 
-    void DockedWindow::slotPreferences()
+    void Browser::slotPreferences()
     {
         SettingsDialog *s = new SettingsDialog(this);
         s->show();
     }
 
-    void DockedWindow::slotUpdateStatusbar(const QString &string)
+    void Browser::slotUpdateStatusbar(const QString &string)
     {
         status_bar()->showMessage(string, 2000);
     }
 
-    void DockedWindow::slotUpdateWindowTitle(const QString &title)
+    void Browser::slotUpdateWindowTitle(const QString &title)
     {
         if(title.isEmpty()) {
             setWindowTitle(tr("MyTetra"));
@@ -887,7 +978,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::slotAboutApplication()
+    void Browser::slotAboutApplication()
     {
         QMessageBox::about(this, tr("About"), tr(
                                "Version %1"
@@ -899,15 +990,20 @@ namespace browser {
                            ).arg(QCoreApplication::applicationVersion()));
     }
 
-    void DockedWindow::slotFileNew()
+    void Browser::slotFileNew()
     {
         //QtSingleApplication::instance()->
         //        _browser->new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));
-        DockedWindow *mw = _entrance->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
+
+        if(_entrance->window_list().count() == 0) {
+            globalparameters.entrance()->new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+        }
+
+        Browser *mw = _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
         mw->slotHome();
     }
 
-    void DockedWindow::slotFileOpen()
+    void Browser::slotFileOpen()
     {
         QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString(),
                                                     tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
@@ -918,7 +1014,7 @@ namespace browser {
         loadPage(file);
     }
 
-    void DockedWindow::slotFilePrintPreview()
+    void Browser::slotFilePrintPreview()
     {
 #ifndef QT_NO_PRINTPREVIEWDIALOG
 
@@ -932,7 +1028,7 @@ namespace browser {
 #endif
     }
 
-    void DockedWindow::slotFilePrint()
+    void Browser::slotFilePrint()
     {
 #if defined(QWEBENGINEPAGE_PRINT)
 
@@ -959,7 +1055,7 @@ namespace browser {
     }
 #endif
 
-    void DockedWindow::slotPrivateBrowsing()
+    void Browser::slotPrivateBrowsing()
     {
         if(!QtSingleApplication::instance()->privateBrowsing()) {
             QString title = tr("Are you sure you want to turn on private browsing?");
@@ -986,7 +1082,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::closeEvent(QCloseEvent *event)
+    void Browser::closeEvent(QCloseEvent *event)
     {
         if(_tabmanager->count() > 1) {
             int ret = QMessageBox::warning(this, QString(),
@@ -1005,7 +1101,7 @@ namespace browser {
         deleteLater();
     }
 
-    void DockedWindow::slotEditFind()
+    void Browser::slotEditFind()
     {
         if(!currentTab())
             return;
@@ -1017,11 +1113,11 @@ namespace browser {
 
         if(ok && !search.isEmpty()) {
             _lastsearch = search;
-            currentTab()->findText(_lastsearch, 0, invoke(this, &DockedWindow::handleFindTextResult));
+            currentTab()->findText(_lastsearch, 0, invoke(this, &Browser::handleFindTextResult));
         }
     }
 
-    void DockedWindow::slotEditFindNext()
+    void Browser::slotEditFindNext()
     {
         if(!currentTab() && !_lastsearch.isEmpty())
             return;
@@ -1029,7 +1125,7 @@ namespace browser {
         currentTab()->findText(_lastsearch);
     }
 
-    void DockedWindow::slotEditFindPrevious()
+    void Browser::slotEditFindPrevious()
     {
         if(!currentTab() && !_lastsearch.isEmpty())
             return;
@@ -1037,7 +1133,7 @@ namespace browser {
         currentTab()->findText(_lastsearch, QWebEnginePage::FindBackward);
     }
 
-    void DockedWindow::slotViewZoomIn()
+    void Browser::slotViewZoomIn()
     {
         if(!currentTab())
             return;
@@ -1045,7 +1141,7 @@ namespace browser {
         currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
     }
 
-    void DockedWindow::slotViewZoomOut()
+    void Browser::slotViewZoomOut()
     {
         if(!currentTab())
             return;
@@ -1053,7 +1149,7 @@ namespace browser {
         currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
     }
 
-    void DockedWindow::slotViewResetZoom()
+    void Browser::slotViewResetZoom()
     {
         if(!currentTab())
             return;
@@ -1061,7 +1157,7 @@ namespace browser {
         currentTab()->setZoomFactor(1.0);
     }
 
-    void DockedWindow::slotViewFullScreen(bool makeFullScreen)
+    void Browser::slotViewFullScreen(bool makeFullScreen)
     {
         if(makeFullScreen) {
             showFullScreen();
@@ -1074,7 +1170,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::slotViewPageSource()
+    void Browser::slotViewPageSource()
     {
         if(!currentTab())
             return;
@@ -1089,36 +1185,36 @@ namespace browser {
     }
 
     // deprecated by record::preoperty::home
-    void DockedWindow::slotHome()
+    void Browser::slotHome()
     {
         QSettings settings;
         settings.beginGroup(QLatin1String("MainWindow"));
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         //loadPage(home);
-        auto ara = boost::make_shared<Entrance::active_record_alternative>(_entrance);
+        auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(_entrance);
         request_record(
             QUrl(home)
             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                 ""
-                , &Entrance::active_record_alternative::generator
+                , &Entrance::ActiveRecordBinder::generator
                 , ara
             )
             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                 ""
-                , &Entrance::active_record_alternative::activator
+                , &Entrance::ActiveRecordBinder::activator
                 , ara
             )
         );
 
     }
 
-    void DockedWindow::slotWebSearch()
+    void Browser::slotWebSearch()
     {
         _toolbarsearch->lineEdit()->selectAll();
         _toolbarsearch->lineEdit()->setFocus();
     }
 
-    void DockedWindow::slotToggleInspector(bool enable)
+    void Browser::slotToggleInspector(bool enable)
     {
 #if defined(QWEBENGINEINSPECTOR)
         QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, enable);
@@ -1139,7 +1235,7 @@ namespace browser {
 #endif
     }
 
-    void DockedWindow::slotSwapFocus()
+    void Browser::slotSwapFocus()
     {
         if(currentTab()->hasFocus())
             _tabmanager->currentLineEdit()->setFocus();
@@ -1147,7 +1243,7 @@ namespace browser {
             currentTab()->setFocus();
     }
 
-    void DockedWindow::loadPage(const QString &page)
+    void Browser::loadPage(const QString &page)
     {
         QUrl url = QUrl::fromUserInput(page);
         loadUrl(url);
@@ -1158,12 +1254,12 @@ namespace browser {
     //        return _tabwidget;
     //    }
 
-    WebView *DockedWindow::currentTab() const
+    WebView *Browser::currentTab() const
     {
         return _tabmanager->currentWebView();
     }
 
-    void DockedWindow::slotLoadProgress(int progress)
+    void Browser::slotLoadProgress(int progress)
     {
         if(progress < 100 && progress > 0) {
             _chasewidget->setAnimated(true);
@@ -1184,7 +1280,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::slotAboutToShowBackMenu()
+    void Browser::slotAboutToShowBackMenu()
     {
         _historybackmenu->clear();
 
@@ -1205,7 +1301,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::slotAboutToShowForwardMenu()
+    void Browser::slotAboutToShowForwardMenu()
     {
         _historyforwardmenu->clear();
 
@@ -1226,7 +1322,7 @@ namespace browser {
         }
     }
 
-    void DockedWindow::slotAboutToShowWindowMenu()
+    void Browser::slotAboutToShowWindowMenu()
     {
         _windowmenu->clear();
         _windowmenu->addAction(_tabmanager->nextTabAction());
@@ -1235,10 +1331,10 @@ namespace browser {
         _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
         _windowmenu->addSeparator();
 
-        QList<QPointer<DockedWindow > > windows = _entrance->window_list();  //QtSingleApplication::instance()->mainWindows();
+        QList<QPointer<Browser > > windows = _entrance->window_list();  //QtSingleApplication::instance()->mainWindows();
 
         for(int i = 0; i < windows.count(); ++i) {
-            QPointer<DockedWindow> window = windows.at(i);
+            QPointer<Browser> window = windows.at(i);
             QAction *action = _windowmenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
             action->setData(i);
             action->setCheckable(true);
@@ -1248,21 +1344,21 @@ namespace browser {
         }
     }
 
-    void DockedWindow::slotShowWindow()
+    void Browser::slotShowWindow()
     {
         if(QAction *action = qobject_cast<QAction *>(sender())) {
             QVariant v = action->data();
 
             if(v.canConvert<int>()) {
                 int offset = qvariant_cast<int>(v);
-                QList<QPointer<DockedWindow> > windows = _entrance->window_list();   //QtSingleApplication::instance()->mainWindows();
+                QList<QPointer<Browser> > windows = _entrance->window_list();   //QtSingleApplication::instance()->mainWindows();
                 windows.at(offset)->activateWindow();
                 windows.at(offset)->currentTab()->setFocus();
             }
         }
     }
 
-    void DockedWindow::slotOpenActionUrl(QAction *action)
+    void Browser::slotOpenActionUrl(QAction *action)
     {
         int offset = action->data().toInt();
         QWebEngineHistory *history = currentTab()->history();
@@ -1273,7 +1369,7 @@ namespace browser {
             history->goToItem(history->forwardItems(history->count() - offset + 1).back()); // forward
     }
 
-    void DockedWindow::geometryChangeRequested(const QRect &geometry)
+    void Browser::geometryChangeRequested(const QRect &geometry)
     {
         setGeometry(geometry);
     }
@@ -1293,19 +1389,19 @@ namespace browser {
     //    //    }
     //}
 
-    QStatusBar *DockedWindow::status_bar()
+    QStatusBar *Browser::status_bar()
     {
         return globalparameters.getStatusBar();
     }
 
-    QStatusBar *DockedWindow::status_bar() const
+    QStatusBar *Browser::status_bar() const
     {
         return globalparameters.getStatusBar();
     }
 
 
 
-    WebView *DockedWindow::invoke_page(Record *const record)
+    WebView *Browser::invoke_page(Record *const record)
     {
         // clean();
 
@@ -1355,7 +1451,7 @@ namespace browser {
             //            blank.setNaturalFieldSource("url", DockedWindow::_defaulthome);
 
             WebView *blankview = nullptr;
-            blankview = tab->find(QUrl(DockedWindow::_defaulthome));
+            blankview = tab->find(QUrl(Browser::_defaulthome));
             //PageView *no_pin = nullptr;
             WebView *nopin_view = tab->find_nopin();
             // assert(dp.first);

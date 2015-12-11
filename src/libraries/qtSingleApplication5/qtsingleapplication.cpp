@@ -43,7 +43,7 @@
 #include <QWidget>
 #include <QtCore/QSettings>
 #include <QtCore/QTextStream>
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "libraries/GlobalParameters.h"
@@ -263,7 +263,7 @@
 ****************************************************************************/
 
 #include "bookmarks.h"
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 #include "views/browser/entrance.h"
 #include "libraries/GlobalParameters.h"
 
@@ -871,7 +871,7 @@ void QtSingleApplication::newLocalSocketConnection()
     QString url;
     stream >> url;
 
-    if(url.isEmpty()) {url = browser::DockedWindow::_defaulthome;}
+    if(url.isEmpty()) {url = browser::Browser::_defaulthome;}
 
     //    browser::DockedWindow *w = nullptr;
 
@@ -885,7 +885,7 @@ void QtSingleApplication::newLocalSocketConnection()
     auto browser_entrance = globalparameters.entrance();
     //    Record *record = request_record(url);
 
-    std::pair<browser::DockedWindow *, browser::WebView *> dp;
+    std::pair<browser::Browser *, browser::WebView *> dp;
 
     if(browser_entrance) {
         if(openLinksIn == 1) {
@@ -915,18 +915,18 @@ void QtSingleApplication::newLocalSocketConnection()
         } else {
             //Record *record = register_record(url);
             //            dp = browser_entrance->active_record(record);
-            auto ara = boost::make_shared<browser::Entrance::active_record_alternative>(browser_entrance);
+            auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
             request_record(
                 url
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                     ""
-                    , &browser::Entrance::active_record_alternative::generator
-                    , ara
+                    , &browser::Entrance::ActiveRecordBinder::generator
+                    , arb
                 )
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                     ""
-                    , &browser::Entrance::active_record_alternative::activator
-                    , ara
+                    , &browser::Entrance::ActiveRecordBinder::activator
+                    , arb
                 )
                 //            , [browser_entrance](Record * const record)->browser::WebView * {   // &Entrance::new_dockedwindow
                 //                return browser_entrance->active_record(record);
@@ -1063,7 +1063,7 @@ void QtSingleApplication::loadSettings()
 #endif
 
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
-    setUserStyleSheet(defaultProfile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::BrowserWindow::defaultHome)))
+    setUserStyleSheet(defaultProfile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
 
     defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
@@ -1112,7 +1112,7 @@ void QtSingleApplication::saveSession()
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadWrite);
 
-    QList<QPointer<browser::DockedWindow> > mws = globalparameters.entrance()->window_list();
+    QList<QPointer<browser::Browser> > mws = globalparameters.entrance()->window_list();
 
     stream << mws.count();
 
@@ -1143,25 +1143,35 @@ void QtSingleApplication::restoreLastSession()
         historywindows.append(windowState);
     }
 
+    QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->window_list();
+
+    if(opened_windows.count() == 0) {
+        globalparameters.entrance()->new_dockedwindow(
+            QUrl(browser::Browser::_defaulthome)
+        );
+    }
+
     for(int i = 0; i < historywindows.count(); ++i) {
         //        browser::BrowserWindow *newWindow = 0;
-        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
-        browser::DockedWindow *current_window = globalparameters.entrance()->active_chain().first;
+        //        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
+
+        browser::Browser *current_window = globalparameters.entrance()->activiated_registered().first;
 
         assert(current_window->currentTab()->page()->url() == QUrl());
 
         if(opened_windows.count() == 1
            && current_window->tabWidget()->count() == 1
-           && current_window->currentTab()->page()->url() == QUrl() //?
+           && current_window->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
           ) {
             // newWindow = globalParameters.browsermanager()->main_window();
             globalparameters.entrance()->restore_state(historywindows.at(i));
         } else {
             // newWindow =
             globalparameters.entrance()->new_dockedwindow(
-                historywindows.at(i)   // register_record(QUrl(browser::BrowserWindow::defaultHome))
+                historywindows.at(i)   // register_record(QUrl(browser::DockedWindow::_defaulthome))
             );
         }
+
 
         // newWindow->restoreState(windows.at(i));
     }
@@ -1377,11 +1387,11 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
         if(!_privateProfile)
             _privateProfile = new QWebEngineProfile(this);
 
-        Q_FOREACH(browser::DockedWindow *window, globalparameters.entrance()->window_list()) {
+        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->window_list()) {
             window->tabWidget()->setProfile(_privateProfile);
         }
     } else {
-        Q_FOREACH(browser::DockedWindow *window, globalparameters.entrance()->window_list()) {
+        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->window_list()) {
             window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
             window->lastsearch() = QString::null;
             window->tabWidget()->clear();

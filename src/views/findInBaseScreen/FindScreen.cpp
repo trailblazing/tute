@@ -375,7 +375,11 @@ void FindScreen::setupSignals(void)
 
     // При нажатии кнопки закрытия
     connect(closeButton, &FlatToolButton::clicked, this, &FindScreen::widgetHide);
-    connect(closeButton, &FlatToolButton::clicked, [] {globalparameters.entrance()->active_chain().first->updateToolbarActionText(false);});
+    connect(closeButton, &FlatToolButton::clicked, [] {
+        auto win = globalparameters.entrance()->activiated_registered().first;
+
+        if(win)win->updateToolbarActionText(false);
+    });
 
 
     // Сигналы для запоминания состояния интерфейса
@@ -823,7 +827,7 @@ void FindScreen::widgetShow(void)
 void FindScreen::widgetHide(void)
 {
     // Запоминается размер сплиттера перед скрытием виджета
-    QSplitter *findSplitterRel = find_object<QSplitter>("findsplitter");
+    QSplitter *findSplitterRel = find_object<QSplitter>("find_splitter");
     appconfig.findsplitter_sizelist(findSplitterRel->sizes());
 
     // Виджет скрывается

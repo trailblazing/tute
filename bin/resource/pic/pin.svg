@@ -17,7 +17,38 @@
    inkscape:version="0.91 r13725"
    sodipodi:docname="pin.svg">
   <defs
-     id="defs3359" />
+     id="defs3359">
+    <pattern
+       inkscape:isstock="true"
+       inkscape:stockid="Stripes 1:1"
+       id="Strips1_1"
+       patternTransform="translate(0,0) scale(10,10)"
+       height="1"
+       width="2"
+       patternUnits="userSpaceOnUse"
+       inkscape:collect="always">
+      <rect
+         id="rect4976"
+         height="2"
+         width="1"
+         y="-0.5"
+         x="0"
+         style="fill:black;stroke:none" />
+    </pattern>
+    <filter
+       inkscape:collect="always"
+       style="color-interpolation-filters:sRGB"
+       id="filter5709"
+       x="-0.036315846"
+       width="1.0726317"
+       y="-0.0356896"
+       height="1.0713792">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="0.12254619"
+         id="feGaussianBlur5711" />
+    </filter>
+  </defs>
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -26,14 +57,14 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="21.114521"
-     inkscape:cx="13.451833"
+     inkscape:cx="5.8504292"
      inkscape:cy="9.2215625"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1366"
-     inkscape:window-height="676"
+     inkscape:window-width="1364"
+     inkscape:window-height="684"
      inkscape:window-x="0"
      inkscape:window-y="27"
      inkscape:window-maximized="1" />
@@ -45,7 +76,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,10 +85,34 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-1036.3622)">
+    <rect
+       style="opacity:0;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3254"
+       width="16"
+       height="16"
+       x="0.0039701676"
+       y="1036.3583"
+       ry="0" />
+    <g
+       id="g3168"
+       transform="matrix(0.9542399,0,0,0.9652306,-1.6545096,1036.6432)">
+      <path
+         inkscape:connector-curvature="0"
+         sodipodi:nodetypes="cccccc"
+         id="rect2385"
+         d="m 2,1 8,0 3,3 0,11 L 2,15 2,1 Z"
+         style="fill:#87aade;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.5209856;stroke-miterlimit:4;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path2388"
+         d="m 10,1.25 0,2.7320263 2.75,0"
+         style="fill:#a9bed4;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.5209856;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
+    </g>
     <path
-       style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 2.2733171,1045.5896 1.4681839,0 2.9363679,4.3572 5.9674571,-11.2719 1.492337,0 0,0"
-       id="path4807"
-       inkscape:connector-curvature="0" />
+       style="opacity:0.7;fill:url(#Strips1_1);fill-opacity:1;fill-rule:evenodd;stroke:#c1c1c1;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter5709)"
+       d="m 7.2935596,1047.4843 2.368038,4.3098 5.7306584,-8.2408"
+       id="path4255"
+       inkscape:connector-curvature="0"
+       transform="matrix(1.0056501,0,0,0.99980559,-0.08776929,0.20367681)" />
   </g>
 </svg>

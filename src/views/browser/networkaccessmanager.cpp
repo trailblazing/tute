@@ -43,7 +43,7 @@
 
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
 
-#include "dockedwindow.h"
+#include "browser.h"
 
 #include <QtCore/QSettings>
 
@@ -156,7 +156,7 @@ namespace browser {
 
         if(! sslTrustedHostList.contains(replyHost)) {
 
-            Entrance *mainWindow = globalparameters.entrance();  //->main_window(register_record(QUrl(BrowserWindow::defaultHome)));    //QtSingleApplication::instance()->mainWindow();
+            Entrance *mainWindow = globalparameters.entrance();  //->main_window(register_record(QUrl(DockedWindow::_defaulthome)));    //QtSingleApplication::instance()->mainWindow();
 
             QStringList errorStrings;
 

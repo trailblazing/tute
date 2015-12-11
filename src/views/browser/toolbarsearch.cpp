@@ -168,17 +168,17 @@ namespace browser {
             //QLineEdit *lineedit =
 
             //            globalparameters.entrance()->active_record(request_record(url));
-            auto ara = boost::make_shared<browser::Entrance::active_record_alternative>(globalparameters.entrance());
+            auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
             request_record(
                 url
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                     ""
-                    , &browser::Entrance::active_record_alternative::generator
+                    , &browser::Entrance::ActiveRecordBinder::generator
                     , ara
                 )
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                     ""
-                    , &browser::Entrance::active_record_alternative::activator
+                    , &browser::Entrance::ActiveRecordBinder::activator
                     , ara
                 )
             );

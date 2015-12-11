@@ -1,5 +1,6 @@
 #include "WindowSwitcher.h"
 
+#include <QSplitter>
 #include "main.h"
 #include "models/appConfig/AppConfig.h"
 #include "libraries/GlobalParameters.h"
@@ -7,6 +8,8 @@
 #include "views/record/MetaEditor.h"
 #include "views/recordTable/RecordTableScreen.h"
 #include "views/findInBaseScreen/FindScreen.h"
+#include "views/browser/entrance.h"
+
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -157,12 +160,23 @@ void WindowSwitcher::findInBaseClick(void)
 {
     // Определяется ссылка на виджет поиска
     FindScreen *findScreen = find_object<FindScreen>("findScreenDisp");
+    QSplitter *vrs = find_object<QSplitter>("v_right_splitter");
+    //    browser::Entrance *entrance = globalparameters.entrance();
 
-    // Если виджет не показан, он выводится на экран, и наоборот
-    if(findScreen->isVisible() == false)
-        findScreen->widgetShow();
-    else
-        findScreen->widgetHide();
+    if(findScreen && vrs) {
+        //        auto dp = entrance->activiated_registered();
+        int height = findScreen->height();
+        QSize vrs_size = vrs->size();
+
+        // Если виджет не показан, он выводится на экран, и наоборот
+        if(findScreen->isVisible() == false) {
+            findScreen->widgetShow();
+            vrs->resize(QSize(vrs_size.width(), vrs->height() - height)); //            dp.first->resize(entrance->size()); // ? dp.second->resize(dp.first->size());
+        } else {
+            findScreen->widgetHide();
+            vrs->resize(QSize(vrs_size.width(), vrs->height() + height));  //            dp.first->resize(entrance->size()); // dp.second->resize(dp.first->size());
+        }
+    }
 }
 
 

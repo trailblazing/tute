@@ -42,7 +42,7 @@
 
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
 
-#include "dockedwindow.h"
+#include "browser.h"
 #include "cookiejar.h"
 #include "downloadmanager.h"
 #include "featurepermissionbar.h"
@@ -143,21 +143,21 @@ namespace browser {
         //        if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
         //        if(url != nullptr) {
-        auto ar = boost::make_shared<WebPage::ActiveRecord>(this, true);
+        auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(this, true);
         _record = request_record(
                       record
                       , std::make_shared <
                       sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>
                       > (
                           ""
-                          , &WebPage::ActiveRecord::generator
+                          , &WebPage::ActiveRecordBinder::generator
                           , ar  // boost::make_shared<WebPage::active_record>(this, true)
                       )
                       , std::make_shared <
                       sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
                       > (
                           ""
-                          , &WebPage::ActiveRecord::activator
+                          , &WebPage::ActiveRecordBinder::activator
                           , ar  // boost::make_shared<WebPage::active_record>(this, true)
                       )
                   );
@@ -166,7 +166,7 @@ namespace browser {
 
     }
 
-    DockedWindow *WebPage::dockedwindow()
+    Browser *WebPage::dockedwindow()
     {
         //        QObject *w = this->parent();
 
@@ -176,8 +176,8 @@ namespace browser {
 
         //            w = w->parent();
         //        }
-
-        return globalparameters.entrance()->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
+        return view()->tabmanager()->browser();
+        //        return globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
     }
 
 
@@ -248,7 +248,7 @@ namespace browser {
 
             }
 
-            DockedWindow *win = view()->tabmanager()->window();
+            Browser *win = view()->tabmanager()->browser();
             assert(win);
 
             if(!win->isActiveWindow() || !win->isVisible()) {
@@ -368,21 +368,21 @@ namespace browser {
 
             // return nullptr;
 
-            WebView *view = globalparameters.entrance()->find(QUrl(DockedWindow::_defaulthome)).second;
+            WebView *view = globalparameters.entrance()->find(QUrl(Browser::_defaulthome)).second;
 
             if(view) {
                 //                return view->page();
-                auto ar = boost::make_shared<WebPage::ActiveRecord>(view->page(), true);
+                auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page(), true);
                 request_record(
-                    QUrl(DockedWindow::_defaulthome)
+                    QUrl(Browser::_defaulthome)
                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                         ""
-                        , &WebPage::ActiveRecord::generator
+                        , &WebPage::ActiveRecordBinder::generator
                         , ar
                     )
                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                         ""
-                        , &WebPage::ActiveRecord::activator
+                        , &WebPage::ActiveRecordBinder::activator
                         , ar
                     )
                 );
@@ -395,7 +395,7 @@ namespace browser {
                 // page->update_record(page->url(), page->title());
                 auto arint = boost::make_shared<TabWidget::NewTab>(this->dockedwindow()->tabWidget(), true);
                 Record *r = request_record(
-                                QUrl(DockedWindow::_defaulthome)
+                                QUrl(Browser::_defaulthome)
                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                                     ""
                                     , &TabWidget::NewTab::generator
@@ -419,14 +419,14 @@ namespace browser {
 
         } else if(type == QWebEnginePage::WebBrowserWindow) {
 
-            globalparameters.entrance()->new_dockedwindow(QUrl(DockedWindow::_defaulthome));                   // QtSingleApplication::instance()->newMainWindow();
-            DockedWindow *mainWindow = globalparameters.entrance()->active_chain().first;  // QtSingleApplication::instance()->mainWindow();
+            std::pair<Browser *, WebView *> dp = globalparameters.entrance()->new_dockedwindow(QUrl(Browser::_defaulthome));               // QtSingleApplication::instance()->newMainWindow();
+            //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
-            page = mainWindow->currentTab()->page();
+            page = dp.second->page();  // mainWindow->currentTab()->page();
 
         } else {
 
-            PopupWindow *popup = new PopupWindow(profile(), QUrl(DockedWindow::_defaulthome), _recordtablecontroller, view()->tabmanager()->window());
+            PopupWindow *popup = new PopupWindow(profile(), QUrl(Browser::_defaulthome), _recordtablecontroller, view()->tabmanager()->browser());
             popup->setAttribute(Qt::WA_DeleteOnClose);
             popup->show();
             //            return
@@ -509,7 +509,12 @@ namespace browser {
 
     void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
     {
-        DockedWindow *mainWindow = globalparameters.entrance()->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
+
+        if(globalparameters.entrance()->window_list().count() == 0) {
+            globalparameters.entrance()->new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+        }
+
+        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(mainWindow);
         dialog.setWindowFlags(Qt::Sheet);
@@ -534,7 +539,12 @@ namespace browser {
     void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
     {
         Q_UNUSED(requestUrl);
-        DockedWindow *mainWindow = globalparameters.entrance()->active_chain().first;    //QtSingleApplication::instance()->mainWindow();
+
+        if(globalparameters.entrance()->window_list().count() == 0) {
+            globalparameters.entrance()->new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+        }
+
+        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(mainWindow);
         dialog.setWindowFlags(Qt::Sheet);
@@ -762,7 +772,7 @@ namespace browser {
             if(url() != QUrl()
                && !url().host().isEmpty()
                && !url().scheme().isEmpty()
-               && url() != QUrl(DockedWindow::_defaulthome)
+               && url() != QUrl(Browser::_defaulthome)
                && url() == _loadingurl
                && url().toString() == _record->getNaturalFieldSource("url")
               ) {
@@ -863,7 +873,7 @@ namespace browser {
             if(url != QUrl()
                && !url.host().isEmpty()
                && !url.scheme().isEmpty()
-               && url != QUrl(DockedWindow::_defaulthome)
+               && url != QUrl(Browser::_defaulthome)
                && url != _loadingurl
                && url.toString() != _record->getNaturalFieldSource("url")
               ) {

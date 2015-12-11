@@ -214,11 +214,11 @@ HEADERS = src/main.h \
     src/views/browser/urllineedit.h \
     src/views/browser/webview.h \
     src/views/browser/xbel.h \
-    src/views/browser/dockedwindow.h \
     src/views/browser/entrance.h \
     src/views/browser/entranceinfo.h \
     src/libraries/FlatControl.h \
-    src/utility/delegate.h
+    src/utility/delegate.h \
+    src/views/browser/browser.h
 
 #    browserapplication.h \
 #    browsermainwindow.h \
@@ -338,9 +338,9 @@ SOURCES = src/main.cpp \
     src/views/browser/urllineedit.cpp \
     src/views/browser/webview.cpp \
     src/views/browser/xbel.cpp \
-    src/views/browser/dockedwindow.cpp \
     src/views/browser/entrance.cpp \
-    src/libraries/FlatControl.cpp
+    src/libraries/FlatControl.cpp \
+    src/views/browser/browser.cpp
 
 #    browserapplication.cpp \
 #    browsermainwindow.cpp \

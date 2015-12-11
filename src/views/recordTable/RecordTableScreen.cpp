@@ -195,6 +195,8 @@ void RecordTableScreen::setupUI(void)
     }
 
     insertActionAsButton(toolsLine, _actionpin);
+    insertActionAsButton(toolsLine, actionWalkHistoryPrevious);
+    insertActionAsButton(toolsLine, actionWalkHistoryNext);
     insertActionAsButton(toolsLine, actionAddNewToEnd);
 
     if(appconfig.getInterfaceMode() == "desktop") {
@@ -215,8 +217,8 @@ void RecordTableScreen::setupUI(void)
 
     if(appconfig.getInterfaceMode() == "desktop") {
         insertActionAsButton(extraToolsLine, actionSyncro);
-        insertActionAsButton(extraToolsLine, actionWalkHistoryPrevious);
-        insertActionAsButton(extraToolsLine, actionWalkHistoryNext);
+        //        insertActionAsButton(extraToolsLine, actionWalkHistoryPrevious);
+        //        insertActionAsButton(extraToolsLine, actionWalkHistoryNext);
     }
 
     insertActionAsButton(extraToolsLine, actionFindInBase);

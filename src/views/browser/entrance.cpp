@@ -287,7 +287,7 @@ namespace browser {
     //        }
     //    }
 
-    Entrance *Entrance::prepend(DockedWindow *browser)
+    Entrance *Entrance::prepend(Browser *browser)
     {
         setWidget(browser);
         browser->setParent(this);
@@ -312,30 +312,40 @@ namespace browser {
 
         QObject::disconnect(_home_connection);
 
-        _home_connection = QObject::connect(findscreen->historyhome(), &QAction::triggered, this, [this](bool checked = true) {
+        _home_connection = QObject::connect(
+                               findscreen->historyhome()
+                               , &QAction::triggered
+                               , this
+        , [this](bool checked = true) {
             Q_UNUSED(checked)
-            WebPage *page = active_chain().second->page();
-            assert(page);
-            Record *record = page->current_record();
-            assert(record);
-            QString home = record->getNaturalFieldSource("home");
-            QUrl homeurl = QUrl(home);
+            auto view = activiated_registered().second;
 
-            if(homeurl.isValid()
-               && homeurl != page->url()
-              ) {
-                record->setNaturalFieldSource("url", home);
-                page->load(record, true);
+            if(view) {
+                WebPage *page = view->page();
+
+                if(page) {
+                    Record *record = page->current_record();
+                    assert(record);
+                    QString home = record->getNaturalFieldSource("home");
+                    QUrl homeurl = QUrl(home);
+
+                    if(homeurl.isValid()
+                       && homeurl != page->url()
+                      ) {
+                        record->setNaturalFieldSource("url", home);
+                        page->load(record, true);
+                    }
+                }
             }
         }
-                                           );
+                           );
 
     }
 
-    DockedWindow *Entrance::new_dockedwindow(const QByteArray &state)
+    Browser *Entrance::new_dockedwindow(const QByteArray &state)
     {
 
-        DockedWindow *browser = new DockedWindow(state, _recordtablecontroller, this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
+        Browser *browser = new Browser(state, _recordtablecontroller, this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
         //        browser->setParent(_dockwidget);
@@ -351,11 +361,11 @@ namespace browser {
         return browser;     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    std::pair<DockedWindow *, WebView *> Entrance::new_dockedwindow(QUrl const &url)
+    std::pair<Browser *, WebView *> Entrance::new_dockedwindow(QUrl const &url)
     {
 
         //        DockedWindow *browser =
-        new DockedWindow(url
+        new Browser(url
                          , _recordtablecontroller
                          , this
                          , _style_source
@@ -366,7 +376,24 @@ namespace browser {
         return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    WebView *Entrance::new_dockedwindow_view(QUrl const &url)
+
+    std::pair<Browser *, WebView *> Entrance::new_dockedwindow(Record *const record)
+    {
+
+        //        DockedWindow *browser =
+        new Browser(record
+                         , _recordtablecontroller
+                         , this
+                         , _style_source
+                         , Qt::MaximizeUsingFullscreenGeometryHint
+                        ); //, dock_widget
+
+
+        return find(record);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+    }
+
+
+    WebView *Entrance::new_view(QUrl const &url)
     {
         //BrowserView *browser_view = globalParameters.getBrowserView();
         //BrowserWindow *browser = nullptr;
@@ -377,7 +404,7 @@ namespace browser {
         //dock_widget->setParent(this);
 
         //        DockedWindow *browser =
-        new DockedWindow(url
+        new Browser(url
                          , _recordtablecontroller
                          , this
                          , _style_source
@@ -478,7 +505,7 @@ namespace browser {
 
     Entrance::Entrance(RecordTableController *recordtablecontroller, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
         : QDockWidget(parent, flags)  //, _application(application)
-        , _mainWindows(QList<QPointer<DockedWindow> >())
+        , _mainWindows(QList<QPointer<Browser> >())
         , _recordtablecontroller(recordtablecontroller)
         , _style_source(style_source)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint
@@ -589,7 +616,7 @@ namespace browser {
         if(_hidetitlebar)delete _hidetitlebar;
 
         for(int i = 0; i < _mainWindows.size(); ++i) {
-            DockedWindow *window = _mainWindows.at(i);
+            Browser *window = _mainWindows.at(i);
             delete window;
         }
 
@@ -678,17 +705,17 @@ namespace browser {
     void Entrance::active_url(const QUrl &url)
     {
         //        Record *r =
-        auto ara = boost::make_shared<Entrance::active_record_alternative>(this);
+        auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
         request_record(
             url
             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
                 ""
-                , &Entrance::active_record_alternative::generator
+                , &Entrance::ActiveRecordBinder::generator
                 , ara
             )
             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
                 ""
-                , &Entrance::active_record_alternative::activator
+                , &Entrance::ActiveRecordBinder::activator
                 , ara
             )
         );
@@ -882,100 +909,162 @@ namespace browser {
 
     void Entrance::clean()
     {
-        // cleanup any deleted main windows first
-        for(int i = _mainWindows.count() - 1; i >= 0; --i) {
-            if(_mainWindows.at(i).isNull()) {
-                _mainWindows.removeAt(i);
+        if(_mainWindows.count() > 0) {
+            // cleanup any deleted main windows first
+            for(int i = _mainWindows.count() - 1; i >= 0; --i) {
+                if(_mainWindows.at(i).isNull()) {
+                    _mainWindows.removeAt(i);
+                }
             }
         }
     }
 
-    //    DockedWindow *Entrance::activebrowser()
-    //    {
-    //        clean();
-    //        std::pair<DockedWindow *, WebView *> dp = std::make_pair(nullptr, nullptr);
-
-    //        if(!_mainWindows.isEmpty()) {
-    //            for(auto &i : _mainWindows) {
-    //                if(i->isVisible()) {
-    //                    assert(i.data());
-    //                    dp.first = i.data();
-    //                    break;
-    //                }
-    //            }
-    //        }
-
-    //        //        assert(dp.first);
-    //        return //qobject_cast<DockedWindow *>(widget()); //
-    //            dp.first;   //_mainWindows[0];
-    //    }
-
-    //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
-
-    std::pair<DockedWindow *, WebView *> Entrance::active_chain(Record *const record)
+    std::pair<Browser *, WebView *> Entrance::activiated_registered()
     {
         clean();
-        //DockedWindow *w = nullptr;
-        std::pair<DockedWindow *, WebView *> dp = std::make_pair(nullptr, nullptr);
+        std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
 
-        if(_mainWindows.isEmpty()) {
 
-            //            Record *r = record ? record : request_record(QUrl(DockedWindow::_defaulthome));
-            //            r->active_immediately(true);
-            dp = new_dockedwindow(
-                     record ? record->getNaturalFieldSource("url") : QUrl(DockedWindow::_defaulthome)
-                 );
-        } else if(record) {
-            //            if(record)record->active_immediately(true);
+        //        if(_mainWindows.isEmpty()) {
+        //            dp = new_dockedwindow(
+        //                     QUrl(DockedWindow::_defaulthome)
+        //                 );
+        //        } else { //
 
+        if(!_mainWindows.isEmpty()) {
             for(auto &i : _mainWindows) {
-
-                dp.second = i->tabWidget()->find(record->getNaturalFieldSource("url"));
-
-                if(dp.second != nullptr) {
-                    //setWidget(i.data());
-                    dp.first = i.data();
-
-                    //                    if(!i->isVisible() || !i->isActiveWindow()) {
-                    //                        i->raise();
-                    //                        i->activateWindow();
-                    //                    }
-
-
-                    break;
-                } else if(i->isVisible() || i->isActiveWindow()) {
+                if(i->isVisible() || i->isActiveWindow()) {
                     assert(i.data());
                     dp.first = i.data();
-                    //                    break;
-                }
-            }
-
-            assert(dp.first);
-
-            if(dp.second == nullptr && dp.first) {
-                //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                dp.second = dp.first->invoke_page(record);
-            }
-
-            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
-                dp.first->raise();
-                dp.first->activateWindow();
-            }
-
-            dp.first->tabWidget()->setCurrentWidget(dp.second);
-            dp.second->show();
-        } else {    // record == nullptr and !_mainWindows.isEmpty()
-            for(auto &i : _mainWindows) {
-                if(i->isActiveWindow()) {
-                    dp.first = i.data();
                     dp.second = i->tabWidget()->currentWebView();
+                    break;
                 }
             }
         }
 
-        assert(dp.first);
-        assert(dp.second);
-        setWidget(dp.first);
+        //        assert(dp.first);
+        return //qobject_cast<DockedWindow *>(widget()); //
+            dp;   //_mainWindows[0];
+    }
+
+    //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
+
+    // prepare active chain but not load them
+    std::pair<Browser *, WebView *> Entrance::equip_registered(Record *const record)
+    {
+        assert(record);
+        clean();
+        //DockedWindow *w = nullptr;
+        std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
+
+        if(record) {
+            assert(!record->generator());
+            assert(QUrl(record->getNaturalFieldSource("url")).isValid());
+
+            if(!record->generator() && QUrl(record->getNaturalFieldSource("url")).isValid()) {
+                //        QUrl url = QUrl(record->getNaturalFieldSource("url"));
+
+
+
+                if(_mainWindows.isEmpty()) {
+
+                    //            Record *r = record ? record : request_record(QUrl(DockedWindow::_defaulthome));
+                    //            r->active_immediately(true);
+
+                    dp = new_dockedwindow(
+                             record // record ? QUrl(record->getNaturalFieldSource("url")).isValid() ? QUrl(record->getNaturalFieldSource("url")) : QUrl(DockedWindow::_defaulthome) : QUrl(DockedWindow::_defaulthome)
+                         );
+                } else {
+                    auto generator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> (
+                                   ""
+                                   , &WebPage::ActiveRecordBinder::generator
+                                   , ar
+                               );
+                    };
+                    auto activator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> (
+                                   ""
+                                   , &WebPage::ActiveRecordBinder::activator
+                                   , ar
+                               );
+                    };
+
+                    //                    if(record && QUrl(record->getNaturalFieldSource("url")).isValid()) {
+                    //            if(record)record->active_immediately(true);
+
+                    for(auto &i : _mainWindows) {
+
+                        dp.second = i->tabWidget()->find(record->getNaturalFieldSource("url"));
+
+                        if(dp.second != nullptr) {
+                            //setWidget(i.data());
+                            dp.first = i.data();
+
+                            //                    if(!i->isVisible() || !i->isActiveWindow()) {
+                            //                        i->raise();
+                            //                        i->activateWindow();
+                            //                    }
+
+                            break;
+                        } else if(i->isVisible() || i->isActiveWindow()) {
+                            assert(i.data());
+                            dp.first = i.data();
+                            //                    break;
+                        }
+                    }
+
+                    assert(dp.first);
+
+                    if(dp.second == nullptr && dp.first) {
+                        //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
+                        dp.second = dp.first->invoke_page(record);
+                    }
+
+                    //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
+                    //                dp.first->raise();
+                    //                dp.first->activateWindow();
+                    //            }
+
+                    //            dp.first->tabWidget()->setCurrentWidget(dp.second);
+                    //            dp.second->show();
+
+                    // registered record, but have no generator:
+                    boost::shared_ptr<WebPage::ActiveRecordBinder> ar = boost::make_shared<WebPage::ActiveRecordBinder>(dp.second->page(), true);
+                    record->generator(
+                        generator(ar)
+                    );
+
+                    record->activator(
+                        activator(ar)
+                    );
+
+                    //                    }
+
+                    //            else {    // record == nullptr and !_mainWindows.isEmpty()
+                    //                // just for get a activiated view
+                    //                for(auto &i : _mainWindows) {
+                    //                    if(i->isActiveWindow()) {
+                    //                        dp.first = i.data();
+                    //                        dp.second = i->tabWidget()->currentWebView();
+                    //                    }
+                    //                }
+
+                    //                //                boost::shared_ptr<WebPage::ActiveRecordBinder> ar = boost::make_shared<WebPage::ActiveRecordBinder>(dp.second->page(), true);
+                    //                //                request_record(
+                    //                //                    QUrl(DockedWindow::_defaulthome)
+                    //                //                    , generator(ar)
+                    //                //                    , activator(ar)
+                    //                //                );
+                    //            }
+                }
+
+                assert(dp.first);
+                assert(dp.second);
+                setWidget(dp.first);
+            }
+        }
+
         return dp;  // qobject_cast<DockedWindow *>(widget()); //
         // _mainWindows[0];
     }
@@ -1062,7 +1151,7 @@ namespace browser {
     //        return list;
     //    }
 
-    QList<QPointer<DockedWindow> > &Entrance::window_list()
+    QList<QPointer<Browser> > &Entrance::window_list()
     {
         clean();
         //        QList<DockedWindow *> list;
@@ -1090,9 +1179,9 @@ namespace browser {
     }
 
 
-    std::pair<DockedWindow *, WebView *> Entrance::find_record_in_browser(Record *const record)
+    std::pair<Browser *, WebView *> Entrance::find(Record *const record)
     {
-        std::pair<DockedWindow *, WebView *> dp{nullptr, nullptr};
+        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
 
         //        if(_mainWindows.isEmpty())dp.first = activebrowser();
 
@@ -1122,9 +1211,9 @@ namespace browser {
         return dp;
     }
 
-    std::pair<DockedWindow *, WebView *> Entrance::find(QUrl url)
+    std::pair<Browser *, WebView *> Entrance::find(QUrl url)
     {
-        std::pair<DockedWindow *, WebView *> dp{nullptr, nullptr};
+        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
 
         //        if(_mainWindows.isEmpty())dp.first = activebrowser();
 
@@ -1163,7 +1252,11 @@ namespace browser {
 
     bool Entrance::restore_state(const QByteArray &state)
     {
-        return active_chain().first->restore_state(state);
+        if(window_list().count() == 0) {
+            new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+        }
+
+        return activiated_registered().first->restore_state(state);
     }
 
     //    std::pair<DockedWindow *, WebView *> Entrance::active_record(Record *const record)

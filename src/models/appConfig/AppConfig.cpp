@@ -302,14 +302,14 @@ void AppConfig::hspl_sizelist(QList<int> list)
 
 QList<int> AppConfig::findsplitter_sizelist(void) const
 {
-    return splitter_sizelist("findsplitter");
+    return splitter_sizelist("find_splitter");
 }
 
 
 void AppConfig::findsplitter_sizelist(QList<int> list)
 {
     qDebug() << "Config set find splitter list to " << list;
-    splitter_sizelist("findsplitter", list);
+    splitter_sizelist("find_splitter", list);
 }
 
 

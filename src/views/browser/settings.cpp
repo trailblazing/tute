@@ -43,7 +43,7 @@
 
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
 
-#include "dockedwindow.h"
+#include "browser.h"
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
 #include "cookiejar.h"
 #endif
@@ -103,7 +103,7 @@ namespace browser {
     {
         QSettings settings;
         settings.beginGroup(QLatin1String("MainWindow"));
-        const QString defaultHome = QLatin1String(DockedWindow::_defaulthome);
+        const QString defaultHome = QLatin1String(Browser::_defaulthome);
         homeLineEdit->setText(settings.value(QLatin1String("home"), defaultHome).toString());
         settings.endGroup();
 
@@ -296,7 +296,7 @@ namespace browser {
 
     void SettingsDialog::setHomeToCurrentPage()
     {
-        DockedWindow *mw = static_cast<DockedWindow *>(parent());
+        Browser *mw = static_cast<Browser *>(parent());
         WebView *webView = mw->currentTab();
 
         if(webView)

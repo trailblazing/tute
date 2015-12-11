@@ -193,22 +193,22 @@ void RecordTableView::onSelectionChanged(const QItemSelection &selected,
     // return;
 
     if(selectRecord.isValid())
-        clickToRecord(selectRecord);
+        click_record(selectRecord);
 }
 
 
 // Слот клика по записи. Принимает индекс Proxy модели
 void RecordTableView::onClickToRecord(const QModelIndex &index)
 {
-    clickToRecord(index);
+    click_record(index);
 }
 
 
 // Действия при выборе строки таблицы конечных записей. Принимает индекс Proxy модели
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
-void RecordTableView::clickToRecord(const QModelIndex &index)
+void RecordTableView::click_record(const QModelIndex &index)
 {
-    controller->clickToRecord(index);
+    controller->click_record(index);
 
     globalparameters.getWindowSwitcher()->switchFromRecordtableToRecord();
 }
@@ -282,7 +282,7 @@ void RecordTableView::on_doubleclick(const QModelIndex &index)
 
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        clickToRecord(index); // Раньше было select()
+        click_record(index); // Раньше было select()
         globalparameters.mainwindow()->editor_switch();
 
     }
@@ -302,7 +302,7 @@ void RecordTableView::editFieldContext(void)
 
     // Нужно перерисовать окно редактирования чтобы обновились инфополя
     // делается это путем "повторного" выбора текущего пункта
-    clickToRecord(index); // Раньше было select()
+    click_record(index); // Раньше было select()
 }
 
 // Получение номера первого выделенного элемента

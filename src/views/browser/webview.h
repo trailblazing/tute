@@ -81,7 +81,7 @@ QT_BEGIN_NAMESPACE
 
 namespace browser {
 
-    class DockedWindow;
+    class Browser;
     class PopupWindow;
     class WebView;
     class TabWidget;
@@ -114,7 +114,7 @@ namespace browser {
                 , WebView *parent = 0
                );
         //        WebView *(*_load_record)(Record *const record);
-        DockedWindow *dockedwindow();
+        Browser *dockedwindow();
         WebView *view() {return _pageview;}
         QSet<Record *> binded_records()const;
 
@@ -130,11 +130,11 @@ namespace browser {
 
         Record *current_record()const {return _record;}
 
-        struct ActiveRecord {
+        struct ActiveRecordBinder {
             WebPage *_the;
             bool _make_current;
             //            RecordTableController *_recordtablecontroller;
-            ActiveRecord(WebPage *the, bool make_current
+            ActiveRecordBinder(WebPage *the, bool make_current
                           = true
                             //                            , RecordTableController *recordtablecontroller
                             //                          = globalparameters.getRecordTableScreen()->getRecordTableController()

@@ -22,7 +22,7 @@
 #include "libraries/WindowSwitcher.h"
 
 #include "libraries/wyedit/EditorTextArea.h"
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
 
 extern AppConfig appconfig;
@@ -90,7 +90,7 @@ MainWindow::~MainWindow()
     saveAllState();
 
     delete treeScreen;
-    delete browserentrance;
+    delete browser_entrance;
     delete recordTableScreen;
     delete findScreenDisp;
     delete editorScreen;
@@ -133,17 +133,21 @@ void MainWindow::setupUI(void)
     windowSwitcher = new WindowSwitcher(this);
     windowSwitcher->setObjectName("windowSwitcher");
     _globalparameters.setWindowSwitcher(windowSwitcher);
-    windowSwitcher->findInBaseClick();
+    //    windowSwitcher->findInBaseClick();
 
-    browserentrance = new browser::Entrance(
-        _recordtablecontroller = recordTableScreen->getRecordTableController()
-                                 , _globalparameters.style_source()
-        , this, Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
-    );
-    //    browsermanager->adjustSize();
-    browserentrance->setScrollbars(true);
-    browserentrance->setObjectName("entrance");
-    _globalparameters.entrance(browserentrance);
+    if(recordTableScreen) {
+        browser_entrance = new browser::Entrance(
+            _recordtablecontroller
+            = recordTableScreen->getRecordTableController()
+              , _globalparameters.style_source()
+            , this
+            , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
+        );
+        //    browsermanager->adjustSize();
+        browser_entrance->setScrollbars(true);
+        browser_entrance->setObjectName("entrance");
+        _globalparameters.entrance(browser_entrance);
+    }
 
     // todo: Для проверки, почему то в этом месте поиск объекта по имени не работает, разобраться.
     // MetaEditor *edView=find_object<MetaEditor>("editorScreen");
@@ -161,7 +165,7 @@ void MainWindow::setupSignals(void)
 
     // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
     connect(treeScreen->_actionlist["findInBase"], SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
-    connect(browserentrance->getactionFreeze(), SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+    connect(browser_entrance->getactionFreeze(), SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
     connect(recordTableScreen->actionFindInBase, SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
     connect(editorScreen, SIGNAL(wyeditFindInBaseClicked()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
 }
@@ -169,20 +173,19 @@ void MainWindow::setupSignals(void)
 
 void MainWindow::assembly(void)
 {
-    vSplitter = new QSplitter(Qt::Vertical);
-    vSplitter->addWidget(browserentrance);
+    v_right_splitter = new QSplitter(Qt::Vertical);
+    v_right_splitter->addWidget(browser_entrance);
+    v_right_splitter->addWidget(editorScreen);             // Text entries // Текст записи
+    v_right_splitter->setCollapsible(0, false);            // The list of final entries can not link up    // Список конечных записей не может смыкаться
+    v_right_splitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
+    v_right_splitter->setObjectName("v_right_splitter");
 
-    vSplitter->addWidget(editorScreen);             // Text entries // Текст записи
-    vSplitter->setCollapsible(0, false);            // The list of final entries can not link up    // Список конечных записей не может смыкаться
-    vSplitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
-
-
-    findSplitter = new QSplitter(Qt::Vertical);
-    findSplitter->addWidget(vSplitter);             //findSplitter->addWidget(hSplitter);
-    findSplitter->addWidget(findScreenDisp);
-    findSplitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
-    findSplitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
-    findSplitter->setObjectName("findsplitter");
+    find_splitter = new QSplitter(Qt::Vertical);
+    find_splitter->addWidget(v_right_splitter);             //findSplitter->addWidget(hSplitter);
+    find_splitter->addWidget(findScreenDisp);
+    find_splitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
+    find_splitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
+    find_splitter->setObjectName("find_splitter");
 
 
     v_left_splitter = new QSplitter(Qt::Vertical);
@@ -190,12 +193,13 @@ void MainWindow::assembly(void)
     v_left_splitter->addWidget(recordTableScreen);
     v_left_splitter->setCollapsible(0, false);
     v_left_splitter->setCollapsible(1, false);
+    v_left_splitter->setObjectName("v_left_splitter");
 
     hSplitter = new QSplitter(Qt::Horizontal);
     hSplitter->addWidget(v_left_splitter);
     //hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
     //hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
-    hSplitter->addWidget(findSplitter);             //hSplitter->addWidget(vSplitter);
+    hSplitter->addWidget(find_splitter);             //hSplitter->addWidget(vSplitter);
     hSplitter->setCollapsible(0, false);            // Дерево веток не может смыкаться
     hSplitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
     hSplitter->setObjectName("hsplitter");
@@ -205,7 +209,7 @@ void MainWindow::assembly(void)
     //    findSplitter->addWidget(findScreenDisp);
     //    findSplitter->setCollapsible(0,false);        // Верхняя часть не должна смыкаться
     //    findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
-    //    findSplitter->setObjectName("findsplitter");
+    //    findSplitter->setObjectName("find_splitter");
 
     setCentralWidget(hSplitter);                    //setCentralWidget(findSplitter);
 
@@ -253,10 +257,10 @@ void MainWindow::restoreGeometry(void)
     // move(rect.topLeft());
     // resize(rect.size());
 
-    vSplitter->setSizes(appconfig.vspl_sizelist());
+    v_right_splitter->setSizes(appconfig.vspl_sizelist());
     hSplitter->setSizes(appconfig.hspl_sizelist());
     v_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
-    findSplitter->setSizes(appconfig.findsplitter_sizelist());
+    find_splitter->setSizes(appconfig.findsplitter_sizelist());
 }
 
 
@@ -268,12 +272,12 @@ void MainWindow::saveGeometry(void)
     QRect geom(pos(), size());
 
     appconfig.mainwin_geometry(geom.x(), geom.y(),
-                                  geom.width(), geom.height());
+                               geom.width(), geom.height());
 
     // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
     //                                   geometry().width(), geometry().height());
 
-    appconfig.vspl_sizelist(vSplitter->sizes());
+    appconfig.vspl_sizelist(v_right_splitter->sizes());
     appconfig.hspl_sizelist(hSplitter->sizes());
     appconfig.v_leftsplitter_sizelist(v_left_splitter->sizes());
 
@@ -285,7 +289,7 @@ void MainWindow::saveGeometry(void)
     // виджет уже невиден
 
     if(appconfig.get_findscreen_show())
-        appconfig.findsplitter_sizelist(findSplitter->sizes());
+        appconfig.findsplitter_sizelist(find_splitter->sizes());
 }
 
 

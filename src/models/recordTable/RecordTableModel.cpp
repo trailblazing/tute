@@ -291,7 +291,7 @@ RecordTableData *RecordTableModel::getTableData(void)
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int RecordTableModel::addTableData(int mode, QModelIndex posIndex, Record record)
+int RecordTableModel::addTableData(int mode, QModelIndex posIndex, Record const &record)
 {
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 

@@ -255,12 +255,15 @@ void TreeScreen::setupUI(void)
         _menubutton
     );
 
-    _menubutton->setIcon(
-        style()->standardIcon(
-            // QStyle::SP_TitleBarMenuButton//
-            QStyle::SP_ToolBarHorizontalExtensionButton // QStyle::SP_ToolBarVerticalExtensionButton
-            , new QStyleOption(1, QStyleOption::SO_Frame), _menubar)
-    );
+    _menubutton->setIcon(QIcon(":/resource/pic/home_blue.svg")
+                         //        style()->standardIcon(
+                         //            // QStyle::SP_TitleBarMenuButton// "Qt"
+                         //            // QStyle::SP_ToolBarHorizontalExtensionButton //
+                         //            QStyle::SP_DirHomeIcon  // QStyle::SP_ToolBarVerticalExtensionButton
+                         //            , Q_NULLPTR //new QStyleOption(1, QStyleOption::SO_Frame)
+                         //            , _menubar
+                         //        )
+                        );
     _menubutton->setFlat(true);
 
     // insertActionAsButton(_menubar, _menuaction);    //
@@ -295,7 +298,7 @@ void TreeScreen::setupUI(void)
                                                 ScrollBarAsNeeded   // ScrollBarAlwaysOn
                                                );
 
-     // Нужно установить правила показа контекстного самодельного меню
+    // Нужно установить правила показа контекстного самодельного меню
     // чтобы оно могло вызываться
     _knowtreeview->setContextMenuPolicy(Qt::CustomContextMenu);
 

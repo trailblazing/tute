@@ -97,7 +97,7 @@ protected:
 
     // Реакия на выбор записи мышкой или клавишами
     // The response to the record selection with the mouse or keys
-    void clickToRecord(const QModelIndex &index);
+    void click_record(const QModelIndex &index);
 
     bool event(QEvent *event);
     bool gestureEvent(QGestureEvent *event);

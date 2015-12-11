@@ -56,12 +56,12 @@ public:
     // Получение ссылки на объект ветки, которой принадлежит таблица
     TreeItem *getItem(void);
 
-    int insertNewRecord(int mode,
-                        int pos,
-                        Record record);
+    int insertNewRecord(int mode
+                        , int pos
+                        , Record const &record);
 
-    void editRecordFields(int pos,
-                          QMap<QString, QString> editFields);
+    void editRecordFields(int pos
+                          , QMap<QString, QString> editFields);
 
     void deleteRecord(int i);
     void deleteRecordById(QString id);

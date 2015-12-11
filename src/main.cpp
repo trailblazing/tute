@@ -14,7 +14,7 @@
 
 #include "main.h"
 
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 #include "views/browser/webview.h"
 #include "views/record/InfoFieldEnter.h"
 
@@ -836,7 +836,7 @@ Record *check_record(const QUrl &_url)
 }
 
 namespace browser {
-    class DockedWindow;
+    class Browser;
     class WebView;
 }
 

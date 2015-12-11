@@ -54,7 +54,7 @@
 #include "models/recordTable/RecordTableModel.h"
 #include "models/recordTable/RecordTableData.h"
 #include "views/browser/history.h"
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 #include "views/browser/webview.h"
 #include "utility/delegate.h"
 
@@ -99,7 +99,7 @@ QT_BEGIN_NAMESPACE
 
 namespace browser {
 
-    class DockedWindow;
+    class Browser;
     class FullScreenNotification;
 
     /*
@@ -222,7 +222,7 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(RecordTableController *recordtablecontroller, DockedWindow *parent);
+        TabWidget(RecordTableController *recordtablecontroller, Browser *parent);
         ~TabWidget();
         void clear();
         void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
@@ -249,7 +249,7 @@ namespace browser {
 
         WebView *find(const QUrl &url) const;
         WebView *find_nopin()const;
-        DockedWindow *window() {return _window;}
+        Browser *browser() {return _window;}
 
         struct NewTab {
             TabWidget *_the;
@@ -343,7 +343,7 @@ namespace browser {
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
         //        //        sd::method<sd::meta_info<void *const>> _active_r;
-        DockedWindow *_window;
+        Browser *_window;
 
     };
 
@@ -351,7 +351,7 @@ namespace browser {
         public TabWidget {  // public QWidget
         Q_OBJECT
     public:
-        PopupWindow(QWebEngineProfile *const setProfile, QUrl const &url, RecordTableController *_recordtablecontroller, DockedWindow *parent);
+        PopupWindow(QWebEngineProfile *const setProfile, QUrl const &url, RecordTableController *_recordtablecontroller, Browser *parent);
 
         QWebEnginePage *page() const;
 

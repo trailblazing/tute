@@ -361,10 +361,12 @@ QDomElement RecordTableData::exportDataToDom(QDomDocument *doc) const
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-int RecordTableData::insertNewRecord(int mode,
-                                     int pos,
-                                     Record record)
+int RecordTableData::insertNewRecord(int mode
+                                     , int pos
+                                     , Record const &record_)
 {
+    Record record = record_;
+
     if(treeItem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
 
     // Мотод должен принять полновесный объект записи

@@ -44,7 +44,7 @@
 #include "libraries/GlobalParameters.h"
 #include "models/appConfig/AppConfig.h"
 #include "models/dataBaseConfig/DataBaseConfig.h"
-#include "views/browser/dockedwindow.h"
+#include "views/browser/browser.h"
 #include <memory>
 
 class QtLocalPeer;
@@ -81,7 +81,7 @@ QT_END_NAMESPACE
 
 namespace browser {
     class BookmarksManager;
-    class DockedWindow;
+    class Browser;
     class CookieJar;
     class DownloadManager;
     class HistoryManager;

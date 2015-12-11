@@ -55,7 +55,7 @@
 
 namespace browser {
     class Entrance;
-    class DockedWindow;
+    class Browser;
 }
 
 class TreeScreen;
@@ -80,7 +80,7 @@ public:
     ~MainWindow();
 
     TreeScreen *treeScreen;
-    browser::Entrance *browserentrance;
+    browser::Entrance *browser_entrance;
     RecordTableScreen *recordTableScreen;
     MetaEditor *editorScreen;
     FindScreen *findScreenDisp;
@@ -178,10 +178,10 @@ private:
     QSystemTrayIcon *trayIcon;
     QMenu           *trayIconMenu;
 
-    QSplitter *vSplitter;
+    QSplitter *v_right_splitter;
     QSplitter *v_left_splitter;
     QSplitter *hSplitter;
-    QSplitter *findSplitter;
+    QSplitter *find_splitter;
 
     QMenu *_filemenu;
     QMenu *_toolsmenu;
@@ -199,7 +199,7 @@ protected:
 
     bool enableRealClose;
 
-    friend class browser::DockedWindow;
+    friend class browser::Browser;
 
 };
 #endif

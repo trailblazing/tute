@@ -77,7 +77,7 @@ RecordTableView *RecordTableController::getView(void)
 
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-void RecordTableController::clickToRecord(const QModelIndex &index)
+void RecordTableController::click_record(const QModelIndex &index)
 {
     // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
     QModelIndex sourceIndex = proxyindex_to_sourceindex(index);
@@ -172,7 +172,7 @@ void RecordTableController::update_browser(const int source_pos)
     //    if(record != old_record) {
 
     if(url != ""
-       && url != browser::DockedWindow::_defaulthome
+       && url != browser::Browser::_defaulthome
        //       && record->active_immediately()
       ) {
 
@@ -187,9 +187,14 @@ void RecordTableController::update_browser(const int source_pos)
         //            page->load(record);
         //        } else
 
+        if(!record->generator() && entrance) {
+            entrance->equip_registered(record);
+        }
+
         if(record->generator() && !record->binded_only_page())record->generate();
-        else if(record->activator() && record->binded_only_page())(*record->activator())();  // if(entrance) entrance->active_record(record);
-        else if(entrance) entrance->active_chain(record);
+        else if(record->activator() && record->binded_only_page())record->active();  // if(entrance) entrance->active_record(record);
+
+        //        else if(entrance)
     }
 
     //    } else {
@@ -200,7 +205,6 @@ void RecordTableController::update_browser(const int source_pos)
     //            // page->load(record);
     //            page->view()->show();
     //        }
-
 
 
     //    }
@@ -764,8 +768,8 @@ void RecordTableController::addNewRecord(int mode)
     record.setField("pin",   _check_state[Qt::Unchecked]);
     record.setField("name",   "");
     record.setField("author", "");
-    record.setField("home",   browser::DockedWindow::_defaulthome);
-    record.setField("url",    browser::DockedWindow::_defaulthome);
+    record.setField("home",   browser::Browser::_defaulthome);
+    record.setField("url",    browser::Browser::_defaulthome);
     record.setField("tags",   "");
 
     record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
@@ -906,7 +910,7 @@ int RecordTableController::new_record(
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-int RecordTableController::addNew(int mode, Record record)
+int RecordTableController::addNew(int mode, Record const &record)
 {
     qDebug() << "In add_new()";
 
@@ -980,8 +984,10 @@ void RecordTableController::openWebsite(QModelIndex proxyIndex)
     Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
     //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
+    if(entrance && !record->generator()) entrance->equip_registered(record);
+
     if(record->generator())record->generate();
-    else if(entrance) entrance->active_chain(record);
+
 
     //    int i = editRecordWin.exec();
     //    if(i == QDialog::Rejected)

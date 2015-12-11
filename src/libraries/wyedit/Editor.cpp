@@ -613,7 +613,7 @@ void Editor::widget_hide(bool checked)
 {
     Q_UNUSED(checked);
     //    // Запоминается размер сплиттера перед скрытием виджета
-    //    QSplitter *findSplitterRel = find_object<QSplitter>("findsplitter");
+    //    QSplitter *findSplitterRel = find_object<QSplitter>("find_splitter");
     //    appconfig.set_findsplitter_size_list(findSplitterRel->sizes());
 
     // Виджет скрывается
