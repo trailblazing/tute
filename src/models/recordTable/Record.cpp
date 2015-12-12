@@ -63,6 +63,12 @@ Record::Record(const Record &obj) : _page(nullptr)
     // Обратный указатель во включенном объекте должен указывать на новый экземпляр
     attachTableData.setRecord(this);
     attachTableData.updateAttachTableBackLink();
+    _is_registered = obj._is_registered;
+    _position = obj._position;
+    _open_link_in_new_window = obj._open_link_in_new_window;
+    //    bool    _active_immediately = false;
+    _generator = obj._generator;
+    _activator = obj._activator;
 }
 
 browser::WebPage *Record::binded_only_page()

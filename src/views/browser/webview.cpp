@@ -166,7 +166,7 @@ namespace browser {
 
     }
 
-    Browser *WebPage::dockedwindow()
+    Browser *WebPage::browser()
     {
         //        QObject *w = this->parent();
 
@@ -346,7 +346,8 @@ namespace browser {
     {
         //        Record *blank_record = request_record(QUrl(DockedWindow::_defaulthome));    // QUrl("about:newtab")
 
-        QWebEnginePage *page = nullptr;
+        //        QWebEnginePage
+        WebPage *page = nullptr;
 
         if(//_openinnewtab ||
             type == QWebEnginePage::WebBrowserTab) {
@@ -373,6 +374,7 @@ namespace browser {
             if(view) {
                 //                return view->page();
                 auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page(), true);
+                //                Record *record =
                 request_record(
                     QUrl(Browser::_defaulthome)
                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
@@ -386,14 +388,17 @@ namespace browser {
                         , ar
                     )
                 );
-
+                //                record->generate();
+                //                record->active();
                 page = view->page();
             } else {
 
                 // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                 // page->bind_record(new_record);  //Record *record = request_record(page->url());
                 // page->update_record(page->url(), page->title());
-                auto arint = boost::make_shared<TabWidget::NewTab>(this->dockedwindow()->tabWidget(), true);
+
+                // already create window, why do this? -- refer to demo browser
+                auto arint = boost::make_shared<TabWidget::NewTab>(browser()->tabWidget(), true);
                 Record *r = request_record(
                                 QUrl(Browser::_defaulthome)
                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
@@ -410,8 +415,12 @@ namespace browser {
                 //                return //_record->page();
                 // globalparameters.entrance()->invoke_view(new_record).second->page();
                 //                    this->dockedwindow()->tabWidget()->newTab(blank_record, true)->page();
-                page = r->binded_only_page();
 
+                //                if(!r->generator())browser()->equip_registered(r);
+                assert(r->generator());
+                r->generate();
+                r->active();
+                page = r->binded_only_page();
 
             }
 
@@ -422,6 +431,7 @@ namespace browser {
             std::pair<Browser *, WebView *> dp = globalparameters.entrance()->new_dockedwindow(QUrl(Browser::_defaulthome));               // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
+
             page = dp.second->page();  // mainWindow->currentTab()->page();
 
         } else {
@@ -432,6 +442,24 @@ namespace browser {
             //            return
             page = popup->page();
         }
+
+        assert(page);
+
+        // never called
+        connect(page, &QWebEnginePage::load, page, [&](const QUrl & url) {
+            Record *record = page->current_record();
+            record->setNaturalFieldSource("url", url.toString());
+            record->generate();
+            record->active();
+        });
+
+        // not realy needed for each time
+        connect(page, &QWebEnginePage::setUrl, page, [&](const QUrl & url) {
+            Record *record = page->_record;
+            record->setNaturalFieldSource("url", url.toString());
+            page->load(record); // record->generate();
+            page->active();     // record->active();
+        });
 
         return page;
     }
@@ -647,6 +675,7 @@ namespace browser {
 
     void WebPage::break_record_which_page_point_to_me()
     {
+        // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
         if(_record) {
             if(_record->binded_only_page()) {
                 if(_record->binded_only_page() == this) {
@@ -654,7 +683,7 @@ namespace browser {
                 }
             }
 
-            _records.remove(_record);
+            if(_records.contains(_record)) _records.remove(_record);
         }
 
         _record = nullptr;
@@ -757,7 +786,7 @@ namespace browser {
 
     void WebPage::onTitleChanged(const QString &title)
     {
-        assert(this->url() != QUrl());
+        //        assert(this->url() != QUrl());
         assert(this->title() == title);
 
         //        Record *record = nullptr;

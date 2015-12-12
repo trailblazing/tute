@@ -711,7 +711,7 @@ namespace browser {
 
         if(index >= 0) {
             if(count() == 1)
-                webView->page()->dockedwindow()->close();
+                webView->page()->browser()->close();
             else
                 closeTab(index);
         }
@@ -1423,20 +1423,20 @@ namespace browser {
     {
         auto wvh = boost::make_shared<WebViewHelper>(this, profile, recordtablecontroller);
         Record *record = request_record(
-                            url
-                            , std::make_shared <
-                            sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, Record *const>
-                            > (""
-                               , &WebViewHelper::generator
-                               , wvh
-                              )
-                            , std::make_shared <
-                            sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
-                            > (""
-                               , &WebViewHelper::activator
-                               , wvh
-                              )
-                        );  // ->binded_only_page()->view();
+                             url
+                             , std::make_shared <
+                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, Record *const>
+                             > (""
+                                , &WebViewHelper::generator
+                                , wvh
+                               )
+                             , std::make_shared <
+                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
+                             > (""
+                                , &WebViewHelper::activator
+                                , wvh
+                               )
+                         );  // ->binded_only_page()->view();
         return record->binded_only_page()->view();
     }()
 
@@ -1466,7 +1466,8 @@ namespace browser {
         connect(page(), &WebPage::windowCloseRequested, this, &QWidget::close);
     }
 
-    QWebEnginePage *PopupWindow::page() const { return _view->page(); }
+    //    QWebEnginePage
+    WebPage *PopupWindow::page() const { return _view->page(); }
 
 
     void PopupWindow::setUrl(const QUrl &url)

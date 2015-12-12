@@ -114,7 +114,7 @@ namespace browser {
                 , WebView *parent = 0
                );
         //        WebView *(*_load_record)(Record *const record);
-        Browser *dockedwindow();
+        Browser *browser();
         WebView *view() {return _pageview;}
         QSet<Record *> binded_records()const;
 
@@ -135,10 +135,10 @@ namespace browser {
             bool _make_current;
             //            RecordTableController *_recordtablecontroller;
             ActiveRecordBinder(WebPage *the, bool make_current
-                          = true
-                            //                            , RecordTableController *recordtablecontroller
-                            //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
-                         )
+                               = true
+                                 //                            , RecordTableController *recordtablecontroller
+                                 //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
+                              )
                 : _the(the)
                 , _make_current(make_current)
                   //              , _recordtablecontroller(recordtablecontroller)
@@ -147,7 +147,7 @@ namespace browser {
             WebView *generator(Record *const record)
             {
                 return _the->load(record, _make_current);
-                                  //                                    , _recordtablecontroller
+                //                                    , _recordtablecontroller
 
             }
 
@@ -159,8 +159,8 @@ namespace browser {
 
     protected:
 
-        bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame);
-        QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type);
+        bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
+        QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;
 #if !defined(QT_NO_UITOOLS)
         QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif

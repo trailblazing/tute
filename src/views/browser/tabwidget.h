@@ -353,7 +353,8 @@ namespace browser {
     public:
         PopupWindow(QWebEngineProfile *const setProfile, QUrl const &url, RecordTableController *_recordtablecontroller, Browser *parent);
 
-        QWebEnginePage *page() const;
+        //        QWebEnginePage
+        WebPage *page() const;
 
     private Q_SLOTS:
         void setUrl(const QUrl &url);

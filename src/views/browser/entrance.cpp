@@ -366,11 +366,11 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(url
-                         , _recordtablecontroller
-                         , this
-                         , _style_source
-                         , Qt::MaximizeUsingFullscreenGeometryHint
-                        ); //, dock_widget
+                    , _recordtablecontroller
+                    , this
+                    , _style_source
+                    , Qt::MaximizeUsingFullscreenGeometryHint
+                   ); //, dock_widget
 
 
         return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
@@ -382,11 +382,11 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(record
-                         , _recordtablecontroller
-                         , this
-                         , _style_source
-                         , Qt::MaximizeUsingFullscreenGeometryHint
-                        ); //, dock_widget
+                    , _recordtablecontroller
+                    , this
+                    , _style_source
+                    , Qt::MaximizeUsingFullscreenGeometryHint
+                   ); //, dock_widget
 
 
         return find(record);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
@@ -405,11 +405,11 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(url
-                         , _recordtablecontroller
-                         , this
-                         , _style_source
-                         , Qt::MaximizeUsingFullscreenGeometryHint
-                        ); //, dock_widget
+                    , _recordtablecontroller
+                    , this
+                    , _style_source
+                    , Qt::MaximizeUsingFullscreenGeometryHint
+                   ); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
         //        browser->setParent(_dockwidget);
@@ -958,10 +958,11 @@ namespace browser {
         std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
 
         if(record) {
-            assert(!record->generator());
+            //            assert(!record->generator()); // maybe Entrance::ActiveRecordBinder registered
             assert(QUrl(record->getNaturalFieldSource("url")).isValid());
 
-            if(!record->generator() && QUrl(record->getNaturalFieldSource("url")).isValid()) {
+            if(// !record->generator() && // maybe Entrance::ActiveRecordBinder registered
+                    QUrl(record->getNaturalFieldSource("url")).isValid()) {
                 //        QUrl url = QUrl(record->getNaturalFieldSource("url"));
 
 

@@ -69,6 +69,7 @@ Record *RecordTableData::find(const QUrl &url)
         // QString _u = i.getNaturalFieldSource("url") ;
 
         if(i.getNaturalFieldSource("url") == url.toString()) {
+            assert(i.is_registered());
             record = &i;
             break;
         }
@@ -85,6 +86,7 @@ Record *RecordTableData::find(Record *const r)
         // QString _u = i.getNaturalFieldSource("url") ;
 
         if(i.getNaturalFieldSource("id") == r->getNaturalFieldSource("id")) {
+            assert(i.is_registered());
             record = &i;
             break;
         }
@@ -312,6 +314,7 @@ void RecordTableData::setupDataFromDom(QDomElement *domModel)
         // Структура, куда будет помещена текущая запись
         // The structure, which will put the current record
         Record currentRecord;
+        currentRecord.is_registered(true);
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)
@@ -366,6 +369,7 @@ int RecordTableData::insertNewRecord(int mode
                                      , Record const &record_)
 {
     Record record = record_;
+    record.is_registered(true);
 
     if(treeItem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
 

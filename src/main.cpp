@@ -994,10 +994,12 @@ Record *request_record(const QUrl &_url
                 _record = register_record(record, _recordtablecontroller);
 
                 assert(_record);
+                assert(_record->is_registered());
                 //                _record->active_immediately(active_immediately);
                 //                _record->generator(generator);
 
             } else {
+                assert(_record->is_registered());
                 _record->generator(generator);
                 _record->activator(activator);
                 _record->generate();

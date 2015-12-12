@@ -92,6 +92,9 @@ public:
     //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
     //    bool active_immediately() {return _active_immediately;}
 
+    bool is_registered() {return _is_registered;}
+    void is_registered(bool reg) {_is_registered = reg;}
+
     void generator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> g) {_generator = g;}
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator() const {return _generator;}
 
@@ -152,6 +155,7 @@ private:
     void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
     friend browser::WebPage;
 
+    bool    _is_registered = false;
     //    bool    _active_request = false;
     int     _position = -1;
     int     _open_link_in_new_window = 0;

@@ -128,6 +128,7 @@ namespace browser {
         QStatusBar *status_bar();       // {return globalparameters.getStatusBar();};
         QStatusBar *status_bar() const; // {return globalparameters.getStatusBar();};
         WebView *invoke_page(Record *const record);
+        void equip_registered(Record *const record);
 
     public slots:
         void loadPage(const QString &url);
@@ -190,7 +191,7 @@ namespace browser {
     private:
         void init();
         void register_url(QUrl const &url);
-        void equip_registered(Record *const record);
+
         void run_script(const QString &style_source);
         void loadDefaultState();
         void setupMenu();
