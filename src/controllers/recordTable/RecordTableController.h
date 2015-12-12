@@ -147,7 +147,7 @@ protected:
     friend class browser::Entrance;
     //friend class WebView;
     //    friend Record *register_record(const QUrl &_url, std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator, RecordTableController *_recordtablecontroller);
-    friend Record *register_record(Record const &record
+    friend std::shared_ptr<Record> register_record(Record const &record
                                    //                                   , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
                                    , RecordTableController *_recordtablecontroller);
 

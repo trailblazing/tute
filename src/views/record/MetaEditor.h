@@ -1,6 +1,7 @@
 #ifndef _METAEDITOR_H_
 #define _METAEDITOR_H_
 
+#include <memory>
 #include <QWidget>
 #include <QLabel>
 #include <QCheckBox>
@@ -61,7 +62,7 @@ public:
 
     void switchToEditorLayout(void);
     void switchToAttachLayout(void);
-    void bind(Record *r);   // {_record = r;}
+    void bind(std::shared_ptr<Record> r);   // {_record = r;}
 
 private:
     void setupLabels(void);
@@ -103,7 +104,7 @@ private:
     QVBoxLayout *metaEditorJoinLayer;
     QMetaObject::Connection _home_connection;    // for disconnect
     QMetaObject::Connection _url_connection;    // for disconnect
-    Record *_record;
+    std::shared_ptr<Record> _record;
 };
 
 #endif /* _METAEDITOR_H_ */

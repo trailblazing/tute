@@ -918,7 +918,7 @@ void QtSingleApplication::newLocalSocketConnection()
             auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
             request_record(
                 url
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     ""
                     , &browser::Entrance::ActiveRecordBinder::generator
                     , arb

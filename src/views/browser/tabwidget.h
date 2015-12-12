@@ -89,9 +89,9 @@ namespace browser {
     class WebView;
 }
 
-extern Record *request_record(
+extern std::shared_ptr<Record> request_record(
     const QUrl &_url
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
     , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>
 );
 
@@ -262,7 +262,7 @@ namespace browser {
                      , RecordTableController *recordtablecontroller
                    = globalparameters.getRecordTableScreen()->getRecordTableController()
                   ): _the(the) , _make_current(make_current), _recordtablecontroller(recordtablecontroller), view(nullptr) {}
-            WebView *generator(Record *const record)
+            WebView *generator(std::shared_ptr<Record> record)
             {
                 return view = _the->newTab(record, _make_current, _recordtablecontroller);
             }
@@ -284,7 +284,7 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(Record *const record
+        WebView *newTab(const std::shared_ptr<Record> record
                         // = request_record(QUrl(DockedWindow::_defaulthome))
                         //  , bool openinnewtab = false
                         , bool make_current

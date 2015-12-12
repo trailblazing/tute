@@ -9,6 +9,7 @@
 #include <QMap>
 #include <QString>
 #include <QByteArray>
+#include <memory>
 
 class TreeItem;
 class Record;
@@ -35,11 +36,11 @@ public:
     void setField(QString name, QString value, int pos);
 
     // Получение образа записи
-    Record getRecordLite(int pos);
-    Record getRecordFat(int pos);
-    Record *getRecord(int pos);
-    Record *find(const QUrl &url);
-    Record *find(Record *const r);
+    std::shared_ptr<Record> getRecordLite(int pos);
+    std::shared_ptr<Record> getRecordFat(int pos);
+    std::shared_ptr<Record> getRecord(int pos);
+    std::shared_ptr<Record> find(const QUrl &url);
+    std::shared_ptr<Record> find(const std::shared_ptr<Record> r);
 
     // Первичное заполнение таблицы конечных записей
     void init(TreeItem *item, QDomElement domModel);
@@ -99,7 +100,7 @@ private:
 
     // Таблица записей (в нормальном виде содержит только "легкие" объекты записей)
     // Table entries (in the normal form contains only "light" objects records)
-    QList< Record > tableData;
+    QList< std::shared_ptr<Record> > tableData;
 
     // Ссылка на ветку, которой принадлежит данная таблица
     // Link to the branch that owns the table

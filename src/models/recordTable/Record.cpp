@@ -20,7 +20,8 @@ extern GlobalParameters globalparameters;
 
 
 Record::Record()
-    : _page(nullptr)
+    : std::enable_shared_from_this<Record>()
+    , _page(nullptr)
     , liteFlag(true)
     , attachTableData(this)
 {
@@ -40,12 +41,14 @@ void Record::page_to_nullptr()
     _page = nullptr;
 }
 // Конструктор копирования
-Record::Record(const Record &obj) : _page(nullptr)
+Record::Record(const Record &obj)
+    : std::enable_shared_from_this<Record>()
+    , _page(nullptr)
 {
     if(obj._page != nullptr) {
 
         _page = obj._page;
-        _page->bind_record(this);
+        _page->bind_record(shared_from_this());
 
         //        obj.breakpage();
 
@@ -99,10 +102,10 @@ Record *Record::bind_page(browser::WebPage *page)
     if(_page != page) {
 
         if(_page) {
-            QSet<Record *> records = _page->binded_records() ;
+            std::set<std::shared_ptr<Record> > records = _page->binded_records() ;
 
             for(auto i : records) {
-                if(i == this) {
+                if(i.get() == this) {
                     if(i->_page) {
                         i->_page->break_record_which_page_point_to_me();
                         //                        i->_page->_record = nullptr;    // _page->break_record();
@@ -131,8 +134,8 @@ Record *Record::bind_page(browser::WebPage *page)
 
     if(_page) {
 
-        if(!_page->_record || _page->_record != this) {
-            _page->bind_record(this);
+        if(!_page->_record || _page->_record.get() != this) {
+            _page->bind_record(shared_from_this());
         }
 
         //        if((!_page->binded_records()) || (_page->binded_records() != this)) {
@@ -155,7 +158,7 @@ bool Record::is_holder()
 {
     bool is_holder_ = false;
 
-    if(_page) is_holder_ = _page->_record == this;
+    if(_page) is_holder_ = _page->_record.get() == this;
 
     return is_holder_;
 }
@@ -179,7 +182,7 @@ Record::~Record()
             // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
             // assert(_page->record() == this);
 
-            bool is_holder = (_page->_record == this);     // _page->record() may mean some other record
+            bool is_holder = (_page->_record.get() == this);     // _page->record() may mean some other record
 
             page_to_nullptr();
 
@@ -1029,7 +1032,7 @@ void Record::checkAndCreateTextFile()
 
 browser::WebView *Record::generate()
 {
-    return (*generator())(this);
+    return (*generator())(shared_from_this());
 }
 
 void Record::active()

@@ -147,7 +147,7 @@ void MetaEditor::setupLabels(void)
 }
 
 
-void MetaEditor::bind(Record *r)
+void MetaEditor::bind(std::shared_ptr<Record> r)
 {
     _record = r;
     assert(_record);

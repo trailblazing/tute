@@ -148,7 +148,7 @@ void RecordTableController::update_browser(const int source_pos)
 
 
 
-    Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(source_pos);
+    std::shared_ptr<Record> record = this->getRecordTableModel()->getRecordTableData()->getRecord(source_pos);
     record->active_request(source_pos, 0);
 
     //    if(record->generator())record->generate();
@@ -228,7 +228,7 @@ void RecordTableController::update_browser(const int source_pos)
 void RecordTableController::sychronize_metaeditor_to_record(const int pos)
 {
 
-    Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+    std::shared_ptr<Record> record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
     assert(record);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -421,7 +421,7 @@ void RecordTableController::addRecordsToClipboard(ClipboardRecords *clipboardRec
         QModelIndex index = proxyindex_to_sourceindex(itemsForCopy.at(i));
 
         // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-        Record record = table->getRecordFat(index.row());
+        Record record = *table->getRecordFat(index.row());
 
         clipboardRecords->addRecord(record);
     }
@@ -981,7 +981,7 @@ void RecordTableController::openWebsite(QModelIndex proxyIndex)
 
     //    browser_view->loadUrl(pos);   //table->getField("url", pos)
 
-    Record *record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+    std::shared_ptr<Record> record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
     //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
     if(entrance && !record->generator()) entrance->equip_registered(record);

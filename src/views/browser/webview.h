@@ -47,7 +47,7 @@
 #include <QLineEdit>
 #include <QNetworkReply>
 #include <QClipboard>
-
+#include <set>
 
 
 #include "models/recordTable/Record.h"
@@ -72,7 +72,7 @@ class QSslError;
 QT_END_NAMESPACE
 
 extern GlobalParameters globalparameters;
-extern Record *check_record(const QUrl &_url);
+extern std::shared_ptr<Record> check_record(const QUrl &_url);
 
 class Record;
 
@@ -99,7 +99,7 @@ namespace browser {
             //                _record->page(nullptr); // globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
             //                _record = nullptr;
             //            }
-            QSet<Record *> records = binded_records();
+            std::set<std::shared_ptr<Record> > records = binded_records();
 
             for(auto i : records) {
                 if(i->binded_only_page() == this)
@@ -108,7 +108,7 @@ namespace browser {
         }
 
         WebPage(QWebEngineProfile *profile
-                , Record *const record
+                , const std::shared_ptr<Record> record
                 // , bool openinnewtab
                 , RecordTableController *_recordtablecontroller
                 , WebView *parent = 0
@@ -116,10 +116,10 @@ namespace browser {
         //        WebView *(*_load_record)(Record *const record);
         Browser *browser();
         WebView *view() {return _pageview;}
-        QSet<Record *> binded_records()const;
+        std::set<std::shared_ptr<Record> > binded_records()const;
 
         void active();
-        WebView *load(Record *const record, bool checked = true);
+        WebView *load(const std::shared_ptr<Record> record, bool checked = true);
         void load(const QUrl &url) = delete;
 
         //        void synchronize_title_to_record()
@@ -128,7 +128,7 @@ namespace browser {
         //            //if(_record)_record->setNaturalFieldSource("name", webPage()->title());
         //        }
 
-        Record *current_record()const {return _record;}
+        std::shared_ptr<Record> current_record()const {return _record;}
 
         struct ActiveRecordBinder {
             WebPage *_the;
@@ -144,7 +144,7 @@ namespace browser {
                   //              , _recordtablecontroller(recordtablecontroller)
             {}
 
-            WebView *generator(Record *const record)
+            WebView *generator(std::shared_ptr<Record> record)
             {
                 return _the->load(record, _make_current);
                 //                                    , _recordtablecontroller
@@ -166,7 +166,7 @@ namespace browser {
 #endif
         virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-        Record *bind_record(Record *const binded_records);
+        std::shared_ptr<Record> bind_record(const std::shared_ptr<Record> binded_records);
         void break_record_which_page_point_to_me();    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
         void update_record(const QUrl &url
                            // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
@@ -190,8 +190,8 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
-        QSet<Record *> _records;
-        Record  *_record;
+        std::set<std::shared_ptr<Record> > _records;
+        std::shared_ptr<Record> _record;
 
         WebView *_pageview;
         // set the webview mousepressedevent
@@ -203,7 +203,7 @@ namespace browser {
         RecordTableController *_recordtablecontroller;
 
 
-        void record(Record *const record) {_record = record;}
+        void record(std::shared_ptr<Record> record) {_record = record;}
         friend class Record;
         friend void Record::page_to_nullptr();
         friend Record::Record(const Record &obj);
@@ -222,9 +222,8 @@ namespace browser {
         Q_OBJECT
 
     public:
-        WebView(Record *const record
-                , QWebEngineProfile *profile
-                // , bool openinnewtab
+        WebView(std::shared_ptr<Record> record
+                , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
                 , RecordTableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController()
                );
@@ -234,7 +233,7 @@ namespace browser {
         void page(WebPage *page);
 
 
-        WebView *load(Record *const record);
+        WebView *load(const std::shared_ptr<Record> record);
         QUrl url() const = delete;
         QIcon icon() const;
 

@@ -203,7 +203,7 @@ namespace browser {
             auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
             request_record(
                 QUrl(Browser::_defaulthome)
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     ""
                     , &TabWidget::NewTab::generator
                     , arint
@@ -240,10 +240,10 @@ namespace browser {
         QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    void Browser::equip_registered(Record *const record)
+    void Browser::equip_registered(std::shared_ptr<Record> record)
     {
         auto generator = [](boost::shared_ptr<TabWidget::NewTab> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> (
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                        ""
                        , &TabWidget::NewTab::generator
                        , ar
@@ -281,10 +281,10 @@ namespace browser {
 
         //        _tabmanager->newTab(url);  // , false
         auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
-        Record *record = request_record(    // why do this?
+        std::shared_ptr<Record> record = request_record(    // why do this?
                              url
                              , std::make_shared <
-                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const >> (
+                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                                  ""
                                  , &TabWidget::NewTab::generator
                                  , arint
@@ -329,8 +329,8 @@ namespace browser {
         register_url(QUrl(Browser::_defaulthome));
         run_script(style_source);
         this->restore_state(state);
-        QMainWindow::setWindowFlags(
-            //Qt::Window |
+
+        QMainWindow::setWindowFlags(    //Qt::Window |
             Qt::FramelessWindowHint);
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
@@ -361,10 +361,9 @@ namespace browser {
     {
         init();
         register_url(url);
-        run_script(style_source);
-        //        assert(record->linkpage());
-        QMainWindow::setWindowFlags(
-            //Qt::Window |
+        run_script(style_source);       //        assert(record->linkpage());
+
+        QMainWindow::setWindowFlags(    //Qt::Window |
             Qt::FramelessWindowHint);
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
@@ -372,13 +371,12 @@ namespace browser {
     }
 
 
-    Browser::Browser(
-        Record *const record
-        , RecordTableController *recordtablecontroller
-        , Entrance *entrance   //, QDockWidget *parent
-        , const QString &style_source
-        , Qt::WindowFlags flags
-    )
+    Browser::Browser(std::shared_ptr<Record> record
+                     , RecordTableController *recordtablecontroller
+                     , Entrance *entrance   //, QDockWidget *parent
+                     , const QString &style_source
+                     , Qt::WindowFlags flags
+                    )
         : QMainWindow(0, flags)
         , _recordtablecontroller(recordtablecontroller)
         , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
@@ -405,10 +403,9 @@ namespace browser {
 
         assert(record->binded_only_page());
 
-        run_script(style_source);
-        //        assert(record->linkpage());
-        QMainWindow::setWindowFlags(
-            //Qt::Window |
+        run_script(style_source);       //        assert(record->linkpage());
+
+        QMainWindow::setWindowFlags(    //Qt::Window |
             Qt::FramelessWindowHint);
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
@@ -1194,7 +1191,7 @@ namespace browser {
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(_entrance);
         request_record(
             QUrl(home)
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                 ""
                 , &Entrance::ActiveRecordBinder::generator
                 , ara
@@ -1401,7 +1398,7 @@ namespace browser {
 
 
 
-    WebView *Browser::invoke_page(Record *const record)
+    WebView *Browser::invoke_page(std::shared_ptr<Record> record)
     {
         // clean();
 

@@ -58,19 +58,19 @@ QString RecordTableData::getField(QString name, int pos) const
         criticalError("RecordTableData::getField() : get unavailable record index " + i);
     }
 
-    return tableData.at(pos).getField(name);
+    return tableData.at(pos)->getField(name);
 }
 
-Record *RecordTableData::find(const QUrl &url)
+std::shared_ptr<Record> RecordTableData::find(const QUrl &url)
 {
-    Record *record = nullptr;
+    std::shared_ptr<Record> record;
 
     for(auto &i : tableData) {
         // QString _u = i.getNaturalFieldSource("url") ;
 
-        if(i.getNaturalFieldSource("url") == url.toString()) {
-            assert(i.is_registered());
-            record = &i;
+        if(i->getNaturalFieldSource("url") == url.toString()) {
+            assert(i->is_registered());
+            record = i;
             break;
         }
     }
@@ -78,16 +78,16 @@ Record *RecordTableData::find(const QUrl &url)
     return record;
 }
 
-Record *RecordTableData::find(Record *const r)
+std::shared_ptr<Record> RecordTableData::find(std::shared_ptr<Record> r)
 {
-    Record *record = nullptr;
+    std::shared_ptr<Record> record;
 
     for(auto &i : tableData) {
         // QString _u = i.getNaturalFieldSource("url") ;
 
-        if(i.getNaturalFieldSource("id") == r->getNaturalFieldSource("id")) {
-            assert(i.is_registered());
-            record = &i;
+        if(i->getNaturalFieldSource("id") == r->getNaturalFieldSource("id")) {
+            assert(i->is_registered());
+            record = i;
             break;
         }
     }
@@ -105,7 +105,7 @@ void RecordTableData::setField(QString name, QString value, int pos)
         criticalError("In RecordTableData::setField() unavailable record index " + i + " in table while field " + name + " try set to " + value);
     }
 
-    tableData[pos].setField(name, value);
+    tableData[pos]->setField(name, value);
 }
 
 
@@ -121,7 +121,7 @@ QString RecordTableData::getText(int pos)
     if(pos < 0 || pos >= size())
         return QString();
 
-    return tableData[pos].getTextDirect();
+    return tableData[pos]->getTextDirect();
 }
 
 
@@ -233,14 +233,14 @@ void RecordTableData::editorSaveCallback(QObject *editor,
 // Эти образы используются для хранения в дереве знаний
 // Get a copy of a light image recording
 // These images are used to store the tree of knowledge
-Record RecordTableData::getRecordLite(int pos)
+std::shared_ptr<Record> RecordTableData::getRecordLite(int pos)
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
-        return Record();
+        return std::make_shared<Record>();
 
     // Хранимая в дереве запись не может быть "тяжелой"
-    if(!tableData.at(pos).isLite())
+    if(!tableData.at(pos)->isLite())
         criticalError("In RecordTableData::getRecordLite() try get fat record");
 
     return tableData.at(pos);
@@ -251,32 +251,32 @@ Record RecordTableData::getRecordLite(int pos)
 // Возвращается запись с "сырыми" данными. Если запись была зашифрована, метод вернет зашифрованные данные
 // Get a copy of the full image recording
 // Returns the record with "raw" data. If the record was encrypted, the method returns the encrypted data
-Record RecordTableData::getRecordFat(int pos)
+std::shared_ptr<Record> RecordTableData::getRecordFat(int pos)
 {
     // Копия записи из дерева
-    Record resultRecord = getRecordLite(pos);
+    std::shared_ptr<Record> resultRecord = getRecordLite(pos);
 
     // Переключение копии записи на режим с хранением полного содержимого
-    resultRecord.switchToFat();
+    resultRecord->switchToFat();
 
     // Добавление текста записи
-    resultRecord.setText(getText(pos));
+    resultRecord->setText(getText(pos));
 
     // Добавление бинарных образов файлов картинок
-    QString directory = appconfig.get_tetradir() + "/base/" + resultRecord.getField("dir");
-    resultRecord.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    QString directory = appconfig.get_tetradir() + "/base/" + resultRecord->getField("dir");
+    resultRecord->setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
     return resultRecord;
 }
 
 
-Record *RecordTableData::getRecord(int pos)
+std::shared_ptr<Record> RecordTableData::getRecord(int pos)
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
         return NULL;
 
-    return &(tableData[pos]);
+    return tableData[pos];
 }
 
 
@@ -313,8 +313,8 @@ void RecordTableData::setupDataFromDom(QDomElement *domModel)
     while(!currentRecordDom.isNull()) {
         // Структура, куда будет помещена текущая запись
         // The structure, which will put the current record
-        Record currentRecord;
-        currentRecord.is_registered(true);
+        std::shared_ptr<Record> currentRecord = std::make_shared<Record>();
+        currentRecord->is_registered(true);
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)
@@ -324,7 +324,7 @@ void RecordTableData::setupDataFromDom(QDomElement *domModel)
         // чтобы в подчиненных объектах прописались правильные указатели на данную запись
         // Write initialized data. It should initsializirovatsya after placement in the list tableData,
         // Order in subordinate objects have registered a valid pointer to this entry
-        (tableData.last()).setupDataFromDom(currentRecordDom);
+        (tableData.last())->setupDataFromDom(currentRecordDom);
 
         currentRecordDom = currentRecordDom.nextSiblingElement("record");
     } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
@@ -346,7 +346,7 @@ QDomElement RecordTableData::exportDataToDom(QDomDocument *doc) const
 
     // Пробегаются все записи в таблице
     for(int i = 0; i < tableData.size(); i++)
-        recordTableDomData.appendChild(tableData.at(i).exportDataToDom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+        recordTableDomData.appendChild(tableData.at(i)->exportDataToDom(doc));     // К элементу recordtabledata прикрепляются конечные записи
 
     // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
@@ -368,13 +368,13 @@ int RecordTableData::insertNewRecord(int mode
                                      , int pos
                                      , Record const &record_)
 {
-    Record record = record_;
-    record.is_registered(true);
+    std::shared_ptr<Record> record = std::make_shared<Record>(record_);
+    record->is_registered(true);
 
     if(treeItem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
 
     // Мотод должен принять полновесный объект записи
-    if(record.isLite() == true)
+    if(record->isLite() == true)
         criticalError("RecordTableData::insertNewRecord() can't insert lite record");
 
     // Выясняется, есть ли в дереве запись с указанным ID
@@ -383,18 +383,18 @@ int RecordTableData::insertNewRecord(int mode
     // и ее желательно вставить с прежним ID и прежним именем директории
     KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>("knowTreeView")->model());
 
-    if(record.getField("id").length() == 0 ||
-       dataModel->isRecordIdExists(record.getField("id"))) {
+    if(record->getField("id").length() == 0 ||
+       dataModel->isRecordIdExists(record->getField("id"))) {
         // Создается новая запись (ID был пустой) или
         // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
 
         // Директория хранения записи и файл
-        record.setField("dir", get_unical_id());
-        record.setField("file", "text.html");
+        record->setField("dir", get_unical_id());
+        record->setField("file", "text.html");
 
         // Уникальный идентификатор XML записи
         QString id = get_unical_id();
-        record.setField("id", id);
+        record->setField("id", id);
     }
 
 
@@ -403,7 +403,7 @@ int RecordTableData::insertNewRecord(int mode
     // Время создания данной записи
     QDateTime ctime_dt = QDateTime::currentDateTime();
     QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
-    record.setField("ctime", ctime);
+    record->setField("ctime", ctime);
 
 
     // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
@@ -418,15 +418,15 @@ int RecordTableData::insertNewRecord(int mode
         }
 
     // Запись полновесных данных с учетом шифрации
-    if(isCrypt && record.getField("crypt") != "1") // В зашифрованную ветку незашифрованную запись
-        record.switchToEncryptAndSaveFat();
-    else if(!isCrypt && record.getField("crypt") == "1") // В незашифрованную ветку зашифрованную запись
-        record.switchToDecryptAndSaveFat();
+    if(isCrypt && record->getField("crypt") != "1") // В зашифрованную ветку незашифрованную запись
+        record->switchToEncryptAndSaveFat();
+    else if(!isCrypt && record->getField("crypt") == "1") // В незашифрованную ветку зашифрованную запись
+        record->switchToDecryptAndSaveFat();
     else
-        record.pushFatAttributes();
+        record->pushFatAttributes();
 
     // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
-    record.switchToLite();
+    record->switchToLite();
 
     // Запись добавляется в таблицу конечных записей
     int insertPos = -1;
@@ -624,7 +624,7 @@ void RecordTableData::switchToEncrypt(void)
             continue;
 
         // Шифрация записи
-        tableData[i].switchToEncryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
+        tableData[i]->switchToEncryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 
@@ -640,7 +640,7 @@ void RecordTableData::switchToDecrypt(void)
             continue;
 
         // Расшифровка записи
-        tableData[i].switchToDecryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
+        tableData[i]->switchToDecryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 

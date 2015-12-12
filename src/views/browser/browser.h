@@ -99,7 +99,7 @@ namespace browser {
         );
 
         Browser(
-            Record *const record
+            std::shared_ptr<Record> record
             , RecordTableController *recordtablecontroller
             , Entrance *entrance   //, QDockWidget *parent
             , const QString &style_source
@@ -127,8 +127,8 @@ namespace browser {
         QStatusBar *statusBar() = delete;
         QStatusBar *status_bar();       // {return globalparameters.getStatusBar();};
         QStatusBar *status_bar() const; // {return globalparameters.getStatusBar();};
-        WebView *invoke_page(Record *const record);
-        void equip_registered(Record *const record);
+        WebView *invoke_page(std::shared_ptr<Record> record);
+        void equip_registered(std::shared_ptr<Record> record);
 
     public slots:
         void loadPage(const QString &url);

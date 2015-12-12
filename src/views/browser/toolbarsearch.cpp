@@ -171,7 +171,7 @@ namespace browser {
             auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
             request_record(
                 url
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     ""
                     , &browser::Entrance::ActiveRecordBinder::generator
                     , ara

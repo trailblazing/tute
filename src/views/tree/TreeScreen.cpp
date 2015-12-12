@@ -1081,7 +1081,7 @@ void TreeScreen::addBranchToClipboard(ClipboardBranch *branch_clipboard_data, QS
 
     for(int i = 0; i < curr_item_record_table->size(); i++) {
         // Полный образ записи (с файлами и текстом)
-        Record record = curr_item_record_table->getRecordFat(i);
+        Record record = *curr_item_record_table->getRecordFat(i);
 
         branch_clipboard_data->addRecord(branch_id, record);
     }

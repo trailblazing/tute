@@ -324,7 +324,7 @@ namespace browser {
                 WebPage *page = view->page();
 
                 if(page) {
-                    Record *record = page->current_record();
+                    std::shared_ptr<Record> record = page->current_record();
                     assert(record);
                     QString home = record->getNaturalFieldSource("home");
                     QUrl homeurl = QUrl(home);
@@ -377,7 +377,7 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::new_dockedwindow(Record *const record)
+    std::pair<Browser *, WebView *> Entrance::new_dockedwindow(std::shared_ptr<Record> record)
     {
 
         //        DockedWindow *browser =
@@ -708,7 +708,7 @@ namespace browser {
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
         request_record(
             url
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>>(
+            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                 ""
                 , &Entrance::ActiveRecordBinder::generator
                 , ara
@@ -950,7 +950,7 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    std::pair<Browser *, WebView *> Entrance::equip_registered(Record *const record)
+    std::pair<Browser *, WebView *> Entrance::equip_registered(std::shared_ptr<Record> record)
     {
         assert(record);
         clean();
@@ -977,7 +977,7 @@ namespace browser {
                          );
                 } else {
                     auto generator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::generator
                                    , ar
@@ -1180,7 +1180,7 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::find(Record *const record)
+    std::pair<Browser *, WebView *> Entrance::find(std::shared_ptr<Record> record)
     {
         std::pair<Browser *, WebView *> dp{nullptr, nullptr};
 
