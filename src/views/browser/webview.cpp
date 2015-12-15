@@ -445,13 +445,13 @@ namespace browser {
 
         assert(page);
 
-        // never called
-        connect(page, &QWebEnginePage::load, page, [&](const QUrl & url) {
-            std::shared_ptr<Record> record = page->current_record();
-            record->setNaturalFieldSource("url", url.toString());
-            record->generate();
-            record->active();
-        });
+        //        // never called
+        //        connect(page, &QWebEnginePage::load, page, [&](const QUrl & url) {
+        //            std::shared_ptr<Record> record = page->current_record();
+        //            record->setNaturalFieldSource("url", url.toString());
+        //            record->generate();
+        //            record->active();
+        //        });
 
         // not realy needed for each time
         connect(page, &QWebEnginePage::setUrl, page, [&](const QUrl & url) {

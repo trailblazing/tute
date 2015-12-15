@@ -195,23 +195,31 @@ void RecordTableScreen::setupUI(void)
     }
 
     insertActionAsButton(toolsLine, _actionpin);
-    insertActionAsButton(toolsLine, actionWalkHistoryPrevious);
-    insertActionAsButton(toolsLine, actionWalkHistoryNext);
     insertActionAsButton(toolsLine, actionAddNewToEnd);
+
+
 
     if(appconfig.getInterfaceMode() == "desktop") {
         insertActionAsButton(toolsLine, actionEditField);
         insertActionAsButton(toolsLine, actionDelete);
     }
 
-    toolsLine->addSeparator();
-    insertActionAsButton(toolsLine, actionCut);
-    insertActionAsButton(toolsLine, actionCopy);
-    insertActionAsButton(toolsLine, actionPaste);
-    toolsLine->addSeparator();
+    insertActionAsButton(toolsLine, actionWalkHistoryPrevious);
+    insertActionAsButton(toolsLine, actionWalkHistoryNext);
     insertActionAsButton(toolsLine, actionMoveUp);
     insertActionAsButton(toolsLine, actionMoveDn);
 
+    toolsLine->addSeparator();
+
+    insertActionAsButton(toolsLine, actionCut);
+    insertActionAsButton(toolsLine, actionCopy);
+    insertActionAsButton(toolsLine, actionPaste);
+
+    toolsLine->addSeparator();
+
+    insertActionAsButton(toolsLine, actionSort);
+    insertActionAsButton(toolsLine, actionPrint);
+    insertActionAsButton(toolsLine, actionSettings);
 
     extraToolsLine = new QToolBar(this);
 
@@ -250,6 +258,8 @@ void RecordTableScreen::assembly(void)
     recordTableScreenLayout->addLayout(recordTableToolsLayout);
     recordTableScreenLayout->addWidget(treePathLabel);
     recordTableScreenLayout->addWidget(recordTableController->getView());
+
+    //    recordTableController->getView()->viewport()->installEventFilter(someFilterWidget);
 
     setLayout(recordTableScreenLayout);
 

@@ -99,7 +99,8 @@ void RecordTableView::init(void)
         verticalHeader()->setDefaultSectionSize(getCalculateIconSizePx());
 
     setHorizontalScrollBarPolicy(Qt::
-                                 ScrollBarAsNeeded  // ScrollBarAlwaysOff
+                                 // ScrollBarAsNeeded  //
+                                 ScrollBarAlwaysOff
                                 );   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 
     restoreColumnWidth();
@@ -223,16 +224,25 @@ void RecordTableView::assemblyContextMenu(void)
 
     contextMenu->addAction(parentPointer->_actionpin);
     contextMenu->addAction(parentPointer->actionAddNewToEnd);
-    contextMenu->addAction(parentPointer->actionAddNewBefore);
-    contextMenu->addAction(parentPointer->actionAddNewAfter);
-    contextMenu->addSeparator();
     contextMenu->addAction(parentPointer->actionEditField);
     contextMenu->addAction(parentPointer->actionDelete);
+
     contextMenu->addSeparator();
+
+    contextMenu->addAction(parentPointer->actionAddNewBefore);
+    contextMenu->addAction(parentPointer->actionAddNewAfter);
+    //    contextMenu->addAction(parentPointer->actionMoveUp);
+    //    contextMenu->addAction(parentPointer->actionMoveDn);
+    //    contextMenu->addAction(parentPointer->actionSyncro);
+
+    contextMenu->addSeparator();
+
     contextMenu->addAction(parentPointer->actionCut);
     contextMenu->addAction(parentPointer->actionCopy);
     contextMenu->addAction(parentPointer->actionPaste);
+
     contextMenu->addSeparator();
+
     contextMenu->addAction(parentPointer->actionSort);
     contextMenu->addAction(parentPointer->actionPrint);
     contextMenu->addAction(parentPointer->actionSettings);

@@ -188,7 +188,9 @@ void MainWindow::assembly(void)
     find_splitter->setObjectName("find_splitter");
 
 
-    v_left_splitter = new QSplitter(Qt::Vertical);
+    v_left_splitter = new QSplitter(
+        Qt::Horizontal  // Qt::Vertical
+    );
     v_left_splitter->addWidget(treeScreen);
     v_left_splitter->addWidget(recordTableScreen);
     v_left_splitter->setCollapsible(0, false);

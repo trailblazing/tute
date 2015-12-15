@@ -189,8 +189,9 @@ void TreeScreen::setupUI(void)
     toolsLine->setIconSize(tool_bar_icon_size);
     */
 
-    insertActionAsButton(_toolsline, _actionlist["insSubbranch"]);
+
     insertActionAsButton(_toolsline, _actionlist["insBranch"]);
+    insertActionAsButton(_toolsline, _actionlist["insSubbranch"]);
 
     if(appconfig.getInterfaceMode() == "desktop") {
         insertActionAsButton(_toolsline, _actionlist["editBranch"]);
@@ -274,7 +275,7 @@ void TreeScreen::setupUI(void)
 
     //    _knowtreeview = new KnowTreeView(this);
     _knowtreeview->setObjectName("knowTreeView");
-    _knowtreeview->setMinimumSize(150
+    _knowtreeview->setMinimumSize(1
                                   , 1   // 250
                                  );
     _knowtreeview->setWordWrap(true);
@@ -335,8 +336,9 @@ void TreeScreen::on_customContextMenuRequested(const QPoint &pos)
 
     // Конструирование меню
     QMenu menu(this);
-    menu.addAction(_actionlist["insSubbranch"]);
+
     menu.addAction(_actionlist["insBranch"]);
+    menu.addAction(_actionlist["insSubbranch"]);
     menu.addAction(_actionlist["editBranch"]);
     menu.addAction(_actionlist["delBranch"]);
     menu.addSeparator();
