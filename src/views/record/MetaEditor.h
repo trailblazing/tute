@@ -70,35 +70,34 @@ private:
     void metaAssembly(void);
     void setupSignals(void);
 
-    QLabel *treePath;       // Надпись Path (только для мобильного интерфейса)
-
-    QCheckBox *recordPin;
+    QLabel      *treePath;       // Надпись Path (только для мобильного интерфейса)
+    QCheckBox   *recordPin;
 
     QLabel *recordName;     // Надпись Title
     QLabel *recordAuthor;   // Надпись Author(s)
 
-    QLabel *labelHome;       // Inscription    // Надпись "Url"
-    ClickableLabel *recordHome;
+    QLabel          *labelHome;       // Inscription    // Надпись "Url"
+    ClickableLabel  *recordHome;
 
-    QLabel *labelUrl;       // Inscription    // Надпись "Url"
-    ClickableLabel *recordUrl;
+    QLabel          *labelUrl;       // Inscription    // Надпись "Url"
+    ClickableLabel  *recordUrl;
 
-    QLabel *labelTags;      // Надпись "Tags"
-    QWidget *recordTagsContainer;
-    QHBoxLayout *recordTagsLayout;
-    QScrollArea *recordTagsScrollArea;
-    QString recordTagsText;
-    QStringList recordTagsTextList;
+    QLabel          *labelTags;      // Надпись "Tags"
+    QWidget         *recordTagsContainer;
+    QHBoxLayout     *recordTagsLayout;
+    QScrollArea     *recordTagsScrollArea;
+    QString         recordTagsText;
+    QStringList     recordTagsTextList;
     QList<QLabel *> recordTagsLabels;
 
-    QSplitter *editorAndFileTableSplitter;
+    QSplitter       *editorAndFileTableSplitter;
 
     // Виджет слоя прикрепляемых файлов
     AttachTableScreen *attachTableScreen;
 
     // Виджет слоя редактирования текста
     QGridLayout *editorMainLayer;
-    QWidget *editorMainScreen;
+    QWidget     *editorMainScreen;
 
     // Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
     QVBoxLayout *metaEditorJoinLayer;

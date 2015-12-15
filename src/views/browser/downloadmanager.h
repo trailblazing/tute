@@ -42,6 +42,7 @@
 #ifndef DOWNLOADMANAGER_H
 #define DOWNLOADMANAGER_H
 
+#include <memory>
 #include "ui_downloads.h"
 #include "ui_downloaditem.h"
 
@@ -93,7 +94,10 @@ namespace browser {
         QTime _downloadtime;
         bool _stopped;
 
-        QScopedPointer<QWebEngineDownloadItem> _download;
+        //        QScopedPointer<QWebEngineDownloadItem>
+        //        QSharedPointer<QWebEngineDownloadItem>
+        //        std::shared_ptr<QWebEngineDownloadItem>
+        QWebEngineDownloadItem *_download;
     };
 
     class AutoSaver;

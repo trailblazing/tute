@@ -405,8 +405,7 @@ namespace browser {
                 disconnect(oldWebView->page(), SIGNAL(linkHovered(const QString &)), this, SIGNAL(linkHovered(const QString &)));
                 disconnect(oldWebView, SIGNAL(loadProgress(int)), this, SIGNAL(loadProgress(int)));
                 disconnect(oldWebView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem *)), this, SLOT(downloadRequested(QWebEngineDownloadItem *)));
-                disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)),
-                           this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
+                disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)), this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
             }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
@@ -415,8 +414,7 @@ namespace browser {
             connect(webView->page(), &WebPage::linkHovered, this, &TabWidget::linkHovered);
             connect(webView, &WebView::loadProgress, this, &TabWidget::loadProgress);
             connect(webView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
-            connect(webView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)),
-                    this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
+            connect(webView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)), this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
 
             for(int i = 0; i < _actions.count(); ++i) {
                 WebActionMapper *mapper = _actions[i];
@@ -1423,20 +1421,20 @@ namespace browser {
     {
         auto wvh = boost::make_shared<WebViewHelper>(this, profile, recordtablecontroller);
         std::shared_ptr<Record> record = request_record(
-                             url
-                             , std::make_shared <
-                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>
-                             > (""
-                                , &WebViewHelper::generator
-                                , wvh
-                               )
-                             , std::make_shared <
-                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
-                             > (""
-                                , &WebViewHelper::activator
-                                , wvh
-                               )
-                         );  // ->binded_only_page()->view();
+                                             url
+                                             , std::make_shared <
+                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>
+                                             > (""
+                                                , &WebViewHelper::generator
+                                                , wvh
+                                               )
+                                             , std::make_shared <
+                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
+                                             > (""
+                                                , &WebViewHelper::activator
+                                                , wvh
+                                               )
+                                         );  // ->binded_only_page()->view();
         return record->binded_only_page()->view();
     }()
 

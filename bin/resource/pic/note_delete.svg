@@ -13,7 +13,7 @@
    height="16px"
    id="svg2385"
    sodipodi:version="0.32"
-   inkscape:version="0.47 r22583"
+   inkscape:version="0.91 r13725"
    sodipodi:docname="note_delete.svg"
    inkscape:output_extension="org.inkscape.output.svg.inkscape"
    version="1.1">
@@ -43,17 +43,17 @@
      inkscape:pageshadow="2"
      inkscape:zoom="24.315904"
      inkscape:cx="8.9804772"
-     inkscape:cy="7.9826464"
+     inkscape:cy="7.9003957"
      inkscape:current-layer="layer1"
      showgrid="true"
      inkscape:grid-bbox="true"
      inkscape:document-units="px"
      gridtolerance="3"
      guidetolerance="3"
-     inkscape:window-width="1016"
-     inkscape:window-height="711"
+     inkscape:window-width="1364"
+     inkscape:window-height="684"
      inkscape:window-x="0"
-     inkscape:window-y="0"
+     inkscape:window-y="27"
      inkscape:snap-bbox="true"
      inkscape:object-paths="true"
      inkscape:object-nodes="true"
@@ -102,9 +102,16 @@
          style="fill:#a9bed4;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.52098560000000005;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <path
-       style="fill:#c83737;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.50000000000000000;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-       d="m 9.749999,10.75 -2.5,0 0,2.5 2.5,0 2.5,0 2.500001,0 0,-2.5 -2.500001,0 -2.5,0 z"
+       style="fill:#c83737;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.58096027;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 10.714948,8.9690184 -2.15694,-1.942326 -1.9158333,2.1867648 2.1569383,1.9423248 2.156938,1.942323 2.156938,1.942324 1.915834,-2.186761 -2.15694,-1.942324 -2.156937,-1.9423265 z"
        id="path3201-4"
-       sodipodi:nodetypes="ccccccccc" />
+       sodipodi:nodetypes="ccccccccc"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:#c83737;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0.58113128;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 12.954682,10.817164 1.927137,-2.1681331 -2.224667,-1.878161 -1.927136,2.1681309 -1.9271428,2.1681312 -1.9271364,2.16813 2.2246667,1.878161 1.9271415,-2.168132 1.927137,-2.168128 z"
+       id="path3201-4-1"
+       sodipodi:nodetypes="ccccccccc"
+       inkscape:connector-curvature="0" />
   </g>
 </svg>

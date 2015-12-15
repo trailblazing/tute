@@ -816,7 +816,9 @@ int RecordTableController::new_record(Record const &record
     //    Record record;
 
     //    if(record.isLite())record.switchToFat();
+
     assert(!record.isLite());
+
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
     //    record.setField("name",   addNewRecordWin.getField("name"));

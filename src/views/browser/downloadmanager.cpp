@@ -93,10 +93,16 @@ namespace browser {
     void DownloadWidget::init()
     {
         if(_download) {
-            connect(_download.data(), SIGNAL(downloadProgress(qint64, qint64)),
-                    this, SLOT(downloadProgress(qint64, qint64)));
-            connect(_download.data(), SIGNAL(finished()),
-                    this, SLOT(finished()));
+            connect(
+                //                _download.get() //
+                //                _download.data()
+                _download
+                , &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress);
+            connect(
+                //                _download.get() //
+                //                _download.data()
+                _download
+                , &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);
         }
 
         // reset info
@@ -457,8 +463,8 @@ namespace browser {
         QByteArray value = settings.value(QLatin1String("removeDownloadsPolicy"), QLatin1String("Never")).toByteArray();
         QMetaEnum removePolicyEnum = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("RemovePolicy"));
         _removepolicy = removePolicyEnum.keyToValue(value) == -1 ?
-                         Never :
-                         static_cast<RemovePolicy>(removePolicyEnum.keyToValue(value));
+                        Never :
+                        static_cast<RemovePolicy>(removePolicyEnum.keyToValue(value));
 
         int i = 0;
         QString key = QString(QLatin1String("download_%1_")).arg(i);

@@ -153,7 +153,7 @@ public:
     FlatToolButton   *save = NULL;
 
     FlatToolButton   *back = NULL;
-    FlatToolButton   *actionFreeze = NULL;
+    FlatToolButton   *actionFreeze = NULL;  // reserved for read only
     FlatToolButton   *findInBase = NULL;
 
     FlatToolButton   *showText = NULL;
@@ -415,9 +415,9 @@ private:
 
     EditorFindDialog *findDialog; // Виджет поиска
 
-    QColor buttonsSelectColor; // Цвет рамки выделенных кнопок
+    QColor  buttonsSelectColor; // Цвет рамки выделенных кнопок
 
-    bool expand_edit_area_flag; // Распахнуто ли на максимум окно редактора
+    bool    expand_edit_area_flag; // Распахнуто ли на максимум окно редактора
 
     // Указатели на переопределенные функции записи и чтения редактируемого текста
     void (*save_callback_func)(QObject *editor, QString saveString);
@@ -440,9 +440,9 @@ private:
     QStringList toolsListInLine2;
 
     // Список инструментов, которые ненужно подгружать
-    QStringList disableToolList;
-    FlatToolButton *_closebutton;
-    QVBoxLayout *_toolsarea_closebutton;
+    QStringList     disableToolList;
+    FlatToolButton  *_closebutton;
+    QVBoxLayout     *_toolsarea_closebutton;
 
     enum {
         BT_BOLD,

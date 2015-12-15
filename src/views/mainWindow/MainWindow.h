@@ -77,15 +77,16 @@ public:
     MainWindow(GlobalParameters &globalparameters
                , const AppConfig &appconfig
                , const DataBaseConfig &databaseconfig);
+
     ~MainWindow();
 
-    TreeScreen *treeScreen;
-    browser::Entrance *browser_entrance;
-    RecordTableScreen *recordTableScreen;
-    MetaEditor *editorScreen;
-    FindScreen *findScreenDisp;
-    QStatusBar *statusBar;
-    WindowSwitcher *windowSwitcher;
+    TreeScreen          *treeScreen;
+    RecordTableScreen   *recordTableScreen;
+    MetaEditor          *editorScreen;
+    FindScreen          *findScreenDisp;
+    QStatusBar          *statusBar;
+    WindowSwitcher      *windowSwitcher;
+    browser::Entrance   *browser_entrance;
 
     void restoreGeometry(void);
     void restore_tree_position(void);
@@ -164,11 +165,11 @@ private:
     void saveEditorCursorPosition(void);
     void saveEditorScrollBarPosition(void);
 
-    GlobalParameters &_globalparameters;
-    const AppConfig &_appconfig;
-    const DataBaseConfig &_databaseconfig;
+    GlobalParameters        &_globalparameters;
+    const AppConfig         &_appconfig;
+    const DataBaseConfig    &_databaseconfig;
 
-    RecordTableController *_recordtablecontroller;
+    RecordTableController   *_recordtablecontroller;
 
     QAction *actionTrayRestore;
     QAction *actionTrayMaximize;

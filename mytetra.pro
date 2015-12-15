@@ -2,7 +2,7 @@
 # ANY_OS - for desktop Windows and Linux
 # MEEGO_OS - for MEEGO
 # ANDROID_OS - for Android
-TARGET_OS=ANY_OS
+TARGET_OS   =   ANY_OS
 
 lessThan(QT_VERSION, 5.6) {
     error("mytetra requires at least Qt 5.6!")
@@ -13,122 +13,123 @@ lessThan(QT.webengine.VERSION, 5.6) {
 }
 
 # Flags for profile application
-# QMAKE_CXXFLAGS_DEBUG += -pg
-# QMAKE_LFLAGS_DEBUG += -pg
+# QMAKE_CXXFLAGS_DEBUG  +=  -pg
+# QMAKE_LFLAGS_DEBUG    +=  -pg
 
 # Create define variable in C++ code
-DEFINES+="ANY_OS=1"
-DEFINES+="MEEGO_OS=2"
-DEFINES+="ANDROID_OS=3"
-DEFINES+="TARGET_OS=$${TARGET_OS}"
-#DEFINES+="QT_NO_VERSION_TAGGING"
+DEFINES +=  "ANY_OS=1"
+DEFINES +=  "MEEGO_OS=2"
+DEFINES +=  "ANDROID_OS=3"
+DEFINES +=  "TARGET_OS=$${TARGET_OS}"
+#DEFINES    +=  "QT_NO_VERSION_TAGGING"
 
 message(Building running in Qt major version: $${QT_MAJOR_VERSION})
 message(Value of QT_NO_SESSIONMANAGER is: $${QT_NO_SESSIONMANAGER})
 
-TEMPLATE = app
+TEMPLATE    =   app
 
-QT = gui    \
-    core    \
-    xml     \
-    svg     \
-    network
+QT  =   gui     \
+        core    \
+        xml     \
+        svg     \
+        network
 
-QT += widgets
-#QT += network webkit
-QT += webenginewidgets network
+QT  +=  widgets
+#QT +=  network webkit
+QT  +=  webenginewidgets network
 
-qtHaveModule(uitools):!embedded: QT += uitools
-else: DEFINES += QT_NO_UITOOLS
+qtHaveModule(uitools):!embedded: QT +=  uitools
+else: DEFINES   +=  QT_NO_UITOOLS
 
-CONFIG += qt    \
-    warn_on     \
-    console     \
-    debug       \
-    exception   \
-    console
+CONFIG  +=  qt      \
+        warn_on     \
+        console     \
+        debug       \
+        exception   \
+        console
 
-CONFIG += c++11
+CONFIG  +=  c++11
 
 
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets \
-                                        printsupport
+greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets \
+                                            printsupport
 
 contains(TARGET_OS, ANY_OS) {
-DESTDIR = bin
-OBJECTS_DIR = build
-MOC_DIR = build
-UI_DIR = build
+DESTDIR     =   bin
+OBJECTS_DIR =   build
+MOC_DIR     =   build
+UI_DIR      =   build
 }
 
-VERSION = 0.0.1
-DEFINES += APP_VERSION=\\\"$$VERSION\\\"
+VERSION     =   0.0.1
+DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
-TARGET = mytetra
-RESOURCES = bin/mytetra.qrc \
+TARGET      =   mytetra
+RESOURCES   =   bin/mytetra.qrc     \
     src/views/browser/data/data.qrc \
     src/views/browser/htmls/htmls.qrc
 
-TRANSLATIONS = bin/resource/translations/mytetra_ru.ts
-CODECFORTR  = utf8
+TRANSLATIONS    =   bin/resource/translations/mytetra_ru.ts
+CODECFORTR      =   utf8
 
-# QMAKE_LFLAGS += -L/usr/lib/qt4/lib
-INCLUDEPATH += $${_PRO_FILE_PWD_}/src
+# QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
+INCLUDEPATH     +=  $${_PRO_FILE_PWD_}/src
 
 contains(TARGET_OS, ANY_OS) {
  message(Building the any OS version...)
- SYSTEM_PROGRAM_NAME=mytetra
- BINARY_INSTALL_PATH=/usr/local/bin
+ SYSTEM_PROGRAM_NAME    =   mytetra
+ BINARY_INSTALL_PATH    =   /usr/local/bin
 }
 
 contains(TARGET_OS, MEEGO_OS){
  message(Building the MeeGo OS version...)
- SYSTEM_PROGRAM_NAME=ru.webhamster.mytetra
- BINARY_INSTALL_PATH=/opt/$${SYSTEM_PROGRAM_NAME}/bin
+ SYSTEM_PROGRAM_NAME    =   ru.webhamster.mytetra
+ BINARY_INSTALL_PATH    =   /opt/$${SYSTEM_PROGRAM_NAME}/bin
 }
 
 contains(TARGET_OS, ANDROID_OS){
  message(Building the Android OS version...)
- SYSTEM_PROGRAM_NAME=mytetra
- BINARY_INSTALL_PATH=/
+ SYSTEM_PROGRAM_NAME    =   mytetra
+ BINARY_INSTALL_PATH    =   /
 }
 
 contains(DEFINES, QWEBENGINEPAGE_SETNETWORKACCESSMANAGER) {
-    HEADERS += networkaccessmanager.h
-    SOURCES += networkaccessmanager.cpp
+    HEADERS     +=  networkaccessmanager.h
+    SOURCES     +=  networkaccessmanager.cpp
 }
 
 build_all:!build_pass {
-    CONFIG -= build_all
-    CONFIG += release
+    CONFIG      -=  build_all
+    CONFIG      +=  release
 }
 
 message(Set installation directory for binary file to $${BINARY_INSTALL_PATH})
 
-# mytetra_binary.path=$${BINARY_INSTALL_PATH}
-# mytetra_binary.files=bin/mytetra
-# INSTALLS+=mytetra_binary
-target.path=$${BINARY_INSTALL_PATH}
-INSTALLS+=target
+# mytetra_binary.path   =   $${BINARY_INSTALL_PATH}
+# mytetra_binary.files  =   bin/mytetra
+# INSTALLS  +=  mytetra_binary
 
-desktop_file.path=/usr/share/applications
+target.path     =   $${BINARY_INSTALL_PATH}
+INSTALLS        +=  target
+
+desktop_file.path   =   /usr/share/applications
 contains(TARGET_OS, ANY_OS) {
- desktop_file.files=desktop/any/mytetra.desktop
+ desktop_file.files =   desktop/any/mytetra.desktop
 }
 contains(TARGET_OS, MEEGO_OS) {
- desktop_file.files=desktop/meego/mytetra.desktop
+ desktop_file.files =   desktop/meego/mytetra.desktop
 }
 contains(TARGET_OS, ANDROID_OS) {
- desktop_file.files=desktop/any/mytetra.desktop
+ desktop_file.files =   desktop/any/mytetra.desktop
 }
-INSTALLS+=desktop_file
+INSTALLS    +=  desktop_file
 
-icon_scalable_file.path=/usr/share/icons/hicolor/scalable/apps
-icon_scalable_file.files=desktop/mytetra.svg
-INSTALLS+=icon_scalable_file
+icon_scalable_file.path     =   /usr/share/icons/hicolor/scalable/apps
+icon_scalable_file.files    =   desktop/mytetra.svg
+INSTALLS    +=  icon_scalable_file
 
-icon_48_file.path=/usr/share/icons/hicolor/48x48/apps
-icon_48_file.files=desktop/mytetra.png
+icon_48_file.path   =   /usr/share/icons/hicolor/48x48/apps
+icon_48_file.files  =   desktop/mytetra.png
 INSTALLS+=icon_48_file
 
 
@@ -220,10 +221,6 @@ HEADERS = src/main.h \
     src/utility/delegate.h \
     src/views/browser/browser.h
 
-#    browserapplication.h \
-#    browsermainwindow.h \
-
-
 
 
 
@@ -240,23 +237,23 @@ HEADERS+=src/libraries/qtSingleApplication5/qtsingleapplication.h \
     src/libraries/qtSingleApplication5/qtsinglecoreapplication.h
 }
 
-HEADERS+=\
-    src/libraries/ClipboardBranch.h \
-    src/libraries/GlobalParameters.h \
-    src/models/dataBaseConfig/DataBaseConfig.h \
-    src/views/enterPassword/EnterPassword.h \
-    src/views/consoleEmulator/ExecuteCommand.h \
+HEADERS     +=                          \
+    src/libraries/ClipboardBranch.h     \
+    src/libraries/GlobalParameters.h    \
+    src/models/dataBaseConfig/DataBaseConfig.h  \
+    src/views/enterPassword/EnterPassword.h     \
+    src/views/consoleEmulator/ExecuteCommand.h  \
     src/views/consoleEmulator/ConsoleEmulator.h \
     src/views/waitClock/WaitClock.h \
-    src/libraries/WalkHistory.h \
-    src/libraries/crypt/Pbkdf2Qt.h \
+    src/libraries/WalkHistory.h     \
+    src/libraries/crypt/Pbkdf2Qt.h  \
     src/libraries/crypt/RC5Simple.h \
-    src/libraries/crypt/Password.h \
-    src/libraries/MtTableWidget.h \
-    src/views/tree/KnowTreeView.h \
+    src/libraries/crypt/Password.h  \
+    src/libraries/MtTableWidget.h   \
+    src/views/tree/KnowTreeView.h   \
     src/libraries/MtStyledItemDelegate.h
 
-SOURCES = src/main.cpp \
+SOURCES     =   src/main.cpp \
     src/views/recordTable/RecordTableScreen.cpp \
     src/views/recordTable/RecordTableView.cpp \
     src/views/record/RecordInfoFieldsEditor.cpp \
@@ -342,9 +339,6 @@ SOURCES = src/main.cpp \
     src/libraries/FlatControl.cpp \
     src/views/browser/browser.cpp
 
-#    browserapplication.cpp \
-#    browsermainwindow.cpp \
-#    main.cpp
 
 
 lessThan(QT_MAJOR_VERSION,5) {
@@ -382,29 +376,29 @@ SOURCES+=\
 
 
 wince* { 
-    CONFIG(debug, release|debug):addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
-    CONFIG(release, release|debug):addPlugins.sources = $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
-    addPlugins.path = imageformats
-    DEPLOYMENT += addPlugins
+    CONFIG(debug, release|debug):addPlugins.sources     =   $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
+    CONFIG(release, release|debug):addPlugins.sources   =   $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
+    addPlugins.path     =   imageformats
+    DEPLOYMENT          +=  addPlugins
 }
 
 win32 {
-   RC_FILE = browser.rc
+   RC_FILE  =   browser.rc
 }
 
 mac {
-    ICON = browser.icns
-    QMAKE_INFO_PLIST = Info_mac.plist
-    TARGET = mytetra
+    ICON    =   browser.icns
+    QMAKE_INFO_PLIST    =   Info_mac.plist
+    TARGET  =   mytetra
 }
 
-ANDROID_PACKAGE_SOURCE_DIR = $$PWD/android
+ANDROID_PACKAGE_SOURCE_DIR  =   $$PWD/android
 
-OTHER_FILES += \
+OTHER_FILES     +=  \
     android/AndroidManifest.xml
 
-DISTFILES += \
-    src/uncrustify.cfg \
+DISTFILES   +=          \
+    src/uncrustify.cfg  \
     src/views/browser/browser.ico \
     src/views/browser/browser.icns \
     src/views/browser/data/defaultbookmarks.xbel \
@@ -420,7 +414,7 @@ DISTFILES += \
     bin/resource/pic/home_blue.svg \
     README.md
 
-FORMS += \
+FORMS   +=              \
     src/views/browser/addbookmarkdialog.ui \
     src/views/browser/bookmarks.ui \
     src/views/browser/cookies.ui \
@@ -434,46 +428,8 @@ FORMS += \
 
 
 unix{
-INCLUDEPATH += src/views/browser
+INCLUDEPATH     +=  src/views/browser
 }
 
-##win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../usr/lib64/release/ -lboost_thread
-##else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../usr/lib64/debug/ -lboost_thread
-##else:unix: LIBS += -L$$PWD/../../../../../usr/lib64/ -lboost_thread
 
-##INCLUDEPATH += $$PWD/../../../../../usr/lib64
-##DEPENDPATH += $$PWD/../../../../../usr/lib64
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Core
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Core
-#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Core
-
-#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-
-##link_directories("${QTXDG_LIBRARY_DIRS}")
-##include_directories("${QTXDG_INCLUDE_DIRS}")
-##find_package(QT5XDG REQUIRED)
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Quick
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Quick
-#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Quick
-
-#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Gui
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Gui
-#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Gui
-
-#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-
-#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Qml
-#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Qml
-#else:unix: LIBS += -L$$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Qml
-
-#INCLUDEPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-#DEPENDPATH += $$PWD/../../../../../opt/Qt5.6.0/5.6/gcc_64/include
-
-EXAMPLE_FILES = Info_mac.plist browser.icns browser.ico browser.rc
+EXAMPLE_FILES   =   Info_mac.plist browser.icns browser.ico browser.rc

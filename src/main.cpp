@@ -527,7 +527,7 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "}"
                 "QScrollBar::handle:vertical {"
                 "    background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-                "    stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);" // "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "    stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);" // "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
                 "    min-height: 0px;"
                 ""
                 "}"
@@ -547,48 +547,48 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "}"
                 ""
 
-                //                "QScrollBar: vertical {"
-                //                                  "border-color: rgb(227, 227, 227);"
-                //                                  "border-width: 1px;"
-                //                                  "border-style: solid;"
-                //                                  "background-color: rgb(240, 240, 240);"
-                //                                  "width: 15px;"
-                //                                  "margin: 21px 0 21px 0;"
-                //                              "}"
+                "QScrollBar: vertical {"
+                "border-color: rgb(227, 227, 227);"
+                "border-width: 1px;"
+                "border-style: solid;"
+                "background-color: rgb(240, 240, 240);"
+                "width: 15px;"
+                "margin: 21px 0 21px 0;"
+                "}"
 
-                //                "QScrollBar::handle: vertical {"
-                //                              "background-color: rgb(200, 200, 200);"
-                //                              "min-height: 25px;"
-                //                              "}"
+                "QScrollBar::handle: vertical {"
+                "background-color: rgb(200, 200, 200);"
+                "min-height: 25px;"
+                "}"
 
-                //                "QScrollBar::add-line: vertical {"
-                //                              "border: 1px solid grey;"
-                //                              "background-color: rgb(241, 241, 241);"
-                //                              "height: 20px;"
-                //                              "subcontrol-position: bottom;"
-                //                              "subcontrol-origin: margin;"
-                //                              "}"
+                "QScrollBar::add-line: vertical {"
+                "border: 1px solid grey;"
+                "background-color: rgb(241, 241, 241);"
+                "height: 20px;"
+                "subcontrol-position: bottom;"
+                "subcontrol-origin: margin;"
+                "}"
 
-                //                "QScrollBar::sub-line: vertical {"
-                //                              "border: 1px solid grey;"
-                //                              "background-color: rgb(241, 241, 241);"
-                //                              "height: 20px;"
-                //                              "subcontrol-position: top;"
-                //                              "subcontrol-origin: margin;"
-                //                              "}"
+                "QScrollBar::sub-line: vertical {"
+                "border: 1px solid grey;"
+                "background-color: rgb(241, 241, 241);"
+                "height: 20px;"
+                "subcontrol-position: top;"
+                "subcontrol-origin: margin;"
+                "}"
 
 
-                //                "QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {"
-                //                              "background: none;"
-                //                              "}"
+                "QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {"
+                "background: none;"
+                "}"
 
-                //                "QScrollBar::up-arrow: vertical {"
-                //                              "image: url(:/BarIcon/Icons/uparrow.png);"
-                //                              "}"
+                "QScrollBar::up-arrow: vertical {"
+                "image: url(:/BarIcon/Icons/uparrow.png);"
+                "}"
 
-                //                "QScrollBar::down-arrow: vertical {"
-                //                              "image: url(:/BarIcon/Icons/downarrow.png);"
-                //                              "}"
+                "QScrollBar::down-arrow: vertical {"
+                "image: url(:/BarIcon/Icons/downarrow.png);"
+                "}"
             )
         );
 
@@ -623,43 +623,47 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "    subcontrol-origin: margin;"
                 "}"
                 ""
-                "QScrollBar:horizontal {\
-                                    border-color: rgb(227, 227, 227);\
-                                    border-width: 1px;\
-                                    border-style: solid;\
-                                    background-color: rgb(240, 240, 240);\
-                                    width: 15px;\
-                                    margin: 0px 21px 0 21px;\
-                                }"
-                "QScrollBar::handle:horizontal {\
-                                    background-color: rgb(200, 200, 200);\
-                                    min-height: 25px;\
-                                }"
-                "QScrollBar::add-line:horizontal {\
-                                    border: 1px solid grey;\
-                                    background-color: rgb(241, 241, 241);\
-                                    width: 20px;\
-                                    subcontrol-position: right;\
-                                    subcontrol-origin: margin;\
-                                }"
-                "QScrollBar::sub-line:horizontal {\
-                                    border: 1px solid grey;\
-                                    background-color: rgb(241, 241, 241);\
-                                    width: 20px;\
-                                    subcontrol-position: left;\
-                                    subcontrol-origin: margin;\
-                                }"
-                "QScrollBar:left-arrow:horizontal\
-                                {\
-                                    image: url(:/BarIcon/Icons/leftarrow.png);\
-                                }"
-                "QScrollBar::right-arrow:horizontal \
-                                {\
-                                    image: url(:/BarIcon/Icons/rightarrow.png);\
-                                }"
-                "QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {\
-                                     background: none;\
-                                }"
+                "QScrollBar:horizontal"
+                "{"
+                "    border-color: rgb(227, 227, 227);"
+                "    border-width: 1px;"
+                "    border-style: solid; "
+                "    background-color: rgb(240, 240, 240); "
+                "    width: 15px; "
+                "    margin: 0px 21px 0 21px; "
+                "}"
+
+                ""
+                "QScrollBar::handle: horizontal {"
+                "background-color: rgb(200, 200, 200); "
+                "min-height: 25px; "
+                "}"
+                "QScrollBar::add-line: horizontal {"
+                "border: 1px solid grey;"
+                "background-color: rgb(241, 241, 241); "
+                "width: 20px; "
+                "subcontrol-position: right; "
+                "subcontrol-origin: margin; "
+                "}"
+                "QScrollBar::sub-line: horizontal {"
+                "border: 1px solid grey; "
+                "background-color: rgb(241, 241, 241); "
+                "width: 20px; "
+                "subcontrol-position: left; "
+                "subcontrol-origin: margin; "
+                "}"
+                "QScrollBar: left-arrow: horizontal"
+                "{"
+                "    image: url(:/BarIcon/Icons/leftarrow.png); "
+                "}"
+
+                "QScrollBar::right-arrow: horizontal"
+                "{"
+                "    image: url(:/BarIcon/Icons/rightarrow.png); "
+                "}"
+                "QScrollBar::add-page: horizontal, QScrollBar::sub-page: horizontal {"
+                "     background: none; "
+                "}"
             )
         );
         object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -684,7 +688,7 @@ QStringList text_delimiter_decompose(QString text)
     text.replace('?', ' ');
     text.replace('!', ' ');
 
-    QStringList list = text.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+    QStringList list = text.split(QRegExp("\\W + "), QString::SkipEmptyParts);
 
     return list;
 }
@@ -751,8 +755,10 @@ void init_random(void)
 }
 
 
-std::shared_ptr<Record> register_record(Record const &record
-                        , RecordTableController *_recordtablecontroller)
+std::shared_ptr<Record> register_record(
+    Record const &record
+    , RecordTableController *_recordtablecontroller
+)
 {
     assert(_recordtablecontroller);
     RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
@@ -840,10 +846,11 @@ namespace browser {
     class WebView;
 }
 
-std::shared_ptr<Record> request_record(std::shared_ptr<Record> record
-                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, std::shared_ptr<Record> > > generator
-                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator
-                      )
+std::shared_ptr<Record> request_record(
+    std::shared_ptr<Record> record
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, std::shared_ptr<Record> > > generator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator
+)
 {
     std::shared_ptr<Record> _record;
     RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
@@ -884,10 +891,11 @@ std::shared_ptr<Record> request_record(std::shared_ptr<Record> record
 
 }
 
-std::shared_ptr<Record> request_record(const QUrl &_url
-                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-                       , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, void> > activator
-                      )
+std::shared_ptr<Record> request_record(
+    const QUrl &_url
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, void> > activator
+)
 {
     std::shared_ptr<Record> _record = nullptr;
 
@@ -1019,7 +1027,7 @@ std::shared_ptr<Record> request_record(const QUrl &_url
 
 int main(int argc, char **argv)
 {
-    printf("\n\rStart MyTetra v.%d.%d.%d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
+    printf("\n\rStart MyTetra v. % d. % d. % d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
 
     Q_INIT_RESOURCE(data);  // added by hughvonyoung@gmail.com
     Q_INIT_RESOURCE(mytetra);
@@ -1065,7 +1073,7 @@ int main(int argc, char **argv)
 
 #if QT_VERSION < 0x050000
     // Установка кодека текстов
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF - 8"));
 #endif
 
     //    // Инициализация глобальных параметров,
@@ -1100,15 +1108,15 @@ int main(int argc, char **argv)
     //    setCssStyle();
 
     //    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
-    //    QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
+    //    QSplashScreen splash(QPixmap(": / resource / pic / mytetra_splash.png"));
 
     //    if(mytetraConfig.getShowSplashScreen())
     //        splash.show();
 
 
     //    //    // Подключение перевода интерфейса
-    //    //    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
-    //    //    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
+    //    //    // QString langFileName=globalParameters.getWorkDirectory()+" / resource / translations / mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
+    //    //    QString langFileName = ": / resource / translations / mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
     //    //    qDebug() << "Use language file " << langFileName;
 
     //    //    //QTranslator langTranslator;

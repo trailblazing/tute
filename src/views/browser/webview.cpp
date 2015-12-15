@@ -216,10 +216,10 @@ namespace browser {
         assert(_record);
         QUrl _url = QUrl(_record->getNaturalFieldSource("url"));
 
-        if(
-            //            _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
-            url() != _url
-        ) {
+        if(_pageview &&
+           //            _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
+           url() != _url
+          ) {
             triggerAction(QWebEnginePage::Stop);
 
             // QUrl url = QUrl(_record->getNaturalFieldSource("url"));
@@ -682,7 +682,7 @@ namespace browser {
                 }
             }
 
-            if(_records.find(_record) != _records.end()) _records.erase(_record);
+            if(_records.size() > 0 && _records.find(_record) != _records.end()) _records.erase(_record);
         }
 
         _record = nullptr;
@@ -772,8 +772,10 @@ namespace browser {
 
                 // _record->linkpage(nullptr);
                 _record->bind_page(this);  // record->breakpage();
+
                 // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-                _records.insert(_record);
+                if(_records.find(_record) == _records.end())_records.insert(_record);
+
                 //                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
                 //                assert(metaeditor);
                 //                metaeditor->bind(_record);

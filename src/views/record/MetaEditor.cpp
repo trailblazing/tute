@@ -26,7 +26,7 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
-namespace browser{
+namespace browser {
     class WebPage;
 }
 
@@ -67,8 +67,7 @@ MetaEditor::~MetaEditor(void)
 
 void MetaEditor::setupSignals(void)
 {
-    connect(this, SIGNAL(setFindTextSignal(QString)),
-            globalparameters.getFindScreen(), SLOT(setFindText(QString)));
+    connect(this, &MetaEditor::setFindTextSignal, globalparameters.getFindScreen(), &FindScreen::setFindText);
 
 }
 
@@ -210,18 +209,19 @@ void MetaEditor::setupUI(void)
 void MetaEditor::metaAssembly(void)
 {
     // Сборка виджета редактирования текста (основной виджет)
-    editorMainScreen = new QWidget(this);
-    editorMainLayer = new QGridLayout(editorMainScreen);
+    editorMainScreen    = new QWidget(this);
+    editorMainLayer     = new QGridLayout(editorMainScreen);
 
     editorMainLayer->addLayout(textformatButtonsLayout, 0, 0, 1, 2);
     editorMainLayer->addWidget(treePath,                1, 0, 1, 2);
     //    editorMainLayer->addWidget(recordPin,               2, 0, 1, 2);
     editorMainLayer->addWidget(recordName,              2, 0, 1, 2);
-    editorMainLayer->addWidget(recordAuthor,            3, 0, 1, 2);
+    editorMainLayer->addWidget(recordAuthor,            3, 1, 1, 2);
+
     editorMainLayer->addWidget(textArea,                4, 0, 1, 2);
 
-    editorMainLayer->addWidget(labelHome,                5, 0);
-    editorMainLayer->addWidget(recordHome,               5, 1);
+    editorMainLayer->addWidget(labelHome,               5, 0);
+    editorMainLayer->addWidget(recordHome,              5, 1);
 
     editorMainLayer->addWidget(labelUrl,                6, 0);
     editorMainLayer->addWidget(recordUrl,               6, 1);
@@ -230,6 +230,7 @@ void MetaEditor::metaAssembly(void)
     editorMainLayer->addWidget(recordTagsScrollArea,    7, 1); // Было addLayout(recordTagsLayout ...)
 
     editorMainLayer->setColumnStretch(1, 1);
+    editorMainLayer->setRowStretch(4, 1);
 
     editorMainLayer->setContentsMargins(0, 0, 0, 0);
 

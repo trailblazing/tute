@@ -89,13 +89,13 @@ MainWindow::~MainWindow()
 {
     saveAllState();
 
-    delete treeScreen;
     delete browser_entrance;
-    delete recordTableScreen;
-    delete findScreenDisp;
-    delete editorScreen;
-    delete statusBar;
     delete windowSwitcher;
+    delete statusBar;
+    delete editorScreen;
+    delete findScreenDisp;
+    delete recordTableScreen;
+    delete treeScreen;
 }
 
 

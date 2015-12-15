@@ -174,14 +174,16 @@ void Editor::init(int mode)
     editorContextMenu = new EditorContextMenu(this);
 
     setup_buttons();
-    setup_editor_area();
 
     setup_closebutton();
     assembly_closebutton();
+    assembly_buttons();
+
+    setup_editor_area();
 
     setup_signals();
 
-    assembly_buttons();
+
 
     if(initDataEnableAssembly) assembly();
 
@@ -674,9 +676,7 @@ void Editor::insert_button_to_tools_line(QString toolName, QToolBar *line)
                 FlatToolButton *tb = qobject_cast<FlatToolButton *>(tool);
 
                 if(tb != 0) {
-                    tb->setAutoRaise(
-                        true    // false
-                    );
+                    tb->setAutoRaise(true);              // false
                 }
             } else {
                 FlatToolButton *tb = qobject_cast<FlatToolButton *>(tool);
@@ -754,7 +754,7 @@ void Editor::assembly(void)
     buttonsAndEditLayout->addLayout(textformatButtonsLayout);
 
     // Добавляется область редактирования
-    buttonsAndEditLayout->addWidget(textArea);
+    buttonsAndEditLayout->addWidget(textArea);    // ?
 
     // Полученый набор элементов устанавливается для текущего окна
     setLayout(buttonsAndEditLayout);

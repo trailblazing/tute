@@ -57,7 +57,7 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="21.114521"
-     inkscape:cx="5.8504292"
+     inkscape:cx="-1.656253"
      inkscape:cy="9.2215625"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -109,10 +109,10 @@
          style="fill:#a9bed4;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.5209856;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
     <path
-       style="opacity:0.7;fill:url(#Strips1_1);fill-opacity:1;fill-rule:evenodd;stroke:#c1c1c1;stroke-width:1.5;stroke-linecap:square;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter5709)"
+       style="opacity:0.8;fill:url(#Strips1_1);fill-opacity:1;fill-rule:evenodd;stroke:#03ff00;stroke-width:2.35685007;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter5709)"
        d="m 7.2935596,1047.4843 2.368038,4.3098 5.7306584,-8.2408"
        id="path4255"
        inkscape:connector-curvature="0"
-       transform="matrix(1.0056501,0,0,0.99980559,-0.08776929,0.20367681)" />
+       transform="matrix(1.130065,0,0,0.99566372,-2.0199648,4.5430099)" />
   </g>
 </svg>
