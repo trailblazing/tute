@@ -40,6 +40,13 @@ MainWindow::MainWindow(
     , _appconfig(appconfig)
     , _databaseconfig(databaseconfig)
     , _recordtablecontroller(nullptr)
+    ,  v_right_splitter(new QSplitter(Qt::Vertical))
+    , find_splitter(new QSplitter(Qt::Vertical))
+    , _qtabwidget(new QTabWidget(this))
+    , v_left_splitter(new QSplitter(
+                          Qt::Horizontal  // Qt::Vertical
+                      ))
+    , hSplitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
@@ -89,13 +96,25 @@ MainWindow::~MainWindow()
 {
     saveAllState();
 
-    delete browser_entrance;
-    delete windowSwitcher;
-    delete statusBar;
-    delete editorScreen;
-    delete findScreenDisp;
-    delete recordTableScreen;
-    delete treeScreen;
+    delete  browser_entrance;
+    delete  windowSwitcher;
+    delete  statusBar;
+    delete  editorScreen;
+    delete  findScreenDisp;
+    delete  recordTableScreen;
+    delete  treeScreen;
+    delete  _qtabwidget;
+
+    delete  v_right_splitter;
+    delete  find_splitter;
+    delete  _qtabwidget;
+    delete  v_left_splitter;
+    delete  hSplitter;
+
+    delete  _filemenu;
+    delete  _toolsmenu;
+    delete  _helpmenu;
+
 }
 
 
@@ -173,32 +192,41 @@ void MainWindow::setupSignals(void)
 
 void MainWindow::assembly(void)
 {
-    v_right_splitter = new QSplitter(Qt::Vertical);
+    //    v_right_splitter = new QSplitter(Qt::Vertical);
     v_right_splitter->addWidget(browser_entrance);
     v_right_splitter->addWidget(editorScreen);             // Text entries // Текст записи
     v_right_splitter->setCollapsible(0, false);            // The list of final entries can not link up    // Список конечных записей не может смыкаться
     v_right_splitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
     v_right_splitter->setObjectName("v_right_splitter");
 
-    find_splitter = new QSplitter(Qt::Vertical);
+    //    find_splitter = new QSplitter(Qt::Vertical);
     find_splitter->addWidget(v_right_splitter);             //findSplitter->addWidget(hSplitter);
     find_splitter->addWidget(findScreenDisp);
     find_splitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
     find_splitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
     find_splitter->setObjectName("find_splitter");
 
+    //    _qtabwidget = new QTabWidget(this);
 
-    v_left_splitter = new QSplitter(
-        Qt::Horizontal  // Qt::Vertical
-    );
-    v_left_splitter->addWidget(treeScreen);
-    v_left_splitter->addWidget(recordTableScreen);
+    _qtabwidget->setTabPosition(QTabWidget::West);
+    _qtabwidget->addTab(treeScreen, QIcon(), "Tree");
+    _qtabwidget->addTab(recordTableScreen, QIcon(), "Record");
+
+    //    v_left_splitter = new QSplitter(
+    //        Qt::Horizontal  // Qt::Vertical
+    //    );
+    v_left_splitter->addWidget(_qtabwidget);
+    //    v_left_splitter->addWidget(treeScreen);
+    //    v_left_splitter->addWidget(recordTableScreen);
     v_left_splitter->setCollapsible(0, false);
-    v_left_splitter->setCollapsible(1, false);
+    //    v_left_splitter->setCollapsible(1, false);
     v_left_splitter->setObjectName("v_left_splitter");
 
-    hSplitter = new QSplitter(Qt::Horizontal);
-    hSplitter->addWidget(v_left_splitter);
+
+    //    hSplitter = new QSplitter(Qt::Horizontal);
+    hSplitter->addWidget(
+        v_left_splitter
+    );
     //hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
     //hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
     hSplitter->addWidget(find_splitter);             //hSplitter->addWidget(vSplitter);

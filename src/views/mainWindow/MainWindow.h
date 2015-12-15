@@ -179,10 +179,12 @@ private:
     QSystemTrayIcon *trayIcon;
     QMenu           *trayIconMenu;
 
-    QSplitter *v_right_splitter;
-    QSplitter *v_left_splitter;
-    QSplitter *hSplitter;
-    QSplitter *find_splitter;
+    QSplitter   *v_right_splitter;
+    QSplitter   *find_splitter;
+    QTabWidget  *_qtabwidget;
+    QSplitter   *v_left_splitter;
+    QSplitter   *hSplitter;
+
 
     QMenu *_filemenu;
     QMenu *_toolsmenu;
