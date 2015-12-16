@@ -637,8 +637,8 @@ namespace browser {
         connect(page(), SIGNAL(statusBarMessage(QString)),
                 SLOT(setStatusBarText(QString)));
 #endif
-        connect(page(), SIGNAL(loadingUrl(QUrl)), this, SIGNAL(urlChanged(QUrl)));
-        connect(page(), SIGNAL(iconUrlChanged(QUrl)), this, SLOT(onIconUrlChanged(QUrl)));
+        connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
+        connect(page(), &WebPage::iconUrlChanged, this, &WebView::onIconUrlChanged);
         connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         page()->setForwardUnsupportedContent(true);
@@ -1152,11 +1152,10 @@ namespace browser {
         this->_page = _page;
         QWebEngineView::setPage(_page);
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
-        connect(page(), SIGNAL(statusBarMessage(QString)),
-                SLOT(setStatusBarText(QString)));
+        connect(page(), SIGNAL(statusBarMessage(QString)), SLOT(setStatusBarText(QString)));
 #endif
-        connect(page(), SIGNAL(loadingUrl(QUrl)), this, SIGNAL(urlChanged(QUrl)));
-        connect(page(), SIGNAL(iconUrlChanged(QUrl)), this, SLOT(onIconUrlChanged(QUrl)));
+        connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
+        connect(page(), &WebPage::iconUrlChanged, this, &WebView::onIconUrlChanged);
         connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         page()->setForwardUnsupportedContent(true);

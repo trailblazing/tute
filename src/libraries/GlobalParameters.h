@@ -18,6 +18,7 @@ class RecordTableScreen;
 class FindScreen;
 class WindowSwitcher;
 class MainWindow;
+class QTabWidget;
 
 class GlobalParameters : public QObject {
     Q_OBJECT
@@ -35,6 +36,9 @@ public:
 
     QString getTargetOs(void);
     QString getApplicationName(void);
+
+    void vtab(QTabWidget *point);
+    QTabWidget *vtab();
 
     void setTreeScreen(TreeScreen *point);
     TreeScreen *getTreeScreen();
@@ -87,6 +91,7 @@ private:
     MetaEditor          *pointMetaEditor;
     QStatusBar          *pointStatusBar;
     WindowSwitcher      *windowSwitcher;
+    QTabWidget          *_vtab;
     MainWindow          *_mainwindow;
 
     QString             mainProgramFile;

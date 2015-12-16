@@ -282,20 +282,20 @@ namespace browser {
         //        _tabmanager->newTab(url);  // , false
         auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
         std::shared_ptr<Record> record = request_record(    // why do this?
-                             url
-                             , std::make_shared <
-                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
-                                 ""
-                                 , &TabWidget::NewTab::generator
-                                 , arint
-                             )
-                             , std::make_shared <
-                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void >> (
-                                 ""
-                                 , &TabWidget::NewTab::activator
-                                 , arint
-                             )
-                         );
+                                             url
+                                             , std::make_shared <
+                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record> >> (
+                                                 ""
+                                                 , &TabWidget::NewTab::generator
+                                                 , arint
+                                             )
+                                             , std::make_shared <
+                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void >> (
+                                                 ""
+                                                 , &TabWidget::NewTab::activator
+                                                 , arint
+                                             )
+                                         );
 
         //assert(new_view->page());
         //record->page(new_view->page());

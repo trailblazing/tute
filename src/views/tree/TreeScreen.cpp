@@ -225,7 +225,7 @@ void TreeScreen::setupUI(void)
 
     //    _menuaction = new QWidgetAction(_menuholder);
 
-    _menuaction->setIcon(QIcon(":/resource/pic/home_blue.svg"));
+    //    _menuaction->setIcon(QIcon(":/resource/pic/tableware.svg"));  // does not work
 
     //menuholder->hide();
 
@@ -256,15 +256,18 @@ void TreeScreen::setupUI(void)
         _menubutton
     );
 
-    _menubutton->setIcon(QIcon(":/resource/pic/home_blue.svg")
-                         //        style()->standardIcon(
-                         //            // QStyle::SP_TitleBarMenuButton// "Qt"
-                         //            // QStyle::SP_ToolBarHorizontalExtensionButton //
-                         //            QStyle::SP_DirHomeIcon  // QStyle::SP_ToolBarVerticalExtensionButton
-                         //            , Q_NULLPTR //new QStyleOption(1, QStyleOption::SO_Frame)
-                         //            , _menubar
-                         //        )
-                        );
+    _menubutton->setIcon(QIcon(":/resource/pic/tableware.svg"));    // must have
+    _menubutton->setToolTip(tr("Main Menu"));
+    _menubutton->setStatusTip(tr("Pull down to get the main menu"));
+
+    //        style()->standardIcon(
+    //            // QStyle::SP_TitleBarMenuButton// "Qt"
+    //            // QStyle::SP_ToolBarHorizontalExtensionButton //
+    //            QStyle::SP_DirHomeIcon  // QStyle::SP_ToolBarVerticalExtensionButton
+    //            , Q_NULLPTR //new QStyleOption(1, QStyleOption::SO_Frame)
+    //            , _menubar
+    //        )
+
     _menubutton->setFlat(true);
 
     // insertActionAsButton(_menubar, _menuaction);    //
@@ -275,7 +278,7 @@ void TreeScreen::setupUI(void)
 
     //    _knowtreeview = new KnowTreeView(this);
     _knowtreeview->setObjectName("knowTreeView");
-    _knowtreeview->setMinimumSize(1
+    _knowtreeview->setMinimumSize(1     // 150
                                   , 1   // 250
                                  );
     _knowtreeview->setWordWrap(true);
@@ -1318,16 +1321,20 @@ void TreeScreen::on_knowtree_clicked(const QModelIndex &index)
     // Устанавливаем данные таблицы конечных записей
     find_object<RecordTableController>("recordTableController")->set_table_data(rtdata);
 
+
+
     // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
-    if(appconfig.getInterfaceMode() == "mobile") {
-        QStringList path = item->getPathAsName();
+    //    if(appconfig.getInterfaceMode() == "mobile") {
+    QStringList path = item->getPathAsName();
 
-        // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
-        int emptyStringIndex = path.indexOf("");
-        path.removeAt(emptyStringIndex);
+    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+    int emptyStringIndex = path.indexOf("");
+    path.removeAt(emptyStringIndex);
 
-        find_object<RecordTableScreen>("recordTableScreen")->setTreePath(path.join(" > "));
-    }
+    find_object<RecordTableScreen>("recordTableScreen")->setTreePath(path.join(" > "));
+    //    }
+
+
 
     // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
     _knowtreeview->resizeColumnToContents(0);

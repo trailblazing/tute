@@ -2,6 +2,7 @@
 #include <QDir>
 #include <QString>
 #include <QDesktopWidget>
+#include <QStackedWidget>
 
 #include "main.h"
 #include "models/appConfig/AppConfig.h"
@@ -42,7 +43,7 @@ MainWindow::MainWindow(
     , _recordtablecontroller(nullptr)
     ,  v_right_splitter(new QSplitter(Qt::Vertical))
     , find_splitter(new QSplitter(Qt::Vertical))
-    , _qtabwidget(new QTabWidget(this))
+    , _vtabwidget(new HidableTabWidget(this))
     , v_left_splitter(new QSplitter(
                           Qt::Horizontal  // Qt::Vertical
                       ))
@@ -62,6 +63,7 @@ MainWindow::MainWindow(
     initFileMenu();
     initToolsMenu();
     //    initHelpMenu();
+    QMainWindow::menuBar()->hide();
 
     setupUI();
     setupSignals();
@@ -103,11 +105,11 @@ MainWindow::~MainWindow()
     delete  findScreenDisp;
     delete  recordTableScreen;
     delete  treeScreen;
-    delete  _qtabwidget;
+    delete  _vtabwidget;
 
     delete  v_right_splitter;
     delete  find_splitter;
-    delete  _qtabwidget;
+    delete  _vtabwidget;
     delete  v_left_splitter;
     delete  hSplitter;
 
@@ -125,11 +127,16 @@ void MainWindow::setupUI(void)
     treeScreen = new TreeScreen(_appconfig, this);
     treeScreen->setObjectName("treeScreen");
     _globalparameters.setTreeScreen(treeScreen);
-
+    //    _treetable_hidden = treeScreen->isHidden();
+    //    connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
+    //    connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
 
     recordTableScreen = new RecordTableScreen(this);
     recordTableScreen->setObjectName("recordTableScreen");
     _globalparameters.setRecordTableScreen(recordTableScreen);
+    //    _recordtable_hidden = recordTableScreen->isHidden();
+    //    connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
+    //    connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
 
     findScreenDisp = new FindScreen(this);
     findScreenDisp->setObjectName("findScreenDisp");
@@ -175,7 +182,7 @@ void MainWindow::setupUI(void)
 
 void MainWindow::setupSignals(void)
 {
-    connect(editorScreen, SIGNAL(send_expand_edit_area(bool)), this, SLOT(onExpandEditArea(bool)));
+    connect(editorScreen, &MetaEditor::send_expand_edit_area, this, &MainWindow::onExpandEditArea);
 
     // Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
     connect(qApp, SIGNAL(commitDataRequest(QSessionManager &)), this, SLOT(commitData(QSessionManager &)));
@@ -208,14 +215,15 @@ void MainWindow::assembly(void)
 
     //    _qtabwidget = new QTabWidget(this);
 
-    _qtabwidget->setTabPosition(QTabWidget::West);
-    _qtabwidget->addTab(treeScreen, QIcon(), "Tree");
-    _qtabwidget->addTab(recordTableScreen, QIcon(), "Record");
+    _vtabwidget->setTabPosition(QTabWidget::West);
+    _vtabwidget->addTab(treeScreen, QIcon(":/resource/pic/branch.svg"), "Tree");
+    _vtabwidget->addTab(recordTableScreen, QIcon(":/resource/pic/maple.svg"), "Record");
+    globalparameters.vtab(_vtabwidget);
 
     //    v_left_splitter = new QSplitter(
     //        Qt::Horizontal  // Qt::Vertical
     //    );
-    v_left_splitter->addWidget(_qtabwidget);
+    v_left_splitter->addWidget(_vtabwidget);
     //    v_left_splitter->addWidget(treeScreen);
     //    v_left_splitter->addWidget(recordTableScreen);
     v_left_splitter->setCollapsible(0, false);
@@ -496,17 +504,17 @@ void MainWindow::initFileMenu(void)
 
     a = new QAction(tr("&Print..."), this);
     a->setShortcut(QKeySequence::Print);
-    connect(a, SIGNAL(triggered()), this, SLOT(filePrint()));
+    connect(a, &QAction::triggered, this, &MainWindow::filePrint);
     // tb->addAction(a);
     _filemenu->addAction(a);
 
     a = new QAction(tr("Print Preview..."), this);
-    connect(a, SIGNAL(triggered()), this, SLOT(filePrintPreview()));
+    connect(a, &QAction::triggered, this, &MainWindow::filePrintPreview);
     _filemenu->addAction(a);
 
     a = new QAction(tr("&Export PDF..."), this);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
-    connect(a, SIGNAL(triggered()), this, SLOT(filePrintPdf()));
+    connect(a, &QAction::triggered, this, &MainWindow::filePrintPdf);
     // tb->addAction(a);
     _filemenu->addAction(a);
 
@@ -530,11 +538,11 @@ void MainWindow::initToolsMenu(void)
     QAction *a;
 
     a = new QAction(tr("Find in ba&se"), this);
-    connect(a, SIGNAL(triggered()), this, SLOT(toolsFind()));
+    connect(a, &QAction::triggered, this, &MainWindow::toolsFind);
     _toolsmenu->addAction(a);
 
     auto b = new QAction(tr("Editor"), this);
-    connect(b, SIGNAL(triggered()), this, SLOT(editor_switch()));
+    connect(b, &QAction::triggered, this, &MainWindow::editor_switch);
     _toolsmenu->addAction(b);
 
     _toolsmenu->addSeparator();
@@ -542,7 +550,7 @@ void MainWindow::initToolsMenu(void)
 
     if(appconfig.getInterfaceMode() == "desktop") {
         a = new QAction(tr("Main &preferences"), this);
-        connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+        connect(a, &QAction::triggered, this, &MainWindow::toolsPreferences);
         _toolsmenu->addAction(a);
     } else {
         // Создание подменю
@@ -589,11 +597,11 @@ void MainWindow::initHelpMenu(void)
     QAction *a;
 
     a = new QAction(tr("About MyTetra"), this);
-    connect(a, SIGNAL(triggered()), this, SLOT(onClickHelpAboutMyTetra()));
+    connect(a, &QAction::triggered, this, &MainWindow::onClickHelpAboutMyTetra);
     _helpmenu->addAction(a);
 
     a = new QAction(tr("About Qt"), this);
-    connect(a, SIGNAL(triggered()), this, SLOT(onClickHelpAboutQt()));
+    connect(a, &QAction::triggered, this, &MainWindow::onClickHelpAboutQt);
     _helpmenu->addAction(a);
 }
 
@@ -739,14 +747,60 @@ void MainWindow::toolsPreferences(void)
 // false - сделать область, отводимую редактору, обычной
 void MainWindow::onExpandEditArea(bool flag)
 {
+    //    static QSize entrance_size = globalparameters.entrance()->size();
+    //    static QSize tree_size = globalparameters.entrance()->size();
+    //    static QSize recordtable_size = globalparameters.entrance()->size();
+    //    static QSize vtab_size = globalparameters.entrance()->size();
+
+    //    static bool _treetable_hidden;     // = globalparameters.getTreeScreen()->isHidden();
+    //    static bool recordtable_hidden; // = globalparameters.getRecordTableScreen()->isHidden();
+
     if(flag) {
-        globalparameters.getTreeScreen()->hide();
-        globalparameters.entrance()->hide();
-        globalparameters.getRecordTableScreen()->hide();
+        globalparameters.entrance()->hide();    // resize(QSize(0, 0)); //
+
+        //        if(!globalparameters.getTreeScreen()->isHidden()) {
+        //            _treetable_hidden = false;
+        //            //            globalparameters.getTreeScreen()->resize(QSize(0, tree_size.height()));
+        //            globalparameters.getTreeScreen()->hide();    // resize(QSize(0, 0)); //
+        //        } else {
+        //            _treetable_hidden = true;
+        //        }
+
+        //        if(!globalparameters.getRecordTableScreen()->isHidden()) {
+        //            _recordtable_hidden = false;
+        //            //            globalparameters.getRecordTableScreen()->resize(QSize(0, recordtable_size.height()));
+        //            globalparameters.getRecordTableScreen()->hide(); // resize(QSize(0, 0)); //
+        //        } else {
+        //            _recordtable_hidden = true;
+        //        }
+
+        emit _vtabwidget->hideAction.setChecked(true);
+        //        QTabWidget *tab = globalparameters.vtab();
+        //        tab->currentWidget()->hide();
+
+        //        auto * tab_pane = tab->findChild<QStackedWidget *>();
+        //        tab_pane->hide();
+
+        //        QRect rect = tab->geometry();
+        //        tab->setGeometry(rect.left(), rect.top(), 0, rect.height());
+
+        //                setGeometry(rect.top(), rect.left(), 0, rect.height());
+
+        //                resize(QSize(0, v_left_splitter->height())); // hide();
     } else {
-        globalparameters.getTreeScreen()->show();
-        globalparameters.entrance()->show();
-        globalparameters.getRecordTableScreen()->show();
+        globalparameters.entrance()->show();    // resize(entrance_size); //
+
+        //        if(!_treetable_hidden) {
+        //            globalparameters.getTreeScreen()->show();    // resize(tree_size); //
+        //        }
+
+        //        if(!_recordtable_hidden) {
+        //            globalparameters.getRecordTableScreen()->show(); // resize(recordtable_size); //
+        //        }
+
+        //        emit _vtabwidget->hideAction.toggle();
+        emit _vtabwidget->hideAction.setChecked(false);
+        //        globalparameters.vtab()->resize(vtab_size); // show();
     }
 }
 

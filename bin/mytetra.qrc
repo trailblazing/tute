@@ -100,7 +100,6 @@
         <file>resource/pic/attach_is_file.svg</file>
         <file>resource/pic/attach_is_link.svg</file>
         <file>resource/pic/pentalpha.svg</file>
-        <file>resource/pic/bull.svg</file>
         <file>resource/pic/search.svg</file>
         <file>resource/pic/home.svg</file>
         <file>resource/pic/home_circle.svg</file>
@@ -109,5 +108,12 @@
         <file>resource/pic/pin.svg</file>
         <file>resource/pic/streamline_home.svg</file>
         <file>resource/pic/up-arrow-circle.svg</file>
+        <file>resource/pic/maple.svg</file>
+        <file>resource/pic/tree.svg</file>
+        <file>resource/pic/branch.svg</file>
+        <file>resource/pic/cogwheel.svg</file>
+        <file>resource/pic/footprint.svg</file>
+        <file>resource/pic/drops.svg</file>
+        <file>resource/pic/tableware.svg</file>
     </qresource>
 </RCC>

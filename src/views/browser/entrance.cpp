@@ -212,7 +212,7 @@ namespace browser {
 
         settings.endGroup();
 
-
+        this->setMinimumSize(QSize(0, 0));
 
         this->show();
 
@@ -508,9 +508,9 @@ namespace browser {
         , _mainWindows(QList<QPointer<Browser> >())
         , _recordtablecontroller(recordtablecontroller)
         , _style_source(style_source)
-        , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint
-                                    //| Qt::SplashScreen
+        , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint //| Qt::SplashScreen
                                    ))
+
           //    , _dockwidget(new DockWidget(
           //                      this
           //                      , _mainWindows[0].data()
@@ -588,6 +588,7 @@ namespace browser {
         setTitleBarWidget(_hidetitlebar);
         //_hidetitlebar->hide();
         _hidetitlebar->setVisible(false);
+        _hidetitlebar->setMaximumSize(0, 0);
 
         delete titleBar;
 
@@ -962,7 +963,7 @@ namespace browser {
             assert(QUrl(record->getNaturalFieldSource("url")).isValid());
 
             if(// !record->generator() && // maybe Entrance::ActiveRecordBinder registered
-                    QUrl(record->getNaturalFieldSource("url")).isValid()) {
+                QUrl(record->getNaturalFieldSource("url")).isValid()) {
                 //        QUrl url = QUrl(record->getNaturalFieldSource("url"));
 
 

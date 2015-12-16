@@ -230,7 +230,7 @@ void MetaEditor::metaAssembly(void)
     editorMainLayer->addWidget(recordTagsScrollArea,    7, 1); // Было addLayout(recordTagsLayout ...)
 
     editorMainLayer->setColumnStretch(1, 1);
-    editorMainLayer->setRowStretch(4, 1);
+    editorMainLayer->setRowStretch(4, 1);   // for textArea auto fullfill
 
     editorMainLayer->setContentsMargins(0, 0, 0, 0);
 

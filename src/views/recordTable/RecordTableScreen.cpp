@@ -118,6 +118,7 @@ void RecordTableScreen::setupActions(void)
     // Настройка внешнего вида таблицы конечных записей
     actionSettings = new QAction(tr("&View settings"), this);
     actionSettings->setStatusTip(tr("Setup table view settins"));
+    actionSettings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
     connect(actionSettings, SIGNAL(triggered()), recordTableController, SLOT(settings()));
 
     // Перемещение записи вверх
@@ -172,7 +173,7 @@ void RecordTableScreen::setupActions(void)
     // Кнопка вызова печати таблицы конечных записей
     actionPrint = new QAction(tr("Print table"), this);
     actionPrint->setStatusTip(tr("Print current notes table"));
-    actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.png"));   //actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
+    actionPrint->setIcon(QIcon(":/resource/pic/drops.svg"));   //actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
     connect(actionPrint, SIGNAL(triggered()), recordTableController, SLOT(onPrintClick()));
 
     // Сразу после создания все действия запрещены
@@ -234,8 +235,8 @@ void RecordTableScreen::setupUI(void)
     treePathLabel = new QLabel(this);
     treePathLabel->setWordWrap(true);
 
-    if(appconfig.getInterfaceMode() == "desktop")
-        treePathLabel->hide();
+    //    if(appconfig.getInterfaceMode() == "desktop")
+    //    treePathLabel->hide();
 }
 
 

@@ -411,6 +411,15 @@ QString GlobalParameters::getApplicationName(void)
     return appName;
 }
 
+void GlobalParameters::vtab(QTabWidget *point)
+{
+    _vtab = point;
+}
+
+QTabWidget *GlobalParameters::vtab()
+{
+    return  _vtab;
+}
 
 void GlobalParameters::setTreeScreen(TreeScreen *point)
 {

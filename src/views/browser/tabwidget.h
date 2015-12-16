@@ -326,24 +326,26 @@ namespace browser {
         QAction *_nexttabaction;
         QAction *_previoustabaction;
 
-        QMenu *_recentlyclosedtabsmenu;
-        static const int _recentlyclosedtabssize = 10;
-        QList<QUrl> _recentlyclosedtabs;
-        QList<WebActionMapper *> _actions;
+        QMenu               *_recentlyclosedtabsmenu;
+        static const int    _recentlyclosedtabssize = 10;
+
+        QList<QUrl>                 _recentlyclosedtabs;
+        QList<WebActionMapper *>    _actions;
+
         // HistoryCompletionModel *_completionModel;// = new HistoryCompletionModel(this);
-        QCompleter *_lineeditcompleter;// = new QCompleter(_completionModel, this);
-        QStackedWidget *_lineedits;
-        TabBar *_tabbar;
-        QWebEngineProfile *_profile;
-        QWebEngineView *_fullscreenview;
-        FullScreenNotification *_fullscreennotification;
-        RecordTableController *_recordtablecontroller;
+        QCompleter              *_lineeditcompleter;// = new QCompleter(_completionModel, this);
+        QStackedWidget          *_lineedits;
+        TabBar                  *_tabbar;
+        QWebEngineProfile       *_profile;
+        QWebEngineView          *_fullscreenview;
+        FullScreenNotification  *_fullscreennotification;
+        RecordTableController   *_recordtablecontroller;
         friend class ToolbarSearch;
 
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
         //        //        sd::method<sd::meta_info<void *const>> _active_r;
-        Browser *_window;
+        Browser     *_window;
 
     };
 

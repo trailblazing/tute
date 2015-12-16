@@ -130,10 +130,10 @@ INSTALLS    +=  icon_scalable_file
 
 icon_48_file.path   =   /usr/share/icons/hicolor/48x48/apps
 icon_48_file.files  =   desktop/mytetra.png
-INSTALLS+=icon_48_file
+INSTALLS    +=  icon_48_file
 
 
-HEADERS = src/main.h \
+HEADERS     =   src/main.h \
     src/views/recordTable/RecordTableScreen.h \
     src/views/recordTable/RecordTableView.h \
     src/views/record/RecordInfoFieldsEditor.h \
@@ -219,25 +219,26 @@ HEADERS = src/main.h \
     src/views/browser/entranceinfo.h \
     src/libraries/FlatControl.h \
     src/utility/delegate.h \
-    src/views/browser/browser.h
+    src/views/browser/browser.h \
+    src/views/mainWindow/hidabletabwidget.h
 
 
 
 
 lessThan(QT_MAJOR_VERSION,5) {
-HEADERS+=src/libraries/qtSingleApplication/qtsingleapplication.h \
+HEADERS     +=  src/libraries/qtSingleApplication/qtsingleapplication.h \
     src/libraries/qtSingleApplication/qtlockedfile.h \
     src/libraries/qtSingleApplication/qtlocalpeer.h \
     src/libraries/qtSingleApplication/qtsinglecoreapplication.h
 }
 else {
-HEADERS+=src/libraries/qtSingleApplication5/qtsingleapplication.h \
+HEADERS     +=  src/libraries/qtSingleApplication5/qtsingleapplication.h \
     src/libraries/qtSingleApplication5/qtlockedfile.h \
     src/libraries/qtSingleApplication5/qtlocalpeer.h \
     src/libraries/qtSingleApplication5/qtsinglecoreapplication.h
 }
 
-HEADERS     +=                          \
+HEADERS     +=  \
     src/libraries/ClipboardBranch.h     \
     src/libraries/GlobalParameters.h    \
     src/models/dataBaseConfig/DataBaseConfig.h  \
@@ -337,12 +338,13 @@ SOURCES     =   src/main.cpp \
     src/views/browser/xbel.cpp \
     src/views/browser/entrance.cpp \
     src/libraries/FlatControl.cpp \
-    src/views/browser/browser.cpp
+    src/views/browser/browser.cpp \
+    src/views/mainWindow/hidabletabwidget.cpp
 
 
 
 lessThan(QT_MAJOR_VERSION,5) {
-SOURCES+=src/libraries/qtSingleApplication/qtsingleapplication.cpp \
+SOURCES     +=  src/libraries/qtSingleApplication/qtsingleapplication.cpp \
     src/libraries/qtSingleApplication/qtlockedfile.cpp \
     src/libraries/qtSingleApplication/qtlockedfile_unix.cpp \
     src/libraries/qtSingleApplication/qtlockedfile_win.cpp \
@@ -350,7 +352,7 @@ SOURCES+=src/libraries/qtSingleApplication/qtsingleapplication.cpp \
     src/libraries/qtSingleApplication/qtsinglecoreapplication.cpp
 }
 else {
-SOURCES+=src/libraries/qtSingleApplication5/qtsingleapplication.cpp \
+SOURCES     +=  src/libraries/qtSingleApplication5/qtsingleapplication.cpp \
     src/libraries/qtSingleApplication5/qtlockedfile.cpp \
     src/libraries/qtSingleApplication5/qtlockedfile_unix.cpp \
     src/libraries/qtSingleApplication5/qtlockedfile_win.cpp \
@@ -358,7 +360,7 @@ SOURCES+=src/libraries/qtSingleApplication5/qtsingleapplication.cpp \
     src/libraries/qtSingleApplication5/qtsinglecoreapplication.cpp
 }
 
-SOURCES+=\
+SOURCES     +=  \
     src/libraries/ClipboardBranch.cpp \
     src/libraries/GlobalParameters.cpp \
     src/models/dataBaseConfig/DataBaseConfig.cpp \
@@ -394,7 +396,7 @@ mac {
 
 ANDROID_PACKAGE_SOURCE_DIR  =   $$PWD/android
 
-OTHER_FILES     +=  \
+OTHER_FILES +=  \
     android/AndroidManifest.xml
 
 DISTFILES   +=          \
@@ -411,10 +413,9 @@ DISTFILES   +=          \
     src/views/browser/htmls/notfound.html \
     src/views/browser/browser.rc \
     src/views/browser/Info_mac.plist \
-    bin/resource/pic/home_blue.svg \
     README.md
 
-FORMS   +=              \
+FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
     src/views/browser/bookmarks.ui \
     src/views/browser/cookies.ui \

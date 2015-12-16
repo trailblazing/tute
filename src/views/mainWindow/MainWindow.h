@@ -44,7 +44,7 @@
 #include <QSystemTrayIcon>
 
 #include <QStatusBar>
-
+#include "hidabletabwidget.h"
 
 //#include "libraries/GlobalParameters.h"
 //#include "models/appConfig/AppConfig.h"
@@ -181,7 +181,7 @@ private:
 
     QSplitter   *v_right_splitter;
     QSplitter   *find_splitter;
-    QTabWidget  *_qtabwidget;
+    HidableTabWidget  *_vtabwidget;
     QSplitter   *v_left_splitter;
     QSplitter   *hSplitter;
 
@@ -189,6 +189,9 @@ private:
     QMenu *_filemenu;
     QMenu *_toolsmenu;
     QMenu *_helpmenu;
+
+    //    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
+    //    bool _recordtable_hidden;     // = globalparameters.getRecordTableScreen()->isHidden();
 
 protected:
 

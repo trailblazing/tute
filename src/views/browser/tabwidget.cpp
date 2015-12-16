@@ -301,6 +301,7 @@ namespace browser {
         connect(_tabbar, SIGNAL(tabMoved(int, int)), this, SLOT(moveTab(int, int)));
         setTabBar(_tabbar);
         setDocumentMode(true);
+        _tabbar->setMaximumSize(0, 0);
         _tabbar->hide();
         // Actions
         //        _newtabaction = ;
@@ -353,6 +354,7 @@ namespace browser {
         connect(this, SIGNAL(currentChanged(int)), this, SLOT(currentChanged(int)));
 
         //        _lineedits = ;
+        _lineedits->setMaximumSize(0, 0);
         _lineedits->hide();
     }
 

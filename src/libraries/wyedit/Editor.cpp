@@ -465,7 +465,8 @@ void Editor::setup_buttons(void)
     // Кнопка вызова виджета конфигурирования редактора
     settings = new FlatToolButton(this);
     settings->setStatusTip(tr("Editor settings"));
-    settings->setIcon(QIcon(":/resource/pic/edit_settings.svg"));
+    //    settings->setIcon(QIcon(":/resource/pic/edit_settings.svg"));
+    settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
     settings->setObjectName("editor_tb_settings");
 
     // Кнопка просмотра HTML кода
