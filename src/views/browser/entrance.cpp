@@ -212,7 +212,8 @@ namespace browser {
 
         settings.endGroup();
 
-        this->setMinimumSize(QSize(0, 0));
+        //        this->setMinimumSize(QSize(0, 0));
+        //        setMinimumHeight(0);
 
         this->show();
 
@@ -302,6 +303,20 @@ namespace browser {
         return this;
     }
 
+    //    void Entrance::on_splitter_moved(int pos, int index)
+    //    {
+    //        Q_UNUSED(index)
+    //        //        resize(size());
+    //        QRect rect = geometry();
+    //        int new_width = rect.width() + (pos - rect.left());
+    //        //move(pos,rect.top());
+    //        resize(new_width, rect.height());
+    //        //setGeometry(pos, rect.top(), new_width, rect.height());
+    //        //        setMaximumWidth(16777215);
+    //        adjustSize();
+    //        repaint();
+    //    }
+
     void Entrance::on_activate_window()
     {
 
@@ -342,7 +357,7 @@ namespace browser {
 
     }
 
-    Browser *Entrance::new_dockedwindow(const QByteArray &state)
+    Browser *Entrance::new_browser(const QByteArray &state)
     {
 
         Browser *browser = new Browser(state, _recordtablecontroller, this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
@@ -361,7 +376,7 @@ namespace browser {
         return browser;     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    std::pair<Browser *, WebView *> Entrance::new_dockedwindow(QUrl const &url)
+    std::pair<Browser *, WebView *> Entrance::new_browser(QUrl const &url)
     {
 
         //        DockedWindow *browser =
@@ -377,7 +392,7 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::new_dockedwindow(std::shared_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::new_browser(std::shared_ptr<Record> record)
     {
 
         //        DockedWindow *browser =
@@ -549,18 +564,22 @@ namespace browser {
 
         setWindowFlags( //Qt::Window |
             Qt::FramelessWindowHint
-            //|Qt::Popup
+            // |Qt::Popup
             | Qt::CustomizeWindowHint
-            //| Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
+            // | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
+            // | Qt::DockWidgetArea::NoDockWidgetArea
+            | Qt::MaximizeUsingFullscreenGeometryHint
         );
 
         setAutoFillBackground(true);
         adjustSize();
+
         setFeatures(QDockWidget::NoDockWidgetFeatures
                     | QDockWidget::DockWidgetVerticalTitleBar
                     //| Qt::DockWidgetArea::NoDockWidgetArea
                     //| Qt::MaximizeUsingFullscreenGeometryHint
                    ); // AllDockWidgetFeatures
+
         //this->titleBarWidget()->hide();
 
         QWidget *titleBar = titleBarWidget();
@@ -588,7 +607,11 @@ namespace browser {
         setTitleBarWidget(_hidetitlebar);
         //_hidetitlebar->hide();
         _hidetitlebar->setVisible(false);
-        _hidetitlebar->setMaximumSize(0, 0);
+        //        _hidetitlebar->setMaximumWidth(0);
+        _hidetitlebar->close();
+        //        _hidetitlebar->setCollapsible(true);
+        // _hidetitlebar->setMaximumHeight();
+        // _hidetitlebar->setMaximumSize(0, 0);
 
         delete titleBar;
 
@@ -618,7 +641,8 @@ namespace browser {
 
         for(int i = 0; i < _mainWindows.size(); ++i) {
             Browser *window = _mainWindows.at(i);
-            delete window;
+
+            if(window) {delete window; window = nullptr;}
         }
 
         //if(isselfcreated())delete current_record;   // no, do not apply memory by this class for record, from the original source
@@ -714,7 +738,7 @@ namespace browser {
                 , &Entrance::ActiveRecordBinder::generator
                 , ara
             )
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                 ""
                 , &Entrance::ActiveRecordBinder::activator
                 , ara
@@ -973,7 +997,7 @@ namespace browser {
                     //            Record *r = record ? record : request_record(QUrl(DockedWindow::_defaulthome));
                     //            r->active_immediately(true);
 
-                    dp = new_dockedwindow(
+                    dp = new_browser(
                              record // record ? QUrl(record->getNaturalFieldSource("url")).isValid() ? QUrl(record->getNaturalFieldSource("url")) : QUrl(DockedWindow::_defaulthome) : QUrl(DockedWindow::_defaulthome)
                          );
                 } else {
@@ -985,7 +1009,7 @@ namespace browser {
                                );
                     };
                     auto activator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::activator
                                    , ar
@@ -1059,6 +1083,7 @@ namespace browser {
                     //                //                    , activator(ar)
                     //                //                );
                     //            }
+
                 }
 
                 assert(dp.first);
@@ -1066,7 +1091,8 @@ namespace browser {
                 setWidget(dp.first);
             }
         }
-
+        assert(dp.first);
+        assert(dp.second);
         return dp;  // qobject_cast<DockedWindow *>(widget()); //
         // _mainWindows[0];
     }
@@ -1255,7 +1281,7 @@ namespace browser {
     bool Entrance::restore_state(const QByteArray &state)
     {
         if(window_list().count() == 0) {
-            new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+            new_browser(QUrl(browser::Browser::_defaulthome));
         }
 
         return activiated_registered().first->restore_state(state);
@@ -1313,6 +1339,14 @@ namespace browser {
     //        }
     //    }
 
+    void Entrance::resizeEvent(QResizeEvent *e)
+    {
+        for(auto &i : _mainWindows) {
+            i->resizeEvent(e);
+        }
+
+        QDockWidget::resizeEvent(e);
+    }
 
 }
 

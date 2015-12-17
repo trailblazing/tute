@@ -189,10 +189,10 @@ template<typename>
 struct active_record;
 
 extern std::shared_ptr<Record> request_record(const QUrl &_url
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, std::shared_ptr<Record>>> generator
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator);
+                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
+                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator);
 extern std::shared_ptr<Record> request_record(const std::shared_ptr<Record> record
                                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator);
+                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator);
 
 #endif // __MAIN_H__

@@ -169,19 +169,19 @@ namespace browser {
 
             //            globalparameters.entrance()->active_record(request_record(url));
             auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
-            request_record(
-                url
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                    ""
-                    , &browser::Entrance::ActiveRecordBinder::generator
-                    , ara
-                )
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                    ""
-                    , &browser::Entrance::ActiveRecordBinder::activator
-                    , ara
-                )
-            );
+//            request_record(
+//                url
+//                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+//                    ""
+//                    , &browser::Entrance::ActiveRecordBinder::generator
+//                    , ara
+//                )
+//                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
+//                    ""
+//                    , &browser::Entrance::ActiveRecordBinder::activator
+//                    , ara
+//                )
+//            );
 
 
             QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());

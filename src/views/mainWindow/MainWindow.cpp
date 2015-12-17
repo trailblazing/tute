@@ -202,7 +202,9 @@ void MainWindow::assembly(void)
     //    v_right_splitter = new QSplitter(Qt::Vertical);
     v_right_splitter->addWidget(browser_entrance);
     v_right_splitter->addWidget(editorScreen);             // Text entries // Текст записи
-    v_right_splitter->setCollapsible(0, false);            // The list of final entries can not link up    // Список конечных записей не может смыкаться
+    v_right_splitter->setCollapsible(0
+                                     , false        // if true, make editor can overload it
+                                    );              // The list of final entries can not link up    // Список конечных записей не может смыкаться
     v_right_splitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
     v_right_splitter->setObjectName("v_right_splitter");
 
@@ -230,7 +232,6 @@ void MainWindow::assembly(void)
     //    v_left_splitter->setCollapsible(1, false);
     v_left_splitter->setObjectName("v_left_splitter");
 
-
     //    hSplitter = new QSplitter(Qt::Horizontal);
     hSplitter->addWidget(
         v_left_splitter
@@ -241,6 +242,8 @@ void MainWindow::assembly(void)
     hSplitter->setCollapsible(0, false);            // Дерево веток не может смыкаться
     hSplitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
     hSplitter->setObjectName("hsplitter");
+
+    //    connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &browser::Entrance::on_splitter_moved);
 
     //    findSplitter=new QSplitter(Qt::Vertical);
     //    findSplitter->addWidget(hSplitter);

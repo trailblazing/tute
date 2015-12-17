@@ -151,8 +151,9 @@ namespace browser {
 
             }
 
-            void activator()
+            void activator(std::shared_ptr<Record> record)
             {
+                assert(record->binded_only_page() == _the);
                 _the->active();
             }
         };
@@ -276,17 +277,17 @@ namespace browser {
 
         //    void onCloseTab(int index);
     private:
-        TabWidget   *_tabmanager;
+        TabWidget               *_tabmanager;
         //        Record *_record;
-        RecordTableController *_recordtablecontroller;
-        WebPage     *_page;
-        QString     _statusbartext;
+        RecordTableController   *_recordtablecontroller;
+        WebPage                 *_page;
+        QString                 _statusbartext;
         //        QUrl _initialurl;
-        int         _progress;
-        QIcon       _icon;
-        QNetworkReply   *_iconreply;
+        int                     _progress;
+        QIcon                   _icon;
+        QNetworkReply           *_iconreply;
 
-        //friend class TabWidget;
+        friend class TabWidget;
     };
 
 

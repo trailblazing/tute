@@ -89,11 +89,11 @@ namespace browser {
     class WebView;
 }
 
-extern std::shared_ptr<Record> request_record(
-    const QUrl &_url
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>
-);
+//extern std::shared_ptr<Record> request_record(
+//    const QUrl &_url
+//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
+//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>
+//);
 
 QT_BEGIN_NAMESPACE
 
@@ -255,20 +255,25 @@ namespace browser {
             TabWidget *_the;
             bool _make_current;
             RecordTableController *_recordtablecontroller;
-            WebView *view;
+            // WebView *view;
             NewTab(TabWidget *the
                    , bool make_current
                    = true
                      , RecordTableController *recordtablecontroller
                    = globalparameters.getRecordTableScreen()->getRecordTableController()
-                  ): _the(the) , _make_current(make_current), _recordtablecontroller(recordtablecontroller), view(nullptr) {}
+                  ): _the(the) , _make_current(make_current), _recordtablecontroller(recordtablecontroller)
+                //  , view(nullptr)
+            {}
+
             WebView *generator(std::shared_ptr<Record> record)
             {
-                return view = _the->newTab(record, _make_current, _recordtablecontroller);
+                return // view =
+                    _the->newTab(record, _make_current, _recordtablecontroller);
             }
-            void activator()
+
+            void activator(std::shared_ptr<Record> record)
             {
-                view->page()->active();
+                record->binded_only_page()->active();
             }
 
         };
@@ -277,7 +282,7 @@ namespace browser {
         void mouseDoubleClickEvent(QMouseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
-
+        void resizeEvent(QResizeEvent *);   // Q_DECL_OVERRIDE;
     public slots:
         void loadUrlInCurrentTab(const QUrl &url);
 
@@ -340,13 +345,15 @@ namespace browser {
         QWebEngineView          *_fullscreenview;
         FullScreenNotification  *_fullscreennotification;
         RecordTableController   *_recordtablecontroller;
-        friend class ToolbarSearch;
+
 
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
         //        //        sd::method<sd::meta_info<void *const>> _active_r;
-        Browser     *_window;
+        Browser                 *_window;
 
+        friend class Browser;
+        friend class ToolbarSearch;
     };
 
     class PopupWindow :

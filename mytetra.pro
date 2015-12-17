@@ -403,14 +403,6 @@ DISTFILES   +=          \
     src/uncrustify.cfg  \
     src/views/browser/browser.ico \
     src/views/browser/browser.icns \
-    src/views/browser/data/defaultbookmarks.xbel \
-    src/views/browser/data/loading.gif \
-    src/views/browser/data/addtab.png \
-    src/views/browser/data/closetab.png \
-    src/views/browser/data/defaulticon.png \
-    src/views/browser/data/history.png \
-    src/views/browser/data/browser.svg \
-    src/views/browser/htmls/notfound.html \
     src/views/browser/browser.rc \
     src/views/browser/Info_mac.plist \
     README.md

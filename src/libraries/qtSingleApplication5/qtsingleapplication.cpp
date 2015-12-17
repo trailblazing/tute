@@ -909,7 +909,7 @@ void QtSingleApplication::newLocalSocketConnection()
 
 
 
-            browser_entrance->new_dockedwindow(url);
+            browser_entrance->new_browser(url);
 
             //bw->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
         } else {
@@ -923,7 +923,7 @@ void QtSingleApplication::newLocalSocketConnection()
                     , &browser::Entrance::ActiveRecordBinder::generator
                     , arb
                 )
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                     ""
                     , &browser::Entrance::ActiveRecordBinder::activator
                     , arb
@@ -1146,7 +1146,7 @@ void QtSingleApplication::restoreLastSession()
     QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->window_list();
 
     if(opened_windows.count() == 0) {
-        globalparameters.entrance()->new_dockedwindow(
+        globalparameters.entrance()->new_browser(
             QUrl(browser::Browser::_defaulthome)
         );
     }
@@ -1167,7 +1167,7 @@ void QtSingleApplication::restoreLastSession()
             globalparameters.entrance()->restore_state(historywindows.at(i));
         } else {
             // newWindow =
-            globalparameters.entrance()->new_dockedwindow(
+            globalparameters.entrance()->new_browser(
                 historywindows.at(i)   // register_record(QUrl(browser::DockedWindow::_defaulthome))
             );
         }

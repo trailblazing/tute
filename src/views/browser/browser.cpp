@@ -208,7 +208,7 @@ namespace browser {
                     , &TabWidget::NewTab::generator
                     , arint
                 )
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                     ""
                     , &TabWidget::NewTab::activator
                     , arint
@@ -250,7 +250,7 @@ namespace browser {
                    );
         };
         auto activator = [](boost::shared_ptr<TabWidget::NewTab> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> (
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
                        ""
                        , &TabWidget::NewTab::activator
                        , ar
@@ -281,21 +281,22 @@ namespace browser {
 
         //        _tabmanager->newTab(url);  // , false
         auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
-        std::shared_ptr<Record> record = request_record(    // why do this?
-                                             url
-                                             , std::make_shared <
-                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record> >> (
-                                                 ""
-                                                 , &TabWidget::NewTab::generator
-                                                 , arint
-                                             )
-                                             , std::make_shared <
-                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void >> (
-                                                 ""
-                                                 , &TabWidget::NewTab::activator
-                                                 , arint
-                                             )
-                                         );
+        std::shared_ptr<Record> record
+            = request_record(    // why do this?
+                  url
+                  , std::make_shared <
+                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record> >> (
+                      ""
+                      , &TabWidget::NewTab::generator
+                      , arint
+                  )
+                  , std::make_shared <
+                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
+                      ""
+                      , &TabWidget::NewTab::activator
+                      , arint
+                  )
+              );
 
         //assert(new_view->page());
         //record->page(new_view->page());
@@ -311,7 +312,6 @@ namespace browser {
         , Qt::WindowFlags flags
     ) : QMainWindow(0, flags)
         , _recordtablecontroller(recordtablecontroller)
-        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
         , _tabmanager(new TabWidget(recordtablecontroller, this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.getFindScreen()->chasewidget())
@@ -324,6 +324,7 @@ namespace browser {
         , _stopreload(globalparameters.getFindScreen()->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
+        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         register_url(QUrl(Browser::_defaulthome));
@@ -345,7 +346,6 @@ namespace browser {
                     )
         : QMainWindow(0, flags)
         , _recordtablecontroller(recordtablecontroller)
-        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
         , _tabmanager(new TabWidget(recordtablecontroller, this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.getFindScreen()->chasewidget())
@@ -358,6 +358,7 @@ namespace browser {
         , _stopreload(globalparameters.getFindScreen()->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
+        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         register_url(url);
@@ -379,7 +380,6 @@ namespace browser {
                     )
         : QMainWindow(0, flags)
         , _recordtablecontroller(recordtablecontroller)
-        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
         , _tabmanager(new TabWidget(recordtablecontroller, this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.getFindScreen()->chasewidget())
@@ -392,6 +392,7 @@ namespace browser {
         , _stopreload(globalparameters.getFindScreen()->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
+        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         equip_registered(record);
@@ -426,8 +427,8 @@ namespace browser {
     void Browser::loadDefaultState()
     {
         QSettings settings;
-        settings.beginGroup(QLatin1String("DockedWindow"));
-        QByteArray data = settings.value(QLatin1String("defaultState")).toByteArray();
+        settings.beginGroup(QLatin1String("browser"));
+        QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
         restore_state(data);
         settings.endGroup();
     }
@@ -444,13 +445,13 @@ namespace browser {
         QtSingleApplication::instance()->saveSession();
 
         QSettings settings;
-        settings.beginGroup(QLatin1String("DockedWindow"));
+        settings.beginGroup(QLatin1String("browser"));
         QByteArray data = save_state(false);
-        settings.setValue(QLatin1String("defaultState"), data);
+        settings.setValue(QLatin1String("default_state"), data);
         settings.endGroup();
     }
 
-    static const qint32 DockedWindowMagic = 0xba;
+    static const qint32 browser_magic = 0xba;
 
     QByteArray Browser::save_state(bool withTabs) const
     {
@@ -463,7 +464,7 @@ namespace browser {
         QByteArray data;
         QDataStream stream(&data, QIODevice::WriteOnly);
 
-        stream << qint32(DockedWindowMagic);
+        stream << qint32(browser_magic);
         stream << qint32(version);
 
         stream << size();
@@ -499,7 +500,7 @@ namespace browser {
         stream >> marker;
         stream >> v;
 
-        if(marker != DockedWindowMagic || v != version)
+        if(marker != browser_magic || v != version)
             return false;
 
         QSize size;
@@ -993,7 +994,7 @@ namespace browser {
         //        _browser->new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));
 
         if(_entrance->window_list().count() == 0) {
-            globalparameters.entrance()->new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         }
 
         Browser *mw = _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
@@ -1077,6 +1078,11 @@ namespace browser {
             // TODO: Also ask here
             QtSingleApplication::instance()->setPrivateBrowsing(false);
         }
+    }
+
+    void Browser::resizeEvent(QResizeEvent *e)
+    {
+        _tabmanager->resizeEvent(e);
     }
 
     void Browser::closeEvent(QCloseEvent *event)
@@ -1196,7 +1202,7 @@ namespace browser {
                 , &Entrance::ActiveRecordBinder::generator
                 , ara
             )
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                 ""
                 , &Entrance::ActiveRecordBinder::activator
                 , ara

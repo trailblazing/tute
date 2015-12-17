@@ -112,23 +112,23 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
-        TabWidget *tabWidget() const {return _tabmanager;}
-        TabWidget *tabWidget() {return _tabmanager;}
-        WebView *currentTab() const;
-        QByteArray save_state(bool withTabs = true) const;
-        bool restore_state(const QByteArray &state);
+        TabWidget   *tabWidget() const {return _tabmanager;}
+        TabWidget   *tabWidget() {return _tabmanager;}
+        WebView     *currentTab() const;
+        QByteArray  save_state(bool withTabs = true) const;
+        bool        restore_state(const QByteArray &state);
         Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-        void setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled) {_webattribute = attribute; _webattributeenabled = enabled;}
-        QString &lastsearch() {return _lastsearch;}
+        void        setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled) {_webattribute = attribute; _webattributeenabled = enabled;}
+        QString     &lastsearch() {return _lastsearch;}
         const QString &lastsearch() const {return _lastsearch;}
         //BrowserView *find_view(const Record *record) {return tabWidget()->find_view(record);}
-        void activateWindow();
-        QAction *historyback() {return _historyback;}
-        QStatusBar *statusBar() = delete;
-        QStatusBar *status_bar();       // {return globalparameters.getStatusBar();};
-        QStatusBar *status_bar() const; // {return globalparameters.getStatusBar();};
-        WebView *invoke_page(std::shared_ptr<Record> record);
-        void equip_registered(std::shared_ptr<Record> record);
+        void        activateWindow();
+        QAction     *historyback() {return _historyback;}
+        QStatusBar  *statusBar() = delete;
+        QStatusBar  *status_bar();       // {return globalparameters.getStatusBar();};
+        QStatusBar  *status_bar() const; // {return globalparameters.getStatusBar();};
+        WebView     *invoke_page(std::shared_ptr<Record> record);
+        void        equip_registered(std::shared_ptr<Record> record);
 
     public slots:
         void loadPage(const QString &url);
@@ -137,7 +137,7 @@ namespace browser {
         //    QAction *getactionFreeze() { return actionFreeze; }
     protected:
         void closeEvent(QCloseEvent *event);
-
+        void resizeEvent(QResizeEvent *);
     private slots:
         void save();
 
@@ -201,23 +201,22 @@ namespace browser {
         //    void initUrl();
     private:
 
-        RecordTableController *_recordtablecontroller;
-        Entrance *_entrance;
-        TabWidget *_tabmanager;
+        RecordTableController   *_recordtablecontroller;
+        TabWidget               *_tabmanager;
         //    QDockWidget *dock_widget;
         //        QToolBar *navigater;
-        ToolbarSearch *_toolbarsearch;
-        BookmarksToolBar *_bookmarkstoolbar;
-        ChaseWidget *_chasewidget;
+        ToolbarSearch       *_toolbarsearch;
+        BookmarksToolBar    *_bookmarkstoolbar;
+        ChaseWidget         *_chasewidget;
 
-        AutoSaver *_autosaver;
+        AutoSaver           *_autosaver;
 
-        QAction *_historyhome;
-        QAction *_historyback;
-        QMenu *_historybackmenu;
-        QAction *_historyforward;
-        QMenu *_historyforwardmenu;
-        QMenu *_windowmenu;
+        QAction             *_historyhome;
+        QAction             *_historyback;
+        QMenu               *_historybackmenu;
+        QAction             *_historyforward;
+        QMenu               *_historyforwardmenu;
+        QMenu               *_windowmenu;
 
         QAction *_stop;
         QAction *_reload;
@@ -232,14 +231,17 @@ namespace browser {
         QIcon _reloadicon;
         QIcon _stopicon;
 
-        QString _lastsearch;
+        QString                             _lastsearch;
         //    QAction *actionFreeze;
-        QWebEngineSettings::WebAttribute _webattribute;
-        bool _webattributeenabled;
-        QWidget *_centralwidget;
-        QVBoxLayout *_layout;
+        QWebEngineSettings::WebAttribute    _webattribute;
+        bool                                _webattributeenabled;
+        QWidget                             *_centralwidget;
+        QVBoxLayout                         *_layout;
+
+        Entrance                            *_entrance;
 
         friend class QtSingleApplication;
+        friend class Entrance;
     };
 }
 

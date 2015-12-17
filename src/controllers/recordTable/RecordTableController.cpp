@@ -191,6 +191,9 @@ void RecordTableController::update_browser(const int source_pos)
             entrance->equip_registered(record);
         }
 
+        assert(record->generator());
+        assert(record->activator());
+
         if(record->generator() && !record->binded_only_page())record->generate();
         else if(record->activator() && record->binded_only_page())record->active();  // if(entrance) entrance->active_record(record);
 

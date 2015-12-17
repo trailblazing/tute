@@ -154,7 +154,7 @@ namespace browser {
                           , ar  // boost::make_shared<WebPage::active_record>(this, true)
                       )
                       , std::make_shared <
-                      sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
+                      sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>
                       > (
                           ""
                           , &WebPage::ActiveRecordBinder::activator
@@ -382,7 +382,7 @@ namespace browser {
                         , &WebPage::ActiveRecordBinder::generator
                         , ar
                     )
-                    , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                    , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                         ""
                         , &WebPage::ActiveRecordBinder::activator
                         , ar
@@ -406,7 +406,7 @@ namespace browser {
                                                     , &TabWidget::NewTab::generator
                                                     , arint
                                                 )
-                                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                                                     ""
                                                     , &TabWidget::NewTab::activator
                                                     , arint
@@ -428,7 +428,7 @@ namespace browser {
 
         } else if(type == QWebEnginePage::WebBrowserWindow) {
 
-            std::pair<Browser *, WebView *> dp = globalparameters.entrance()->new_dockedwindow(QUrl(Browser::_defaulthome));               // QtSingleApplication::instance()->newMainWindow();
+            std::pair<Browser *, WebView *> dp = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));               // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
@@ -539,7 +539,7 @@ namespace browser {
     {
 
         if(globalparameters.entrance()->window_list().count() == 0) {
-            globalparameters.entrance()->new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         }
 
         Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
@@ -569,7 +569,7 @@ namespace browser {
         Q_UNUSED(requestUrl);
 
         if(globalparameters.entrance()->window_list().count() == 0) {
-            globalparameters.entrance()->new_dockedwindow(QUrl(browser::Browser::_defaulthome));
+            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         }
 
         Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();

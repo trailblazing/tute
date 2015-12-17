@@ -34,8 +34,7 @@ namespace browser {
 }
 
 
-class Record : public std::enable_shared_from_this<Record>
-{
+class Record : public std::enable_shared_from_this<Record> {
 
     // К закрытым функциям может иметь доступ объекты приаттаченного файла
     friend class Attach;
@@ -100,8 +99,8 @@ public:
     void generator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> g) {_generator = g;}
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator() const {return _generator;}
 
-    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> a) {_activator = a;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator() const {return _activator;}
+    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> a) {_activator = a;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator() const {return _activator;}
 
     browser::WebView *generate();
     void active();
@@ -163,7 +162,7 @@ private:
     int     _open_link_in_new_window = 0;
     //    bool    _active_immediately = false;
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _generator;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> _activator;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> _activator;
 };
 
 #endif // __RECORD_H__

@@ -30,12 +30,14 @@ void HidableTabWidget::onHideAction(bool checked)
     } else {
         if(this->tabPosition() == North || tabPosition() == South) { // , West, East
             this->setMaximumHeight(
-                            std::numeric_limits<int>::max() // 100000
-                            ); // just a very big number
+                std::numeric_limits<int>::max() // 100000
+            ); // just a very big number
+            //            setContentsMargins(0, 0, 0, 0);
         } else {
             this->setMaximumWidth(
-                            std::numeric_limits<int>::max() // 100000
-                            ); // just a very big number
+                std::numeric_limits<int>::max() // 100000
+            ); // just a very big number
+            //            setContentsMargins(0, 0, 0, 0);
         }
 
         this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);

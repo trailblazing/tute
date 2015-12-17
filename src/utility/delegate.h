@@ -1042,7 +1042,7 @@ namespace sd {
         std::string _return_type_name;
 
         boost::shared_ptr<void> _transmitter;
-        void(*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg &&...);
+        void(*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
         // const size_t _parameter_num;
         // const char* arguments_types;
 
@@ -1091,7 +1091,7 @@ namespace sd {
         std::string _return_type_name;
 
         boost::shared_ptr<void> _transmitter;
-        void(*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg &&...);
+        void(*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
         // const size_t _parameter_num;
         // const char* arguments_types;
 

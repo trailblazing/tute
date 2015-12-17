@@ -848,8 +848,8 @@ namespace browser {
 
 std::shared_ptr<Record> request_record(
     std::shared_ptr<Record> record
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, std::shared_ptr<Record> > > generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>> activator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator
 )
 {
     std::shared_ptr<Record> _record;
@@ -894,7 +894,7 @@ std::shared_ptr<Record> request_record(
 std::shared_ptr<Record> request_record(
     const QUrl &_url
     , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, void> > activator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator
 )
 {
     std::shared_ptr<Record> _record = nullptr;

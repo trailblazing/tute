@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <memory>
 #include <cassert>
 #include "tabwidget.h"
 
@@ -69,6 +70,7 @@
 
 #include "views/recordTable/RecordTableScreen.h"
 #include "libraries/GlobalParameters.h"
+#include "models/recordTable/Record.h"
 #include "models/recordTable/RecordTableModel.h"
 #include "models/recordTable/RecordTableData.h"
 #include "views/recordTable/RecordTableView.h"
@@ -278,7 +280,7 @@ namespace browser {
             _tabbar
             , &TabBar::newTab   //                , this
         , [this]() {
-            auto arint = boost::make_shared<NewTab>(this, true);
+            boost::shared_ptr<browser::TabWidget::NewTab> arint = boost::make_shared<browser::TabWidget::NewTab>(this, true);
             request_record(
                 QUrl(Browser::_defaulthome)
 
@@ -286,10 +288,14 @@ namespace browser {
                 //                return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);
                 //            }   // nested    //
                 //                [this](Record * const record)-> WebView * {return this->newTab(record);}
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                    "", &NewTab::generator, arint)  //                _active
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
-                    "", &NewTab::activator, arint)
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                , std::string, browser::WebView *(TabWidget::NewTab::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::NewTab>
+                >(
+                    std::string(""), &TabWidget::NewTab::generator, std::forward<boost::shared_ptr<TabWidget::NewTab>>(arint))  //                _active
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>
+                , std::string, void(TabWidget::NewTab::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::NewTab>
+                >(
+                    std::string(""), &TabWidget::NewTab::activator, std::forward<boost::shared_ptr<TabWidget::NewTab>>(arint))
             );
         });
         connect(_tabbar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
@@ -301,7 +307,9 @@ namespace browser {
         connect(_tabbar, SIGNAL(tabMoved(int, int)), this, SLOT(moveTab(int, int)));
         setTabBar(_tabbar);
         setDocumentMode(true);
-        _tabbar->setMaximumSize(0, 0);
+
+        //        _tabbar->setMaximumSize(0, 0);
+
         _tabbar->hide();
         // Actions
         //        _newtabaction = ;
@@ -316,7 +324,7 @@ namespace browser {
                 QUrl(Browser::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     "", &NewTab::generator, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                     "", &NewTab::activator, arint)
             );
         });
@@ -354,7 +362,9 @@ namespace browser {
         connect(this, SIGNAL(currentChanged(int)), this, SLOT(currentChanged(int)));
 
         //        _lineedits = ;
-        _lineedits->setMaximumSize(0, 0);
+
+        //        _lineedits->setMaximumSize(0, 0);
+
         _lineedits->hide();
     }
 
@@ -963,7 +973,7 @@ namespace browser {
             request_record(QUrl(Browser::_defaulthome)
                            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                                "", &NewTab::generator, arint)
-                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                                "", &NewTab::activator, arint)
                           );
             return;
@@ -980,6 +990,17 @@ namespace browser {
         }
 
         QTabWidget::contextMenuEvent(event);
+    }
+
+    void TabWidget::resizeEvent(QResizeEvent *e)
+    {
+        for(int i = 0; i < count(); i++) {
+            WebView *view = webView(i);
+
+            if(view)view->resizeEvent(e);
+        }
+
+        QTabWidget::resizeEvent(e);
     }
 
     void TabWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -1000,7 +1021,7 @@ namespace browser {
                 request_record(url
                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                                    "", &NewTab::generator, arint)
-                               , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                               , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                                    "", &NewTab::activator, arint)
                               );
             }
@@ -1028,17 +1049,13 @@ namespace browser {
                 auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page(), true);
                 request_record(
                     url
-                    , std::make_shared <
-                    sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>
-                    > (
+                    , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
                         std::string("")
                         , &WebPage::ActiveRecordBinder::generator
                         , ar
                     )
-                    , std::make_shared <
-                    sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
-                    > (
-                        ""
+                    , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
+                        std::string("")
                         , &WebPage::ActiveRecordBinder::activator
                         , ar
                     )
@@ -1138,7 +1155,7 @@ namespace browser {
                 request_record(url
                                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                                    "", &NewTab::generator, arint)
-                               , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>(
+                               , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
                                    "", &NewTab::activator, arint)
                               );
 
@@ -1149,16 +1166,12 @@ namespace browser {
                     auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page(), true);
                     request_record(
                         url
-                        , std::make_shared <
-                        sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                        > (
+                        , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                             ""
                             , &WebPage::ActiveRecordBinder::generator
                             , ar
                         )
-                        , std::make_shared <
-                        sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
-                        > (
+                        , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
                             ""
                             , &WebPage::ActiveRecordBinder::activator
                             , ar
@@ -1387,24 +1400,25 @@ namespace browser {
         PopupWindow *_the;
         QWebEngineProfile *_profile;
         RecordTableController *_recordtablecontroller;
-        WebView *_view;
+        // WebView *_view;
         WebViewHelper(
             PopupWindow *const the, QWebEngineProfile *profile, RecordTableController *recordtablecontroller) :
             _the(the)
             , _profile(profile)
             , _recordtablecontroller(recordtablecontroller)
-            , _view(nullptr)
+            // , _view(nullptr)
         {}
+
         WebView *generator(std::shared_ptr<Record> record)
         {
-            return _view =
-                       new WebView(record, _profile, _the, _recordtablecontroller);
+            return // _view =
+                new WebView(record, _profile, _the, _recordtablecontroller);
 
         }
 
-        void activator()
+        void activator(std::shared_ptr<Record> record)
         {
-            _view->page()->active();
+            record->binded_only_page()->active();
 
         }
 
@@ -1421,22 +1435,21 @@ namespace browser {
               //                         )
               [this, url, profile, recordtablecontroller]
     {
-        auto wvh = boost::make_shared<WebViewHelper>(this, profile, recordtablecontroller);
-        std::shared_ptr<Record> record = request_record(
-                                             url
-                                             , std::make_shared <
-                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>
-                                             > (""
-                                                , &WebViewHelper::generator
-                                                , wvh
-                                               )
-                                             , std::make_shared <
-                                             sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>
-                                             > (""
-                                                , &WebViewHelper::activator
-                                                , wvh
-                                               )
-                                         );  // ->binded_only_page()->view();
+        boost::shared_ptr<WebViewHelper> wvh = boost::make_shared<WebViewHelper>(this, profile, recordtablecontroller);
+        std::shared_ptr<Record> record
+            = request_record(
+                  url
+                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+                      ""
+                      , &WebViewHelper::generator
+                      , wvh
+                  )
+                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
+                      ""
+                      , &WebViewHelper::activator
+                      , wvh
+                  )
+              );  // ->binded_only_page()->view();
         return record->binded_only_page()->view();
     }()
 

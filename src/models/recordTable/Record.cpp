@@ -1037,5 +1037,5 @@ browser::WebView *Record::generate()
 
 void Record::active()
 {
-    (*activator())();
+    (*activator())(shared_from_this());
 }

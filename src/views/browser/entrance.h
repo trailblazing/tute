@@ -20,10 +20,11 @@ extern GlobalParameters globalparameters;
 namespace browser {
     class WebView;
 }
-extern std::shared_ptr<Record> request_record(const QUrl &_url
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void>>
-                                             );
+
+//extern std::shared_ptr<Record> request_record(const QUrl &_url
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>
+//                                             );
 
 QT_BEGIN_NAMESPACE
 
@@ -66,10 +67,10 @@ namespace browser {
 
         struct ActiveRecordBinder {
             Entrance    *_the;
-            WebView     *_view;
-            ActiveRecordBinder(Entrance *the): _the(the), _view(nullptr) {}
-            WebView *generator(std::shared_ptr<Record> record) {return _view = _the->equip_registered(record).second;}
-            void activator() {_view->page()->active();}
+            WebPage     *_page;
+            ActiveRecordBinder(Entrance *the): _the(the), _page(nullptr) {}
+            WebView *generator(std::shared_ptr<Record> record) {_page = _the->equip_registered(record).second->page(); return _the->equip_registered(record).second;}
+            void activator(std::shared_ptr<Record> record) {record->binded_only_page()->active();}
         };
 
         std::pair<Browser *, WebView *> activiated_registered();
@@ -101,11 +102,12 @@ namespace browser {
 
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &url);
-        std::pair<Browser *, WebView *> new_dockedwindow(QUrl const &url);
-        std::pair<Browser *, WebView *> new_dockedwindow(std::shared_ptr<Record> record);
-        Browser *new_dockedwindow(const QByteArray &state);
+        std::pair<Browser *, WebView *> new_browser(QUrl const &url);
+        std::pair<Browser *, WebView *> new_browser(std::shared_ptr<Record> record);
+        Browser *new_browser(const QByteArray &state);
         Entrance *prepend(Browser *);
         void on_activate_window();
+        //        void on_splitter_moved(int pos, int index);
 
 #if defined(Q_OS_OSX)
         void lastWindowClosed();
@@ -116,7 +118,8 @@ namespace browser {
         //        void loadUrl(const int pos);
         void openUrl(const QUrl &url);
         //        void setUrl(const QUrl &url);
-
+    protected:
+        void resizeEvent(QResizeEvent *);
     private:
 
         //        void(Entrance::*invoke_ptr)(const QUrl &url);
