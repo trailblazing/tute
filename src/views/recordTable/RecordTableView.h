@@ -15,13 +15,13 @@
 
 class ClipboardRecords;
 class RecordTableController;
-
+class RecordTableScreen;
 
 class RecordTableView : public QTableView {
     Q_OBJECT
 
 public:
-    RecordTableView(QWidget *parent = 0);
+    RecordTableView(RecordTableScreen *recordtablescreen, RecordTableController *controller);
     virtual ~RecordTableView();
 
     void setController(RecordTableController *pController);
@@ -45,6 +45,8 @@ public:
     ClipboardRecords *getSelectedRecords(void);
 
     void moveCursorToNewRecord(int mode, int pos);
+    //    void on_parent_resizevent(QResizeEvent *e);
+
 
 signals:
 
@@ -80,8 +82,10 @@ protected slots:
 
 protected:
 
-    QMenu *contextMenu;
-    RecordTableController *controller;
+    QMenu                   *contextMenu;
+    RecordTableScreen       *_recordtablescreen;
+    RecordTableController   *_controller;
+    QVBoxLayout             *_layout;
 
     void setupSignals(void);
 
@@ -104,6 +108,7 @@ protected:
     void tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture);
 
     QPoint mouseStartPos;
+
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
@@ -112,10 +117,13 @@ protected:
 
     bool enableMoveSection;
 
+    void resizeEvent(QResizeEvent *e);
+
 private:
 
     void startDrag();
-
+    friend class RecordTableScreen;
+    friend class VerticalScrollArea;
 };
 
 #endif /* RECORDLISTSCREEN_H_ */

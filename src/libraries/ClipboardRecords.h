@@ -13,7 +13,7 @@
 // Определяется структура данных набора записей
 // которая будет передаваться через буфер обмена
 struct CLIPB_RECORDS_STRUCT {
-    QList< Record > table;
+    QList< std::shared_ptr<Record> > table;
 };
 Q_DECLARE_METATYPE(CLIPB_RECORDS_STRUCT);
 
@@ -27,11 +27,11 @@ public:
 
     void init(void);
     void clear(void);
-    void addRecord(Record record);
+    void addRecord(std::shared_ptr<Record> record);
     void print(void) const;
     int getCount(void) const;
 
-    Record getRecord(int n) const;
+    std::shared_ptr<Record> getRecord(int n) const;
     QString getRecordText(int n) const;
     QMap<QString, QString> getRecordFieldList(int n) const;
     QMap<QString, QByteArray > getRecordPictureFiles(int n) const;

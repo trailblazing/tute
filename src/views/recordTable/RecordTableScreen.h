@@ -15,6 +15,7 @@
 #include <QLabel>
 
 class RecordTableController;
+class VerticalScrollArea;
 
 class RecordTableScreen : public QWidget {
     Q_OBJECT
@@ -58,6 +59,9 @@ public slots:
     // Обновление панели инструментов
     void toolsUpdate(void);
 
+
+protected:
+    void resizeEvent(QResizeEvent *e);
 private slots:
 
     void onSyncroClick(void);
@@ -69,10 +73,11 @@ private:
     QToolBar *toolsLine;
     QToolBar *extraToolsLine;
 
-    QLabel *treePathLabel;
+    QLabel  *treePathLabel;
     QString treePath;
 
-    RecordTableController *recordTableController;
+    VerticalScrollArea      *_verticalscrollarea;
+    RecordTableController   *recordTableController;
 
     QHBoxLayout *recordTableToolsLayout;
     QVBoxLayout *recordTableScreenLayout;

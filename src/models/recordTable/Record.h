@@ -42,19 +42,17 @@ class Record : public std::enable_shared_from_this<Record> {
 
 public:
     Record();
-    Record(const Record &obj);
-
     virtual ~Record();
 
 
-    browser::WebPage *binded_only_page();   // const; // {return _page;}
+    browser::WebPage *unique_page();   // const; // {return _page;}
 
     void setupDataFromDom(QDomElement iDomElement);
     QDomElement exportDataToDom(QDomDocument *doc) const;
 
-    QString getText() const;
-    QString getTextDirect();
-    void setText(QString iText);
+    QString getTextFromFat() const;
+    QString getTextDirectFromLite();
+    void setTextToFat(QString iText);
 
     QString getField(QString name) const;
     void setField(QString name, QString value);
@@ -163,6 +161,8 @@ private:
     //    bool    _active_immediately = false;
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _generator;
     std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> _activator;
+
+    explicit Record(const Record &obj) = delete;
 };
 
 #endif // __RECORD_H__

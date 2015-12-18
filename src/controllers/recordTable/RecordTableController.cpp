@@ -37,18 +37,24 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordTableController::RecordTableController(QObject *parent) : QObject(parent)
+RecordTableController::RecordTableController(RecordTableScreen *recordtablescreen)
+    : QObject(recordtablescreen)
+    , view(new RecordTableView(recordtablescreen, this
+                               // , qobject_cast<QWidget * >(RecordTableScreen)
+                              ))
+    , recordSourceModel(new RecordTableModel(this))
+    , recordProxyModel(new RecordTableProxyModel(this))
 {
     // Инициализируется область со списком записей
-    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
+    //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
     view->setObjectName("recordTableView");
-    view->setController(this);
+    //    view->setController(this);
 
     // Создание модели данных
-    recordSourceModel = new RecordTableModel(this);
+    //    recordSourceModel = new RecordTableModel(this);
     recordSourceModel->setObjectName("recordSourceModel");
 
-    recordProxyModel = new RecordTableProxyModel(this);
+    //    recordProxyModel = new RecordTableProxyModel(this);
     recordProxyModel->setSourceModel(recordSourceModel);
     recordProxyModel->setObjectName("recordProxyModel");
 
@@ -194,8 +200,8 @@ void RecordTableController::update_browser(const int source_pos)
         assert(record->generator());
         assert(record->activator());
 
-        if(record->generator() && !record->binded_only_page())record->generate();
-        else if(record->activator() && record->binded_only_page())record->active();  // if(entrance) entrance->active_record(record);
+        if(record->generator() && !record->unique_page())record->generate();
+        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
 
         //        else if(entrance)
     }
@@ -424,7 +430,7 @@ void RecordTableController::addRecordsToClipboard(ClipboardRecords *clipboardRec
         QModelIndex index = proxyindex_to_sourceindex(itemsForCopy.at(i));
 
         // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-        Record record = *table->getRecordFat(index.row());
+        std::shared_ptr<Record> record = table->getRecordFat(index.row());
 
         clipboardRecords->addRecord(record);
     }
@@ -759,23 +765,23 @@ void RecordTableController::addNewRecord(int mode)
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
-    Record record;
-    record.switchToFat();
+    std::shared_ptr<Record> record = std::make_shared<Record>();
+    record->switchToFat();
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
     //    record.setField("name",   addNewRecordWin.getField("name"));
     //    record.setField("author", addNewRecordWin.getField("author"));
     //    record.setField("url",    addNewRecordWin.getField("url"));
     //    record.setField("tags",   addNewRecordWin.getField("tags"));
-    record.setText("");
-    record.setField("pin",   _check_state[Qt::Unchecked]);
-    record.setField("name",   "");
-    record.setField("author", "");
-    record.setField("home",   browser::Browser::_defaulthome);
-    record.setField("url",    browser::Browser::_defaulthome);
-    record.setField("tags",   "");
+    record->setTextToFat("");
+    record->setField("pin",   _check_state[Qt::Unchecked]);
+    record->setField("name",   "");
+    record->setField("author", "");
+    record->setField("home",   browser::Browser::_defaulthome);
+    record->setField("url",    browser::Browser::_defaulthome);
+    record->setField("tags",   "");
 
-    record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    record->setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
     // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
     // Запись должна быть создана, потом можно аттачить файлы.
@@ -792,7 +798,7 @@ void RecordTableController::addNewRecord(int mode)
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-int RecordTableController::new_record(Record const &record
+int RecordTableController::new_record(std::shared_ptr<Record> record
                                       , const int mode
                                       //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
                                      )
@@ -820,7 +826,7 @@ int RecordTableController::new_record(Record const &record
 
     //    if(record.isLite())record.switchToFat();
 
-    assert(!record.isLite());
+    assert(!record->isLite());
 
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -880,23 +886,23 @@ int RecordTableController::new_record(
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
-    Record record;
-    record.switchToFat();
+    std::shared_ptr<Record> record = std::make_shared<Record>();
+    record->switchToFat();
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
     //    record.setField("name",   addNewRecordWin.getField("name"));
     //    record.setField("author", addNewRecordWin.getField("author"));
     //    record.setField("url",    addNewRecordWin.getField("url"));
     //    record.setField("tags",   addNewRecordWin.getField("tags"));
-    record.setText("");
-    record.setField("pin",   _check_state[Qt::Unchecked]);
-    record.setField("name",   "");
-    record.setField("author", "");
-    record.setField("home",   url.toString());
-    record.setField("url",    url.toString());
-    record.setField("tags",   "");
+    record->setTextToFat("");
+    record->setField("pin",   _check_state[Qt::Unchecked]);
+    record->setField("name",   "");
+    record->setField("author", "");
+    record->setField("home",   url.toString());
+    record->setField("url",    url.toString());
+    record->setField("tags",   "");
 
-    record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    record->setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
     //    record.generator(generator);
 
@@ -915,7 +921,7 @@ int RecordTableController::new_record(
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-int RecordTableController::addNew(int mode, Record const &record)
+int RecordTableController::addNew(int mode, std::shared_ptr<Record> record)
 {
     qDebug() << "In add_new()";
 

@@ -756,7 +756,7 @@ void init_random(void)
 
 
 std::shared_ptr<Record> register_record(
-    Record const &record
+    std::shared_ptr<Record> record
     , RecordTableController *_recordtablecontroller
 )
 {
@@ -767,7 +767,7 @@ std::shared_ptr<Record> register_record(
     //    Record record;
 
     //    if(record.isLite())record.switchToFat();
-    assert(!record.isLite());
+    assert(!record->isLite());
     int source_position = _recordtablecontroller->new_record(record, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
 
     //    Record *_record = nullptr;
@@ -777,7 +777,7 @@ std::shared_ptr<Record> register_record(
     auto record_ = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(source_position);
 
     //assert(record_ == _record);
-    assert(record_->getNaturalFieldSource("url") == record.getNaturalFieldSource("url"));
+    assert(record_->getNaturalFieldSource("url") == record->getNaturalFieldSource("url"));
     //            }
     //assert(_record);
     return record_; //_record;
@@ -866,7 +866,7 @@ std::shared_ptr<Record> request_record(
             if(!_record) {
                 record->generator(generator);
                 record->activator(activator);
-                _record = register_record(*record, _recordtablecontroller);
+                _record = register_record(record, _recordtablecontroller);
 
                 assert(_record);
                 //                _record->active_immediately(active_immediately);
@@ -965,19 +965,19 @@ std::shared_ptr<Record> request_record(
                 // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
                 QString directory = DiskHelper::createTempDirectory();  //
 
-                Record record;
+                std::shared_ptr<Record> record = std::make_shared<Record>();
 
                 //                if(record.isLite())
-                record.switchToFat();
+                record->switchToFat();
 
                 //                QString title = _url.toString(); // not ready yet
 
-                record.setNaturalFieldSource("pin",     _check_state[Qt::Unchecked]);
-                record.setNaturalFieldSource("name",    "");
-                record.setNaturalFieldSource("author",  "");
-                record.setNaturalFieldSource("home",    _url.toString());    // only changed
-                record.setNaturalFieldSource("url",     _url.toString());    // only changed
-                record.setNaturalFieldSource("tags",    "");
+                record->setNaturalFieldSource("pin",     _check_state[Qt::Unchecked]);
+                record->setNaturalFieldSource("name",    "");
+                record->setNaturalFieldSource("author",  "");
+                record->setNaturalFieldSource("home",    _url.toString());    // only changed
+                record->setNaturalFieldSource("url",     _url.toString());    // only changed
+                record->setNaturalFieldSource("tags",    "");
 
                 //                _recordtablecontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
                 //                _record = recordtabledata->getRecordByUrl(_url);
@@ -985,10 +985,10 @@ std::shared_ptr<Record> request_record(
                 //                //                _record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
                 //                //            }
-                record.generator(generator);
-                record.activator(activator);
+                record->generator(generator);
+                record->activator(activator);
 
-                record.setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+                record->setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
 
                 // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи

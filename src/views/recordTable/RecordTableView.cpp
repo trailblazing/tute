@@ -3,7 +3,7 @@
 #include <QDrag>
 #include <QVector>
 #include <QHeaderView>
-
+#include <QScrollBar>
 #include "main.h"
 #include "views/mainWindow/MainWindow.h"
 #include "views/tree/TreeScreen.h"
@@ -28,7 +28,11 @@ extern AppConfig appconfig;
 // Виджет, отображащий список записей в ветке
 
 
-RecordTableView::RecordTableView(QWidget *parent) : QTableView(parent)
+RecordTableView::RecordTableView(RecordTableScreen *recordtablescreen, RecordTableController *controller)
+    : QTableView(recordtablescreen)
+    , _recordtablescreen(recordtablescreen)
+    , _controller(controller)
+    , _layout(new QVBoxLayout(this))
 {
     // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
     this->setSortingEnabled(false);
@@ -38,19 +42,25 @@ RecordTableView::RecordTableView(QWidget *parent) : QTableView(parent)
 
     // Разрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);
+
+    _layout->setSpacing(0);
+
+    _layout->setMargin(0);
+
+    //    viewport()->getContentsMargins();
 }
 
 
 RecordTableView::~RecordTableView()
 {
-
+    delete _layout;
 }
 
 
-void RecordTableView::setController(RecordTableController *pController)
-{
-    controller = pController;
-}
+//void RecordTableView::setController(RecordTableController *pController)
+//{
+//    _controller = pController;
+//}
 
 
 // Пришлось ввести метод init, так как инициализация невозможна без
@@ -112,6 +122,7 @@ void RecordTableView::init(void)
     // чтобы оно могло вызываться
     assemblyContextMenu();
     setContextMenuPolicy(Qt::CustomContextMenu);
+
 
 }
 
@@ -209,7 +220,7 @@ void RecordTableView::onClickToRecord(const QModelIndex &index)
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
 void RecordTableView::click_record(const QModelIndex &index)
 {
-    controller->click_record(index);
+    _controller->click_record(index);
 
     globalparameters.getWindowSwitcher()->switchFromRecordtableToRecord();
 }
@@ -220,32 +231,32 @@ void RecordTableView::assemblyContextMenu(void)
     // Конструирование меню
     contextMenu = new QMenu(this);
 
-    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
+    //    RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 
-    contextMenu->addAction(parentPointer->_actionpin);
-    contextMenu->addAction(parentPointer->actionAddNewToEnd);
-    contextMenu->addAction(parentPointer->actionEditField);
-    contextMenu->addAction(parentPointer->actionDelete);
+    contextMenu->addAction(_recordtablescreen->_actionpin);
+    contextMenu->addAction(_recordtablescreen->actionAddNewToEnd);
+    contextMenu->addAction(_recordtablescreen->actionEditField);
+    contextMenu->addAction(_recordtablescreen->actionDelete);
 
     contextMenu->addSeparator();
 
-    contextMenu->addAction(parentPointer->actionAddNewBefore);
-    contextMenu->addAction(parentPointer->actionAddNewAfter);
+    contextMenu->addAction(_recordtablescreen->actionAddNewBefore);
+    contextMenu->addAction(_recordtablescreen->actionAddNewAfter);
     //    contextMenu->addAction(parentPointer->actionMoveUp);
     //    contextMenu->addAction(parentPointer->actionMoveDn);
     //    contextMenu->addAction(parentPointer->actionSyncro);
 
     contextMenu->addSeparator();
 
-    contextMenu->addAction(parentPointer->actionCut);
-    contextMenu->addAction(parentPointer->actionCopy);
-    contextMenu->addAction(parentPointer->actionPaste);
+    contextMenu->addAction(_recordtablescreen->actionCut);
+    contextMenu->addAction(_recordtablescreen->actionCopy);
+    contextMenu->addAction(_recordtablescreen->actionPaste);
 
     contextMenu->addSeparator();
 
-    contextMenu->addAction(parentPointer->actionSort);
-    contextMenu->addAction(parentPointer->actionPrint);
-    contextMenu->addAction(parentPointer->actionSettings);
+    contextMenu->addAction(_recordtablescreen->actionSort);
+    contextMenu->addAction(_recordtablescreen->actionPrint);
+    contextMenu->addAction(_recordtablescreen->actionSettings);
 }
 
 
@@ -253,20 +264,22 @@ void RecordTableView::assemblyContextMenu(void)
 void RecordTableView::onCustomContextMenuRequested(const QPoint &pos)
 {
     qDebug() << "In on_customContextMenuRequested";
+    //    auto p = parent();
 
-    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
-
+    //    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
+    //    RecordTableScreen *parentPointer = static_cast<RecordTableScreen *>(p);
+    //    RecordTableScreen *_recordtablescreen = globalparameters.getRecordTableScreen();
 
     // Устанавливается надпись для пункта сортировки
     if(!this->isSortingEnabled())
-        parentPointer->actionSort->setText(tr("Enable sorting"));
+        _recordtablescreen->actionSort->setText(tr("Enable sorting"));
     else
-        parentPointer->actionSort->setText(tr("Disable sorting"));
+        _recordtablescreen->actionSort->setText(tr("Disable sorting"));
 
     // Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
     int n = this->horizontalHeader()->logicalIndexAt(pos);
     qDebug() << "Click on column number " << n;
-    parentPointer->actionSort->setData(n);   // Запоминается в объект действия для сортировки
+    _recordtablescreen->actionSort->setData(n);   // Запоминается в объект действия для сортировки
 
 
     // Включение отображения меню на экране
@@ -308,7 +321,7 @@ void RecordTableView::editFieldContext(void)
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     QModelIndex index = selectItems.at(0);
 
-    controller->editFieldContext(index);
+    _controller->editFieldContext(index);
 
     // Нужно перерисовать окно редактирования чтобы обновились инфополя
     // делается это путем "повторного" выбора текущего пункта
@@ -350,7 +363,7 @@ QModelIndex RecordTableView::getFirstSelectionProxyIndex(void)
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->index( pos, 0 );
-    QModelIndex index = controller->pos_to_proxyindex(pos);
+    QModelIndex index = _controller->pos_to_proxyindex(pos);
 
     return index;
 }
@@ -365,7 +378,7 @@ QModelIndex RecordTableView::getFirstSelectionSourceIndex(void)
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
-    QModelIndex index = controller->proxyindex_to_sourceindex(proxyIndex);
+    QModelIndex index = _controller->proxyindex_to_sourceindex(proxyIndex);
 
     return index;
 }
@@ -390,7 +403,7 @@ bool RecordTableView::isSelectedSetToBottom(void)
 // Установка засветки в нужную строку на экране
 void RecordTableView::setSelectionToPos(int iPos)
 {
-    QModelIndex index = controller->pos_to_proxyindex(iPos); // Модельный индекс в Proxy модели
+    QModelIndex index = _controller->pos_to_proxyindex(iPos); // Модельный индекс в Proxy модели
     int pos = index.row();
 
     // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
@@ -400,7 +413,7 @@ void RecordTableView::setSelectionToPos(int iPos)
         msgBox.exec();
     }
 
-    int rowCount = controller->getRowCount();
+    int rowCount = _controller->getRowCount();
 
     if(pos > (rowCount - 1))
         return;
@@ -452,7 +465,7 @@ void RecordTableView::moveCursorToNewRecord(int mode, int pos)
        (mode == ADD_NEW_RECORD_AFTER && pos >= (model()->rowCount() - 1)))
         scrollToBottom();
 
-    int proxyPos = controller->pos_to_proxyindex(pos).row();
+    int proxyPos = _controller->pos_to_proxyindex(pos).row();
 
     selectRow(proxyPos);
 }
@@ -605,7 +618,7 @@ ClipboardRecords *RecordTableView::getSelectedRecords(void)
     clipboardRecords->clear();
 
     // Объект заполняется выбранными записями
-    controller->addRecordsToClipboard(clipboardRecords, itemsForCopy);
+    _controller->addRecordsToClipboard(clipboardRecords, itemsForCopy);
 
     return clipboardRecords;
 }
@@ -714,5 +727,71 @@ void RecordTableView::restoreColumnWidth(void)
     // Чтобы последняя растягивалась по месту
     for(int i = 0; i < columnWidthList.size() - 1; i++)
         setColumnWidth(i, columnWidthList[i].toInt());
+
+    resizeEvent(nullptr);
 }
 
+//// if pin and title width beyond container width, when click title item, widget will move left, pin column will disappeared
+//void RecordTableView::on_parent_resizevent(QResizeEvent *e)
+//{
+//    Q_UNUSED(e)
+
+//    //    int vscrollbar_width = this->verticalScrollBar()->width();
+//    //    int viewport_width = this->maximumViewportSize().width();
+//    //    int _width = width();
+//    //    int parent_width = e->size().width();
+//    //    auto margin = viewport()->contentsMargins();
+//    //    auto rect =  viewport()->contentsRect();
+//    auto rect1 = contentsRect();
+//    auto real_width = rect1.width();
+//    //    auto size_width = size().width();
+
+//    if((columnWidth(0) + columnWidth(1)) >= real_width) {
+//        setColumnWidth(0, 30);
+//        setColumnWidth(1, (real_width >= 30) ? real_width - 30 : columnWidth(1));
+//    } else {
+//        setColumnWidth(0, 30);
+//        real_width = this->contentsRect().width();
+
+//        if(real_width >= 300) {
+//            setColumnWidth(1, 300 - 30); // restoreColumnWidth();
+//        } else {
+//            setColumnWidth(1, (real_width >= 30) ? real_width - 30 : columnWidth(1));
+//        }
+//    }
+
+//    //    saveColumnWidth();
+//}
+
+
+// if pin and title width beyond container width, when click title item, widget will move left, pin column will disappeared
+void RecordTableView::resizeEvent(QResizeEvent *e)
+{
+    //    Q_UNUSED(e)
+
+    //    int vscrollbar_width = this->verticalScrollBar()->width();
+    //    int viewport_width = this->maximumViewportSize().width();
+    //    int _width = width();
+    //    int parent_width = e->size().width();
+    //    auto margin = viewport()->contentsMargins();
+    //    auto rect0 =  viewport()->contentsRect();
+    auto rect = contentsRect();
+    auto real_width = rect.width();
+    //    auto size_width = size().width();
+
+    if((columnWidth(0) + columnWidth(1)) >= real_width) {
+        setColumnWidth(0, 30);
+        setColumnWidth(1, (real_width >= 30) ? real_width - 30 : columnWidth(1));
+    } else {
+        setColumnWidth(0, 30);
+        real_width = this->contentsRect().width();
+
+        if(real_width >= 300) {
+            setColumnWidth(1, 300 - 30); // restoreColumnWidth();
+        } else {
+            setColumnWidth(1, (real_width >= 30) ? real_width - 30 : columnWidth(1));
+        }
+    }
+
+    QTableView::resizeEvent(e);
+}

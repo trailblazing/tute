@@ -273,7 +273,7 @@ namespace browser {
 
             void activator(std::shared_ptr<Record> record)
             {
-                record->binded_only_page()->active();
+                record->unique_page()->active();
             }
 
         };

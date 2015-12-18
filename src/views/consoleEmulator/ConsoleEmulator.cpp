@@ -13,7 +13,7 @@ extern AppConfig appconfig;
 
 ConsoleEmulator::ConsoleEmulator(QWidget *parent) : QDialog(parent)
 {
-    isError=false;
+    isError = false;
 
     setupUI();
     setupSignals();
@@ -34,24 +34,25 @@ ConsoleEmulator::~ConsoleEmulator()
 
 void ConsoleEmulator::setupUI(void)
 {
-    messageLabel=new QLabel(this);
+    messageLabel = new QLabel(this);
 
-    buttonDetails=new FlatToolButton(this);
+    buttonDetails = new FlatToolButton(this);
     buttonDetails->setIcon(QIcon(":/resource/pic/expand_console.svg"));
 
-    buttonCancel=new QPushButton(this);
+    buttonCancel = new QPushButton(this);
     buttonCancel->setText(tr("Cancel"));
     buttonCancel->setDefault(true);
 
-    consoleOutput=new QTextEdit(this);
+    consoleOutput = new QTextEdit(this);
     consoleOutput->setReadOnly(true);
     consoleOutput->setFontFamily("monospace");
-    if(appconfig.getSyncroConsoleDetails()==false)
+
+    if(appconfig.getSyncroConsoleDetails() == false)
         consoleOutput->hide();
 
-    waitClock=new WaitClock(this);
+    waitClock = new WaitClock(this);
 
-    escShortcut=new QShortcut(QKeySequence("Esc"),  this);
+    escShortcut = new QShortcut(QKeySequence("Esc"),  this);
 }
 
 
@@ -108,7 +109,7 @@ void ConsoleEmulator::clearConsoleOutput(void)
 
 void ConsoleEmulator::addConsoleOutput(QString text)
 {
-    consoleOutput->setPlainText( consoleOutput->toPlainText()+text );
+    consoleOutput->setPlainText(consoleOutput->toPlainText() + text);
     consoleOutput->moveCursor(QTextCursor::End);
 
     QScrollBar *v = consoleOutput->verticalScrollBar();
@@ -152,17 +153,17 @@ void ConsoleEmulator::switchToErrorView(void)
 {
     qDebug() << "ConsoleEmulator::switchToErrorView() : Detect error!";
 
-    isError=true;
+    isError = true;
 
-// Верхняя строка скрывается
-// QLayoutItem *child;
-// while ((child = upToolbar->takeAt(0)) != 0)
-//   child->widget()->hide();
+    // Верхняя строка скрывается
+    // QLayoutItem *child;
+    // while ((child = upToolbar->takeAt(0)) != 0)
+    //   child->widget()->hide();
 
-// Сообщение об обнаруженной ошибке
-    messageLabel->setText("<b>"+tr("Commands running error")+"</b>");
+    // Сообщение об обнаруженной ошибке
+    messageLabel->setText("<b>" + tr("Commands running error") + "</b>");
 
-// Консольный вывод показывается, так как он возможно не был открыт, если не был выбран развернутый вид
+    // Консольный вывод показывается, так как он возможно не был открыт, если не был выбран развернутый вид
     consoleOutput->show();
 }
 

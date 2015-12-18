@@ -41,12 +41,10 @@ MainWindow::MainWindow(
     , _appconfig(appconfig)
     , _databaseconfig(databaseconfig)
     , _recordtablecontroller(nullptr)
-    ,  v_right_splitter(new QSplitter(Qt::Vertical))
+    , v_right_splitter(new QSplitter(Qt::Vertical))
     , find_splitter(new QSplitter(Qt::Vertical))
     , _vtabwidget(new HidableTabWidget(this))
-    , v_left_splitter(new QSplitter(
-                          Qt::Horizontal  // Qt::Vertical
-                      ))
+    , v_left_splitter(new QSplitter(Qt::Horizontal))    // Qt::Vertical
     , hSplitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
@@ -244,6 +242,7 @@ void MainWindow::assembly(void)
     hSplitter->setObjectName("hsplitter");
 
     //    connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &browser::Entrance::on_splitter_moved);
+    //    connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen, &RecordTableScreen::on_splitter_moved);
 
     //    findSplitter=new QSplitter(Qt::Vertical);
     //    findSplitter->addWidget(hSplitter);

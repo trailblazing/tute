@@ -220,7 +220,8 @@ HEADERS     =   src/main.h \
     src/libraries/FlatControl.h \
     src/utility/delegate.h \
     src/views/browser/browser.h \
-    src/views/mainWindow/hidabletabwidget.h
+    src/views/mainWindow/hidabletabwidget.h \
+    src/views/recordTable/verticalscrollarea.h
 
 
 
@@ -339,7 +340,8 @@ SOURCES     =   src/main.cpp \
     src/views/browser/entrance.cpp \
     src/libraries/FlatControl.cpp \
     src/views/browser/browser.cpp \
-    src/views/mainWindow/hidabletabwidget.cpp
+    src/views/mainWindow/hidabletabwidget.cpp \
+    src/views/recordTable/verticalscrollarea.cpp
 
 
 

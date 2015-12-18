@@ -188,12 +188,12 @@ void KnowTreeView::dropEvent(QDropEvent *event)
 
         for(int i = 0; i < clipboardRecords->getCount(); i++) {
             // Полные данные записи
-            Record record = clipboardRecords->getRecord(i);
+            std::shared_ptr<Record> record = clipboardRecords->getRecord(i);
 
             // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
             // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-            recordTableController->removeRowById(record.getField("id"));
+            recordTableController->removeRowById(record->getField("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(recordTableController->getRowCount() == 0)

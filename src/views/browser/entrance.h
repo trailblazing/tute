@@ -70,7 +70,7 @@ namespace browser {
             WebPage     *_page;
             ActiveRecordBinder(Entrance *the): _the(the), _page(nullptr) {}
             WebView *generator(std::shared_ptr<Record> record) {_page = _the->equip_registered(record).second->page(); return _the->equip_registered(record).second;}
-            void activator(std::shared_ptr<Record> record) {record->binded_only_page()->active();}
+            void activator(std::shared_ptr<Record> record) {record->unique_page()->active();}
         };
 
         std::pair<Browser *, WebView *> activiated_registered();

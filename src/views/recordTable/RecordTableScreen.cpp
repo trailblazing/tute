@@ -7,7 +7,7 @@
 #include "main.h"
 #include "RecordTableView.h"
 #include "RecordTableScreen.h"
-
+#include "views/recordTable/verticalscrollarea.h"
 #include "views/mainWindow/MainWindow.h"
 #include "views/record/MetaEditor.h"
 #include "models/appConfig/AppConfig.h"
@@ -48,6 +48,7 @@ RecordTableScreen::RecordTableScreen(QWidget *parent)
 RecordTableScreen::~RecordTableScreen()
 {
     delete recordTableController;
+    delete _verticalscrollarea;
 }
 
 
@@ -235,8 +236,13 @@ void RecordTableScreen::setupUI(void)
     treePathLabel = new QLabel(this);
     treePathLabel->setWordWrap(true);
 
-    //    if(appconfig.getInterfaceMode() == "desktop")
-    //    treePathLabel->hide();
+    if(appconfig.getInterfaceMode() == "desktop")
+        treePathLabel->hide();
+
+    _verticalscrollarea = new VerticalScrollArea(
+        std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>>("", &RecordTableView::resizeEvent, recordTableController->getView())
+        , this
+    );
 }
 
 
@@ -257,8 +263,33 @@ void RecordTableScreen::assembly(void)
     recordTableScreenLayout->setObjectName("recordtablescreen_QVBoxLayout");
 
     recordTableScreenLayout->addLayout(recordTableToolsLayout);
-    recordTableScreenLayout->addWidget(treePathLabel);
-    recordTableScreenLayout->addWidget(recordTableController->getView());
+
+    if(appconfig.getInterfaceMode() == "mobile") {
+        recordTableScreenLayout->addWidget(treePathLabel);
+    }
+
+
+
+
+    // how to use VerticalScrollArea class:
+    RecordTableView *rtview = recordTableController->getView(); //    auto rtview = new QWidget(this);
+
+    rtview->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+
+    _verticalscrollarea->setWidget(rtview);
+    rtview->viewport()->installEventFilter(_verticalscrollarea);
+    QVBoxLayout *baseLayout = new QVBoxLayout();
+    baseLayout->addWidget(_verticalscrollarea);
+    //    _verticalscrollarea->viewport()->installEventFilter(rtview);
+
+
+
+
+    recordTableScreenLayout->addLayout(baseLayout); //
+
+    //    recordTableScreenLayout->addWidget(recordTableController->getView());
+
+    //    recordTableScreenLayout->addWidget(_verticalscrollarea);
 
     //    recordTableController->getView()->viewport()->installEventFilter(someFilterWidget);
 
@@ -268,8 +299,16 @@ void RecordTableScreen::assembly(void)
     QLayout *lt;
     lt = layout();
     lt->setContentsMargins(0, 2, 0, 0);
+    lt->setSpacing(0);
+
 }
 
+
+void RecordTableScreen::resizeEvent(QResizeEvent *e)
+{
+    recordTableController->getView()->resizeEvent(e);
+    QWidget::resizeEvent(e);
+}
 
 // Отключение всех действий над записями
 // (но не всех действий на панели инструментов, так как на панели инструментов есть действия, не оказывающие воздействия на записи)
@@ -321,22 +360,25 @@ void RecordTableScreen::toolsUpdate(void)
     // и не включена сортировка
     if(recordTableController->getView()->selectionModel()->hasSelection() &&
        (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1 &&
-       recordTableController->getView()->isSortingEnabled() == false)
+       recordTableController->getView()->isSortingEnabled() == false) {
         actionAddNewBefore->setEnabled(true);
+    }
 
     // Добавление записи после
     // Добавлять "после" можно только тогда, когда выбрана только одна строка
     // и не включена сортировка
     if(recordTableController->getView()->selectionModel()->hasSelection() &&
        (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1 &&
-       recordTableController->getView()->isSortingEnabled() == false)
+       recordTableController->getView()->isSortingEnabled() == false) {
         actionAddNewAfter->setEnabled(true);
+    }
 
     // Редактирование записи
     // Редактировать можно только тогда, когда выбрана только одна строка
     if(recordTableController->getView()->selectionModel()->hasSelection() &&
-       (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1)
+       (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1) {
         actionEditField->setEnabled(true);
+    }
 
     // Удаление записи
     // Пункт активен только если запись (или записи) выбраны в списке
@@ -377,11 +419,13 @@ void RecordTableScreen::toolsUpdate(void)
     // Пункт возможен только когда выбрана одна строка
     // и указатель стоит не на начале списка
     // и не включена сортировка
-    if(recordTableController->getView()->selectionModel()->hasSelection() &&
-       (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1 &&
-       recordTableController->getView()->isSelectedSetToTop() == false &&
-       recordTableController->getView()->isSortingEnabled() == false)
+    if(recordTableController->getView()->selectionModel()->hasSelection()
+       && (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1
+       && recordTableController->getView()->isSelectedSetToTop() == false
+       && recordTableController->getView()->isSortingEnabled() == false
+      ) {
         actionMoveUp->setEnabled(true);
+    }
 
     // Перемещение записи вниз
     // Пункт возможен только когда выбрана одна строка
@@ -390,12 +434,15 @@ void RecordTableScreen::toolsUpdate(void)
     if(recordTableController->getView()->selectionModel()->hasSelection() &&
        (recordTableController->getView()->selectionModel()->selectedRows()).size() == 1 &&
        recordTableController->getView()->isSelectedSetToBottom() == false &&
-       recordTableController->getView()->isSortingEnabled() == false)
+       recordTableController->getView()->isSortingEnabled() == false
+      ) {
         actionMoveDn->setEnabled(true);
+    }
 
     // Обновляется состояние области редактирования текста
     if(recordTableController->getView()->selectionModel()->hasSelection() &&
-       recordTableController->getRowCount() > 0) {
+       recordTableController->getRowCount() > 0
+      ) {
         qDebug() << "In table select present";
         qDebug() << "In table row count is" << recordTableController->getRowCount();
         find_object<MetaEditor>("editorScreen")->set_textarea_editable(true);

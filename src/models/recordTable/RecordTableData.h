@@ -59,7 +59,7 @@ public:
 
     int insertNewRecord(int mode
                         , int pos
-                        , Record const &record);
+                        , std::shared_ptr<Record> record);
 
     void editRecordFields(int pos
                           , QMap<QString, QString> editFields);

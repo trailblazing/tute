@@ -420,7 +420,7 @@ namespace browser {
                 assert(r->generator());
                 r->generate();
                 r->active();
-                page = r->binded_only_page();
+                page = r->unique_page();
 
             }
 
@@ -676,8 +676,8 @@ namespace browser {
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
         if(_record) {
-            if(_record->binded_only_page()) {
-                if(_record->binded_only_page() == this) {
+            if(_record->unique_page()) {
+                if(_record->unique_page() == this) {
                     _record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
                 }
             }
@@ -767,7 +767,7 @@ namespace browser {
         //        }
 
         if(_record) {
-            if((!_record->binded_only_page()) || (_record->binded_only_page() != this)) {
+            if((!_record->unique_page()) || (_record->unique_page() != this)) {
                 // assert(_record->linkpage() == this);    // should always be true -> if not move note
 
                 // _record->linkpage(nullptr);

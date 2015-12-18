@@ -1,6 +1,7 @@
 #ifndef __RECORDTABLEMODEL_H__
 #define __RECORDTABLEMODEL_H__
 
+#include <memory>
 #include <QAbstractTableModel>
 #include <QModelIndex>
 #include <QVariant>
@@ -59,7 +60,7 @@ private:
     // Добавление записей
     int addTableData(int mode,
                      QModelIndex posIndex,
-                     const Record &record);
+                     std::shared_ptr<Record> record);
 
     void onRecordTableConfigChange(void);
 

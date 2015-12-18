@@ -102,7 +102,7 @@ namespace browser {
             std::set<std::shared_ptr<Record> > records = binded_records();
 
             for(auto i : records) {
-                if(i->binded_only_page() == this)
+                if(i->unique_page() == this)
                     i->page_to_nullptr();
             }
         }
@@ -153,7 +153,7 @@ namespace browser {
 
             void activator(std::shared_ptr<Record> record)
             {
-                assert(record->binded_only_page() == _the);
+                assert(record->unique_page() == _the);
                 _the->active();
             }
         };
@@ -210,7 +210,7 @@ namespace browser {
         friend Record::Record(const Record &obj);
         friend Record::~Record();
         friend Record *Record::bind_page(WebPage *page);
-        friend WebPage *Record::binded_only_page();
+        friend WebPage *Record::unique_page();
         friend bool Record::is_holder();
     };
 

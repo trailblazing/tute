@@ -1086,7 +1086,7 @@ void TreeScreen::addBranchToClipboard(ClipboardBranch *branch_clipboard_data, QS
 
     for(int i = 0; i < curr_item_record_table->size(); i++) {
         // Полный образ записи (с файлами и текстом)
-        Record record = *curr_item_record_table->getRecordFat(i);
+        std::shared_ptr<Record> record = curr_item_record_table->getRecordFat(i);
 
         branch_clipboard_data->addRecord(branch_id, record);
     }
@@ -1324,15 +1324,15 @@ void TreeScreen::on_knowtree_clicked(const QModelIndex &index)
 
 
     // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
-    //    if(appconfig.getInterfaceMode() == "mobile") {
-    QStringList path = item->getPathAsName();
+    if(appconfig.getInterfaceMode() == "mobile") {
+        QStringList path = item->getPathAsName();
 
-    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
-    int emptyStringIndex = path.indexOf("");
-    path.removeAt(emptyStringIndex);
+        // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+        int emptyStringIndex = path.indexOf("");
+        path.removeAt(emptyStringIndex);
 
-    find_object<RecordTableScreen>("recordTableScreen")->setTreePath(path.join(" > "));
-    //    }
+        find_object<RecordTableScreen>("recordTableScreen")->setTreePath(path.join(" > "));
+    }
 
 
 

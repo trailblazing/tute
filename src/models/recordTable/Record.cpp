@@ -40,41 +40,44 @@ void Record::page_to_nullptr()
 
     _page = nullptr;
 }
-// Конструктор копирования
-Record::Record(const Record &obj)
-    : std::enable_shared_from_this<Record>()
-    , _page(nullptr)
-{
-    if(obj._page != nullptr) {
 
-        _page = obj._page;
-        _page->bind_record(shared_from_this());
 
-        //        obj.breakpage();
+//// Конструктор копирования
+//Record::Record(const Record &obj)
+//    : std::enable_shared_from_this<Record>()
+//    , _page(nullptr)
+//{
+//    if(obj._page != nullptr) {
 
-        //        obj._page->record(nullptr);   // dangerous
-        //        obj._page = nullptr;          // readonly
-    }
+//        _page = obj._page;
+//        _page->bind_record(shared_from_this()); // does not work
 
-    // Скопировать нужно каждый кусочек класса, сами они не копируются
-    liteFlag = obj.liteFlag;
-    fieldList = obj.fieldList;
-    text = obj.text;
-    pictureFiles = obj.pictureFiles;
-    attachTableData = obj.attachTableData;
+//        //        obj.breakpage();
 
-    // Обратный указатель во включенном объекте должен указывать на новый экземпляр
-    attachTableData.setRecord(this);
-    attachTableData.updateAttachTableBackLink();
-    _is_registered = obj._is_registered;
-    _position = obj._position;
-    _open_link_in_new_window = obj._open_link_in_new_window;
-    //    bool    _active_immediately = false;
-    _generator = obj._generator;
-    _activator = obj._activator;
-}
+//        //        obj._page->record(nullptr);   // dangerous
+//        //        obj._page = nullptr;          // readonly
+//    }
 
-browser::WebPage *Record::binded_only_page()
+//    // Скопировать нужно каждый кусочек класса, сами они не копируются
+//    liteFlag = obj.liteFlag;
+//    fieldList = obj.fieldList;
+//    text = obj.text;
+//    pictureFiles = obj.pictureFiles;
+//    attachTableData = obj.attachTableData;
+
+//    // Обратный указатель во включенном объекте должен указывать на новый экземпляр
+//    attachTableData.setRecord(this);
+//    attachTableData.updateAttachTableBackLink();
+//    _is_registered = obj._is_registered;
+//    _position = obj._position;
+//    _open_link_in_new_window = obj._open_link_in_new_window;
+//    //    bool    _active_immediately = false;
+//    _generator = obj._generator;
+//    _activator = obj._activator;
+//}
+
+
+browser::WebPage *Record::unique_page()
 {
     //    browser::WebPage *page = nullptr;
 
@@ -175,7 +178,7 @@ Record::~Record()
         }
 
         if(_page->_record) {
-            assert(_page == _page->_record->binded_only_page());   // _page->rebind_record() make sure of this statement
+            assert(_page == _page->_record->unique_page());   // _page->rebind_record() make sure of this statement
 
             // multi record to one page:
             // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
@@ -587,11 +590,11 @@ void Record::setAttachTable(AttachTableData *iAttachTable)
 
 // Получение текста записи из памяти
 // Если запись зашифрована, возвращаемый текст будет расшифрован
-QString Record::getText() const
+QString Record::getTextFromFat() const
 {
     // У легкого объекта невозможно запросить текст из памяти, если так происходит - это ошибка вызывающей логики
     if(liteFlag == true)
-        criticalError("Cant get text from lite record object" + getIdAndNameAsString());
+        criticalError("Can\'t get text from lite record object" + getIdAndNameAsString());
 
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то расшифровка невозможна
@@ -612,11 +615,12 @@ QString Record::getText() const
 
 
 // Получение значения текста напрямую из файла, без заполнения свойства text
-QString Record::getTextDirect()
+QString Record::getTextDirectFromLite()
 {
     // У тяжелого объекта невозможно получить текст записи из файла (у тяжелого объекта текст записи хранится в памяти)
-    if(liteFlag == false)
-        criticalError("Cant run Record::getTextDirect() for non lite record " + getIdAndNameAsString());
+    if(liteFlag == false) {
+        criticalError("Can\'t run Record::getTextDirect() for non lite record " + getIdAndNameAsString());
+    }
 
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то расшифровка невозможна
@@ -650,11 +654,11 @@ QString Record::getTextDirect()
 
 // Установка текста записи как свойства объекта
 // Принимает незашифрованные данные, сохраняет их в памяти, при записи шифрует если запись зашифрована
-void Record::setText(QString iText)
+void Record::setTextToFat(QString iText)
 {
     // Легкому объекту невозможно установить текст, если так происходит - это ошибка вызывающей логики
     if(liteFlag == true)
-        criticalError("Cant set text for lite record object" + getIdAndNameAsString());
+        criticalError("Can\'t set text for lite record object" + getIdAndNameAsString());
 
     // Если шифровать ненужно
     if(fieldList.value("crypt").length() == 0 || fieldList.value("crypt") == "0")

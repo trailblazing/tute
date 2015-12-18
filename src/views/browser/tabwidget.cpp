@@ -634,7 +634,7 @@ namespace browser {
                            , this, recordtablecontroller); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
         //        record->view(webView);  // inside PageView initialization
         //webView->setPage(new WebPage(_profile, webView));
-        assert(record->binded_only_page());
+        assert(record->unique_page());
 
         urlLineEdit->setWebView(view);
         connect(view, SIGNAL(loadStarted()), this, SLOT(webViewLoadStarted()));
@@ -664,7 +664,7 @@ namespace browser {
         //record->page()->load(record);
         //globalparameters.entrance()->invoke_view(record);
 
-        assert(record->binded_only_page());
+        assert(record->unique_page());
 
         //        int lc = _lineedits->count();
         //        int c = count();
@@ -688,7 +688,7 @@ namespace browser {
         //        }
 
         assert(view);
-        assert(record->binded_only_page());
+        assert(record->unique_page());
         return view; // TabWidget::newTabFull::WebView *
     }
 
@@ -748,7 +748,7 @@ namespace browser {
         if(index < 0 || index >= count())
             return;
 
-        assert(webView(index)->page()->current_record()->binded_only_page());
+        assert(webView(index)->page()->current_record()->unique_page());
         //WebView *tab =
         newTab(webView(index)->page()->current_record()
                // , false
@@ -854,7 +854,7 @@ namespace browser {
                     std::shared_ptr<Record> record = view->page()->current_record();
 
                     if(record) {
-                        assert(record->binded_only_page());
+                        assert(record->unique_page());
                         //                    QModelIndex proxyindex = view->recordtablecontroller()->convertIdToProxyIndex(record->getField("id"));
                         //                    int position = view->recordtablecontroller()->convertProxyIndexToPos(proxyindex);
                         //                    RecordTableView *recordtableview = view->recordtablecontroller()->getView();
@@ -1036,7 +1036,7 @@ namespace browser {
             //            Record *record;
             std::shared_ptr<Record> record_ = webView->page()->current_record();
 
-            if(record_->binded_only_page()->url() != url) {
+            if(record_->unique_page()->url() != url) {
                 //                //                record = record_;
                 //                //            } else {
                 //                record = request_record(url);
@@ -1418,7 +1418,7 @@ namespace browser {
 
         void activator(std::shared_ptr<Record> record)
         {
-            record->binded_only_page()->active();
+            record->unique_page()->active();
 
         }
 
@@ -1450,7 +1450,7 @@ namespace browser {
                       , wvh
                   )
               );  // ->binded_only_page()->view();
-        return record->binded_only_page()->view();
+        return record->unique_page()->view();
     }()
 
       )

@@ -663,10 +663,10 @@ QString KnowTreeModel::pasteSubbranchRecurse(TreeItem *item,
     // -----------------------------------------------
 
     // Выясняются данные конечных записей
-    QList< Record > records = subbranch->getBranchRecords(startBranchId);
+    QList< std::shared_ptr<Record> > records = subbranch->getBranchRecords(startBranchId);
 
-    foreach(Record record, records) {
-        qDebug() << "Add table record " + record.getField("name");
+    foreach(std::shared_ptr<Record> record, records) {
+        qDebug() << "Add table record " + record->getField("name");
         newitem->recordtableGetTableData()->insertNewRecord(ADD_NEW_RECORD_TO_END,
                                                             0,
                                                             record);

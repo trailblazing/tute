@@ -15,6 +15,7 @@ class RecordTableData;
 class RecordTableModel;
 class RecordTableProxyModel;
 class ClipboardRecords;
+class RecordTableScreen;
 
 namespace browser {
     class Entrance;
@@ -30,7 +31,7 @@ namespace browser {
 class RecordTableController : public QObject {
     Q_OBJECT
 public:
-    RecordTableController(QObject *parent = 0);
+    RecordTableController(RecordTableScreen *recordtablescreen);
     virtual ~RecordTableController();
 
     void init(void);
@@ -118,9 +119,9 @@ protected:
     void sychronize_attachtable_to_record(const int pos);
     void update_browser(const int source_pos);
 
-    RecordTableView *view;
-    RecordTableModel *recordSourceModel; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
-    RecordTableProxyModel *recordProxyModel;
+    RecordTableView         *view;
+    RecordTableModel        *recordSourceModel; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
+    RecordTableProxyModel   *recordProxyModel;
 
     void addNewRecord(int mode);
 
@@ -130,12 +131,12 @@ protected:
         = add_new_record_after
     );
 
-    int new_record(Record const &record
+    int new_record(std::shared_ptr<Record> record
                    , const int mode
                    = add_new_record_after
                   );
 
-    int addNew(int mode, const Record &record);
+    int addNew(int mode, std::shared_ptr<Record> record);
 
     void editField(int pos
                    , QString pin
@@ -147,7 +148,7 @@ protected:
     friend class browser::Entrance;
     //friend class WebView;
     //    friend Record *register_record(const QUrl &_url, std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator, RecordTableController *_recordtablecontroller);
-    friend std::shared_ptr<Record> register_record(Record const &record
+    friend std::shared_ptr<Record> register_record(std::shared_ptr<Record> record
                                    //                                   , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
                                    , RecordTableController *_recordtablecontroller);
 

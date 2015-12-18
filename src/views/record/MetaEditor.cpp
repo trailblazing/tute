@@ -159,7 +159,7 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
                                        //            , _record->binded_only_page()
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
-        assert(_record->binded_only_page());
+        assert(_record->unique_page());
         _record->active();
     });
 
@@ -169,7 +169,7 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
         //            Q_UNUSED(home)
-        browser::WebPage *page = _record->binded_only_page();
+        browser::WebPage *page = _record->unique_page();
         assert(page);
         QString home = _record->getNaturalFieldSource("home");
 

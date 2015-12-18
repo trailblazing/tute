@@ -254,7 +254,8 @@ namespace browser {
     {
         if(event->buttons() == Qt::LeftButton
            && (event->pos() - _dragstartpos).manhattanLength() > QApplication::startDragDistance()
-           && _browserview) {
+           && _browserview
+          ) {
             QDrag *drag = new QDrag(this);
             QMimeData *mimeData = new QMimeData;
             mimeData->setText(QString::fromUtf8(_browserview->page()->url().toEncoded()));

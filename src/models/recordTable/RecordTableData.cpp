@@ -121,7 +121,10 @@ QString RecordTableData::getText(int pos)
     if(pos < 0 || pos >= size())
         return QString();
 
-    return tableData[pos]->getTextDirect();
+    if(tableData[pos]->isLite())
+        return tableData[pos]->getTextDirectFromLite();
+    else
+        return tableData[pos]->getTextFromFat();
 }
 
 
@@ -254,13 +257,14 @@ std::shared_ptr<Record> RecordTableData::getRecordLite(int pos)
 std::shared_ptr<Record> RecordTableData::getRecordFat(int pos)
 {
     // Копия записи из дерева
-    std::shared_ptr<Record> resultRecord = getRecordLite(pos);
+    std::shared_ptr<Record> resultRecord = getRecord(pos);  //std::shared_ptr<Record> resultRecord = getRecordLite(pos);
 
+    // original
     // Переключение копии записи на режим с хранением полного содержимого
-    resultRecord->switchToFat();
+    if(resultRecord->isLite())resultRecord->switchToFat();
 
     // Добавление текста записи
-    resultRecord->setText(getText(pos));
+    resultRecord->setTextToFat(getText(pos));
 
     // Добавление бинарных образов файлов картинок
     QString directory = appconfig.get_tetradir() + "/base/" + resultRecord->getField("dir");
@@ -366,14 +370,14 @@ QDomElement RecordTableData::exportDataToDom(QDomDocument *doc) const
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
 int RecordTableData::insertNewRecord(int mode
                                      , int pos
-                                     , Record const &record_)
+                                     , std::shared_ptr<Record> record)
 {
-    std::shared_ptr<Record> record = std::make_shared<Record>(record_);
+    //    std::shared_ptr<Record> record = std::make_shared<Record>(record_);
     record->is_registered(true);
 
     if(treeItem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
 
-    // Мотод должен принять полновесный объект записи
+    // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
     if(record->isLite() == true)
         criticalError("RecordTableData::insertNewRecord() can't insert lite record");
 
@@ -425,7 +429,7 @@ int RecordTableData::insertNewRecord(int mode
     else
         record->pushFatAttributes();
 
-    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
+    // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
     record->switchToLite();
 
     // Запись добавляется в таблицу конечных записей

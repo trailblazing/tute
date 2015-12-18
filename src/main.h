@@ -175,7 +175,7 @@ extern std::string getDifference(const std::string &url_compare_stored, const st
 //                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
 //                               , RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController());
 
-extern std::shared_ptr<Record> register_record(Record const &record
+extern std::shared_ptr<Record> register_record(std::shared_ptr<Record> record
                                                //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
                                                , RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController());
 extern std::shared_ptr<Record> check_record(const QUrl &_url);

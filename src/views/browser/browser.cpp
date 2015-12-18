@@ -301,7 +301,7 @@ namespace browser {
         //assert(new_view->page());
         //record->page(new_view->page());
         //assert(_backup->page());
-        assert(record->binded_only_page());
+        assert(record->unique_page());
     }
 
     Browser::Browser(
@@ -402,7 +402,7 @@ namespace browser {
             record->active();
         }
 
-        assert(record->binded_only_page());
+        assert(record->unique_page());
 
         run_script(style_source);       //        assert(record->linkpage());
 
