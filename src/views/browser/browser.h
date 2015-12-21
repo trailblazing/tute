@@ -47,7 +47,7 @@
 #include <QtGui/QIcon>
 #include <QtCore/QUrl>
 #include <QWebEngineSettings>
-#include "controllers/recordTable/RecordTableController.h"
+#include "controllers/recordTable/TableController.h"
 //#include "tabmanager.h"
 
 
@@ -83,7 +83,7 @@ namespace browser {
     public:
         Browser(
             QUrl const &url         // Record *const record
-            , RecordTableController *recordtablecontroller
+            , TableController *recordtablecontroller
             , Entrance *_entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -92,7 +92,7 @@ namespace browser {
 
         Browser(
             const QByteArray &state
-            , RecordTableController *recordtablecontroller
+            , TableController *recordtablecontroller
             , Entrance *_entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -100,7 +100,7 @@ namespace browser {
 
         Browser(
             std::shared_ptr<Record> record
-            , RecordTableController *recordtablecontroller
+            , TableController *recordtablecontroller
             , Entrance *entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -128,7 +128,7 @@ namespace browser {
         QStatusBar  *status_bar();       // {return globalparameters.getStatusBar();};
         QStatusBar  *status_bar() const; // {return globalparameters.getStatusBar();};
         WebView     *invoke_page(std::shared_ptr<Record> record);
-        void        equip_registered(std::shared_ptr<Record> record);
+        std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record);
 
     public slots:
         void loadPage(const QString &url);
@@ -190,7 +190,7 @@ namespace browser {
 
     private:
         void init();
-        void register_url(QUrl const &url);
+        std::shared_ptr<Record> register_url(QUrl const &url);
 
         void run_script(const QString &style_source);
         void loadDefaultState();
@@ -201,7 +201,7 @@ namespace browser {
         //    void initUrl();
     private:
 
-        RecordTableController   *_recordtablecontroller;
+        TableController   *_recordtablecontroller;
         TabWidget               *_tabmanager;
         //    QDockWidget *dock_widget;
         //        QToolBar *navigater;

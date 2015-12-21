@@ -38,11 +38,11 @@
 #include "entrance.h"
 #include "entranceinfo.h"
 #include "toolbarsearch.h"
-#include "views/recordTable/RecordTableScreen.h"
-#include "controllers/recordTable/RecordTableController.h"
-#include "views/recordTable/RecordTableView.h"
-#include "models/recordTable/RecordTableData.h"
-#include "models/recordTable/RecordTableModel.h"
+#include "views/recordTable/TableScreen.h"
+#include "controllers/recordTable/TableController.h"
+#include "views/recordTable/TableView.h"
+#include "models/recordTable/TableData.h"
+#include "models/recordTable/TableModel.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/webview.h"
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
@@ -348,7 +348,7 @@ namespace browser {
                        && homeurl != page->url()
                       ) {
                         record->setNaturalFieldSource("url", home);
-                        page->load(record, true);
+                        ::equip_registered(record, page)->active(); // page->load(record, true);
                     }
                 }
             }
@@ -518,7 +518,7 @@ namespace browser {
     //        qobject_cast<Entrance *>(parent)->window_list().prepend(browser);
     //    }
 
-    Entrance::Entrance(RecordTableController *recordtablecontroller, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
+    Entrance::Entrance(TableController *recordtablecontroller, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
         : QDockWidget(parent, flags)  //, _application(application)
         , _mainWindows(QList<QPointer<Browser> >())
         , _recordtablecontroller(recordtablecontroller)
@@ -731,19 +731,20 @@ namespace browser {
     {
         //        Record *r =
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
-        request_record(
-            url
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                ""
-                , &Entrance::ActiveRecordBinder::generator
-                , ara
-            )
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
-                ""
-                , &Entrance::ActiveRecordBinder::activator
-                , ara
-            )
-        );
+        auto r = request_record(
+                     url
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                         ""
+                         , &Entrance::ActiveRecordBinder::binder
+                         , ara
+                     )
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                         ""
+                         , &Entrance::ActiveRecordBinder::activator
+                         , ara
+                     )
+                 );
+        r->active();
         //        r->active_immediately(true);
         //        return active_record(r);
     }
@@ -978,6 +979,7 @@ namespace browser {
     std::pair<Browser *, WebView *> Entrance::equip_registered(std::shared_ptr<Record> record)
     {
         assert(record);
+        assert(record->is_registered());
         clean();
         //DockedWindow *w = nullptr;
         std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
@@ -1004,12 +1006,12 @@ namespace browser {
                     auto generator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
                         return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                                    ""
-                                   , &WebPage::ActiveRecordBinder::generator
+                                   , &WebPage::ActiveRecordBinder::binder
                                    , ar
                                );
                     };
                     auto activator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::activator
                                    , ar
@@ -1056,8 +1058,8 @@ namespace browser {
                     //            dp.second->show();
 
                     // registered record, but have no generator:
-                    boost::shared_ptr<WebPage::ActiveRecordBinder> ar = boost::make_shared<WebPage::ActiveRecordBinder>(dp.second->page(), true);
-                    record->generator(
+                    boost::shared_ptr<WebPage::ActiveRecordBinder> ar = boost::make_shared<WebPage::ActiveRecordBinder>(dp.second->page());
+                    record->binder(
                         generator(ar)
                     );
 
@@ -1091,6 +1093,7 @@ namespace browser {
                 setWidget(dp.first);
             }
         }
+
         assert(dp.first);
         assert(dp.second);
         return dp;  // qobject_cast<DockedWindow *>(widget()); //

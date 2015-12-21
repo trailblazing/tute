@@ -32,7 +32,7 @@
 #include "views/browser/toolbarsearch.h"
 #include "views/browser/chasewidget.h"
 #include "libraries/FlatControl.h"
-
+#include "models/recordTable/TableData.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -43,7 +43,8 @@ FindScreen::FindScreen(QWidget *parent)
     , _navigater(new QToolBar(this))
     , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
     , _progress(new QProgressDialog(this))
-    , _findtable(new FindTableWidget(this))
+      //    , _findtable(new FindTableWidget(this))
+      //    , _result
     , _toolbarsearch(new browser::ToolbarSearch(this))
 {
     _navigater->setMaximumWidth(130);
@@ -222,6 +223,10 @@ void FindScreen::setupComboOption(void)
     treeSearchArea->addItem(QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch")); // Текущая ветка
     treeSearchArea->setCurrentIndex(appconfig.getFindScreenTreeSearchArea());
 
+    if(appconfig.getInterfaceMode() == "desktop") {
+        treeSearchArea->hide();
+    }
+
     if(appconfig.getInterfaceMode() == "mobile") {
         // wordRegard->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
         // howExtract->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
@@ -324,6 +329,7 @@ void FindScreen::setupWhereFindLine(void)
 void FindScreen::assemblyWhereFindLine(void)
 {
     whereFindLine = new QHBoxLayout();
+    whereFindLine->setEnabled(false);
 
     if(appconfig.getInterfaceMode() == "desktop")
         whereFindLine->addWidget(whereFindLabel);
@@ -333,7 +339,9 @@ void FindScreen::assemblyWhereFindLine(void)
 
     whereFindLine->addWidget(wordRegard);
     whereFindLine->addWidget(howExtract);
-    whereFindLine->addWidget(treeSearchArea);
+
+    if(appconfig.getInterfaceMode() == "mobile") whereFindLine->addWidget(treeSearchArea);
+
     whereFindLine->addWidget(findInPin);
     whereFindLine->addWidget(findInName);
     whereFindLine->addWidget(findInAuthor);
@@ -351,8 +359,7 @@ void FindScreen::assemblyWhereFindLine(void)
 void FindScreen::setupSignals(void)
 {
     // При каждом изменении текста в строке запроса
-    connect(_toolbarsearch//_findtext
-            , &browser::ToolbarSearch::textChanged, this, &FindScreen::enableFindButton);
+    connect(_toolbarsearch, &browser::ToolbarSearch::textChanged, this, &FindScreen::enableFindButton);
 
     // При каждом изменении текста извне может вырабатыватся этот сигнал
     // Он вырабатывается в слоте setFindText()
@@ -360,17 +367,22 @@ void FindScreen::setupSignals(void)
 
 
     // При нажатии Enter в строке запроса
-    connect(_toolbarsearch//_findtext
-            , &browser::ToolbarSearch::returnPressed, this, &FindScreen::findClicked);
+    connect(_toolbarsearch, &browser::ToolbarSearch::returnPressed, this
+    , [this]() {FindScreen::findClicked();}
+           );
 
     // При нажатии кнопки Find
-    connect(_findstartbutton, &QPushButton::clicked, this, &FindScreen::findClicked);
+    connect(_findstartbutton, &QPushButton::clicked, this
+    , [this]() {FindScreen::findClicked();}
+           );
 
     // При нажатии кнопки разворачивания/сворачивания инструментов поиска
     connect(toolsExpand, &FlatToolButton::clicked, this, &FindScreen::toolsExpandClicked);
 
     // После установки текста извне, вырабатывается этот сигнал
-    connect(this, &FindScreen::findClickedAfterAnotherTextChanged, this, &FindScreen::findClicked);
+    connect(this, &FindScreen::findClickedAfterAnotherTextChanged, this
+    , [this]() {FindScreen::findClicked();}
+           );
 
 
     // При нажатии кнопки закрытия
@@ -388,6 +400,11 @@ void FindScreen::setupSignals(void)
     connect(howExtract, howExtract->currentindexchanged, this, &FindScreen::changedHowExtract);
 
     connect(treeSearchArea, treeSearchArea->currentindexchanged, this, &FindScreen::changedTreeSearchArea);
+
+    //    assert(globalparameters.vtab());
+    //    connect(globalparameters.vtab(), &QTabWidget::currentChanged
+    //            , this, &FindScreen::changedTreeSearchArea    // , &appconfig, &AppConfig::setFindScreenTreeSearchArea
+    //           );
 
     connect(findInPin, &QCheckBox::stateChanged, this, &FindScreen::changedFindInPin);
 
@@ -416,10 +433,11 @@ void FindScreen::setupUI(void)
 
 void FindScreen::assembly(void)
 {
-    centralDesktopLayout = new QVBoxLayout();
+    centralDesktopLayout = new QVBoxLayout(this);
 
     if(appconfig.getInterfaceMode() == "desktop") {
         toolsLine = new QHBoxLayout();
+        toolsLine->setEnabled(true);
         toolsLine->addLayout(toolsAreaFindTextAndButton);
         //toolsLine->addLayout(toolsAreaComboOption);
         toolsLine->addLayout(toolsAreaCloseButton);
@@ -429,6 +447,7 @@ void FindScreen::assembly(void)
 
     if(appconfig.getInterfaceMode() == "mobile") {
         toolsGrid = new QGridLayout();
+        toolsGrid->setEnabled(true);
         toolsGrid->addLayout(toolsAreaFindTextAndButton, 0, 0);
         toolsGrid->addLayout(toolsAreaCloseButton,       0, 1);
         //toolsGrid->addLayout(toolsAreaComboOption,       1, 0);
@@ -437,9 +456,13 @@ void FindScreen::assembly(void)
     }
 
     centralDesktopLayout->addLayout(whereFindLine);
-    centralDesktopLayout->addWidget(_findtable, 10);
+    //    centralDesktopLayout->addWidget(_findtable, 10);
     centralDesktopLayout->setContentsMargins(0, 0, 0, 0); // Boundaries removed // Границы убираются
-    centralDesktopLayout->setSizeConstraint(QLayout::SetNoConstraint);
+    centralDesktopLayout->setSizeConstraint(QLayout::   // SetFixedSize // this setting will lead TableScreen can not resize!!!
+                                            SetNoConstraint
+                                           );
+    centralDesktopLayout->setMargin(0);
+    centralDesktopLayout->setSpacing(0);
 
     // whereFindLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     // _findtable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -450,6 +473,25 @@ void FindScreen::assembly(void)
     switchToolsExpand(appconfig.getFindInBaseExpand());
 }
 
+void FindScreen::adjustSize()
+{
+    //    int height = toolsLine->isEnabled() ? toolsLine->sizeHint().height() : 0 + whereFindLine->isEnabled() ? whereFindLine->sizeHint().height() : 0;
+    //    setMinimumHeight(height);
+    //    setMaximumHeight(height);
+    //    setMinimumWidth(width());
+    //    setMaximumWidth(width());
+    QWidget::adjustSize();
+}
+
+void FindScreen::resizeEvent(QResizeEvent *e)
+{
+    //    adjustSize();
+    //    auto hint = whereFindLine->sizeHint();
+    //    int height = whereFindLine->sizeHint().height();
+    setMinimumHeight(toolsLine->sizeHint().height() + whereFindLine->sizeHint().height());
+    setMaximumHeight(toolsLine->sizeHint().height() + whereFindLine->sizeHint().height());
+    QWidget::resizeEvent(e);
+}
 
 void FindScreen::enableFindButton(const QString &text)
 {
@@ -470,16 +512,16 @@ void FindScreen::setFindText(QString text)
 
 
 // Слот, срабатывающий при нажатии на кнопку начала поиска
-void FindScreen::findClicked(void)
+std::shared_ptr<TableData> FindScreen::findClicked(void)
 {
     // Поля, где нужно искать (Заголовок, текст, теги...)
-    searchArea["pin"]  = findInPin->isChecked();
-    searchArea["name"]  = findInName->isChecked();
-    searchArea["author"] = findInAuthor->isChecked();
-    searchArea["home"]   = findInHome->isChecked();
-    searchArea["url"]   = findInUrl->isChecked();
-    searchArea["tags"]  = findInTags->isChecked();
-    searchArea["text"]  = findInText->isChecked();
+    searchArea["pin"]       = findInPin->isChecked();
+    searchArea["name"]      = findInName->isChecked();
+    searchArea["author"]    = findInAuthor->isChecked();
+    searchArea["home"]      = findInHome->isChecked();
+    searchArea["url"]       = findInUrl->isChecked();
+    searchArea["tags"]      = findInTags->isChecked();
+    searchArea["text"]      = findInText->isChecked();
 
     // Проверяется, установлено ли хоть одно поле для поиска
     int findEnableFlag = 0;
@@ -494,12 +536,11 @@ void FindScreen::findClicked(void)
         messageBox.setText(tr("Verify that you selected fields for search for starting find process."));
         messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
         messageBox.exec();
-        return;
+        return nullptr;
     }
 
     // Выясняется список слов, которые нужно искать
-    searchWordList = text_delimiter_decompose(//_findtext
-                         _toolbarsearch->text());
+    searchWordList = text_delimiter_decompose(_toolbarsearch->text());
 
     if(searchWordList.size() == 0) {
         QMessageBox messageBox(this);
@@ -507,66 +548,86 @@ void FindScreen::findClicked(void)
         messageBox.setText(tr("The search request is too short. Enter at least one word."));
         messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
         messageBox.exec();
-        return;
+        return nullptr;
     }
 
-    findStart();
+    return findStart();
 }
 
 
-void FindScreen::findStart(void)
+std::shared_ptr<TableData> FindScreen::findStart(void)
 {
+
+    if(globalparameters.vtab()->currentWidget()->objectName() == "recordTableScreen"
+       && !find_object<TreeScreen>("treeScreen")->getCurrentItemIndex().isValid()
+      ) {
+        appconfig.setFindScreenTreeSearchArea(2);
+    }
+
     // Сохраняется текущая редактируемая запись, чтобы и в ней
     // были найдены введенные перед нажатием Find данные, если они есть
     find_object<MainWindow>("mainwindow")->saveTextarea();
 
-    // Очищается таблица результата поиска
-    _findtable->clearAll();
+    //    // Очищается таблица результата поиска
+    //    _findtable->re_initialize();
 
     // Выясняется ссылка на модель дерева данных
-    KnowTreeModel *searchModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>("knowTreeView")->model());
+    KnowTreeModel *search_model = static_cast<KnowTreeModel *>(find_object<KnowTreeView>("knowTreeView")->model());
 
 
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
-    TreeItem *startItem = 0;
-    int totalRec = 0;
+    std::shared_ptr<TreeItem> start_item;
+    std::shared_ptr<TableData> source;
+    int total_records = 0;
 
-    if(appconfig.getFindScreenTreeSearchArea() == 0) { // Если нужен поиск во всем дереве
+
+    //__________________________________________________________________________________________________
+
+
+    auto global_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result) {
         // Корневой элемент дерева
-        startItem = searchModel->rootItem;
-
+        start_item = search_model->rootItem;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
-        totalRec = searchModel->getAllRecordCount();
-    } else if(appconfig.getFindScreenTreeSearchArea() == 1) {   // If you want to search the current branch // Если нужен поиск в текущей ветке
+        total_records = search_model->getAllRecordCount();
+        result->empty();
+    };
+
+    auto branch_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result) {
+
         // Индекс текущей выбранной ветки
         QModelIndex currentItemIndex = find_object<TreeScreen>("treeScreen")->getCurrentItemIndex();
 
         // Текущая ветка
-        startItem = searchModel->getItem(currentItemIndex);
+        start_item = search_model->getItem(currentItemIndex);
 
         // Количество элементов (веток) в текущей ветке и всех подветках
-        totalRec = searchModel->getRecordCountForItem(startItem);
-    }
+        total_records = search_model->getRecordCountForItem(start_item);
+        result->empty();
+    };
 
-    qDebug() << "Start finding in " << totalRec << " records";
+    Q_UNUSED(branch_search_prepare)
+
+    auto result_set_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result, std::shared_ptr<TableData> &source) {
+        // to be done
+        QMap<QString, QString> data;
+        start_item = std::make_shared<TreeItem>(data);
+
+        source.swap(_result);
+        QDomDocument doc;
+        auto dommodel = source->dom_from_data(&doc);    // source->init(startItem, QDomElement());
+        start_item->recordtableInit(dommodel);
+
+        result = std::make_shared<TableData>();        // assert(_result->size() == 0); //_result->empty();
+        total_records = source->size();
+    };
 
 
-    // Если стартовый элемент не был установлен
-    if(startItem == 0) {
-        QMessageBox messageBox(this);
-        messageBox.setWindowTitle(tr("Cannot start find process"));
-        messageBox.setText(tr("Cant set start search element in tree."));
-        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
-        messageBox.exec();
-        return;
-    }
-
-    if(0 != totalRec) {
+    auto prepare_progressbar = [&]() {
         // Показывается виджет линейки наполняемости
         _progress->reset();
         _progress->setLabelText(tr("Search..."));
-        _progress->setRange(0, totalRec);
+        _progress->setRange(0, total_records);
         _progress->setModal(true);
         _progress->setMinimumDuration(0);
         _progress->show();
@@ -575,28 +636,120 @@ void FindScreen::findStart(void)
         totalProgressCounter = 0;
         cancelFlag = 0;
 
-        //Вызывается рекурсивный поиск в дереве
-        findRecurse(startItem);
+    };
 
-        // После вставки всех данных подгоняется ширина колонок
-        _findtable->updateColumnsWidth();
 
+    auto assert_start_item = [&]() {
+        // Если стартовый элемент не был установлен
+        //        if(!startItem)
+        //        {
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Cannot start find process"));
+        messageBox.setText(tr("Can\'t set start search element in tree."));
+        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
+        messageBox.exec();
+        //        return nullptr;
+        //        } else
+        //            return startItem;
+    };
+
+
+    auto close_progressbar = [&]() {
         // Виджет линейки наполняемости скрывается
         _progress->reset();
         _progress->hide();
         _progress->close();
-    } else {
-        _progress->reset();
-        _progress->hide();
-        _progress->close();
-        // create a new note and open in browser
-        // if it is a web address, open it
-        // else, open from search engine
+    };
+
+    auto final_search = [&](std::shared_ptr<TreeItem> &start_item, std::shared_ptr<TableData> &result) {
+        qDebug() << "Start finding in " << total_records << " records";
+        prepare_progressbar();
+        //Вызывается рекурсивный поиск в дереве
+        find_recursive(start_item, result);
+
+        //        if(result->size() == 0 && appconfig.getFindScreenTreeSearchArea() == 2) {
+        //            global_search_prepare(start_item, total_records, result);
+        //        }
+
+    };
+
+    auto output = [&](std::shared_ptr<TableData> &result) {
+
+        // После вставки всех данных подгоняется ширина колонок
+        //        _findtable->updateColumnsWidth();
+        globalparameters.getTreeScreen()->on_found(result);
+    };
+
+
+    //__________________________________________________________________________________________________
+
+
+
+
+    if( // appconfig.getFindScreenTreeSearchArea() == 2
+        //        globalparameters.vtab()->currentWidget()->objectName() == "recordTableScreen"
+        //        && !find_object<TreeScreen>("treeScreen")->getCurrentItemIndex().isValid()
+        _result->size() > 0
+    ) { // search in last search result
+        result_set_search_prepare(start_item, total_records, _result, source);
+
+        if(!start_item) {assert_start_item(); return nullptr;}
+
+        if(0 != total_records) {
+            final_search(start_item, _result);
+        }
     }
+
+    if(0 == _result->size()) {
+
+        //    if( // appconfig.getFindScreenTreeSearchArea() == 1
+        //        // globalparameters.vtab()->currentWidget()->objectName() == "treeScreen"
+        //        find_object<TreeScreen>("treeScreen")->getCurrentItemIndex().isValid()
+        //    ) { // If you want to search the current branch // Если нужен поиск в текущей ветке
+        //        branch_search_prepare(start_item, total_records, _result);
+        //    }
+
+        //    if( // appconfig.getFindScreenTreeSearchArea() == 0
+        //        globalparameters.vtab()->currentWidget()->objectName() == "treeScreen"
+        //        && !find_object<TreeScreen>("treeScreen")->getCurrentItemIndex().isValid()
+        //    ) { // Если нужен поиск во всем дереве
+
+        global_search_prepare(start_item, total_records, _result);
+
+        if(!start_item) {assert_start_item(); return nullptr;}
+
+        if(0 != total_records) {
+            final_search(start_item, _result);
+        }
+
+        //    }
+
+    }
+
+
+
+
+
+    //        close_progressbar();
+    //    } else {
+
+    close_progressbar();
+
+
+
+    // create a new note and open in browser
+    // if it is a web address, open it
+    // else, open from search engine
+    //    }
+
+    output(_result);
+
+
+    return _result;
 }
 
 
-void FindScreen::findRecurse(TreeItem *curritem)
+void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_ptr<TableData>  result)
 {
     // Если была нажата отмена поиска
     if(cancelFlag == 1)return;
@@ -611,7 +764,7 @@ void FindScreen::findRecurse(TreeItem *curritem)
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
-        RecordTableData *searchRecordTable = curritem->recordtableGetTableData();
+        std::shared_ptr<TableData> searchRecordTable = curritem->recordtableGetTableData();
 
         // Перебираются записи таблицы
         for(int i = 0; i < searchRecordTable->size(); i++) {
@@ -627,13 +780,13 @@ void FindScreen::findRecurse(TreeItem *curritem)
             // Результаты поиска в полях
             QMap<QString, bool> iteration_search_result;
 
-            iteration_search_result["pin"]  = false;
-            iteration_search_result["name"]  = false;
-            iteration_search_result["author"] = false;
-            iteration_search_result["home"]   = false;
-            iteration_search_result["url"]   = false;
-            iteration_search_result["tags"]  = false;
-            iteration_search_result["text"]  = false;
+            iteration_search_result["pin"]      = false;
+            iteration_search_result["name"]     = false;
+            iteration_search_result["author"]   = false;
+            iteration_search_result["home"]     = false;
+            iteration_search_result["url"]      = false;
+            iteration_search_result["tags"]     = false;
+            iteration_search_result["text"]     = false;
 
             // Текст в котором будет проводиться поиск
             QString inspectText;
@@ -649,11 +802,11 @@ void FindScreen::findRecurse(TreeItem *curritem)
                 if(searchArea[key] == true) {
                     if(key != "text") {
                         // Поиск в обычном поле
-                        inspectText = searchRecordTable->getField(key, i);
+                        inspectText = searchRecordTable->field(key, i);
                         iteration_search_result[key] = findInTextProcess(inspectText);
                     } else {
                         // Поиск в тексте записи
-                        inspectText = searchRecordTable->getText(i);
+                        inspectText = searchRecordTable->text(i);
                         QTextDocument textdoc;
                         textdoc.setHtml(inspectText);
                         iteration_search_result[key] = findInTextProcess(textdoc.toPlainText());
@@ -670,24 +823,25 @@ void FindScreen::findRecurse(TreeItem *curritem)
 
             // Если запись найдена
             if(findFlag == 1) {
-                qDebug() << "Find succesfull in " << searchRecordTable->getField("name", i);
+                qDebug() << "Find succesfull in " << searchRecordTable->field("name", i);
 
                 // QString pin0 = curritem->getField("pin");
                 // QString pin1 = searchRecordTable->getField("pin", i);   // work
 
-                // В таблицу результатов поиска добавляются данные
-                // Имя записи
-                // Имя ветки
-                // Теги
-                // Путь к ветке
-                // ID записи в таблице конечных записей
-                _findtable->addRow(searchRecordTable->getField("name", i)
-                                   , searchRecordTable->getField("pin", i)  // curritem->getField("pin")
-                                   , curritem->getField("name")
-                                   , searchRecordTable->getField("tags", i)
-                                   , curritem->getPath()
-                                   , searchRecordTable->getField("id", i)
-                                  );
+                //                // В таблицу результатов поиска добавляются данные
+                //                // Имя записи
+                //                // Имя ветки
+                //                // Теги
+                //                // Путь к ветке
+                //                // ID записи в таблице конечных записей
+                //                _findtable->addRow(searchRecordTable->field("name", i)
+                //                                   , searchRecordTable->field("pin", i)  // curritem->getField("pin")
+                //                                   , curritem->getField("name")
+                //                                   , searchRecordTable->field("tags", i)
+                //                                   , curritem->getPath()
+                //                                   , searchRecordTable->field("id", i)
+                //                                  );
+                result->insert_new_record(ADD_NEW_RECORD_TO_END, result->work_pos(), searchRecordTable->record_fat(i));
             }
 
         } // Закрылся цикл перебора записей в таблице конечных записей
@@ -696,7 +850,7 @@ void FindScreen::findRecurse(TreeItem *curritem)
 
     // Рекурсивная обработка каждой подчиненной ветки
     for(int i = 0; i < curritem->childCount(); i++)
-        findRecurse(curritem->child(i));
+        find_recursive(curritem->child(i), result);
 
 }
 
@@ -871,7 +1025,7 @@ void FindScreen::switchToolsExpand(bool flag)
     // Флаги поиска скрываются для любого интерфейса, так как они всегда находятся на отдельной строке
     wordRegard->setVisible(flag);
     howExtract->setVisible(flag);
-    treeSearchArea->setVisible(flag);
+    //    treeSearchArea->setVisible(flag);
     findInPin->setVisible(flag);
     findInName->setVisible(flag);
     findInAuthor->setVisible(flag);
@@ -879,14 +1033,19 @@ void FindScreen::switchToolsExpand(bool flag)
     findInUrl->setVisible(flag);
     findInTags->setVisible(flag);
     findInText->setVisible(flag);
+
+    whereFindLine->setEnabled(flag);
+    this->adjustSize();
 }
 
+// dangerous!
 void FindScreen::remove_id(const QString &id)
 {
-    _findtable->remove_id(id);
+    _result->delete_record_by_id(id);     // _findtable->remove_id(id);
 }
 
+// dangerous!
 void FindScreen::remove_row(const int row)
 {
-    _findtable->remove_row(row);
+    _result->delete_record(row);     // _findtable->remove_row(row);
 }

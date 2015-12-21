@@ -43,11 +43,11 @@
 #include "libraries/crypt/RC5Simple.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/GlobalParameters.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "views/recordTable/TableScreen.h"
 #include "models/dataBaseConfig/DataBaseConfig.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableData.h"
-#include "controllers/recordTable/RecordTableController.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableData.h"
+#include "controllers/recordTable/TableController.h"
 
 const int add_new_record_after = 2;
 using namespace std;
@@ -757,11 +757,11 @@ void init_random(void)
 
 std::shared_ptr<Record> register_record(
     std::shared_ptr<Record> record
-    , RecordTableController *_recordtablecontroller
+    , TableController *_recordtablecontroller
 )
 {
     assert(_recordtablecontroller);
-    RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+    std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
     assert(recordtabledata);
 
     //    Record record;
@@ -774,13 +774,14 @@ std::shared_ptr<Record> register_record(
     //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
 
     //                int pos = _recordtablecontroller->getFirstSelectionPos();
-    auto record_ = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(source_position);
+    auto _record = _recordtablecontroller->recordtable_model()->getRecordTableData()->record(source_position);
 
-    //assert(record_ == _record);
-    assert(record_->getNaturalFieldSource("url") == record->getNaturalFieldSource("url"));
+    assert(_record.get() == record.get());
+    //assert(record == _record);
+    assert(_record->getNaturalFieldSource("url") == record->getNaturalFieldSource("url"));
     //            }
     //assert(_record);
-    return record_; //_record;
+    return _record; //_record;
 }
 
 //Record *register_record(const QUrl &_url
@@ -826,11 +827,11 @@ std::shared_ptr<Record> check_record(const QUrl &_url)
     std::shared_ptr<Record> _record = nullptr;
 
 
-    RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
     assert(_recordtablecontroller);
 
     if(_recordtablecontroller) {
-        RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
         assert(recordtabledata);
 
         if(recordtabledata) {
@@ -849,36 +850,40 @@ namespace browser {
 std::shared_ptr<Record> request_record(
     std::shared_ptr<Record> record
     , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
 )
 {
     std::shared_ptr<Record> _record;
-    RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
     assert(_recordtablecontroller);
 
     if(_recordtablecontroller) {
-        RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
         assert(recordtabledata);
 
         if(recordtabledata) {
             _record = recordtabledata->find(record);
 
             if(!_record) {
-                record->generator(generator);
-                record->activator(activator);
+                //                record->binder(generator);
+                //                record->activator(activator);
                 _record = register_record(record, _recordtablecontroller);
 
-                assert(_record);
+                //                assert(_record);
+
                 //                _record->active_immediately(active_immediately);
                 //                _record->generator(generator);
-
-            } else {
-                _record->generator(generator);
-                _record->activator(activator);
-                _record->generate();
+                assert(_record.get() == record.get());
             }
 
+            //            else {
+            _record->binder(generator);
+            _record->activator(activator);
+            //                _record->generate();
+            //            }
+
             assert(_record);
+            assert(_record->is_registered());
 
         }
     }
@@ -894,7 +899,7 @@ std::shared_ptr<Record> request_record(
 std::shared_ptr<Record> request_record(
     const QUrl &_url
     , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
 )
 {
     std::shared_ptr<Record> _record = nullptr;
@@ -921,11 +926,11 @@ std::shared_ptr<Record> request_record(
 
     //    } else {
 
-    RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
     assert(_recordtablecontroller);
 
     if(_recordtablecontroller) {
-        RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
         assert(recordtabledata);
 
         if(recordtabledata) {
@@ -985,8 +990,9 @@ std::shared_ptr<Record> request_record(
                 //                //                _record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
                 //                //            }
-                record->generator(generator);
-                record->activator(activator);
+
+                //                record->binder(generator);
+                //                record->activator(activator);
 
                 record->setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
@@ -1001,20 +1007,26 @@ std::shared_ptr<Record> request_record(
 
                 _record = register_record(record, _recordtablecontroller);
 
-                assert(_record);
-                assert(_record->is_registered());
+                //                assert(_record);
+                //                assert(_record->is_registered());
                 //                _record->active_immediately(active_immediately);
                 //                _record->generator(generator);
 
-            } else {
-                assert(_record->is_registered());
-                _record->generator(generator);
-                _record->activator(activator);
-                _record->generate();
+                assert(_record.get() == record.get());
             }
 
-            assert(_record);
+            //            else {
+            //                //                assert(_record->is_registered());
+            //                _record->binder(generator);
+            //                _record->activator(activator);
+            //                //                _record->generate();    // why?
+            //            }
 
+            _record->binder(generator);
+            _record->activator(activator);
+
+            assert(_record);
+            assert(_record->is_registered());
         }
     }
 
@@ -1024,6 +1036,38 @@ std::shared_ptr<Record> request_record(
 
     return _record;
 }
+
+
+std::shared_ptr<Record>  equip_registered(std::shared_ptr<Record> record, browser::WebPage *page)
+{
+    auto binder = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
+        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                   ""
+                   , &browser::WebPage::ActiveRecordBinder::binder
+                   , ar
+               );
+    };
+    auto activator = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
+        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                   ""
+                   , &browser::WebPage::ActiveRecordBinder::activator
+                   , ar
+               );
+    };
+
+    // registered record, but have no generator:
+    auto ar = boost::make_shared<browser::WebPage::ActiveRecordBinder>(page);
+    record->binder(
+        binder(ar)
+    );
+
+    record->activator(
+        activator(ar)
+    );
+
+    return record;
+}
+
 
 int main(int argc, char **argv)
 {

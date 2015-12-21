@@ -6,7 +6,7 @@
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "views/recordTable/TableScreen.h"
 #include "views/findInBaseScreen/FindScreen.h"
 #include "views/browser/entrance.h"
 
@@ -52,7 +52,7 @@ bool WindowSwitcher::getSwitchStatus(void)
 
 void WindowSwitcher::switchFromTreeToRecordtable(void)
 {
-    if(!enableSwitcher)
+    if(!enableSwitcher) // on desktop, default false
         return;
 
     // Скрываются все прочие области
@@ -63,6 +63,8 @@ void WindowSwitcher::switchFromTreeToRecordtable(void)
     QWidget *object = static_cast<QWidget *>(globalparameters.getRecordTableScreen());
     object->show();
     appconfig.setFocusWidget(object->objectName());
+
+    globalparameters.vtab()->setCurrentWidget(globalparameters.getRecordTableScreen());
 }
 
 
@@ -108,7 +110,7 @@ void WindowSwitcher::switchFromRecordToFindInBase(void)
 
 void WindowSwitcher::switchFromRecordtableToRecord(void)
 {
-    if(!enableSwitcher)
+    if(!enableSwitcher) // on desktop, default false
         return;
 
     // Скрываются все прочие области

@@ -14,17 +14,17 @@
 #include <QGestureEvent>
 
 class ClipboardRecords;
-class RecordTableController;
-class RecordTableScreen;
+class TableController;
+class TableScreen;
 
-class RecordTableView : public QTableView {
+class TableView : public QTableView {
     Q_OBJECT
 
 public:
-    RecordTableView(RecordTableScreen *recordtablescreen, RecordTableController *controller);
-    virtual ~RecordTableView();
+    TableView(TableScreen *recordtablescreen, TableController *controller);
+    virtual ~TableView();
 
-    void setController(RecordTableController *pController);
+    void setController(TableController *pController);
 
     void init(void);
 
@@ -83,8 +83,8 @@ protected slots:
 protected:
 
     QMenu                   *contextMenu;
-    RecordTableScreen       *_recordtablescreen;
-    RecordTableController   *_controller;
+    TableScreen       *_recordtablescreen;
+    TableController   *_controller;
     QVBoxLayout             *_layout;
 
     void setupSignals(void);
@@ -122,7 +122,7 @@ protected:
 private:
 
     void startDrag();
-    friend class RecordTableScreen;
+    friend class TableScreen;
     friend class VerticalScrollArea;
 };
 

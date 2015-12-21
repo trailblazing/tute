@@ -94,14 +94,14 @@ public:
     bool is_registered() {return _is_registered;}
     void is_registered(bool reg) {_is_registered = reg;}
 
-    void generator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> g) {_generator = g;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator() const {return _generator;}
+    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> g) {_binder = g;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> binder() const {return _binder;}
 
-    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> a) {_activator = a;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> activator() const {return _activator;}
+    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> a) {_activator = a;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator() const {return _activator;}
 
-    browser::WebView *generate();
-    void active();
+    browser::WebView *bind();
+    browser::WebView *active();
 protected:
 
     browser::WebPage *_page;
@@ -150,7 +150,7 @@ protected:
     QString getNaturalField(QString name) const;
     QString getCalculableField(QString name) const;
 private:
-    Record *bind_page(browser::WebPage *bind_page);  // {_page = page; _page->record(this);}
+    Record *bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
     void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
     friend browser::WebPage;
 
@@ -159,8 +159,8 @@ private:
     int     _position = -1;
     int     _open_link_in_new_window = 0;
     //    bool    _active_immediately = false;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _generator;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> _activator;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _binder;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _activator;
 
     explicit Record(const Record &obj) = delete;
 };

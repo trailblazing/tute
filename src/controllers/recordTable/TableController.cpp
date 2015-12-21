@@ -2,13 +2,13 @@
 #include <QHeaderView>
 
 #include "main.h"
-#include "RecordTableController.h"
+#include "TableController.h"
 #include "controllers/attachTable/AttachTableController.h"
 #include "views/record/MetaEditor.h"
 #include "views/record/AddNewRecord.h"
-#include "views/recordTable/RecordTableView.h"
-#include "views/recordTable/RecordTableScreen.h"
-#include "views/recordTable/RecordTablePrint.h"
+#include "views/recordTable/TableView.h"
+#include "views/recordTable/TableScreen.h"
+#include "views/recordTable/TablePrint.h"
 #include "views/mainWindow/MainWindow.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/RecordInfoFieldsEditor.h"
@@ -16,9 +16,9 @@
 #include "views/browser/entrance.h"
 #include "views/browser/tabwidget.h"
 #include "models/recordTable/Record.h"
-#include "models/recordTable/RecordTableData.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableProxyModel.h"
+#include "models/recordTable/TableData.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableProxyModel.h"
 #include "models/appConfig/AppConfig.h"
 #include "models/tree/TreeItem.h"
 #include "libraries/GlobalParameters.h"
@@ -37,17 +37,15 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordTableController::RecordTableController(RecordTableScreen *recordtablescreen)
+TableController::TableController(TableScreen *recordtablescreen)
     : QObject(recordtablescreen)
-    , view(new RecordTableView(recordtablescreen, this
-                               // , qobject_cast<QWidget * >(RecordTableScreen)
-                              ))
-    , recordSourceModel(new RecordTableModel(this))
-    , recordProxyModel(new RecordTableProxyModel(this))
+    , _view(new TableView(recordtablescreen, this))    // , qobject_cast<QWidget * >(RecordTableScreen)
+    , recordSourceModel(new TableModel(this))
+    , recordProxyModel(new TableProxyModel(this))
 {
     // Инициализируется область со списком записей
     //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
-    view->setObjectName("recordTableView");
+    _view->setObjectName("recordTableView");
     //    view->setController(this);
 
     // Создание модели данных
@@ -59,31 +57,31 @@ RecordTableController::RecordTableController(RecordTableScreen *recordtablescree
     recordProxyModel->setObjectName("recordProxyModel");
 
     // Модель данных задается для вида
-    view->setModel(recordProxyModel);
+    _view->setModel(recordProxyModel);
 }
 
 
-RecordTableController::~RecordTableController()
+TableController::~TableController()
 {
 
 }
 
 
-void RecordTableController::init(void)
+void TableController::init(void)
 {
-    view->init();
+    _view->init();
 }
 
 
-RecordTableView *RecordTableController::getView(void)
+TableView *TableController::view(void)
 {
-    return view;
+    return _view;
 }
 
 
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-void RecordTableController::click_record(const QModelIndex &index)
+void TableController::click_record(const QModelIndex &index)
 {
     // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
     QModelIndex sourceIndex = proxyindex_to_sourceindex(index);
@@ -102,7 +100,7 @@ void RecordTableController::click_record(const QModelIndex &index)
 
 // you can't click a record which does not exist.
 // you can switch between two already existing record from this
-void RecordTableController::update_browser(const int source_pos)
+void TableController::update_browser(const int source_pos)
 {
     //RecordTableData *table = recordSourceModel->getTableData();
 
@@ -154,7 +152,8 @@ void RecordTableController::update_browser(const int source_pos)
 
 
 
-    std::shared_ptr<Record> record = this->getRecordTableModel()->getRecordTableData()->getRecord(source_pos);
+    std::shared_ptr<Record> record = this->recordtable_model()->getRecordTableData()->record(source_pos);
+    assert(record->is_registered());
     record->active_request(source_pos, 0);
 
     //    if(record->generator())record->generate();
@@ -193,15 +192,16 @@ void RecordTableController::update_browser(const int source_pos)
         //            page->load(record);
         //        } else
 
-        if(!record->generator() && entrance) {
+        if(entrance && (!record->binder() || !record->activator())) {
             entrance->equip_registered(record);
         }
 
-        assert(record->generator());
+        assert(record->binder());
         assert(record->activator());
 
-        if(record->generator() && !record->unique_page())record->generate();
-        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
+        //        if(record->binder() && !record->unique_page())record->bind();
+        //        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
+        if(record->binder() && record->activator())record->active();
 
         //        else if(entrance)
     }
@@ -234,10 +234,10 @@ void RecordTableController::update_browser(const int source_pos)
 
 }
 
-void RecordTableController::sychronize_metaeditor_to_record(const int pos)
+void TableController::sychronize_metaeditor_to_record(const int pos)
 {
 
-    std::shared_ptr<Record> record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+    std::shared_ptr<Record> record = this->recordtable_model()->getRecordTableData()->record(pos);
     assert(record);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -247,24 +247,24 @@ void RecordTableController::sychronize_metaeditor_to_record(const int pos)
     metaeditor->bind(record);
 
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // В таблице конечных данных запоминается какая запись была выбрана
     // чтобы затем при выборе этой же подветки засветка автоматически
     // установилась на последнюю рабочую запись
-    table->setWorkPos(pos);
+    table->work_pos(pos);
 
 
     // Устанавливается функция обратного вызова для записи данных
-    metaeditor->set_save_callback(table->editorSaveCallback);
+    metaeditor->set_save_callback(table->editor_save_callback);
 
     // Сохраняется текст и картинки в окне редактирования
     find_object<MainWindow>("mainwindow")->saveTextarea();
 
 
     // Для новой выбраной записи выясняется директория и основной файл
-    QString currentDir = table->getField("dir", pos);
-    QString currentFile = table->getField("file", pos);
+    QString currentDir = table->field("dir", pos);
+    QString currentFile = table->field("file", pos);
     QString fullDir = appconfig.get_tetradir() + "/base/" + currentDir;
     QString fullFileName = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
@@ -281,7 +281,7 @@ void RecordTableController::sychronize_metaeditor_to_record(const int pos)
     // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
     // Before the opening of the editor it attempts to get the text records
     // This call will create a text file with the record if it is not already created (think remake)
-    table->getText(pos);
+    table->text(pos);
 
     // Редактору задаются имя файла и директории
     // И дается команда загрузки файла
@@ -292,37 +292,37 @@ void RecordTableController::sychronize_metaeditor_to_record(const int pos)
     // И если имя директории или имя файла пусты, то это означает что
     // запись не была расшифрована, и редактор должен просто показывать пустой текст
     // ничего не сохранять и не считывать
-    qDebug() << "RecordTableView::onClickToRecord() : id " << table->getField("id", pos);
-    qDebug() << "RecordTableView::onClickToRecord() : name " << table->getField("name", pos);
-    qDebug() << "RecordTableView::onClickToRecord() : crypt " << table->getField("crypt", pos);
+    qDebug() << "RecordTableView::onClickToRecord() : id " << table->field("id", pos);
+    qDebug() << "RecordTableView::onClickToRecord() : name " << table->field("name", pos);
+    qDebug() << "RecordTableView::onClickToRecord() : crypt " << table->field("crypt", pos);
 
-    if(table->getField("crypt", pos) == "1")
+    if(table->field("crypt", pos) == "1")
         if(fullDir.length() == 0 || currentFile.length() == 0)
             metaeditor->setDirFileEmptyReaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
     // В редактор заносится информация, идет ли работа с зашифрованным текстом
-    metaeditor->setMiscField("crypt", table->getField("crypt", pos));
+    metaeditor->setMiscField("crypt", table->field("crypt", pos));
 
     // В редакторе устанавливается функция обратного вызова для чтения данных
-    metaeditor->set_load_callback(table->editorLoadCallback);
+    metaeditor->set_load_callback(table->editor_load_callback);
 
     metaeditor->load_textarea();
     // edView->set_textarea(table->get_text(index.row()));
 
     // Заполняются прочие инфо-поля
-    metaeditor->setName(table->getField("name", pos));
-    metaeditor->setAuthor(table->getField("author", pos));
-    metaeditor->setHome(table->getField("home", pos));
-    metaeditor->setUrl(table->getField("url", pos));
-    metaeditor->setTags(table->getField("tags", pos));
+    metaeditor->setName(table->field("name", pos));
+    metaeditor->setAuthor(table->field("author", pos));
+    metaeditor->setHome(table->field("home", pos));
+    metaeditor->setUrl(table->field("url", pos));
+    metaeditor->setTags(table->field("tags", pos));
 
-    QString id = table->getField("id", pos);
+    QString id = table->field("id", pos);
     metaeditor->setMiscField("id", id);
 
-    metaeditor->setMiscField("title", table->getField("name", pos));
+    metaeditor->setMiscField("title", table->field("name", pos));
 
     // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
-    QString path = qobject_cast<RecordTableScreen *>(parent())->getTreePath();
+    QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
 
     // В мобильном интерфейсе редактор должен показывать путь до записи
     if(appconfig.getInterfaceMode() == "mobile")
@@ -335,25 +335,25 @@ void RecordTableController::sychronize_metaeditor_to_record(const int pos)
     }
 
     // Обновление иконки аттачей
-    if(table->getRecord(pos)->getAttachTablePointer()->size() == 0)
+    if(table->record(pos)->getAttachTablePointer()->size() == 0)
         metaeditor->toAttach->setIcon(metaeditor->iconAttachNotExists);   // Если нет приаттаченных файлов
     else
         metaeditor->toAttach->setIcon(metaeditor->iconAttachExists);   // Есть приаттаченные файлы
 }
 
 
-void RecordTableController::sychronize_attachtable_to_record(const int pos)
+void TableController::sychronize_attachtable_to_record(const int pos)
 {
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Устанавливается таблица приаттаченных файлов
     AttachTableController *attachTableController = find_object<AttachTableController>("attachTableController");
-    attachTableController->setAttachTableData(table->getRecord(pos)->getAttachTablePointer());
+    attachTableController->setAttachTableData(table->record(pos)->getAttachTablePointer());
 }
 
 
-bool RecordTableController::isTableNotExists(void)
+bool TableController::is_table_notexists(void)
 {
     if(recordSourceModel->getTableData() == NULL)
         return true;
@@ -361,9 +361,31 @@ bool RecordTableController::isTableNotExists(void)
         return false;
 }
 
+//// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
+//void TableController::reset_tabledata_test(TableData *rtData)
+//{
+
+//    //    _view->deleteLater();
+//    _view->reset();
+
+//    recordSourceModel->deleteLater();
+
+//    recordSourceModel = new TableModel(this);
+//    //    recordProxyModel->deleteLater();
+//    //    recordProxyModel= new RecordTableProxyModel(this);
+//    recordProxyModel->clear();
+//    recordProxyModel->setSourceModel(recordSourceModel);
+
+//    //    // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
+//    //    recordSourceModel->reset_tabledata(rtData);
+
+//    _view->setModel(recordProxyModel);
+
+//    reset_tabledata(rtData);
+//}
 
 // Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
-void RecordTableController::set_table_data(RecordTableData *rtData)
+void TableController::reset_tabledata(std::shared_ptr<TableData> rtData)
 {
     qDebug() << "In RecordTableView setTableData() start";
 
@@ -374,24 +396,24 @@ void RecordTableController::set_table_data(RecordTableData *rtData)
     find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
 
     // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
-    recordSourceModel->setTableData(rtData);
+    recordSourceModel->reset_tabledata(rtData);
 
     // Надо обязательно сбросить selection model
-    view->selectionModel()->clear();
+    _view->selectionModel()->clear();
 
     // Если список конечных записей не пуст
     bool removeSelection = true;
 
     if(recordSourceModel->rowCount() > 0) {
         // Нужно выяснить, на какой записи ранее стояло выделение
-        int workPos = rtData->getWorkPos();
+        int workPos = rtData->work_pos();
 
         // Если номер записи допустимый
         if(workPos > 0 && workPos < recordSourceModel->rowCount()) {
             // Выделение устанавливается на нужную запись
             // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
-            view->selectRow(workPos);
-            view->scrollTo(view->currentIndex());   // QAbstractItemView::PositionAtCenter
+            _view->selectRow(workPos);
+            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 
             removeSelection = false;
         }
@@ -406,7 +428,7 @@ void RecordTableController::set_table_data(RecordTableData *rtData)
         // в альтернативной ветке (там "эмулируется" клик по записи)
         // А так как записей нет, то обновление инструментов надо
         // вызвать принудительно
-        qobject_cast<RecordTableScreen *>(parent())->toolsUpdate();
+        qobject_cast<TableScreen *>(parent())->toolsUpdate();
     }
 
     // qApp->restoreOverrideCursor();
@@ -420,91 +442,91 @@ void RecordTableController::set_table_data(RecordTableData *rtData)
 // Индексы QModelIndexList передаются от Proxy модели
 // Fill the object passed clipboard data from these records
 // Index QModelIndexList transferred from the Proxy pattern
-void RecordTableController::addRecordsToClipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy)
+void TableController::add_records_toclipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy)
 {
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Перебираются записи и вносятся в буфер обмена
     for(int i = 0; i < itemsForCopy.size(); ++i) {
         QModelIndex index = proxyindex_to_sourceindex(itemsForCopy.at(i));
 
         // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-        std::shared_ptr<Record> record = table->getRecordFat(index.row());
+        std::shared_ptr<Record> record = table->record_fat(index.row());
 
         clipboardRecords->addRecord(record);
     }
 }
 
 
-int RecordTableController::getRowCount(void)
+int TableController::row_count(void)
 {
     return recordProxyModel->rowCount();
 }
 
 
 // Get the number of the first highlighted item on the screen   // Получение номера первого выделенного элемента на экране
-int RecordTableController::getFirstSelectionPos(void)
+int TableController::first_selectionpos(void)
 {
-    return view->getFirstSelectionPos();
+    return _view->getFirstSelectionPos();
 }
 
 
 // Получение ID первого выделенного элемента на экране
-QString RecordTableController::getFirstSelectionId(void)
+QString TableController::first_selectionid(void)
 {
-    return view->getFirstSelectionId();
+    return _view->getFirstSelectionId();
 }
 
 
-void RecordTableController::select_pos(int pos)
+void TableController::select_pos(int pos)
 {
-    view->setSelectionToPos(pos);
+    _view->setSelectionToPos(pos);
 }
 
 
-void RecordTableController::select_id(QString id)
+void TableController::select_id(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Если таблица конечных данных задана
     // (Не задана таблица может быть по причине если ветка зашифрована и введен неверный пароль, или при вводе пароля была нажата отмена)
-    if(table != NULL) {
+    if(table) {
         // Номер записи в Source данных
-        int pos = table->getPosById(id);
+        int pos = table->get_pos_by_id(id);
 
-        view->setSelectionToPos(sourcepos_to_proxypos(pos));
+        _view->setSelectionToPos(sourcepos_to_proxypos(pos));
     }
 }
 
 
-QModelIndex RecordTableController::id_to_sourceindex(QString id)
+QModelIndex TableController::id_to_sourceindex(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Номер записи в Source данных
-    int sourcePos = table->getPosById(id);
+    int sourcePos = table->get_pos_by_id(id);
 
     return pos_to_sourceindex(sourcePos);
 }
 
 
-QModelIndex RecordTableController::id_to_proxyindex(QString id)
+QModelIndex TableController::id_to_proxyindex(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Номер записи в Source данных
-    int sourcePos = table->getPosById(id);
+    int sourcePos = table->get_pos_by_id(id);
     int proxyPos = sourcepos_to_proxypos(sourcePos);
 
     return pos_to_proxyindex(proxyPos);
 }
 
 
-QModelIndex RecordTableController::pos_to_proxyindex(int pos)
+QModelIndex TableController::pos_to_proxyindex(int pos)
 {
     if(pos < 0 || pos >= recordProxyModel->rowCount())
         return QModelIndex();
@@ -515,7 +537,7 @@ QModelIndex RecordTableController::pos_to_proxyindex(int pos)
 }
 
 
-QModelIndex RecordTableController::pos_to_sourceindex(int pos)
+QModelIndex TableController::pos_to_sourceindex(int pos)
 {
     if(pos < 0 || pos >= recordProxyModel->rowCount())
         return QModelIndex();
@@ -528,7 +550,7 @@ QModelIndex RecordTableController::pos_to_sourceindex(int pos)
 
 
 // Преобразование Proxy индекса в позицию на экране (так, как это будет выглядеть при Proxy модели)
-int RecordTableController::proxyindex_to_pos(QModelIndex index)
+int TableController::proxyindex_to_pos(QModelIndex index)
 {
     if(!index.isValid())
         return -1;
@@ -538,7 +560,7 @@ int RecordTableController::proxyindex_to_pos(QModelIndex index)
 
 
 // Преобразование Source индекса в позицию на экране (так, как это будет выглядеть при Source модели)
-int RecordTableController::sourceindex_to_pos(QModelIndex index)
+int TableController::sourceindex_to_pos(QModelIndex index)
 {
     if(!index.isValid())
         return -1;
@@ -547,7 +569,7 @@ int RecordTableController::sourceindex_to_pos(QModelIndex index)
 }
 
 
-QModelIndex RecordTableController::proxyindex_to_sourceindex(QModelIndex proxyIndex)
+QModelIndex TableController::proxyindex_to_sourceindex(QModelIndex proxyIndex)
 {
     if(!proxyIndex.isValid())
         return QModelIndex();
@@ -558,7 +580,7 @@ QModelIndex RecordTableController::proxyindex_to_sourceindex(QModelIndex proxyIn
 }
 
 
-QModelIndex RecordTableController::sourceindex_to_proxyindex(QModelIndex sourceIndex)
+QModelIndex TableController::sourceindex_to_proxyindex(QModelIndex sourceIndex)
 {
     if(!sourceIndex.isValid())
         return QModelIndex();
@@ -569,14 +591,14 @@ QModelIndex RecordTableController::sourceindex_to_proxyindex(QModelIndex sourceI
 }
 
 
-int RecordTableController::sourcepos_to_proxypos(int sourcePos)
+int TableController::sourcepos_to_proxypos(int sourcePos)
 {
     QModelIndex proxyIndex = recordProxyModel->mapFromSource(recordSourceModel->index(sourcePos, 0));
     return proxyIndex.row();
 }
 
 
-int RecordTableController::proxypos_to_sourcepos(int proxyPos)
+int TableController::proxypos_to_sourcepos(int proxyPos)
 {
     QModelIndex sourceIndex = recordProxyModel->mapToSource(recordProxyModel->index(proxyPos, 0));
     return sourceIndex.row();
@@ -585,7 +607,7 @@ int RecordTableController::proxypos_to_sourcepos(int proxyPos)
 
 // Копирование отмеченных записей в буфер обмена с удалением
 // из таблицы конечных записей
-void RecordTableController::cut(void)
+void TableController::cut(void)
 {
     // Надо сохранить запись, так как перед копированием в буфер обмена запись
     // обязательно должна быть сохранена, иначе редактирование,
@@ -593,20 +615,20 @@ void RecordTableController::cut(void)
     find_object<MetaEditor>("editorScreen")->save_textarea();
 
     copy();
-    deleteRecords();
+    delete_records_selected();
 }
 
 
 // Копирование отмеченных записей в буфер обмена
-void RecordTableController::copy(void)
+void TableController::copy(void)
 {
     // Объект с записями помещается в буфер обмена
-    QApplication::clipboard() -> setMimeData(view->getSelectedRecords());
+    QApplication::clipboard() -> setMimeData(_view->getSelectedRecords());
 }
 
 
 // Insert records from the clipboard    // Вставка записей из буфера обмена
-void RecordTableController::paste(void)
+void TableController::paste(void)
 {
     // Проверяется, содержит ли буфер обмена данные нужного формата
     const QMimeData *mimeData = QApplication::clipboard()->mimeData();
@@ -631,7 +653,7 @@ void RecordTableController::paste(void)
 
     // Пробегаются все записи в буфере
     for(int i = 0; i < nList; i++)
-        addNew(ADD_NEW_RECORD_TO_END, clipboardRecords->getRecord(i));
+        addnew_record(ADD_NEW_RECORD_TO_END, clipboardRecords->getRecord(i));
 
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
@@ -640,30 +662,30 @@ void RecordTableController::paste(void)
 
 
 // Слот для добавления новой записи в конец таблицы
-void RecordTableController::addNewToEndContext(void)
+void TableController::addnew_to_end_context(void)
 {
     qDebug() << "In slot add_new_toend_context()";
 
-    addNewRecord(ADD_NEW_RECORD_TO_END);
+    addnew_record(ADD_NEW_RECORD_TO_END);
 }
 
 
 // Слот для добавления новой записи перед выделенной строкой
-void RecordTableController::addNewBeforeContext(void)
+void TableController::addnew_before_context(void)
 {
     qDebug() << "In slot add_new_before_context()";
 
-    addNewRecord(ADD_NEW_RECORD_BEFORE);
+    addnew_record(ADD_NEW_RECORD_BEFORE);
 }
 
 
 // Слот для добавления новой записи после выделенной строки
 // Slot to add a new record after the highlighted row
-void RecordTableController::addNewAfterContext(void)
+void TableController::addnew_after_context(void)
 {
     qDebug() << "In slot add_new_after_context()";
 
-    addNewRecord(ADD_NEW_RECORD_AFTER);
+    addnew_record(ADD_NEW_RECORD_AFTER);
 }
 
 //// Слот для добавления новой записи после выделенной строки
@@ -744,7 +766,7 @@ void RecordTableController::addNewAfterContext(void)
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-void RecordTableController::addNewRecord(int mode)
+void TableController::addnew_record(int mode)
 {
     qDebug() << "In add_new_record()";
 
@@ -792,16 +814,16 @@ void RecordTableController::addNewRecord(int mode)
     DiskHelper::removeDirectory(directory);
 
     // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    addNew(mode, record);
+    addnew_record(mode, record);
 }
 
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-int RecordTableController::new_record(std::shared_ptr<Record> record
-                                      , const int mode
-                                      //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
-                                     )
+int TableController::new_record(std::shared_ptr<Record> record
+                                , const int mode
+                                //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                               )
 {
     qDebug() << "In add_new_record()";
 
@@ -856,12 +878,12 @@ int RecordTableController::new_record(std::shared_ptr<Record> record
     DiskHelper::removeDirectory(directory);
 
     // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addNew(mode, record);
+    return addnew_record(mode, record);
 }
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-int RecordTableController::new_record(
+int TableController::new_record_from_url(
     const QUrl &url
     , const int mode
     //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
@@ -915,18 +937,18 @@ int RecordTableController::new_record(
     DiskHelper::removeDirectory(directory);
 
     // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addNew(mode, record);
+    return addnew_record(mode, record);
 }
 
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-int RecordTableController::addNew(int mode, std::shared_ptr<Record> record)
+int TableController::addnew_record(int mode, std::shared_ptr<Record> record)
 {
     qDebug() << "In add_new()";
 
     // Получение Source-индекса первой выделенной строки
-    QModelIndex posIndex = view->getFirstSelectionSourceIndex();
+    QModelIndex posIndex = _view->getFirstSelectionSourceIndex();
 
     //    //    assert(posIndex.isValid());
     //    if(!posIndex.isValid()) {
@@ -940,7 +962,7 @@ int RecordTableController::addNew(int mode, std::shared_ptr<Record> record)
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
     int selPos = recordSourceModel->addTableData(mode, posIndex, record);
 
-    view->moveCursorToNewRecord(mode, sourcepos_to_proxypos(selPos));
+    _view->moveCursorToNewRecord(mode, sourcepos_to_proxypos(selPos));
 
     // Сохранение дерева веток
     find_object<TreeScreen>("treeScreen")->saveKnowTree();
@@ -965,13 +987,13 @@ int RecordTableController::addNew(int mode, std::shared_ptr<Record> record)
 }
 
 
-void RecordTableController::onEditFieldContext(void)
+void TableController::on_edit_fieldcontext(void)
 {
-    view->editFieldContext();
+    _view->editFieldContext();
     //view->loadUrl();
 }
 
-void RecordTableController::openWebsite(QModelIndex proxyIndex)
+void TableController::open_website(QModelIndex proxyIndex)
 {
     qDebug() << "RecordTableController::editFieldContext()";
 
@@ -992,12 +1014,13 @@ void RecordTableController::openWebsite(QModelIndex proxyIndex)
 
     //    browser_view->loadUrl(pos);   //table->getField("url", pos)
 
-    std::shared_ptr<Record> record = this->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+    std::shared_ptr<Record> record = this->recordtable_model()->getRecordTableData()->record(pos);
+    assert(record->is_registered());
 
     //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
-    if(entrance && !record->generator()) entrance->equip_registered(record);
+    if(entrance && (!record->binder() || record->activator())) entrance->equip_registered(record);
 
-    if(record->generator())record->generate();
+    if(record->binder() && record->activator())record->active();
 
 
     //    int i = editRecordWin.exec();
@@ -1014,7 +1037,7 @@ void RecordTableController::openWebsite(QModelIndex proxyIndex)
 }
 
 // Действия при нажатии кнопки редактирования записи
-void RecordTableController::editFieldContext(QModelIndex proxyIndex)
+void TableController::edit_fieldcontext(QModelIndex proxyIndex)
 {
     qDebug() << "RecordTableController::editFieldContext()";
 
@@ -1022,18 +1045,18 @@ void RecordTableController::editFieldContext(QModelIndex proxyIndex)
     int pos = sourceIndex.row(); // Номер строки в базе
 
     // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
-    RecordInfoFieldsEditor editRecordWin;
+    InfoFieldsEditor editRecordWin;
 
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Поля окна заполняются начальными значениями
-    editRecordWin.setField("pin",       table->getField("pin",   pos));
-    editRecordWin.setField("name",      table->getField("name",   pos));
-    editRecordWin.setField("author",    table->getField("author", pos));
-    editRecordWin.setField("home",      table->getField("home",    pos));
-    editRecordWin.setField("url",       table->getField("url",    pos));
-    editRecordWin.setField("tags",      table->getField("tags",   pos));
+    editRecordWin.setField("pin",       table->field("pin",   pos));
+    editRecordWin.setField("name",      table->field("name",   pos));
+    editRecordWin.setField("author",    table->field("author", pos));
+    editRecordWin.setField("home",      table->field("home",    pos));
+    editRecordWin.setField("url",       table->field("url",    pos));
+    editRecordWin.setField("tags",      table->field("tags",   pos));
 
 
     int i = editRecordWin.exec();
@@ -1042,30 +1065,30 @@ void RecordTableController::editFieldContext(QModelIndex proxyIndex)
         return; // Была нажата отмена, ничего ненужно делать
 
     // Измененные данные записываются
-    editField(pos,
-              editRecordWin.getField("pin"),
-              editRecordWin.getField("name"),
-              editRecordWin.getField("author"),
-              editRecordWin.getField("home"),
-              editRecordWin.getField("url"),
-              editRecordWin.getField("tags"));
+    edit_field(pos,
+               editRecordWin.getField("pin"),
+               editRecordWin.getField("name"),
+               editRecordWin.getField("author"),
+               editRecordWin.getField("home"),
+               editRecordWin.getField("url"),
+               editRecordWin.getField("tags"));
 }
 
 
 // Функция сохранения отредактированных полей записи в таблицу конечных записей
-void RecordTableController::editField(int pos
-                                      , QString pin
-                                      , QString name
-                                      , QString author
-                                      , QString home
-                                      , QString url
-                                      , QString tags
-                                     )
+void TableController::edit_field(int pos
+                                 , QString pin
+                                 , QString name
+                                 , QString author
+                                 , QString home
+                                 , QString url
+                                 , QString tags
+                                )
 {
     qDebug() << "In edit_field()";
 
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Переданные отредактированные поля преобразуются в вид имя-значение
     QMap<QString, QString> editData;
@@ -1077,7 +1100,7 @@ void RecordTableController::editField(int pos
     editData["tags"] = tags;
 
     // Обновление новых данных в таблице конечных записей
-    table->editRecordFields(pos, editData);
+    table->edit_record_fields(pos, editData);
 
     // Обновление инфополей в области редактирования записи
     MetaEditor *metaEditor = find_object<MetaEditor>("editorScreen");
@@ -1093,10 +1116,10 @@ void RecordTableController::editField(int pos
 
 
 // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
-void RecordTableController::deleteContext(void)
+void TableController::delete_context(void)
 {
     // Создается окно с вопросом нужно удалять запись (записи) или нет
-    QMessageBox messageBox(view);
+    QMessageBox messageBox(_view);
     messageBox.setWindowTitle("Delete");
     messageBox.setText(tr("Are you sure to delete this record(s)?"));
     QAbstractButton *cancelButton = messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
@@ -1108,19 +1131,19 @@ void RecordTableController::deleteContext(void)
 
     if(messageBox.clickedButton() == deleteButton) {
         // Выбранные данные удаляются
-        deleteRecords();
+        delete_records_selected();
     }
 
 }
 
 
 // Удаление отмеченных записей
-void RecordTableController::deleteRecords(void)
+void TableController::delete_records_selected(void)
 {
     qDebug() << "RecordTableView::delete_records()";
 
     // Получение списка Item-элементов, подлежащих удалению. Индексы Proxy модели
-    QModelIndexList itemsForDelete = view->selectionModel()->selectedIndexes();
+    QModelIndexList itemsForDelete = _view->selectionModel()->selectedIndexes();
 
     // Проверка, выбраны ли записи
     if(itemsForDelete.count() == 0) {
@@ -1168,7 +1191,7 @@ void RecordTableController::deleteRecords(void)
     find_object<MetaEditor>("editorScreen")->clearAll();
 
     // Вызывается удаление отмеченных записей
-    removeRowsByIdList(delIds);
+    removerows_by_idlist(delIds);
 
     // Сохранение дерева веток
     find_object<TreeScreen>("treeScreen")->saveKnowTree();
@@ -1179,7 +1202,7 @@ void RecordTableController::deleteRecords(void)
 
     // Установка курсора на нужную позицию
     if(selectionRowNum >= 0 && selectionRowNum < recordProxyModel->rowCount())
-        view->selectRow(selectionRowNum);
+        _view->selectRow(selectionRowNum);
 
     // Если таблица конечных записей пуста
     if(recordProxyModel->rowCount() == 0) {
@@ -1188,28 +1211,28 @@ void RecordTableController::deleteRecords(void)
         find_object<MetaEditor>("editorScreen")->clearAll();
     }
 
-    qobject_cast<RecordTableScreen *>(parent())->toolsUpdate();
+    qobject_cast<TableScreen *>(parent())->toolsUpdate();
 }
 
 
 // Удаление одной записи по идентификатору
-void RecordTableController::removeRowById(QString delId)
+void TableController::removerow_by_id(QString delId)
 {
     QVector<QString> delIds;
     delIds.append(delId);
-    removeRowsByIdList(delIds);
+    removerows_by_idlist(delIds);
 }
 
 
 // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
-void RecordTableController::removeRowsByIdList(QVector<QString> delIds)
+void TableController::removerows_by_idlist(QVector<QString> delIds)
 {
     qDebug() << "Remove rows by ID list: " << delIds;
 
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
-    if(table == NULL)
+    if(!table)
         return;
 
     for(int i = 0; i < delIds.count(); i++) {
@@ -1219,29 +1242,29 @@ void RecordTableController::removeRowsByIdList(QVector<QString> delIds)
         // Удаляется строка в Proxy модели
         // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
         recordProxyModel->removeRow(idx.row());
-        view->reset();
-        view->setModel(recordProxyModel);
+        _view->reset();
+        _view->setModel(recordProxyModel);
         globalparameters.getFindScreen()->remove_id(id);
     }
 }
 
 
 // Перемещение записи вверх
-void RecordTableController::moveUp(void)
+void TableController::move_up(void)
 {
     qDebug() << "In moveup()";
 
     // Получение номера первой выделенной строки
-    int pos = view->getFirstSelectionPos();
+    int pos = _view->getFirstSelectionPos();
 
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Перемещение текущей записи вверх
-    table->moveUp(pos);
+    table->move_up(pos);
 
     // Установка засветки на перемещенную запись
-    view->setSelectionToPos(pos - 1);
+    _view->setSelectionToPos(pos - 1);
 
     // Сохранение дерева веток
     find_object<TreeScreen>("treeScreen")->saveKnowTree();
@@ -1249,21 +1272,21 @@ void RecordTableController::moveUp(void)
 
 
 // Перемещение записи вниз
-void RecordTableController::moveDn(void)
+void TableController::move_dn(void)
 {
     qDebug() << "In movedn()";
 
     // Получение номера первой выделенной строки
-    int pos = view->getFirstSelectionPos();
+    int pos = _view->getFirstSelectionPos();
 
     // Выясняется ссылка на таблицу конечных данных
-    RecordTableData *table = recordSourceModel->getTableData();
+    std::shared_ptr<TableData> table = recordSourceModel->getTableData();
 
     // Перемещение текущей записи вниз
-    table->moveDn(pos);
+    table->move_dn(pos);
 
     // Установка засветки на перемещенную запись
-    view->setSelectionToPos(pos + 1);
+    _view->setSelectionToPos(pos + 1);
 
     // Сохранение дерева веток
     find_object<TreeScreen>("treeScreen")->saveKnowTree();
@@ -1271,14 +1294,14 @@ void RecordTableController::moveDn(void)
 
 
 // Клик по пункту "Сортировка" в контекстном меню
-void RecordTableController::onSortClick(void)
+void TableController::on_sort_click(void)
 {
-    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
+    TableScreen *parentPointer = qobject_cast<TableScreen *>(parent());
 
     // Если сортировка еще не включена
-    if(!view->isSortingEnabled()) {
+    if(!_view->isSortingEnabled()) {
         // Включается сортировка
-        view->setSortingEnabled(true);
+        _view->setSortingEnabled(true);
 
         recordProxyModel->setSortRole(SORT_ROLE); // Qt::DisplayRole
 
@@ -1288,14 +1311,14 @@ void RecordTableController::onSortClick(void)
         recordProxyModel->sort(n);
 
         // Треугольничек сортировки переставляется на нужный столбец
-        view->horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder);
+        _view->horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder);
 
         // Запрещается передвижение заголовков столбцов
         // так как после переноса неправильно устанавливается треугольничек сортировки, он остается на том же по счету столбце
         // horizontalHeader()->setSectionsMovable(false);
     } else {
         // Оменяется сортировка
-        view->setSortingEnabled(false);
+        _view->setSortingEnabled(false);
         recordProxyModel->setSortRole(Qt::InitialSortOrderRole);
         recordProxyModel->invalidate();
 
@@ -1303,12 +1326,12 @@ void RecordTableController::onSortClick(void)
         // horizontalHeader()->setSectionsMovable(true);
     }
 
-    qobject_cast<RecordTableScreen *>(parent())->toolsUpdate();
+    qobject_cast<TableScreen *>(parent())->toolsUpdate();
 }
 
 
 // Слот, срабатывающий при вызове настроек
-void RecordTableController::settings(void)
+void TableController::settings(void)
 {
     AppConfigDialog dialog("pageRecordTable");
     dialog.show();
@@ -1320,22 +1343,22 @@ void RecordTableController::settings(void)
 }
 
 
-void RecordTableController::onRecordTableConfigChange(void)
+void TableController::on_recordtable_configchange(void)
 {
     recordSourceModel->onRecordTableConfigChange();
-    view->restoreColumnWidth();
-    view->restoreHeaderState();
+    _view->restoreColumnWidth();
+    _view->restoreHeaderState();
 }
 
 
-void RecordTableController::onPrintClick(void)
+void TableController::on_print_click(void)
 {
-    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
+    TableScreen *parentPointer = qobject_cast<TableScreen *>(parent());
 
-    RecordTablePrint printDialog(parentPointer);
+    TablePrint printDialog(parentPointer);
     printDialog.setModel(recordProxyModel);
     printDialog.generateHtmlTableFromModel();
-    printDialog.setTitleToHtml(recordSourceModel->getTableData()->getItem()->getPathAsNameWithDelimeter(" / "));
+    printDialog.setTitleToHtml(recordSourceModel->getTableData()->item()->getPathAsNameWithDelimeter(" / "));
     printDialog.exec();
 }
 

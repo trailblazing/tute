@@ -4,7 +4,7 @@
 
 #include "XmlTree.h"
 #include "main.h"
-#include "models/recordTable/RecordTableData.h"
+#include "models/recordTable/TableData.h"
 
 XmlTree::XmlTree(void)
 {

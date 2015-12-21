@@ -79,14 +79,14 @@
 
 
 #include "main.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableData.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableData.h"
 #include "models/recordTable/Record.h"
-#include "views/recordTable/RecordTableView.h"
+#include "views/recordTable/TableView.h"
 #include "libraries/GlobalParameters.h"
 #include "views/browser/entrance.h"
-#include "views/recordTable/RecordTableScreen.h"
-#include "controllers/recordTable/RecordTableController.h"
+#include "views/recordTable/TableScreen.h"
+#include "controllers/recordTable/TableController.h"
 #include "views/browser/tabwidget.h"
 #include "views/mainWindow/MainWindow.h"
 #include "views/findInBaseScreen/FindScreen.h"
@@ -200,20 +200,21 @@ namespace browser {
             //                , _tabmanager   //typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
             //                , Arg &&... arg
             //            );
-            auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
-            request_record(
+            auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager, true);
+            auto record = request_record(
                 QUrl(Browser::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     ""
-                    , &TabWidget::NewTab::generator
+                    , &TabWidget::ActiveRecordBinder::binder
                     , arint
                 )
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     ""
-                    , &TabWidget::NewTab::activator
+                    , &TabWidget::ActiveRecordBinder::activator
                     , arint
                 )
             );
+            record->active();
         });
 #endif
 
@@ -240,26 +241,26 @@ namespace browser {
         QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    void Browser::equip_registered(std::shared_ptr<Record> record)
+    std::shared_ptr<Record> Browser::equip_registered(std::shared_ptr<Record> record)
     {
-        auto generator = [](boost::shared_ptr<TabWidget::NewTab> ar) {
+        auto generator = [](boost::shared_ptr<TabWidget::ActiveRecordBinder> ar) {
             return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                        ""
-                       , &TabWidget::NewTab::generator
+                       , &TabWidget::ActiveRecordBinder::binder
                        , ar
                    );
         };
-        auto activator = [](boost::shared_ptr<TabWidget::NewTab> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
+        auto activator = [](boost::shared_ptr<TabWidget::ActiveRecordBinder> ar) {
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                        ""
-                       , &TabWidget::NewTab::activator
+                       , &TabWidget::ActiveRecordBinder::activator
                        , ar
                    );
         };
 
         // registered record, but have no generator:
-        boost::shared_ptr<TabWidget::NewTab> ar = boost::make_shared<TabWidget::NewTab>(_tabmanager);
-        record->generator(
+        boost::shared_ptr<TabWidget::ActiveRecordBinder> ar = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager);
+        record->binder(
             generator(ar)
         );
 
@@ -269,9 +270,10 @@ namespace browser {
 
         //        _tabmanager->newTab(record);
         //        assert(record->binded_only_page());
+        return record;
     }
 
-    void Browser::register_url(QUrl const &url)
+    std::shared_ptr<Record> Browser::register_url(QUrl const &url)
     {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
@@ -280,33 +282,34 @@ namespace browser {
         //PageView *new_view =
 
         //        _tabmanager->newTab(url);  // , false
-        auto arint = boost::make_shared<TabWidget::NewTab>(_tabmanager, true);
+        auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager, true);
         std::shared_ptr<Record> record
             = request_record(    // why do this?
                   url
                   , std::make_shared <
                   sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record> >> (
                       ""
-                      , &TabWidget::NewTab::generator
+                      , &TabWidget::ActiveRecordBinder::binder
                       , arint
                   )
                   , std::make_shared <
-                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>> (
+                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record> >> (
                       ""
-                      , &TabWidget::NewTab::activator
+                      , &TabWidget::ActiveRecordBinder::activator
                       , arint
                   )
               );
-
+        //        record->active();
         //assert(new_view->page());
         //record->page(new_view->page());
         //assert(_backup->page());
         assert(record->unique_page());
+        return record;
     }
 
     Browser::Browser(
         const QByteArray &state
-        , RecordTableController *recordtablecontroller
+        , TableController *recordtablecontroller
         , Entrance *entrance   //, QDockWidget *parent
         , const QString &style_source
         , Qt::WindowFlags flags
@@ -327,19 +330,20 @@ namespace browser {
         , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
-        register_url(QUrl(Browser::_defaulthome));
+        auto r = register_url(QUrl(Browser::_defaulthome));
+        r->active();
         run_script(style_source);
         this->restore_state(state);
 
-        QMainWindow::setWindowFlags(    //Qt::Window |
-            Qt::FramelessWindowHint);
+        QMainWindow::setWindowFlags(Qt::FramelessWindowHint);    //Qt::Window |
+
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
         show();
     }
 
     Browser::Browser(const QUrl &url
-                     , RecordTableController *recordtablecontroller
+                     , TableController *recordtablecontroller
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -361,11 +365,12 @@ namespace browser {
         , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
-        register_url(url);
+        auto r = register_url(url);
+        r->active();
         run_script(style_source);       //        assert(record->linkpage());
 
-        QMainWindow::setWindowFlags(    //Qt::Window |
-            Qt::FramelessWindowHint);
+        QMainWindow::setWindowFlags(Qt::FramelessWindowHint);    //Qt::Window |
+
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
         show();
@@ -373,7 +378,7 @@ namespace browser {
 
 
     Browser::Browser(std::shared_ptr<Record> record
-                     , RecordTableController *recordtablecontroller
+                     , TableController *recordtablecontroller
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -397,8 +402,8 @@ namespace browser {
         init();
         equip_registered(record);
 
-        if(record->generator()) {
-            record->generate();
+        if(record->binder()) {
+            record->bind();
             record->active();
         }
 
@@ -1195,20 +1200,20 @@ namespace browser {
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         //loadPage(home);
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(_entrance);
-        request_record(
-            QUrl(home)
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                ""
-                , &Entrance::ActiveRecordBinder::generator
-                , ara
-            )
-            , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
-                ""
-                , &Entrance::ActiveRecordBinder::activator
-                , ara
-            )
-        );
-
+        auto r = request_record(
+                     QUrl(home)
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                         ""
+                         , &Entrance::ActiveRecordBinder::binder
+                         , ara
+                     )
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                         ""
+                         , &Entrance::ActiveRecordBinder::activator
+                         , ara
+                     )
+                 );
+        r->active();
     }
 
     void Browser::slotWebSearch()
@@ -1461,13 +1466,15 @@ namespace browser {
 
             if(blankview != nullptr) {
                 view = blankview;
-                view->page()->load(record);
+                //                view->page()->load(record);
+                ::equip_registered(record, view->page())->active();
+
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
                 if(view->page()->url().toString() != record->getNaturalFieldSource("url")) {
 
-                    view->page()->load(record);
+                    ::equip_registered(record, view->page())->active(); // view->page()->load(record);
                 }
             } else {
                 view = tab->newTab(record);  // , false

@@ -6,7 +6,7 @@
 
 #include "main.h"
 #include "Record.h"
-#include "RecordTableData.h"
+#include "TableData.h"
 
 #include "models/appConfig/AppConfig.h"
 #include "views/mainWindow/MainWindow.h"
@@ -29,7 +29,7 @@ extern WalkHistory walkhistory;
 // Это набор данных конечной таблицы, с которыми удобно работать
 
 // Конструктор
-RecordTableData::RecordTableData(void): treeItem(nullptr), workPos(-1)
+TableData::TableData(void): _treeitem(nullptr), _workpos(-1)
 {
     //    treeItem = NULL;
 
@@ -40,7 +40,7 @@ RecordTableData::RecordTableData(void): treeItem(nullptr), workPos(-1)
 
 
 // Деструктор
-RecordTableData::~RecordTableData()
+TableData::~TableData()
 {
     empty();
     return;
@@ -49,23 +49,23 @@ RecordTableData::~RecordTableData()
 
 // Получение значения указанного поля для указанного имени поля
 // Имя поля - все возможные имена полей, кроме text (такого поля теперь вообще нет, текст запрашивается как отдельное свойство)
-QString RecordTableData::getField(QString name, int pos) const
+QString TableData::field(QString name, int pos) const
 {
     // Если индекс недопустимый
-    if(pos < 0 || pos >= tableData.size()) {
+    if(pos < 0 || pos >= _tabledata.size()) {
         QString i;
         i.setNum(pos);
         criticalError("RecordTableData::getField() : get unavailable record index " + i);
     }
 
-    return tableData.at(pos)->getField(name);
+    return _tabledata.at(pos)->getField(name);
 }
 
-std::shared_ptr<Record> RecordTableData::find(const QUrl &url)
+std::shared_ptr<Record> TableData::find(const QUrl &url)
 {
     std::shared_ptr<Record> record;
 
-    for(auto &i : tableData) {
+    for(auto &i : _tabledata) {
         // QString _u = i.getNaturalFieldSource("url") ;
 
         if(i->getNaturalFieldSource("url") == url.toString()) {
@@ -78,11 +78,11 @@ std::shared_ptr<Record> RecordTableData::find(const QUrl &url)
     return record;
 }
 
-std::shared_ptr<Record> RecordTableData::find(std::shared_ptr<Record> r)
+std::shared_ptr<Record> TableData::find(std::shared_ptr<Record> r)
 {
     std::shared_ptr<Record> record;
 
-    for(auto &i : tableData) {
+    for(auto &i : _tabledata) {
         // QString _u = i.getNaturalFieldSource("url") ;
 
         if(i->getNaturalFieldSource("id") == r->getNaturalFieldSource("id")) {
@@ -96,16 +96,16 @@ std::shared_ptr<Record> RecordTableData::find(std::shared_ptr<Record> r)
 }
 
 // Установка значения указанного поля для указанного элемента
-void RecordTableData::setField(QString name, QString value, int pos)
+void TableData::field(QString name, QString value, int pos)
 {
     // Если индекс недопустимый
-    if(pos < 0 || pos >= tableData.size()) {
+    if(pos < 0 || pos >= _tabledata.size()) {
         QString i;
         i.setNum(pos);
         criticalError("In RecordTableData::setField() unavailable record index " + i + " in table while field " + name + " try set to " + value);
     }
 
-    tableData[pos]->setField(name, value);
+    _tabledata[pos]->setField(name, value);
 }
 
 
@@ -115,16 +115,16 @@ void RecordTableData::setField(QString name, QString value, int pos)
 // Get the value of the text of the specified record
 // Method returns the decrypted data
 // If there is a problem that file with text entries, will create an empty file
-QString RecordTableData::getText(int pos)
+QString TableData::text(int pos)
 {
     // Если индекс недопустимый, возвращается пустая строка
     if(pos < 0 || pos >= size())
         return QString();
 
-    if(tableData[pos]->isLite())
-        return tableData[pos]->getTextDirectFromLite();
+    if(_tabledata[pos]->isLite())
+        return _tabledata[pos]->getTextDirectFromLite();
     else
-        return tableData[pos]->getTextFromFat();
+        return _tabledata[pos]->getTextFromFat();
 }
 
 
@@ -133,8 +133,8 @@ QString RecordTableData::getText(int pos)
 // Ее вызывает редактор, передавая указатель на себя
 // и ссылку на переменную loadText, которую надо заполнить
 // Внимание! Метод не содержит работы с данными записи. Подумать, где его разместить
-void RecordTableData::editorLoadCallback(QObject *editor,
-                                         QString &loadText)
+void TableData::editor_load_callback(QObject *editor,
+                                           QString &loadText)
 {
     // qDebug() << "RecordTableScreen::editor_load_callback() : Dir" << dir << "File" << file;
 
@@ -180,8 +180,8 @@ void RecordTableData::editorLoadCallback(QObject *editor,
 // Ее вызывает редактор, передавая указатель на себя
 // и текст который надо записать в переменной saveText
 // Внимание! Метод не содержит работы с данными записи. Подумать, где его разместить
-void RecordTableData::editorSaveCallback(QObject *editor,
-                                         QString saveText)
+void TableData::editor_save_callback(QObject *editor,
+                                           QString saveText)
 {
     // qDebug() << "RecordTableScreen::editor_load_callback() : Dir" << dir << "File" << file;
 
@@ -236,17 +236,17 @@ void RecordTableData::editorSaveCallback(QObject *editor,
 // Эти образы используются для хранения в дереве знаний
 // Get a copy of a light image recording
 // These images are used to store the tree of knowledge
-std::shared_ptr<Record> RecordTableData::getRecordLite(int pos)
+std::shared_ptr<Record> TableData::record_lite(int pos)
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
         return std::make_shared<Record>();
 
     // Хранимая в дереве запись не может быть "тяжелой"
-    if(!tableData.at(pos)->isLite())
+    if(!_tabledata.at(pos)->isLite())
         criticalError("In RecordTableData::getRecordLite() try get fat record");
 
-    return tableData.at(pos);
+    return _tabledata.at(pos);
 }
 
 
@@ -254,17 +254,17 @@ std::shared_ptr<Record> RecordTableData::getRecordLite(int pos)
 // Возвращается запись с "сырыми" данными. Если запись была зашифрована, метод вернет зашифрованные данные
 // Get a copy of the full image recording
 // Returns the record with "raw" data. If the record was encrypted, the method returns the encrypted data
-std::shared_ptr<Record> RecordTableData::getRecordFat(int pos)
+std::shared_ptr<Record> TableData::record_fat(int pos)
 {
     // Копия записи из дерева
-    std::shared_ptr<Record> resultRecord = getRecord(pos);  //std::shared_ptr<Record> resultRecord = getRecordLite(pos);
+    std::shared_ptr<Record> resultRecord = record(pos);  //std::shared_ptr<Record> resultRecord = getRecordLite(pos);
 
     // original
     // Переключение копии записи на режим с хранением полного содержимого
     if(resultRecord->isLite())resultRecord->switchToFat();
 
     // Добавление текста записи
-    resultRecord->setTextToFat(getText(pos));
+    resultRecord->setTextToFat(text(pos));
 
     // Добавление бинарных образов файлов картинок
     QString directory = appconfig.get_tetradir() + "/base/" + resultRecord->getField("dir");
@@ -274,32 +274,32 @@ std::shared_ptr<Record> RecordTableData::getRecordFat(int pos)
 }
 
 
-std::shared_ptr<Record> RecordTableData::getRecord(int pos)
+std::shared_ptr<Record> TableData::record(int pos)
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
-        return NULL;
+        return nullptr;
 
-    return tableData[pos];
+    return _tabledata[pos];
 }
 
 
 // Инициализация таблицы данных на основе переданного DOM-элемента
-void RecordTableData::init(TreeItem *item, QDomElement iDomElement)
+void TableData::init(std::shared_ptr<TreeItem> item, QDomElement iDomElement)
 {
     // Создание таблицы
     if(!iDomElement.isNull()) {
         QDomElement *domElement = &iDomElement;
-        setupDataFromDom(domElement);
+        data_from_dom(domElement);
     }
 
     // Запоминается ссылка на ветку, которой принадлежит данная таблица
-    treeItem = item;
+    _treeitem = item;
 }
 
 
 // Разбор DOM модели и преобразование ее в таблицу
-void RecordTableData::setupDataFromDom(QDomElement *domModel)
+void TableData::data_from_dom(QDomElement *domModel)
 {
     // QDomElement n = dommodel.documentElement();
     // QDomElement n = dommodel;
@@ -322,13 +322,13 @@ void RecordTableData::setupDataFromDom(QDomElement *domModel)
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)
-        tableData << currentRecord;
+        _tabledata << currentRecord;
 
         // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
         // чтобы в подчиненных объектах прописались правильные указатели на данную запись
         // Write initialized data. It should initsializirovatsya after placement in the list tableData,
         // Order in subordinate objects have registered a valid pointer to this entry
-        (tableData.last())->setupDataFromDom(currentRecordDom);
+        (_tabledata.last())->setupDataFromDom(currentRecordDom);
 
         currentRecordDom = currentRecordDom.nextSiblingElement("record");
     } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
@@ -340,21 +340,21 @@ void RecordTableData::setupDataFromDom(QDomElement *domModel)
 
 
 // Преобразование таблицы конечных записей в Dom документ
-QDomElement RecordTableData::exportDataToDom(QDomDocument *doc) const
+QDomElement TableData::dom_from_data(QDomDocument *doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-    if(tableData.size() == 0)
+    if(_tabledata.size() == 0)
         return QDomElement();
 
-    QDomElement recordTableDomData = doc->createElement("recordtable");
+    QDomElement recordtable_domdata = doc->createElement("recordtable");
 
     // Пробегаются все записи в таблице
-    for(int i = 0; i < tableData.size(); i++)
-        recordTableDomData.appendChild(tableData.at(i)->exportDataToDom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+    for(int i = 0; i < _tabledata.size(); i++)
+        recordtable_domdata.appendChild(_tabledata.at(i)->exportDataToDom(doc));     // К элементу recordtabledata прикрепляются конечные записи
 
     // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
-    return recordTableDomData;
+    return recordtable_domdata;
 }
 
 
@@ -368,14 +368,14 @@ QDomElement RecordTableData::exportDataToDom(QDomDocument *doc) const
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-int RecordTableData::insertNewRecord(int mode
-                                     , int pos
-                                     , std::shared_ptr<Record> record)
+int TableData::insert_new_record(int mode
+                                       , int pos
+                                       , std::shared_ptr<Record> record)
 {
     //    std::shared_ptr<Record> record = std::make_shared<Record>(record_);
-    record->is_registered(true);
 
-    if(treeItem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << treeItem->getAllFields();
+
+    if(_treeitem != nullptr) qDebug() << "RecordTableData::insert_new_record() : Insert new record to branch " << _treeitem->getAllFields();
 
     // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
     if(record->isLite() == true)
@@ -413,13 +413,14 @@ int RecordTableData::insertNewRecord(int mode
     // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
     bool isCrypt = false;
 
-    if(treeItem != NULL)
-        if(treeItem->getField("crypt") == "1") {
+    if(_treeitem != nullptr) {
+        if(_treeitem->getField("crypt") == "1") {
             if(globalparameters.getCryptKey().length() > 0)
                 isCrypt = true;
             else
                 criticalError("RecordTableData::insertNewRecord() : Can not insert data to crypt branch. Password not setted.");
         }
+    }
 
     // Запись полновесных данных с учетом шифрации
     if(isCrypt && record->getField("crypt") != "1") // В зашифрованную ветку незашифрованную запись
@@ -435,27 +436,31 @@ int RecordTableData::insertNewRecord(int mode
     // Запись добавляется в таблицу конечных записей
     int insertPos = -1;
 
+    record->is_registered(true);
+
     if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-        tableData << record;
-        insertPos = tableData.size() - 1;
+        _tabledata << record;
+        insertPos = _tabledata.size() - 1;
     } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-        tableData.insert(pos, record);
+        _tabledata.insert(pos, record);
         insertPos = pos;
     } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-        tableData.insert(pos + 1, record);
+        _tabledata.insert(pos + 1, record);
         insertPos = pos + 1;
     }
 
     qDebug() << "RecordTableData::insert_new_record() : New record pos" << QString::number(insertPos);
 
     // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
+
+
     return insertPos;
 }
 
 
 // Замена в указанной записи переданных полей на новые значения
-void RecordTableData::editRecordFields(int pos,
-                                       QMap<QString, QString> editFields)
+void TableData::edit_record_fields(int pos,
+                                         QMap<QString, QString> editFields)
 {
     qDebug() << "In recordtabledata method edit_record()";
 
@@ -463,7 +468,7 @@ void RecordTableData::editRecordFields(int pos,
 
     while(i.hasNext()) {
         i.next();
-        setField(i.key(), i.value(), pos);
+        field(i.key(), i.value(), pos);
     }
 
     // changePersistentIndex(QModelIndex(), QModelIndex());
@@ -472,22 +477,22 @@ void RecordTableData::editRecordFields(int pos,
 
 // Удаление записи с указанным индексом
 // todo: добавить удаление приаттаченных файлов и очистку таблицы приаттаченных файлов
-void RecordTableData::deleteRecord(int i)
+void TableData::delete_record(int i)
 {
-    qDebug() << "Try delete record num " << i << " table count " << tableData.size();
+    qDebug() << "Try delete record num " << i << " table count " << _tabledata.size();
 
     // Нельзя удалять с недопустимым индексом
-    if(i >= tableData.size())
+    if(i >= _tabledata.size())
         return;
 
     // Удаление директории и файлов внутри, с сохранением в резервной директории
-    QString dirForDelete = appconfig.get_tetradir() + "/base/" + getField("dir", i);
+    QString dirForDelete = appconfig.get_tetradir() + "/base/" + field("dir", i);
     qDebug() << "Remove dir " << dirForDelete;
     DiskHelper::removeDirectoryToTrash(dirForDelete);
 
 
     // Удаление позиции курсора из истории
-    QString id = getField("id", i);
+    QString id = field("id", i);
 
     if(id.length() > 0)
         walkhistory.removeHistoryData(id);
@@ -502,7 +507,7 @@ void RecordTableData::deleteRecord(int i)
     // beginRemoveRows(QModelIndex(),i,i);
 
     // Удаляется элемент
-    tableData.removeAt(i); // Было takeAt
+    _tabledata.removeAt(i); // Было takeAt
     qDebug() << "Delete record succesfull";
 
     //    //
@@ -516,49 +521,49 @@ void RecordTableData::deleteRecord(int i)
 }
 
 
-void RecordTableData::deleteRecordById(QString id)
+void TableData::delete_record_by_id(QString id)
 {
     for(int i = 0; i < size(); i++)
-        if(getField("id", i) == id)
-            deleteRecord(i); // Так как id уникальный, удаляться будет только одна запись
+        if(field("id", i) == id)
+            delete_record(i); // Так как id уникальный, удаляться будет только одна запись
 }
 
 
 // Удаление всех элементов таблицы конечных записей
-void RecordTableData::deleteAllRecords(void)
+void TableData::delete_all_records(void)
 {
     int tableSize = size(); // Запоминается размер таблицы, так как он при удалении меняется
 
     for(int i = 0; i < tableSize; i++)
-        deleteRecord(0); // Удаляется самая первая запись много раз
+        delete_record(0);   // Deleted very first record many times   // Удаляется самая первая запись много раз
 }
 
 
 // Метод мягкого удаления данных
 // Данные очищаются только у объекта
 // а физически данные на диске не затрагиваются
-void RecordTableData::empty(void)
+void TableData::empty(void)
 {
-    tableData.clear();
-    treeItem = NULL;
+    _tabledata.clear();
+    _treeitem = nullptr;
 }
 
 
-bool RecordTableData::isRecordExists(const QString &id)
+bool TableData::is_record_exists(const QString &id)
 {
     for(int i = 0; i < size(); i++)
-        if(getField("id", i) == id)
+        if(field("id", i) == id)
             return true;
 
     return false;
 }
 
-bool RecordTableData::isRecordExists(const QUrl &url)
+bool TableData::is_record_exists(const QUrl &url)
 {
     bool found = false;
 
     for(int i = 0; i < size(); i++) {
-        std::string compare = getDifference(getField("url", i).toStdString(), url.toString().toStdString());
+        std::string compare = getDifference(field("url", i).toStdString(), url.toString().toStdString());
 
         if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
             found = true;
@@ -569,10 +574,10 @@ bool RecordTableData::isRecordExists(const QUrl &url)
     return found;
 }
 
-int RecordTableData::getPosById(QString id)
+int TableData::get_pos_by_id(QString id)
 {
     for(int i = 0; i < size(); i++)
-        if(getField("id", i) == id)
+        if(field("id", i) == id)
             return i;
 
     return -1;
@@ -580,18 +585,18 @@ int RecordTableData::getPosById(QString id)
 
 
 // Количество записей в таблице данных
-int RecordTableData::size(void) const
+int TableData::size(void) const
 {
-    return tableData.size();
+    return _tabledata.size();
 }
 
 
 // Перемещение записи вверх на одну строку
-void RecordTableData::moveUp(int pos)
+void TableData::move_up(int pos)
 {
     if(pos > 0) {
         // Данные перемещаются
-        tableData.move(pos, pos - 1);
+        _tabledata.move(pos, pos - 1);
 
         // Обновляется экран
         // QModelIndex from=index(pos-1);
@@ -603,11 +608,11 @@ void RecordTableData::moveUp(int pos)
 
 // Перемещение записи вниз на одну строку
 // Move write down one line
-void RecordTableData::moveDn(int pos)
+void TableData::move_dn(int pos)
 {
-    if(pos < tableData.count()) {
+    if(pos < _tabledata.count()) {
         // Данные перемещаются
-        tableData.move(pos, pos + 1);
+        _tabledata.move(pos, pos + 1);
 
         // Обновляется экран
         // QModelIndex from=index(pos);
@@ -619,50 +624,50 @@ void RecordTableData::moveDn(int pos)
 
 // Переключение таблицы в зашифрованное состояние
 // todo: Добавить шифрацию имени приаттаченных файлов и содержимого файлов
-void RecordTableData::switchToEncrypt(void)
+void TableData::switch_to_encrypt(void)
 {
     // Перебор записей
     for(int i = 0; i < size(); i++) {
         // Если запись уже зашифрована, ее шифровать ненужно
-        if(getField("crypt", i) == "1")
+        if(field("crypt", i) == "1")
             continue;
 
         // Шифрация записи
-        tableData[i]->switchToEncryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
+        _tabledata[i]->switchToEncryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 
 
 // Переключение таблицы в расшифрованное состояние
 // todo: добавить расшифрацию имени приаттаченных файлов и содержимого файлов
-void RecordTableData::switchToDecrypt(void)
+void TableData::switch_to_decrypt(void)
 {
     // Перебор записей
     for(int i = 0; i < size(); i++) {
         // Если запись не зашифрована, ее не нужно расшифровывать
-        if(getField("crypt", i) == "" || getField("crypt", i) == "0")
+        if(field("crypt", i) == "" || field("crypt", i) == "0")
             continue;
 
         // Расшифровка записи
-        tableData[i]->switchToDecryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
+        _tabledata[i]->switchToDecryptAndSaveLite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 
 
 // Получение ссылки на объект ветки, которой принадлежит таблица
-TreeItem *RecordTableData::getItem(void)
+std::shared_ptr<TreeItem> TableData::item(void)
 {
-    return treeItem;
+    return _treeitem;
 }
 
 
-int RecordTableData::getWorkPos(void)
+int TableData::work_pos(void)
 {
-    return workPos;
+    return _workpos;
 }
 
 
-void RecordTableData::setWorkPos(int pos)
+void TableData::work_pos(int pos)
 {
-    workPos = pos;
+    _workpos = pos;
 }

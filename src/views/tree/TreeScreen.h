@@ -1,6 +1,7 @@
 #ifndef _TREESCREEN_H_
 #define _TREESCREEN_H_
 
+#include <memory>
 #include <QtGlobal>
 #include <QWidget>
 #include <QListView>
@@ -17,10 +18,11 @@ class ClipboardBranch;
 class AppConfig;
 class QMenuBar;
 class QWidgetAction;
-
+class TableData;
 
 
 namespace  browser {
+    class ToolbarSearch;
     class WebPage;
 }
 
@@ -53,6 +55,9 @@ public:
 
     QMenu *buttonmenu() {return _menus_in_button;}
 
+public slots:
+    void on_found(std::shared_ptr<TableData> recordtable);
+
 private slots:
 
     void expand_all_subbranch(void);
@@ -77,7 +82,7 @@ private slots:
 
     // Действия при клике на ветку дерева
     void on_knowtree_clicked(const QModelIndex &index);
-
+    void on_knowtree_doubleclicked(const QModelIndex &index);
     // Открытие контекстного меню
     void on_customContextMenuRequested(const QPoint &pos);
 
@@ -90,9 +95,11 @@ private:
     QWidgetAction   *_menuaction;
 
 
-    KnowTreeView    *_knowtreeview;
-    QHBoxLayout     *_toolslayout;
-    QVBoxLayout     *_treescreenlayout;
+    KnowTreeView            *_knowtreeview;
+    QHBoxLayout             *_toolslayout;
+    //    browser::ToolbarSearch  *_recordtree_search;
+    //    QHBoxLayout             *_recordtree_searchlayout;
+    QVBoxLayout             *_treescreenlayout;
 
     const AppConfig &_appconfig;
 

@@ -4,7 +4,7 @@
 #include <QBoxLayout>
 
 #include "verticalscrollarea.h"
-#include "views/recordTable/RecordTableView.h"
+#include "views/recordTable/TableView.h"
 
 VerticalScrollArea::VerticalScrollArea(
     std::shared_ptr<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>> interface

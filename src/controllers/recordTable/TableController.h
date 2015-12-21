@@ -10,12 +10,12 @@
 extern const int add_new_record_after;
 
 class Record;
-class RecordTableView;
-class RecordTableData;
-class RecordTableModel;
-class RecordTableProxyModel;
+class TableView;
+class TableData;
+class TableModel;
+class TableProxyModel;
 class ClipboardRecords;
-class RecordTableScreen;
+class TableScreen;
 
 namespace browser {
     class Entrance;
@@ -28,29 +28,30 @@ namespace browser {
 //BOOST_STRONG_TYPEDEF(QString, Id_T)
 
 
-class RecordTableController : public QObject {
+class TableController : public QObject {
     Q_OBJECT
 public:
-    RecordTableController(RecordTableScreen *recordtablescreen);
-    virtual ~RecordTableController();
+    TableController(TableScreen *recordtablescreen);
+    virtual ~TableController();
 
     void init(void);
 
-    RecordTableView *getView(void);
-    RecordTableModel *getRecordTableModel() {return recordSourceModel;}
+    TableView *view(void);
+    TableModel *recordtable_model() {return recordSourceModel;}
 
     void click_record(const QModelIndex &index);
 
-    bool isTableNotExists(void);
-    void set_table_data(RecordTableData *rtData);
+    bool is_table_notexists(void);
+    //    void reset_tabledata_test(TableData *rtData);
+    void reset_tabledata(std::shared_ptr<TableData> rtData);
 
-    int getRowCount(void);
+    int row_count(void);
 
-    void addRecordsToClipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
+    void add_records_toclipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
 
-    void openWebsite(QModelIndex proxyIndex);
+    void open_website(QModelIndex proxyIndex);
     // Действия при редактировании инфополей записи из контекстного меню
-    void editFieldContext(QModelIndex proxyIndex);
+    void edit_fieldcontext(QModelIndex proxyIndex);
 
     QModelIndex pos_to_proxyindex(int pos);
     QModelIndex pos_to_sourceindex(int pos);
@@ -63,14 +64,14 @@ public:
     QModelIndex id_to_sourceindex(QString id);
     QModelIndex id_to_proxyindex(QString id);
 
-    int     getFirstSelectionPos(void);
-    QString getFirstSelectionId(void);
+    int     first_selectionpos(void);
+    QString first_selectionid(void);
     void    select_pos(int pos);
     void    select_id(QString id);
 
     // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
-    void removeRowById(QString delId);
-    void removeRowsByIdList(QVector<QString> delIds);
+    void removerow_by_id(QString delId);
+    void removerows_by_idlist(QVector<QString> delIds);
 
 signals:
 
@@ -85,33 +86,33 @@ public slots:
     // Вызов действий для вставки записей из буфера
     void paste(void);
 
-    void onEditFieldContext(void);
+    void on_edit_fieldcontext(void);
 
-    void deleteRecords(void);
+    void delete_records_selected(void);
 
     // Вызов действий из контекстного меню для открытия окна с вводом новой записи
-    void addNewToEndContext(void);
-    void addNewBeforeContext(void);
-    void addNewAfterContext(void);
+    void addnew_to_end_context(void);
+    void addnew_before_context(void);
+    void addnew_after_context(void);
     //void autoAddNewAfterContext(void);
 
     // Вызов действий из контекстного меню для удаления конечной записи
-    void deleteContext(void);
+    void delete_context(void);
 
-    void moveUp(void);
-    void moveDn(void);
+    void move_up(void);
+    void move_dn(void);
 
     // Клик по пункту "Сортировка" в контекстном меню
-    void onSortClick(void);
+    void on_sort_click(void);
 
     // Слот для вызов настроек
     void settings(void);
 
     // Слот, обновляющий вид если изменились настройки таблицы конечных записей в конфиге программы
-    void onRecordTableConfigChange(void);
+    void on_recordtable_configchange(void);
 
     // Печать таблицы конечных записей
-    void onPrintClick(void);
+    void on_print_click(void);
 
 protected:
 
@@ -119,13 +120,13 @@ protected:
     void sychronize_attachtable_to_record(const int pos);
     void update_browser(const int source_pos);
 
-    RecordTableView         *view;
-    RecordTableModel        *recordSourceModel; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
-    RecordTableProxyModel   *recordProxyModel;
+    TableView         *_view;
+    TableModel        *recordSourceModel; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
+    TableProxyModel   *recordProxyModel;
 
-    void addNewRecord(int mode);
+    void addnew_record(int mode);
 
-    int new_record(
+    int new_record_from_url(
         const QUrl &url
         , const int mode
         = add_new_record_after
@@ -136,21 +137,20 @@ protected:
                    = add_new_record_after
                   );
 
-    int addNew(int mode, std::shared_ptr<Record> record);
+    int addnew_record(int mode, std::shared_ptr<Record> record);
 
-    void editField(int pos
-                   , QString pin
-                   , QString name
-                   , QString author
-                   , QString home, QString url
-                   , QString tags
-                  );
+    void edit_field(int pos
+                    , QString pin
+                    , QString name
+                    , QString author
+                    , QString home, QString url
+                    , QString tags
+                   );
+
     friend class browser::Entrance;
     //friend class WebView;
-    //    friend Record *register_record(const QUrl &_url, std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator, RecordTableController *_recordtablecontroller);
-    friend std::shared_ptr<Record> register_record(std::shared_ptr<Record> record
-                                   //                                   , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
-                                   , RecordTableController *_recordtablecontroller);
+
+    friend std::shared_ptr<Record> register_record(std::shared_ptr<Record> record, TableController *_recordtablecontroller);
 
     //    friend Record *register_record(const QUrl &_url);
 };

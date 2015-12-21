@@ -17,7 +17,7 @@
 #if QT_VERSION < 0x050000
 RecordInfoFieldsEditor::RecordInfoFieldsEditor(QWidget *parent, Qt::WFlags f) : QDialog(parent, f)
 #else
-RecordInfoFieldsEditor::RecordInfoFieldsEditor(QWidget * parent, Qt::WindowFlags f) : QDialog(parent, f)
+InfoFieldsEditor::InfoFieldsEditor(QWidget * parent, Qt::WindowFlags f) : QDialog(parent, f)
 #endif
 {
     setupUI();
@@ -26,13 +26,13 @@ RecordInfoFieldsEditor::RecordInfoFieldsEditor(QWidget * parent, Qt::WindowFlags
 }
 
 
-RecordInfoFieldsEditor::~RecordInfoFieldsEditor()
+InfoFieldsEditor::~InfoFieldsEditor()
 {
 
 }
 
 
-void RecordInfoFieldsEditor::setupUI(void)
+void InfoFieldsEditor::setupUI(void)
 {
     // Ввод инфополей записи
     infoField = new InfoFieldEnter();
@@ -49,14 +49,14 @@ void RecordInfoFieldsEditor::setupUI(void)
 }
 
 
-void RecordInfoFieldsEditor::setupSignals(void)
+void InfoFieldsEditor::setupSignals(void)
 {
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(okClick(void)));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
 
-void RecordInfoFieldsEditor::assembly(void)
+void InfoFieldsEditor::assembly(void)
 {
     // Размещалка элементов
     QVBoxLayout *layout = new QVBoxLayout();
@@ -78,7 +78,7 @@ void RecordInfoFieldsEditor::assembly(void)
 }
 
 
-void RecordInfoFieldsEditor::okClick(void)
+void InfoFieldsEditor::okClick(void)
 {
     QString message = "";
 
@@ -97,7 +97,7 @@ void RecordInfoFieldsEditor::okClick(void)
 }
 
 
-QString RecordInfoFieldsEditor::getField(QString name)
+QString InfoFieldsEditor::getField(QString name)
 {
     if(infoField->checkFieldName(name) == true)
         return infoField->getField(name);
@@ -108,7 +108,7 @@ QString RecordInfoFieldsEditor::getField(QString name)
 }
 
 
-void RecordInfoFieldsEditor::setField(QString name, QString value)
+void InfoFieldsEditor::setField(QString name, QString value)
 {
     if(infoField->checkFieldName(name) == true)
         infoField->setField(name, value);

@@ -14,11 +14,13 @@ namespace browser {
 
 class TreeScreen;
 class MetaEditor;
-class RecordTableScreen;
+class TableScreen;
 class FindScreen;
 class WindowSwitcher;
 class MainWindow;
 class QTabWidget;
+class QSplitter;
+
 
 class GlobalParameters : public QObject {
     Q_OBJECT
@@ -37,6 +39,9 @@ public:
     QString getTargetOs(void);
     QString getApplicationName(void);
 
+    void v_left_splitter(QSplitter *vleftsplitter);
+    QSplitter *v_left_splitter();
+
     void vtab(QTabWidget *point);
     QTabWidget *vtab();
 
@@ -46,8 +51,8 @@ public:
     browser::Entrance *entrance();
     void entrance(browser::Entrance *&b);
 
-    void setRecordTableScreen(RecordTableScreen *point);
-    RecordTableScreen *getRecordTableScreen();
+    void setRecordTableScreen(TableScreen *point);
+    TableScreen *getRecordTableScreen();
 
     void setFindScreen(FindScreen *point);
     FindScreen *getFindScreen();
@@ -86,11 +91,12 @@ private:
 
     TreeScreen          *pointTreeScreen;
     browser::Entrance   *_browsermanager;
-    RecordTableScreen   *pointRecordTableScreen;
+    TableScreen   *pointRecordTableScreen;
     FindScreen          *pointFindScreen;
     MetaEditor          *pointMetaEditor;
     QStatusBar          *pointStatusBar;
     WindowSwitcher      *windowSwitcher;
+    QSplitter           *_v_left_splitter;
     QTabWidget          *_vtab;
     MainWindow          *_mainwindow;
 

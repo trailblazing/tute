@@ -134,8 +134,6 @@ INSTALLS    +=  icon_48_file
 
 
 HEADERS     =   src/main.h \
-    src/views/recordTable/RecordTableScreen.h \
-    src/views/recordTable/RecordTableView.h \
     src/views/record/RecordInfoFieldsEditor.h \
     src/views/record/InfoFieldEnter.h \
     src/views/record/MetaEditor.h \
@@ -152,9 +150,6 @@ HEADERS     =   src/main.h \
     src/models/tree/TreeModel.h \
     src/models/tree/TreeItem.h \
     src/models/tree/KnowTreeModel.h \
-    src/models/recordTable/RecordTableData.h \
-    src/models/recordTable/RecordTableModel.h \
-    src/models/recordTable/RecordTableProxyModel.h \
     src/models/appConfig/AppConfig.h \
     src/views/record/AddNewRecord.h \
     src/libraries/ClipboardRecords.h \
@@ -183,7 +178,6 @@ HEADERS     =   src/main.h \
     src/libraries/FixedParameters.h \
     src/libraries/WindowSwitcher.h \
     src/libraries/wyedit/EditorShowText.h \
-    src/views/recordTable/RecordTablePrint.h \
     src/models/recordTable/Record.h \
     src/models/attachTable/Attach.h \
     src/models/attachTable/AttachTableData.h \
@@ -191,7 +185,6 @@ HEADERS     =   src/main.h \
     src/views/attachTable/AttachTableView.h \
     src/views/attachTable/AttachTableScreen.h \
     src/controllers/attachTable/AttachTableController.h \
-    src/controllers/recordTable/RecordTableController.h \
     src/views/dialog/ReduceMessageBox.h \
     src/views/dialog/OverTextToolButton.h \
     src/libraries/crypt/CryptService.h \
@@ -221,7 +214,14 @@ HEADERS     =   src/main.h \
     src/utility/delegate.h \
     src/views/browser/browser.h \
     src/views/mainWindow/hidabletabwidget.h \
-    src/views/recordTable/verticalscrollarea.h
+    src/views/recordTable/verticalscrollarea.h \
+    src/controllers/recordTable/TableController.h \
+    src/models/recordTable/TableData.h \
+    src/models/recordTable/TableModel.h \
+    src/models/recordTable/TableProxyModel.h \
+    src/views/recordTable/TableScreen.h \
+    src/views/recordTable/TableView.h \
+    src/views/recordTable/TablePrint.h
 
 
 
@@ -256,8 +256,6 @@ HEADERS     +=  \
     src/libraries/MtStyledItemDelegate.h
 
 SOURCES     =   src/main.cpp \
-    src/views/recordTable/RecordTableScreen.cpp \
-    src/views/recordTable/RecordTableView.cpp \
     src/views/record/RecordInfoFieldsEditor.cpp \
     src/views/record/InfoFieldEnter.cpp \
     src/views/record/MetaEditor.cpp \
@@ -274,9 +272,6 @@ SOURCES     =   src/main.cpp \
     src/models/tree/TreeModel.cpp \
     src/models/tree/TreeItem.cpp \
     src/models/tree/KnowTreeModel.cpp \
-    src/models/recordTable/RecordTableData.cpp \
-    src/models/recordTable/RecordTableModel.cpp \
-    src/models/recordTable/RecordTableProxyModel.cpp \
     src/models/appConfig/AppConfig.cpp \
     src/views/record/AddNewRecord.cpp \
     src/libraries/ClipboardRecords.cpp \
@@ -305,14 +300,12 @@ SOURCES     =   src/main.cpp \
     src/libraries/FixedParameters.cpp \
     src/libraries/WindowSwitcher.cpp \
     src/libraries/wyedit/EditorShowText.cpp \
-    src/views/recordTable/RecordTablePrint.cpp \
     src/models/recordTable/Record.cpp \
     src/models/attachTable/Attach.cpp \
     src/models/attachTable/AttachTableData.cpp \
     src/models/attachTable/AttachTableModel.cpp \
     src/views/attachTable/AttachTableView.cpp \
     src/views/attachTable/AttachTableScreen.cpp \
-    src/controllers/recordTable/RecordTableController.cpp \
     src/controllers/attachTable/AttachTableController.cpp \
     src/views/dialog/ReduceMessageBox.cpp \
     src/views/dialog/OverTextToolButton.cpp \
@@ -341,7 +334,14 @@ SOURCES     =   src/main.cpp \
     src/libraries/FlatControl.cpp \
     src/views/browser/browser.cpp \
     src/views/mainWindow/hidabletabwidget.cpp \
-    src/views/recordTable/verticalscrollarea.cpp
+    src/views/recordTable/verticalscrollarea.cpp \
+    src/controllers/recordTable/TableController.cpp \
+    src/models/recordTable/TableData.cpp \
+    src/models/recordTable/TableModel.cpp \
+    src/models/recordTable/TableProxyModel.cpp \
+    src/views/recordTable/TableScreen.cpp \
+    src/views/recordTable/TableView.cpp \
+    src/views/recordTable/TablePrint.cpp
 
 
 

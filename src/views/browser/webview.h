@@ -51,14 +51,14 @@
 
 
 #include "models/recordTable/Record.h"
-#include "controllers/recordTable/RecordTableController.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "controllers/recordTable/TableController.h"
+#include "views/recordTable/TableScreen.h"
 #include "models/recordTable/Record.h"
 #include "libraries/GlobalParameters.h"
 //#include "tabwidget.h"
 #include "views/browser/featurepermissionbar.h"
 #include "libraries/qtSingleApplication5/qtsingleapplication.h"
-#include "views/recordTable/RecordTableView.h"
+#include "views/recordTable/TableView.h"
 //#include "tabwidget.h"
 #include "models/recordTable/Record.h"
 
@@ -110,7 +110,7 @@ namespace browser {
         WebPage(QWebEngineProfile *profile
                 , const std::shared_ptr<Record> record
                 // , bool openinnewtab
-                , RecordTableController *_recordtablecontroller
+                , TableController *_recordtablecontroller
                 , WebView *parent = 0
                );
         //        WebView *(*_load_record)(Record *const record);
@@ -118,7 +118,7 @@ namespace browser {
         WebView *view() {return _pageview;}
         std::set<std::shared_ptr<Record> > binded_records()const;
 
-        void active();
+        WebView *active();
         WebView *load(const std::shared_ptr<Record> record, bool checked = true);
         void load(const QUrl &url) = delete;
 
@@ -132,29 +132,30 @@ namespace browser {
 
         struct ActiveRecordBinder {
             WebPage *_the;
-            bool _make_current;
+            //            bool _make_current;
             //            RecordTableController *_recordtablecontroller;
-            ActiveRecordBinder(WebPage *the, bool make_current
-                               = true
-                                 //                            , RecordTableController *recordtablecontroller
-                                 //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
+            ActiveRecordBinder(WebPage *the
+                               //                               , bool make_current = true
                               )
+            //                            , RecordTableController *recordtablecontroller
+            //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
+
                 : _the(the)
-                , _make_current(make_current)
+                  //                , _make_current(make_current)
                   //              , _recordtablecontroller(recordtablecontroller)
             {}
 
-            WebView *generator(std::shared_ptr<Record> record)
+            WebView *binder(std::shared_ptr<Record> record)
             {
-                return _the->load(record, _make_current);
+                return _the->bind(record);  // _the->load(record, _make_current);
                 //                                    , _recordtablecontroller
 
             }
 
-            void activator(std::shared_ptr<Record> record)
+            WebView *activator(std::shared_ptr<Record> record)
             {
                 assert(record->unique_page() == _the);
-                _the->active();
+                return _the->active();
             }
         };
 
@@ -167,7 +168,7 @@ namespace browser {
 #endif
         virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-        std::shared_ptr<Record> bind_record(const std::shared_ptr<Record> binded_records);
+        WebView *bind(const std::shared_ptr<Record> record);
         void break_record_which_page_point_to_me();    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
         void update_record(const QUrl &url
                            // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
@@ -201,15 +202,15 @@ namespace browser {
         // bool _openinnewtab;
         QUrl    _loadingurl;
         //bool _create_window_generated;
-        RecordTableController *_recordtablecontroller;
+        TableController *_recordtablecontroller;
 
 
         void record(std::shared_ptr<Record> record) {_record = record;}
         friend class Record;
         friend void Record::page_to_nullptr();
-        friend Record::Record(const Record &obj);
+        //        friend Record::Record(const Record &obj);
         friend Record::~Record();
-        friend Record *Record::bind_page(WebPage *page);
+        friend Record *Record::bind(WebPage *page);
         friend WebPage *Record::unique_page();
         friend bool Record::is_holder();
     };
@@ -226,7 +227,7 @@ namespace browser {
         WebView(std::shared_ptr<Record> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
-                , RecordTableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController()
+                , TableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController()
                );
 
         ~WebView();
@@ -241,12 +242,12 @@ namespace browser {
         QString lastStatusBarText() const;
         inline int progress() const { return _progress; }
 
-        RecordTableController *recordtablecontroller() {return _recordtablecontroller;}
-        void bind_recordtabcontroller(RecordTableController *recordtablecontroller) {_recordtablecontroller  = recordtablecontroller ;}
+        TableController *recordtablecontroller() {return _recordtablecontroller;}
+        void bind_recordtabcontroller(TableController *recordtablecontroller) {_recordtablecontroller  = recordtablecontroller ;}
         //        Record *const &record()const {return _record;}
         //        void record(Record *record) {if(record) {_record = record; _record->view(this);}}
 
-        void switch_show();
+        //        void switch_show();
 
         TabWidget *const &tabmanager()const {return _tabmanager;}
     protected:
@@ -279,7 +280,7 @@ namespace browser {
     private:
         TabWidget               *_tabmanager;
         //        Record *_record;
-        RecordTableController   *_recordtablecontroller;
+        TableController   *_recordtablecontroller;
         WebPage                 *_page;
         QString                 _statusbartext;
         //        QUrl _initialurl;

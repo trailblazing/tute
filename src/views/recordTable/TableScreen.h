@@ -14,15 +14,20 @@
 #include <QItemSelection>
 #include <QLabel>
 
-class RecordTableController;
+class TableController;
 class VerticalScrollArea;
+class FlatToolButton;
 
-class RecordTableScreen : public QWidget {
+namespace browser {
+    class ToolbarSearch;
+}
+
+class TableScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordTableScreen(QWidget *parent = 0);
-    virtual ~RecordTableScreen();
+    TableScreen(QWidget *parent = 0);
+    virtual ~TableScreen();
 
     int     getFirstSelectionPos(void);
     QString getFirstSelectionId(void);
@@ -32,10 +37,10 @@ public:
     void setTreePath(QString path);
     QString getTreePath(void);
 
-    inline RecordTableController *
+    inline TableController *
     getRecordTableController()
     {
-        return recordTableController;
+        return _recordtable_controller;
     }
 
     // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
@@ -70,17 +75,20 @@ private slots:
     void onBackClick(void);
 
 private:
-    QToolBar *toolsLine;
-    QToolBar *extraToolsLine;
+    QToolBar *_toolsline;
+    QToolBar *_extra_toolsline;
 
-    QLabel  *treePathLabel;
-    QString treePath;
+    QLabel          *_treepathlabel;
+    //    FlatToolButton  *_treepath_button;
+    QString         _treepath;
 
-    VerticalScrollArea      *_verticalscrollarea;
-    RecordTableController   *recordTableController;
+    VerticalScrollArea  *_vertical_scrollarea;
+    TableController     *_recordtable_controller;
 
-    QHBoxLayout *recordTableToolsLayout;
-    QVBoxLayout *recordTableScreenLayout;
+    QHBoxLayout             *_recordtable_toolslayout;
+    //    browser::ToolbarSearch  *_recordtree_search;
+    //    QHBoxLayout             *_recordtree_searchlayout;
+    QVBoxLayout             *_recordtable_screenlayout;
 
     QAction *actionMoveUp;
     QAction *actionMoveDn;

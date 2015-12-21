@@ -47,11 +47,11 @@
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "libraries/GlobalParameters.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "views/recordTable/TableScreen.h"
 #include "models/dataBaseConfig/DataBaseConfig.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableData.h"
-#include "controllers/recordTable/RecordTableController.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableData.h"
+#include "controllers/recordTable/TableController.h"
 #include "main.h"
 #include <utility>
 
@@ -98,11 +98,11 @@
 #include "libraries/crypt/RC5Simple.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/GlobalParameters.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "views/recordTable/TableScreen.h"
 #include "models/dataBaseConfig/DataBaseConfig.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableData.h"
-#include "controllers/recordTable/RecordTableController.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableData.h"
+#include "controllers/recordTable/TableController.h"
 
 
 //using namespace std;
@@ -916,22 +916,24 @@ void QtSingleApplication::newLocalSocketConnection()
             //Record *record = register_record(url);
             //            dp = browser_entrance->active_record(record);
             auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
-            request_record(
-                url
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                    ""
-                    , &browser::Entrance::ActiveRecordBinder::generator
-                    , arb
-                )
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
-                    ""
-                    , &browser::Entrance::ActiveRecordBinder::activator
-                    , arb
-                )
-                //            , [browser_entrance](Record * const record)->browser::WebView * {   // &Entrance::new_dockedwindow
-                //                return browser_entrance->active_record(record);
-                //            }
-            );
+            auto record = request_record(
+                              url
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                  ""
+                                  , &browser::Entrance::ActiveRecordBinder::binder
+                                  , arb
+                              )
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                  ""
+                                  , &browser::Entrance::ActiveRecordBinder::activator
+                                  , arb
+                              )
+                              //            , [browser_entrance](Record * const record)->browser::WebView * {   // &Entrance::new_dockedwindow
+                              //                return browser_entrance->active_record(record);
+                              //            }
+                          );
+            //            record->generate();
+            record->active();
             //            dp.second = browser_entrance->active_record()->invoke_page(record); //->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
         }
 

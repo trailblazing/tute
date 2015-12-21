@@ -15,7 +15,7 @@
 class QNetworkReply;
 class QSslError;
 class QtSingleApplication;
-class RecordTableController;
+class TableController;
 extern GlobalParameters globalparameters;
 namespace browser {
     class WebView;
@@ -23,7 +23,7 @@ namespace browser {
 
 //extern std::shared_ptr<Record> request_record(const QUrl &_url
 //                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
 //                                             );
 
 QT_BEGIN_NAMESPACE
@@ -55,7 +55,7 @@ namespace browser {
     public:
 
 
-        Entrance(RecordTableController *recordtablecontroller, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+        Entrance(TableController *recordtablecontroller, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
         ~Entrance();
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
         //        void setupDynamicSignals(void);
@@ -67,10 +67,17 @@ namespace browser {
 
         struct ActiveRecordBinder {
             Entrance    *_the;
-            WebPage     *_page;
-            ActiveRecordBinder(Entrance *the): _the(the), _page(nullptr) {}
-            WebView *generator(std::shared_ptr<Record> record) {_page = _the->equip_registered(record).second->page(); return _the->equip_registered(record).second;}
-            void activator(std::shared_ptr<Record> record) {record->unique_page()->active();}
+            //            WebPage     *_page;
+            ActiveRecordBinder(Entrance *the): _the(the)    //              , _page(nullptr)
+            {}
+
+            WebView *binder(std::shared_ptr<Record> record)
+            {
+                //                _page = _the->equip_registered(record).second->page();
+                return _the->equip_registered(record).second;
+            }
+
+            WebView *activator(std::shared_ptr<Record> record) {return record->unique_page()->active();}
         };
 
         std::pair<Browser *, WebView *> activiated_registered();
@@ -129,7 +136,7 @@ namespace browser {
         void assembly(void);
 
         QList<QPointer<Browser> > _mainWindows;
-        RecordTableController *_recordtablecontroller;
+        TableController *_recordtablecontroller;
         QString _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
         QAction *_actionFreeze;

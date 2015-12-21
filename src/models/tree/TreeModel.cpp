@@ -1,7 +1,7 @@
 #include "TreeItem.h"
 #include "TreeModel.h"
 #include "main.h"
-#include "models/recordTable/RecordTableData.h"
+#include "models/recordTable/TableData.h"
 #include "libraries/GlobalParameters.h"
 
 extern GlobalParameters globalparameters;
@@ -38,7 +38,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается окраска текста элемента
     if(role == Qt::ForegroundRole) {
-        TreeItem *item = getItem(index);
+        std::shared_ptr<TreeItem> item = getItem(index);
 
         if(item->recordtableGetRowCount() > 0)
             return QColor(Qt::black);// Если узел содержит таблицу конечных записей
@@ -55,14 +55,14 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается содержимое текста элемента
     if(role == Qt::DisplayRole || role == Qt::EditRole) {
-        TreeItem *item = getItem(index);
+        std::shared_ptr<TreeItem> item = getItem(index);
 
         return QVariant(item->getField("dynamicname"));   // Запрашивается строка имени с количеством элементов
     }
 
     // Если запрашиваются элементы оформления
     if(role == Qt::DecorationRole) {
-        TreeItem *item = getItem(index);
+        std::shared_ptr<TreeItem> item = getItem(index);
 
         // Если ветка зашифрована
         if(item->getField("crypt") == "1") {
@@ -89,17 +89,17 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 
 
 // Получение указателя на Item-злемент связанный с заданным QModelIndex
-TreeItem *TreeModel::getItem(const QModelIndex &index) const
+std::shared_ptr<TreeItem> TreeModel::getItem(const QModelIndex &index) const
 {
     if(index.isValid()) {
-        TreeItem *item = static_cast<TreeItem *>(index.internalPointer());
+        std::shared_ptr<TreeItem> item = const_pointer_cast<TreeItem>(static_cast<TreeItem *>(index.internalPointer())->shared_from_this());
 
         if(item) {
             // qDebug() << "Get tree item " << item->data("name").toString();
             return item;
         } else {
             qDebug() << "Detect bad castind to TreeItem in getItem() method ";
-            return NULL;
+            return nullptr;
         }
 
     }
@@ -109,7 +109,7 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
 }
 
 
-QModelIndex TreeModel::getIndexByItem(TreeItem *item)
+QModelIndex TreeModel::getIndexByItem(std::shared_ptr<TreeItem> item)
 {
     // Инициализация рекурсивной функции
     getIndexRecurse(QModelIndex(), item, 0);
@@ -118,7 +118,7 @@ QModelIndex TreeModel::getIndexByItem(TreeItem *item)
 }
 
 
-QModelIndex TreeModel::getIndexRecurse(QModelIndex index, TreeItem *item, int mode)
+QModelIndex TreeModel::getIndexRecurse(QModelIndex index, std::shared_ptr<TreeItem> item, int mode)
 {
     static QModelIndex find_index;
     static bool is_find = false;
@@ -132,7 +132,7 @@ QModelIndex TreeModel::getIndexRecurse(QModelIndex index, TreeItem *item, int mo
 
     if(mode == 1) {
         // Если указатель узла совпадает с заданным item
-        if(item == static_cast<TreeItem *>(index.internalPointer())) {
+        if(item.get() == static_cast<TreeItem * >(index.internalPointer())) {
             is_find = true;
             find_index = index;
             return find_index;
@@ -149,9 +149,9 @@ QModelIndex TreeModel::getIndexRecurse(QModelIndex index, TreeItem *item, int mo
 
 
 // Получение указателя на Item-злемент с указанным путем
-TreeItem *TreeModel::getItem(QStringList path) const
+std::shared_ptr<TreeItem> TreeModel::getItem(QStringList path) const
 {
-    TreeItem *curritem = rootItem;
+    std::shared_ptr<TreeItem> curritem = rootItem;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
@@ -180,7 +180,7 @@ bool TreeModel::isItemValid(QStringList path) const
     if(path.count() == 1 && path[0] == "0")
         return false;
 
-    TreeItem *curritem = rootItem;
+    std::shared_ptr<TreeItem> curritem = rootItem;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
@@ -242,12 +242,12 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
     if(parent.isValid() && parent.column() != 0)
         return QModelIndex();
 
-    TreeItem *parentItem = getItem(parent);
+    std::shared_ptr<TreeItem> parentItem = getItem(parent);
 
-    TreeItem *childItem = parentItem->child(row);
+    std::shared_ptr<TreeItem> childItem = parentItem->child(row);
 
     if(childItem)
-        return createIndex(row, column, childItem);
+        return createIndex(row, column, static_cast<void *>(childItem.get()));
     else
         return QModelIndex();
 }
@@ -256,7 +256,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 // Вставка пустых строк с позиции position в количестве rows
 bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
-    TreeItem *parentItem = getItem(parent);
+    std::shared_ptr<TreeItem> parentItem = getItem(parent);
     bool success;
 
     beginInsertRows(parent, position, position + rows - 1);
@@ -276,19 +276,25 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     if(!index.isValid())
         return QModelIndex();
 
-    TreeItem *childItem = getItem(index);
-    TreeItem *parentItem = childItem->parent();
+    std::shared_ptr<TreeItem> childItem = getItem(index);
+    std::shared_ptr<TreeItem> parentItem;
 
-    if(parentItem == rootItem)
-        return QModelIndex();
+    if(childItem) {
+        parentItem = childItem->parent();
 
-    return createIndex(parentItem->childNumber(), 0, parentItem);
+        if(!parentItem
+           || (parentItem == rootItem)) {
+            return QModelIndex();
+        }
+    }
+
+    return createIndex(parentItem->childNumber(), 0, parentItem.get());
 }
 
 
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
-    TreeItem *parentItem = getItem(parent);
+    std::shared_ptr<TreeItem> parentItem = getItem(parent);
     bool success = true;
 
     beginRemoveRows(parent, position, position + rows - 1);
@@ -301,7 +307,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 
 int TreeModel::rowCount(const QModelIndex &itemIndex) const
 {
-    TreeItem *item = getItem(itemIndex);
+    std::shared_ptr<TreeItem> item = getItem(itemIndex);
     return item->childCount();
 }
 
@@ -334,7 +340,7 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 
         // Вычисляется указатель на Item элемент по QModelIndex
         // в визуальной модели дерева
-        TreeItem *item = getItem(index);
+        std::shared_ptr<TreeItem> item = getItem(index);
 
         // Устанавливаются данные в Item элемент
         item->setField("name", value.toString());

@@ -16,7 +16,7 @@ public:
     FindTableWidget(QWidget *parent = 0);
     virtual ~FindTableWidget(void);
 
-    void clearAll(void);
+    void re_initialize(void);
     void addRow(QString title, QString pin, QString branchName, QString tags, QStringList path, QString recordId);
     void updateColumnsWidth(void);
     void remove_id(const QString &id);

@@ -36,7 +36,7 @@ FindTableWidget::FindTableWidget(QWidget *parent)
     setupSignals();
     assembly();
 
-    clearAll();
+    re_initialize();
 }
 
 
@@ -113,7 +113,7 @@ void FindTableWidget::updateColumnsWidth(void)
 }
 
 
-void FindTableWidget::clearAll(void)
+void FindTableWidget::re_initialize(void)
 {
     // Модель таблицы очищается
     _findtablemodel->setRowCount(0);

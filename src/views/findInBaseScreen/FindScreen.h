@@ -1,9 +1,11 @@
 #ifndef _FINDSCREEN_H_
 #define _FINDSCREEN_H_
 
+#include <memory>
 #include <QMap>
 #include <QWidget>
 #include <QToolBar>
+#include "models/recordTable/TableData.h"
 
 class QLineEdit;
 // class QPushButton;
@@ -23,7 +25,7 @@ class FindTableWidget;
 class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
-
+class TableData;
 
 namespace browser {
     class ChaseWidget;
@@ -52,17 +54,17 @@ public:
     browser::ChaseWidget *chasewidget() {return _chasewidget;}
     void remove_id(const QString &id);
     void remove_row(const int row);
-
+    void adjustSize();
 
 public slots:
 
     void widgetShow(void);
     void widgetHide(void);
-    void findClicked(void);
+    std::shared_ptr<TableData> findClicked(void);
     void setFindText(QString text);
 
-
-
+protected:
+    virtual void resizeEvent(QResizeEvent *e);
 private slots:
 
     void enableFindButton(const QString &text);
@@ -107,13 +109,13 @@ private:
     //    FlatToolButton *_stop_reload;
     browser::ChaseWidget *_chasewidget;
 
-    QHBoxLayout *toolsAreaFindTextAndButton;
+    QHBoxLayout     *toolsAreaFindTextAndButton;
 
-    FlatToolButton *_findstartbutton;   // QPushButton
-    FlatToolButton *toolsExpand;
+    FlatToolButton  *_findstartbutton;   // QPushButton
+    FlatToolButton  *toolsExpand;
 
-    QVBoxLayout *toolsAreaCloseButton;
-    FlatToolButton *closeButton;
+    QVBoxLayout     *toolsAreaCloseButton;
+    FlatToolButton  *closeButton;
 
     QHBoxLayout *toolsAreaComboOption;
     FlatComboBox *wordRegard;
@@ -121,14 +123,14 @@ private:
     FlatComboBox *treeSearchArea;
 
     QHBoxLayout *whereFindLine;
-    QLabel *whereFindLabel;
-    QCheckBox *findInPin;
-    QCheckBox *findInName;
-    QCheckBox *findInAuthor;
-    QCheckBox *findInHome;
-    QCheckBox *findInUrl;
-    QCheckBox *findInTags;
-    QCheckBox *findInText;
+    QLabel      *whereFindLabel;
+    QCheckBox   *findInPin;
+    QCheckBox   *findInName;
+    QCheckBox   *findInAuthor;
+    QCheckBox   *findInHome;
+    QCheckBox   *findInUrl;
+    QCheckBox   *findInTags;
+    QCheckBox   *findInText;
 
     QHBoxLayout *toolsLine;
     QGridLayout *toolsGrid;
@@ -138,8 +140,10 @@ private:
     QProgressDialog *_progress;
     //    QLineEdit *_findtext;
     //    QStackedWidget *_lineedits;
-    FindTableWidget *_findtable;    // result of finding?
-    browser::ToolbarSearch *_toolbarsearch;
+    //    FindTableWidget             *_findtable;    // result of finding?
+
+    std::shared_ptr<TableData>  _result = std::make_shared<TableData>();
+    browser::ToolbarSearch      *_toolbarsearch;
 
     void setup_navigate(void);
     void assembly_navigate(void);
@@ -163,8 +167,8 @@ private:
 
     void changedFindInField(QString fieldname, int state);
 
-    void findStart(void);
-    void findRecurse(TreeItem *curritem);
+    std::shared_ptr<TableData> findStart(void);
+    void find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_ptr<TableData> result);
     bool findInTextProcess(const QString &text);
 
     void switchToolsExpand(bool flag);

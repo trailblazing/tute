@@ -1,14 +1,14 @@
 #include "main.h"
 #include "Record.h"
-#include "RecordTableModel.h"
-#include "RecordTableData.h"
+#include "TableModel.h"
+#include "TableData.h"
 
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "models/appConfig/AppConfig.h"
 #include "views/mainWindow/MainWindow.h"
 #include "libraries/FixedParameters.h"
-#include "views/recordTable/RecordTableView.h"
+#include "views/recordTable/TableView.h"
 #include "views/findInBaseScreen/FindScreen.h"
 
 extern FixedParameters fixedparameters;
@@ -16,9 +16,9 @@ extern AppConfig appconfig;
 
 
 // Конструктор модели
-RecordTableModel::RecordTableModel(QObject *pobj)
+TableModel::TableModel(QObject *pobj)
     : QAbstractTableModel(pobj)
-    , table(new RecordTableData())
+    , _table(new TableData())
 {
     // При создании модели она должна брать данные как минимум из
     // пустой таблицы данных
@@ -31,7 +31,7 @@ RecordTableModel::RecordTableModel(QObject *pobj)
 
 
 // Деструктор модели
-RecordTableModel::~RecordTableModel()
+TableModel::~TableModel()
 {
     return;
 }
@@ -39,14 +39,14 @@ RecordTableModel::~RecordTableModel()
 
 // Предоставление данных табличной модели
 // Provide tabular data model
-QVariant RecordTableModel::data(const QModelIndex &index, int role) const
+QVariant TableModel::data(const QModelIndex &index, int role) const
 {
     // Если таблица данных не создана
-    if(table == NULL)
+    if(!_table)
         return QVariant();
 
     // Если таблица пустая
-    if(table->size() == 0)
+    if(_table->size() == 0)
         return QVariant();
 
     // Если индекс недопустимый, возвращается пустой объект
@@ -63,7 +63,7 @@ QVariant RecordTableModel::data(const QModelIndex &index, int role) const
         if(index.column() < showFields.size()) {
             QString fieldName = showFields.value(index.column());
 
-            QString field = table->getField(fieldName, index.row());
+            QString field = _table->field(fieldName, index.row());
 
 
             // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
@@ -94,7 +94,7 @@ QVariant RecordTableModel::data(const QModelIndex &index, int role) const
     }
 
     if(role == RECORD_ID_ROLE) {
-        return table->getField("id", index.row());
+        return _table->field("id", index.row());
     }
 
     // Если происходит запрос ссылки на таблицу данных
@@ -112,14 +112,14 @@ QVariant RecordTableModel::data(const QModelIndex &index, int role) const
 
 
 // Save the input data at the specified index   // Сохранение вводимых данных по указанному индексу
-bool RecordTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool TableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     // Если таблица данных не создана
-    if(table == NULL)
+    if(!_table)
         return false;
 
     // Если таблица пустая
-    if(table->size() == 0)
+    if(_table->size() == 0)
         return false;
 
     // Если индекс недопустимый
@@ -140,7 +140,7 @@ bool RecordTableModel::setData(const QModelIndex &index, const QVariant &value, 
             cellValue = value.value<QString>();
 
             // Изменяется поле в таблице конечных записей
-            table->setField(fieldName, cellValue, index.row());
+            _table->field(fieldName, cellValue, index.row());
 
             emit dataChanged(index, index); // Посылается сигнал что данные были изменены
 
@@ -170,7 +170,7 @@ bool RecordTableModel::setData(const QModelIndex &index, const QVariant &value, 
 
 
 // Получение заголовков столбцов и строк
-QVariant RecordTableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
     QStringList showFields = appconfig.getRecordTableShowFields();
@@ -203,19 +203,19 @@ QVariant RecordTableModel::headerData(int section, Qt::Orientation orientation, 
 
 
 // Сколько записей в таблице
-int RecordTableModel::rowCount(const QModelIndex &parent) const
+int TableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
-    if(table == NULL)
+    if(!_table)
         return 0;
 
-    return table->size();
+    return _table->size();
 }
 
 
 // Сколько столбцов в таблице
-int RecordTableModel::columnCount(const QModelIndex &parent) const
+int TableModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
@@ -238,7 +238,7 @@ int RecordTableModel::columnCount(const QModelIndex &parent) const
 // Delete rows in the table
 // Note: Override removeRows () method affects the removeRow (),
 // Because it simply calls removeRows () to remove a single line
-bool RecordTableModel::removeRows(int row, int count, const QModelIndex &parent)
+bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent);
 
@@ -250,7 +250,7 @@ bool RecordTableModel::removeRows(int row, int count, const QModelIndex &parent)
 
     //QModelIndex index = createIndex(row, 0);
 
-    auto view = globalparameters.getRecordTableScreen()->getRecordTableController()->getView();
+    auto view = globalparameters.getRecordTableScreen()->getRecordTableController()->view();
 
     beginRemoveRows(//index   //
         QModelIndex()
@@ -259,9 +259,10 @@ bool RecordTableModel::removeRows(int row, int count, const QModelIndex &parent)
 
     // Удаляются строки непосредственно в таблице
     for(int i = row; i < row + count; ++i) {
-        table->deleteRecord(i);
+        _table->delete_record(i);
         globalparameters.getFindScreen()->remove_row(row);
     }
+
     view->reset();
     view->setModel(this);
     endRemoveRows();
@@ -271,32 +272,32 @@ bool RecordTableModel::removeRows(int row, int count, const QModelIndex &parent)
 
 
 // Установка данных в таблицу данных
-void RecordTableModel::setTableData(RecordTableData *rtData)
+void TableModel::reset_tabledata(std::shared_ptr<TableData> rtData)
 {
     beginResetModel();
 
-    table = rtData;
+    _table = rtData;
 
     endResetModel();
 }
 
 
 // Получение ссылки на таблицу данных
-RecordTableData *RecordTableModel::getTableData(void)
+std::shared_ptr<TableData> TableModel::getTableData(void)
 {
     // Возвращается ссылка на данные, с которыми в данный момент работает модель
-    return table;
+    return _table;
 }
 
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int RecordTableModel::addTableData(int mode, QModelIndex posIndex, std::shared_ptr<Record> record)
+int TableModel::addTableData(int mode, QModelIndex posIndex, std::shared_ptr<Record> record)
 {
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
     // Вставка новых данных в таблицу конечных записей
-    int selPos = table->insertNewRecord(mode, posIndex.row(), record);
+    int selPos = _table->insert_new_record(mode, posIndex.row(), record);
 
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 
@@ -304,9 +305,13 @@ int RecordTableModel::addTableData(int mode, QModelIndex posIndex, std::shared_p
 }
 
 
-void RecordTableModel::onRecordTableConfigChange(void)
+void TableModel::onRecordTableConfigChange(void)
 {
     beginResetModel();
     endResetModel();
 }
 
+void TableModel::resetInternalData()
+{
+    QAbstractTableModel::resetInternalData();
+}

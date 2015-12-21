@@ -1,6 +1,7 @@
 #ifndef TREEMODEL_H
 #define TREEMODEL_H
 
+#include <memory>
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
@@ -44,23 +45,23 @@ public:
 
     // Возвращение указателя на Item-элемент с указанным index
     // Где index - это индекс объекта в терминах структуры модель-вид
-    TreeItem *getItem(const QModelIndex &index) const;
+    std::shared_ptr<TreeItem> getItem(const QModelIndex &index) const;
 
     // Возвращение указателя на Item-элемент с указанным путем
     // в виде последовательности идентификаторов
-    TreeItem *getItem(QStringList path) const;
+    std::shared_ptr<TreeItem> getItem(QStringList path) const;
 
     bool isItemValid(QStringList path) const;
 
-    QModelIndex getIndexByItem(TreeItem *item);
+    QModelIndex getIndexByItem(std::shared_ptr<TreeItem> item);
 
     void emitSignalDataChanged(const QModelIndex &index);
 
-    TreeItem *rootItem; // Ссылка на первый (корневой) item-объект
+    std::shared_ptr<TreeItem> rootItem; // Ссылка на первый (корневой) item-объект
 
 private:
 
-    QModelIndex getIndexRecurse(QModelIndex index, TreeItem *item, int mode);
+    QModelIndex getIndexRecurse(QModelIndex index, std::shared_ptr<TreeItem> item, int mode);
 
     // Element over which the cursor will carry. Used in the Drag And Drop.    // Элемент, над которым проносят курсор. Используется при Drag And Drop.
     QModelIndex cursorOverIndex;

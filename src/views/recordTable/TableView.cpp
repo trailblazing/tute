@@ -9,16 +9,16 @@
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
 #include "libraries/ClipboardRecords.h"
-#include "RecordTableView.h"
-#include "views/recordTable/RecordTableScreen.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableProxyModel.h"
+#include "TableView.h"
+#include "views/recordTable/TableScreen.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableProxyModel.h"
 #include "models/appConfig/AppConfig.h"
 #include "models/tree/KnowTreeModel.h"
 #include "libraries/GlobalParameters.h"
 #include "views/mainWindow/MainWindow.h"
 #include "libraries/WindowSwitcher.h"
-#include "controllers/recordTable/RecordTableController.h"
+#include "controllers/recordTable/TableController.h"
 
 
 extern GlobalParameters globalparameters;
@@ -28,7 +28,7 @@ extern AppConfig appconfig;
 // Виджет, отображащий список записей в ветке
 
 
-RecordTableView::RecordTableView(RecordTableScreen *recordtablescreen, RecordTableController *controller)
+TableView::TableView(TableScreen *recordtablescreen, TableController *controller)
     : QTableView(recordtablescreen)
     , _recordtablescreen(recordtablescreen)
     , _controller(controller)
@@ -51,7 +51,7 @@ RecordTableView::RecordTableView(RecordTableScreen *recordtablescreen, RecordTab
 }
 
 
-RecordTableView::~RecordTableView()
+TableView::~TableView()
 {
     delete _layout;
 }
@@ -68,7 +68,7 @@ RecordTableView::~RecordTableView()
 // при наличии ссылки на данный объект
 // Причина в том, что одни и те же QAction используются в двух местах -
 // в RecordTableScreen и здесь в контекстном меню
-void RecordTableView::init(void)
+void TableView::init(void)
 {
     qDebug() << "RecordTableView::init()";
 
@@ -127,7 +127,7 @@ void RecordTableView::init(void)
 }
 
 
-void RecordTableView::setupSignals(void)
+void TableView::setupSignals(void)
 {
     // Сигнал чтобы показать контекстное меню по правому клику на списке записей
     connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(onCustomContextMenuRequested(const QPoint &)));
@@ -137,17 +137,17 @@ void RecordTableView::setupSignals(void)
 
     // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
     // Signal to open for editing the parameters of the recording double click
-    connect(this, &RecordTableView::doubleClicked, this, &RecordTableView::on_doubleclick);
+    connect(this, &TableView::doubleClicked, this, &TableView::on_doubleclick);
 
     if(appconfig.getInterfaceMode() == "desktop")
-        connect(this, &RecordTableView::listSelectionChanged, this, &RecordTableView::onSelectionChanged);
+        connect(this, &TableView::listSelectionChanged, this, &TableView::onSelectionChanged);
 
     // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
     // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
     if(appconfig.getInterfaceMode() == "mobile")
-        connect(this, &RecordTableView::clicked, this, &RecordTableView::onClickToRecord);
+        connect(this, &TableView::clicked, this, &TableView::onClickToRecord);
 
-    RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
+    TableScreen *parentPointer = qobject_cast<TableScreen *>(parent());
 
     // Сигналы для обновления панели инструментов при изменении в selectionModel()
     connect(this->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
@@ -168,7 +168,7 @@ void RecordTableView::setupSignals(void)
 }
 
 
-void RecordTableView::restoreHeaderState(void)
+void TableView::restoreHeaderState(void)
 {
     // Видимость горизонтальных заголовков
     if(appconfig.getRecordTableShowHorizontalHeaders() == false)
@@ -184,7 +184,7 @@ void RecordTableView::restoreHeaderState(void)
 }
 
 
-void RecordTableView::onSelectionChanged(const QItemSelection &selected,
+void TableView::onSelectionChanged(const QItemSelection &selected,
                                          const QItemSelection &deselected)
 {
     QModelIndex selectRecord;
@@ -210,7 +210,7 @@ void RecordTableView::onSelectionChanged(const QItemSelection &selected,
 
 
 // Слот клика по записи. Принимает индекс Proxy модели
-void RecordTableView::onClickToRecord(const QModelIndex &index)
+void TableView::onClickToRecord(const QModelIndex &index)
 {
     click_record(index);
 }
@@ -218,7 +218,7 @@ void RecordTableView::onClickToRecord(const QModelIndex &index)
 
 // Действия при выборе строки таблицы конечных записей. Принимает индекс Proxy модели
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
-void RecordTableView::click_record(const QModelIndex &index)
+void TableView::click_record(const QModelIndex &index)
 {
     _controller->click_record(index);
 
@@ -226,7 +226,7 @@ void RecordTableView::click_record(const QModelIndex &index)
 }
 
 
-void RecordTableView::assemblyContextMenu(void)
+void TableView::assemblyContextMenu(void)
 {
     // Конструирование меню
     contextMenu = new QMenu(this);
@@ -261,7 +261,7 @@ void RecordTableView::assemblyContextMenu(void)
 
 
 // Открытие контекстного меню в таблице конечных записей
-void RecordTableView::onCustomContextMenuRequested(const QPoint &pos)
+void TableView::onCustomContextMenuRequested(const QPoint &pos)
 {
     qDebug() << "In on_customContextMenuRequested";
     //    auto p = parent();
@@ -289,7 +289,7 @@ void RecordTableView::onCustomContextMenuRequested(const QPoint &pos)
 
 
 // Слот, срабатывающий при нажатии кнопки редактирования записи
-void RecordTableView::on_doubleclick(const QModelIndex &index)
+void TableView::on_doubleclick(const QModelIndex &index)
 {
     qDebug() << "In RecordTableView::editFieldContext";
 
@@ -313,7 +313,7 @@ void RecordTableView::on_doubleclick(const QModelIndex &index)
 
 
 // Слот, срабатывающий при нажатии кнопки редактирования записи
-void RecordTableView::editFieldContext(void)
+void TableView::editFieldContext(void)
 {
     qDebug() << "In RecordTableView::editFieldContext";
 
@@ -321,7 +321,7 @@ void RecordTableView::editFieldContext(void)
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     QModelIndex index = selectItems.at(0);
 
-    _controller->editFieldContext(index);
+    _controller->edit_fieldcontext(index);
 
     // Нужно перерисовать окно редактирования чтобы обновились инфополя
     // делается это путем "повторного" выбора текущего пункта
@@ -329,7 +329,7 @@ void RecordTableView::editFieldContext(void)
 }
 
 // Получение номера первого выделенного элемента
-int RecordTableView::getFirstSelectionPos(void)
+int TableView::getFirstSelectionPos(void)
 {
     // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
@@ -342,7 +342,7 @@ int RecordTableView::getFirstSelectionPos(void)
 
 
 // Получение ID первого выделенного элемента
-QString RecordTableView::getFirstSelectionId(void)
+QString TableView::getFirstSelectionId(void)
 {
     // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
@@ -355,7 +355,7 @@ QString RecordTableView::getFirstSelectionId(void)
 
 
 // Получение модельного индекса первого выделенного элемента в Proxy модели
-QModelIndex RecordTableView::getFirstSelectionProxyIndex(void)
+QModelIndex TableView::getFirstSelectionProxyIndex(void)
 {
     int pos = getFirstSelectionPos();
 
@@ -370,7 +370,7 @@ QModelIndex RecordTableView::getFirstSelectionProxyIndex(void)
 
 
 // Получение модельного индекса первого выделенного элемента в Source модели
-QModelIndex RecordTableView::getFirstSelectionSourceIndex(void)
+QModelIndex TableView::getFirstSelectionSourceIndex(void)
 {
     QModelIndex proxyIndex = getFirstSelectionProxyIndex();
 
@@ -384,14 +384,14 @@ QModelIndex RecordTableView::getFirstSelectionSourceIndex(void)
 }
 
 
-bool RecordTableView::isSelectedSetToTop(void)
+bool TableView::isSelectedSetToTop(void)
 {
     if(getFirstSelectionPos() == 0)return true;
     else return false;
 }
 
 
-bool RecordTableView::isSelectedSetToBottom(void)
+bool TableView::isSelectedSetToBottom(void)
 {
     if(getFirstSelectionPos() == model()->rowCount() - 1)
         return true;
@@ -401,7 +401,7 @@ bool RecordTableView::isSelectedSetToBottom(void)
 
 
 // Установка засветки в нужную строку на экране
-void RecordTableView::setSelectionToPos(int iPos)
+void TableView::setSelectionToPos(int iPos)
 {
     QModelIndex index = _controller->pos_to_proxyindex(iPos); // Модельный индекс в Proxy модели
     int pos = index.row();
@@ -413,7 +413,7 @@ void RecordTableView::setSelectionToPos(int iPos)
         msgBox.exec();
     }
 
-    int rowCount = _controller->getRowCount();
+    int rowCount = _controller->row_count();
 
     if(pos > (rowCount - 1))
         return;
@@ -448,7 +448,7 @@ void RecordTableView::setSelectionToPos(int iPos)
 
 // mode - режим в котором добавлялась новая запись
 // pos - позиция новой записи в размерности Source модели
-void RecordTableView::moveCursorToNewRecord(int mode, int pos)
+void TableView::moveCursorToNewRecord(int mode, int pos)
 {
     // Установка курсора на только что созданную позицию
     /*
@@ -473,7 +473,7 @@ void RecordTableView::moveCursorToNewRecord(int mode, int pos)
 
 
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
-bool RecordTableView::event(QEvent *event)
+bool TableView::event(QEvent *event)
 {
     if(event->type() == QEvent::Gesture) {
         qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
@@ -486,7 +486,7 @@ bool RecordTableView::event(QEvent *event)
 
 // Обработчик жестов
 // Вызывается из обработчика событий
-bool RecordTableView::gestureEvent(QGestureEvent *event)
+bool TableView::gestureEvent(QGestureEvent *event)
 {
     qDebug() << "In gestureEvent()" << event;
 
@@ -499,7 +499,7 @@ bool RecordTableView::gestureEvent(QGestureEvent *event)
 
 // Обработчик жеста TapAndHoldGesture
 // Вызывается из обработчика жестов
-void RecordTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
+void TableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 {
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
@@ -510,7 +510,7 @@ void RecordTableView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 
 
 // Реакция на нажатие кнопок мышки
-void RecordTableView::mousePressEvent(QMouseEvent *event)
+void TableView::mousePressEvent(QMouseEvent *event)
 {
     // Если нажата левая кнопка мыши
     if(event->buttons() == Qt::LeftButton) {
@@ -522,7 +522,7 @@ void RecordTableView::mousePressEvent(QMouseEvent *event)
 
 
 // Реакция на движение мышкой
-void RecordTableView::mouseMoveEvent(QMouseEvent *event)
+void TableView::mouseMoveEvent(QMouseEvent *event)
 {
     // Если при движении нажата левая кнопка мышки
     if(event->buttons() & Qt::LeftButton) {
@@ -539,14 +539,14 @@ void RecordTableView::mouseMoveEvent(QMouseEvent *event)
 
 
 // Реакция на отпускание клавиши мышки
-void RecordTableView::mouseReleaseEvent(QMouseEvent *event)
+void TableView::mouseReleaseEvent(QMouseEvent *event)
 {
     QTableView::mouseReleaseEvent(event);
 }
 
 
 // Начало переноса записи
-void RecordTableView::startDrag()
+void TableView::startDrag()
 {
     qDebug() << "Start record drag\n";
 
@@ -578,7 +578,7 @@ void RecordTableView::startDrag()
 }
 
 
-ClipboardRecords *RecordTableView::getSelectedRecords(void)
+ClipboardRecords *TableView::getSelectedRecords(void)
 {
     // Получение списка Item-элементов, подлежащих копированию
     QModelIndexList itemsForCopy = selectionModel()->selectedIndexes();
@@ -618,14 +618,14 @@ ClipboardRecords *RecordTableView::getSelectedRecords(void)
     clipboardRecords->clear();
 
     // Объект заполняется выбранными записями
-    _controller->addRecordsToClipboard(clipboardRecords, itemsForCopy);
+    _controller->add_records_toclipboard(clipboardRecords, itemsForCopy);
 
     return clipboardRecords;
 }
 
 
 // Переопределенный сигнал (virtual protected slot)
-void RecordTableView::selectionChanged(const QItemSelection &selected,
+void TableView::selectionChanged(const QItemSelection &selected,
                                        const QItemSelection &deselected)
 {
     // qDebug() << "RecordTableView::selectionChanged()";
@@ -638,7 +638,7 @@ void RecordTableView::selectionChanged(const QItemSelection &selected,
 
 
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
-void RecordTableView::onSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex)
+void TableView::onSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex)
 {
     Q_UNUSED(logicalIndex);
 
@@ -686,7 +686,7 @@ void RecordTableView::onSectionMoved(int logicalIndex, int oldVisualIndex, int n
 }
 
 
-void RecordTableView::onSectionResized(int logicalIndex, int oldSize, int newSize)
+void TableView::onSectionResized(int logicalIndex, int oldSize, int newSize)
 {
     Q_UNUSED(logicalIndex);
     Q_UNUSED(oldSize);
@@ -697,7 +697,7 @@ void RecordTableView::onSectionResized(int logicalIndex, int oldSize, int newSiz
 
 
 // Сохранение ширины колонок в конфигфайл
-void RecordTableView::saveColumnWidth(void)
+void TableView::saveColumnWidth(void)
 {
     // Выясняется количество полей
     int count = appconfig.getRecordTableShowFields().size();
@@ -717,7 +717,7 @@ void RecordTableView::saveColumnWidth(void)
 
 
 // Восстановление ширины колонок из конфигфайла
-void RecordTableView::restoreColumnWidth(void)
+void TableView::restoreColumnWidth(void)
 {
     QStringList columnWidthList = appconfig.getRecordTableFieldsWidth();
 
@@ -765,7 +765,7 @@ void RecordTableView::restoreColumnWidth(void)
 
 
 // if pin and title width beyond container width, when click title item, widget will move left, pin column will disappeared
-void RecordTableView::resizeEvent(QResizeEvent *e)
+void TableView::resizeEvent(QResizeEvent *e)
 {
     //    Q_UNUSED(e)
 

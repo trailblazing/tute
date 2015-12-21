@@ -13,7 +13,7 @@
 
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "views/recordTable/TableScreen.h"
 #include "views/findInBaseScreen/FindScreen.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/entrance.h"
@@ -411,6 +411,17 @@ QString GlobalParameters::getApplicationName(void)
     return appName;
 }
 
+
+void GlobalParameters::v_left_splitter(QSplitter *vleftsplitter)
+{
+    _v_left_splitter = vleftsplitter;
+}
+
+QSplitter *GlobalParameters::v_left_splitter()
+{
+    return _v_left_splitter;
+}
+
 void GlobalParameters::vtab(QTabWidget *point)
 {
     _vtab = point;
@@ -443,12 +454,12 @@ void GlobalParameters::entrance(browser::Entrance *&b)
 }
 
 
-void GlobalParameters::setRecordTableScreen(RecordTableScreen *point)
+void GlobalParameters::setRecordTableScreen(TableScreen *point)
 {
     pointRecordTableScreen = point;
 }
 
-RecordTableScreen *GlobalParameters::getRecordTableScreen()
+TableScreen *GlobalParameters::getRecordTableScreen()
 {
     return pointRecordTableScreen;
 }

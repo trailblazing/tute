@@ -25,7 +25,7 @@ public:
     void initFromXML(QString fileName);
     void reload(void);
 
-    QDomElement exportFullModelDataToDom(TreeItem *root);
+    QDomElement exportFullModelDataToDom(std::shared_ptr<TreeItem> root);
 
     void save(void);
 
@@ -36,7 +36,7 @@ public:
     void addNewSiblingBranch(const QModelIndex &index, QString id, QString name);
 
     // Добавление новой подветки к Item элементу
-    void addNewBranch(TreeItem *parent, QString id, QString name);
+    void addNewBranch(std::shared_ptr<TreeItem> parent, QString id, QString name);
 
     // Перемещение ветки вверх и вниз
     QModelIndex moveUpBranch(const QModelIndex &index);
@@ -45,16 +45,16 @@ public:
     // Получение индекса подчиненного элемента с указанным номером
     QModelIndex indexChildren(const QModelIndex &parent, int n) const;
 
-    QModelIndex getIndexByItem(TreeItem *item);
+    QModelIndex getIndexByItem(std::shared_ptr<TreeItem> item);
 
     // Поиск ветки с указанным ID
-    TreeItem *getItemById(QString id);
+    std::shared_ptr<TreeItem> getItemById(QString id);
 
     // Возвращает общее количество записей, хранимых в дереве
     int getAllRecordCount(void);
 
     // Возвращает количество записей в ветке и всех подветках
-    int getRecordCountForItem(TreeItem *item);
+    int getRecordCountForItem(std::shared_ptr<TreeItem> item);
 
     QString pasteNewChildBranch(const QModelIndex &index, ClipboardBranch *subbranch);
     QString pasteNewSiblingBranch(const QModelIndex &index, ClipboardBranch *subbranch);
@@ -78,38 +78,38 @@ private:
     void init(QDomDocument *domModel);
 
     // Функция заполнения дерева из DOM-документа
-    void setupModelData(QDomDocument *dommodel, TreeItem *parent);
+    void setupModelData(QDomDocument *dommodel, std::shared_ptr<TreeItem> parent);
 
     // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
-    void parseNodeElement(QDomElement n, TreeItem *parent);
+    void parseNodeElement(QDomElement n, std::shared_ptr<TreeItem> parent);
 
     // Преобразование Item в DOM модель
-    void parseTreeToDom(QDomDocument *doc, QDomElement &xmlData, TreeItem *currItem);
+    void parseTreeToDom(QDomDocument *doc, QDomElement &xmlData, std::shared_ptr<TreeItem> currItem);
 
     // Перемещение ветки вверх или вниз
     QModelIndex moveUpDnBranch(const QModelIndex &index,int direction);
 
-    int getAllRecordCountRecurse(TreeItem *item,int mode);
+    int getAllRecordCountRecurse(std::shared_ptr<TreeItem> item, int mode);
 
-    QString pasteSubbranchRecurse(TreeItem *item,
+    QString pasteSubbranchRecurse(std::shared_ptr<TreeItem> item,
                                   QString startBranchId,
                                   ClipboardBranch *subbranch);
 
-    TreeItem *getItemByIdRecurse(TreeItem *item, QString id, int mode);
+    std::shared_ptr<TreeItem> getItemByIdRecurse(std::shared_ptr<TreeItem> item, QString id, int mode);
 
-    bool isContainsCryptBranchesRecurse(TreeItem *item, int mode);
+    bool isContainsCryptBranchesRecurse(std::shared_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString pasteSubbranch(TreeItem *item, ClipboardBranch *subbranch);
+    QString pasteSubbranch(std::shared_ptr<TreeItem> item, ClipboardBranch *subbranch);
 
-    QStringList getRecordPathRecurse(TreeItem *item,
+    QStringList getRecordPathRecurse(std::shared_ptr<TreeItem> item,
                                      QStringList currentPath,
                                      QString recordId,
                                      int mode);
 
-    bool isItemIdExistsRecurse(TreeItem *item, QString findId, int mode);
+    bool isItemIdExistsRecurse(std::shared_ptr<TreeItem> item, QString findId, int mode);
 
-    bool isRecordIdExistsRecurse(TreeItem *item, QString findId, int mode);
+    bool isRecordIdExistsRecurse(std::shared_ptr<TreeItem> item, QString findId, int mode);
 
     bool checkFormat(QDomElement elementFormat);
 

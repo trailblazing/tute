@@ -1,18 +1,18 @@
 #include <QSortFilterProxyModel>
 
 #include "main.h"
-#include "RecordTableProxyModel.h"
+#include "TableProxyModel.h"
 
 
 // Конструктор модели
-RecordTableProxyModel::RecordTableProxyModel(QObject *pobj) : QSortFilterProxyModel(pobj)
+TableProxyModel::TableProxyModel(QObject *pobj) : QSortFilterProxyModel(pobj)
 {
     // this->setSourceModel(this);
 
 }
 
 // Деструктор модели
-RecordTableProxyModel::~RecordTableProxyModel()
+TableProxyModel::~TableProxyModel()
 {
     return;
 }

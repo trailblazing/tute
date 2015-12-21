@@ -58,6 +58,9 @@
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
 #include "views/findInBaseScreen/FindScreen.h"
+#include "main.h"
+
+
 
 namespace browser {
 
@@ -88,7 +91,7 @@ namespace browser {
         lineEdit()->setCompleter(completer);
 
         connect(lineEdit(), SIGNAL(returnPressed()), SLOT(searchNow()));
-        connect(this, &SearchLineEdit::textChanged/*(const QString &text)*/, _findtext, [&](const QString & text) {_findtext->setText(text);});
+        connect(this, &SearchLineEdit::textChanged, _findtext, [&](const QString & text) {_findtext->setText(text);});
         //connect(this, &ToolbarSearch::returnPressed, _tabmanager, &TabManager::lineEditReturnPressed);
         connect(this, &ToolbarSearch::returnPressed, _findtext, &QLineEdit::returnPressed);
 
@@ -124,105 +127,109 @@ namespace browser {
     {
         QString searchText = lineEdit()->text();
 
-        globalparameters.getFindScreen()->findClicked();
+        std::shared_ptr<TableData> recordtabledata = globalparameters.getFindScreen()->findClicked();
 
-        QUrl url = QUrl(searchText);
+        if(!recordtabledata || 0 == recordtabledata->size()) {
 
-        // if(url.host().isSimpleText());
-
-        //        bool url_isRelative = url.isRelative();
-        //        bool url_isValid = url.isValid();
-        //        bool host_not_null = !url.host().isNull();
-        //        bool host_isDetached = url.host().isDetached();
-        //        bool host_isEmpty = url.host().isEmpty();
-        //        bool host_isSimpleText = url.host().isSimpleText();
-
-        //        bool path_empty = url.path().isEmpty();
-        //        bool path_null = url.path().isNull();
-        //        QString path = url.path();
-
-        //        if( // !url.host().isEmpty() &&
-        //            url.isValid()
-        //        ) {
-        //            if(url.scheme().isEmpty()    //url.scheme().isNull()
-        //               // && url.isRelative() //&& !url.host().isNull()
-        //              ) {
-        //                //url = QUrl("http://" + searchText);
-        //                url.setScheme(QLatin1String("https"));
-        //            }
-
-        //            if(url.path().isEmpty()
-        //              ) {
-        //                url.setPath(QLatin1String("//"));
-        //            }
-        //        }
+            QUrl url = QUrl(searchText);
 
 
-        // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
-        if(!url.isEmpty()
-           // && !url.host().isNull()
-           && url.isValid()
-           && !url.scheme().isEmpty()
-           // && url != QUrl(DockedWindow::_defaulthome) //&& !url.host().isNull()
-          ) {
-            //QLineEdit *lineedit =
+            // if(url.host().isSimpleText());
 
-            //            globalparameters.entrance()->active_record(request_record(url));
-            auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
-//            request_record(
-//                url
-//                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-//                    ""
-//                    , &browser::Entrance::ActiveRecordBinder::generator
-//                    , ara
-//                )
-//                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, void, std::shared_ptr<Record>>>(
-//                    ""
-//                    , &browser::Entrance::ActiveRecordBinder::activator
-//                    , ara
-//                )
-//            );
+            //        bool url_isRelative = url.isRelative();
+            //        bool url_isValid = url.isValid();
+            //        bool host_not_null = !url.host().isNull();
+            //        bool host_isDetached = url.host().isDetached();
+            //        bool host_isEmpty = url.host().isEmpty();
+            //        bool host_isSimpleText = url.host().isSimpleText();
 
+            //        bool path_empty = url.path().isEmpty();
+            //        bool path_null = url.path().isNull();
+            //        QString path = url.path();
 
-            QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+            //        if( // !url.host().isEmpty() &&
+            //            url.isValid()
+            //        ) {
+            //            if(url.scheme().isEmpty()    //url.scheme().isNull()
+            //               // && url.isRelative() //&& !url.host().isNull()
+            //              ) {
+            //                //url = QUrl("http://" + searchText);
+            //                url.setScheme(QLatin1String("https"));
+            //            }
 
-            if(line_edit)line_edit->setText(searchText);
+            //            if(url.path().isEmpty()
+            //              ) {
+            //                url.setPath(QLatin1String("//"));
+            //            }
+            //        }
 
-            //globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
+            // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
+            if(!url.isEmpty()
+               // && !url.host().isNull()
+               && url.isValid()
+               && !url.scheme().isEmpty()
+               // && url != QUrl(DockedWindow::_defaulthome) //&& !url.host().isNull()
+              ) {
+                //QLineEdit *lineedit =
 
-            //globalparameters.entrance()->activebrowser()->tabWidget()->new_view(register_record(url));
+                //            globalparameters.entrance()->active_record(request_record(url));
+                auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
+                auto r = request_record(
+                             url
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                 ""
+                                 , &browser::Entrance::ActiveRecordBinder::binder
+                                 , ara
+                             )
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                 ""
+                                 , &browser::Entrance::ActiveRecordBinder::activator
+                                 , ara
+                             )
+                         );
 
-            //currentLineEdit();  // lineEditReturnPressed();
-            //assert(lineedit);
-            //lineedit->setText(searchText);
-            //lineedit->returnPressed();
-        } else {
+                r->active();
 
-            QStringList newList = _stringlistmodel->stringList();
+                QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
 
-            if(newList.contains(searchText))
-                newList.removeAt(newList.indexOf(searchText));
+                if(line_edit)line_edit->setText(searchText);
 
-            newList.prepend(searchText);
+                //globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
 
-            if(newList.size() >= _maxsavedsearches)
-                newList.removeLast();
+                //globalparameters.entrance()->activebrowser()->tabWidget()->new_view(register_record(url));
 
-            if(!QtSingleApplication::instance()->privateBrowsing()) {
-                _stringlistmodel->setStringList(newList);
-                _autosaver->changeOccurred();
+                //currentLineEdit();  // lineEditReturnPressed();
+                //assert(lineedit);
+                //lineedit->setText(searchText);
+                //lineedit->returnPressed();
+            } else  {
+
+                QStringList newList = _stringlistmodel->stringList();
+
+                if(newList.contains(searchText))
+                    newList.removeAt(newList.indexOf(searchText));
+
+                newList.prepend(searchText);
+
+                if(newList.size() >= _maxsavedsearches)
+                    newList.removeLast();
+
+                if(!QtSingleApplication::instance()->privateBrowsing()) {
+                    _stringlistmodel->setStringList(newList);
+                    _autosaver->changeOccurred();
+                }
+
+                QUrl url(QLatin1String("https://www.google.com/search"));
+                QUrlQuery urlQuery;
+                urlQuery.addQueryItem(QLatin1String("q"), searchText);
+                urlQuery.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+                urlQuery.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+                urlQuery.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
+                // urlQuery.addQueryItem();
+                url.setQuery(urlQuery);
+                // QString u = url.toString();
+                emit search(url);
             }
-
-            QUrl url(QLatin1String("https://www.google.com/search"));
-            QUrlQuery urlQuery;
-            urlQuery.addQueryItem(QLatin1String("q"), searchText);
-            urlQuery.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-            urlQuery.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-            urlQuery.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
-            // urlQuery.addQueryItem();
-            url.setQuery(urlQuery);
-            // QString u = url.toString();
-            emit search(url);
         }
     }
 

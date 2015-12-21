@@ -1,6 +1,8 @@
 #ifndef TREEITEM_H
 #define TREEITEM_H
 
+
+#include <memory>
 #include <QList>
 #include <QVariant>
 #include <QVector>
@@ -8,16 +10,16 @@
 #include <QDomElement>
 #include <QDomDocument>
 
-#include "models/recordTable/RecordTableData.h"
+#include "models/recordTable/TableData.h"
 
-class TreeItem {
+class TreeItem : public std::enable_shared_from_this<TreeItem> {
 public:
-    TreeItem(const QMap<QString, QString> &data, TreeItem *parent = 0);
+    TreeItem(const QMap<QString, QString> &data, std::shared_ptr<TreeItem> parent = nullptr);
     ~TreeItem();
 
     // Возвращение ссылки на потомка, который хранится в списке childItems
     // под указанным номером
-    TreeItem *child(int number);
+    std::shared_ptr<TreeItem> child(int number);
 
     // Возвращение количества потомков (т.е. количество записей в списке childItems)
     int childCount() const;
@@ -51,7 +53,7 @@ public:
     bool addChildren(void);
 
     // Возвращение ссылки на родительский элемент
-    TreeItem *parent();
+    std::shared_ptr<TreeItem> parent();
 
     // Удаление потомков, начиная с позиции position массива childItems
     bool removeChildren(int position, int count);
@@ -108,7 +110,7 @@ public:
     QDomElement recordtableExportDataToDom(QDomDocument *doc);
 
     // Взятие ссылки на данные конечных записей
-    RecordTableData *recordtableGetTableData(void);
+    std::shared_ptr<TableData> recordtableGetTableData(void);
 
 private:
     bool removeChildrenLink(int position, int count);
@@ -116,20 +118,20 @@ private:
     void empty(void);
 
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
-    QList<QStringList> getAllChildrenPathAsFieldRecurse(TreeItem *item, QString fieldName, int mode);
+    QList<QStringList> getAllChildrenPathAsFieldRecurse(std::shared_ptr<TreeItem> item, QString fieldName, int mode);
 
     bool isFieldNameAvailable(QString name) const;
     QStringList fieldNameAvailableList(void) const;
     QStringList fieldNameForCryptList(void) const;
 
-    QList<TreeItem*> childItems;    // Список ссылок на потомков
-    TreeItem *parentItem;           // Ссылка на родителя
+    QList<std::shared_ptr<TreeItem>>    _child_items;   // Список ссылок на потомков
+    std::shared_ptr<TreeItem>           _parent_item;           // Ссылка на родителя
 
     // Таблица инфополей данной ветки
-    QMap<QString, QString> fieldsTable;
+    QMap<QString, QString> _fieldtable;
 
     // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
-    RecordTableData recordsTable;
+    std::shared_ptr<TableData> _recordtable = std::make_shared<TableData>();
 };
 
 #endif

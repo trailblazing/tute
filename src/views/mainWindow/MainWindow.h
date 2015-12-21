@@ -60,11 +60,11 @@ namespace browser {
 
 class TreeScreen;
 class MetaEditor;
-class RecordTableScreen;
+class TableScreen;
 class FindScreen;
 class WindowSwitcher;
 class QtSingleApplication;
-class RecordTableController;
+class TableController;
 class GlobalParameters;
 class AppConfig;
 class DataBaseConfig;
@@ -75,13 +75,13 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow(GlobalParameters &globalparameters
-               , const AppConfig &appconfig
-               , const DataBaseConfig &databaseconfig);
+               , AppConfig &appconfig
+               , DataBaseConfig &databaseconfig);
 
     ~MainWindow();
 
     TreeScreen          *treeScreen;
-    RecordTableScreen   *recordTableScreen;
+    TableScreen   *recordTableScreen;
     MetaEditor          *editorScreen;
     FindScreen          *findScreenDisp;
     QStatusBar          *statusBar;
@@ -108,7 +108,7 @@ public:
     void saveTextarea(void);
 
     void saveAllState(void);
-
+    HidableTabWidget *vtab() {return _vtabwidget;}
 
     QMenu *filemenu() {return _filemenu;}
     QMenu *toolsmenu() {return _toolsmenu;}
@@ -165,11 +165,11 @@ private:
     void saveEditorCursorPosition(void);
     void saveEditorScrollBarPosition(void);
 
-    GlobalParameters        &_globalparameters;
-    const AppConfig         &_appconfig;
-    const DataBaseConfig    &_databaseconfig;
+    GlobalParameters    &_globalparameters;
+    AppConfig           &_appconfig;
+    DataBaseConfig      &_databaseconfig;
 
-    RecordTableController   *_recordtablecontroller;
+    TableController   *_recordtablecontroller;
 
     QAction *actionTrayRestore;
     QAction *actionTrayMaximize;

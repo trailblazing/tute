@@ -14,17 +14,17 @@
 #define SORT_ROLE       Qt::UserRole+13
 
 class Record;
-class RecordTableData;
+class TableData;
 
-class RecordTableModel : public QAbstractTableModel {
+class TableModel : public QAbstractTableModel {
     Q_OBJECT
 
     // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
-    friend class RecordTableController;
+    friend class TableController;
 
 public:
-    RecordTableModel(QObject *pobj = 0);
-    ~RecordTableModel();
+    TableModel(QObject *pobj = 0);
+    ~TableModel();
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
@@ -36,7 +36,7 @@ public:
     // Interface model, saving data entry at the specified index
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
-    RecordTableData *getRecordTableData() {return table;}
+    std::shared_ptr<TableData> getRecordTableData() {return _table;}
     // Интерфейс модели, сколько записей в таблице
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
 
@@ -47,15 +47,15 @@ public:
 
 
 public slots:
-
+    void resetInternalData();
 
 private:
 
     // Установка указателя на таблицу данных, с которой нужно работать модели
-    void setTableData(RecordTableData *rtData);
+    void reset_tabledata(std::shared_ptr<TableData> rtData);
 
     // Ссылка на данные, с которыми работает модель
-    RecordTableData *getTableData(void);
+    std::shared_ptr<TableData> getTableData(void);
 
     // Добавление записей
     int addTableData(int mode,
@@ -67,7 +67,7 @@ private:
 protected:
 
     // Указатель на таблицу конечных записей
-    RecordTableData *table;
+    std::shared_ptr<TableData>  _table;
 
 };
 

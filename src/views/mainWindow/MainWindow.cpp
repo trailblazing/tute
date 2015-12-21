@@ -13,7 +13,7 @@
 #include "libraries/TrashMonitoring.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/recordTable/RecordTableScreen.h"
+#include "views/recordTable/TableScreen.h"
 #include "models/tree/TreeItem.h"
 #include "views/findInBaseScreen/FindScreen.h"
 #include "models/tree/KnowTreeModel.h"
@@ -34,8 +34,8 @@ extern WalkHistory walkhistory;
 
 MainWindow::MainWindow(
     GlobalParameters &globalparameters
-    , const AppConfig &appconfig
-    , const DataBaseConfig &databaseconfig)
+    , AppConfig &appconfig
+    , DataBaseConfig &databaseconfig)
     : QMainWindow()
     , _globalparameters(globalparameters)
     , _appconfig(appconfig)
@@ -129,7 +129,7 @@ void MainWindow::setupUI(void)
     //    connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
     //    connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
 
-    recordTableScreen = new RecordTableScreen(this);
+    recordTableScreen = new TableScreen(this);
     recordTableScreen->setObjectName("recordTableScreen");
     _globalparameters.setRecordTableScreen(recordTableScreen);
     //    _recordtable_hidden = recordTableScreen->isHidden();
@@ -215,10 +215,24 @@ void MainWindow::assembly(void)
 
     //    _qtabwidget = new QTabWidget(this);
 
-    _vtabwidget->setTabPosition(QTabWidget::West);
+    _vtabwidget->setTabPosition(QTabWidget::West);  // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
     _vtabwidget->addTab(treeScreen, QIcon(":/resource/pic/branch.svg"), "Tree");
     _vtabwidget->addTab(recordTableScreen, QIcon(":/resource/pic/maple.svg"), "Record");
     globalparameters.vtab(_vtabwidget);
+
+    _appconfig.setFindScreenTreeSearchArea(0);  // force to root_item of global tree
+
+    // deprecated: ignoring Tree Search Area
+    connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
+    , [this](int index) {
+        if(_vtabwidget->widget(index)->objectName() == "treeScreen") {
+            _appconfig.setFindScreenTreeSearchArea(0);
+        } else if(_vtabwidget->widget(index)->objectName() == "recordTableScreen") {
+            _appconfig.setFindScreenTreeSearchArea(1);
+        }
+    }   // &AppConfig::setFindScreenTreeSearchArea
+           );   // , findScreenDisp, &FindScreen::changedTreeSearchArea
+
 
     //    v_left_splitter = new QSplitter(
     //        Qt::Horizontal  // Qt::Vertical
@@ -229,6 +243,8 @@ void MainWindow::assembly(void)
     v_left_splitter->setCollapsible(0, false);
     //    v_left_splitter->setCollapsible(1, false);
     v_left_splitter->setObjectName("v_left_splitter");
+
+    globalparameters.v_left_splitter(v_left_splitter);
 
     //    hSplitter = new QSplitter(Qt::Horizontal);
     hSplitter->addWidget(
@@ -350,7 +366,7 @@ void MainWindow::save_tree_position(void)
     QModelIndex index = treeScreen->getCurrentItemIndex();
 
     // Получаем указатель вида TreeItem
-    TreeItem *item = treeScreen->_knowtreemodel->getItem(index);
+    auto item = treeScreen->_knowtreemodel->getItem(index);
 
     // Сохраняем путь к элементу item
     appconfig.set_tree_position(item->getPath());
@@ -363,7 +379,7 @@ void MainWindow::set_tree_position(QStringList path)
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    TreeItem *item = treeScreen->_knowtreemodel->getItem(path);
+    auto item = treeScreen->_knowtreemodel->getItem(path);
 
     qDebug() << "Set tree position to " << item->getField("name") << " id " << item->getField("id");
 
@@ -382,7 +398,7 @@ bool MainWindow::isTreePositionCrypt()
     if(treeScreen->_knowtreemodel->isItemValid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    TreeItem *item = treeScreen->_knowtreemodel->getItem(path);
+    auto item = treeScreen->_knowtreemodel->getItem(path);
 
     if(item->getField("crypt") == "1")
         return true;
@@ -1071,10 +1087,10 @@ void MainWindow::goWalkHistory(void)
 
 
     // Выясняется позицию записи в таблице конечных записей
-    TreeItem *item = treeScreen->_knowtreemodel->getItem(path);
+    auto item = treeScreen->_knowtreemodel->getItem(path);
 
     // Проверяем, есть ли такая позиция
-    if(item->recordtableGetTableData()->isRecordExists(id) == false) {
+    if(item->recordtableGetTableData()->is_record_exists(id) == false) {
         walkhistory.setDrop(false);
         return;
     }

@@ -15,10 +15,10 @@
 #include "models/appConfig/AppConfig.h"
 #include "views/attachTable/AttachTableScreen.h"
 #include "views/tree/TreeScreen.h"
-#include "views/recordTable/RecordTableView.h"
-#include "views/recordTable/RecordTableScreen.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "models/recordTable/RecordTableData.h"
+#include "views/recordTable/TableView.h"
+#include "views/recordTable/TableScreen.h"
+#include "models/recordTable/TableModel.h"
+#include "models/recordTable/TableData.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/webview.h"
 
@@ -176,7 +176,7 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
         if(_record->getNaturalFieldSource("url") != home)
             _record->setNaturalFieldSource("url", home);
 
-        page->load(_record, true);
+        ::equip_registered(_record, page)->active(); // page->load(_record, true);
         //        _record->active();
     });
 
@@ -324,21 +324,21 @@ void MetaEditor::setTreePath(QString path)
 
 void MetaEditor::switch_pin()
 {
-    RecordTableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    TableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
 
     if(recordtablecontroller) {
-        RecordTableModel *recordtablemodel = recordtablecontroller->getRecordTableModel();
-        RecordTableView *recordtableview = recordtablecontroller->getView();
-        int pos = recordtablecontroller->getFirstSelectionPos();
+        TableModel *recordtablemodel = recordtablecontroller->recordtable_model();
+        TableView *recordtableview = recordtablecontroller->view();
+        int pos = recordtablecontroller->first_selectionpos();
 
-        if(recordtablemodel) {
+        if(recordtablemodel && -1 != pos) {
             // Выясняется ссылка на таблицу конечных данных
-            RecordTableData *table = recordtablemodel->getRecordTableData();    //getTableData();
+            std::shared_ptr<TableData> table = recordtablemodel->getRecordTableData();    //getTableData();
 
-            QString pin = table->getField("pin", pos);
+            QString pin = table->field("pin", pos);
             recordPin->setCheckState(_state_check[pin]);
 
-            QString home = table->getField("url", pos);
+            QString home = table->field("url", pos);
 
             // Переданные отредактированные поля преобразуются в вид имя-значение
             QMap<QString, QString> editData;
@@ -371,7 +371,7 @@ void MetaEditor::switch_pin()
             //    editData["tags"] = tags;
 
             // Обновление новых данных в таблице конечных записей
-            table->editRecordFields(pos, editData);
+            table->edit_record_fields(pos, editData);
 
 
             // Сохранение дерева веток

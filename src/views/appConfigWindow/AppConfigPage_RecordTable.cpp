@@ -8,8 +8,8 @@
 #include "AppConfigPage_RecordTable.h"
 #include "models/appConfig/AppConfig.h"
 #include "libraries/FixedParameters.h"
-#include "models/recordTable/RecordTableModel.h"
-#include "controllers/recordTable/RecordTableController.h"
+#include "models/recordTable/TableModel.h"
+#include "controllers/recordTable/TableController.h"
 
 extern AppConfig appconfig;
 extern FixedParameters fixedparameters;
@@ -92,7 +92,7 @@ void AppConfigPage_RecordTable::setupSignals(void)
 
 
     // Указатель на контроллер таблицы конечных записей
-    RecordTableController *recordTableController = find_object<RecordTableController>("recordTableController");
+    TableController *recordTableController = find_object<TableController>("recordTableController");
 
     // При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
     connect(this, SIGNAL(recordTableConfigChange()),

@@ -100,7 +100,7 @@ browser::WebPage *Record::unique_page()
     return _page;
 }
 
-Record *Record::bind_page(browser::WebPage *page)
+Record *Record::bind(browser::WebPage *page)
 {
     if(_page != page) {
 
@@ -138,7 +138,7 @@ Record *Record::bind_page(browser::WebPage *page)
     if(_page) {
 
         if(!_page->_record || _page->_record.get() != this) {
-            _page->bind_record(shared_from_this());
+            _page->bind(shared_from_this());
         }
 
         //        if((!_page->binded_records()) || (_page->binded_records() != this)) {
@@ -1034,12 +1034,22 @@ void Record::checkAndCreateTextFile()
     }
 }
 
-browser::WebView *Record::generate()
+browser::WebView *Record::bind()
 {
-    return (*generator())(shared_from_this());
+    if(!_page)
+        return (*binder())(shared_from_this());
+    else
+        return _page->view();
 }
 
-void Record::active()
+browser::WebView *Record::active()
 {
-    (*activator())(shared_from_this());
+    if(!_page)
+        (*binder())(shared_from_this());
+
+    assert(_page);
+    //    if(_page->url().toString() != getNaturalFieldSource("url"))   // wrong! just activate the wiew
+    return (*activator())(shared_from_this());
+    //    else
+    //        return _page->view();
 }
