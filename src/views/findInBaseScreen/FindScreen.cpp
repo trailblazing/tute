@@ -551,11 +551,11 @@ std::shared_ptr<TableData> FindScreen::findClicked(void)
         return nullptr;
     }
 
-    return findStart();
+    return find_start();
 }
 
 
-std::shared_ptr<TableData> FindScreen::findStart(void)
+std::shared_ptr<TableData> FindScreen::find_start(void)
 {
 
     if(globalparameters.vtab()->currentWidget()->objectName() == "recordTableScreen"
@@ -587,7 +587,7 @@ std::shared_ptr<TableData> FindScreen::findStart(void)
 
     auto global_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result) {
         // Корневой элемент дерева
-        start_item = search_model->rootItem;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+        start_item = search_model->_root_item;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
         total_records = search_model->getAllRecordCount();
         result->empty();
@@ -599,7 +599,7 @@ std::shared_ptr<TableData> FindScreen::findStart(void)
         QModelIndex currentItemIndex = find_object<TreeScreen>("treeScreen")->getCurrentItemIndex();
 
         // Текущая ветка
-        start_item = search_model->getItem(currentItemIndex);
+        start_item = search_model->item(currentItemIndex);
 
         // Количество элементов (веток) в текущей ветке и всех подветках
         total_records = search_model->getRecordCountForItem(start_item);
@@ -611,12 +611,12 @@ std::shared_ptr<TableData> FindScreen::findStart(void)
     auto result_set_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result, std::shared_ptr<TableData> &source) {
         // to be done
         QMap<QString, QString> data;
-        start_item = std::make_shared<TreeItem>(data);
+        start_item = std::make_shared<TreeItem>(data, search_model->_root_item);
 
         source.swap(_result);
         QDomDocument doc;
         auto dommodel = source->dom_from_data(&doc);    // source->init(startItem, QDomElement());
-        start_item->recordtableInit(dommodel);
+        start_item->recordtable_init(dommodel);
 
         result = std::make_shared<TableData>();        // assert(_result->size() == 0); //_result->empty();
         total_records = source->size();

@@ -14,7 +14,9 @@
 
 class TreeItem : public std::enable_shared_from_this<TreeItem> {
 public:
-    TreeItem(const QMap<QString, QString> &data, std::shared_ptr<TreeItem> parent = nullptr);
+    TreeItem(const QMap<QString, QString> &data, std::shared_ptr<TreeItem> parent
+            // = nullptr
+            );
     ~TreeItem();
 
     // Возвращение ссылки на потомка, который хранится в списке childItems
@@ -98,7 +100,7 @@ public:
     void switchToDecrypt(void);
 
     // Первичное заполнение таблицы конечных записей, "промежуточный" метод
-    void recordtableInit(QDomElement domModel);
+    void recordtable_init(QDomElement domModel);
 
     // Взятие количества записей в таблице конечных записей, "промежуточный" метод
     int recordtableGetRowCount(void);

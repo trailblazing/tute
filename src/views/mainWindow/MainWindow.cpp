@@ -366,7 +366,7 @@ void MainWindow::save_tree_position(void)
     QModelIndex index = treeScreen->getCurrentItemIndex();
 
     // Получаем указатель вида TreeItem
-    auto item = treeScreen->_knowtreemodel->getItem(index);
+    auto item = treeScreen->_knowtreemodel->item(index);
 
     // Сохраняем путь к элементу item
     appconfig.set_tree_position(item->getPath());
@@ -375,16 +375,16 @@ void MainWindow::save_tree_position(void)
 
 void MainWindow::set_tree_position(QStringList path)
 {
-    if(treeScreen->_knowtreemodel->isItemValid(path) == false)
+    if(treeScreen->_knowtreemodel->is_item_valid(path) == false)
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = treeScreen->_knowtreemodel->getItem(path);
+    auto item = treeScreen->_knowtreemodel->item(path);
 
     qDebug() << "Set tree position to " << item->getField("name") << " id " << item->getField("id");
 
     // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = treeScreen->_knowtreemodel->getIndexByItem(item);
+    QModelIndex setto = treeScreen->_knowtreemodel->create_index_from_item(item);
 
     // Курсор устанавливается в нужную позицию
     treeScreen->setCursorToIndex(setto);
@@ -395,10 +395,10 @@ bool MainWindow::isTreePositionCrypt()
 {
     QStringList path = appconfig.get_tree_position();
 
-    if(treeScreen->_knowtreemodel->isItemValid(path) == false) return false;
+    if(treeScreen->_knowtreemodel->is_item_valid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = treeScreen->_knowtreemodel->getItem(path);
+    auto item = treeScreen->_knowtreemodel->item(path);
 
     if(item->getField("crypt") == "1")
         return true;
@@ -1080,14 +1080,14 @@ void MainWindow::goWalkHistory(void)
     QStringList path = treeScreen->_knowtreemodel->getRecordPath(id);
 
     // Проверяем, есть ли такая ветка
-    if(treeScreen->_knowtreemodel->isItemValid(path) == false) {
+    if(treeScreen->_knowtreemodel->is_item_valid(path) == false) {
         walkhistory.setDrop(false);
         return;
     }
 
 
     // Выясняется позицию записи в таблице конечных записей
-    auto item = treeScreen->_knowtreemodel->getItem(path);
+    auto item = treeScreen->_knowtreemodel->item(path);
 
     // Проверяем, есть ли такая позиция
     if(item->recordtableGetTableData()->is_record_exists(id) == false) {

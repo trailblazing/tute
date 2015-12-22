@@ -25,7 +25,7 @@ public:
     void initFromXML(QString fileName);
     void reload(void);
 
-    QDomElement exportFullModelDataToDom(std::shared_ptr<TreeItem> root);
+    QDomElement full_modeldata_to_dom(std::shared_ptr<TreeItem> root);
 
     void save(void);
 
@@ -45,7 +45,7 @@ public:
     // Получение индекса подчиненного элемента с указанным номером
     QModelIndex indexChildren(const QModelIndex &parent, int n) const;
 
-    QModelIndex getIndexByItem(std::shared_ptr<TreeItem> item);
+    QModelIndex create_index_from_item(std::shared_ptr<TreeItem> item);
 
     // Поиск ветки с указанным ID
     std::shared_ptr<TreeItem> getItemById(QString id);
@@ -73,21 +73,21 @@ public:
 
 private:
 
-    QString xmlFileName;
+    QString xmlFileName = "";
 
     void init(QDomDocument *domModel);
 
     // Функция заполнения дерева из DOM-документа
-    void setupModelData(QDomDocument *dommodel, std::shared_ptr<TreeItem> parent);
+    void setup_modeldata(QDomDocument *dommodel, std::shared_ptr<TreeItem> parent);
 
     // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
-    void parseNodeElement(QDomElement n, std::shared_ptr<TreeItem> parent);
+    void node_from_dom(QDomElement n, std::shared_ptr<TreeItem> parent);
 
     // Преобразование Item в DOM модель
-    void parseTreeToDom(QDomDocument *doc, QDomElement &xmlData, std::shared_ptr<TreeItem> currItem);
+    void tree_to_dom(QDomDocument *doc, QDomElement &xmlData, std::shared_ptr<TreeItem> currItem);
 
     // Перемещение ветки вверх или вниз
-    QModelIndex moveUpDnBranch(const QModelIndex &index,int direction);
+    QModelIndex moveUpDnBranch(const QModelIndex &index, int direction);
 
     int getAllRecordCountRecurse(std::shared_ptr<TreeItem> item, int mode);
 

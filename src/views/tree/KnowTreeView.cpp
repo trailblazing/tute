@@ -150,7 +150,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto treeItemDrop = parentPointer->_knowtreemodel->getItem(index);
+        auto treeItemDrop = parentPointer->_knowtreemodel->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
         std::shared_ptr<TableData> recordTableData = treeItemDrop->recordtableGetTableData();
@@ -159,7 +159,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         QModelIndex indexFrom = find_object<TreeScreen>("treeScreen")->getCurrentItemIndex();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = parentPointer->_knowtreemodel->getItem(indexFrom);
+        auto treeItemDrag = parentPointer->_knowtreemodel->item(indexFrom);
 
         // Если перенос происходит в ту же самую ветку
         if(indexFrom == index)

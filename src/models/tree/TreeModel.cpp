@@ -10,7 +10,8 @@ extern GlobalParameters globalparameters;
 // TreeModel - Это модель данных, которая работает с видом TreeScreen
 // От него наследуется класс KnowTreeModel
 
-TreeModel::TreeModel(QObject *parent) : QAbstractItemModel(parent)
+TreeModel::TreeModel(QObject *parent)
+    : QAbstractItemModel(parent)
 {
     return;
 }
@@ -38,9 +39,9 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается окраска текста элемента
     if(role == Qt::ForegroundRole) {
-        std::shared_ptr<TreeItem> item = getItem(index);
+        std::shared_ptr<TreeItem> it = item(index);
 
-        if(item->recordtableGetRowCount() > 0)
+        if(it->recordtableGetRowCount() > 0)
             return QColor(Qt::black);// Если узел содержит таблицу конечных записей
         else
             return QColor(Qt::darkGray); // Ветка без таблицы конечных записей
@@ -55,17 +56,17 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается содержимое текста элемента
     if(role == Qt::DisplayRole || role == Qt::EditRole) {
-        std::shared_ptr<TreeItem> item = getItem(index);
+        std::shared_ptr<TreeItem> it = item(index);
 
-        return QVariant(item->getField("dynamicname"));   // Запрашивается строка имени с количеством элементов
+        return QVariant(it->getField("dynamicname"));   // Запрашивается строка имени с количеством элементов
     }
 
     // Если запрашиваются элементы оформления
     if(role == Qt::DecorationRole) {
-        std::shared_ptr<TreeItem> item = getItem(index);
+        std::shared_ptr<TreeItem> it = item(index);
 
         // Если ветка зашифрована
-        if(item->getField("crypt") == "1") {
+        if(it->getField("crypt") == "1") {
             // Если пароль не введен, доступа к ветке нет
             if(globalparameters.getCryptKey().length() == 0)
                 return QIcon(":/resource/pic/branch_closed.svg");
@@ -89,7 +90,7 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 
 
 // Получение указателя на Item-злемент связанный с заданным QModelIndex
-std::shared_ptr<TreeItem> TreeModel::getItem(const QModelIndex &index) const
+std::shared_ptr<TreeItem> TreeModel::item(const QModelIndex &index) const
 {
     if(index.isValid()) {
         std::shared_ptr<TreeItem> item = const_pointer_cast<TreeItem>(static_cast<TreeItem *>(index.internalPointer())->shared_from_this());
@@ -105,20 +106,20 @@ std::shared_ptr<TreeItem> TreeModel::getItem(const QModelIndex &index) const
     }
 
     // qDebug() << "Detect bad QModelIndex in getItem() method ";
-    return rootItem;
+    return _root_item;
 }
 
 
-QModelIndex TreeModel::getIndexByItem(std::shared_ptr<TreeItem> item)
+QModelIndex TreeModel::index_from_item(std::shared_ptr<TreeItem> item)
 {
     // Инициализация рекурсивной функции
-    getIndexRecurse(QModelIndex(), item, 0);
+    index_recursive(QModelIndex(), item, 0);
 
-    return getIndexRecurse(QModelIndex(), item, 1);
+    return index_recursive(QModelIndex(), item, 1);
 }
 
 
-QModelIndex TreeModel::getIndexRecurse(QModelIndex index, std::shared_ptr<TreeItem> item, int mode)
+QModelIndex TreeModel::index_recursive(QModelIndex index, std::shared_ptr<TreeItem> item, int mode)
 {
     static QModelIndex find_index;
     static bool is_find = false;
@@ -140,7 +141,7 @@ QModelIndex TreeModel::getIndexRecurse(QModelIndex index, std::shared_ptr<TreeIt
             // Иначе указатель узла не совпадает с заданным
             // и нужно рекурсивно искать далее
             for(int i = 0; i < index.row(); i++)
-                getIndexRecurse(index.child(i, 0), item, 1);
+                index_recursive(index.child(i, 0), item, 1);
         }
     }
 
@@ -149,9 +150,9 @@ QModelIndex TreeModel::getIndexRecurse(QModelIndex index, std::shared_ptr<TreeIt
 
 
 // Получение указателя на Item-злемент с указанным путем
-std::shared_ptr<TreeItem> TreeModel::getItem(QStringList path) const
+std::shared_ptr<TreeItem> TreeModel::item(QStringList path) const
 {
-    std::shared_ptr<TreeItem> curritem = rootItem;
+    std::shared_ptr<TreeItem> curritem = _root_item;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
@@ -175,12 +176,12 @@ std::shared_ptr<TreeItem> TreeModel::getItem(QStringList path) const
 }
 
 
-bool TreeModel::isItemValid(QStringList path) const
+bool TreeModel::is_item_valid(QStringList path) const
 {
     if(path.count() == 1 && path[0] == "0")
         return false;
 
-    std::shared_ptr<TreeItem> curritem = rootItem;
+    std::shared_ptr<TreeItem> curritem = _root_item;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
@@ -204,7 +205,7 @@ bool TreeModel::isItemValid(QStringList path) const
 }
 
 
-void TreeModel::emitSignalDataChanged(const QModelIndex &index)
+void TreeModel::emit_datachanged_signal(const QModelIndex &index)
 {
     emit dataChanged(index, index);
 }
@@ -242,7 +243,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
     if(parent.isValid() && parent.column() != 0)
         return QModelIndex();
 
-    std::shared_ptr<TreeItem> parentItem = getItem(parent);
+    std::shared_ptr<TreeItem> parentItem = item(parent);
 
     std::shared_ptr<TreeItem> childItem = parentItem->child(row);
 
@@ -256,7 +257,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 // Вставка пустых строк с позиции position в количестве rows
 bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
-    std::shared_ptr<TreeItem> parentItem = getItem(parent);
+    std::shared_ptr<TreeItem> parentItem = item(parent);
     bool success;
 
     beginInsertRows(parent, position, position + rows - 1);
@@ -276,25 +277,25 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     if(!index.isValid())
         return QModelIndex();
 
-    std::shared_ptr<TreeItem> childItem = getItem(index);
+    std::shared_ptr<TreeItem> childItem = item(index);
     std::shared_ptr<TreeItem> parentItem;
 
     if(childItem) {
         parentItem = childItem->parent();
 
         if(!parentItem
-           || (parentItem == rootItem)) {
+           || (parentItem == _root_item)) {
             return QModelIndex();
         }
     }
 
-    return createIndex(parentItem->childNumber(), 0, parentItem.get());
+    return createIndex(parentItem->childNumber(), 0, static_cast<void *>(parentItem.get()));
 }
 
 
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
-    std::shared_ptr<TreeItem> parentItem = getItem(parent);
+    std::shared_ptr<TreeItem> parentItem = item(parent);
     bool success = true;
 
     beginRemoveRows(parent, position, position + rows - 1);
@@ -307,8 +308,8 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 
 int TreeModel::rowCount(const QModelIndex &itemIndex) const
 {
-    std::shared_ptr<TreeItem> item = getItem(itemIndex);
-    return item->childCount();
+    std::shared_ptr<TreeItem> it = item(itemIndex);
+    return it->childCount();
 }
 
 
@@ -328,10 +329,10 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
             cursorOverIndex = QModelIndex();
 
         if(previousIndex.isValid())
-            emitSignalDataChanged(previousIndex);
+            emit_datachanged_signal(previousIndex);
 
         if(cursorOverIndex.isValid())
-            emitSignalDataChanged(cursorOverIndex);
+            emit_datachanged_signal(cursorOverIndex);
 
         return true;
     }
@@ -340,10 +341,10 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 
         // Вычисляется указатель на Item элемент по QModelIndex
         // в визуальной модели дерева
-        std::shared_ptr<TreeItem> item = getItem(index);
+        std::shared_ptr<TreeItem> it = item(index);
 
         // Устанавливаются данные в Item элемент
-        item->setField("name", value.toString());
+        it->setField("name", value.toString());
 
         return true;
     }
@@ -359,6 +360,6 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
         return false;
 
     Q_UNUSED(section);
-    rootItem->setField("name", value.toString());
+    _root_item->setField("name", value.toString());
     return true;
 }

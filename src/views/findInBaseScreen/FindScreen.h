@@ -167,7 +167,7 @@ private:
 
     void changedFindInField(QString fieldname, int state);
 
-    std::shared_ptr<TableData> findStart(void);
+    std::shared_ptr<TableData> find_start(void);
     void find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_ptr<TableData> result);
     bool findInTextProcess(const QString &text);
 

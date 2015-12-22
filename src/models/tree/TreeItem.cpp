@@ -73,7 +73,7 @@ void TreeItem::empty(void)
     //    // Удаляются все подветки
     //    qDeleteAll(_child_items);
 
-    _parent_item = NULL;
+    _parent_item.reset();
 }
 
 
@@ -264,7 +264,7 @@ QString TreeItem::getId()
 
 QString TreeItem::getParentId()
 {
-    if(_parent_item != NULL) {
+    if(_parent_item) {
         return _parent_item->getField("id");
     } else
         return "";
@@ -284,7 +284,7 @@ bool TreeItem::insertChildren(int position, int count, int columns)
 
     for(int row = 0; row < count; ++row) {
         QMap<QString, QString> data;
-        auto item = std::make_shared<TreeItem>(data); // Создается объект item
+        auto item = std::make_shared<TreeItem>(data, shared_from_this()); // Создается объект item
         _child_items.insert(position, item); // Вставка item в нужную позицию массива childItems
     }
 
@@ -546,7 +546,7 @@ void TreeItem::switchToDecrypt(void)
 }
 
 
-void TreeItem::recordtableInit(QDomElement domModel)
+void TreeItem::recordtable_init(QDomElement domModel)
 {
     _recordtable->init(shared_from_this(), domModel);
 }
