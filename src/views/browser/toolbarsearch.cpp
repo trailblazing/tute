@@ -127,7 +127,7 @@ namespace browser {
     {
         QString searchText = lineEdit()->text();
 
-        std::shared_ptr<TableData> recordtabledata = globalparameters.find_screen()->findClicked();
+        std::shared_ptr<TableData> recordtabledata = globalparameters.find_screen()->find_clicked();
 
         if(!recordtabledata || 0 == recordtabledata->size()) {
 

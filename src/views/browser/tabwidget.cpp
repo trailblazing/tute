@@ -249,7 +249,9 @@ namespace browser {
 
     }
 
-    TabWidget::TabWidget(TableController *_record_controller, TableController *_page_controller, Browser *parent)
+    TabWidget::TabWidget(TableController *_record_controller
+                         // , TableController *_page_controller
+                         , Browser *parent)
         : QTabWidget(parent)
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
@@ -267,7 +269,7 @@ namespace browser {
         , _fullscreenview(0)
         , _fullscreennotification(0)
         , _record_controller(_record_controller)
-        , _page_controller(_page_controller)
+        // , _page_controller(_page_controller)
           //        , _active_record(this)
           //        , _active("", &active_record::operator(), &_active_record)
         , _window(parent)
@@ -314,7 +316,8 @@ namespace browser {
 
         //        _tabbar->setMaximumSize(0, 0);
 
-        _tabbar->hide();
+        //        _tabbar->hide();
+
         // Actions
         //        _newtabaction = ;
         _newtabaction->setShortcuts(QKeySequence::AddTab);
@@ -595,7 +598,7 @@ namespace browser {
     WebView *TabWidget::newTab(std::shared_ptr<Record> record   // , bool openinnewtab
                                , bool make_current
                                , TableController *_record_controller
-                               , TableController *_page_controller
+                               // , TableController *_page_controller
                               )
     {
         //        if(record == nullptr) {
@@ -635,7 +638,9 @@ namespace browser {
         if(!record->unique_page()) {
             view = new WebView(record, _profile // use record for return
                                // , openinnewtab
-                               , this, _record_controller, _page_controller); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
+                               , this, _record_controller
+                               // , _page_controller
+                               ); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
         }
 
         //        record->view(webView);  // inside PageView initialization
@@ -1405,8 +1410,12 @@ namespace browser {
     }
 
 
-    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, TableController *_record_controller, TableController *_page_controller, Browser *parent)
-        : TabWidget(_record_controller, _page_controller, parent)
+    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, TableController *_record_controller
+                             // , TableController *_page_controller
+                             , Browser *parent)
+        : TabWidget(_record_controller
+                    // , _page_controller
+                    , parent)
         , _addressbar(new QLineEdit(this))
         , _view(
               //              new WebView(record, profile
@@ -1414,9 +1423,13 @@ namespace browser {
               //                          , this
               //                          , _record_ontroller    // globalparameters.getRecordTableScreen()->getRecordTableController()
               //                         )
-              [this, url, profile, _record_controller, _page_controller]
+              [this, url, profile, _record_controller
+              // , _page_controller
+              ]
     {
-        boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(this, profile, _record_controller, _page_controller);
+        boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(this, profile, _record_controller
+                                                                                           // , _page_controller
+                                                                                           );
         std::shared_ptr<Record> record
             = _record_controller->request_record(
                   url

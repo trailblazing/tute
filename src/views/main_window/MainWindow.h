@@ -185,14 +185,14 @@ private:
 
     TreeScreen          *_tree_screen;
     TableScreen         *_table_screen;
-    TableScreen         *_page_screen;
+    // TableScreen         *_page_screen;
     browser::DownloadManager *_download;
     FindScreen          *_find_screen;
     MetaEditor          *_editor_screen;
     QStatusBar          *_statusbar;
     WindowSwitcher      *_switcher;
     TableController     *_record_controller;
-    TableController     *_page_controller;
+    // TableController     *_page_controller;
     browser::Entrance   *_entrance;
 
     //    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();

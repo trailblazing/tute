@@ -55,33 +55,33 @@ public:
     browser::ChaseWidget *chasewidget() {return _chasewidget;}
     void remove_id(const QString &id);
     void remove_row(const int row);
-    void adjustSize();
+    void adjust_size();
 
 public slots:
 
-    void widgetShow(void);
-    void widgetHide(void);
-    std::shared_ptr<TableData> findClicked(void);
-    void setFindText(QString text);
+    void widget_show(void);
+    void widget_hide(void);
+    std::shared_ptr<TableData> find_clicked(void);
+    void find_text(QString text);
 
 protected:
     virtual void resizeEvent(QResizeEvent *e);
 private slots:
 
-    void enableFindButton(const QString &text);
-    void toolsExpandClicked(void);
+    void enable_findbutton(const QString &text);
+    void tools_expand_clicked(void);
 
-    void changedWordRegard(int pos);
-    void changedHowExtract(int pos);
-    void changedTreeSearchArea(int pos);
+    void word_regard(int pos);
+    void how_extract(int pos);
+    void tree_search_area(int pos);
 
-    void changedFindInPin(int state);
-    void changedFindInName(int state);
-    void changedFindInAuthor(int state);
-    void changedFindInHome(int state);
-    void changedFindInUrl(int state);
-    void changedFindInTags(int state);
-    void changedFindInText(int state);
+    void if_find_in_pin(int state);
+    void if_find_in_name(int state);
+    void if_find_in_author(int state);
+    void if_find_in_home(int state);
+    void if_find_in_url(int state);
+    void if_find_in_tags(int state);
+    void if_find_in_text(int state);
 
 signals:
 
@@ -149,30 +149,30 @@ private:
     void setup_navigate(void);
     void assembly_navigate(void);
 
-    void setupFindTextAndButton(void);
-    void assemblyFindTextAndButton(void);
+    void setup_findtext_and_button(void);
+    void assembly_findtext_and_button(void);
 
-    void setupComboOption(void);
-    void assemblyComboOption(void);
+    void setup_combooption(void);
+    void assembly_combooption(void);
 
-    void setupCloseButton(void);
-    void assemblyCloseButton(void);
+    void setup_closebutton(void);
+    void assembly_closebutton(void);
 
-    void setupWhereFindLine(void);
-    void assemblyWhereFindLine(void);
+    void setup_wherefind_line(void);
+    void assembly_wherefind_line(void);
 
-    void setupUI(void);
+    void setup_ui(void);
     void assembly(void);
 
-    void setupSignals(void);
+    void setup_signals(void);
 
-    void changedFindInField(QString fieldname, int state);
+    void if_find_in_field(QString fieldname, int state);
 
     std::shared_ptr<TableData> find_start(void);
     void find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_ptr<TableData> result);
-    bool findInTextProcess(const QString &text);
+    bool find_in_text_process(const QString &text);
 
-    void switchToolsExpand(bool flag);
+    void switch_tools_expand(bool flag);
 
     // Поля, где нужно искать (Заголовок, текст, теги...)
     QMap<QString, bool> searchArea;

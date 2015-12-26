@@ -33,7 +33,7 @@ namespace browser {
 MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen) : Editor()
 {
     setObjectName(object_name);
-    Editor::setDisableToolList(appconfig.getHideEditorTools());
+    Editor::disable_tool_list(appconfig.getHideEditorTools());
 
     Editor::initEnableAssembly(false);
     Editor::initConfigFileName(globalparameters.work_directory() + "/editorconf.ini");
@@ -69,7 +69,7 @@ void MetaEditor::setupSignals(FindScreen *_find_screen)
 {
     connect(this, &MetaEditor::setFindTextSignal
             , _find_screen  // globalparameters.getFindScreen()
-            , &FindScreen::setFindText);
+            , &FindScreen::find_text);
 
 }
 
@@ -308,7 +308,7 @@ void MetaEditor::clearAll(void)
     set_work_directory("");
     set_file_name("");
 
-    clearAllMiscField();
+    clear_all_misc_field();
 
     // Иконка аттачей должна показывать что аттачей нет
     toAttach->setIcon(iconAttachNotExists);
@@ -556,7 +556,7 @@ void MetaEditor::onClickToTag(const QString &link_text)
 
     // Если виджет не показан, он выводится на экран
     if(findScreen->isVisible() == false)
-        findScreen->widgetShow();
+        findScreen->widget_show();
 
     emit setFindTextSignal(tag);
 }

@@ -174,10 +174,10 @@ void WindowSwitcher::findInBaseClick(void)
 
         // Если виджет не показан, он выводится на экран, и наоборот
         if(findScreen->isVisible() == false) {
-            findScreen->widgetShow();
+            findScreen->widget_show();
             vrs->resize(QSize(vrs_size.width(), vrs->height() - height)); //            dp.first->resize(entrance->size()); // ? dp.second->resize(dp.first->size());
         } else {
-            findScreen->widgetHide();
+            findScreen->widget_hide();
             vrs->resize(QSize(vrs_size.width(), vrs->height() + height));  //            dp.first->resize(entrance->size()); // dp.second->resize(dp.first->size());
         }
     }

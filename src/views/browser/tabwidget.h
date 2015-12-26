@@ -222,7 +222,7 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(TableController *_record_controller, TableController *_page_controller, Browser *parent);
+        TabWidget(TableController *_record_controller, Browser *parent);
         ~TabWidget();
         void clear();
         void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
@@ -255,23 +255,26 @@ namespace browser {
             TabWidget       *_the;
             bool            _make_current;
             TableController *_record_controller;
-            TableController *_page_controller;
+            // TableController *_page_controller;
             // WebView *view;
             ActiveRecordBinder(TabWidget *the
                                , bool make_current
                                = true
                                  , TableController *_record_controller
                                = globalparameters.table_screen()->table_controller()
-                                 , TableController *_page_controller
-                               = globalparameters.page_screen()->table_controller()
-                              ): _the(the) , _make_current(make_current), _record_controller(_record_controller), _page_controller(_page_controller)
+                                 // , TableController *_page_controller
+                                 // = globalparameters.page_screen()->table_controller()
+                              ): _the(the) , _make_current(make_current), _record_controller(_record_controller)
+                // , _page_controller(_page_controller)
                 //  , view(nullptr)
             {}
 
             WebView *binder(std::shared_ptr<Record> record)
             {
                 return // view =
-                    _the->newTab(record, _make_current, _record_controller, _page_controller);
+                    _the->newTab(record, _make_current, _record_controller
+                                 // , _page_controller
+                                 );
             }
 
             WebView *activator(std::shared_ptr<Record> record)
@@ -299,9 +302,7 @@ namespace browser {
                         = true
                           , TableController *_record_controller
                         = globalparameters.table_screen()->table_controller()
-                          , TableController *_page_controller
-                        = globalparameters.page_screen()->table_controller()
-                       );
+                          );
 
         //        void new_view(bool make_current = false);    //true
 
@@ -349,7 +350,7 @@ namespace browser {
         QWebEngineView          *_fullscreenview;
         FullScreenNotification  *_fullscreennotification;
         TableController         *_record_controller;
-        TableController         *_page_controller;
+        // TableController         *_page_controller;
 
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
@@ -364,7 +365,9 @@ namespace browser {
         public TabWidget {  // public QWidget
         Q_OBJECT
     public:
-        PopupWindow(QWebEngineProfile *const setProfile, QUrl const &url, TableController *_record_controller, TableController *_page_controller, Browser *parent);
+        PopupWindow(QWebEngineProfile *const setProfile, QUrl const &url, TableController *_record_controller
+                    // , TableController *_page_controller
+                    , Browser *parent);
 
         //        QWebEnginePage
         WebPage *page() const;
@@ -385,11 +388,13 @@ namespace browser {
             TableController *_page_controller;
             // WebView *_view;
             ActiveRecordBinder(
-                PopupWindow *const the, QWebEngineProfile *profile, TableController *_record_controller, TableController *_page_controller) :
+                PopupWindow *const the, QWebEngineProfile *profile, TableController *_record_controller
+                // , TableController *_page_controller
+            ) :
                 _the(the)
                 , _profile(profile)
                 , _record_controller(_record_controller)
-                , _page_controller(_page_controller)
+                // , _page_controller(_page_controller)
                 // , _view(nullptr)
             {}
 
@@ -399,7 +404,9 @@ namespace browser {
 
                 //            if(!record->unique_page())
                 return // _view =
-                    new WebView(record, _profile, _the, _record_controller, _page_controller);
+                    new WebView(record, _profile, _the, _record_controller
+                                // , _page_controller
+                               );
                 //            else
                 //                return record->unique_page()->view();
             }

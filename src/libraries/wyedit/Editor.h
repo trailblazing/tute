@@ -218,23 +218,23 @@ public:
 
     // Методы установки и чтения произвольных нестандартных данных
     // которые может хранить объект редактора
-    void setMiscField(QString name, QString value);
-    QString getMiscField(QString name);
-    void clearAllMiscField(void);
+    void misc_field(QString name, QString value);
+    QString misc_field(QString name);
+    void clear_all_misc_field(void);
 
     void update_indentline_geometry();
 
-    void setDirFileEmptyReaction(int mode);
-    int  getDirFileEmptyReaction(void);
+    void dir_file_empty_reaction(int mode);
+    int  dir_file_empty_reaction(void);
 
     // Метод позволяющий управлять доступностью инструментов редактирования
-    void setDisableToolList(QStringList toolNames);
+    void disable_tool_list(QStringList toolNames);
 
-    int  getCursorPosition(void);
-    void setCursorPosition(int n);
+    int  cursor_position(void);
+    void cursor_position(int n);
 
-    int  getScrollBarPosition(void);
-    void setScrollBarPosition(int n);
+    int  scrollbar_position(void);
+    void scrollbar_position(int n);
 
 
     enum {
@@ -262,11 +262,11 @@ signals:
 
     void send_expand_edit_area(bool flag);
 
-    void wyeditFindInBaseClicked();
+    void wyedit_find_in_base_clicked();
 
 public slots:
 
-    void onUpdateIndentlineGeometrySlot(void);
+    void on_update_indentline_geometry_slot(void);
 
 private slots:
 

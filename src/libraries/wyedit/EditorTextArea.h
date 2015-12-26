@@ -28,8 +28,8 @@ public:
     int get_indent_started_right(void);
 
 signals:
-    void tapAndHoldGestureFinished(const QPoint &);
-    void updateIndentlineGeometrySignal(void);
+    void tap_and_hold_gesture_finished(const QPoint &);
+    void update_indentline_geometry_signal(void);
 
 
 public slots:
@@ -44,8 +44,8 @@ private:
     int  posIndentEdge; // По какой координате рисовать линию отступа
 
     bool event(QEvent *event);
-    bool gestureEvent(QGestureEvent *event);
-    void tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture);
+    bool gesture_event(QGestureEvent *event);
+    void tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture);
 
     virtual bool eventFilter(QObject *o, QEvent *e);
 };

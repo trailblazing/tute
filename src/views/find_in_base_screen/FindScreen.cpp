@@ -63,22 +63,22 @@ FindScreen::FindScreen(QString object_name, QWidget *parent)
     setup_navigate();
     assembly_navigate();
 
-    setupFindTextAndButton();
-    assemblyFindTextAndButton();
+    setup_findtext_and_button();
+    assembly_findtext_and_button();
 
-    setupCloseButton();
-    assemblyCloseButton();
+    setup_closebutton();
+    assembly_closebutton();
 
-    setupComboOption();
+    setup_combooption();
     //assemblyComboOption();
 
-    setupWhereFindLine();
-    assemblyWhereFindLine();
+    setup_wherefind_line();
+    assembly_wherefind_line();
 
-    setupUI();
+    setup_ui();
     assembly();
 
-    setupSignals();
+    setup_signals();
 }
 
 
@@ -154,7 +154,7 @@ void FindScreen::assembly_navigate(void)
 }
 
 // Текст поиска и кнопка "Поиск"
-void FindScreen::setupFindTextAndButton(void)
+void FindScreen::setup_findtext_and_button(void)
 {
     // Поле текста для поиска
     //_findtext = new QLineEdit();
@@ -177,7 +177,7 @@ void FindScreen::setupFindTextAndButton(void)
 
 
 // Текст поиска и кнопка "Поиск"
-void FindScreen::assemblyFindTextAndButton(void)
+void FindScreen::assembly_findtext_and_button(void)
 {
     toolsAreaFindTextAndButton = new QHBoxLayout();
     //    QWidget *con = new QWidget(this);
@@ -204,7 +204,7 @@ void FindScreen::assemblyFindTextAndButton(void)
 
 
 // Набор опций поиска в виде выпадающих списков
-void FindScreen::setupComboOption(void)
+void FindScreen::setup_combooption(void)
 {
     // Выбор "Любое слово" - "Все слова"
     wordRegard = new FlatComboBox();
@@ -256,7 +256,7 @@ void FindScreen::setupComboOption(void)
 
 
 // Набор опций поиска в виде выпадающих списков
-void FindScreen::assemblyComboOption(void)
+void FindScreen::assembly_combooption(void)
 {
     toolsAreaComboOption = new QHBoxLayout();
     //    toolsAreaComboOption->addWidget(wordRegard);
@@ -266,7 +266,7 @@ void FindScreen::assemblyComboOption(void)
 }
 
 
-void FindScreen::setupCloseButton(void)
+void FindScreen::setup_closebutton(void)
 {
     // Кнопка закрытия виджета
     closeButton = new FlatToolButton(this);
@@ -286,7 +286,7 @@ void FindScreen::setupCloseButton(void)
 }
 
 
-void FindScreen::assemblyCloseButton(void)
+void FindScreen::assembly_closebutton(void)
 {
     // Вертикальная область с кнопкой закрытия и распоркой
     // чтобы кнопка была вверху
@@ -297,7 +297,7 @@ void FindScreen::assemblyCloseButton(void)
 }
 
 
-void FindScreen::setupWhereFindLine(void)
+void FindScreen::setup_wherefind_line(void)
 {
     whereFindLabel = new QLabel(tr("Find in: "));
 
@@ -327,7 +327,7 @@ void FindScreen::setupWhereFindLine(void)
 }
 
 
-void FindScreen::assemblyWhereFindLine(void)
+void FindScreen::assembly_wherefind_line(void)
 {
     whereFindLine = new QHBoxLayout();
     whereFindLine->setEnabled(false);
@@ -357,37 +357,37 @@ void FindScreen::assemblyWhereFindLine(void)
 }
 
 
-void FindScreen::setupSignals(void)
+void FindScreen::setup_signals(void)
 {
     // При каждом изменении текста в строке запроса
-    connect(_toolbarsearch, &browser::ToolbarSearch::textChanged, this, &FindScreen::enableFindButton);
+    connect(_toolbarsearch, &browser::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
 
     // При каждом изменении текста извне может вырабатыватся этот сигнал
     // Он вырабатывается в слоте setFindText()
-    connect(this, &FindScreen::textChangedFromAnother, this, &FindScreen::enableFindButton);
+    connect(this, &FindScreen::textChangedFromAnother, this, &FindScreen::enable_findbutton);
 
 
     // При нажатии Enter в строке запроса
     connect(_toolbarsearch, &browser::ToolbarSearch::returnPressed, this
-    , [this]() {FindScreen::findClicked();}
+    , [this]() {FindScreen::find_clicked();}
            );
 
     // При нажатии кнопки Find
     connect(_findstartbutton, &QPushButton::clicked, this
-    , [this]() {FindScreen::findClicked();}
+    , [this]() {FindScreen::find_clicked();}
            );
 
     // При нажатии кнопки разворачивания/сворачивания инструментов поиска
-    connect(toolsExpand, &FlatToolButton::clicked, this, &FindScreen::toolsExpandClicked);
+    connect(toolsExpand, &FlatToolButton::clicked, this, &FindScreen::tools_expand_clicked);
 
     // После установки текста извне, вырабатывается этот сигнал
     connect(this, &FindScreen::findClickedAfterAnotherTextChanged, this
-    , [this]() {FindScreen::findClicked();}
+    , [this]() {FindScreen::find_clicked();}
            );
 
 
     // При нажатии кнопки закрытия
-    connect(closeButton, &FlatToolButton::clicked, this, &FindScreen::widgetHide);
+    connect(closeButton, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
     connect(closeButton, &FlatToolButton::clicked, [] {
         auto win = globalparameters.entrance()->activiated_registered().first;
 
@@ -396,34 +396,34 @@ void FindScreen::setupSignals(void)
 
 
     // Сигналы для запоминания состояния интерфейса
-    connect(wordRegard, wordRegard->currentindexchanged, this, &FindScreen::changedWordRegard);
+    connect(wordRegard, wordRegard->currentindexchanged, this, &FindScreen::word_regard);
 
-    connect(howExtract, howExtract->currentindexchanged, this, &FindScreen::changedHowExtract);
+    connect(howExtract, howExtract->currentindexchanged, this, &FindScreen::how_extract);
 
-    connect(treeSearchArea, treeSearchArea->currentindexchanged, this, &FindScreen::changedTreeSearchArea);
+    connect(treeSearchArea, treeSearchArea->currentindexchanged, this, &FindScreen::tree_search_area);
 
     //    assert(globalparameters.vtab());
     //    connect(globalparameters.vtab(), &QTabWidget::currentChanged
     //            , this, &FindScreen::changedTreeSearchArea    // , &appconfig, &AppConfig::setFindScreenTreeSearchArea
     //           );
 
-    connect(findInPin, &QCheckBox::stateChanged, this, &FindScreen::changedFindInPin);
+    connect(findInPin, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_pin);
 
-    connect(findInName, &QCheckBox::stateChanged, this, &FindScreen::changedFindInName);
+    connect(findInName, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_name);
 
-    connect(findInAuthor, &QCheckBox::stateChanged, this, &FindScreen::changedFindInAuthor);
+    connect(findInAuthor, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_author);
 
-    connect(findInHome, &QCheckBox::stateChanged, this, &FindScreen::changedFindInHome);
+    connect(findInHome, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_home);
 
-    connect(findInUrl, &QCheckBox::stateChanged, this, &FindScreen::changedFindInUrl);
+    connect(findInUrl, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_url);
 
-    connect(findInTags, &QCheckBox::stateChanged, this, &FindScreen::changedFindInTags);
+    connect(findInTags, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_tags);
 
-    connect(findInText, &QCheckBox::stateChanged, this, &FindScreen::changedFindInText);
+    connect(findInText, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
 }
 
 
-void FindScreen::setupUI(void)
+void FindScreen::setup_ui(void)
 {
     //_findtable = new FindTableWidget();
     //_findtable->hide();
@@ -471,10 +471,10 @@ void FindScreen::assembly(void)
 
     this->setLayout(centralDesktopLayout);
 
-    switchToolsExpand(appconfig.getFindInBaseExpand());
+    switch_tools_expand(appconfig.getFindInBaseExpand());
 }
 
-void FindScreen::adjustSize()
+void FindScreen::adjust_size()
 {
     //    int height = toolsLine->isEnabled() ? toolsLine->sizeHint().height() : 0 + whereFindLine->isEnabled() ? whereFindLine->sizeHint().height() : 0;
     //    setMinimumHeight(height);
@@ -494,7 +494,7 @@ void FindScreen::resizeEvent(QResizeEvent *e)
     QWidget::resizeEvent(e);
 }
 
-void FindScreen::enableFindButton(const QString &text)
+void FindScreen::enable_findbutton(const QString &text)
 {
     _findstartbutton->setEnabled(!text.isEmpty());
 }
@@ -502,7 +502,7 @@ void FindScreen::enableFindButton(const QString &text)
 
 // Слот, с помощью которого другие виджеты могут устанавливать
 // текст для поиска
-void FindScreen::setFindText(QString text)
+void FindScreen::find_text(QString text)
 {
     //_findtext
     _toolbarsearch->setText(text);
@@ -513,7 +513,7 @@ void FindScreen::setFindText(QString text)
 
 
 // Слот, срабатывающий при нажатии на кнопку начала поиска
-std::shared_ptr<TableData> FindScreen::findClicked(void)
+std::shared_ptr<TableData> FindScreen::find_clicked(void)
 {
     // Поля, где нужно искать (Заголовок, текст, теги...)
     searchArea["pin"]       = findInPin->isChecked();
@@ -804,13 +804,13 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
                     if(key != "text") {
                         // Поиск в обычном поле
                         inspectText = searchRecordTable->field(key, i);
-                        iteration_search_result[key] = findInTextProcess(inspectText);
+                        iteration_search_result[key] = find_in_text_process(inspectText);
                     } else {
                         // Поиск в тексте записи
                         inspectText = searchRecordTable->text(i);
                         QTextDocument textdoc;
                         textdoc.setHtml(inspectText);
-                        iteration_search_result[key] = findInTextProcess(textdoc.toPlainText());
+                        iteration_search_result[key] = find_in_text_process(textdoc.toPlainText());
                     }
                 }
             } // Закрылся цикл поиска в полях
@@ -858,7 +858,7 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
 
 // Поиск в переданном тексте
 // Учитываются состояния переключателей wordregard и howextract
-bool FindScreen::findInTextProcess(const QString &text)
+bool FindScreen::find_in_text_process(const QString &text)
 {
     int findWordCount = 0;
     int findFlag = 0;
@@ -900,63 +900,63 @@ bool FindScreen::findInTextProcess(const QString &text)
 }
 
 
-void FindScreen::changedWordRegard(int pos)
+void FindScreen::word_regard(int pos)
 {
     appconfig.set_findscreen_wordregard(pos);
 }
 
 
-void FindScreen::changedHowExtract(int pos)
+void FindScreen::how_extract(int pos)
 {
     appconfig.set_findscreen_howextract(pos);
 }
 
 
-void FindScreen::changedTreeSearchArea(int pos)
+void FindScreen::tree_search_area(int pos)
 {
     appconfig.setFindScreenTreeSearchArea(pos);
 }
 
-void FindScreen::changedFindInPin(int state)
+void FindScreen::if_find_in_pin(int state)
 {
-    changedFindInField("pin", state);
+    if_find_in_field("pin", state);
 }
 
-void FindScreen::changedFindInName(int state)
+void FindScreen::if_find_in_name(int state)
 {
-    changedFindInField("name", state);
-}
-
-
-void FindScreen::changedFindInAuthor(int state)
-{
-    changedFindInField("author", state);
-}
-
-void FindScreen::changedFindInHome(int state)
-{
-    changedFindInField("home", state);
-}
-
-void FindScreen::changedFindInUrl(int state)
-{
-    changedFindInField("url", state);
+    if_find_in_field("name", state);
 }
 
 
-void FindScreen::changedFindInTags(int state)
+void FindScreen::if_find_in_author(int state)
 {
-    changedFindInField("tags", state);
+    if_find_in_field("author", state);
+}
+
+void FindScreen::if_find_in_home(int state)
+{
+    if_find_in_field("home", state);
+}
+
+void FindScreen::if_find_in_url(int state)
+{
+    if_find_in_field("url", state);
 }
 
 
-void FindScreen::changedFindInText(int state)
+void FindScreen::if_find_in_tags(int state)
 {
-    changedFindInField("text", state);
+    if_find_in_field("tags", state);
 }
 
 
-void FindScreen::changedFindInField(QString fieldname, int state)
+void FindScreen::if_find_in_text(int state)
+{
+    if_find_in_field("text", state);
+}
+
+
+void FindScreen::if_find_in_field(QString fieldname, int state)
 {
     bool i;
 
@@ -967,7 +967,7 @@ void FindScreen::changedFindInField(QString fieldname, int state)
 }
 
 
-void FindScreen::widgetShow(void)
+void FindScreen::widget_show(void)
 {
     appconfig.set_findscreen_show(true);
     this->show();
@@ -979,7 +979,7 @@ void FindScreen::widgetShow(void)
 
 
 // Полное сокрытие виджета
-void FindScreen::widgetHide(void)
+void FindScreen::widget_hide(void)
 {
     // Запоминается размер сплиттера перед скрытием виджета
     QSplitter *findSplitterRel = find_object<QSplitter>("find_splitter");
@@ -992,20 +992,20 @@ void FindScreen::widgetHide(void)
 
 
 // Слот, срабатывающий при клике на кнопку expand
-void FindScreen::toolsExpandClicked(void)
+void FindScreen::tools_expand_clicked(void)
 {
     // Если нужно сомкнуть инструменты
     if(findInName->isVisible()) {
-        switchToolsExpand(false);
+        switch_tools_expand(false);
         appconfig.setFindInBaseExpand(false);
     } else {
-        switchToolsExpand(true);
+        switch_tools_expand(true);
         appconfig.setFindInBaseExpand(true);
     }
 }
 
 
-void FindScreen::switchToolsExpand(bool flag)
+void FindScreen::switch_tools_expand(bool flag)
 {
     // toolsAreaComboOption->setVisible(flag);
     // whereFindLine->setVisible(flag);
@@ -1036,7 +1036,7 @@ void FindScreen::switchToolsExpand(bool flag)
     findInText->setVisible(flag);
 
     whereFindLine->setEnabled(flag);
-    this->adjustSize();
+    this->adjust_size();
 }
 
 // dangerous!

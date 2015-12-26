@@ -111,7 +111,7 @@ namespace browser {
                 , const std::shared_ptr<Record> record
                 // , bool openinnewtab
                 , TableController *_record_controller
-                , TableController *_page_controller
+                // , TableController *_page_controller
                 , WebView *parent = 0
                );
         //        WebView *(*_load_record)(Record *const record);
@@ -208,7 +208,7 @@ namespace browser {
         QUrl                    _loadingurl;
         //bool _create_window_generated;
         TableController         *_record_controller;
-        TableController         *_page_controller;
+        // TableController         *_page_controller;
 
         void record(std::shared_ptr<Record> record) {_record = record;}
         friend class Record;
@@ -232,11 +232,9 @@ namespace browser {
         WebView(std::shared_ptr<Record> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
-                , TableController *recordtablecontroller
+                , TableController *table_controller
                 = globalparameters.table_screen()->table_controller()
-                  , TableController *_page_controller
-                = globalparameters.page_screen()->table_controller()
-               );
+                  );
 
         ~WebView();
         WebPage *page() const { return _page; }
@@ -250,7 +248,7 @@ namespace browser {
         QString lastStatusBarText() const;
         inline int progress() const { return _progress; }
 
-        TableController *recordtablecontroller() {return _record_controller;}
+        TableController *table_controller() {return _record_controller;}
         void bind_recordtabcontroller(TableController *recordtablecontroller) {_record_controller  = recordtablecontroller ;}
         //        Record *const &record()const {return _record;}
         //        void record(Record *record) {if(record) {_record = record; _record->view(this);}}
@@ -289,7 +287,7 @@ namespace browser {
         TabWidget               *_tabmanager;
         //        Record *_record;
         TableController         *_record_controller;
-        TableController         *_page_controller;
+        // TableController         *_page_controller;
         WebPage                 *_page;
         QString                 _statusbartext;
         //        QUrl _initialurl;

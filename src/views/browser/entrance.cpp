@@ -360,7 +360,9 @@ namespace browser {
     Browser *Entrance::new_browser(const QByteArray &state)
     {
 
-        Browser *browser = new Browser(state, _record_controller, _page_controller, this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
+        Browser *browser = new Browser(state, _record_controller
+                                       // , _page_controller
+                                       , this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
         //        browser->setParent(_dockwidget);
@@ -382,7 +384,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    , _page_controller
+                    // , _page_controller
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -399,7 +401,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(record
                     , _record_controller
-                    , _page_controller
+                    // , _page_controller
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -423,7 +425,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    , _page_controller
+                    // , _page_controller
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -521,11 +523,13 @@ namespace browser {
     //        qobject_cast<Entrance *>(parent)->window_list().prepend(browser);
     //    }
 
-    Entrance::Entrance(QString object_name, TableController *recordtablecontroller, TableController *_page_controller, browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
+    Entrance::Entrance(QString object_name, TableController *record_controller
+                       // , TableController *_page_controller
+                       , browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
         : QDockWidget(parent, flags)  //, _application(application)
         , _main_windows(QList<QPointer<Browser> >())
-        , _record_controller(recordtablecontroller)
-        , _page_controller(_page_controller)
+        , _record_controller(record_controller)
+        // , _page_controller(_page_controller)
         , _style_source(style_source)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint //| Qt::SplashScreen
                                    ))

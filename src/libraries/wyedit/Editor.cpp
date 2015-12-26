@@ -301,7 +301,7 @@ void Editor::setup_signals(void)
     // Вызов диалога поиска в тексте
     connect(findDialog, SIGNAL(find_text(const QString &, QTextDocument::FindFlags)), this, SLOT(on_findtext_signal_detect(const QString &, QTextDocument::FindFlags)));
 
-    connect(textArea, SIGNAL(updateIndentlineGeometrySignal()), this, SLOT(onUpdateIndentlineGeometrySlot()));
+    connect(textArea, SIGNAL(updateIndentlineGeometrySignal()), this, SLOT(on_update_indentline_geometry_slot()));
     connect(this->_closebutton, &FlatToolButton::clicked, this, &Editor::widget_hide);
 
 }
@@ -767,7 +767,7 @@ void Editor::assembly(void)
 }
 
 
-void Editor::onUpdateIndentlineGeometrySlot()
+void Editor::on_update_indentline_geometry_slot()
 {
     update_indentline_geometry();
 }
@@ -2885,7 +2885,7 @@ void Editor::on_to_attach_clicked(void)
 
 void Editor::on_find_in_base_clicked(void)
 {
-    emit wyeditFindInBaseClicked();
+    emit wyedit_find_in_base_clicked();
 }
 
 
@@ -2905,8 +2905,8 @@ void Editor::on_show_text_clicked(void)
     // Устанавливается флаг удаления диалога после закрытия его окна
     showText->setAttribute(Qt::WA_DeleteOnClose);
 
-    if(getMiscField("title").length() > 0)
-        showText->setWindowTitle(getMiscField("title"));
+    if(misc_field("title").length() > 0)
+        showText->setWindowTitle(misc_field("title"));
 
     QTextDocument *cloneDocument = textArea->document()->clone(showText); // Для метода clone указан parent, который уничтожится при закрытии окна, и за собой уничтожит этот временный документ
     showText->setDocument(cloneDocument);
@@ -2939,13 +2939,13 @@ void Editor::set_attach_callback(void (*func)(void))
 }
 
 
-void Editor::setMiscField(QString name, QString value)
+void Editor::misc_field(QString name, QString value)
 {
     miscFields[name] = value;
 }
 
 
-QString Editor::getMiscField(QString name)
+QString Editor::misc_field(QString name)
 {
     if(miscFields.contains(name))
         return miscFields[name];
@@ -2954,13 +2954,13 @@ QString Editor::getMiscField(QString name)
 }
 
 
-void Editor::clearAllMiscField(void)
+void Editor::clear_all_misc_field(void)
 {
     miscFields.clear();
 }
 
 
-void Editor::setDirFileEmptyReaction(int mode)
+void Editor::dir_file_empty_reaction(int mode)
 {
     // Проверяется допустимость переданного значения
     if(mode == DIRFILEEMPTY_REACTION_SHOW_ERROR ||
@@ -2971,27 +2971,27 @@ void Editor::setDirFileEmptyReaction(int mode)
 }
 
 
-int Editor::getDirFileEmptyReaction(void)
+int Editor::dir_file_empty_reaction(void)
 {
     return dirFileEmptyReaction;
 }
 
 
 // Метод позволяющий управлять доступностью инcтрументов редактирования
-void Editor::setDisableToolList(QStringList toolNames)
+void Editor::disable_tool_list(QStringList toolNames)
 {
     qDebug() << "Editor::setDisableToolList() : " << toolNames;
     disableToolList = toolNames;
 }
 
 
-int Editor::getCursorPosition(void)
+int Editor::cursor_position(void)
 {
     return textArea->textCursor().position();
 }
 
 
-void Editor::setCursorPosition(int n)
+void Editor::cursor_position(int n)
 {
     QTextCursor cursor = textArea->textCursor();
 
@@ -3001,13 +3001,13 @@ void Editor::setCursorPosition(int n)
 }
 
 
-int Editor::getScrollBarPosition(void)
+int Editor::scrollbar_position(void)
 {
     return textArea->verticalScrollBar()->value();
 }
 
 
-void Editor::setScrollBarPosition(int n)
+void Editor::scrollbar_position(int n)
 {
     textArea->verticalScrollBar()->setValue(n);
 }

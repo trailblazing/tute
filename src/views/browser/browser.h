@@ -81,20 +81,16 @@ namespace browser {
         Q_OBJECT
 
     public:
-        Browser(
-            QUrl const &url         // Record *const record
-            , TableController *recordtablecontroller
-            , TableController *_page_controller
+        Browser(QUrl const &url         // Record *const record
+            , TableController *record_controller
             , Entrance *_entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
         );
 
 
-        Browser(
-            const QByteArray &state
-            , TableController *recordtablecontroller
-            , TableController *_page_controller
+        Browser(const QByteArray &state
+            , TableController *record_controller
             , Entrance *_entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -102,8 +98,8 @@ namespace browser {
 
         Browser(
             std::shared_ptr<Record> record
-            , TableController *recordtablecontroller
-            , TableController *_page_controller
+            , TableController *record_controller
+            // , TableController *_page_controller
             , Entrance *entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -205,7 +201,7 @@ namespace browser {
     private:
 
         TableController     *_record_controller;
-        TableController     *_page_controller;
+        // TableController     *_page_controller;
         TabWidget           *_tabmanager;
         //    QDockWidget *dock_widget;
         //        QToolBar *navigater;

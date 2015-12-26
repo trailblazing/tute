@@ -299,10 +299,10 @@ void TableController::sychronize_metaeditor_to_record(const int pos)
 
     if(table->field("crypt", pos) == "1")
         if(fullDir.length() == 0 || currentFile.length() == 0)
-            metaeditor->setDirFileEmptyReaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+            metaeditor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
     // В редактор заносится информация, идет ли работа с зашифрованным текстом
-    metaeditor->setMiscField("crypt", table->field("crypt", pos));
+    metaeditor->misc_field("crypt", table->field("crypt", pos));
 
     // В редакторе устанавливается функция обратного вызова для чтения данных
     metaeditor->set_load_callback(table->editor_load_callback);
@@ -318,9 +318,9 @@ void TableController::sychronize_metaeditor_to_record(const int pos)
     metaeditor->setTags(table->field("tags", pos));
 
     QString id = table->field("id", pos);
-    metaeditor->setMiscField("id", id);
+    metaeditor->misc_field("id", id);
 
-    metaeditor->setMiscField("title", table->field("name", pos));
+    metaeditor->misc_field("title", table->field("name", pos));
 
     // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
     QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
@@ -331,8 +331,8 @@ void TableController::sychronize_metaeditor_to_record(const int pos)
 
     // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
     if(appconfig.getRememberCursorAtOrdinarySelection()) {
-        metaeditor->setCursorPosition(walkhistory.getCursorPosition(id));
-        metaeditor->setScrollBarPosition(walkhistory.getScrollBarPosition(id));
+        metaeditor->cursor_position(walkhistory.getCursorPosition(id));
+        metaeditor->scrollbar_position(walkhistory.getScrollBarPosition(id));
     }
 
     // Обновление иконки аттачей

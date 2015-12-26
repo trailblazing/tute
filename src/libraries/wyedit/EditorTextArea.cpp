@@ -58,7 +58,7 @@ bool EditorTextArea::event(QEvent *event)
 {
     if(event->type() == QEvent::Gesture) {
         // qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
-        return gestureEvent(static_cast<QGestureEvent *>(event));
+        return gesture_event(static_cast<QGestureEvent *>(event));
     }
 
     return QTextEdit::event(event);
@@ -67,12 +67,12 @@ bool EditorTextArea::event(QEvent *event)
 
 // Обработчик жестов
 // Вызывается из обработчика событий
-bool EditorTextArea::gestureEvent(QGestureEvent *event)
+bool EditorTextArea::gesture_event(QGestureEvent *event)
 {
     // qDebug() << "In gestureEvent()" << event;
 
     if(QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))
-        tapAndHoldGestureTriggered(static_cast<QTapAndHoldGesture *>(gesture));
+        tap_and_hold_gesture_triggered(static_cast<QTapAndHoldGesture *>(gesture));
 
     return true;
 }
@@ -80,13 +80,13 @@ bool EditorTextArea::gestureEvent(QGestureEvent *event)
 
 // Обработчик жеста TapAndHoldGesture
 // Вызывается из обработчика жестов
-void EditorTextArea::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
+void EditorTextArea::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture)
 {
     // qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
     if(gesture->state() == Qt::GestureFinished)
         if(globalparameters.target_os() == "android")
-            emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
+            emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
 }
 
 
@@ -95,7 +95,7 @@ bool EditorTextArea::eventFilter(QObject *o, QEvent *e)
     // Обработка показа или скрытия области прокрутки редактора
     if(o == this->verticalScrollBar())
         if(e->type() == QEvent::Hide || e->type() == QEvent::Show)
-            emit updateIndentlineGeometrySignal();
+            emit update_indentline_geometry_signal();
 
     return false; // Продолжать оработку событий дальше
 }
@@ -269,7 +269,7 @@ void EditorTextArea::resizeEvent(QResizeEvent *event)
     QTextEdit::resizeEvent(event);
 
     // Надо обновить геометрию виджета настройки отступов
-    emit updateIndentlineGeometrySignal();
+    emit update_indentline_geometry_signal();
 }
 
 

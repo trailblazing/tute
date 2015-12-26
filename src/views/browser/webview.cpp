@@ -101,7 +101,6 @@ namespace browser {
                      , std::shared_ptr<Record> record
                      // , bool openinnewtab
                      , TableController *record_controller
-                     , TableController *_page_controller
                      , WebView *parent
                     )
         : QWebEnginePage(profile, parent)
@@ -144,7 +143,7 @@ namespace browser {
     //          )
     //, _create_window_generated(false)
     , _record_controller(record_controller)
-    , _page_controller(_page_controller)
+    //    , _page_controller(_page_controller)
     {
         //        assert(url != nullptr);
 
@@ -174,40 +173,41 @@ namespace browser {
         //            load(url);
         //        }
 
-        add_record_to_page_screen(_record);
+        // add_record_to_page_screen(_record);
 
     }
 
-    void WebPage::add_record_to_page_screen(std::shared_ptr<Record> record)
-    {
-        auto table_data = _page_controller->table_data();
+    //    void WebPage::add_record_to_page_screen(std::shared_ptr<Record> record)
+    //    {
+    //        auto table_data = _page_controller->table_data();
 
-        if(!table_data->is_record_exists(record->getNaturalFieldSource("id"))) {
-            //        auto records = table_data->records();
-            //        records.append(_record);    //
-            if(record->isLite())record->switchToFat();
+    //        if(!table_data->is_record_exists(record->getNaturalFieldSource("id"))) {
+    //            //        auto records = table_data->records();
+    //            //        records.append(_record);    //
+    //            if(record->isLite())record->switchToFat();
 
-            table_data->insert_new_record(table_data->size(), record);
-            _page_controller->reset_tabledata(table_data);
-        }
-    }
+    //            table_data->insert_new_record(table_data->size(), record);
+    //            _page_controller->reset_tabledata(table_data);
+    //        }
+    //    }
 
-    void WebPage::remove_record_from_page_screen(std::shared_ptr<Record> record)
-    {
-        std::shared_ptr<TableData> table_data = _page_controller->table_data();
+    //    // this will delete record for ever from database
+    //    void WebPage::remove_record_from_page_screen(std::shared_ptr<Record> record)
+    //    {
+    //        std::shared_ptr<TableData> table_data = _page_controller->table_data();
 
-        //        for(int i = 0; i < table_data->size(); i++) {
-        //            auto r = table_data->record(i);
-        assert(record->unique_page() == this);
+    //        //        for(int i = 0; i < table_data->size(); i++) {
+    //        //            auto r = table_data->record(i);
+    //        assert(record->unique_page() == this);
 
-        if(table_data->is_record_exists(record->getNaturalFieldSource("id"))
-           //                && record->unique_page() == this
-          ) {
-            table_data->delete_record_by_id(record->getNaturalFieldSource("id"));
-        }
+    //        if(table_data->is_record_exists(record->getNaturalFieldSource("id"))
+    //           //                && record->unique_page() == this
+    //          ) {
+    //            table_data->delete_record_by_id(record->getNaturalFieldSource("id"));    // this will delete record for ever from database
+    //        }
 
-        //        }
-    }
+    //        //        }
+    //    }
 
     Browser *WebPage::browser()
     {
@@ -499,7 +499,9 @@ namespace browser {
 
         } else {
 
-            PopupWindow *popup = new PopupWindow(profile(), QUrl(Browser::_defaulthome), _record_controller, _page_controller, view()->tabmanager()->browser());
+            PopupWindow *popup = new PopupWindow(profile(), QUrl(Browser::_defaulthome), _record_controller
+                                                 // , _page_controller
+                                                 , view()->tabmanager()->browser());
             popup->setAttribute(Qt::WA_DeleteOnClose);
             popup->show();
             //            return
@@ -706,15 +708,17 @@ namespace browser {
     WebView::WebView(const std::shared_ptr<Record> record
                      , QWebEngineProfile *profile   // , bool openinnewtab
                      , TabWidget *parent
-                     , TableController *_record_controller, TableController *_page_controller)
+                     , TableController *table_controller
+                     // , TableController *_page_controller
+                     )
         : QWebEngineView(static_cast<QWidget *>(parent))    // ->parent()
         , _tabmanager(parent)                               //        , _record(record)
-        , _record_controller(_record_controller)
-        , _page_controller(_page_controller)
+        , _record_controller(table_controller)
+        // , _page_controller(_page_controller)
         , _page(new WebPage(profile
                             , record // , openinnewtab
-                            , _record_controller
-                            , _page_controller
+                            , table_controller
+                            // , _page_controller
                             , this))
           //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
         , _progress(0)
@@ -777,7 +781,7 @@ namespace browser {
 
             if(_record->unique_page()) {
                 if(_record->unique_page() == this) {
-                    remove_record_from_page_screen(_record);
+                    // remove_record_from_page_screen(_record);    // this will delete record for ever from database
                     _record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
                 }
             }
@@ -863,7 +867,7 @@ namespace browser {
 
             _record = record;
 
-            add_record_to_page_screen(_record);    // may lead to recursive call
+            // add_record_to_page_screen(_record);    // may lead to recursive call
         }
 
         //        else {
@@ -1188,7 +1192,7 @@ namespace browser {
 
             if(make_current) {// globalparameters.mainwindow()
                 _record_controller->select_id(_record->getNaturalFieldSource("id"));
-                _page_controller->select_id(_record->getNaturalFieldSource("id"));
+                // _page_controller->select_id(_record->getNaturalFieldSource("id"));
             }
 
             //            if(_record->_active_request) {

@@ -312,15 +312,17 @@ namespace browser {
     }
 
     Browser::Browser(const QByteArray &state
-                     , TableController *recordtablecontroller
-                     , TableController *_page_controller
+                     , TableController *record_controller
+                     // , TableController *_page_controller
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     ) : QMainWindow(0, flags)
-        , _record_controller(recordtablecontroller)
-        , _page_controller(_page_controller)
-        , _tabmanager(new TabWidget(recordtablecontroller, _page_controller, this))
+        , _record_controller(record_controller)
+        // , _page_controller(_page_controller)
+        , _tabmanager(new TabWidget(record_controller
+                                    // , _page_controller
+                                    , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -348,16 +350,18 @@ namespace browser {
     }
 
     Browser::Browser(const QUrl &url
-                     , TableController *recordtablecontroller
-                     , TableController *_page_controller
+                     , TableController *record_controller
+                     // , TableController *_page_controller
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
-        , _record_controller(recordtablecontroller)
-        , _page_controller(_page_controller)
-        , _tabmanager(new TabWidget(recordtablecontroller, _page_controller, this))
+        , _record_controller(record_controller)
+        // , _page_controller(_page_controller)
+        , _tabmanager(new TabWidget(record_controller
+                                    // , _page_controller
+                                    , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -385,16 +389,18 @@ namespace browser {
 
 
     Browser::Browser(std::shared_ptr<Record> record
-                     , TableController *recordtablecontroller
-                     , TableController *_page_controller
+                     , TableController *record_controller
+                     // , TableController *_page_controller
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
-        , _record_controller(recordtablecontroller)
-        , _page_controller(_page_controller)
-        , _tabmanager(new TabWidget(recordtablecontroller, _page_controller, this))
+        , _record_controller(record_controller)
+        // , _page_controller(_page_controller)
+        , _tabmanager(new TabWidget(record_controller
+                                    // , _page_controller
+                                    , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))

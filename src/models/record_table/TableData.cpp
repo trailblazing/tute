@@ -145,7 +145,7 @@ void TableData::editor_load_callback(QObject *editor,
     // Нужно ли дешифровать данные при чтении
     bool workWithCrypt = false;
 
-    if(currEditor->getMiscField("crypt") == "1") {
+    if(currEditor->misc_field("crypt") == "1") {
         // Если не установлено ключа шифрации
         if(globalparameters.crypt_key().length() == 0) {
             loadText = "";
@@ -192,7 +192,7 @@ void TableData::editor_save_callback(QObject *editor,
     // Нужно ли шифровать записываемый текст
     bool workWithCrypt = false;
 
-    if(currEditor->getMiscField("crypt") == "1") {
+    if(currEditor->misc_field("crypt") == "1") {
         // Если не установлено ключа шифрации
         if(globalparameters.crypt_key().length() == 0)
             return;
@@ -527,8 +527,10 @@ void TableData::delete_record(int i)
 void TableData::delete_record_by_id(QString id)
 {
     for(int i = 0; i < size(); i++) {
-        if(field("id", i) == id)
+        if(field("id", i) == id) {
             delete_record(i); // Так как id уникальный, удаляться будет только одна запись
+            break;
+        }
     }
 }
 

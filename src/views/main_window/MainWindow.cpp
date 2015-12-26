@@ -53,17 +53,17 @@ MainWindow::MainWindow(
     , _helpmenu(new QMenu(tr("&Help"), this))
     , _tree_screen(new TreeScreen("tree_screen", appconfig, _filemenu, _toolsmenu, this))
     , _table_screen(new TableScreen("table_screen", this))
-    , _page_screen(new TableScreen("page_screen", this))
+    // , _page_screen(new TableScreen("page_screen", this))
     , _download(new browser::DownloadManager("download_manager", this))
     , _find_screen(new FindScreen("find_screen", this))
     , _editor_screen(new MetaEditor("editor_screen", _find_screen))
     , _statusbar(new QStatusBar(this))
     , _switcher(new WindowSwitcher("window_switcher", _editor_screen, this))
     , _record_controller(_table_screen->table_controller())
-    , _page_controller(_page_screen->table_controller())
+    // , _page_controller(_page_screen->table_controller())
     , _entrance(new browser::Entrance("entrance"
                                       , _record_controller
-                                      , _page_controller
+                                      // , _page_controller
                                       , _find_screen->toolbarsearch()
                                       , globalparameters.style_source()
                                       , this
@@ -125,7 +125,7 @@ MainWindow::~MainWindow()
     delete  _find_screen;
     delete  _download;
 
-    if(_page_screen)delete  _page_screen;
+    // if(_page_screen)delete  _page_screen;
 
     delete  _table_screen;
     delete  _tree_screen;
@@ -164,7 +164,7 @@ void MainWindow::setupUI(void)
 
     //    _page_screen = new TableScreen(this);
     //    _page_screen->setObjectName("page_screen");
-    _globalparameters.page_screen(_page_screen);
+    // _globalparameters.page_screen(_page_screen);
 
     //    _download = new browser::DownloadManager(this);
     //    _download->setObjectName("download_manager");
@@ -230,9 +230,9 @@ void MainWindow::setupSignals(void)
     //    connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
     connect(_table_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-    if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    // if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-    connect(_editor_screen, &MetaEditor::wyeditFindInBaseClicked, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 }
 
 
@@ -261,7 +261,7 @@ void MainWindow::assembly(void)
 
     _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/leaves.svg"), "Record");
 
-    if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
+    // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
     _vtabwidget->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/maple.svg"), "Download");
 
@@ -491,7 +491,7 @@ void MainWindow::select_id(QString id)
 
 void MainWindow::saveEditorCursorPosition(void)
 {
-    int n = _editor_screen->getCursorPosition();
+    int n = _editor_screen->cursor_position();
 
     appconfig.setEditorCursorPosition(n);
 }
@@ -501,13 +501,13 @@ void MainWindow::restoreEditorCursorPosition(void)
 {
     int n = appconfig.getEditorCursorPosition();
 
-    _editor_screen->setCursorPosition(n);
+    _editor_screen->cursor_position(n);
 }
 
 
 void MainWindow::saveEditorScrollBarPosition(void)
 {
-    int n = _editor_screen->getScrollBarPosition();
+    int n = _editor_screen->scrollbar_position();
 
     appconfig.setEditorScrollBarPosition(n);
 }
@@ -517,7 +517,7 @@ void MainWindow::restoreEditorScrollBarPosition(void)
 {
     int n = appconfig.getEditorScrollBarPosition();
 
-    _editor_screen->setScrollBarPosition(n);
+    _editor_screen->scrollbar_position(n);
 }
 
 
@@ -1099,10 +1099,10 @@ void MainWindow::goWalkHistoryPrevious(void)
 {
     _editor_screen->save_textarea();
 
-    QString id = _editor_screen->getMiscField("id");
+    QString id = _editor_screen->misc_field("id");
     walkhistory.add(id,
-                    _editor_screen->getCursorPosition(),
-                    _editor_screen->getScrollBarPosition(),
+                    _editor_screen->cursor_position(),
+                    _editor_screen->scrollbar_position(),
                     WALK_HISTORY_GO_PREVIOUS);
     walkhistory.setDrop(true);
 
@@ -1114,10 +1114,10 @@ void MainWindow::goWalkHistoryNext(void)
 {
     _editor_screen->save_textarea();
 
-    QString id = _editor_screen->getMiscField("id");
+    QString id = _editor_screen->misc_field("id");
     walkhistory.add(id,
-                    _editor_screen->getCursorPosition(),
-                    _editor_screen->getScrollBarPosition(),
+                    _editor_screen->cursor_position(),
+                    _editor_screen->scrollbar_position(),
                     WALK_HISTORY_GO_NEXT);
     walkhistory.setDrop(true);
 
@@ -1158,8 +1158,8 @@ void MainWindow::goWalkHistory(void)
     select_id(id);
 
     if(appconfig.getRememberCursorAtHistoryNavigation()) {
-        _editor_screen->setCursorPosition(walkhistory.getCursorPosition(id));
-        _editor_screen->setScrollBarPosition(walkhistory.getScrollBarPosition(id));
+        _editor_screen->cursor_position(walkhistory.getCursorPosition(id));
+        _editor_screen->scrollbar_position(walkhistory.getScrollBarPosition(id));
     }
 
     walkhistory.setDrop(false);
@@ -1171,15 +1171,15 @@ void MainWindow::goWalkHistory(void)
 // текст редактируемой записи
 void MainWindow::saveTextarea(void)
 {
-    QString id = _editor_screen->getMiscField("id");
+    QString id = _editor_screen->misc_field("id");
 
     qDebug() << "MainWindow::saveTextarea() : id :" << id;
 
     _editor_screen->save_textarea();
 
     walkhistory.add(id,
-                    _editor_screen->getCursorPosition(),
-                    _editor_screen->getScrollBarPosition());
+                    _editor_screen->cursor_position(),
+                    _editor_screen->scrollbar_position());
 }
 
 

@@ -55,7 +55,9 @@ namespace browser {
     public:
 
 
-        Entrance(QString object_name, TableController *recordtablecontroller, TableController *_page_controller, browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+        Entrance(QString object_name, TableController *record_controller
+                 // , TableController *_page_controller
+                 , browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
         ~Entrance();
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
         //        void setupDynamicSignals(void);
@@ -137,7 +139,7 @@ namespace browser {
 
         QList<QPointer<Browser> >   _main_windows;
         TableController             *_record_controller;
-        TableController             *_page_controller;
+        // TableController             *_page_controller;
         QString                     _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
         QAction                     *_actionFreeze;
