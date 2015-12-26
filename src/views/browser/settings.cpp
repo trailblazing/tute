@@ -41,7 +41,7 @@
 
 #include "settings.h"
 
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 
 #include "browser.h"
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)

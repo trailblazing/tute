@@ -2,27 +2,29 @@
 
 #include <QSplitter>
 #include "main.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/recordTable/TableScreen.h"
-#include "views/findInBaseScreen/FindScreen.h"
+#include "views/record_table/TableScreen.h"
+#include "views/find_in_base_screen/FindScreen.h"
 #include "views/browser/entrance.h"
-
+#include "views/record/MetaEditor.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 
-WindowSwitcher::WindowSwitcher(QObject *parent) : QObject(parent)
+WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent) : QObject(parent)
 {
+    setObjectName(object_name);
     enableSwitch();
 
     // Редактор является встраиваемым, поэтому работа кнопки Back у него идет через callback функцию
-    // MetaEditor *edView=find_object<MetaEditor>("editorScreen"); // Выясняется указатель на объект редактирования текста записи
-    MetaEditor *metaEditor = globalparameters.getMetaEditor();
-    metaEditor->set_back_callback(this->switchFromRecordToRecordtable);   // Устанавливается функция обратного вызова при клике на кнопку Back
+    // MetaEditor *edView=find_object<MetaEditor>("editor_screen"); // Выясняется указатель на объект редактирования текста записи
+
+    //    MetaEditor *metaEditor = globalparameters.getMetaEditor();
+    meta_editor->set_back_callback(this->switchFromRecordToRecordtable);   // Устанавливается функция обратного вызова при клике на кнопку Back
 }
 
 
@@ -56,15 +58,15 @@ void WindowSwitcher::switchFromTreeToRecordtable(void)
         return;
 
     // Скрываются все прочие области
-    globalparameters.getTreeScreen()->hide();
-    globalparameters.getMetaEditor()->hide();
+    globalparameters.tree_screen()->hide();
+    globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    QWidget *object = static_cast<QWidget *>(globalparameters.getRecordTableScreen());
+    QWidget *object = static_cast<QWidget *>(globalparameters.table_screen());
     object->show();
     appconfig.setFocusWidget(object->objectName());
 
-    globalparameters.vtab()->setCurrentWidget(globalparameters.getRecordTableScreen());
+    globalparameters.vtab()->setCurrentWidget(globalparameters.table_screen());
 }
 
 
@@ -79,22 +81,22 @@ void WindowSwitcher::switchFromTreeToFindInBase(void)
 // Статическая функция, используется редактором как callback функция при нажатии кнопки back в редакторе конечной записи
 void WindowSwitcher::switchFromRecordToRecordtable(void)
 {
-    if(globalparameters.getWindowSwitcher() == NULL)
+    if(globalparameters.window_switcher() == NULL)
         return;
 
     // Если переключение запрещено
-    if(!globalparameters.getWindowSwitcher()->getSwitchStatus())
+    if(!globalparameters.window_switcher()->getSwitchStatus())
         return;
 
     if(appconfig.getInterfaceMode() != "mobile") // В статическом методе использовать нестатическую переменну enableSwitcher нельзя
         return;
 
     // Скрываются все прочие области
-    globalparameters.getTreeScreen()->hide();
-    globalparameters.getMetaEditor()->hide();
+    globalparameters.tree_screen()->hide();
+    globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    QWidget *object = static_cast<QWidget *>(globalparameters.getRecordTableScreen());
+    QWidget *object = static_cast<QWidget *>(globalparameters.table_screen());
     object->show();
     appconfig.setFocusWidget(object->objectName());
 }
@@ -114,11 +116,11 @@ void WindowSwitcher::switchFromRecordtableToRecord(void)
         return;
 
     // Скрываются все прочие области
-    globalparameters.getTreeScreen()->hide();
-    globalparameters.getRecordTableScreen()->hide();
+    globalparameters.tree_screen()->hide();
+    globalparameters.table_screen()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    QWidget *object = static_cast<QWidget *>(globalparameters.getMetaEditor());
+    QWidget *object = static_cast<QWidget *>(globalparameters.meta_editor());
     object->show();
     appconfig.setFocusWidget(object->objectName());
 }
@@ -138,11 +140,11 @@ void WindowSwitcher::switchFromRecordtableToTree(void)
         return;
 
     // Скрываются все прочие области
-    globalparameters.getMetaEditor()->hide();
-    globalparameters.getRecordTableScreen()->hide();
+    globalparameters.meta_editor()->hide();
+    globalparameters.table_screen()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    QWidget *object = static_cast<QWidget *>(globalparameters.getTreeScreen());
+    QWidget *object = static_cast<QWidget *>(globalparameters.tree_screen());
     object->show();
     appconfig.setFocusWidget(object->objectName());
 }
@@ -161,7 +163,7 @@ void WindowSwitcher::closeFindInBase(void)
 void WindowSwitcher::findInBaseClick(void)
 {
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen = find_object<FindScreen>("findScreenDisp");
+    FindScreen *findScreen = find_object<FindScreen>("find_screen");
     QSplitter *vrs = find_object<QSplitter>("v_right_splitter");
     //    browser::Entrance *entrance = globalparameters.entrance();
 
@@ -188,41 +190,41 @@ void WindowSwitcher::restoreFocusWidget()
         return;
 
     // Скрываются все прочие области
-    globalparameters.getTreeScreen()->hide();
-    globalparameters.getRecordTableScreen()->hide();
-    globalparameters.getMetaEditor()->hide();
+    globalparameters.tree_screen()->hide();
+    globalparameters.table_screen()->hide();
+    globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
     QString widgetName = appconfig.getFocusWidget();
 
     // Оформить через case
-    if(widgetName == "treeScreen") {
-        globalparameters.getTreeScreen()->show();
-        globalparameters.getTreeScreen()->setFocus();
+    if(widgetName == "tree_screen") {
+        globalparameters.tree_screen()->show();
+        globalparameters.tree_screen()->setFocus();
         return;
     }
 
-    if(widgetName == "recordTableScreen") {
-        globalparameters.getRecordTableScreen()->show();
-        globalparameters.getRecordTableScreen()->setFocus();
+    if(widgetName == "table_screen") {
+        globalparameters.table_screen()->show();
+        globalparameters.table_screen()->setFocus();
         return;
     }
 
-    if(widgetName == "editorScreen") {
-        globalparameters.getMetaEditor()->show();
-        globalparameters.getMetaEditor()->setFocus();
+    if(widgetName == "editor_screen") {
+        globalparameters.meta_editor()->show();
+        globalparameters.meta_editor()->setFocus();
         return;
     }
 
     // Доработать
     if(widgetName == "findTableView") {
-        globalparameters.getFindScreen()->show();
-        globalparameters.getFindScreen()->setFocus();
+        globalparameters.find_screen()->show();
+        globalparameters.find_screen()->setFocus();
         return;
     }
 
 
     // Остальные случаи - активируется дерево записей
-    globalparameters.getTreeScreen()->show();
-    globalparameters.getTreeScreen()->setFocus();
+    globalparameters.tree_screen()->show();
+    globalparameters.tree_screen()->setFocus();
 }

@@ -20,6 +20,8 @@ class QScrollArea;
 class QSplitter;
 class AttachTableScreen;
 class Record;
+class FindScreen;
+
 
 class ClickableLabel: public QLabel {
     Q_OBJECT
@@ -46,7 +48,7 @@ signals:
     void setFindTextSignal(QString text);
 
 public:
-    MetaEditor(void);
+    MetaEditor(QString object_name, FindScreen *_find_screen);
     ~MetaEditor(void);
 
     void setTreePath(QString path);
@@ -68,7 +70,7 @@ private:
     void setupLabels(void);
     void setupUI(void);
     void metaAssembly(void);
-    void setupSignals(void);
+    void setupSignals(FindScreen *_find_screen);
 
     QLabel      *treePath;       // Надпись Path (только для мобильного интерфейса)
     QCheckBox   *recordPin;

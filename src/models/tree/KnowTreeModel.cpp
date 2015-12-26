@@ -10,7 +10,7 @@
 
 #include "libraries/ClipboardRecords.h"
 #include "libraries/ClipboardBranch.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 #include "views/tree/TreeScreen.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/DiskHelper.h"
@@ -149,14 +149,14 @@ void KnowTreeModel::node_from_dom(QDomElement domElement, std::shared_ptr<TreeIt
 
     // У данного Dom-элемента ищется таблица конечных записей
     // и данные заполняются в Item-таблицу конечных записей
-    parent->recordtable_init(domElement);
+    parent->table_init(domElement);
 
     // Пробегаются все DOM элементы текущего уровня
     // и рекурсивно вызывается обработка подуровней
     while(!domElement.isNull()) {
         if(domElement.tagName() == "node") {
             // Обнаруженый подузел прикрепляется к текущему элементу
-            parent->insertChildren(parent->childCount(), 1, 1);
+            parent->insert_children(parent->child_count(), 1, 1);
 
             /*
             QString line1,line_name,line_id;
@@ -177,12 +177,12 @@ void KnowTreeModel::node_from_dom(QDomElement domElement, std::shared_ptr<TreeIt
                 QString value = attribute.nodeValue();
 
                 // В дерево разделов устанавливаются считанные атрибуты
-                parent->child(parent->childCount() - 1)->setFieldDirect(name , value);
+                parent->child(parent->child_count() - 1)->set_field_direct(name , value);
             }
 
             // Вызов перебора оставшегося DOM дерева с прикреплением обнаруженных объектов
             // к только что созданному элементу
-            node_from_dom(domElement.firstChildElement(), parent->child(parent->childCount() - 1));
+            node_from_dom(domElement.firstChildElement(), parent->child(parent->child_count() - 1));
 
         }
 
@@ -214,12 +214,12 @@ void KnowTreeModel::tree_to_dom(QDomDocument *doc, QDomElement &xmlData, std::sh
 
     // Если в ветке присутсвует таблица конечных записей
     // В первую очередь добавляется она
-    if(currItem->recordtableGetRowCount() > 0) {
+    if(currItem->row_count() > 0) {
         // Обработка таблицы конечных записей
 
         // Получение Dom дерева таблицы конечных записей
         // В метод передается QDomDocument, на основе кторого будут создаваться элементы
-        QDomElement recordTableDom = currItem->recordtableExportDataToDom(doc);
+        QDomElement recordTableDom = currItem->export_to_dom(doc);
 
         // Dom дерево таблицы конечных записей добавляется
         // как подчиненный элемент к текущему элементу
@@ -230,12 +230,12 @@ void KnowTreeModel::tree_to_dom(QDomDocument *doc, QDomElement &xmlData, std::sh
     // Обработка каждой подчиненной ветки
     int i;
 
-    for(i = 0; i < currItem->childCount(); i++) {
+    for(i = 0; i < currItem->child_count(); i++) {
         // Временный элемент, куда будет внесена текущая перебираемая ветка
         QDomElement  tempElement = doc->createElement("node");
 
         // Получение всех полей для данной ветки
-        QMap<QString, QString> fields = currItem->child(i)->getAllFieldsDirect();
+        QMap<QString, QString> fields = currItem->child(i)->all_fields_direct();
 
         // Перебираются поля элемента ветки
         QMapIterator<QString, QString> fields_iterator(fields);
@@ -318,7 +318,7 @@ void KnowTreeModel::addNewChildBranch(const QModelIndex &index, QString id, QStr
     // Получение ссылки на Item элемент по QModelIndex
     std::shared_ptr<TreeItem> parent = item(index);
 
-    beginInsertRows(index, parent->childCount(), parent->childCount());
+    beginInsertRows(index, parent->child_count(), parent->child_count());
     addNewBranch(parent, id, name);
     endInsertRows();
 }
@@ -333,7 +333,7 @@ void KnowTreeModel::addNewSiblingBranch(const QModelIndex &index, QString id, QS
     assert(parent);
 
     if(parent) {
-        beginInsertRows(index.parent(), parent->childCount(), parent->childCount());
+        beginInsertRows(index.parent(), parent->child_count(), parent->child_count());
         addNewBranch(parent, id, name);
         endInsertRows();
     }
@@ -351,24 +351,24 @@ void KnowTreeModel::addNewBranch(std::shared_ptr<TreeItem> parent, QString id, Q
 {
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
-    parent->addChildren();
+    parent->add_children();
 
     // Определяется ссылка на только что созданную ветку
-    std::shared_ptr<TreeItem> current = parent->child(parent->childCount() - 1);
+    std::shared_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
 
     // Устанавливается идентификатор узла
-    current->setField("id", id);
+    current->set_field("id", id);
 
     // Устанавливается навание узла
-    current->setField("name", name);
+    current->set_field("name", name);
 
     // Инициализируется таблица конечных записей
-    current->recordtableGetTableData()->init(current, QDomElement());
+    current->tabledata()->init(current, QDomElement());
 
     // Определяется, является ли родительская ветка зашифрованной
-    if(parent->getField("crypt") == "1") {
+    if(parent->field("crypt") == "1") {
         // Новая ветка превращается в зашифрованную
-        current->switchToEncrypt();
+        current->to_encrypt();
     }
 }
 
@@ -381,7 +381,7 @@ QString KnowTreeModel::pasteNewChildBranch(const QModelIndex &index, ClipboardBr
     // Получение ссылки на Item элемент по QModelIndex
     std::shared_ptr<TreeItem> parent = item(index);
 
-    beginInsertRows(index, parent->childCount(), parent->childCount());
+    beginInsertRows(index, parent->child_count(), parent->child_count());
     pasted_branch_id = pasteSubbranch(parent, (ClipboardBranch *)subbranch);
     endInsertRows();
 
@@ -397,7 +397,7 @@ QString KnowTreeModel::pasteNewSiblingBranch(const QModelIndex &index, Clipboard
     std::shared_ptr<TreeItem> current = item(index);
     std::shared_ptr<TreeItem> parent = current->parent();
 
-    beginInsertRows(index.parent(), parent->childCount(), parent->childCount());
+    beginInsertRows(index.parent(), parent->child_count(), parent->child_count());
     pasted_branch_id = pasteSubbranch(parent, (ClipboardBranch *)subbranch);
     endInsertRows();
 
@@ -443,8 +443,8 @@ QModelIndex KnowTreeModel::moveUpDnBranch(const QModelIndex &index, int directio
 
     bool moveok;
 
-    if(direction == 1) moveok = current->moveUp(); // Перемещение в Item представлении
-    else             moveok = current->moveDn();
+    if(direction == 1) moveok = current->move_up(); // Перемещение в Item представлении
+    else             moveok = current->move_dn();
 
     if(moveok) {
         changePersistentIndex(swap_index, index);
@@ -475,7 +475,7 @@ QModelIndex KnowTreeModel::indexChildren(const QModelIndex &parent, int n) const
 
     // Если у основного Item элемента запрашивается индекс
     // несуществующего подэлемента, возвращается пустой индекс
-    if(n < 0 || n > (it->childCount() - 1)) {
+    if(n < 0 || n > (it->child_count() - 1)) {
         qDebug() << "In indexChildren() unavailable children number";
         return QModelIndex();
     }
@@ -497,9 +497,9 @@ QModelIndex KnowTreeModel::indexChildren(const QModelIndex &parent, int n) const
 
 
 // Получение QModelIndex по известному TreeItem
-QModelIndex KnowTreeModel::create_index_from_item(std::shared_ptr<TreeItem> item)
+QModelIndex KnowTreeModel::index_item(std::shared_ptr<TreeItem> item)
 {
-    int itemrow = item->childNumber();
+    int itemrow = item->child_index();
 
     return this->createIndex(itemrow, 0, static_cast<void *>(item.get()));
 }
@@ -534,9 +534,9 @@ int KnowTreeModel::getAllRecordCountRecurse(std::shared_ptr<TreeItem> item, int 
         return 0;
     }
 
-    n = n + item->recordtableGetRowCount();
+    n = n + item->row_count();
 
-    for(int i = 0; i < item->childCount(); i++)
+    for(int i = 0; i < item->child_count(); i++)
         getAllRecordCountRecurse(item->child(i), 1);
 
     return n;
@@ -568,13 +568,13 @@ bool KnowTreeModel::isItemIdExistsRecurse(std::shared_ptr<TreeItem> item, QStrin
         return true;
 
     // Если текущая ветка содержит искомый идетнификатор
-    if(item->getField("id") == findId) {
+    if(item->field("id") == findId) {
         isExists = true;
         return true;
     }
 
     // Перебираются подветки
-    for(int i = 0; i < item->childCount(); i++)
+    for(int i = 0; i < item->child_count(); i++)
         isItemIdExistsRecurse(item->child(i), findId, 1);
 
     return isExists;
@@ -606,13 +606,13 @@ bool KnowTreeModel::isRecordIdExistsRecurse(std::shared_ptr<TreeItem> item, QStr
         return true;
 
     // Если таблица записей текущей ветки содержит искомый идентификатор
-    if(item->recordtableGetTableData()->is_record_exists(findId)) {
+    if(item->tabledata()->is_record_exists(findId)) {
         isExists = true;
         return true;
     }
 
     // Перебираются подветки
-    for(int i = 0; i < item->childCount(); i++)
+    for(int i = 0; i < item->child_count(); i++)
         isRecordIdExistsRecurse(item->child(i), findId, 1);
 
     return isExists;
@@ -666,7 +666,7 @@ QString KnowTreeModel::pasteSubbranchRecurse(std::shared_ptr<TreeItem> item,
     // Выясняется указатель на эту добавленную ветку
     auto newitem = getItemById(id);
 
-    qDebug() << "KnowTreeModel::paste_subbranch_recurse() : create branch with field" << newitem->getAllFields();
+    qDebug() << "KnowTreeModel::paste_subbranch_recurse() : create branch with field" << newitem->all_fields();
 
     // -----------------------------------------------
     // Для стартовой ветки добавляются конечные записи
@@ -677,9 +677,7 @@ QString KnowTreeModel::pasteSubbranchRecurse(std::shared_ptr<TreeItem> item,
 
     foreach(std::shared_ptr<Record> record, records) {
         qDebug() << "Add table record " + record->getField("name");
-        newitem->recordtableGetTableData()->insert_new_record(ADD_NEW_RECORD_TO_END,
-                                                              0,
-                                                              record);
+        newitem->tabledata()->insert_new_record(0, record, ADD_NEW_RECORD_TO_END);
     }
 
     // --------------------
@@ -707,7 +705,7 @@ QString KnowTreeModel::pasteSubbranchRecurse(std::shared_ptr<TreeItem> item,
 void KnowTreeModel::reEncrypt(QString previousPassword, QString currentPassword)
 {
     // Получение путей ко всем подветкам дерева
-    QList<QStringList> subbranchespath = _root_item->getAllChildrenPath();
+    QList<QStringList> subbranchespath = _root_item->all_children_path();
 
     // Перебираются подветки
     foreach(QStringList currPath, subbranchespath) {
@@ -716,22 +714,22 @@ void KnowTreeModel::reEncrypt(QString previousPassword, QString currentPassword)
         auto currBranch = item(currPath);
         auto currBranchParent = currBranch->parent();
 
-        if(currBranch->getField("crypt") == "1" &&
-           currBranchParent->getField("crypt") != "1") {
+        if(currBranch->field("crypt") == "1" &&
+           currBranchParent->field("crypt") != "1") {
             Password pwd;
 
             pwd.setCryptKeyToMemory(previousPassword);
-            currBranch->switchToDecrypt();
+            currBranch->to_decrypt();
 
             pwd.setCryptKeyToMemory(currentPassword);
-            currBranch->switchToEncrypt();
+            currBranch->to_encrypt();
         }
 
     } // Закончился перебор подветок
 
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 }
 
 
@@ -758,11 +756,11 @@ std::shared_ptr<TreeItem> KnowTreeModel::getItemByIdRecurse(std::shared_ptr<Tree
 
     if(find_item != NULL) return find_item;
 
-    if(item->getId() == id) {
+    if(item->id() == id) {
         find_item = item;
         return find_item;
     } else {
-        for(int i = 0; i < item->childCount(); i++)
+        for(int i = 0; i < item->child_count(); i++)
             getItemByIdRecurse(item->child(i), id, 1);
 
         return find_item;
@@ -797,15 +795,15 @@ QStringList KnowTreeModel::getRecordPathRecurse(std::shared_ptr<TreeItem> item,
         return findPath;
 
     // Путь дополняется
-    currentPath << item->getId();
+    currentPath << item->id();
 
     // Если в данной ветке есть искомая запись
-    if(item->recordtableGetTableData()->is_record_exists(recordId)) {
+    if(item->tabledata()->is_record_exists(recordId)) {
         isFind = true;
         findPath = currentPath;
     } else {
         // Иначе перебираются подветки
-        for(int i = 0; i < item->childCount(); i++)
+        for(int i = 0; i < item->child_count(); i++)
             getRecordPathRecurse(item->child(i), currentPath, recordId, 1);
     }
 
@@ -831,12 +829,12 @@ bool KnowTreeModel::isContainsCryptBranchesRecurse(std::shared_ptr<TreeItem> ite
         return isCrypt;
     }
 
-    if(item->getField("crypt") == "1") {
+    if(item->field("crypt") == "1") {
         isCrypt = true;
         return isCrypt;
     }
 
-    for(int i = 0; i < item->childCount(); i++)
+    for(int i = 0; i < item->child_count(); i++)
         isContainsCryptBranchesRecurse(item->child(i), 1);
 
     return isCrypt;

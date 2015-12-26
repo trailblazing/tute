@@ -58,7 +58,7 @@ namespace browser {
 
     signals:
         void activated(const QModelIndex &index);
-        void hovered(const QString &text);
+        void hovered_signal(const QString &text);
 
     public:
         ModelMenu(QWidget *parent = 0);

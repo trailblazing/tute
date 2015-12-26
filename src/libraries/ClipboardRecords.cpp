@@ -7,8 +7,8 @@
 #include <QtDebug>
 
 #include "main.h"
-#include "models/recordTable/Record.h"
-#include "models/attachTable/AttachTableData.h"
+#include "models/record_table/Record.h"
+#include "models/attach_table/AttachTableData.h"
 #include "ClipboardRecords.h"
 
 

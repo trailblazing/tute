@@ -2,7 +2,7 @@
 #include <QDialog>
 
 #include "main.h"
-#include "views/appConfigWindow/ConfigDialog.h"
+#include "views/app_config/ConfigDialog.h"
 
 #include "EditorConfigDialog.h"
 #include "EditorConfigFont.h"

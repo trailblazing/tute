@@ -10,7 +10,7 @@
 #include <QDomElement>
 #include <QDomDocument>
 
-#include "models/recordTable/TableData.h"
+#include "models/record_table/TableData.h"
 
 class TreeItem : public std::enable_shared_from_this<TreeItem> {
 public:
@@ -24,110 +24,110 @@ public:
     std::shared_ptr<TreeItem> child(int number);
 
     // Возвращение количества потомков (т.е. количество записей в списке childItems)
-    int childCount() const;
+    int child_count() const;
 
     // Возвращение количества полей, которые хранит данный элемент.
     int fieldCount() const;
 
     // Получение значения поля по имени
-    QString getField(QString name);
+    QString field(QString name);
 
     // Получение всех полей данных
-    QMap<QString, QString> getAllFields();
+    QMap<QString, QString> all_fields();
 
     // Получение всех полей данных напрямую, без преобразований
-    QMap<QString, QString> getAllFieldsDirect();
+    QMap<QString, QString> all_fields_direct();
 
     // Заполнение указанного поля
-    void setField(QString name, QString value);
+    void set_field(QString name, QString value);
 
     // Заполнение указанного поля данными напрямую, без преобразований
-    void setFieldDirect(QString name, QString value);
+    void set_field_direct(QString name, QString value);
 
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
     // count - сколько потомков вставить (обычно 1, но можно и несколько)
     // columns - сколько столбцов должен содержать потомок
-    bool insertChildren(int position, int count, int columns);
+    bool insert_children(int position, int count, int columns);
 
     // Добавление нового подчиненного элемента
     // в конец списка подчиненных элементов
-    bool addChildren(void);
+    bool add_children(void);
 
     // Возвращение ссылки на родительский элемент
     std::shared_ptr<TreeItem> parent();
 
     // Удаление потомков, начиная с позиции position массива childItems
-    bool removeChildren(int position, int count);
+    bool remove_children(int position, int count);
 
     // Удаление всех потомков элемента
-    void removeAllChildren();
+    void remove_all_children();
 
     // Возвращает номер, под которым данный объект хранится
     // в массиве childItems своего родителя
-    int childNumber() const;
+    int child_index() const;
 
-    bool moveUp(void);
-    bool moveDn(void);
+    bool move_up(void);
+    bool move_dn(void);
 
     // Возвращает id путь (список идентификаторов от корня до текущего элемента)
-    QStringList getPath(void);
+    QStringList path(void);
 
     // Возвращает путь в виде названий веток дерева
-    QStringList getPathAsName(void);
+    QStringList path_as_name(void);
 
-    QString getPathAsNameWithDelimeter(QString delimeter);
+    QString path_as_name_with_delimiter(QString delimeter);
 
     // Возвращает набор значений указанного поля для пути от корня к ветке
-    QStringList getPathAsField(QString fieldName);
+    QStringList path_as_field(QString fieldName);
 
     // Возвращает массив путей всех подветок, которые содержит ветка
-    QList<QStringList> getAllChildrenPath(void);
+    QList<QStringList> all_children_path(void);
 
     // Возвращает набор значений указанного поля для подветок
-    QList<QStringList> getAllChildrenPathAsField(QString fieldName);
+    QList<QStringList> all_children_path_as_field(QString fieldName);
 
     // Получение идентификатора элемента
-    QString getId();
+    QString id();
 
     // Получение идентификатора родительской ветки
-    QString getParentId();
+    QString parent_id();
 
     // Шифрация данной ветки и всех подветок
-    void switchToEncrypt(void);
+    void to_encrypt(void);
 
     // Расшифровка данной ветки и всех подветок
-    void switchToDecrypt(void);
+    void to_decrypt(void);
 
     // Первичное заполнение таблицы конечных записей, "промежуточный" метод
-    void recordtable_init(QDomElement domModel);
+    void table_init(QDomElement domModel);
 
     // Взятие количества записей в таблице конечных записей, "промежуточный" метод
-    int recordtableGetRowCount(void);
+    int row_count(void);
 
     // Удаление всех элементов в таблице конечных записей, "промежуточный" метод
-    void recordtableDeleteAllRecords(void);
+    void table_clear(void);
 
     // Преобразование таблицы конечных записей в DOM представление, "промежуточный" метод
-    QDomElement recordtableExportDataToDom(QDomDocument *doc);
+    QDomElement export_to_dom(QDomDocument *doc);
 
     // Взятие ссылки на данные конечных записей
-    std::shared_ptr<TableData> recordtableGetTableData(void);
+    std::shared_ptr<TableData> tabledata(void);
 
 private:
-    bool removeChildrenLink(int position, int count);
+    bool remove_children_link(int position, int count);
 
     void empty(void);
 
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
-    QList<QStringList> getAllChildrenPathAsFieldRecurse(std::shared_ptr<TreeItem> item, QString fieldName, int mode);
+    QList<QStringList> all_children_path_as_field(std::shared_ptr<TreeItem> item, QString fieldName, int mode);
 
-    bool isFieldNameAvailable(QString name) const;
-    QStringList fieldNameAvailableList(void) const;
-    QStringList fieldNameForCryptList(void) const;
+    bool is_fieldname_available(QString name) const;
+    QStringList fieldname_availablelist(void) const;
+    QStringList fieldname_for_cryptlist(void) const;
 
     QList<std::shared_ptr<TreeItem>>    _child_items;   // Список ссылок на потомков
-    std::shared_ptr<TreeItem>           _parent_item;           // Ссылка на родителя
+    std::shared_ptr<TreeItem>           _parent_item;   // Ссылка на родителя
 
     // Таблица инфополей данной ветки
     QMap<QString, QString> _fieldtable;

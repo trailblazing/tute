@@ -39,11 +39,11 @@
 **
 ****************************************************************************/
 
-#include "edittableview.h"
+#include "edittableview.hxx"
 #include <QtGui/QKeyEvent>
 
 
-namespace browser {
+//namespace browser {
 
     EditTableView::EditTableView(QWidget *parent)
         : QTableView(parent)
@@ -83,4 +83,4 @@ namespace browser {
     }
 
 
-}
+//}

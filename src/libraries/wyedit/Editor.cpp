@@ -32,8 +32,8 @@
 #include "views/record/MetaEditor.h"
 #include "views/tree/TreeScreen.h"
 #include "libraries/GlobalParameters.h"
-#include "models/appConfig/AppConfig.h"
-#include "views/mainWindow/MainWindow.h"
+#include "models/app_config/AppConfig.h"
+#include "views/main_window/MainWindow.h"
 #include "libraries/FlatControl.h"
 
 #include "main.h"
@@ -2872,7 +2872,7 @@ void Editor::on_back_clicked(void)
 void Editor::on_freeze_clicked(void)
 {
     // Обновление инфополей в области редактирования записи
-    MetaEditor *metaeditor = globalparameters.getMetaEditor();  //MetaEditor *metaEditor = find_object<MetaEditor>("editorScreen");
+    MetaEditor *metaeditor = globalparameters.meta_editor();  //MetaEditor *metaEditor = find_object<MetaEditor>("editor_screen");
 
     if(metaeditor)metaeditor->switch_pin();
 }

@@ -11,10 +11,10 @@
 
 #include "models/tree/KnowTreeModel.h"
 #include "views/tree/KnowTreeView.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 #include "libraries/GlobalParameters.h"
-#include "views/enterPassword/EnterPassword.h"
-#include "models/dataBaseConfig/DataBaseConfig.h"
+#include "views/enter_password/EnterPassword.h"
+#include "models/database_config/DataBaseConfig.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -40,7 +40,7 @@ Password::~Password(void)
 bool Password::retrievePassword()
 {
 // Если пароль в данной сессии не вводился
-    if(globalparameters.getCryptKey().size()==0) {
+    if(globalparameters.crypt_key().size()==0) {
 
         // Если в хранилище данных вообще не задан пароль
         if(databaseconfig.get_crypt_mode()==0) {
@@ -133,7 +133,7 @@ bool Password::replacePassword(void)
         msgBox.exec();
 
         // В памяти сбрасывается возможно вводимый ранее правильно пароль
-        globalparameters.setCryptKey(QByteArray());
+        globalparameters.crypt_key(QByteArray());
 
         return false;
     }
@@ -176,7 +176,7 @@ void Password::setCryptKeyToMemory(QString password)
     // qDebug() << "Password::setCryptKeyToMemory() : Set crypt key to:" << key.toHex();
 
     // Ключ запоминается в память
-    globalparameters.setCryptKey(key);
+    globalparameters.crypt_key(key);
 }
 
 
@@ -190,7 +190,7 @@ void Password::setCryptKeyToMemoryFromMiddleHash(void)
 // qDebug() << "Set crypt key from middle hash to:" << key.toHex();
 
 // Ключ запоминается в память
-    globalparameters.setCryptKey(key);
+    globalparameters.crypt_key(key);
 }
 
 
@@ -391,7 +391,7 @@ void Password::resetPassword(void)
         databaseconfig.set_middle_hash_check_data("");
 
         // Ключ в памяти удаляется
-        globalparameters.setCryptKey(QByteArray());
+        globalparameters.crypt_key(QByteArray());
     }
 }
 

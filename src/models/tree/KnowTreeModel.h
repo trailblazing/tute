@@ -45,7 +45,7 @@ public:
     // Получение индекса подчиненного элемента с указанным номером
     QModelIndex indexChildren(const QModelIndex &parent, int n) const;
 
-    QModelIndex create_index_from_item(std::shared_ptr<TreeItem> item);
+    QModelIndex index_item(std::shared_ptr<TreeItem> item);
 
     // Поиск ветки с указанным ID
     std::shared_ptr<TreeItem> getItemById(QString id);

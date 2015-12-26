@@ -2,7 +2,7 @@
 
 #include "InfoFieldEnter.h"
 #include "main.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 #include "views/browser/tabwidget.h"
 #include "libraries/FlatControl.h"
 

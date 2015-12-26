@@ -41,6 +41,8 @@ QT  +=  webenginewidgets network
 qtHaveModule(uitools):!embedded: QT +=  uitools
 else: DEFINES   +=  QT_NO_UITOOLS
 
+#DEFINES         +=  QWEBENGINEPAGE_SETNETWORKACCESSMANAGER
+
 CONFIG  +=  qt      \
         warn_on     \
         console     \
@@ -133,7 +135,8 @@ icon_48_file.files  =   desktop/mytetra.png
 INSTALLS    +=  icon_48_file
 
 
-HEADERS     =   src/main.h \
+HEADERS     =   \
+    src/main.h  \
     src/views/record/RecordInfoFieldsEditor.h \
     src/views/record/InfoFieldEnter.h \
     src/views/record/MetaEditor.h \
@@ -143,28 +146,13 @@ HEADERS     =   src/main.h \
     src/libraries/wyedit/EditorConfigFont.h \
     src/libraries/wyedit/EditorConfigMisc.h \
     src/libraries/wyedit/EditorFindDialog.h \
-    src/views/mainWindow/MainWindow.h \
-    src/views/printPreview/PrintPreview.h \
-    src/views/printPreview/PreviewView.h \
     src/models/tree/XmlTree.h \
     src/models/tree/TreeModel.h \
     src/models/tree/TreeItem.h \
     src/models/tree/KnowTreeModel.h \
-    src/models/appConfig/AppConfig.h \
     src/views/record/AddNewRecord.h \
     src/libraries/ClipboardRecords.h \
     src/views/tree/TreeScreen.h \
-    src/views/findInBaseScreen/FindScreen.h \
-    src/views/findInBaseScreen/FindTableWidget.h \
-    src/views/appConfigWindow/AppConfigDialog.h \
-    src/views/appConfigWindow/ConfigDialog.h \
-    src/views/appConfigWindow/ConfigPage.h \
-    src/views/appConfigWindow/AppConfigPage_Main.h \
-    src/views/appConfigWindow/AppConfigPage_Misc.h \
-    src/views/appConfigWindow/AppConfigPage_Crypt.h \
-    src/views/appConfigWindow/AppConfigPage_Synchro.h \
-    src/views/appConfigWindow/AppConfigPage_RecordTable.h \
-    src/models/appConfig/AppConfigUpdater.h \
     src/libraries/TrashMonitoring.h \
     src/libraries/wyedit/EditorContextMenu.h \
     src/libraries/wyedit/EditorTextArea.h \
@@ -178,13 +166,6 @@ HEADERS     =   src/main.h \
     src/libraries/FixedParameters.h \
     src/libraries/WindowSwitcher.h \
     src/libraries/wyedit/EditorShowText.h \
-    src/models/recordTable/Record.h \
-    src/models/attachTable/Attach.h \
-    src/models/attachTable/AttachTableData.h \
-    src/models/attachTable/AttachTableModel.h \
-    src/views/attachTable/AttachTableView.h \
-    src/views/attachTable/AttachTableScreen.h \
-    src/controllers/attachTable/AttachTableController.h \
     src/views/dialog/ReduceMessageBox.h \
     src/views/dialog/OverTextToolButton.h \
     src/libraries/crypt/CryptService.h \
@@ -193,7 +174,6 @@ HEADERS     =   src/main.h \
     src/views/browser/bookmarks.h \
     src/views/browser/chasewidget.h \
     src/views/browser/downloadmanager.h \
-    src/views/browser/edittableview.h \
     src/views/browser/edittreeview.h \
     src/views/browser/featurepermissionbar.h \
     src/views/browser/fullscreennotification.h \
@@ -213,40 +193,67 @@ HEADERS     =   src/main.h \
     src/libraries/FlatControl.h \
     src/utility/delegate.h \
     src/views/browser/browser.h \
-    src/views/mainWindow/hidabletabwidget.h \
-    src/views/recordTable/verticalscrollarea.h \
-    src/controllers/recordTable/TableController.h \
-    src/models/recordTable/TableData.h \
-    src/models/recordTable/TableModel.h \
-    src/models/recordTable/TableProxyModel.h \
-    src/views/recordTable/TableScreen.h \
-    src/views/recordTable/TableView.h \
-    src/views/recordTable/TablePrint.h
-
+    src/views/app_config/AppConfigDialog.h \
+    src/views/app_config/AppConfigPageCrypt.h \
+    src/views/app_config/AppConfigPageMain.h \
+    src/views/app_config/AppConfigPageMisc.h \
+    src/views/app_config/AppConfigPageSynchro.h \
+    src/views/app_config/AppConfigPageTable.h \
+    src/views/app_config/ConfigDialog.h \
+    src/views/app_config/ConfigPage.h \
+    src/views/attach_table/AttachTableScreen.h \
+    src/views/attach_table/AttachTableView.h \
+    src/controllers/attach_table/AttachTableController.h \
+    src/controllers/record_table/TableController.h \
+    src/models/app_config/AppConfig.h \
+    src/models/app_config/AppConfigUpdater.h \
+    src/models/attach_table/Attach.h \
+    src/models/attach_table/AttachTableData.h \
+    src/models/attach_table/AttachTableModel.h \
+    src/models/database_config/DataBaseConfig.h \
+    src/models/record_table/Record.h \
+    src/models/record_table/TableData.h \
+    src/models/record_table/TableModel.h \
+    src/models/record_table/TableProxyModel.h \
+    src/views/console_emulator/ConsoleEmulator.h \
+    src/views/console_emulator/ExecuteCommand.h \
+    src/views/enter_password/EnterPassword.h \
+    src/views/find_in_base_screen/FindScreen.h \
+    src/views/find_in_base_screen/FindTableWidget.h \
+    src/views/main_window/hidabletabwidget.h \
+    src/views/main_window/MainWindow.h \
+    src/views/print_preview/PreviewView.h \
+    src/views/print_preview/PrintPreview.h \
+    src/views/record_table/TablePrint.h \
+    src/views/record_table/TableScreen.h \
+    src/views/record_table/TableView.h \
+    src/views/record_table/verticalscrollarea.h \
+    src/views/wait_clock/WaitClock.h \
+    src/views/browser/edittableview.hxx
+#    src/views/browser/cookiejar.h \
 
 
 
 lessThan(QT_MAJOR_VERSION,5) {
-HEADERS     +=  src/libraries/qtSingleApplication/qtsingleapplication.h \
-    src/libraries/qtSingleApplication/qtlockedfile.h \
-    src/libraries/qtSingleApplication/qtlocalpeer.h \
-    src/libraries/qtSingleApplication/qtsinglecoreapplication.h
+HEADERS     +=  \
+    src/libraries/qt_single_application/qtsingleapplication.h \
+    src/libraries/qt_single_application/qtlockedfile.h \
+    src/libraries/qt_single_application/qtlocalpeer.h \
+    src/libraries/qt_single_application/qtsinglecoreapplication.h
 }
 else {
-HEADERS     +=  src/libraries/qtSingleApplication5/qtsingleapplication.h \
-    src/libraries/qtSingleApplication5/qtlockedfile.h \
-    src/libraries/qtSingleApplication5/qtlocalpeer.h \
-    src/libraries/qtSingleApplication5/qtsinglecoreapplication.h
+HEADERS     +=  \
+    src/libraries/qt_single_application5/qtsingleapplication.h \
+    src/libraries/qt_single_application5/qtlockedfile.h \
+    src/libraries/qt_single_application5/qtlocalpeer.h \
+    src/libraries/qt_single_application5/qtsinglecoreapplication.h
 }
 
 HEADERS     +=  \
     src/libraries/ClipboardBranch.h     \
     src/libraries/GlobalParameters.h    \
-    src/models/dataBaseConfig/DataBaseConfig.h  \
-    src/views/enterPassword/EnterPassword.h     \
-    src/views/consoleEmulator/ExecuteCommand.h  \
-    src/views/consoleEmulator/ConsoleEmulator.h \
-    src/views/waitClock/WaitClock.h \
+#    src/views/console_emulator/ExecuteCommand.h  \
+#    src/views/console_emulator/ConsoleEmulator.h \
     src/libraries/WalkHistory.h     \
     src/libraries/crypt/Pbkdf2Qt.h  \
     src/libraries/crypt/RC5Simple.h \
@@ -265,28 +272,13 @@ SOURCES     =   src/main.cpp \
     src/libraries/wyedit/EditorConfigFont.cpp \
     src/libraries/wyedit/EditorConfigMisc.cpp \
     src/libraries/wyedit/EditorFindDialog.cpp \
-    src/views/mainWindow/MainWindow.cpp \
-    src/views/printPreview/PrintPreview.cpp \
-    src/views/printPreview/PreviewView.cpp \
     src/models/tree/XmlTree.cpp \
     src/models/tree/TreeModel.cpp \
     src/models/tree/TreeItem.cpp \
     src/models/tree/KnowTreeModel.cpp \
-    src/models/appConfig/AppConfig.cpp \
     src/views/record/AddNewRecord.cpp \
     src/libraries/ClipboardRecords.cpp \
     src/views/tree/TreeScreen.cpp \
-    src/views/findInBaseScreen/FindScreen.cpp \
-    src/views/findInBaseScreen/FindTableWidget.cpp \
-    src/views/appConfigWindow/AppConfigDialog.cpp \
-    src/views/appConfigWindow/ConfigDialog.cpp \
-    src/views/appConfigWindow/ConfigPage.cpp \
-    src/views/appConfigWindow/AppConfigPage_Main.cpp \
-    src/views/appConfigWindow/AppConfigPage_Misc.cpp \
-    src/views/appConfigWindow/AppConfigPage_Crypt.cpp \
-    src/views/appConfigWindow/AppConfigPage_Synchro.cpp \
-    src/views/appConfigWindow/AppConfigPage_RecordTable.cpp \
-    src/models/appConfig/AppConfigUpdater.cpp \
     src/libraries/TrashMonitoring.cpp \
     src/libraries/wyedit/EditorContextMenu.cpp \
     src/libraries/wyedit/EditorTextArea.cpp \
@@ -300,13 +292,6 @@ SOURCES     =   src/main.cpp \
     src/libraries/FixedParameters.cpp \
     src/libraries/WindowSwitcher.cpp \
     src/libraries/wyedit/EditorShowText.cpp \
-    src/models/recordTable/Record.cpp \
-    src/models/attachTable/Attach.cpp \
-    src/models/attachTable/AttachTableData.cpp \
-    src/models/attachTable/AttachTableModel.cpp \
-    src/views/attachTable/AttachTableView.cpp \
-    src/views/attachTable/AttachTableScreen.cpp \
-    src/controllers/attachTable/AttachTableController.cpp \
     src/views/dialog/ReduceMessageBox.cpp \
     src/views/dialog/OverTextToolButton.cpp \
     src/libraries/crypt/CryptService.cpp \
@@ -333,43 +318,68 @@ SOURCES     =   src/main.cpp \
     src/views/browser/entrance.cpp \
     src/libraries/FlatControl.cpp \
     src/views/browser/browser.cpp \
-    src/views/mainWindow/hidabletabwidget.cpp \
-    src/views/recordTable/verticalscrollarea.cpp \
-    src/controllers/recordTable/TableController.cpp \
-    src/models/recordTable/TableData.cpp \
-    src/models/recordTable/TableModel.cpp \
-    src/models/recordTable/TableProxyModel.cpp \
-    src/views/recordTable/TableScreen.cpp \
-    src/views/recordTable/TableView.cpp \
-    src/views/recordTable/TablePrint.cpp
-
+    src/views/app_config/AppConfigDialog.cpp \
+    src/views/app_config/AppConfigPageCrypt.cpp \
+    src/views/app_config/AppConfigPageMain.cpp \
+    src/views/app_config/AppConfigPageMisc.cpp \
+    src/views/app_config/AppConfigPageRecordTable.cpp \
+    src/views/app_config/AppConfigPageSynchro.cpp \
+    src/views/app_config/ConfigDialog.cpp \
+    src/views/app_config/ConfigPage.cpp \
+    src/views/attach_table/AttachTableScreen.cpp \
+    src/views/attach_table/AttachTableView.cpp \
+    src/controllers/attach_table/AttachTableController.cpp \
+    src/controllers/record_table/TableController.cpp \
+    src/models/app_config/AppConfig.cpp \
+    src/models/app_config/AppConfigUpdater.cpp \
+    src/models/attach_table/Attach.cpp \
+    src/models/attach_table/AttachTableData.cpp \
+    src/models/attach_table/AttachTableModel.cpp \
+    src/models/database_config/DataBaseConfig.cpp \
+    src/models/record_table/Record.cpp \
+    src/models/record_table/TableData.cpp \
+    src/models/record_table/TableModel.cpp \
+    src/models/record_table/TableProxyModel.cpp \
+    src/views/console_emulator/ConsoleEmulator.cpp \
+    src/views/console_emulator/ExecuteCommand.cpp \
+    src/views/enter_password/EnterPassword.cpp \
+    src/views/find_in_base_screen/FindScreen.cpp \
+    src/views/find_in_base_screen/FindTableWidget.cpp \
+    src/views/main_window/hidabletabwidget.cpp \
+    src/views/main_window/MainWindow.cpp \
+    src/views/print_preview/PreviewView.cpp \
+    src/views/print_preview/PrintPreview.cpp \
+    src/views/record_table/TablePrint.cpp \
+    src/views/record_table/TableScreen.cpp \
+    src/views/record_table/TableView.cpp \
+    src/views/record_table/verticalscrollarea.cpp \
+    src/views/wait_clock/WaitClock.cpp
+#    src/views/browser/cookiejar.cpp \
 
 
 lessThan(QT_MAJOR_VERSION,5) {
-SOURCES     +=  src/libraries/qtSingleApplication/qtsingleapplication.cpp \
-    src/libraries/qtSingleApplication/qtlockedfile.cpp \
-    src/libraries/qtSingleApplication/qtlockedfile_unix.cpp \
-    src/libraries/qtSingleApplication/qtlockedfile_win.cpp \
-    src/libraries/qtSingleApplication/qtlocalpeer.cpp \
-    src/libraries/qtSingleApplication/qtsinglecoreapplication.cpp
+SOURCES     +=  \
+    src/libraries/qt_single_application/qtsingleapplication.cpp \
+    src/libraries/qt_single_application/qtlockedfile.cpp \
+    src/libraries/qt_single_application/qtlockedfile_unix.cpp \
+    src/libraries/qt_single_application/qtlockedfile_win.cpp \
+    src/libraries/qt_single_application/qtlocalpeer.cpp \
+    src/libraries/qt_single_application/qtsinglecoreapplication.cpp
 }
 else {
-SOURCES     +=  src/libraries/qtSingleApplication5/qtsingleapplication.cpp \
-    src/libraries/qtSingleApplication5/qtlockedfile.cpp \
-    src/libraries/qtSingleApplication5/qtlockedfile_unix.cpp \
-    src/libraries/qtSingleApplication5/qtlockedfile_win.cpp \
-    src/libraries/qtSingleApplication5/qtlocalpeer.cpp \
-    src/libraries/qtSingleApplication5/qtsinglecoreapplication.cpp
+SOURCES     +=  \
+    src/libraries/qt_single_application5/qtsingleapplication.cpp \
+    src/libraries/qt_single_application5/qtlockedfile.cpp \
+    src/libraries/qt_single_application5/qtlockedfile_unix.cpp \
+    src/libraries/qt_single_application5/qtlockedfile_win.cpp \
+    src/libraries/qt_single_application5/qtlocalpeer.cpp \
+    src/libraries/qt_single_application5/qtsinglecoreapplication.cpp
+
 }
 
 SOURCES     +=  \
     src/libraries/ClipboardBranch.cpp \
     src/libraries/GlobalParameters.cpp \
-    src/models/dataBaseConfig/DataBaseConfig.cpp \
-    src/views/enterPassword/EnterPassword.cpp \
-    src/views/consoleEmulator/ExecuteCommand.cpp \
-    src/views/consoleEmulator/ConsoleEmulator.cpp \
-    src/views/waitClock/WaitClock.cpp \
     src/libraries/WalkHistory.cpp \
     src/libraries/crypt/Pbkdf2Qt.cpp \
     src/libraries/crypt/RC5Simple.cpp \

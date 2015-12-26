@@ -40,7 +40,7 @@
 ****************************************************************************/
 
 
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 
 #include "browser.h"
 #include "cookiejar.h"
@@ -51,8 +51,8 @@
 #include "ui_proxy.h"
 #include "tabwidget.h"
 #include "webview.h"
-#include "views/mainWindow/MainWindow.h"
-#include "views/findInBaseScreen/FindScreen.h"
+#include "views/main_window/MainWindow.h"
+#include "views/find_in_base_screen/FindScreen.h"
 
 
 #include <QtGui/QClipboard>
@@ -61,7 +61,7 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
-
+#include <QWebEnginePage>
 
 #if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 #include <QWebEngineHitTestResult>
@@ -75,14 +75,14 @@
 #include <QtCore/QBuffer>
 
 #include "main.h"
-#include "models/recordTable/TableModel.h"
-#include "models/recordTable/TableData.h"
-#include "models/recordTable/Record.h"
-#include "views/recordTable/TableView.h"
+#include "models/record_table/TableModel.h"
+#include "models/record_table/TableData.h"
+#include "models/record_table/Record.h"
+#include "views/record_table/TableView.h"
 #include "libraries/GlobalParameters.h"
 #include "views/browser/entrance.h"
-#include "views/recordTable/TableScreen.h"
-#include "controllers/recordTable/TableController.h"
+#include "views/record_table/TableScreen.h"
+#include "controllers/record_table/TableController.h"
 //#include "browserview.moc"
 #include "libraries/GlobalParameters.h"
 #include "views/record/MetaEditor.h"
@@ -100,24 +100,51 @@ namespace browser {
     WebPage::WebPage(QWebEngineProfile *profile
                      , std::shared_ptr<Record> record
                      // , bool openinnewtab
-                     , TableController *_recordtablecontroller
+                     , TableController *record_controller
+                     , TableController *_page_controller
                      , WebView *parent
                     )
         : QWebEnginePage(profile, parent)
           //        , _load_record(&WebPage::load)
-        , _record(nullptr
-                  //              url ?
-                  //                  [this](Record * const r) {_record = nullptr; return bind_record(r);}(url)
-                  //    : nullptr
-                 )
-        , _pageview(parent)
-        , _keyboardmodifiers(Qt::NoModifier)
-        , _pressedbuttons(Qt::NoButton)
-          //        , _openinnewtab(
-          //              openinnewtab  //false
-          //          )
-          //, _create_window_generated(false)
-        , _recordtablecontroller(_recordtablecontroller)
+        , _record([ & ]()
+    {
+        std::shared_ptr<Record> record_result;
+
+        if(!record->is_registered()) {
+            auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(this);
+            record_result = _record_controller->request_record(
+                                record
+                                , std::make_shared <
+                                sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                                > (
+                                    ""
+                                    , &WebPage::ActiveRecordBinder::binder
+                                    , ar  // boost::make_shared<WebPage::active_record>(this, true)
+                                )
+                                , std::make_shared <
+                                sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                                > (
+                                    ""
+                                    , &WebPage::ActiveRecordBinder::activator
+                                    , ar  // boost::make_shared<WebPage::active_record>(this, true)
+                                )
+                            );
+        } else {
+            record_result = equip_registered(record);
+        }
+
+        return record_result;
+    }()
+             )
+    , _pageview(parent)
+    , _keyboardmodifiers(Qt::NoModifier)
+    , _pressedbuttons(Qt::NoButton)
+    //        , _openinnewtab(
+    //              openinnewtab  //false
+    //          )
+    //, _create_window_generated(false)
+    , _record_controller(record_controller)
+    , _page_controller(_page_controller)
     {
         //        assert(url != nullptr);
 
@@ -131,46 +158,55 @@ namespace browser {
         setNetworkAccessManager(QtSingleApplication::networkAccessManager());
 #endif
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-        connect(this, SIGNAL(unsupportedContent(QNetworkReply *)),
-                this, SLOT(handleUnsupportedContent(QNetworkReply *)));
+        connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::unsupportedContent, this, &WebPage::handleUnsupportedContent);
 #endif
-        connect(this, &WebPage::authenticationRequired, &WebPage::authenticationRequired);
-        connect(this, &WebPage::proxyAuthenticationRequired, &WebPage::proxyAuthenticationRequired);
+        connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::authenticationRequired, this, &WebPage::authenticationRequired);
+        connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::proxyAuthenticationRequired, this, &WebPage::proxyAuthenticationRequired);
 
-        connect(this, &WebPage::titleChanged, this, &WebPage::onTitleChanged);
-        connect(this, &WebPage::urlChanged, this, &WebPage::onUrlChanged);
+        connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::titleChanged, this, &WebPage::onTitleChanged);
+        connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::urlChanged, this, &WebPage::onUrlChanged);
 
         //        if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
         //        if(url != nullptr) {
-        auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(this);
-
-        if(!record->is_registered()) {
-            _record = request_record(
-                          record
-                          , std::make_shared <
-                          sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                          > (
-                              ""
-                              , &WebPage::ActiveRecordBinder::binder
-                              , ar  // boost::make_shared<WebPage::active_record>(this, true)
-                          )
-                          , std::make_shared <
-                          sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                          > (
-                              ""
-                              , &WebPage::ActiveRecordBinder::activator
-                              , ar  // boost::make_shared<WebPage::active_record>(this, true)
-                          )
-                      );
-        } else {
-            _record =::equip_registered(record, this);
-        }
 
         _record->active();
         //            load(url);
         //        }
 
+        add_record_to_page_screen(_record);
+
+    }
+
+    void WebPage::add_record_to_page_screen(std::shared_ptr<Record> record)
+    {
+        auto table_data = _page_controller->table_data();
+
+        if(!table_data->is_record_exists(record->getNaturalFieldSource("id"))) {
+            //        auto records = table_data->records();
+            //        records.append(_record);    //
+            if(record->isLite())record->switchToFat();
+
+            table_data->insert_new_record(table_data->size(), record);
+            _page_controller->reset_tabledata(table_data);
+        }
+    }
+
+    void WebPage::remove_record_from_page_screen(std::shared_ptr<Record> record)
+    {
+        std::shared_ptr<TableData> table_data = _page_controller->table_data();
+
+        //        for(int i = 0; i < table_data->size(); i++) {
+        //            auto r = table_data->record(i);
+        assert(record->unique_page() == this);
+
+        if(table_data->is_record_exists(record->getNaturalFieldSource("id"))
+           //                && record->unique_page() == this
+          ) {
+            table_data->delete_record_by_id(record->getNaturalFieldSource("id"));
+        }
+
+        //        }
     }
 
     Browser *WebPage::browser()
@@ -256,7 +292,7 @@ namespace browser {
             triggerAction(QWebEnginePage::Stop);
 
             // QUrl url = QUrl(_record->getNaturalFieldSource("url"));
-            setUrl(_url);    // load(QUrl(_record->getNaturalFieldSource("url")));
+            QWebEnginePage::setUrl(_url);    // load(QUrl(_record->getNaturalFieldSource("url")));
 
             QWebEnginePage::load(_url);
             //            }
@@ -284,7 +320,7 @@ namespace browser {
             _pageview->show();
             //        if(checked) // globalparameters.mainwindow()
             _pageview->setFocus();   // make upate validate
-            _recordtablecontroller->select_id(_record->getNaturalFieldSource("id"));
+            _record_controller->select_id(_record->getNaturalFieldSource("id"));
         }
 
         return _pageview;
@@ -401,7 +437,7 @@ namespace browser {
                 //                return view->page();
                 auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
 
-                auto record = request_record(
+                auto record = _record_controller->request_record(
                                   QUrl(Browser::_defaulthome)
                                   , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                                       ""
@@ -426,7 +462,7 @@ namespace browser {
                 // already create window, why do this? -- refer to demo browser
                 auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
                 std::shared_ptr<Record> r
-                    = request_record(
+                    = _record_controller->request_record(
                           QUrl(Browser::_defaulthome)
                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                               ""
@@ -463,7 +499,7 @@ namespace browser {
 
         } else {
 
-            PopupWindow *popup = new PopupWindow(profile(), QUrl(Browser::_defaulthome), _recordtablecontroller, view()->tabmanager()->browser());
+            PopupWindow *popup = new PopupWindow(profile(), QUrl(Browser::_defaulthome), _record_controller, _page_controller, view()->tabmanager()->browser());
             popup->setAttribute(Qt::WA_DeleteOnClose);
             popup->show();
             //            return
@@ -481,7 +517,7 @@ namespace browser {
         //        });
 
         // not realy needed for each time
-        connect(page, &QWebEnginePage::setUrl, page, [&](const QUrl & url) {
+        connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
             std::shared_ptr<Record> record = page->_record;
             record->setNaturalFieldSource("url", url.toString());
             page->load(record); // record->generate();
@@ -569,16 +605,16 @@ namespace browser {
             globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         }
 
-        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
 
-        QDialog dialog(mainWindow);
+        QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
 
         Ui::PasswordDialog passwordDialog;
         passwordDialog.setupUi(&dialog);
 
         passwordDialog.iconLabel->setText(QString());
-        passwordDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+        passwordDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser).pixmap(32, 32));
 
         QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
         introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
@@ -621,6 +657,40 @@ namespace browser {
         }
     }
 
+
+
+    std::shared_ptr<Record>  WebPage::equip_registered(std::shared_ptr<Record> record
+                                                       //                                                       , browser::WebPage *page
+                                                      )
+    {
+        auto binder = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                       ""
+                       , &browser::WebPage::ActiveRecordBinder::binder
+                       , ar
+                   );
+        };
+        auto activator = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                       ""
+                       , &browser::WebPage::ActiveRecordBinder::activator
+                       , ar
+                   );
+        };
+
+        // registered record, but have no generator:
+        auto ar = boost::make_shared<browser::WebPage::ActiveRecordBinder>(this);
+        record->binder(
+            binder(ar)
+        );
+
+        record->activator(
+            activator(ar)
+        );
+
+        return record;
+    }
+
     WebView::~WebView()
     {
         //        if(_page->record()) {
@@ -636,13 +706,15 @@ namespace browser {
     WebView::WebView(const std::shared_ptr<Record> record
                      , QWebEngineProfile *profile   // , bool openinnewtab
                      , TabWidget *parent
-                     , TableController *recordtablecontroller)
+                     , TableController *_record_controller, TableController *_page_controller)
         : QWebEngineView(static_cast<QWidget *>(parent))    // ->parent()
         , _tabmanager(parent)                               //        , _record(record)
-        , _recordtablecontroller(recordtablecontroller)
+        , _record_controller(_record_controller)
+        , _page_controller(_page_controller)
         , _page(new WebPage(profile
                             , record // , openinnewtab
-                            , recordtablecontroller
+                            , _record_controller
+                            , _page_controller
                             , this))
           //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
         , _progress(0)
@@ -661,18 +733,17 @@ namespace browser {
         QWebEngineView::setPage(_page);
 
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
-        connect(page(), SIGNAL(statusBarMessage(QString)),
-                SLOT(setStatusBarText(QString)));
+        connect(page(), &WebPage::statusBarMessage, &WebPage::setStatusBarText);
 #endif
         connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
-        connect(page(), &WebPage::iconUrlChanged, this, &WebView::onIconUrlChanged);
-        connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::iconUrlChanged, this, &WebView::onIconUrlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         page()->setForwardUnsupportedContent(true);
 #endif
 
 
-        connect(this->_page, &WebPage::loadFinished, this, &WebView::onLoadFinished);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
 
         //    &WebPage::titleChanged(const QString &title);
         //    &WebPage::urlChanged(const QUrl &url);
@@ -703,13 +774,16 @@ namespace browser {
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
         if(_record) {
+
             if(_record->unique_page()) {
                 if(_record->unique_page() == this) {
+                    remove_record_from_page_screen(_record);
                     _record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
                 }
             }
 
             if(_records.size() > 0 && _records.find(_record) != _records.end()) _records.erase(_record);
+
         }
 
         _record = nullptr;
@@ -739,7 +813,7 @@ namespace browser {
         //            this->_openinnewtab
         //            // ||  record != nullptr   // history navigation
         //        ) {
-        //            // new_record = record ? record : ::register_record(url, _recordtablecontroller);
+        //            // new_record = record ? record : ::register_record(url, _record_ontroller);
         //            //            new_record->page(_page);
         //            //            _page->record(new_record);
 
@@ -786,7 +860,10 @@ namespace browser {
             //        view->show();
             //        // _page->record(new_record);
             //        update_record();
+
             _record = record;
+
+            add_record_to_page_screen(_record);    // may lead to recursive call
         }
 
         //        else {
@@ -803,7 +880,7 @@ namespace browser {
                 // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
                 if(_records.find(_record) == _records.end())_records.insert(_record);
 
-                //                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+                //                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
                 //                assert(metaeditor);
                 //                metaeditor->bind(_record);
             }
@@ -843,7 +920,7 @@ namespace browser {
 
                 //                update_record(url(), title, true);
 
-                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
                 assert(metaeditor);
 
                 if(title != ""
@@ -893,7 +970,7 @@ namespace browser {
 
             //            if(! _page->record()) {
             //                Record *record = nullptr;
-            //                //            RecordTableData *data = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+            //                //            RecordTableData *data = _record_ontroller->getRecordTableModel()->getRecordTableData();
             //                //            record = data->record(_page->url());
 
             //                //            if(!record)::register_record(_page->url());
@@ -997,7 +1074,7 @@ namespace browser {
 
                 //                //if(this->record())
                 // setUrl(url); // recursive
-                MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
                 assert(metaeditor);
 
                 if(url.toString() != "") {
@@ -1035,10 +1112,10 @@ namespace browser {
 
         //        //if(globalparameters.getRecordTableScreen()->getRecordTableController()) {
 
-        //        //        RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+        //        //        RecordTableController *_record_ontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
         //        //            //Record *_record = nullptr;
-        //        //            //RecordTableModel *recordtablemodel = _recordtablecontroller->getRecordTableModel();
-        //        RecordTableView *recordtableview = _recordtablecontroller->getView();
+        //        //            //RecordTableModel *recordtablemodel = _record_ontroller->getRecordTableModel();
+        //        RecordTableView *recordtableview = _record_ontroller->getView();
         //        //            //RecordTableData *recordtabledata = recordtablemodel->getRecordTableData();
 
         //        //        if(!_record) {
@@ -1058,14 +1135,14 @@ namespace browser {
             //            //            view->show();
 
             //            //                //MetaEditor *metaeditor = ::globalparameters.getMetaEditor();
-            //            QModelIndex proxyindex = _recordtablecontroller->convertIdToProxyIndex(_record->getNaturalFieldSource("id"));
-            //            //                //QModelIndex sourceindex = _recordtablecontroller->convertIdToSourceIndex(_page->record()->getField("id"));
-            //            int position = _recordtablecontroller->convertProxyIndexToPos(proxyindex);
+            //            QModelIndex proxyindex = _record_ontroller->convertIdToProxyIndex(_record->getNaturalFieldSource("id"));
+            //            //                //QModelIndex sourceindex = _record_ontroller->convertIdToSourceIndex(_page->record()->getField("id"));
+            //            int position = _record_ontroller->convertProxyIndexToPos(proxyindex);
             //            //                // QString page_title = webPage()->title();    // same as this->title()
 
 
             // Выясняется указатель на объект редактирования текста записи
-            MetaEditor *metaeditor = find_object<MetaEditor>("editorScreen");
+            MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
 
             // Выясняется ссылка на таблицу конечных данных
             //                RecordTableData *table = recordSourceModel->getTableData();
@@ -1109,8 +1186,10 @@ namespace browser {
 
             this->view()->setFocus();   // make upate validate
 
-            if(make_current) // globalparameters.mainwindow()
-                _recordtablecontroller->select_id(_record->getNaturalFieldSource("id"));
+            if(make_current) {// globalparameters.mainwindow()
+                _record_controller->select_id(_record->getNaturalFieldSource("id"));
+                _page_controller->select_id(_record->getNaturalFieldSource("id"));
+            }
 
             //            if(_record->_active_request) {
             //                if(_record->_openlinkinnewwindow == 1) {
@@ -1135,7 +1214,7 @@ namespace browser {
 
             //globalParameters.getRecordTableScreen()->update();//repaint();    // does not work
             //emit recordtableview->clicked(proxyindex);  // recordtableview->clickToRecord(proxyindex);    // does not work
-            //_recordtablecontroller->clickToRecord(proxyindex);    // does not work
+            //_record_ontroller->clickToRecord(proxyindex);    // does not work
             //recordtablemodel->dataChanged();
             //            }
 
@@ -1148,9 +1227,9 @@ namespace browser {
             //            qDebug() << "qDebug()\t" << row << "\t" << column << "\t" << _row << "\t" << _column << "\t" << "\n";    // does not work?
 
             //std::cout << "std::cout\t" << row << "\t" << column << "\t" << _row << "\t" << _column << "\t" << "\n";
-            //_recordtablecontroller->getRecordTableModel()->setData(sourceindex, QVariant::fromValue(this->title()), Qt::EditRole);
+            //_record_ontroller->getRecordTableModel()->setData(sourceindex, QVariant::fromValue(this->title()), Qt::EditRole);
 
-            //            _recordtablecontroller->editField(position
+            //            _record_ontroller->editField(position
             //                                              , _record->getNaturalFieldSource("name")
             //                                              , _record->getNaturalFieldSource("author")
             //                                              , _record->getNaturalFieldSource("url")
@@ -1179,19 +1258,19 @@ namespace browser {
         this->_page = _page;
         QWebEngineView::setPage(_page);
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
-        connect(page(), SIGNAL(statusBarMessage(QString)), SLOT(setStatusBarText(QString)));
+        connect(page(), &WebPage::statusBarMessage, &WebPage::setStatusBarText);
 #endif
         connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
-        connect(page(), &WebPage::iconUrlChanged, this, &WebView::onIconUrlChanged);
-        connect(page(), &WebPage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::iconUrlChanged, this, &WebView::onIconUrlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         page()->setForwardUnsupportedContent(true);
 #endif
 
 
-        connect(this->_page, &WebPage::loadFinished, this, &WebView::onLoadFinished);
-        connect(this->_page, &WebPage::titleChanged, this->_page, &WebPage::onTitleChanged);
-        connect(this->_page, &WebPage::urlChanged, this->_page, &WebPage::onUrlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::titleChanged, this->_page, &WebPage::onTitleChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::urlChanged, this->_page, &WebPage::onUrlChanged);
         //    &WebPage::titleChanged(const QString &title);
         //    &WebPage::urlChanged(const QUrl &url);
 
@@ -1259,22 +1338,22 @@ namespace browser {
         //        //QString url(QString(""));
         //        //QUrl _url = globalParameters.getBrowserView()->mainWindow()->currentTab()->url();
 
-        //        //    if(!_recordtablecontroller) {
+        //        //    if(!_record_ontroller) {
         //        //        //RecordTableController *
-        //        //        _recordtablecontroller = globalParameters.getRecordTableScreen()->getRecordTableController();
+        //        //        _record_ontroller = globalParameters.getRecordTableScreen()->getRecordTableController();
         //        //    }
 
-        //        //    RecordTableData *recordTableData = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
+        //        //    RecordTableData *recordTableData = _record_ontroller->getRecordTableModel()->getRecordTableData();
 
         //        //if(_url.isValid() && _record == nullptr) {
         //        _page->record(bind_record(_url));
 
-        //        //        QModelIndex proxyindex = _recordtablecontroller->convertIdToProxyIndex(_page->record()->getField("id"));
-        //        //        int position = _recordtablecontroller->convertProxyIndexToPos(proxyindex);
-        //        //        _recordtablecontroller->getView()->setSelectionToPos(position);
+        //        //        QModelIndex proxyindex = _record_ontroller->convertIdToProxyIndex(_page->record()->getField("id"));
+        //        //        int position = _record_ontroller->convertProxyIndexToPos(proxyindex);
+        //        //        _record_ontroller->getView()->setSelectionToPos(position);
         setFocus();
         //        globalparameters.mainwindow()
-        _recordtablecontroller->select_id(_page->current_record()->getNaturalFieldSource("id"));
+        _record_controller->select_id(_page->current_record()->getNaturalFieldSource("id"));
 
         //}
 
@@ -1287,7 +1366,7 @@ namespace browser {
         connect(permissionBar, &FeaturePermissionBar::featurePermissionProvided, page(), &QWebEnginePage::setFeaturePermission);
 
         // Discard the bar on new loads (if we navigate away or reload).
-        connect(page(), &QWebEnginePage::loadStarted, permissionBar, &QObject::deleteLater);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadStarted, permissionBar, &QObject::deleteLater);
 
         permissionBar->requestPermission(securityOrigin, feature);
     }
@@ -1337,7 +1416,7 @@ namespace browser {
         QNetworkRequest iconRequest(url);
         _iconreply = QtSingleApplication::networkAccessManager()->get(iconRequest);
         _iconreply->setParent(this);
-        connect(_iconreply, SIGNAL(finished()), this, SLOT(iconLoaded()));
+        connect(_iconreply, &QNetworkReply::finished, this, &WebView::iconLoaded);
     }
 
 
@@ -1389,7 +1468,7 @@ namespace browser {
     WebView *WebView::load(std::shared_ptr<Record> record)
     {
         //        _page->record(record);
-        return ::equip_registered(record, _page)->active();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
+        return _page->equip_registered(record)->active();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
 
     }
 

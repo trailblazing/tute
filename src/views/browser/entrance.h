@@ -6,7 +6,7 @@
 #include <QUrl>
 #include <QDockWidget>
 #include "utility/delegate.h"
-#include "models/recordTable/Record.h"
+#include "models/record_table/Record.h"
 #include "libraries/GlobalParameters.h"
 #include "browser.h"
 #include "webview.h"
@@ -55,7 +55,7 @@ namespace browser {
     public:
 
 
-        Entrance(TableController *recordtablecontroller, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+        Entrance(QString object_name, TableController *recordtablecontroller, TableController *_page_controller, browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
         ~Entrance();
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
         //        void setupDynamicSignals(void);
@@ -102,7 +102,7 @@ namespace browser {
         void setCache(bool cache, int cacheSize);
         void finished(QNetworkReply *reply);
         void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
-        QAction *getactionFreeze() { return _actionFreeze; }
+        //        QAction *getactionFreeze() { return _actionFreeze; }
         //        void openLinkInNewTab();
         //        void onLoadFinished(bool);
         void setupActions(void);
@@ -132,19 +132,20 @@ namespace browser {
         //        void(Entrance::*invoke_ptr)(const QUrl &url);
 
         void setupUI(void);
-        void setupSignals(void);
+        void setupSignals(ToolbarSearch *toolbarsearch);
         void assembly(void);
 
-        QList<QPointer<Browser> > _mainWindows;
-        TableController *_recordtablecontroller;
-        QString _style_source;
+        QList<QPointer<Browser> >   _main_windows;
+        TableController             *_record_controller;
+        TableController             *_page_controller;
+        QString                     _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
-        QAction *_actionFreeze;
+        QAction                     *_actionFreeze;
         //struct BrowserViewPrivate *d;
         //        QDockWidget *_dockwidget;
         //        DockedWindow *_browser;
-        QWidget *_hidetitlebar;
-        QMetaObject::Connection _home_connection;    // for disconnect
+        QWidget                     *_hidetitlebar;
+        QMetaObject::Connection     _home_connection;    // for disconnect
         friend class QtSingleApplication;
     };
 

@@ -42,7 +42,7 @@
 #include "history.h"
 
 #include "autosaver.h"
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 
 #include <QtCore/QBuffer>
 #include <QtCore/QDir>
@@ -76,27 +76,29 @@ namespace browser {
         : QObject(parent)
         , _savetimer(new AutoSaver(this))
         , _historylimit(30)
-        , _historymodel(0)
-        , _historyfiltermodel(0)
-        , _historytreemodel(0)
+        , _historymodel(new HistoryModel(this, this))
+        , _historyfiltermodel(new HistoryFilterModel(_historymodel, this))
+        , _historytreemodel(new HistoryTreeModel(_historyfiltermodel, this))
     {
         _expiredtimer.setSingleShot(true);
-        connect(&_expiredtimer, SIGNAL(timeout()),
-                this, SLOT(checkForExpired()));
-        connect(this, SIGNAL(entryAdded(HistoryItem)),
-                _savetimer, SLOT(changeOccurred()));
-        connect(this, SIGNAL(entryRemoved(HistoryItem)),
-                _savetimer, SLOT(changeOccurred()));
+        connect(&_expiredtimer, &QTimer::timeout, this, &HistoryManager::checkForExpired);
+        connect(this, &HistoryManager::entryAdded, _savetimer, &AutoSaver::changeOccurred);
+        connect(this, &HistoryManager::entryRemoved, _savetimer, &AutoSaver::changeOccurred);
         load();
 
-        _historymodel = new HistoryModel(this, this);
-        _historyfiltermodel = new HistoryFilterModel(_historymodel, this);
-        _historytreemodel = new HistoryTreeModel(_historyfiltermodel, this);
+        //        _historymodel = new HistoryModel(this, this);
+        //        _historyfiltermodel = new HistoryFilterModel(_historymodel, this);
+        //        _historytreemodel = new HistoryTreeModel(_historyfiltermodel, this);
     }
 
     HistoryManager::~HistoryManager()
     {
+        delete _historytreemodel;
+        delete _historyfiltermodel;
+        delete _historymodel;
+
         _savetimer->saveIfNeccessary();
+        delete _savetimer;
     }
 
     QList<HistoryItem> HistoryManager::history() const
@@ -393,15 +395,11 @@ namespace browser {
         , _history(history)
     {
         Q_ASSERT(_history);
-        connect(_history, SIGNAL(historyReset()),
-                this, SLOT(historyReset()));
-        connect(_history, SIGNAL(entryRemoved(HistoryItem)),
-                this, SLOT(historyReset()));
+        connect(_history, &HistoryManager::historyReset, this, &HistoryModel::historyReset);
+        connect(_history, &HistoryManager::entryRemoved, this, &HistoryModel::historyReset);
 
-        connect(_history, SIGNAL(entryAdded(HistoryItem)),
-                this, SLOT(entryAdded()));
-        connect(_history, SIGNAL(entryUpdated(int)),
-                this, SLOT(entryUpdated(int)));
+        connect(_history, &HistoryManager::entryAdded, this, &HistoryModel::entryAdded);
+        connect(_history, &HistoryManager::entryUpdated, this, &HistoryModel::entryUpdated);
     }
 
     void HistoryModel::historyReset()
@@ -511,9 +509,9 @@ namespace browser {
         for(int i = lastRow; i >= row; --i)
             lst.removeAt(i);
 
-        disconnect(_history, SIGNAL(historyReset()), this, SLOT(historyReset()));
+        disconnect(_history, &HistoryManager::historyReset, this, &HistoryModel::historyReset);
         _history->setHistory(lst);
-        connect(_history, SIGNAL(historyReset()), this, SLOT(historyReset()));
+        connect(_history, &HistoryManager::historyReset, this, &HistoryModel::historyReset);
         endRemoveRows();
         return true;
     }
@@ -657,8 +655,7 @@ namespace browser {
         : ModelMenu(parent)
         , _history(0)
     {
-        connect(this, SIGNAL(activated(QModelIndex)),
-                this, SLOT(activated(QModelIndex)));
+        connect(static_cast<ModelMenu *const>(this), &ModelMenu::activated, this, &HistoryMenu::activated);
         setHoverRole(HistoryModel::UrlStringRole);
     }
 
@@ -693,19 +690,18 @@ namespace browser {
             addSeparator();
 
         QAction *showAllAction = new QAction(tr("Show All History"), this);
-        connect(showAllAction, SIGNAL(triggered()), this, SLOT(showHistoryDialog()));
+        connect(showAllAction, &QAction::triggered, this, &HistoryMenu::showHistoryDialog);
         addAction(showAllAction);
 
         QAction *clearAction = new QAction(tr("Clear History"), this);
-        connect(clearAction, SIGNAL(triggered()), _history, SLOT(clear()));
+        connect(clearAction, &QAction::triggered, _history, &HistoryManager::clear);
         addAction(clearAction);
     }
 
     void HistoryMenu::showHistoryDialog()
     {
         HistoryDialog *dialog = new HistoryDialog(this);
-        connect(dialog, SIGNAL(openUrl(QUrl)),
-                this, SIGNAL(openUrl(QUrl)));
+        connect(dialog, &HistoryDialog::openUrl, this, &HistoryMenu::openUrl);
         dialog->show();
     }
 
@@ -744,10 +740,9 @@ namespace browser {
         tree->setTextElideMode(Qt::ElideMiddle);
         QAbstractItemModel *model = history->historyTreeModel();
         TreeProxyModel *proxyModel = new TreeProxyModel(this);
-        connect(search, SIGNAL(textChanged(QString)),
-                proxyModel, SLOT(setFilterFixedString(QString)));
-        connect(removeButton, SIGNAL(clicked()), tree, SLOT(removeOne()));
-        connect(removeAllButton, SIGNAL(clicked()), history, SLOT(clear()));
+        connect(search, &SearchLineEdit::textChanged, proxyModel, &TreeProxyModel::setFilterFixedString);
+        connect(removeButton, &QPushButton::clicked, tree, &EditTreeView::removeOne);
+        connect(removeAllButton, &QPushButton::clicked, history, &HistoryManager::clear);
         proxyModel->setSourceModel(model);
         tree->setModel(proxyModel);
         tree->setExpanded(proxyModel->index(0, 0), true);
@@ -756,11 +751,9 @@ namespace browser {
         int header = fm.width(QLatin1Char('m')) * 40;
         tree->header()->resizeSection(0, header);
         tree->header()->setStretchLastSection(true);
-        connect(tree, SIGNAL(activated(QModelIndex)),
-                this, SLOT(open()));
+        connect(tree, &EditTreeView::activated, this, &HistoryDialog::open);
         tree->setContextMenuPolicy(Qt::CustomContextMenu);
-        connect(tree, SIGNAL(customContextMenuRequested(QPoint)),
-                this, SLOT(customContextMenuRequested(QPoint)));
+        connect(tree, &EditTreeView::customContextMenuRequested, this, &HistoryDialog::customContextMenuRequested);
     }
 
     void HistoryDialog::customContextMenuRequested(const QPoint &pos)
@@ -827,26 +820,20 @@ namespace browser {
     void HistoryFilterModel::setSourceModel(QAbstractItemModel *newSourceModel)
     {
         if(sourceModel()) {
-            disconnect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
-            disconnect(sourceModel(), SIGNAL(dataChanged(QModelIndex, QModelIndex)),
-                       this, SLOT(dataChanged(QModelIndex, QModelIndex)));
-            disconnect(sourceModel(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-                       this, SLOT(sourceRowsInserted(QModelIndex, int, int)));
-            disconnect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                       this, SLOT(sourceRowsRemoved(QModelIndex, int, int)));
+            disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &HistoryFilterModel::sourceReset);
+            disconnect(sourceModel(), &QAbstractItemModel::dataChanged, this, &HistoryFilterModel::dataChanged);
+            disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &HistoryFilterModel::sourceRowsInserted);
+            disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryFilterModel::sourceRowsRemoved);
         }
 
         QAbstractProxyModel::setSourceModel(newSourceModel);
 
         if(sourceModel()) {
             _loaded = false;
-            connect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
-            connect(sourceModel(), SIGNAL(dataChanged(QModelIndex, QModelIndex)),
-                    this, SLOT(sourceDataChanged(QModelIndex, QModelIndex)));
-            connect(sourceModel(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-                    this, SLOT(sourceRowsInserted(QModelIndex, int, int)));
-            connect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                    this, SLOT(sourceRowsRemoved(QModelIndex, int, int)));
+            connect(sourceModel(), &QAbstractItemModel::modelReset, this, &HistoryFilterModel::sourceReset);
+            connect(sourceModel(), &QAbstractItemModel::dataChanged, this, &HistoryFilterModel::sourceDataChanged);
+            connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &HistoryFilterModel::sourceRowsInserted);
+            connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryFilterModel::sourceRowsRemoved);
         }
     }
 
@@ -998,16 +985,14 @@ namespace browser {
             return false;
 
         int lastRow = row + count - 1;
-        disconnect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                   this, SLOT(sourceRowsRemoved(QModelIndex, int, int)));
+        disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryFilterModel::sourceRowsRemoved);
         beginRemoveRows(parent, row, lastRow);
         int oldCount = rowCount();
         int start = sourceModel()->rowCount() - _sourcerow.value(row);
         int end = sourceModel()->rowCount() - _sourcerow.value(lastRow);
         sourceModel()->removeRows(start, end - start + 1);
         endRemoveRows();
-        connect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                this, SLOT(sourceRowsRemoved(QModelIndex, int, int)));
+        connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryFilterModel::sourceRowsRemoved);
         _loaded = false;
 
         if(oldCount - count != rowCount()) {
@@ -1088,21 +1073,17 @@ namespace browser {
     void HistoryCompletionModel::setSourceModel(QAbstractItemModel *newSourceModel)
     {
         if(sourceModel()) {
-            disconnect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
-            disconnect(sourceModel(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-                       this, SLOT(sourceReset()));
-            disconnect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                       this, SLOT(sourceReset()));
+            disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &HistoryCompletionModel::sourceReset);
+            disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &HistoryCompletionModel::sourceReset);
+            disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryCompletionModel::sourceReset);
         }
 
         QAbstractProxyModel::setSourceModel(newSourceModel);
 
         if(newSourceModel) {
-            connect(newSourceModel, SIGNAL(modelReset()), this, SLOT(sourceReset()));
-            connect(sourceModel(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-                    this, SLOT(sourceReset()));
-            connect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                    this, SLOT(sourceReset()));
+            connect(newSourceModel, &QAbstractItemModel::modelReset, this, &HistoryCompletionModel::sourceReset);
+            connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &HistoryCompletionModel::sourceReset);
+            connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryCompletionModel::sourceReset);
         }
 
         beginResetModel();
@@ -1300,23 +1281,19 @@ namespace browser {
     void HistoryTreeModel::setSourceModel(QAbstractItemModel *newSourceModel)
     {
         if(sourceModel()) {
-            disconnect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
-            disconnect(sourceModel(), SIGNAL(layoutChanged()), this, SLOT(sourceReset()));
-            disconnect(sourceModel(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-                       this, SLOT(sourceRowsInserted(QModelIndex, int, int)));
-            disconnect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                       this, SLOT(sourceRowsRemoved(QModelIndex, int, int)));
+            disconnect(sourceModel(), &QAbstractItemModel::modelReset, this, &HistoryTreeModel::sourceReset);
+            disconnect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &HistoryTreeModel::sourceReset);
+            disconnect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &HistoryTreeModel::sourceRowsInserted);
+            disconnect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryTreeModel::sourceRowsRemoved);
         }
 
         QAbstractProxyModel::setSourceModel(newSourceModel);
 
         if(newSourceModel) {
-            connect(sourceModel(), SIGNAL(modelReset()), this, SLOT(sourceReset()));
-            connect(sourceModel(), SIGNAL(layoutChanged()), this, SLOT(sourceReset()));
-            connect(sourceModel(), SIGNAL(rowsInserted(QModelIndex, int, int)),
-                    this, SLOT(sourceRowsInserted(QModelIndex, int, int)));
-            connect(sourceModel(), SIGNAL(rowsRemoved(QModelIndex, int, int)),
-                    this, SLOT(sourceRowsRemoved(QModelIndex, int, int)));
+            connect(sourceModel(), &QAbstractItemModel::modelReset, this, &HistoryTreeModel::sourceReset);
+            connect(sourceModel(), &QAbstractItemModel::layoutChanged, this, &HistoryTreeModel::sourceReset);
+            connect(sourceModel(), &QAbstractItemModel::rowsInserted, this, &HistoryTreeModel::sourceRowsInserted);
+            connect(sourceModel(), &QAbstractItemModel::rowsRemoved, this, &HistoryTreeModel::sourceRowsRemoved);
         }
 
         beginResetModel();

@@ -42,7 +42,7 @@
 #include "downloadmanager.h"
 
 #include "autosaver.h"
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "networkaccessmanager.h"
 
 #include <math.h>
@@ -71,6 +71,7 @@ namespace browser {
 
     DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent)
         : QWidget(parent)
+        , std::enable_shared_from_this<DownloadWidget>()
         , _bytesreceived(0)
         , _download(download)
     {
@@ -79,8 +80,8 @@ namespace browser {
         p.setColor(QPalette::Text, Qt::darkGray);
         downloadInfoLabel->setPalette(p);
         progressBar->setMaximum(0);
-        connect(stopButton, SIGNAL(clicked()), this, SLOT(stop()));
-        connect(openButton, SIGNAL(clicked()), this, SLOT(open()));
+        connect(stopButton, &FlatToolButton::clicked, this, &DownloadWidget::stop);
+        connect(openButton, &FlatToolButton::clicked, this, &DownloadWidget::open);
 
         if(download) {
             _file.setFile(download->path());
@@ -309,26 +310,29 @@ namespace browser {
         It is a basic download manager.  It only downloads the file, doesn't do BitTorrent,
         extract zipped files or anything fancy.
       */
-    DownloadManager::DownloadManager(QWidget *parent)
+    DownloadManager::DownloadManager(QString object_name, QWidget *parent)
         : QDialog(parent)
         , _autosaver(new AutoSaver(this))
+        , _model(new DownloadModel(this))
         , _iconprovider(0)
         , _removepolicy(Never)
     {
+        setObjectName(object_name);
         setupUi(this);
         downloadsView->setShowGrid(false);
         downloadsView->verticalHeader()->hide();
         downloadsView->horizontalHeader()->hide();
         downloadsView->setAlternatingRowColors(true);
         downloadsView->horizontalHeader()->setStretchLastSection(true);
-        _model = new DownloadModel(this);
+        //        _model = new DownloadModel(this);
         downloadsView->setModel(_model);
-        connect(cleanupButton, SIGNAL(clicked()), this, SLOT(cleanup()));
+        connect(cleanupButton, &FlatToolButton::clicked, this, &DownloadManager::cleanup);
         load();
     }
 
     DownloadManager::~DownloadManager()
     {
+        delete _model;
         _autosaver->changeOccurred();
         _autosaver->saveIfNeccessary();
 
@@ -350,13 +354,13 @@ namespace browser {
 
     void DownloadManager::download(QWebEngineDownloadItem *download)
     {
-        DownloadWidget *widget = new DownloadWidget(download, this);
+        auto widget = std::make_shared< DownloadWidget>(download, this);
         addItem(widget);
     }
 
-    void DownloadManager::addItem(DownloadWidget *widget)
+    void DownloadManager::addItem(std::shared_ptr<DownloadWidget> widget)
     {
-        connect(widget, SIGNAL(statusChanged()), this, SLOT(updateRow()));
+        connect(widget.get(), &DownloadWidget::statusChanged, this, &DownloadManager::updateRow);
         int row = _downloads.count();
         _model->beginInsertRows(QModelIndex(), row, row);
         _downloads.append(widget);
@@ -366,7 +370,7 @@ namespace browser {
         if(row == 0)
             show();
 
-        downloadsView->setIndexWidget(_model->index(row, 0), widget);
+        downloadsView->setIndexWidget(_model->index(row, 0), widget.get());
         QIcon icon = style()->standardIcon(QStyle::SP_FileIcon);
         widget->fileIcon->setPixmap(icon.pixmap(48, 48));
         downloadsView->setRowHeight(row, widget->sizeHint().height());
@@ -375,7 +379,7 @@ namespace browser {
     void DownloadManager::updateRow()
     {
         DownloadWidget *widget = qobject_cast<DownloadWidget *>(sender());
-        int row = _downloads.indexOf(widget);
+        int row = _downloads.indexOf(widget->shared_from_this());
 
         if(-1 == row)
             return;
@@ -475,7 +479,7 @@ namespace browser {
             bool done = settings.value(key + QLatin1String("done"), true).toBool();
 
             if(done && !url.isEmpty() && !fileName.isEmpty()) {
-                DownloadWidget *widget = new DownloadWidget(0, this);
+                auto widget = std::make_shared< DownloadWidget>(nullptr, this);
                 widget->_file.setFile(fileName);
                 widget->fileNameLabel->setText(widget->_file.fileName());
                 widget->_url = url;

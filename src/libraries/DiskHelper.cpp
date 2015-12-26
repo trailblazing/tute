@@ -2,7 +2,7 @@
 
 #include "DiskHelper.h"
 #include "main.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 #include "libraries/TrashMonitoring.h"
 
 extern AppConfig appconfig;

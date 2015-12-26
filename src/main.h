@@ -19,9 +19,9 @@
 #include <QAbstractItemView>
 #include <QThread>
 #include "utility/delegate.h"
-#include "models/recordTable/Record.h"
+#include "models/record_table/Record.h"
 #include "libraries/GlobalParameters.h"
-#include "views/recordTable/TableScreen.h"
+#include "views/record_table/TableScreen.h"
 
 using namespace std;
 
@@ -54,9 +54,10 @@ using namespace std;
 #define CURRENT_FORMAT_VERSION 1
 #define CURRENT_FORMAT_SUBVERSION 2
 
-#define ADD_NEW_RECORD_TO_END 0
-#define ADD_NEW_RECORD_BEFORE 1
-#define ADD_NEW_RECORD_AFTER 2
+//#define ADD_NEW_RECORD_TO_END 0
+//#define ADD_NEW_RECORD_BEFORE 1
+//#define ADD_NEW_RECORD_AFTER 2
+
 extern const int add_new_record_after;
 // Прототипы функций, которые могут использоваться в других файлах
 // Function prototypes, which can be used in other files
@@ -173,12 +174,12 @@ extern std::string getDifference(const std::string &url_compare_stored, const st
 
 //extern Record *register_record(const QUrl &_url
 //                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
-//                               , RecordTableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController());
+//                               , RecordTableController *record_controller = globalparameters.getRecordTableScreen()->getRecordTableController());
 
-extern std::shared_ptr<Record> register_record(std::shared_ptr<Record> record
-                                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
-                                               , TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController());
-extern std::shared_ptr<Record> check_record(const QUrl &_url);
+//extern std::shared_ptr<Record> register_record(std::shared_ptr<Record> record
+//                                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+//                                               , TableController *record_controller = globalparameters.table_screen()->table_controller());
+//extern std::shared_ptr<Record> check_record(const QUrl &_url);
 
 namespace browser {
     class Browser;
@@ -188,13 +189,13 @@ namespace browser {
 template<typename>
 struct active_record;
 
-extern std::shared_ptr<Record> request_record(const QUrl &_url
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator);
-extern std::shared_ptr<Record> request_record(const std::shared_ptr<Record> record
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator);
+//extern std::shared_ptr<Record> request_record(const QUrl &_url
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator);
+//extern std::shared_ptr<Record> request_record(const std::shared_ptr<Record> record
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator);
 
-std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record, browser::WebPage *page);
+//std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record, browser::WebPage *page);
 
 #endif // __MAIN_H__

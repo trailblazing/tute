@@ -53,7 +53,7 @@ public:
 
     bool is_item_valid(QStringList path) const;
 
-    QModelIndex index_from_item(std::shared_ptr<TreeItem> item);
+    QModelIndex index_item(std::shared_ptr<TreeItem> item);
 
     void emit_datachanged_signal(const QModelIndex &index);
 

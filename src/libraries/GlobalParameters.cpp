@@ -13,10 +13,12 @@
 
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/recordTable/TableScreen.h"
-#include "views/findInBaseScreen/FindScreen.h"
+#include "views/record_table/TableScreen.h"
+#include "views/find_in_base_screen/FindScreen.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/entrance.h"
+#include "views/browser/downloadmanager.h"
+
 
 GlobalParameters::GlobalParameters(QObject *pobj)
 {
@@ -30,29 +32,30 @@ GlobalParameters::~GlobalParameters()
 }
 
 
-void GlobalParameters::setMainProgramFile(QString file)
+void GlobalParameters::main_program_file(QString file)
 {
-    mainProgramFile = file;
+    _main_program_file = file;
 }
 
 
-QString GlobalParameters::getMainProgramFile(void)
+QString GlobalParameters::main_program_file(void)
 {
-    return mainProgramFile;
+    return _main_program_file;
 }
 
 
 void GlobalParameters::init(void)
 {
-    pointTreeScreen = NULL;
-    _browsermanager = NULL;
-    pointRecordTableScreen = NULL;
-    pointFindScreen = NULL;
-    pointMetaEditor = NULL;
-    pointStatusBar = NULL;
-    windowSwitcher = NULL;
+    _tree_screen = nullptr;
+    _browsermanager = nullptr;
+    _table_screen = nullptr;
+    _page_screen = nullptr;
+    _find_screen = nullptr;
+    _meta_editor = nullptr;
+    _statusbar = nullptr;
+    _window_switcher = nullptr;
 
-    initWorkDirectory(); // Инициализация рабочей директории
+    init_workdirectory(); // Инициализация рабочей директории
 }
 
 
@@ -64,10 +67,10 @@ void GlobalParameters::init(void)
 //Initialization working directory
 // If the working directory already exists, it will be installed as a working directory.
 // If the directory is not found, it will create a new working directory with initial files and it will be set as the working directory
-void GlobalParameters::initWorkDirectory(void)
+void GlobalParameters::init_workdirectory(void)
 {
     // Если рабочая директория найдена автоматически
-    if(findWorkDirectory())
+    if(find_workdirectory())
         return;
 
     // Рабочая директория не найдена, и нужно создать начальные данные
@@ -78,7 +81,7 @@ void GlobalParameters::initWorkDirectory(void)
     bool enablePortable = false;
 
     // Путь к директории, где лежит бинарник
-    QFileInfo mainProgramFileInfo(mainProgramFile);
+    QFileInfo mainProgramFileInfo(_main_program_file);
     QString fullCurrentPath = mainProgramFileInfo.absolutePath();
 
     // Проверяется, можно ли читать и писать файлы в этой директории
@@ -94,7 +97,7 @@ void GlobalParameters::initWorkDirectory(void)
         }
     }
 
-    QString dataDirName = ".config/" + getApplicationName();
+    QString dataDirName = ".config/" + application_name();
 
     QString welcomeText = tr("Welcome to MyTetra v.") + QString::number(APPLICATION_RELEASE_VERSION) + '.' + QString::number(APPLICATION_RELEASE_SUBVERSION) + '.' + QString::number(APPLICATION_RELEASE_MICROVERSION) + "!";
 
@@ -118,7 +121,7 @@ void GlobalParameters::initWorkDirectory(void)
         int ret = msgBox.exec();
 
         if(ret == QMessageBox::Ok)
-            createStandartProgramFiles();
+            create_standard_programfiles();
         else
             exit(0); // Была нажата отмена
     } else {
@@ -131,7 +134,7 @@ void GlobalParameters::initWorkDirectory(void)
                            tr("Portable:\n") + portableText + "\n\n";
 
         QStringList items;
-        QString standartItem = tr("Standart");
+        QString standartItem = tr("Standard");
         QString portableItem = tr("Portable");
         items << standartItem << portableItem;
 
@@ -151,33 +154,33 @@ void GlobalParameters::initWorkDirectory(void)
         // Если пользователь сделал выбор
         if(ok && !item.isEmpty()) {
             if(item == standartItem)
-                createStandartProgramFiles();
+                create_standard_programfiles();
             else
-                createPortableProgramFiles();
+                create_portable_programfiles();
         } else
             exit(0); // Была нажата отмена
 
     }
 
     // Search restarts working directory    // Заново запускается поиск рабочей директории
-    workDirectory = "";
-    findWorkDirectory();
+    _work_directory = "";
+    find_workdirectory();
 }
 
 
-void GlobalParameters::createStandartProgramFiles(void)
+void GlobalParameters::create_standard_programfiles(void)
 {
     qDebug() << "Create standart program files";
 
     QDir userDir = QDir::home();
-    QString dataDirName = ".config/" + getApplicationName();
+    QString dataDirName = ".config/" + application_name();
 
     if(userDir.mkpath(dataDirName)) {
         qDebug() << "Successfull create subdirectory " << dataDirName << " in directory " << userDir.absolutePath();
 
         QString createFilePath = userDir.absolutePath() + "/" + dataDirName; // Ранее использовался QDir::homePath()
 
-        createFirstProgramFiles(createFilePath);
+        create_first_programfiles(createFilePath);
     } else {
         criticalError("Can not created directory \"" + dataDirName + "\" in user directory \"" + QDir::homePath() + "\"");
         exit(0);
@@ -185,21 +188,21 @@ void GlobalParameters::createStandartProgramFiles(void)
 }
 
 
-void GlobalParameters::createPortableProgramFiles(void)
+void GlobalParameters::create_portable_programfiles(void)
 {
     qDebug() << "Create portable program files";
 
     // Путь к директории, где лежит бинарник
-    QFileInfo mainProgramFileInfo(mainProgramFile);
+    QFileInfo mainProgramFileInfo(_main_program_file);
     QString createFilePath = mainProgramFileInfo.absolutePath();
 
-    createFirstProgramFiles(createFilePath);
+    create_first_programfiles(createFilePath);
 }
 
 
 // Создание первоначального набора файлов в указанной директории
 // Create the initial set of files in the specified directory
-void GlobalParameters::createFirstProgramFiles(QString dirName)
+void GlobalParameters::create_first_programfiles(QString dirName)
 {
     qDebug() << "Create first program files in directory " << dirName;
 
@@ -210,7 +213,7 @@ void GlobalParameters::createFirstProgramFiles(QString dirName)
     dir.mkdir("trash");
 
     // Создаются файлы конфигурации
-    QString targetOs = getTargetOs(); // "any" или "meego" или "android"
+    QString targetOs = target_os(); // "any" или "meego" или "android"
 
     QFile::copy(":/resource/standartconfig/" + targetOs + "/conf.ini", dirName + "/conf.ini");
     QFile::setPermissions(dirName + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
@@ -221,7 +224,7 @@ void GlobalParameters::createFirstProgramFiles(QString dirName)
     QFile::copy(":/resource/standartconfig/" + targetOs + "/entrance.ini", dirName + "/entrance.ini");
     QFile::setPermissions(dirName + "/entrance.ini", QFile::ReadUser | QFile::WriteUser);
 
-    createStyleSheetFile(dirName);
+    create_stylesheet_file(dirName);
 
     // Создается файл базы данных
     QFile::copy(":/resource/standartdata/mytetra.xml", dirName + "/data/mytetra.xml");
@@ -233,9 +236,9 @@ void GlobalParameters::createFirstProgramFiles(QString dirName)
 }
 
 
-void GlobalParameters::createStyleSheetFile(QString dirName)
+void GlobalParameters::create_stylesheet_file(QString dirName)
 {
-    QString targetOs = getTargetOs();
+    QString targetOs = target_os();
     QFile::copy(":/resource/standartconfig/" + targetOs + "/stylesheet.css", dirName + "/stylesheet.css");
     QFile::setPermissions(dirName + "/stylesheet.css", QFile::ReadUser | QFile::WriteUser);
 }
@@ -243,7 +246,7 @@ void GlobalParameters::createStyleSheetFile(QString dirName)
 
 // Автоопределение рабочей директории
 // Auto working directory
-bool GlobalParameters::findWorkDirectory(void)
+bool GlobalParameters::find_workdirectory(void)
 {
     // Поиск файла conf.ini в той же директории, где находится бинарник
     // Search conf.ini file in the same directory where the binary
@@ -258,61 +261,61 @@ bool GlobalParameters::findWorkDirectory(void)
 
     // Директория, где была выполнена команда запуска
     // Directory where you have performed command launch
-    QFileInfo mainProgramFileInfo(mainProgramFile);
+    QFileInfo mainProgramFileInfo(_main_program_file);
     QString fullCurrentPath = mainProgramFileInfo.absolutePath();
     qDebug() << "Check full current path " << fullCurrentPath;
 
-    if(isMytetraIniConfig(fullCurrentPath + "/conf.ini") == true) {
+    if(is_mytetra_ini_config(fullCurrentPath + "/conf.ini") == true) {
         qDebug() << "Work directory set to path " << fullCurrentPath;
 
         // QDir dir=QDir("./");
         // QDir dir=QDir(QDir::currentPath());
         // workDirectory=dir.absolutePath();
-        workDirectory = fullCurrentPath;
+        _work_directory = fullCurrentPath;
     } else {
         // Если в текущей директории запуска нет conf.ini
 
         // Поиск файла conf.ini в домашней директории пользователя
         // в поддиректории ".имя_программы"
-        QString dir = QDir::homePath() + "/." + getApplicationName();
+        QString dir = QDir::homePath() + "/." + application_name();
 
         qDebug() << "Detect home directory " << dir;
 
         // Если директория существует и в ней есть настоящий файл конфигурации
-        if(isMytetraIniConfig(dir + "/conf.ini") == true) {
+        if(is_mytetra_ini_config(dir + "/conf.ini") == true) {
             qDebug() << "Config init file success find in home directory " << dir;
-            workDirectory = dir;
+            _work_directory = dir;
         } else {
             // Иначе директории "~/.имя_программы" нет
             // и нужно пробовать найти данные в "~/.config/имя_программы"
             qDebug() << "File conf.ini can't' find in home directory " << dir;
 
-            dir = QDir::homePath() + "/.config/" + getApplicationName();
+            dir = QDir::homePath() + "/.config/" + application_name();
 
             qDebug() << "Try find conf.ini in home subdirectory " << dir;
 
             // Если директория существует и в ней есть настоящий файл конфигурации
-            if(isMytetraIniConfig(dir + "/conf.ini") == true) {
+            if(is_mytetra_ini_config(dir + "/conf.ini") == true) {
                 qDebug() << "Config init file success find in home subdirectory " << dir;
-                workDirectory = dir;
+                _work_directory = dir;
             } else
                 qDebug() << "File conf.ini can't' find in home subdirectory " << dir;
         }
     }
 
     // Если рабочая директория не определена
-    if(workDirectory.length() == 0) {
+    if(_work_directory.length() == 0) {
         qDebug() << "Cant find work directory with mytetra data";
         return false;
     } else {
         // Иначе рабочая директория установлена
-        qDebug() << "Set work directory to " << workDirectory;
+        qDebug() << "Set work directory to " << _work_directory;
 
         // Устанавливается эта директория как рабочая
-        if(QDir::setCurrent(workDirectory))
+        if(QDir::setCurrent(_work_directory))
             return true;
         else {
-            criticalError("Can not set work directory as '" + workDirectory + "'. System problem.");
+            criticalError("Can not set work directory as '" + _work_directory + "'. System problem.");
             return false;
         }
     }
@@ -320,7 +323,7 @@ bool GlobalParameters::findWorkDirectory(void)
 
 
 // Проверка ini-файла
-bool GlobalParameters::isMytetraIniConfig(QString fileName)
+bool GlobalParameters::is_mytetra_ini_config(QString fileName)
 {
     qDebug() << "Check config file " << fileName;
 
@@ -368,13 +371,13 @@ bool GlobalParameters::isMytetraIniConfig(QString fileName)
 }
 
 
-QString GlobalParameters::getWorkDirectory(void)
+QString GlobalParameters::work_directory(void)
 {
-    return workDirectory;
+    return _work_directory;
 }
 
 
-QString GlobalParameters::getTargetOs(void)
+QString GlobalParameters::target_os(void)
 {
 #if TARGET_OS==ANY_OS
     return "any";
@@ -392,18 +395,18 @@ QString GlobalParameters::getTargetOs(void)
 
 // Имя программы в системе
 // Используется для создания и поиска каталога с данными пользователя
-QString GlobalParameters::getApplicationName(void)
+QString GlobalParameters::application_name(void)
 {
     // todo: Подумать и заменить этот код на значения, полученные из PRO-файла
     QString appName = "";
 
-    if(getTargetOs() == "any")
+    if(target_os() == "any")
         appName = "mytetra";
 
-    if(getTargetOs() == "meego")
+    if(target_os() == "meego")
         appName = "ru.webhamster.mytetra";
 
-    if(getTargetOs() == "android")
+    if(target_os() == "android")
         appName = "ru.webhamster.mytetra";
 
     // qDebug() << "In getApplicationName() return \"" << appName << "\"";
@@ -432,14 +435,20 @@ QTabWidget *GlobalParameters::vtab()
     return  _vtab;
 }
 
-void GlobalParameters::setTreeScreen(TreeScreen *point)
+browser::DownloadManager *GlobalParameters::download_manager()
 {
-    pointTreeScreen = point;
+    _vtab->setCurrentWidget(static_cast<QWidget *>(_download_manager));
+    return _download_manager;
 }
 
-TreeScreen *GlobalParameters::getTreeScreen()
+void GlobalParameters::tree_screen(TreeScreen *point)
 {
-    return pointTreeScreen;
+    _tree_screen = point;
+}
+
+TreeScreen *GlobalParameters::tree_screen()
+{
+    return _tree_screen;
 }
 
 
@@ -454,69 +463,81 @@ void GlobalParameters::entrance(browser::Entrance *&b)
 }
 
 
-void GlobalParameters::setRecordTableScreen(TableScreen *point)
+void GlobalParameters::table_screen(TableScreen *point)
 {
-    pointRecordTableScreen = point;
+    _table_screen = point;
 }
 
-TableScreen *GlobalParameters::getRecordTableScreen()
+TableScreen *GlobalParameters::table_screen()
 {
-    return pointRecordTableScreen;
+    return _table_screen;
 }
 
-
-void GlobalParameters::setFindScreen(FindScreen *point)
+TableScreen *GlobalParameters::page_screen()
 {
-    pointFindScreen = point;
-}
-
-FindScreen *GlobalParameters::getFindScreen()
-{
-    return pointFindScreen;
+    return _page_screen;
 }
 
 
-void GlobalParameters::setMetaEditor(MetaEditor *point)
+void GlobalParameters::page_screen(TableScreen *page)
 {
-    pointMetaEditor = point;
-}
-
-MetaEditor *GlobalParameters::getMetaEditor()
-{
-    return pointMetaEditor;
+    _page_screen = page;
 }
 
 
-void GlobalParameters::setStatusBar(QStatusBar *point)
+
+void GlobalParameters::find_screen(FindScreen *point)
 {
-    pointStatusBar = point;
+    _find_screen = point;
 }
 
-QStatusBar *GlobalParameters::getStatusBar()
+FindScreen *GlobalParameters::find_screen()
 {
-    return pointStatusBar;
-}
-
-
-void GlobalParameters::setWindowSwitcher(WindowSwitcher *point)
-{
-    windowSwitcher = point;
+    return _find_screen;
 }
 
 
-WindowSwitcher *GlobalParameters::getWindowSwitcher()
+void GlobalParameters::meta_editor(MetaEditor *point)
 {
-    return windowSwitcher;
+    _meta_editor = point;
+}
+
+MetaEditor *GlobalParameters::meta_editor()
+{
+    return _meta_editor;
 }
 
 
-void GlobalParameters::setCryptKey(QByteArray hash)
+void GlobalParameters::status_bar(QStatusBar *point)
 {
-    passwordHash = hash;
+    _statusbar = point;
+}
+
+QStatusBar *GlobalParameters::status_bar()
+{
+    return _statusbar;
 }
 
 
-QByteArray GlobalParameters::getCryptKey(void)
+void GlobalParameters::window_switcher(WindowSwitcher *point)
 {
-    return passwordHash;
+    _window_switcher = point;
+}
+
+
+WindowSwitcher *GlobalParameters::window_switcher()
+{
+    return _window_switcher;
+}
+
+
+void GlobalParameters::crypt_key(QByteArray hash)
+{
+    _password_hash = hash;
+}
+
+
+QByteArray GlobalParameters::crypt_key(void)
+{
+    return _password_hash;
 }

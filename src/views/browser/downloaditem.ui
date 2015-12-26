@@ -92,14 +92,14 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="stopButton">
+      <widget class="FlatToolButton" name="stopButton">
        <property name="text">
         <string>Stop</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="openButton">
+      <widget class="FlatToolButton" name="openButton">
        <property name="text">
         <string>Open</string>
        </property>
@@ -123,6 +123,11 @@
   </layout>
  </widget>
  <customwidgets>
+ <customwidget>
+  <class>FlatToolButton</class>
+  <extends>QToolButton</extends>
+  <header location="global">libraries/FlatControl.h</header>
+ </customwidget>
   <customwidget>
    <class>SqueezeLabel</class>
    <extends>QWidget</extends>

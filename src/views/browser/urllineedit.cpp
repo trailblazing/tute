@@ -41,7 +41,7 @@
 
 #include "urllineedit.h"
 
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 
 #include "searchlineedit.h"
 #include "webview.h"

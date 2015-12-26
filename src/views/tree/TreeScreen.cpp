@@ -13,10 +13,10 @@
 #include "TreeScreen.h"
 #include "KnowTreeView.h"
 
-#include "models/recordTable/TableData.h"
-#include "views/recordTable/TableScreen.h"
-#include "models/appConfig/AppConfig.h"
-#include "views/mainWindow/MainWindow.h"
+#include "models/record_table/TableData.h"
+#include "views/record_table/TableScreen.h"
+#include "models/app_config/AppConfig.h"
+#include "views/main_window/MainWindow.h"
 #include "models/tree/TreeItem.h"
 #include "models/tree/KnowTreeModel.h"
 #include "libraries/ClipboardBranch.h"
@@ -24,16 +24,16 @@
 #include "libraries/GlobalParameters.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/WindowSwitcher.h"
-#include "controllers/recordTable/TableController.h"
+#include "controllers/record_table/TableController.h"
 #include "views/browser/toolbarsearch.h"
-#include "models/recordTable/TableModel.h"
+#include "models/record_table/TableModel.h"
 
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 
-TreeScreen::TreeScreen(const AppConfig &appconfig, QWidget *parent)
+TreeScreen::TreeScreen(QString object_name, const AppConfig &appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *parent)
     : QWidget(parent)
       //, ui(new Ui::MainWindow)
       //, _menubar(new QMenuBar(this))
@@ -52,9 +52,9 @@ TreeScreen::TreeScreen(const AppConfig &appconfig, QWidget *parent)
 {
     //    _recordtree_search->setMinimumWidth(100);
     //    _recordtree_search->sizePolicy().setHorizontalStretch(10);
-
+    setObjectName(object_name);
     setupActions();
-    setupUI();
+    setupUI(_filemenu, _toolsmenu);
     setupModels();
     setupSignals();
     assembly();
@@ -182,18 +182,18 @@ void TreeScreen::setupActions(void)
     ac = new QAction(tr("Pin / freeze browser view"), this);
     ac->setStatusTip(tr("Pin / freeze browser view"));
     ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-    _actionlist["freezeBrowserView"] = ac;
+    _actionlist["freeze_browser_view"] = ac;
 
     // Открытие поиска по базе (связывание клика происходит в MainWindows)
     ac = new QAction(tr("Find in base"), this);
     ac->setStatusTip(tr("Find in base"));
     ac->setIcon(QIcon(":/resource/pic/find_in_base.svg"));
     // connection in void MainWindow::setupSignals(void)
-    _actionlist["findInBase"] = ac;
+    _actionlist["find_in_base"] = ac;
 }
 
 
-void TreeScreen::setupUI(void)
+void TreeScreen::setupUI(QMenu *_filemenu, QMenu *_toolsmenu)
 {
     //_toolsline = new QToolBar(this);
 
@@ -225,8 +225,8 @@ void TreeScreen::setupUI(void)
 
     if(appconfig.getInterfaceMode() == "mobile") {
         _toolsline->addSeparator();
-        insertActionAsButton(_toolsline, _actionlist["freezeBrowserView"]);
-        insertActionAsButton(_toolsline, _actionlist["findInBase"]); // Клик по этой кнопке связывается с действием в MainWindow
+        insertActionAsButton(_toolsline, _actionlist["freeze_browser_view"]);
+        insertActionAsButton(_toolsline, _actionlist["find_in_base"]); // Клик по этой кнопке связывается с действием в MainWindow
     }
 
     //_toolsline->addSeparator();
@@ -255,8 +255,12 @@ void TreeScreen::setupUI(void)
     //    ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
     //    connect(ac, SIGNAL(triggered()), this, SLOT(del_branch()));
 
-    _menus_in_button->addMenu(globalparameters.mainwindow()->filemenu());
-    _menus_in_button->addMenu(globalparameters.mainwindow()->toolsmenu());
+    _menus_in_button->addMenu(
+        _filemenu   // globalparameters.mainwindow()->filemenu()
+    );
+    _menus_in_button->addMenu(
+        _toolsmenu   // globalparameters.mainwindow()->toolsmenu()
+    );
     //_buttonmenu->addAction(_menuaction);
 
     _menubutton
@@ -378,15 +382,15 @@ void TreeScreen::on_customContextMenuRequested(const QPoint &pos)
     QModelIndex index = getCurrentItemIndex();
 
     // Выясняется, зашифрована ли ветка или нет
-    QString cryptFlag = _knowtreemodel->item(index)->getField("crypt");
+    QString cryptFlag = _knowtreemodel->item(index)->field("crypt");
 
     // Выясняется, зашифрована ли родительская ветка
-    QString parentCryptFlag = _knowtreemodel->item(index)->parent()->getField("crypt");
+    QString parentCryptFlag = _knowtreemodel->item(index)->parent()->field("crypt");
 
     // Если ветка не зашифрована
     // Или ветка зашифрована, но пароль успешно введен
     if(cryptFlag != "1" ||
-       (cryptFlag == "1" && globalparameters.getCryptKey().length() > 0)) {
+       (cryptFlag == "1" && globalparameters.crypt_key().length() > 0)) {
 
         // Если в буфере есть ветки, соответсвующие пункты становятся активными
         bool isBranch = false;
@@ -557,7 +561,7 @@ void TreeScreen::moveUpDnBranch(int direction)
     }
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 }
 
 
@@ -665,7 +669,7 @@ void TreeScreen::insBranchProcess(QModelIndex index, QString name, bool is_branc
         // Parent надо получить и в виде объекта QModelIndex, и в виде объекта Item
         // Затем у объекта Item выяснить количество элементов, и установить
         // засветку через метод index() относительно parent в виде QModelIndex
-        QModelIndex setto = _knowtreemodel->index(item->parent()->childCount() - 1, 0, index.parent());
+        QModelIndex setto = _knowtreemodel->index(item->parent()->child_count() - 1, 0, index.parent());
         _knowtreeview->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
     } else {
         // Подветка
@@ -674,7 +678,7 @@ void TreeScreen::insBranchProcess(QModelIndex index, QString name, bool is_branc
         _knowtreemodel->addNewChildBranch(index, id, name);
 
         // Установка курсора на только что созданную позицию
-        QModelIndex setto = _knowtreemodel->indexChildren(index, item->childCount() - 1);
+        QModelIndex setto = _knowtreemodel->indexChildren(index, item->child_count() - 1);
         _knowtreeview->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
 
         // А можно было установить курсор на нужную позицию и так
@@ -683,7 +687,7 @@ void TreeScreen::insBranchProcess(QModelIndex index, QString name, bool is_branc
     }
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 
     find_object<MainWindow>("mainwindow")->setEnabled(true);
 }
@@ -713,12 +717,12 @@ void TreeScreen::edit_branch(void)
     auto item = _knowtreemodel->item(index);
 
     // Если ветка зашифрована и пароль не был введен
-    if(item->getField("crypt") == "1" &&
-       globalparameters.getCryptKey().length() == 0)
+    if(item->field("crypt") == "1" &&
+       globalparameters.crypt_key().length() == 0)
         return;
 
     // Получение имени ветки
-    QString name = item->getField("name");
+    QString name = item->field("name");
 
     // Создается окно ввода данных
     bool ok;
@@ -734,10 +738,10 @@ void TreeScreen::edit_branch(void)
 
     find_object<MainWindow>("mainwindow")->setDisabled(true);
 
-    item->setField("name", newname);
+    item->set_field("name", newname);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 
     find_object<MainWindow>("mainwindow")->setEnabled(true);
 }
@@ -763,12 +767,12 @@ void TreeScreen::del_branch(QString mode)
     for(int i = 0; i < selectitems.size(); ++i) {
         QModelIndex index = selectitems.at(i);
         auto item = _knowtreemodel->item(index);
-        branches_name << item->getField("name");
+        branches_name << item->field("name");
     }
 
 
     // Если системный пароль не установлен, зашифрованные ветки удалять нельзя
-    if(globalparameters.getCryptKey().size() == 0) {
+    if(globalparameters.crypt_key().size() == 0) {
         bool disableFlag = false;
 
         // Перебираются удаляемые ветки
@@ -777,13 +781,13 @@ void TreeScreen::del_branch(QString mode)
             auto item = _knowtreemodel->item(index);
 
             // Если у ветки установлен флаг шифрования
-            if(item->getField("crypt") == "1") {
+            if(item->field("crypt") == "1") {
                 disableFlag = true;
                 break;
             }
 
             // Проверяется наличие флага шифрования у всех подветок
-            QList<QStringList> cryptFlagsList = item->getAllChildrenPathAsField("crypt");
+            QList<QStringList> cryptFlagsList = item->all_children_path_as_field("crypt");
 
             foreach(QStringList cryptFlags, cryptFlagsList)
                 if(cryptFlags.contains("1")) {
@@ -860,8 +864,8 @@ void TreeScreen::del_branch(QString mode)
         // Индексы с длинным путем перемещаются в начало списка
         for(int i = 0; i < selectitems.size(); i++)
             for(int j = selectitems.size() - 1; j > i; j--) {
-                QStringList path_1 = (_knowtreemodel->item(selectitems.at(j - 1)))->getPath();
-                QStringList path_2 = (_knowtreemodel->item(selectitems.at(j)))->getPath();
+                QStringList path_1 = (_knowtreemodel->item(selectitems.at(j - 1)))->path();
+                QStringList path_2 = (_knowtreemodel->item(selectitems.at(j)))->path();
 
                 if(path_1.size() < path_2.size())
                     selectitems.swap(j - 1, j);
@@ -870,7 +874,7 @@ void TreeScreen::del_branch(QString mode)
         qDebug() << "Path for delete";
 
         for(int i = 0; i < selectitems.size(); ++i)
-            qDebug() << (_knowtreemodel->item(selectitems.at(i)))->getPath();
+            qDebug() << (_knowtreemodel->item(selectitems.at(i)))->path();
 
         // Вызов удаления веток
         for(int i = 0; i < selectitems.size(); ++i)
@@ -879,7 +883,7 @@ void TreeScreen::del_branch(QString mode)
         qDebug() << "Delete finish";
 
         // Сохранение дерева веток
-        find_object<TreeScreen>("treeScreen")->saveKnowTree();
+        find_object<TreeScreen>("tree_screen")->saveKnowTree();
 
         qDebug() << "Save new tree finish";
     }
@@ -904,15 +908,15 @@ void TreeScreen::del_one_branch(QModelIndex index)
     // Получение узла, который соответствует обрабатываемому индексу
     auto item = _knowtreemodel->item(index);
 
-    qDebug() << "Label 2, branch id:" << item->getField("id") << "name:" << item->getField("name");
+    qDebug() << "Label 2, branch id:" << item->field("id") << "name:" << item->field("name");
 
     // Получение пути к элементу
-    QStringList path = item->getPath();
+    QStringList path = item->path();
 
     qDebug() << "Label 3";
 
     // Получение путей ко всем подветкам
-    QList<QStringList> subbranchespath = item->getAllChildrenPath();
+    QList<QStringList> subbranchespath = item->all_children_path();
 
     qDebug() << "Label 4";
 
@@ -925,8 +929,8 @@ void TreeScreen::del_one_branch(QModelIndex index)
     // Удаление всех подчиненных элементов для нужных подветок
     // Вначале пробегаются самые длинные ветки а потом более короткие
     for(int i = subbranchespath.size() - 1; i >= 0; i--) {
-        qDebug() << "Delete subbranch, id:" << _knowtreemodel->item(subbranchespath.at(i))->getField("id") << "name:" << _knowtreemodel->item(subbranchespath.at(i))->getField("name");
-        (_knowtreemodel->item(subbranchespath.at(i)))->recordtableDeleteAllRecords();
+        qDebug() << "Delete subbranch, id:" << _knowtreemodel->item(subbranchespath.at(i))->field("id") << "name:" << _knowtreemodel->item(subbranchespath.at(i))->field("name");
+        (_knowtreemodel->item(subbranchespath.at(i)))->table_clear();
         // ( knowTreeModel->getItem(subbranchespath.at(i)) )->removeAllChildren();
     }
 
@@ -934,8 +938,8 @@ void TreeScreen::del_one_branch(QModelIndex index)
 
     // Удаление таблицы конечных записей для самой удаляемой ветки
     // Удаление подчиненных элементов для самой удаляемой ветки
-    qDebug() << "Delete rootbranch, id:" << _knowtreemodel->item(path)->getField("id") << "name:" << _knowtreemodel->item(path)->getField("name");
-    (_knowtreemodel->item(path))->recordtableDeleteAllRecords();
+    qDebug() << "Delete rootbranch, id:" << _knowtreemodel->item(path)->field("id") << "name:" << _knowtreemodel->item(path)->field("name");
+    (_knowtreemodel->item(path))->table_clear();
     // ( knowTreeModel->getItem(path) )->removeAllChildren();
 
     qDebug() << "Label 7";
@@ -1002,10 +1006,10 @@ bool TreeScreen::copy_branch(void)
     auto item = _knowtreemodel->item(index);
 
     // Получение пути к выделенной ветке
-    QStringList path = item->getPath();
+    QStringList path = item->path();
 
     // Получение путей ко всем подветкам
-    QList<QStringList> subbranchespath = item->getAllChildrenPath();
+    QList<QStringList> subbranchespath = item->all_children_path();
 
 
     // Проверка, содержит ли данная ветка как шифрованные
@@ -1014,14 +1018,14 @@ bool TreeScreen::copy_branch(void)
     bool encryptPresence = false;
 
     // Флаги на основе состояния текущей ветки
-    if(_knowtreemodel->item(path)->getField("crypt") == "1")
+    if(_knowtreemodel->item(path)->field("crypt") == "1")
         encryptPresence = true;
     else
         nocryptPresence = true;
 
     // Флаги на основе состояния подветок
     foreach(QStringList currPath, subbranchespath)
-        if(_knowtreemodel->item(currPath)->getField("crypt") == "1")
+        if(_knowtreemodel->item(currPath)->field("crypt") == "1")
             encryptPresence = true;
         else
             nocryptPresence = true;
@@ -1089,17 +1093,17 @@ void TreeScreen::addBranchToClipboard(ClipboardBranch *branch_clipboard_data, QS
 
     // Добавление ветки
     curr_item = _knowtreemodel->item(path);
-    curr_item_fields = curr_item->getAllFields(); // Раньше было getAllFieldsDirect()
+    curr_item_fields = curr_item->all_fields(); // Раньше было getAllFieldsDirect()
     branch_id = curr_item_fields["id"];
 
     if(is_root)
         branch_clipboard_data->addBranch("-1", curr_item_fields);
     else
-        branch_clipboard_data->addBranch(curr_item->getParentId(),
+        branch_clipboard_data->addBranch(curr_item->parent_id(),
                                          curr_item_fields);
 
     // Добавление конечных записей
-    curr_item_record_table = curr_item->recordtableGetTableData();
+    curr_item_record_table = curr_item->tabledata();
 
     for(int i = 0; i < curr_item_record_table->size(); i++) {
         // Полный образ записи (с файлами и текстом)
@@ -1181,11 +1185,11 @@ void TreeScreen::pasteBranchSmart(bool is_branch)
 
     // Установка курсора на новую созданную ветку
     auto pasted_branch_item = _knowtreemodel->getItemById(pasted_branch_id);
-    QStringList pasted_branch_path = pasted_branch_item->getPath();
+    QStringList pasted_branch_path = pasted_branch_item->path();
     find_object<MainWindow>("mainwindow")->set_tree_position(pasted_branch_path);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 
     // Разблокируется главное окно
     find_object<MainWindow>("mainwindow")->setEnabled(true);
@@ -1196,7 +1200,7 @@ void TreeScreen::pasteBranchSmart(bool is_branch)
 void TreeScreen::encrypt_branch(void)
 {
     // Если пароль в данной сессии не вводился
-    if(globalparameters.getCryptKey().size() == 0) {
+    if(globalparameters.crypt_key().size() == 0) {
         // Запрашивается пароль
         Password password;
 
@@ -1215,7 +1219,7 @@ void TreeScreen::encrypt_branch(void)
 void TreeScreen::decrypt_branch(void)
 {
     // Если пароль в данной сессии не вводился
-    if(globalparameters.getCryptKey().size() == 0) {
+    if(globalparameters.crypt_key().size() == 0) {
         // Запрашивается пароль
         Password password;
 
@@ -1235,10 +1239,10 @@ void TreeScreen::encryptBranchItem(void)
     auto item = _knowtreemodel->item(getCurrentItemIndex());
 
     // Шифрация ветки и всех подветок
-    item->switchToEncrypt();
+    item->to_encrypt();
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 
     // Обновляеются на экране ветка и ее подветки
     updateBranchOnScreen(getCurrentItemIndex());
@@ -1251,10 +1255,10 @@ void TreeScreen::decryptBranchItem(void)
     auto item = _knowtreemodel->item(getCurrentItemIndex());
 
     // Расшифровка ветки и всех подветок
-    item->switchToDecrypt();
+    item->to_decrypt();
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("treeScreen")->saveKnowTree();
+    find_object<TreeScreen>("tree_screen")->saveKnowTree();
 
     // Обновляеются на экране ветка и ее подветки
     updateBranchOnScreen(getCurrentItemIndex());
@@ -1275,12 +1279,12 @@ void TreeScreen::updateBranchOnScreen(const QModelIndex &index)
     auto item = _knowtreemodel->item(index);
 
     // Перебираются подветки
-    QList<QStringList> updatePathts = item->getAllChildrenPath();
+    QList<QStringList> updatePathts = item->all_children_path();
 
     foreach(QStringList currentPath, updatePathts) {
         auto currentItem = _knowtreemodel->item(currentPath);
 
-        QModelIndex currentIndex = _knowtreemodel->create_index_from_item(currentItem);
+        QModelIndex currentIndex = _knowtreemodel->index_item(currentItem);
 
         // Для подветки дается команда чтобы модель сообщила о своем изменении
         _knowtreemodel->emit_datachanged_signal(currentIndex);
@@ -1290,15 +1294,15 @@ void TreeScreen::updateBranchOnScreen(const QModelIndex &index)
 void TreeScreen::on_knowtree_doubleclicked(const QModelIndex &index)
 {
     on_knowtree_clicked(index);
-    globalparameters.vtab()->setCurrentWidget(globalparameters.getRecordTableScreen());
+    globalparameters.vtab()->setCurrentWidget(globalparameters.table_screen());
 }
 
 
 void TreeScreen::on_found(std::shared_ptr<TableData> recordtable)
 {
-    TableController *controller = globalparameters.getRecordTableScreen()->getRecordTableController();
-    TableModel *source_model = controller->recordtable_model();
-    source_model->resetInternalData();  // delete source_model;
+    TableController *controller = globalparameters.table_screen()->table_controller();
+    TableModel *source_model = controller->table_model();
+    source_model->reset_internal_data();  // delete source_model;
     //    controller->init();
     controller->reset_tabledata(recordtable);
     //    controller->init();
@@ -1312,7 +1316,7 @@ void TreeScreen::on_found(std::shared_ptr<TableData> recordtable)
     //        int emptyStringIndex = path.indexOf("");
     //        path.removeAt(emptyStringIndex);
 
-    //        find_object<RecordTableScreen>("recordTableScreen")->setTreePath(path.join(" > "));
+    //        find_object<RecordTableScreen>("table_screen")->setTreePath(path.join(" > "));
 
     //    }
 
@@ -1322,8 +1326,8 @@ void TreeScreen::on_found(std::shared_ptr<TableData> recordtable)
     _knowtreeview->resizeColumnToContents(0);
 
     // Переключаются окна (используется для мобильного интерфейса)
-    globalparameters.getWindowSwitcher()->switchFromTreeToRecordtable();
-    globalparameters.vtab()->setCurrentWidget(globalparameters.getRecordTableScreen());
+    globalparameters.window_switcher()->switchFromTreeToRecordtable();
+    globalparameters.vtab()->setCurrentWidget(globalparameters.table_screen());
 
 
 }
@@ -1348,15 +1352,15 @@ void TreeScreen::on_knowtree_clicked(const QModelIndex &index)
     }
 
     // Проверяется, происходит ли клик по зашифрованной ветке
-    if(item->getField("crypt") == "1") {
+    if(item->field("crypt") == "1") {
         // Если пароль доступа к зашифрованным данным не вводился в этой сессии
-        if(globalparameters.getCryptKey().length() == 0) {
+        if(globalparameters.crypt_key().length() == 0) {
             // Запрашивается пароль
             Password password;
 
             if(password.retrievePassword() == false) {
                 // Устанавливаем пустые данные для отображения таблицы конечных записей
-                find_object<TableController>("recordTableController")->reset_tabledata(NULL);
+                find_object<TableController>("table_screen_controller")->reset_tabledata(nullptr);
 
                 // Все инструменты работы с веткой отключаются
                 QMapIterator<QString, QAction *> i(_actionlist);
@@ -1373,23 +1377,23 @@ void TreeScreen::on_knowtree_clicked(const QModelIndex &index)
 
 
     // Получаем указатель на данные таблицы конечных записей
-    std::shared_ptr<TableData> rtdata = item->recordtableGetTableData();
+    std::shared_ptr<TableData> record_tabledata = item->tabledata();
 
     // Устанавливаем данные таблицы конечных записей
-    find_object<TableController>("recordTableController")->reset_tabledata(rtdata);
+    find_object<TableController>("table_screen_controller")->reset_tabledata(record_tabledata);
 
 
 
     // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
     if(appconfig.getInterfaceMode() == "mobile") {
 
-        QStringList path = item->getPathAsName();
+        QStringList path = item->path_as_name();
 
         // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
         int emptyStringIndex = path.indexOf("");
         path.removeAt(emptyStringIndex);
 
-        find_object<TableScreen>("recordTableScreen")->setTreePath(path.join(" > "));
+        find_object<TableScreen>("table_screen")->setTreePath(path.join(" > "));
 
     }
 
@@ -1399,7 +1403,7 @@ void TreeScreen::on_knowtree_clicked(const QModelIndex &index)
     _knowtreeview->resizeColumnToContents(0);
 
     // Переключаются окна (используется для мобильного интерфейса)
-    globalparameters.getWindowSwitcher()->switchFromTreeToRecordtable();
+    globalparameters.window_switcher()->switchFromTreeToRecordtable();
 }
 
 
@@ -1463,13 +1467,13 @@ int TreeScreen::getFirstSelectedItemIndex(void)
 // Получение индекса текущего элемента на котором стоит курсор
 QModelIndex TreeScreen::getCurrentItemIndex(void)
 {
-    if(0 == _knowtreemodel->_root_item->childCount()) {
-        _knowtreemodel->_root_item->addChildren();
+    if(0 == _knowtreemodel->_root_item->child_count()) {
+        _knowtreemodel->_root_item->add_children();
     }
 
     if(!_knowtreeview->selectionModel()->currentIndex().isValid()) {
         _knowtreeview->selectionModel()->setCurrentIndex(
-            _knowtreemodel->create_index_from_item(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->childCount() - 1))
+            _knowtreemodel->index_item(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1))
             //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
             //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
             , QItemSelectionModel::SelectCurrent);

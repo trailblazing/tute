@@ -11,17 +11,17 @@
 #include "libraries/wyedit/Editor.h"
 #include "libraries/wyedit/EditorTextArea.h"
 #include "libraries/GlobalParameters.h"
-#include "views/findInBaseScreen/FindScreen.h"
-#include "models/appConfig/AppConfig.h"
-#include "views/attachTable/AttachTableScreen.h"
+#include "views/find_in_base_screen/FindScreen.h"
+#include "models/app_config/AppConfig.h"
+#include "views/attach_table/AttachTableScreen.h"
 #include "views/tree/TreeScreen.h"
-#include "views/recordTable/TableView.h"
-#include "views/recordTable/TableScreen.h"
-#include "models/recordTable/TableModel.h"
-#include "models/recordTable/TableData.h"
+#include "views/record_table/TableView.h"
+#include "views/record_table/TableScreen.h"
+#include "models/record_table/TableModel.h"
+#include "models/record_table/TableData.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/webview.h"
-
+#include "views/find_in_base_screen/FindScreen.h"
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
@@ -30,13 +30,13 @@ namespace browser {
     class WebPage;
 }
 
-MetaEditor::MetaEditor(void) : Editor()
+MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen) : Editor()
 {
-
+    setObjectName(object_name);
     Editor::setDisableToolList(appconfig.getHideEditorTools());
 
     Editor::initEnableAssembly(false);
-    Editor::initConfigFileName(globalparameters.getWorkDirectory() + "/editorconf.ini");
+    Editor::initConfigFileName(globalparameters.work_directory() + "/editorconf.ini");
     Editor::initEnableRandomSeed(false);
 
     if(appconfig.getInterfaceMode() == "desktop")
@@ -50,7 +50,7 @@ MetaEditor::MetaEditor(void) : Editor()
     setupUI();
     metaAssembly();
 
-    setupSignals();
+    setupSignals(_find_screen);
 
     // В редакторе устанавливается функция обратного вызова на кнопку Attach
     set_attach_callback(toAttachCallback);
@@ -65,9 +65,11 @@ MetaEditor::~MetaEditor(void)
 }
 
 
-void MetaEditor::setupSignals(void)
+void MetaEditor::setupSignals(FindScreen *_find_screen)
 {
-    connect(this, &MetaEditor::setFindTextSignal, globalparameters.getFindScreen(), &FindScreen::setFindText);
+    connect(this, &MetaEditor::setFindTextSignal
+            , _find_screen  // globalparameters.getFindScreen()
+            , &FindScreen::setFindText);
 
 }
 
@@ -176,7 +178,7 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
         if(_record->getNaturalFieldSource("url") != home)
             _record->setNaturalFieldSource("url", home);
 
-        ::equip_registered(_record, page)->active(); // page->load(_record, true);
+        page->equip_registered(_record)->active(); // page->load(_record, true);
         //        _record->active();
     });
 
@@ -272,7 +274,7 @@ void MetaEditor::switchToAttachLayout(void)
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
 void MetaEditor::toAttachCallback(void)
 {
-    MetaEditor *edView = find_object<MetaEditor>("editorScreen");
+    MetaEditor *edView = find_object<MetaEditor>("editor_screen");
     edView->switchToAttachLayout();
 }
 
@@ -324,16 +326,16 @@ void MetaEditor::setTreePath(QString path)
 
 void MetaEditor::switch_pin()
 {
-    TableController *recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+    TableController *recordtablecontroller = globalparameters.table_screen()->table_controller();
 
     if(recordtablecontroller) {
-        TableModel *recordtablemodel = recordtablecontroller->recordtable_model();
+        TableModel *recordtablemodel = recordtablecontroller->table_model();
         TableView *recordtableview = recordtablecontroller->view();
         int pos = recordtablecontroller->first_selectionpos();
 
         if(recordtablemodel && -1 != pos) {
             // Выясняется ссылка на таблицу конечных данных
-            std::shared_ptr<TableData> table = recordtablemodel->getRecordTableData();    //getTableData();
+            std::shared_ptr<TableData> table = recordtablemodel->table_data();    //getTableData();
 
             QString pin = table->field("pin", pos);
             recordPin->setCheckState(_state_check[pin]);
@@ -375,8 +377,8 @@ void MetaEditor::switch_pin()
 
 
             // Сохранение дерева веток
-            //find_object<TreeScreen>("treeScreen")->saveKnowTree();
-            TreeScreen *treescreen = globalparameters.getTreeScreen();
+            //find_object<TreeScreen>("tree_screen")->saveKnowTree();
+            TreeScreen *treescreen = globalparameters.tree_screen();
 
             if(treescreen)treescreen->saveKnowTree();
 
@@ -550,7 +552,7 @@ void MetaEditor::onClickToTag(const QString &link_text)
     // -----------------------------
 
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen = find_object<FindScreen>("findScreenDisp");
+    FindScreen *findScreen = find_object<FindScreen>("find_screen");
 
     // Если виджет не показан, он выводится на экран
     if(findScreen->isVisible() == false)

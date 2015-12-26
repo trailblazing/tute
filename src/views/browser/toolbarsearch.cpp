@@ -43,8 +43,8 @@
 #include "toolbarsearch.h"
 #include "autosaver.h"
 
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
-#include "views/findInBaseScreen/FindTableWidget.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "views/find_in_base_screen/FindTableWidget.h"
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
@@ -57,7 +57,7 @@
 //#include "views/browser/chasewidget.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
-#include "views/findInBaseScreen/FindScreen.h"
+#include "views/find_in_base_screen/FindScreen.h"
 #include "main.h"
 
 
@@ -127,7 +127,7 @@ namespace browser {
     {
         QString searchText = lineEdit()->text();
 
-        std::shared_ptr<TableData> recordtabledata = globalparameters.getFindScreen()->findClicked();
+        std::shared_ptr<TableData> recordtabledata = globalparameters.find_screen()->findClicked();
 
         if(!recordtabledata || 0 == recordtabledata->size()) {
 
@@ -174,7 +174,7 @@ namespace browser {
 
                 //            globalparameters.entrance()->active_record(request_record(url));
                 auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
-                auto r = request_record(
+                auto r = globalparameters.table_screen()->table_controller()->request_record(
                              url
                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                                  ""
@@ -230,6 +230,8 @@ namespace browser {
                 // QString u = url.toString();
                 emit search(url);
             }
+        } else {
+            globalparameters.table_screen()->table_controller()->select_pos(0);
         }
     }
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>browser::DownloadDialog</class>
- <widget class="QDialog" name="browser::DownloadDialog">
+ <class>download_dialog</class>
+ <widget class="QDialog" name="download_dialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -29,18 +29,15 @@
    <property name="spacing">
     <number>0</number>
    </property>
-   <item row="0" column="0" colspan="3">
-    <widget class="EditTableView" name="downloadsView"/>
-   </item>
    <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="cleanupButton">
-       <property name="enabled">
-        <bool>false</bool>
-       </property>
+      <widget class="FlatToolButton" name="cleanupButton">
        <property name="text">
         <string>Clean up</string>
+       </property>
+       <property name="autoRaise">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -79,13 +76,21 @@
      </property>
     </spacer>
    </item>
+   <item row="0" column="0" colspan="3">
+    <widget class="EditTableView" name="downloadsView"/>
+   </item>
   </layout>
  </widget>
  <customwidgets>
+ <customwidget>
+  <class>FlatToolButton</class>
+  <extends>QToolButton</extends>
+  <header location="global">libraries/FlatControl.h</header>
+ </customwidget>
   <customwidget>
    <class>EditTableView</class>
    <extends>QTableView</extends>
-   <header>edittableview.h</header>
+   <header location="global">edittableview.hxx</header>
   </customwidget>
  </customwidgets>
  <resources/>

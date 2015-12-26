@@ -1,7 +1,7 @@
 #include "TreeItem.h"
 #include "TreeModel.h"
 #include "main.h"
-#include "models/recordTable/TableData.h"
+#include "models/record_table/TableData.h"
 #include "libraries/GlobalParameters.h"
 
 extern GlobalParameters globalparameters;
@@ -41,7 +41,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if(role == Qt::ForegroundRole) {
         std::shared_ptr<TreeItem> it = item(index);
 
-        if(it->recordtableGetRowCount() > 0)
+        if(it->row_count() > 0)
             return QColor(Qt::black);// Если узел содержит таблицу конечных записей
         else
             return QColor(Qt::darkGray); // Ветка без таблицы конечных записей
@@ -58,7 +58,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
     if(role == Qt::DisplayRole || role == Qt::EditRole) {
         std::shared_ptr<TreeItem> it = item(index);
 
-        return QVariant(it->getField("dynamicname"));   // Запрашивается строка имени с количеством элементов
+        return QVariant(it->field("dynamicname"));   // Запрашивается строка имени с количеством элементов
     }
 
     // Если запрашиваются элементы оформления
@@ -66,9 +66,9 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
         std::shared_ptr<TreeItem> it = item(index);
 
         // Если ветка зашифрована
-        if(it->getField("crypt") == "1") {
+        if(it->field("crypt") == "1") {
             // Если пароль не введен, доступа к ветке нет
-            if(globalparameters.getCryptKey().length() == 0)
+            if(globalparameters.crypt_key().length() == 0)
                 return QIcon(":/resource/pic/branch_closed.svg");
             else
                 return QIcon(":/resource/pic/branch_opened.svg");
@@ -110,7 +110,7 @@ std::shared_ptr<TreeItem> TreeModel::item(const QModelIndex &index) const
 }
 
 
-QModelIndex TreeModel::index_from_item(std::shared_ptr<TreeItem> item)
+QModelIndex TreeModel::index_item(std::shared_ptr<TreeItem> item)
 {
     // Инициализация рекурсивной функции
     index_recursive(QModelIndex(), item, 0);
@@ -159,8 +159,8 @@ std::shared_ptr<TreeItem> TreeModel::item(QStringList path) const
         int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->childCount(); j++)
-            if((curritem->child(j))->getField("id") == path.at(i)) {
+        for(int j = 0; j < curritem->child_count(); j++)
+            if((curritem->child(j))->field("id") == path.at(i)) {
                 // Узел найден, он становится текущим
                 curritem = curritem->child(j);
                 found = 1;
@@ -188,8 +188,8 @@ bool TreeModel::is_item_valid(QStringList path) const
         int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->childCount(); j++)
-            if((curritem->child(j))->getField("id") == path.at(i)) {
+        for(int j = 0; j < curritem->child_count(); j++)
+            if((curritem->child(j))->field("id") == path.at(i)) {
                 // Узел найден, он становится текущим
                 curritem = curritem->child(j);
                 found = 1;
@@ -264,7 +264,7 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 
     // Добавляются строки начиная с указанной позиции, в количестве rows
     // с числом столбцов равным единице
-    success = parentItem->insertChildren(position, rows, 1);
+    success = parentItem->insert_children(position, rows, 1);
 
     endInsertRows();
 
@@ -289,7 +289,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
         }
     }
 
-    return createIndex(parentItem->childNumber(), 0, static_cast<void *>(parentItem.get()));
+    return createIndex(parentItem->child_index(), 0, static_cast<void *>(parentItem.get()));
 }
 
 
@@ -299,7 +299,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     bool success = true;
 
     beginRemoveRows(parent, position, position + rows - 1);
-    success = parentItem->removeChildren(position, rows);
+    success = parentItem->remove_children(position, rows);
     endRemoveRows();
 
     return success;
@@ -309,7 +309,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 int TreeModel::rowCount(const QModelIndex &itemIndex) const
 {
     std::shared_ptr<TreeItem> it = item(itemIndex);
-    return it->childCount();
+    return it->child_count();
 }
 
 
@@ -344,7 +344,7 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
         std::shared_ptr<TreeItem> it = item(index);
 
         // Устанавливаются данные в Item элемент
-        it->setField("name", value.toString());
+        it->set_field("name", value.toString());
 
         return true;
     }
@@ -360,6 +360,6 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
         return false;
 
     Q_UNUSED(section);
-    _root_item->setField("name", value.toString());
+    _root_item->set_field("name", value.toString());
     return true;
 }

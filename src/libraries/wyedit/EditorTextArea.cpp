@@ -6,7 +6,7 @@
 #include <QUrl>
 
 #include "../../main.h"
-#include "views/mainWindow/MainWindow.h"
+#include "views/main_window/MainWindow.h"
 #include "libraries/GlobalParameters.h"
 
 #include "Editor.h"
@@ -85,7 +85,7 @@ void EditorTextArea::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
     // qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
     if(gesture->state() == Qt::GestureFinished)
-        if(globalparameters.getTargetOs() == "android")
+        if(globalparameters.target_os() == "android")
             emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
 }
 

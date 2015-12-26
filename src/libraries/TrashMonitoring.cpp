@@ -4,7 +4,7 @@
 
 #include "main.h"
 #include "TrashMonitoring.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 
 extern AppConfig appconfig;
 

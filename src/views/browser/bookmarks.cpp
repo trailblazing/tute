@@ -42,7 +42,7 @@
 #include "bookmarks.h"
 
 #include "autosaver.h"
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "history.h"
 #include "xbel.h"
 

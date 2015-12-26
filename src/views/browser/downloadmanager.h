@@ -62,7 +62,7 @@ QT_BEGIN_NAMESPACE
 namespace browser {
 
     class DownloadManager;
-    class DownloadWidget : public QWidget, public Ui_DownloadItem {
+    class DownloadWidget : public QWidget, public Ui_DownloadItem , public std::enable_shared_from_this<DownloadWidget> {
         Q_OBJECT
 
     signals:
@@ -88,11 +88,11 @@ namespace browser {
         void updateInfoLabel();
         QString dataString(int size) const;
 
-        QUrl _url;
-        QFileInfo _file;
-        qint64 _bytesreceived;
-        QTime _downloadtime;
-        bool _stopped;
+        QUrl        _url;
+        QFileInfo   _file;
+        qint64      _bytesreceived;
+        QTime       _downloadtime;
+        bool        _stopped;
 
         //        QScopedPointer<QWebEngineDownloadItem>
         //        QSharedPointer<QWebEngineDownloadItem>
@@ -106,7 +106,9 @@ namespace browser {
     //    class QFileIconProvider;
     //    QT_END_NAMESPACE
 
-    class DownloadManager : public QDialog, public Ui_DownloadDialog {
+    class DownloadManager
+        : public QDialog
+        , public Ui_download_dialog {
         Q_OBJECT
         Q_PROPERTY(RemovePolicy removePolicy READ removePolicy WRITE setRemovePolicy)
         Q_ENUMS(RemovePolicy)
@@ -118,7 +120,7 @@ namespace browser {
             SuccessFullDownload
         };
 
-        DownloadManager(QWidget *parent = 0);
+        DownloadManager(QString object_name, QWidget *parent = 0);
         ~DownloadManager();
         int activeDownloads() const;
 
@@ -134,15 +136,15 @@ namespace browser {
         void updateRow();
 
     private:
-        void addItem(DownloadWidget *item);
+        void addItem(std::shared_ptr<DownloadWidget> item);
         void updateItemCount();
         void load();
 
-        AutoSaver *_autosaver;
-        DownloadModel *_model;
-        QFileIconProvider *_iconprovider;
-        QList<DownloadWidget *> _downloads;
-        RemovePolicy _removepolicy;
+        AutoSaver               *_autosaver;
+        DownloadModel           *_model;
+        QFileIconProvider       *_iconprovider;
+        QList<std::shared_ptr<DownloadWidget>> _downloads;
+        RemovePolicy            _removepolicy;
         friend class DownloadModel;
     };
 

@@ -28,11 +28,11 @@
 #if QT_VERSION < 0x050000
 #include "libraries/qtSingleApplication/qtsingleapplication.h"
 #else
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 #endif
 
-#include "views/mainWindow/MainWindow.h"
-#include "models/appConfig/AppConfig.h"
+#include "views/main_window/MainWindow.h"
+#include "models/app_config/AppConfig.h"
 #include "libraries/DiskHelper.h"
 #include "libraries/ClipboardRecords.h"
 #include "libraries/TrashMonitoring.h"
@@ -43,11 +43,11 @@
 #include "libraries/crypt/RC5Simple.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/GlobalParameters.h"
-#include "views/recordTable/TableScreen.h"
-#include "models/dataBaseConfig/DataBaseConfig.h"
-#include "models/recordTable/TableModel.h"
-#include "models/recordTable/TableData.h"
-#include "controllers/recordTable/TableController.h"
+#include "views/record_table/TableScreen.h"
+#include "models/database_config/DataBaseConfig.h"
+#include "models/record_table/TableModel.h"
+#include "models/record_table/TableData.h"
+#include "controllers/record_table/TableController.h"
 
 const int add_new_record_after = 2;
 using namespace std;
@@ -267,8 +267,8 @@ int imin(int x1, int x2)
 
 void smartPrintDebugMessage(QString msg)
 {
-    if(globalparameters.getTargetOs() == "any" ||
-       globalparameters.getTargetOs() == "meego") {
+    if(globalparameters.target_os() == "any" ||
+       globalparameters.target_os() == "meego") {
         QTime currTime = QTime::currentTime();
         QString timeText = currTime.toString("hh:mm:ss");
         msg = timeText + " " + msg;
@@ -339,12 +339,12 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 void setDebugMessageHandler()
 {
-    qDebug() << "Debug message before set message handler for target OS: " << globalparameters.getTargetOs();
+    qDebug() << "Debug message before set message handler for target OS: " << globalparameters.target_os();
 
     // Для десктопных операционок можно переустановить обработчик qDebug()
     // Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
-    if(globalparameters.getTargetOs() == "any" ||
-       globalparameters.getTargetOs() == "meego") {
+    if(globalparameters.target_os() == "any" ||
+       globalparameters.target_os() == "meego") {
         qDebug() << "Set alternative handler myMessageOutput() for debug message";
 
 #if QT_VERSION < 0x050000
@@ -431,7 +431,7 @@ QString replaceCssMetaIconSize(QString styleText)
 
 void setCssStyle()
 {
-    QString csspath = globalparameters.getWorkDirectory() + "/stylesheet.css";
+    QString csspath = globalparameters.work_directory() + "/stylesheet.css";
 
     QFile css(csspath);
 
@@ -440,7 +440,7 @@ void setCssStyle()
     // Если файла не существует
     if(!openResult) {
         qDebug() << "Stylesheet not found in " << csspath << ". Create new css file.";
-        globalparameters.createStyleSheetFile(globalparameters.getWorkDirectory());
+        globalparameters.create_stylesheet_file(globalparameters.work_directory());
     }
 
     css.close();
@@ -469,7 +469,7 @@ void setKineticScrollArea(QAbstractItemView *object)
     if(object == NULL)
         return;
 
-    if(globalparameters.getTargetOs() == "android") {
+    if(globalparameters.target_os() == "android") {
         // Настройка жестов прокрутки
         QScroller *scroller = QScroller::scroller(object);
 
@@ -546,7 +546,6 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "    subcontrol-origin: margin;"
                 "}"
                 ""
-
                 "QScrollBar: vertical {"
                 "border-color: rgb(227, 227, 227);"
                 "border-width: 1px;"
@@ -555,12 +554,10 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "width: 15px;"
                 "margin: 21px 0 21px 0;"
                 "}"
-
                 "QScrollBar::handle: vertical {"
                 "background-color: rgb(200, 200, 200);"
                 "min-height: 25px;"
                 "}"
-
                 "QScrollBar::add-line: vertical {"
                 "border: 1px solid grey;"
                 "background-color: rgb(241, 241, 241);"
@@ -568,7 +565,6 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "subcontrol-position: bottom;"
                 "subcontrol-origin: margin;"
                 "}"
-
                 "QScrollBar::sub-line: vertical {"
                 "border: 1px solid grey;"
                 "background-color: rgb(241, 241, 241);"
@@ -576,16 +572,12 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "subcontrol-position: top;"
                 "subcontrol-origin: margin;"
                 "}"
-
-
                 "QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {"
                 "background: none;"
                 "}"
-
                 "QScrollBar::up-arrow: vertical {"
                 "image: url(:/BarIcon/Icons/uparrow.png);"
                 "}"
-
                 "QScrollBar::down-arrow: vertical {"
                 "image: url(:/BarIcon/Icons/downarrow.png);"
                 "}"
@@ -632,7 +624,6 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "    width: 15px; "
                 "    margin: 0px 21px 0 21px; "
                 "}"
-
                 ""
                 "QScrollBar::handle: horizontal {"
                 "background-color: rgb(200, 200, 200); "
@@ -656,7 +647,6 @@ void setKineticScrollArea(QAbstractItemView *object)
                 "{"
                 "    image: url(:/BarIcon/Icons/leftarrow.png); "
                 "}"
-
                 "QScrollBar::right-arrow: horizontal"
                 "{"
                 "    image: url(:/BarIcon/Icons/rightarrow.png); "
@@ -755,318 +745,6 @@ void init_random(void)
 }
 
 
-std::shared_ptr<Record> register_record(
-    std::shared_ptr<Record> record
-    , TableController *_recordtablecontroller
-)
-{
-    assert(_recordtablecontroller);
-    std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
-    assert(recordtabledata);
-
-    //    Record record;
-
-    //    if(record.isLite())record.switchToFat();
-    assert(!record->isLite());
-    int source_position = _recordtablecontroller->new_record(record, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
-
-    //    Record *_record = nullptr;
-    //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
-
-    //                int pos = _recordtablecontroller->getFirstSelectionPos();
-    auto _record = _recordtablecontroller->recordtable_model()->getRecordTableData()->record(source_position);
-
-    assert(_record.get() == record.get());
-    //assert(record == _record);
-    assert(_record->getNaturalFieldSource("url") == record->getNaturalFieldSource("url"));
-    //            }
-    //assert(_record);
-    return _record; //_record;
-}
-
-//Record *register_record(const QUrl &_url
-//                        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
-//                        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> activator
-//                        , RecordTableController *_recordtablecontroller)
-//{
-
-//    assert(_recordtablecontroller);
-//    RecordTableData *recordtabledata = _recordtablecontroller->getRecordTableModel()->getRecordTableData();
-//    assert(recordtabledata);
-
-//    Record record;
-
-//    if(record.isLite())record.switchToFat();
-
-//    //                QString title = _url.toString(); // not ready yet
-
-//    record.setNaturalFieldSource("pin",     "");
-//    record.setNaturalFieldSource("name",    "");
-//    record.setNaturalFieldSource("author",  "");
-//    record.setNaturalFieldSource("home",    _url.toString());
-//    record.setNaturalFieldSource("url",     _url.toString());    // only changed
-//    record.setNaturalFieldSource("tags",    "");
-
-//    int source_position = _recordtablecontroller->new_record(_url, ADD_NEW_RECORD_AFTER, generator); //recordTableController->autoAddNewAfterContext();
-
-//    //    Record *_record = nullptr;
-//    //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
-
-//    //                int pos = _recordtablecontroller->getFirstSelectionPos();
-//    auto record_ = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(source_position);
-
-//    //assert(record_ == _record);
-//    assert(record_->getNaturalFieldSource("url") == _url.toString());
-//    //            }
-//    //assert(_record);
-//    return record_; //_record;
-//}
-
-std::shared_ptr<Record> check_record(const QUrl &_url)
-{
-    std::shared_ptr<Record> _record = nullptr;
-
-
-    TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
-    assert(_recordtablecontroller);
-
-    if(_recordtablecontroller) {
-        std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
-        assert(recordtabledata);
-
-        if(recordtabledata) {
-            _record = recordtabledata->find(_url);
-        }
-    }
-
-    return _record;
-}
-
-namespace browser {
-    class Browser;
-    class WebView;
-}
-
-std::shared_ptr<Record> request_record(
-    std::shared_ptr<Record> record
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
-)
-{
-    std::shared_ptr<Record> _record;
-    TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
-    assert(_recordtablecontroller);
-
-    if(_recordtablecontroller) {
-        std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
-        assert(recordtabledata);
-
-        if(recordtabledata) {
-            _record = recordtabledata->find(record);
-
-            if(!_record) {
-                //                record->binder(generator);
-                //                record->activator(activator);
-                _record = register_record(record, _recordtablecontroller);
-
-                //                assert(_record);
-
-                //                _record->active_immediately(active_immediately);
-                //                _record->generator(generator);
-                assert(_record.get() == record.get());
-            }
-
-            //            else {
-            _record->binder(generator);
-            _record->activator(activator);
-            //                _record->generate();
-            //            }
-
-            assert(_record);
-            assert(_record->is_registered());
-
-        }
-    }
-
-    //    }
-
-    //    assert(_record);
-
-    return _record;
-
-}
-
-std::shared_ptr<Record> request_record(
-    const QUrl &_url
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
-)
-{
-    std::shared_ptr<Record> _record = nullptr;
-
-    //    QString l = _url.toString();
-
-    //    if(_url.toString() == browser::DockedWindow::_defaulthome) {
-    //        if(default_record == nullptr) {
-    //            default_record = new Record();
-
-    //            if(default_record && default_record->isLite())default_record->switchToFat();
-
-    //            //                QString title = _url.toString(); // not ready yet
-    //            if(default_record) {
-    //                default_record->setNaturalFieldSource("pin",   "");
-    //                default_record->setNaturalFieldSource("name",   "");
-    //                default_record->setNaturalFieldSource("author", "");
-    //                default_record->setNaturalFieldSource("url",    _url.toString());    // only changed
-    //                default_record->setNaturalFieldSource("tags",   "");
-    //            }
-    //        }
-
-    //        _record = default_record;
-
-    //    } else {
-
-    TableController *_recordtablecontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
-    assert(_recordtablecontroller);
-
-    if(_recordtablecontroller) {
-        std::shared_ptr<TableData> recordtabledata = _recordtablecontroller->recordtable_model()->getRecordTableData();
-        assert(recordtabledata);
-
-        if(recordtabledata) {
-            _record = recordtabledata->find(_url);
-
-            if(!_record) {
-
-                //                int pos = _recordtablecontroller->getFirstSelectionPos();
-                //                Record *previous_record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-
-                //                if(previous_record) {
-
-                //                    Record record;
-
-                //                    if(record.isLite())record.switchToFat();
-
-                //                    //QString title = d->view->title(); // not ready yet
-                //                    //record.setNaturalFieldSource("id",   previous_record->getNaturalFieldSource("id"));   // id concept?
-                //                    record.setNaturalFieldSource("pin",   "");
-                //                    record.setNaturalFieldSource("name",   previous_record->getNaturalFieldSource("name"));
-                //                    record.setNaturalFieldSource("author", previous_record->getNaturalFieldSource("author"));
-                //                    record.setNaturalFieldSource("url",    _url.toString());    // only changed
-                //                    record.setNaturalFieldSource("tags",   previous_record->getNaturalFieldSource("tags"));
-
-                //                    _recordtablecontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
-                //                    _record = recordtabledata->getRecordByUrl(_url);
-                //                    //                int pos = _recordtablecontroller->getFirstSelectionPos();
-                //                    //                _record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-                //                } else {
-
-
-
-
-                //    record.generator(generator);
-
-
-                // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-                QString directory = DiskHelper::createTempDirectory();  //
-
-                std::shared_ptr<Record> record = std::make_shared<Record>();
-
-                //                if(record.isLite())
-                record->switchToFat();
-
-                //                QString title = _url.toString(); // not ready yet
-
-                record->setNaturalFieldSource("pin",     _check_state[Qt::Unchecked]);
-                record->setNaturalFieldSource("name",    "");
-                record->setNaturalFieldSource("author",  "");
-                record->setNaturalFieldSource("home",    _url.toString());    // only changed
-                record->setNaturalFieldSource("url",     _url.toString());    // only changed
-                record->setNaturalFieldSource("tags",    "");
-
-                //                _recordtablecontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
-                //                _record = recordtabledata->getRecordByUrl(_url);
-                //                //                int pos = _recordtablecontroller->getFirstSelectionPos();
-                //                //                _record = _recordtablecontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
-
-                //                //            }
-
-                //                record->binder(generator);
-                //                record->activator(activator);
-
-                record->setPictureFiles(DiskHelper::getFilesFromDirectory(directory, "*.png"));
-
-
-                // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
-                // Запись должна быть создана, потом можно аттачить файлы.
-                // Это ограничение для "ленивого" программинга, но пока так
-                // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
-
-                // Временная директория с картинками и приаттаченными файлами удаляется
-                DiskHelper::removeDirectory(directory);
-
-                _record = register_record(record, _recordtablecontroller);
-
-                //                assert(_record);
-                //                assert(_record->is_registered());
-                //                _record->active_immediately(active_immediately);
-                //                _record->generator(generator);
-
-                assert(_record.get() == record.get());
-            }
-
-            //            else {
-            //                //                assert(_record->is_registered());
-            //                _record->binder(generator);
-            //                _record->activator(activator);
-            //                //                _record->generate();    // why?
-            //            }
-
-            _record->binder(generator);
-            _record->activator(activator);
-
-            assert(_record);
-            assert(_record->is_registered());
-        }
-    }
-
-    //    }
-
-    //    assert(_record);
-
-    return _record;
-}
-
-
-std::shared_ptr<Record>  equip_registered(std::shared_ptr<Record> record, browser::WebPage *page)
-{
-    auto binder = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
-        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                   ""
-                   , &browser::WebPage::ActiveRecordBinder::binder
-                   , ar
-               );
-    };
-    auto activator = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
-        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                   ""
-                   , &browser::WebPage::ActiveRecordBinder::activator
-                   , ar
-               );
-    };
-
-    // registered record, but have no generator:
-    auto ar = boost::make_shared<browser::WebPage::ActiveRecordBinder>(page);
-    record->binder(
-        binder(ar)
-    );
-
-    record->activator(
-        activator(ar)
-    );
-
-    return record;
-}
 
 
 int main(int argc, char **argv)
@@ -1084,7 +762,7 @@ int main(int argc, char **argv)
     // File running program (a zero argument to main)
     QString mainProgramFile = QString::fromLatin1(argv[0]); // Todo: This code must not work correctly with ways to UTF 8   // todo: Этот код наверно некорректно работает с путями в UTF8
     qDebug() << "Set main program file to " << mainProgramFile;
-    globalparameters.setMainProgramFile(mainProgramFile);
+    globalparameters.main_program_file(mainProgramFile);
 
     // Перехват отладочных сообщений
     setDebugMessageHandler();

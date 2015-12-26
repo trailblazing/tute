@@ -2,7 +2,7 @@
 #define _EDITORCONFIGDIALOG_H_
 
 #include <QWidget>
-#include "views/appConfigWindow/ConfigDialog.h"
+#include "views/app_config/ConfigDialog.h"
 
 class EditorConfigDialog : public QWidget {
     Q_OBJECT

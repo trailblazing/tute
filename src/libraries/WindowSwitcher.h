@@ -3,11 +3,14 @@
 
 #include <QObject>
 
+class MetaEditor;
+
+
 class WindowSwitcher : public QObject {
     Q_OBJECT
 
 public:
-    explicit WindowSwitcher(QObject *parent = 0);
+    explicit WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent = 0);
 
     void enableSwitch(void);
     void disableSwitch(void);

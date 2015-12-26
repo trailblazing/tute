@@ -9,13 +9,13 @@
 #include "libraries/ClipboardRecords.h"
 #include "libraries/GlobalParameters.h"
 #include "models/tree/KnowTreeModel.h"
-#include "models/recordTable/TableData.h"
+#include "models/record_table/TableData.h"
 #include "models/tree/TreeItem.h"
-#include "models/recordTable/TableModel.h"
-#include "views/mainWindow/MainWindow.h"
-#include "views/recordTable/TableScreen.h"
+#include "models/record_table/TableModel.h"
+#include "views/main_window/MainWindow.h"
+#include "views/record_table/TableScreen.h"
 #include "views/record/MetaEditor.h"
-#include "controllers/recordTable/TableController.h"
+#include "controllers/record_table/TableController.h"
 
 
 extern GlobalParameters globalparameters;
@@ -73,7 +73,7 @@ void KnowTreeView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
     if(gesture->state() == Qt::GestureFinished)
-        if(globalparameters.getTargetOs() == "android")
+        if(globalparameters.target_os() == "android")
             emit tapAndHoldGestureFinished(mapFromGlobal(gesture->position().toPoint()));
 }
 
@@ -153,10 +153,10 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         auto treeItemDrop = parentPointer->_knowtreemodel->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
-        std::shared_ptr<TableData> recordTableData = treeItemDrop->recordtableGetTableData();
+        std::shared_ptr<TableData> recordTableData = treeItemDrop->tabledata();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = find_object<TreeScreen>("treeScreen")->getCurrentItemIndex();
+        QModelIndex indexFrom = find_object<TreeScreen>("tree_screen")->getCurrentItemIndex();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
         auto treeItemDrag = parentPointer->_knowtreemodel->item(indexFrom);
@@ -166,9 +166,9 @@ void KnowTreeView::dropEvent(QDropEvent *event)
             return;
 
         // Если перенос происходит из не зашифрованной ветки в зашифрованную, а пароль не установлен
-        if(treeItemDrag->getField("crypt") != "1" &&
-           treeItemDrop->getField("crypt") == "1" &&
-           globalparameters.getCryptKey().length() == 0) {
+        if(treeItemDrag->field("crypt") != "1" &&
+           treeItemDrop->field("crypt") == "1" &&
+           globalparameters.crypt_key().length() == 0) {
             // Выводится уведомление что невозможен перенос без пароля
             QMessageBox msgBox;
             msgBox.setWindowTitle(tr("Warning!"));
@@ -184,7 +184,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         // В настоящий момент в MimeData попадает только одна запись,
         // но в дальнейшем планируется переносить несколько записей
         // и здесь код подготовлен для переноса нескольких записей
-        TableController *recordTableController = find_object<TableController>("recordTableController"); // Указатель на контроллер таблицы конечных записей
+        TableController *recordTableController = find_object<TableController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
 
         for(int i = 0; i < clipboardRecords->getCount(); i++) {
             // Полные данные записи
@@ -197,17 +197,15 @@ void KnowTreeView::dropEvent(QDropEvent *event)
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(recordTableController->row_count() == 0)
-                find_object<MetaEditor>("editorScreen")->clearAll(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+                find_object<MetaEditor>("editor_screen")->clearAll(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
 
-            find_object<TableScreen>("recordTableScreen")->toolsUpdate();
+            find_object<TableScreen>("table_screen")->toolsUpdate();
 
             // Добавление записи в базу
-            recordTableData->insert_new_record(ADD_NEW_RECORD_TO_END,
-                                             0,
-                                             record);
+            recordTableData->insert_new_record(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
-            find_object<TreeScreen>("treeScreen")->saveKnowTree();
+            find_object<TreeScreen>("tree_screen")->saveKnowTree();
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось

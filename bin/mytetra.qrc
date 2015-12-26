@@ -115,5 +115,7 @@
         <file>resource/pic/footprint.svg</file>
         <file>resource/pic/drops.svg</file>
         <file>resource/pic/tableware.svg</file>
+        <file>resource/pic/three_leaves_clover.svg</file>
+        <file>resource/pic/leaves.svg</file>
     </qresource>
 </RCC>

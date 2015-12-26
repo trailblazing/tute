@@ -10,6 +10,7 @@
 
 namespace browser {
     class Entrance;
+    class DownloadManager;
 }
 
 class TreeScreen;
@@ -29,15 +30,15 @@ public:
     GlobalParameters(QObject *pobj = 0);
     virtual ~GlobalParameters();
 
-    void setMainProgramFile(QString file);
-    QString getMainProgramFile(void);
+    void main_program_file(QString file);
+    QString main_program_file(void);
 
     void init(void);
 
-    QString getWorkDirectory(void);
+    QString work_directory(void);
 
-    QString getTargetOs(void);
-    QString getApplicationName(void);
+    QString target_os(void);
+    QString application_name(void);
 
     void v_left_splitter(QSplitter *vleftsplitter);
     QSplitter *v_left_splitter();
@@ -45,65 +46,70 @@ public:
     void vtab(QTabWidget *point);
     QTabWidget *vtab();
 
-    void setTreeScreen(TreeScreen *point);
-    TreeScreen *getTreeScreen();
+    void tree_screen(TreeScreen *point);
+    TreeScreen *tree_screen();
 
     browser::Entrance *entrance();
     void entrance(browser::Entrance *&b);
 
-    void setRecordTableScreen(TableScreen *point);
-    TableScreen *getRecordTableScreen();
+    void table_screen(TableScreen *point);
+    TableScreen *table_screen();
 
-    void setFindScreen(FindScreen *point);
-    FindScreen *getFindScreen();
+    void page_screen(TableScreen *page);
+    TableScreen *page_screen();
 
-    void setMetaEditor(MetaEditor *point);
-    MetaEditor *getMetaEditor();
+    void find_screen(FindScreen *point);
+    FindScreen *find_screen();
 
-    void setStatusBar(QStatusBar *point);
-    QStatusBar *getStatusBar();
+    void meta_editor(MetaEditor *point);
+    MetaEditor *meta_editor();
 
-    void setWindowSwitcher(WindowSwitcher *point);
-    WindowSwitcher *getWindowSwitcher();
+    void status_bar(QStatusBar *point);
+    QStatusBar *status_bar();
+
+    void window_switcher(WindowSwitcher *point);
+    WindowSwitcher *window_switcher();
 
     MainWindow *mainwindow() {return _mainwindow;}
     void mainwindow(MainWindow *mainwindow) {_mainwindow = mainwindow;}
 
-    void setCryptKey(QByteArray hash);
-    QByteArray getCryptKey(void);
+    void crypt_key(QByteArray hash);
+    QByteArray crypt_key(void);
 
     // Файл стилей может создаваться и после развертывания начальных файлов MyTetra
     // Так как в более старых версиях MyTetra его еще небыло
-    void createStyleSheetFile(QString dirName);
+    void create_stylesheet_file(QString dirName);
 
     void style_source(const QString &source) {_style_source = source;}
     QString style_source()const {return _style_source;}
 
-
+    void download_manager(browser::DownloadManager *dm) {_download_manager = dm;}
+    browser::DownloadManager *download_manager();
 private:
 
-    void initWorkDirectory(void);
-    bool findWorkDirectory(void);
-    bool isMytetraIniConfig(QString fileName);
-    void createStandartProgramFiles(void);
-    void createPortableProgramFiles(void);
-    void createFirstProgramFiles(QString dirName);
+    void init_workdirectory(void);
+    bool find_workdirectory(void);
+    bool is_mytetra_ini_config(QString fileName);
+    void create_standard_programfiles(void);
+    void create_portable_programfiles(void);
+    void create_first_programfiles(QString dirName);
 
-    TreeScreen          *pointTreeScreen;
+    TreeScreen          *_tree_screen;
     browser::Entrance   *_browsermanager;
-    TableScreen   *pointRecordTableScreen;
-    FindScreen          *pointFindScreen;
-    MetaEditor          *pointMetaEditor;
-    QStatusBar          *pointStatusBar;
-    WindowSwitcher      *windowSwitcher;
+    TableScreen         *_table_screen;
+    TableScreen         *_page_screen;
+    FindScreen          *_find_screen;
+    MetaEditor          *_meta_editor;
+    QStatusBar          *_statusbar;
+    WindowSwitcher      *_window_switcher;
     QSplitter           *_v_left_splitter;
     QTabWidget          *_vtab;
     MainWindow          *_mainwindow;
+    browser::DownloadManager *_download_manager;
+    QString             _main_program_file;
+    QString             _work_directory;
 
-    QString             mainProgramFile;
-    QString             workDirectory;
-
-    QByteArray          passwordHash;
+    QByteArray          _password_hash;
     QString             _style_source;
 };
 

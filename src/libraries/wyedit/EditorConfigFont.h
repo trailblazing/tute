@@ -12,7 +12,7 @@
 
 class FlatToolButton;
 
-#include "views/appConfigWindow/ConfigPage.h"
+#include "views/app_config/ConfigPage.h"
 
 
 class EditorConfig;

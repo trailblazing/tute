@@ -11,7 +11,7 @@
 #include "AddNewRecord.h"
 #include "main.h"
 #include "InfoFieldEnter.h"
-#include "models/appConfig/AppConfig.h"
+#include "models/app_config/AppConfig.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/wyedit/Editor.h"
 #include "libraries/DiskHelper.h"
@@ -51,7 +51,7 @@ void AddNewRecord::setupUI(void)
     recordTextEditor = new Editor();
     recordTextEditor->setDisableToolList(appconfig.getHideEditorTools() + (QStringList() << "save" << "show_text" << "attach"));
     recordTextEditor->initEnableAssembly(true);
-    recordTextEditor->initConfigFileName(globalparameters.getWorkDirectory() + "/editorconf.ini");
+    recordTextEditor->initConfigFileName(globalparameters.work_directory() + "/editorconf.ini");
     recordTextEditor->initEnableRandomSeed(false);
     recordTextEditor->init(Editor::WYEDIT_DESKTOP_MODE); // Так как это окно, в мобильном режие его инициализировать ненужно, так как есть кнопка Отмена
 

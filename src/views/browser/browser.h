@@ -47,7 +47,7 @@
 #include <QtGui/QIcon>
 #include <QtCore/QUrl>
 #include <QWebEngineSettings>
-#include "controllers/recordTable/TableController.h"
+#include "controllers/record_table/TableController.h"
 //#include "tabmanager.h"
 
 
@@ -84,6 +84,7 @@ namespace browser {
         Browser(
             QUrl const &url         // Record *const record
             , TableController *recordtablecontroller
+            , TableController *_page_controller
             , Entrance *_entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -93,6 +94,7 @@ namespace browser {
         Browser(
             const QByteArray &state
             , TableController *recordtablecontroller
+            , TableController *_page_controller
             , Entrance *_entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -101,6 +103,7 @@ namespace browser {
         Browser(
             std::shared_ptr<Record> record
             , TableController *recordtablecontroller
+            , TableController *_page_controller
             , Entrance *entrance   //, QDockWidget *parent
             , const QString &style_source
             , Qt::WindowFlags flags = 0
@@ -201,8 +204,9 @@ namespace browser {
         //    void initUrl();
     private:
 
-        TableController   *_recordtablecontroller;
-        TabWidget               *_tabmanager;
+        TableController     *_record_controller;
+        TableController     *_page_controller;
+        TabWidget           *_tabmanager;
         //    QDockWidget *dock_widget;
         //        QToolBar *navigater;
         ToolbarSearch       *_toolbarsearch;

@@ -125,15 +125,15 @@ namespace browser {
     private:
         void purgeOldCookies();
         void load();
-        bool m_loaded;
-        AutoSaver *m_saveTimer;
+        bool        _loaded;
+        AutoSaver   *_save_timer;
 
-        AcceptPolicy m_acceptCookies;
-        KeepPolicy m_keepCookies;
+        AcceptPolicy    _accept_cookies;
+        KeepPolicy      _keep_cookies;
 
-        QStringList m_exceptions_block;
-        QStringList m_exceptions_allow;
-        QStringList m_exceptions_allowForSession;
+        QStringList _exceptions_block;
+        QStringList _exceptions_allow;
+        QStringList _exceptions_allow_for_session;
     };
 
     class CookieModel : public QAbstractTableModel {

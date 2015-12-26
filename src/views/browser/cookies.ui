@@ -79,11 +79,11 @@
    <extends>QLineEdit</extends>
    <header>searchlineedit.h</header>
   </customwidget>
-  <customwidget>
-   <class>EditTableView</class>
-   <extends>QTableView</extends>
-   <header>edittableview.h</header>
-  </customwidget>
+   <customwidget>
+    <class>EditTableView</class>
+    <extends>QTableView</extends>
+    <header location="global">edittableview.hxx</header>
+   </customwidget>
  </customwidgets>
  <resources/>
  <connections>

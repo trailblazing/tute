@@ -38,15 +38,15 @@
 #include "entrance.h"
 #include "entranceinfo.h"
 #include "toolbarsearch.h"
-#include "views/recordTable/TableScreen.h"
-#include "controllers/recordTable/TableController.h"
-#include "views/recordTable/TableView.h"
-#include "models/recordTable/TableData.h"
-#include "models/recordTable/TableModel.h"
+#include "views/record_table/TableScreen.h"
+#include "controllers/record_table/TableController.h"
+#include "views/record_table/TableView.h"
+#include "models/record_table/TableData.h"
+#include "models/record_table/TableModel.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/webview.h"
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
-#include "views/findInBaseScreen/FindScreen.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "views/find_in_base_screen/FindScreen.h"
 #include <utility>
 
 namespace browser {
@@ -151,7 +151,7 @@ namespace browser {
         // sb.append(QDir::separator());
         // sb.append("browserview.ini");
 
-        QString configFileName = globalparameters.getWorkDirectory() + "/browserview.ini";
+        QString configFileName = globalparameters.work_directory() + "/browserview.ini";
         // check to see if we have a settings file where we started from
         // if not fall back to system hard coded path
         QFileInfo file(configFileName.toLatin1()); //file(sb.toLatin1());
@@ -298,7 +298,7 @@ namespace browser {
         //        setAutoFillBackground(true);
         //        setFeatures(QDockWidget::NoDockWidgetFeatures);
         //        _browser = browser;
-        _mainWindows.prepend(browser);
+        _main_windows.prepend(browser);
 
         return this;
     }
@@ -320,7 +320,7 @@ namespace browser {
     void Entrance::on_activate_window()
     {
 
-        FindScreen *findscreen = globalparameters.getFindScreen();
+        FindScreen *findscreen = globalparameters.find_screen();
 
         assert(findscreen);
         assert(findscreen->historyhome());
@@ -348,7 +348,7 @@ namespace browser {
                        && homeurl != page->url()
                       ) {
                         record->setNaturalFieldSource("url", home);
-                        ::equip_registered(record, page)->active(); // page->load(record, true);
+                        page->equip_registered(record)->active(); // page->load(record, true);
                     }
                 }
             }
@@ -360,7 +360,7 @@ namespace browser {
     Browser *Entrance::new_browser(const QByteArray &state)
     {
 
-        Browser *browser = new Browser(state, _recordtablecontroller, this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
+        Browser *browser = new Browser(state, _record_controller, _page_controller, this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
         //        browser->setParent(_dockwidget);
@@ -381,7 +381,8 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(url
-                    , _recordtablecontroller
+                    , _record_controller
+                    , _page_controller
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -397,7 +398,8 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(record
-                    , _recordtablecontroller
+                    , _record_controller
+                    , _page_controller
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -420,7 +422,8 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(url
-                    , _recordtablecontroller
+                    , _record_controller
+                    , _page_controller
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -464,7 +467,7 @@ namespace browser {
     //        //auto dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
     //        //dock_widget->setParent(this);
     //        DockedWindow *browser = new DockedWindow(record->getNaturalFieldSource("url")
-    //                                                 , _recordtablecontroller
+    //                                                 , _record_ontroller
     //                                                 , this
     //                                                 , _style_source
     //                                                 , Qt::MaximizeUsingFullscreenGeometryHint
@@ -518,10 +521,11 @@ namespace browser {
     //        qobject_cast<Entrance *>(parent)->window_list().prepend(browser);
     //    }
 
-    Entrance::Entrance(TableController *recordtablecontroller, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
+    Entrance::Entrance(QString object_name, TableController *recordtablecontroller, TableController *_page_controller, browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
         : QDockWidget(parent, flags)  //, _application(application)
-        , _mainWindows(QList<QPointer<Browser> >())
-        , _recordtablecontroller(recordtablecontroller)
+        , _main_windows(QList<QPointer<Browser> >())
+        , _record_controller(recordtablecontroller)
+        , _page_controller(_page_controller)
         , _style_source(style_source)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint //| Qt::SplashScreen
                                    ))
@@ -537,7 +541,7 @@ namespace browser {
           //                                    , this, style_source, flags    //Qt::Widget   //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
           //                                   ))
     {
-
+        setObjectName(object_name);
         //        invoke_ptr = &Entrance::active_url;
 
         //_mainWindows.prepend(browser);
@@ -622,7 +626,7 @@ namespace browser {
 
         initSetting();
 
-        setupSignals();
+        setupSignals(toolbarsearch);
 
         //        new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));  // main_window() will never fail
 
@@ -639,14 +643,14 @@ namespace browser {
     {
         if(_hidetitlebar)delete _hidetitlebar;
 
-        for(int i = 0; i < _mainWindows.size(); ++i) {
-            Browser *window = _mainWindows.at(i);
+        for(int i = 0; i < _main_windows.size(); ++i) {
+            Browser *window = _main_windows.at(i);
 
             if(window) {delete window; window = nullptr;}
         }
 
         //if(isselfcreated())delete current_record;   // no, do not apply memory by this class for record, from the original source
-        if(_actionFreeze)delete _actionFreeze;
+        //        if(_actionFreeze)delete _actionFreeze;
 
         //        if(_dockwidget)delete _dockwidget;
 
@@ -656,9 +660,9 @@ namespace browser {
 
     void Entrance::setupActions()
     {
-        _actionFreeze = new QAction(tr("Pin / freeze browser view"), this);
-        _actionFreeze->setStatusTip(tr("Pin / freeze browser view"));
-        _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
+        //        _actionFreeze = new QAction(tr("Pin / freeze browser view"), this);
+        //        _actionFreeze->setStatusTip(tr("Pin / freeze browser view"));
+        //        _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
     }
 
     void Entrance::setupUI(void)
@@ -731,7 +735,7 @@ namespace browser {
     {
         //        Record *r =
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
-        auto r = request_record(
+        auto r = _record_controller->request_record(
                      url
                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                          ""
@@ -749,11 +753,11 @@ namespace browser {
         //        return active_record(r);
     }
 
-    void Entrance::setupSignals(void)
+    void Entrance::setupSignals(browser::ToolbarSearch *toolbarsearch)
     {
-        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        connect(_toolbarsearch, &ToolbarSearch::search, this, &Entrance::active_url);
-        connect(this->_actionFreeze, SIGNAL(triggered()), globalparameters.getWindowSwitcher(), SLOT(findInBaseClick()));
+        //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
+        connect(toolbarsearch, &ToolbarSearch::search, this, &Entrance::active_url);
+        //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
     }
 
@@ -932,14 +936,13 @@ namespace browser {
         reply->ignoreSslErrors(errors);
     }
 
-
     void Entrance::clean()
     {
-        if(_mainWindows.count() > 0) {
+        if(_main_windows.count() > 0) {
             // cleanup any deleted main windows first
-            for(int i = _mainWindows.count() - 1; i >= 0; --i) {
-                if(_mainWindows.at(i).isNull()) {
-                    _mainWindows.removeAt(i);
+            for(int i = _main_windows.count() - 1; i >= 0; --i) {
+                if(_main_windows.at(i).isNull()) {
+                    _main_windows.removeAt(i);
                 }
             }
         }
@@ -957,8 +960,8 @@ namespace browser {
         //                 );
         //        } else { //
 
-        if(!_mainWindows.isEmpty()) {
-            for(auto &i : _mainWindows) {
+        if(!_main_windows.isEmpty()) {
+            for(auto &i : _main_windows) {
                 if(i->isVisible() || i->isActiveWindow()) {
                     assert(i.data());
                     dp.first = i.data();
@@ -994,7 +997,7 @@ namespace browser {
 
 
 
-                if(_mainWindows.isEmpty()) {
+                if(_main_windows.isEmpty()) {
 
                     //            Record *r = record ? record : request_record(QUrl(DockedWindow::_defaulthome));
                     //            r->active_immediately(true);
@@ -1021,7 +1024,7 @@ namespace browser {
                     //                    if(record && QUrl(record->getNaturalFieldSource("url")).isValid()) {
                     //            if(record)record->active_immediately(true);
 
-                    for(auto &i : _mainWindows) {
+                    for(auto &i : _main_windows) {
 
                         dp.second = i->tabWidget()->find(record->getNaturalFieldSource("url"));
 
@@ -1190,16 +1193,16 @@ namespace browser {
         //        for(int i = 0; i < _mainWindows.count(); ++i)
         //            list.append(_mainWindows.at(i));
 
-        return _mainWindows;    // list;
+        return _main_windows;    // list;
     }
 
 #if defined(Q_OS_OSX)
     void BrowserView::lastWindowClosed()
     {
         clean();
-        BrowserWindow *mw = new BrowserWindow(this);
-        mw->slotHome();
-        _mainWindows.prepend(mw);
+        browser::Browser *browser = new browser::Browser(this);
+        browser->slotHome();
+        _main_windows.prepend(browser);
     }
 #endif
 
@@ -1218,7 +1221,7 @@ namespace browser {
 
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
-        for(auto &i : _mainWindows) {
+        for(auto &i : _main_windows) {
             dp.second = i->tabWidget()->find(record->getNaturalFieldSource("url"));
 
             if(dp.second != nullptr) {
@@ -1250,7 +1253,7 @@ namespace browser {
 
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
-        for(auto &i : _mainWindows) {
+        for(auto &i : _main_windows) {
             dp.second = i->tabWidget()->find(url);
 
             if(dp.second != nullptr) {
@@ -1277,7 +1280,7 @@ namespace browser {
     //    BrowserView *BrowserManager::create_view(Record *record, BrowserWindow *window)
     //    {
     //        BrowserView *bv = nullptr;
-    //        bv = window->tabWidget()->newTabFull(record, _recordtablecontroller, true);
+    //        bv = window->tabWidget()->newTabFull(record, _record_ontroller, true);
     //        return bv;
     //    }
 
@@ -1344,7 +1347,7 @@ namespace browser {
 
     void Entrance::resizeEvent(QResizeEvent *e)
     {
-        for(auto &i : _mainWindows) {
+        for(auto &i : _main_windows) {
             i->resizeEvent(e);
         }
 

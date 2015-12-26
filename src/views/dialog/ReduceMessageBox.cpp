@@ -2,7 +2,7 @@
 
 #include "main.h"
 #include "ReduceMessageBox.h"
-#include "views/mainWindow/MainWindow.h"
+#include "views/main_window/MainWindow.h"
 
 
 

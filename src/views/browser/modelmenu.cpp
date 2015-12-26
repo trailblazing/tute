@@ -181,7 +181,7 @@ namespace browser {
             end = qMin(max, end);
 
         connect(menu, SIGNAL(triggered(QAction *)), this, SLOT(triggered(QAction *)));
-        connect(menu, SIGNAL(hovered(QAction *)), this, SLOT(hovered(QAction *)));
+        connect(menu, SIGNAL(hovered(QAction *)), this, SLOT(hovered_signal(QAction *)));
 
         for(int i = 0; i < end; ++i) {
             QModelIndex idx = _model->index(i, 0, parent);
@@ -241,7 +241,7 @@ namespace browser {
             QString hoveredString = idx.data(_hoverrole).toString();
 
             if(!hoveredString.isEmpty())
-                emit hovered(hoveredString);
+                emit hovered_signal(hoveredString);
         }
     }
 

@@ -43,7 +43,7 @@
 #include <cassert>
 #include "tabwidget.h"
 
-#include "libraries/qtSingleApplication5/qtsingleapplication.h"
+#include "libraries/qt_single_application5/qtsingleapplication.h"
 
 #include "browser.h"
 #include "downloadmanager.h"
@@ -68,16 +68,16 @@
 #include <QException>
 
 
-#include "views/recordTable/TableScreen.h"
+#include "views/record_table/TableScreen.h"
 #include "libraries/GlobalParameters.h"
-#include "models/recordTable/Record.h"
-#include "models/recordTable/TableModel.h"
-#include "models/recordTable/TableData.h"
-#include "views/recordTable/TableView.h"
-#include "views/findInBaseScreen/FindScreen.h"
+#include "models/record_table/Record.h"
+#include "models/record_table/TableModel.h"
+#include "models/record_table/TableData.h"
+#include "views/record_table/TableView.h"
+#include "views/find_in_base_screen/FindScreen.h"
 #include "toolbarsearch.h"
 #include "entrance.h"
-#include "views/mainWindow/MainWindow.h"
+#include "views/main_window/MainWindow.h"
 #include "main.h"
 
 extern GlobalParameters globalparameters;
@@ -96,18 +96,18 @@ namespace browser {
     {
         setContextMenuPolicy(Qt::CustomContextMenu);
         setAcceptDrops(true);
-        connect(this, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextMenuRequested(QPoint)));
+        connect(this, &TabBar::customContextMenuRequested, this, &TabBar::contextMenuRequested);
 
         QString ctrl = QLatin1String("Ctrl+%1");
 
         for(int i = 1; i < 10; ++i) {
             QShortcut *shortCut = new QShortcut(ctrl.arg(i), this);
             _tabshortcuts.append(shortCut);
-            connect(shortCut, SIGNAL(activated()), this, SLOT(selectTabAction()));
+            connect(shortCut, &QShortcut::activated, this, &TabBar::selectTabAction);
         }
 
         setTabsClosable(true);
-        connect(this, SIGNAL(tabCloseRequested(int)), this, SIGNAL(closeTab(int)));
+        //        connect(this, &TabBar::tabCloseRequested, this, &TabBar::closeTab);
         setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
         setMovable(true);
     }
@@ -127,27 +127,26 @@ namespace browser {
         int index = tabAt(position);
 
         if(-1 != index) {
-            QAction *action = menu.addAction(tr("Clone Tab"),
-                                             this, SLOT(cloneTab()));
+            QAction *action = menu.addAction(tr("Clone Tab"), this, &TabBar::cloneTab);
             action->setData(index);
 
             menu.addSeparator();
 
-            action = menu.addAction(tr("&Close Tab"), this, SLOT(closeTab()), QKeySequence::Close);
+            action = menu.addAction(tr("&Close Tab"), this, &TabBar::closeTab, QKeySequence::Close);
             action->setData(index);
 
-            action = menu.addAction(tr("Close &Other Tabs"), this, SLOT(closeOtherTabs()));
+            action = menu.addAction(tr("Close &Other Tabs"), this, &TabBar::closeOtherTabs);
             action->setData(index);
 
             menu.addSeparator();
 
-            action = menu.addAction(tr("Reload Tab"), this, SLOT(reloadTab()), QKeySequence::Refresh);
+            action = menu.addAction(tr("Reload Tab"), this, &TabBar::reloadTab, QKeySequence::Refresh);
             action->setData(index);
         } else {
             menu.addSeparator();
         }
 
-        menu.addAction(tr("Reload All Tabs"), this, SIGNAL(reloadAllTabs()));
+        menu.addAction(tr("Reload All Tabs"), this, &TabBar::reloadAllTabs);
         menu.exec(QCursor::pos());
     }
 
@@ -155,7 +154,7 @@ namespace browser {
     {
         if(QAction *action = qobject_cast<QAction *>(sender())) {
             int index = action->data().toInt();
-            emit cloneTab(index);
+            emit cloneTabSignal(index);
         }
     }
 
@@ -163,7 +162,7 @@ namespace browser {
     {
         if(QAction *action = qobject_cast<QAction *>(sender())) {
             int index = action->data().toInt();
-            emit closeTab(index);
+            emit closeTabSignal(index);
         }
     }
 
@@ -171,7 +170,7 @@ namespace browser {
     {
         if(QAction *action = qobject_cast<QAction *>(sender())) {
             int index = action->data().toInt();
-            emit closeOtherTabs(index);
+            emit closeOtherTabsSignal(index);
         }
     }
 
@@ -228,7 +227,7 @@ namespace browser {
     {
         if(QAction *action = qobject_cast<QAction *>(sender())) {
             int index = action->data().toInt();
-            emit reloadTab(index);
+            emit reloadTabSignal(index);
         }
     }
 
@@ -250,7 +249,7 @@ namespace browser {
 
     }
 
-    TabWidget::TabWidget(TableController *recordtablecontroller, Browser *parent)
+    TabWidget::TabWidget(TableController *_record_controller, TableController *_page_controller, Browser *parent)
         : QTabWidget(parent)
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
@@ -267,12 +266,13 @@ namespace browser {
         , _profile(QWebEngineProfile::defaultProfile())
         , _fullscreenview(0)
         , _fullscreennotification(0)
-        , _recordtablecontroller(recordtablecontroller)
+        , _record_controller(_record_controller)
+        , _page_controller(_page_controller)
           //        , _active_record(this)
           //        , _active("", &active_record::operator(), &_active_record)
         , _window(parent)
     {
-        _lineedits = globalparameters.getFindScreen()->toolbarsearch()->lineedits();
+        _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
 
         setElideMode(Qt::ElideRight);
         //        _active_record = [this](Record * const record)-> WebView * {return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);};
@@ -281,7 +281,7 @@ namespace browser {
             , &TabBar::newTab   //                , this
         , [this]() {
             boost::shared_ptr<browser::TabWidget::ActiveRecordBinder> arint = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(this, true);
-            auto r = request_record(
+            auto r = this->_record_controller->request_record(
                          QUrl(Browser::_defaulthome)
 
                          //            [this](Record * const record)-> WebView * {
@@ -299,13 +299,16 @@ namespace browser {
                      );
             //            r->active();
         });
-        connect(_tabbar, SIGNAL(closeTab(int)), this, SLOT(closeTab(int)));
+
+        connect(_tabbar, &TabBar::closeTabSignal, this
+                , &TabWidget::closeTab
+               );
         connect(this, &TabWidget::tabsChanged, this, &TabWidget::onTabsChanged);
-        connect(_tabbar, SIGNAL(cloneTab(int)), this, SLOT(cloneTab(int)));
-        connect(_tabbar, SIGNAL(closeOtherTabs(int)), this, SLOT(closeOtherTabs(int)));
-        connect(_tabbar, SIGNAL(reloadTab(int)), this, SLOT(reloadTab(int)));
-        connect(_tabbar, SIGNAL(reloadAllTabs()), this, SLOT(reloadAllTabs()));
-        connect(_tabbar, SIGNAL(tabMoved(int, int)), this, SLOT(moveTab(int, int)));
+        connect(_tabbar, &TabBar::cloneTabSignal, this, &TabWidget::cloneTab);
+        connect(_tabbar, &TabBar::closeOtherTabsSignal, this, &TabWidget::closeOtherTabs);
+        connect(_tabbar, &TabBar::reloadTabSignal, this, &TabWidget::reloadTab);
+        connect(_tabbar, &TabBar::reloadAllTabs, this, &TabWidget::reloadAllTabs);
+        connect(_tabbar, &TabBar::tabMoved, this, &TabWidget::moveTab);
         setTabBar(_tabbar);
         setDocumentMode(true);
 
@@ -321,7 +324,7 @@ namespace browser {
             , &QAction::triggered   //                , this
         , [this](bool make_current) {
             auto arint = boost::make_shared<ActiveRecordBinder>(this, make_current);
-            request_record(
+            this->_record_controller->request_record(
                 QUrl(Browser::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                     "", &ActiveRecordBinder::binder, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
@@ -342,7 +345,7 @@ namespace browser {
         shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_BracketRight));
         shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Less));
         _nexttabaction->setShortcuts(shortcuts);
-        connect(_nexttabaction, SIGNAL(triggered()), this, SLOT(nextTab()));
+        connect(_nexttabaction, &QAction::triggered, this, &TabWidget::nextTab);
 
         //        _previoustabaction = ;
         shortcuts.clear();
@@ -351,16 +354,16 @@ namespace browser {
         shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_BracketLeft));
         shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Greater));
         _previoustabaction->setShortcuts(shortcuts);
-        connect(_previoustabaction, SIGNAL(triggered()), this, SLOT(previousTab()));
+        connect(_previoustabaction, &QAction::triggered, this, &TabWidget::previousTab);
 
         //        _recentlyclosedtabsmenu = ;
-        connect(_recentlyclosedtabsmenu, SIGNAL(aboutToShow()), this, SLOT(aboutToShowRecentTabsMenu()));
-        connect(_recentlyclosedtabsmenu, SIGNAL(triggered(QAction *)), this, SLOT(aboutToShowRecentTriggeredAction(QAction *)));
+        connect(_recentlyclosedtabsmenu, &QMenu::aboutToShow, this, &TabWidget::aboutToShowRecentTabsMenu);
+        connect(_recentlyclosedtabsmenu, &QMenu::triggered, this, &TabWidget::aboutToShowRecentTriggeredAction);
         //        _recentlyclosedtabsaction = ;
         _recentlyclosedtabsaction->setMenu(_recentlyclosedtabsmenu);
         _recentlyclosedtabsaction->setEnabled(false);
 
-        connect(this, SIGNAL(currentChanged(int)), this, SLOT(currentChanged(int)));
+        connect(this, &QTabWidget::currentChanged, this, &TabWidget::currentChanged);
 
         //        _lineedits = ;
 
@@ -415,19 +418,19 @@ namespace browser {
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
                 disconnect(oldWebView, &PageView::statusBarMessage, this, &TabManager::showStatusBarMessage);
 #endif
-                disconnect(oldWebView->page(), SIGNAL(linkHovered(const QString &)), this, SIGNAL(linkHovered(const QString &)));
-                disconnect(oldWebView, SIGNAL(loadProgress(int)), this, SIGNAL(loadProgress(int)));
-                disconnect(oldWebView->page()->profile(), SIGNAL(downloadRequested(QWebEngineDownloadItem *)), this, SLOT(downloadRequested(QWebEngineDownloadItem *)));
-                disconnect(oldWebView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)), this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
+                disconnect(static_cast<QWebEnginePage *>(oldWebView->page()), &QWebEnginePage::linkHovered, this, &TabWidget::linkHovered);
+                disconnect(oldWebView, &WebView::loadProgress, this, &TabWidget::loadProgress);
+                disconnect(oldWebView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
+                disconnect(static_cast<QWebEnginePage *>(oldWebView->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
             }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
-            connect(view, SIGNAL(statusBarMessage(QString)), this, SIGNAL(showStatusBarMessage(QString)));
+            connect(webView, &WebView::statusBarMessage, this, &TabWidget::showStatusBarMessage);
 #endif
-            connect(webView->page(), &WebPage::linkHovered, this, &TabWidget::linkHovered);
+            connect(static_cast<QWebEnginePage *>(webView->page()), &QWebEnginePage::linkHovered, this, &TabWidget::linkHovered);
             connect(webView, &WebView::loadProgress, this, &TabWidget::loadProgress);
             connect(webView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
-            connect(webView->page(), SIGNAL(fullScreenRequested(QWebEngineFullScreenRequest)), this, SLOT(fullScreenRequested(QWebEngineFullScreenRequest)));
+            connect(static_cast<QWebEnginePage *>(webView->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
             for(int i = 0; i < _actions.count(); ++i) {
                 WebActionMapper *mapper = _actions[i];
@@ -458,7 +461,7 @@ namespace browser {
                     //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
                     webView->setFocus();
                     //                    globalparameters.mainwindow()
-                    _recordtablecontroller->select_id(record->getNaturalFieldSource("id"));
+                    _record_controller->select_id(record->getNaturalFieldSource("id"));
                     //                    webView->setFocus();
 
                 }
@@ -591,7 +594,8 @@ namespace browser {
 
     WebView *TabWidget::newTab(std::shared_ptr<Record> record   // , bool openinnewtab
                                , bool make_current
-                               , TableController *recordtablecontroller
+                               , TableController *_record_controller
+                               , TableController *_page_controller
                               )
     {
         //        if(record == nullptr) {
@@ -631,7 +635,7 @@ namespace browser {
         if(!record->unique_page()) {
             view = new WebView(record, _profile // use record for return
                                // , openinnewtab
-                               , this, recordtablecontroller); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
+                               , this, _record_controller, _page_controller); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
         }
 
         //        record->view(webView);  // inside PageView initialization
@@ -639,27 +643,27 @@ namespace browser {
         assert(record->unique_page());
 
         urlLineEdit->setWebView(view);
-        connect(view, SIGNAL(loadStarted()), this, SLOT(webViewLoadStarted()));
-        connect(view, SIGNAL(iconChanged()), this, SLOT(webViewIconChanged()));
-        connect(view, SIGNAL(titleChanged(QString)), this, SLOT(webViewTitleChanged(QString)));
-        connect(view, SIGNAL(urlChanged(QUrl)), this, SLOT(webViewUrlChanged(QUrl)));
-        connect(view->page(), SIGNAL(windowCloseRequested()), this, SLOT(windowCloseRequested()));
-        connect(view->page(), SIGNAL(geometryChangeRequested(QRect)), this, SIGNAL(geometryChangeRequested(QRect)));
+        connect(view, &WebView::loadStarted, this, &TabWidget::webViewLoadStarted);
+        connect(view, &WebView::iconChanged, this, &TabWidget::webViewIconChanged);
+        connect(view, &WebView::titleChanged, this, &TabWidget::webViewTitleChanged);
+        connect(view, &WebView::urlChanged, this, &TabWidget::webViewUrlChanged);
+        connect(static_cast<QWebEnginePage *>(view->page()), &QWebEnginePage::windowCloseRequested, this, &TabWidget::windowCloseRequested);
+        connect(static_cast<QWebEnginePage *>(view->page()), &QWebEnginePage::geometryChangeRequested, this, &TabWidget::geometryChangeRequested);
 
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
-        connect(view->page(), SIGNAL(printRequested(QWebEngineFrame *)), this, SIGNAL(printRequested(QWebEngineFrame *)));
+        connect(view->page(), &WebPage::printRequested, this, &TabWidget::printRequested);
 #endif
 
 #if defined(QWEBENGINEPAGE_MENUBARVISIBILITYCHANGEREQUESTED)
-        connect(view->page(), SIGNAL(menuBarVisibilityChangeRequested(bool)), this, SIGNAL(menuBarVisibilityChangeRequested(bool)));
+        connect(view->page(), &WebPage::menuBarVisibilityChangeRequested, this, &TabWidget::menuBarVisibilityChangeRequested);
 #endif
 
 #if defined(QWEBENGINEPAGE_STATUSBARVISIBILITYCHANGEREQUESTED)
-        connect(view->page(), SIGNAL(statusBarVisibilityChangeRequested(bool)), this, SIGNAL(statusBarVisibilityChangeRequested(bool)));
+        connect(view->page(), &WebPage::statusBarVisibilityChangeRequested, this, &TabWidget::statusBarVisibilityChangeRequested);
 #endif
 
 #if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
-        connect(view->page(), SIGNAL(toolBarVisibilityChangeRequested(bool)), this, SIGNAL(toolBarVisibilityChangeRequested(bool)));
+        connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
         addTab(view, record->getNaturalFieldSource("name"));    //, tr("(Untitled)")
 
@@ -864,7 +868,7 @@ namespace browser {
                         //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
                         view->setFocus();
                         //                        globalparameters.mainwindow()
-                        _recordtablecontroller->select_id(record->getNaturalFieldSource("id"));
+                        _record_controller->select_id(record->getNaturalFieldSource("id"));
                     }
                 }
             }
@@ -972,12 +976,13 @@ namespace browser {
             //                  );
 
             auto arint = boost::make_shared<ActiveRecordBinder>(this, true);
-            request_record(QUrl(Browser::_defaulthome)
-                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                               "", &ActiveRecordBinder::binder, arint)
-                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                               "", &ActiveRecordBinder::activator, arint)
-                          );
+            _record_controller->request_record(
+                QUrl(Browser::_defaulthome)
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                    "", &ActiveRecordBinder::binder, arint)
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                    "", &ActiveRecordBinder::activator, arint)
+            );
             return;
         }
 
@@ -1020,12 +1025,13 @@ namespace browser {
                 //                                         );
                 //                webView->setUrl(url);
                 auto arint = boost::make_shared<ActiveRecordBinder>(this, true);
-                auto r = request_record(url
-                                        , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                                            "", &ActiveRecordBinder::binder, arint)
-                                        , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                                            "", &ActiveRecordBinder::activator, arint)
-                                       );
+                auto r = _record_controller->request_record(
+                             url
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                 "", &ActiveRecordBinder::binder, arint)
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                 "", &ActiveRecordBinder::activator, arint)
+                         );
                 r->active();
             }
         }
@@ -1050,7 +1056,7 @@ namespace browser {
                 //                webView->page()->load(record);    //webView->load(record); //loadUrl(url);
                 //                webView->setFocus();
                 auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page());
-                auto r = request_record(
+                auto r = _record_controller->request_record(
                              url
                              , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
                                  std::string("")
@@ -1157,7 +1163,7 @@ namespace browser {
                 //                //v->load_record(_record);
                 auto arint = boost::make_shared<ActiveRecordBinder>(this, true);
                 auto r
-                    = request_record(
+                    = _record_controller->request_record(
                           url
                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
                               "", &ActiveRecordBinder::binder, arint)
@@ -1169,7 +1175,7 @@ namespace browser {
                 if(webView(0)->page()->url() != url) {
                     //                    webView(0)->load(_record);    //loadUrl(_url);
                     auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
-                    auto r = request_record(
+                    auto r = _record_controller->request_record(
                                  url
                                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
                                      ""
@@ -1328,9 +1334,9 @@ namespace browser {
         if(!_root)
             return;
 
-        connect(_root, SIGNAL(triggered()), this, SLOT(rootTriggered()));
-        connect(root, SIGNAL(destroyed(QObject *)), this, SLOT(rootDestroyed()));
-        root->setEnabled(false);
+        connect(_root, &QAction::triggered, this, &WebActionMapper::rootTriggered);
+        connect(_root, &QAction::destroyed, this, &WebActionMapper::rootDestroyed);
+        _root->setEnabled(false);
     }
 
     void WebActionMapper::rootDestroyed()
@@ -1348,7 +1354,7 @@ namespace browser {
         if(!action)
             return;
 
-        connect(action, SIGNAL(changed()), this, SLOT(childChanged()));
+        connect(action, &QAction::changed, this, &WebActionMapper::childChanged);
     }
 
     QWebEnginePage::WebAction WebActionMapper::webAction() const
@@ -1379,8 +1385,7 @@ namespace browser {
     void WebActionMapper::updateCurrent(QWebEnginePage *currentParent)
     {
         if(_currentparent)
-            disconnect(_currentparent, SIGNAL(destroyed(QObject *)),
-                       this, SLOT(currentDestroyed()));
+            disconnect(static_cast<QObject *>(_currentparent), &QObject::destroyed, this, &WebActionMapper::currentDestroyed);
 
         _currentparent = currentParent;
 
@@ -1396,25 +1401,24 @@ namespace browser {
         QAction *source = _currentparent->action(_webaction);
         _root->setChecked(source->isChecked());
         _root->setEnabled(source->isEnabled());
-        connect(_currentparent, SIGNAL(destroyed(QObject *)),
-                this, SLOT(currentDestroyed()));
+        connect(static_cast<QObject *>(_currentparent), &QObject::destroyed, this, &WebActionMapper::currentDestroyed);
     }
 
 
-    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, TableController *recordtablecontroller, Browser *parent)
-        : TabWidget(recordtablecontroller, parent)
+    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, TableController *_record_controller, TableController *_page_controller, Browser *parent)
+        : TabWidget(_record_controller, _page_controller, parent)
         , _addressbar(new QLineEdit(this))
         , _view(
               //              new WebView(record, profile
               //                          // , false
               //                          , this
-              //                          , _recordtablecontroller    // globalparameters.getRecordTableScreen()->getRecordTableController()
+              //                          , _record_ontroller    // globalparameters.getRecordTableScreen()->getRecordTableController()
               //                         )
-              [this, url, profile, recordtablecontroller]
+              [this, url, profile, _record_controller, _page_controller]
     {
-        boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(this, profile, recordtablecontroller);
+        boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(this, profile, _record_controller, _page_controller);
         std::shared_ptr<Record> record
-            = request_record(
+            = _record_controller->request_record(
                   url
                   , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
                       ""
@@ -1438,7 +1442,7 @@ namespace browser {
 
         //        _view->page(new WebPage(profile, url
         //                                // , false
-        //                                , _recordtablecontroller
+        //                                , _record_ontroller
         //                                , _view));
 
 
@@ -1454,8 +1458,8 @@ namespace browser {
 
         connect(_view, &WebView::titleChanged, this, &QWidget::setWindowTitle);
         connect(_view, &WebView::urlChanged, this, &PopupWindow::setUrl);
-        connect(page(), &WebPage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
-        connect(page(), &WebPage::windowCloseRequested, this, &QWidget::close);
+        connect(static_cast<QWebEnginePage *>(page()), &QWebEnginePage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
+        connect(static_cast<QWebEnginePage *>(page()), &QWebEnginePage::windowCloseRequested, this, &QWidget::close);
     }
 
     //    QWebEnginePage

@@ -31,7 +31,7 @@ class TreeScreen : public QWidget {
     Q_OBJECT
 
 public:
-    TreeScreen(const AppConfig &appconfig, QWidget *parent = 0);
+    TreeScreen(QString object_name, const AppConfig &appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *parent = 0);
     virtual ~TreeScreen();
 
     QMap<QString, QAction *> _actionlist;
@@ -103,7 +103,7 @@ private:
 
     const AppConfig &_appconfig;
 
-    void setupUI(void);
+    void setupUI(QMenu *main_menu, QMenu *_toolsmenu);
     void setupModels(void);
     void setupSignals(void);
     void setupActions(void);

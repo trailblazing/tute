@@ -42,7 +42,7 @@ std::shared_ptr<TreeItem> TreeItem::child(int number)
 
 
 // Возвращение количества потомков (т.е. количество записей в списке childItems)
-int TreeItem::childCount() const
+int TreeItem::child_count() const
 {
     return _child_items.count();
 }
@@ -50,7 +50,7 @@ int TreeItem::childCount() const
 
 // Возвращает номер, под которым данный объект хранится
 // в массиве childItems своего родителя
-int TreeItem::childNumber() const
+int TreeItem::child_index() const
 {
     if(_parent_item)
         return _parent_item->_child_items.indexOf(
@@ -83,7 +83,7 @@ int TreeItem::fieldCount() const
 }
 
 
-QString TreeItem::getField(QString name)
+QString TreeItem::field(QString name)
 {
 
     // Если запрашивается динамическое имя из имени и количества потомков
@@ -95,14 +95,14 @@ QString TreeItem::getField(QString name)
         // и поле является зашифрованным
         if(_fieldtable.contains("crypt"))
             if(_fieldtable["crypt"] == "1") {
-                if(globalparameters.getCryptKey().length() > 0)
-                    itemName = CryptService::decryptString(globalparameters.getCryptKey(), itemName);
+                if(globalparameters.crypt_key().length() > 0)
+                    itemName = CryptService::decryptString(globalparameters.crypt_key(), itemName);
                 else
                     itemName = QString(QObject::tr("Closed"));
             }
 
         // Выясняется, есть ли у текущего элемента конечные записи
-        int recordCount = this->recordtableGetRowCount();
+        int recordCount = this->row_count();
 
         // Если конечных элементов нет, возвращатся просто имя
         if(recordCount == 0)
@@ -118,7 +118,7 @@ QString TreeItem::getField(QString name)
 
 
     // Если имя поля допустимо
-    if(isFieldNameAvailable(name)) {
+    if(is_fieldname_available(name)) {
         // Если поле с таким именем существует
         if(_fieldtable.contains(name)) {
             QString value = _fieldtable[name];
@@ -127,10 +127,10 @@ QString TreeItem::getField(QString name)
             // и поле является зашифрованным
             if(_fieldtable.contains("crypt"))
                 if(_fieldtable["crypt"] == "1")
-                    if(fieldNameForCryptList().contains(name)) {
-                        if(globalparameters.getCryptKey().length() > 0 &&
+                    if(fieldname_for_cryptlist().contains(name)) {
+                        if(globalparameters.crypt_key().length() > 0 &&
                            value != "")
-                            value = CryptService::decryptString(globalparameters.getCryptKey(), value);
+                            value = CryptService::decryptString(globalparameters.crypt_key(), value);
                         else
                             value = "";
                     }
@@ -147,7 +147,7 @@ QString TreeItem::getField(QString name)
 
 
 // Получение всех установленных полей "имя_поля"->"значение"
-QMap<QString, QString> TreeItem::getAllFields()
+QMap<QString, QString> TreeItem::all_fields()
 {
     qDebug() << "TreeItem::getAllFields() : Fields data " << _fieldtable;
 
@@ -157,8 +157,8 @@ QMap<QString, QString> TreeItem::getAllFields()
 
     foreach(QString name, names) {
         // В результат добаляются только параметры с разрешенным именем
-        if(isFieldNameAvailable(name))
-            result[name] = getField(name);
+        if(is_fieldname_available(name))
+            result[name] = field(name);
     }
 
     return result;
@@ -167,7 +167,7 @@ QMap<QString, QString> TreeItem::getAllFields()
 
 // Получение всех установленных полей "имя_поля"->"значение"
 // Напрямую, без преобразований, без расшифровки
-QMap<QString, QString> TreeItem::getAllFieldsDirect()
+QMap<QString, QString> TreeItem::all_fields_direct()
 {
     return _fieldtable;
 }
@@ -176,19 +176,19 @@ QMap<QString, QString> TreeItem::getAllFieldsDirect()
 // Установка данных
 // Первый параметр - имя поля
 // Второй параметр - устанавливаемое значение
-void TreeItem::setField(QString name, QString value)
+void TreeItem::set_field(QString name, QString value)
 {
-    if(isFieldNameAvailable(name)) {
+    if(is_fieldname_available(name)) {
         // Если поле нужно шифровать
         // и поле является зашифрованным
         if(_fieldtable.contains("crypt"))
             if(_fieldtable["crypt"] == "1")
-                if(fieldNameForCryptList().contains(name)) {
+                if(fieldname_for_cryptlist().contains(name)) {
                     // Если установлен пароль
-                    if(globalparameters.getCryptKey().length() > 0) {
+                    if(globalparameters.crypt_key().length() > 0) {
                         // Если поле непустое, поле зашифровывается
                         if(value != "")
-                            value = CryptService::encryptString(globalparameters.getCryptKey(), value);
+                            value = CryptService::encryptString(globalparameters.crypt_key(), value);
                     } else // Иначе пароль не установлен
                         criticalError("TreeItem::setField() : Can not encrypt field \"" + name + "\". Password not setted.");
                 }
@@ -202,25 +202,25 @@ void TreeItem::setField(QString name, QString value)
 
 // Установка данных напрямую - какие данные переданы, те и запомнятся
 // без всяких преобразований, без шифрации
-void TreeItem::setFieldDirect(QString name, QString value)
+void TreeItem::set_field_direct(QString name, QString value)
 {
-    if(isFieldNameAvailable(name)) {
+    if(is_fieldname_available(name)) {
         _fieldtable[name] = value;
     } else
         criticalError("TreeItem::setFieldDirect() : Set unavailable field \"" + name + "\" to item of branch tree");
 }
 
 
-bool TreeItem::isFieldNameAvailable(QString name) const
+bool TreeItem::is_fieldname_available(QString name) const
 {
-    if(fieldNameAvailableList().contains(name))
+    if(fieldname_availablelist().contains(name))
         return true;
     else
         return false;
 }
 
 
-QStringList TreeItem::fieldNameAvailableList(void) const
+QStringList TreeItem::fieldname_availablelist(void) const
 {
     QStringList names;
 
@@ -234,7 +234,7 @@ QStringList TreeItem::fieldNameAvailableList(void) const
 }
 
 
-QStringList TreeItem::fieldNameForCryptList(void) const
+QStringList TreeItem::fieldname_for_cryptlist(void) const
 {
     QStringList names;
 
@@ -250,7 +250,7 @@ std::shared_ptr<TreeItem> TreeItem::parent()
 }
 
 
-QString TreeItem::getId()
+QString TreeItem::id()
 {
     if(_fieldtable.contains("id"))
         return (_fieldtable["id"]);
@@ -262,10 +262,10 @@ QString TreeItem::getId()
 }
 
 
-QString TreeItem::getParentId()
+QString TreeItem::parent_id()
 {
     if(_parent_item) {
-        return _parent_item->getField("id");
+        return _parent_item->field("id");
     } else
         return "";
 }
@@ -275,7 +275,7 @@ QString TreeItem::getParentId()
 // position - позиция в списке подчиненных элементов для вставки элементов
 // count - сколько новых элементов будет вставлено
 // columns - сколько колонок содержит добавляемый элемент
-bool TreeItem::insertChildren(int position, int count, int columns)
+bool TreeItem::insert_children(int position, int count, int columns)
 {
     Q_UNUSED(columns);
 
@@ -294,7 +294,7 @@ bool TreeItem::insertChildren(int position, int count, int columns)
 
 // Добавление нового подчиненного элемента
 // в конец списка подчиненных элементов
-bool TreeItem::addChildren(void)
+bool TreeItem::add_children(void)
 {
     QMap<QString, QString> data;
 
@@ -306,7 +306,7 @@ bool TreeItem::addChildren(void)
 }
 
 
-bool TreeItem::removeChildren(int position, int count)
+bool TreeItem::remove_children(int position, int count)
 {
     if(position < 0 || position + count > _child_items.size())
         return false;
@@ -319,14 +319,14 @@ bool TreeItem::removeChildren(int position, int count)
 }
 
 
-void TreeItem::removeAllChildren()
+void TreeItem::remove_all_children()
 {
     for(int i = 0; i < _child_items.size(); i++)
         _child_items.removeAt(i);    // _child_items.takeAt(i).reset(); // delete _child_items.takeAt(i);
 }
 
 
-bool TreeItem::removeChildrenLink(int position, int count)
+bool TreeItem::remove_children_link(int position, int count)
 {
     if(position < 0 || position + count > _child_items.size())
         return false;
@@ -339,10 +339,10 @@ bool TreeItem::removeChildrenLink(int position, int count)
 }
 
 
-bool TreeItem::moveUp(void)
+bool TreeItem::move_up(void)
 {
     // Выясняется номер данного элемента в списке родителя
-    int num = childNumber();
+    int num = child_index();
 
     // Если двигать вверх некуда, ничего делать ненужно
     if(num == 0)return false;
@@ -354,13 +354,13 @@ bool TreeItem::moveUp(void)
 }
 
 
-bool TreeItem::moveDn(void)
+bool TreeItem::move_dn(void)
 {
     // Выясняется номер данного элемента в списке родителя
-    int num = childNumber();
+    int num = child_index();
 
     // Если двигать вниз некуда, ничего делать ненужно
-    if(num >= (_parent_item->childCount() - 1))return false;
+    if(num >= (_parent_item->child_count() - 1))return false;
 
     // Элемент перемещается вниз по списку
     (_parent_item->_child_items).swap(num, num + 1);
@@ -370,23 +370,23 @@ bool TreeItem::moveDn(void)
 
 
 // Путь к элементу (список идентификаторов от корня до текущего элемента)
-QStringList TreeItem::getPath(void)
+QStringList TreeItem::path(void)
 {
-    return getPathAsField("id");
+    return path_as_field("id");
 }
 
 
 // Путь к элементу (в виде списка названий веток)
-QStringList TreeItem::getPathAsName(void)
+QStringList TreeItem::path_as_name(void)
 {
-    return getPathAsField("name");
+    return path_as_field("name");
 }
 
 
 // Путь к элементу в виде строки, разделенной указанным разделителем
-QString TreeItem::getPathAsNameWithDelimeter(QString delimeter)
+QString TreeItem::path_as_name_with_delimiter(QString delimeter)
 {
-    QStringList path = getPathAsName();
+    QStringList path = path_as_name();
 
     // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
     int emptyStringIndex = path.indexOf("");
@@ -396,16 +396,16 @@ QString TreeItem::getPathAsNameWithDelimeter(QString delimeter)
 }
 
 
-QStringList TreeItem::getPathAsField(QString fieldName)
+QStringList TreeItem::path_as_field(QString fieldName)
 {
     QStringList path;
     std::shared_ptr<TreeItem> currentItem = shared_from_this();
 
-    path << currentItem->getField(fieldName);
+    path << currentItem->field(fieldName);
 
     while(currentItem->parent() != NULL) {
         currentItem = currentItem->parent();
-        path << currentItem->getField(fieldName);
+        path << currentItem->field(fieldName);
     }
 
     // Поворот массива идентификаторов задом наперед
@@ -419,25 +419,25 @@ QStringList TreeItem::getPathAsField(QString fieldName)
 
 
 // Возвращает массив путей всех подветок, которые содержит ветка
-QList<QStringList> TreeItem::getAllChildrenPath(void)
+QList<QStringList> TreeItem::all_children_path(void)
 {
     // Очищение списка путей
-    getAllChildrenPathAsFieldRecurse(shared_from_this(), "", 0);
+    all_children_path_as_field(shared_from_this(), "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = getAllChildrenPathAsFieldRecurse(shared_from_this(), "id", 1);
+    QList<QStringList> pathList = all_children_path_as_field(shared_from_this(), "id", 1);
 
     return pathList;
 }
 
 
-QList<QStringList> TreeItem::getAllChildrenPathAsField(QString fieldName)
+QList<QStringList> TreeItem::all_children_path_as_field(QString fieldName)
 {
     // Очищение списка путей
-    getAllChildrenPathAsFieldRecurse(shared_from_this(), "", 0);
+    all_children_path_as_field(shared_from_this(), "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = getAllChildrenPathAsFieldRecurse(shared_from_this(), fieldName, 1);
+    QList<QStringList> pathList = all_children_path_as_field(shared_from_this(), fieldName, 1);
 
     return pathList;
 }
@@ -472,7 +472,7 @@ QList<QStringList> TreeItem::get_all_children_path_recurse(TreeItem *item,int mo
 
 // Возвращает массив указанных полей всех подветок, которые содержит ветка
 // Внутренняя рекурсивная функция
-QList<QStringList> TreeItem::getAllChildrenPathAsFieldRecurse(std::shared_ptr<TreeItem> item, QString fieldName, int mode)
+QList<QStringList> TreeItem::all_children_path_as_field(std::shared_ptr<TreeItem> item, QString fieldName, int mode)
 {
     static QList<QStringList> pathList;
 
@@ -482,10 +482,10 @@ QList<QStringList> TreeItem::getAllChildrenPathAsFieldRecurse(std::shared_ptr<Tr
         return QList<QStringList>();
     }
 
-    for(int i = 0; i < (item->childCount()); i++) {
-        QStringList path = (item->child(i))->getPathAsField(fieldName);
+    for(int i = 0; i < (item->child_count()); i++) {
+        QStringList path = (item->child(i))->path_as_field(fieldName);
         pathList << path;
-        getAllChildrenPathAsFieldRecurse(item->child(i), fieldName, 2);
+        all_children_path_as_field(item->child(i), fieldName, 2);
     }
 
     if(mode == 1)return pathList;
@@ -494,7 +494,7 @@ QList<QStringList> TreeItem::getAllChildrenPathAsFieldRecurse(std::shared_ptr<Tr
 
 
 // Переключение ветки и всех подветок в зашифрованное состояние
-void TreeItem::switchToEncrypt(void)
+void TreeItem::to_encrypt(void)
 {
     qDebug() << "TreeItem::switchToEncrypt() : Crypt branch" << _fieldtable["name"] << "id" << _fieldtable["id"];
 
@@ -506,7 +506,7 @@ void TreeItem::switchToEncrypt(void)
     _fieldtable["crypt"] = "1";
 
     // Шифруется имя ветки
-    _fieldtable["name"] = CryptService::encryptString(globalparameters.getCryptKey(), _fieldtable["name"]);
+    _fieldtable["name"] = CryptService::encryptString(globalparameters.crypt_key(), _fieldtable["name"]);
 
 
     // Шифрация конечных записей для этой ветки
@@ -514,13 +514,13 @@ void TreeItem::switchToEncrypt(void)
 
 
     // Шифрация подветок
-    for(int i = 0; i < childCount(); i++)
-        child(i)->switchToEncrypt();
+    for(int i = 0; i < child_count(); i++)
+        child(i)->to_encrypt();
 }
 
 
 // Переключение ветки и всех подветок в расшифрованное состояние
-void TreeItem::switchToDecrypt(void)
+void TreeItem::to_decrypt(void)
 {
     qDebug() << "TreeItem::switchToDecrypt() : Decrypt branch" << _fieldtable["name"] << "id" << _fieldtable["id"];
 
@@ -533,7 +533,7 @@ void TreeItem::switchToDecrypt(void)
     _fieldtable["crypt"] = "0";
 
     // Расшифровка имени ветки
-    _fieldtable["name"] = CryptService::decryptString(globalparameters.getCryptKey(), _fieldtable["name"]);
+    _fieldtable["name"] = CryptService::decryptString(globalparameters.crypt_key(), _fieldtable["name"]);
 
 
     // Дешифрация конечных записей для этой ветки
@@ -541,36 +541,36 @@ void TreeItem::switchToDecrypt(void)
 
 
     // Дешифрация подветок
-    for(int i = 0; i < childCount(); i++)
-        child(i)->switchToDecrypt();
+    for(int i = 0; i < child_count(); i++)
+        child(i)->to_decrypt();
 }
 
 
-void TreeItem::recordtable_init(QDomElement domModel)
+void TreeItem::table_init(QDomElement domModel)
 {
     _recordtable->init(shared_from_this(), domModel);
 }
 
 
-int TreeItem::recordtableGetRowCount(void)
+int TreeItem::row_count(void)
 {
     return _recordtable->size();
 }
 
 
-QDomElement TreeItem::recordtableExportDataToDom(QDomDocument *doc)
+QDomElement TreeItem::export_to_dom(QDomDocument *doc)
 {
     return _recordtable->dom_from_data(doc);
 }
 
 
-void TreeItem::recordtableDeleteAllRecords(void)
+void TreeItem::table_clear(void)
 {
     _recordtable->delete_all_records();
 }
 
 
-std::shared_ptr<TableData> TreeItem::recordtableGetTableData(void)
+std::shared_ptr<TableData> TreeItem::tabledata(void)
 {
     return _recordtable;
 }
