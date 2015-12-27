@@ -257,13 +257,13 @@ void MainWindow::assembly(void)
     //    _qtabwidget = new QTabWidget(this);
 
     _vtabwidget->setTabPosition(QTabWidget::West);  // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
-    _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/branch.svg"), "Tree");
+    _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
 
-    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/leaves.svg"), "Record");
+    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Record");
 
     // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
-    _vtabwidget->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/maple.svg"), "Download");
+    _vtabwidget->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/holly.svg"), "Download");
 
     auto hide_others = [this](int index) {
         auto count = _vtabwidget->count();

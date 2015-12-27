@@ -117,5 +117,11 @@
         <file>resource/pic/tableware.svg</file>
         <file>resource/pic/three_leaves_clover.svg</file>
         <file>resource/pic/leaves.svg</file>
+        <file>resource/pic/branch_single.svg</file>
+        <file>resource/pic/leaf.svg</file>
+        <file>resource/pic/cherry.svg</file>
+        <file>resource/pic/leaves_shine.svg</file>
+        <file>resource/pic/clover.svg</file>
+        <file>resource/pic/holly.svg</file>
     </qresource>
 </RCC>
