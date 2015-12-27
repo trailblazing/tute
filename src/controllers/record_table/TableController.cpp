@@ -197,7 +197,7 @@ void TableController::update_browser(const int source_pos)
             entrance->equip_registered(record);
         }
 
-        assert(record->unique_page());
+        //        assert(record->unique_page());    // not sure
         assert(record->binder());
         assert(record->activator());
 

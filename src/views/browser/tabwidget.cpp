@@ -110,7 +110,8 @@ namespace browser {
         connect(static_cast<QTabBar *const>(this), &QTabBar::tabCloseRequested, this, &TabBar::closeTabSignal);
         setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
         setMovable(true);
-        setStyleSheet("QTabBar::tab { left: 1px; max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");  // ?
+        //        setStyleSheet("QTabBar::tab { left: 1px; max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");  // ?
+        setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
     }
 
     void TabBar::selectTabAction()
@@ -380,7 +381,7 @@ namespace browser {
         _lineedits->hide();
         setTabPosition(TabPosition::South);
         setTabShape(TabShape::Triangular);
-        setStyleSheet("QTabWidget::tab-bar { left: 1px; max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}"); // alignment: left; // does not work
+        setStyleSheet("QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}"); // left: 1px; alignment: left; // does not work
         //        Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, 0, q));
     }
 
