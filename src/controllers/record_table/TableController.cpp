@@ -46,16 +46,16 @@ TableController::TableController(QString screen_name, TableScreen *table_screen)
     setObjectName(screen_name + "_controller");
     // Инициализируется область со списком записей
     //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
-//    _view->setObjectName("recordTableView");
+    //    _view->setObjectName("recordTableView");
     //    view->setController(this);
 
     // Создание модели данных
     //    recordSourceModel = new RecordTableModel(this);
-//    _source_model->setObjectName("recordSourceModel");
+    //    _source_model->setObjectName("recordSourceModel");
 
     //    recordProxyModel = new RecordTableProxyModel(this);
     _proxy_model->setSourceModel(_source_model);
-//    _proxy_model->setObjectName("recordProxyModel");
+    //    _proxy_model->setObjectName("recordProxyModel");
 
     // Модель данных задается для вида
     _view->setModel(_proxy_model);
@@ -193,10 +193,11 @@ void TableController::update_browser(const int source_pos)
         //            page->load(record);
         //        } else
 
-        if(entrance && (!record->binder() || !record->activator())) {
+        if(entrance && !record->unique_page()) {    // !record->binder() || !record->activator())) {
             entrance->equip_registered(record);
         }
 
+        assert(record->unique_page());
         assert(record->binder());
         assert(record->activator());
 

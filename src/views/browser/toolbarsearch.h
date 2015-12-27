@@ -86,11 +86,11 @@ namespace browser {
         ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,
             QWidget *parent = 0);
         ~ToolbarSearch();
-        void setText(const QString &text);
+        void text(const QString &text);
         QString text() const;
 
         QLineEdit *findtext() {return _findtext;}
-        void findtext(QLineEdit *findtext) {_findtext = findtext;}
+        //        void findtext(QLineEdit *findtext) {_findtext = findtext;}
 
         QStackedWidget *lineedits() {return _lineedits;}
         void lineedits(QStackedWidget *lineedits) { _lineedits = lineedits;}

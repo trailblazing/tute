@@ -285,9 +285,10 @@ namespace browser {
     {
         QUrl _url = QUrl(_record->getNaturalFieldSource("url"));
 
-        if(_pageview &&
+        if(_pageview
+
            //            _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
-           url() != _url
+           && url() != _url   // url() may be nothing
           ) {
             triggerAction(QWebEnginePage::Stop);
 
@@ -710,11 +711,11 @@ namespace browser {
                      , TabWidget *parent
                      , TableController *table_controller
                      // , TableController *_page_controller
-                     )
+                    )
         : QWebEngineView(static_cast<QWidget *>(parent))    // ->parent()
         , _tabmanager(parent)                               //        , _record(record)
         , _record_controller(table_controller)
-        // , _page_controller(_page_controller)
+          // , _page_controller(_page_controller)
         , _page(new WebPage(profile
                             , record // , openinnewtab
                             , table_controller
@@ -756,7 +757,7 @@ namespace browser {
         setFocus();
     }
 
-    std::set<std::shared_ptr<Record> > WebPage::binded_records()const
+    std::map<QString, std::shared_ptr<Record> > WebPage::binded_records()const
     {
         //        Record *record = _record;   // maybe invalid
 
@@ -774,23 +775,38 @@ namespace browser {
         return _records;
     }
 
-    void WebPage::break_record_which_page_point_to_me()
+
+    void WebPage::break_records_which_page_point_to_me()
+    {
+        for(auto &i : _records) {
+            break_record_which_page_point_to_me(i.second);
+        }
+    }
+
+    void WebPage::break_record_which_page_point_to_me(std::shared_ptr<Record> record)
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
-        if(_record) {
+        if(record) {
 
-            if(_record->unique_page()) {
-                if(_record->unique_page() == this) {
+            if(record->unique_page()) {
+                if(record->unique_page() == this) {
                     // remove_record_from_page_screen(_record);    // this will delete record for ever from database
-                    _record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
+                    record->binder().reset();
+                    record->activator().reset();
+                    record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
+                    //                    assert(!record->binder());
+                    //                    assert(!record->activator());
+                    assert(!record->unique_page());
                 }
             }
 
-            if(_records.size() > 0 && _records.find(_record) != _records.end()) _records.erase(_record);
+            if(_records.size() > 0
+               && _records.find(record->getNaturalFieldSource("id")) != _records.end()
+              ) _records.erase(record->getNaturalFieldSource("id"));
 
         }
 
-        _record = nullptr;
+        //        _record.reset();  // do not reset, you may need it later
     }
 
     WebView *WebPage::bind(std::shared_ptr<Record> record)
@@ -825,7 +841,7 @@ namespace browser {
         //            this->_openinnewtab = false;
         //        }
 
-        if(_record != record) {
+        if(_record && _record != record) {
             //            if(_record) {
             //                if(_record->binded_page() != nullptr && _record->binded_page() == this) {
             //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
@@ -837,7 +853,13 @@ namespace browser {
             //                }
             //            }
 
-            this->break_record_which_page_point_to_me();
+            //            if(_record && _record->unique_page() != nullptr)
+
+            // this->break_record_which_page_point_to_me(_record);
+
+            if(_records.size() > 0
+               && _records.find(_record->getNaturalFieldSource("id")) != _records.end()
+              ) _records.erase(_record->getNaturalFieldSource("id"));
 
             //            if(record) {
             //                if((!record->binded_page()) || (record->binded_page() != this)) {
@@ -882,7 +904,9 @@ namespace browser {
                 _record->bind(this);  // record->breakpage();
 
                 // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-                if(_records.find(_record) == _records.end())_records.insert(_record);
+                // if(_records.find(_record) == _records.end())
+                if(_records.find(record->getNaturalFieldSource("id")) == _records.end())
+                    _records[_record->getNaturalFieldSource("id")] = _record;
 
                 //                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
                 //                assert(metaeditor);

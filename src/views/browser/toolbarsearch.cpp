@@ -76,10 +76,10 @@ namespace browser {
         , _autosaver(new AutoSaver(this))
         , _maxsavedsearches(10)
         , _stringlistmodel(new QStringListModel(this))
-        , _lineedits(new QStackedWidget(this))  // , _lineedits(lineedits)
+        , _lineedits(nullptr)   // new QStackedWidget(this))  // , _lineedits(lineedits)
         , _findtext(new QLineEdit(this))        // , _findtext(findtext)
     {
-        _lineedits->setVisible(false);
+        //        _lineedits->setVisible(false);
         _findtext->setVisible(false);
 
         QMenu *m = menu();
@@ -190,9 +190,13 @@ namespace browser {
 
                 r->active();
 
-                QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+                assert(_lineedits);
 
-                if(line_edit)line_edit->setText(searchText);
+                if(_lineedits) {
+                    QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+
+                    if(line_edit)line_edit->setText(searchText);
+                }
 
                 //globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
 
@@ -276,7 +280,7 @@ namespace browser {
         _autosaver->changeOccurred();;
     }
 
-    void ToolbarSearch::setText(const QString &text) {_findtext->setText(text);}
+    void ToolbarSearch::text(const QString &text) {_findtext->setText(text);}
     QString ToolbarSearch::text() const {return _findtext->text();}
 
 }

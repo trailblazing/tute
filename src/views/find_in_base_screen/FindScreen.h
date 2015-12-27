@@ -43,7 +43,7 @@ public:
     virtual ~FindScreen(void);
     //QToolBar *navigater() {return _navigater;}
 
-    void toolbarsearch(browser::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
+    //    void toolbarsearch(browser::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
     browser::ToolbarSearch *toolbarsearch() {return _toolbarsearch;}
 
     FlatToolButton *findstartbutton() {return _findstartbutton;}

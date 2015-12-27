@@ -107,7 +107,7 @@ namespace browser {
         }
 
         setTabsClosable(true);
-        //        connect(this, &TabBar::tabCloseRequested, this, &TabBar::closeTab);
+        connect(static_cast<QTabBar *const>(this), &QTabBar::tabCloseRequested, this, &TabBar::closeTabSignal);
         setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
         setMovable(true);
     }
@@ -244,8 +244,10 @@ namespace browser {
         delete _closetabaction;
         delete _newtabaction;
         delete _recentlyclosedtabsaction;
-        delete _fullscreennotification;
-        delete _fullscreenview;
+
+        if(_fullscreennotification)delete _fullscreennotification;
+
+        if(_fullscreenview)delete _fullscreenview;
 
     }
 
@@ -263,18 +265,21 @@ namespace browser {
         , _lineeditcompleter(
               nullptr   // new QCompleter(_completionModel, this)
           )
-          //, _lineedits(new QStackedWidget(this))
+        , _lineedits(new QStackedWidget(this))
         , _tabbar(new TabBar(this))
         , _profile(QWebEngineProfile::defaultProfile())
-        , _fullscreenview(0)
-        , _fullscreennotification(0)
+        , _fullscreenview(nullptr)
+        , _fullscreennotification(nullptr)
         , _record_controller(_record_controller)
-        // , _page_controller(_page_controller)
+          // , _page_controller(_page_controller)
           //        , _active_record(this)
           //        , _active("", &active_record::operator(), &_active_record)
         , _window(parent)
     {
-        _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
+        //        _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
+        //        connect(parent, []() {}, globalparameters.find_screen()->toolbarsearch(), [this]() {globalparameters.find_screen()->toolbarsearch()->lineedits(_lineedits);});
+        //        move to     void Browser::activateWindow();
+
 
         setElideMode(Qt::ElideRight);
         //        _active_record = [this](Record * const record)-> WebView * {return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);};
@@ -283,28 +288,27 @@ namespace browser {
             , &TabBar::newTab   //                , this
         , [this]() {
             boost::shared_ptr<browser::TabWidget::ActiveRecordBinder> arint = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(this, true);
-            auto r = this->_record_controller->request_record(
-                         QUrl(Browser::_defaulthome)
+            //            auto r =
+            this->_record_controller->request_record(
+                QUrl(Browser::_defaulthome)
 
-                         //            [this](Record * const record)-> WebView * {
-                         //                return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);
-                         //            }   // nested    //
-                         //                [this](Record * const record)-> WebView * {return this->newTab(record);}
-                         , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                         , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
-                         >(
-                             std::string(""), &TabWidget::ActiveRecordBinder::binder, std::forward<boost::shared_ptr<TabWidget::ActiveRecordBinder>>(arint))  //                _active
-                         , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                         , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
-                         >(
-                             std::string(""), &TabWidget::ActiveRecordBinder::activator, std::forward<boost::shared_ptr<TabWidget::ActiveRecordBinder>>(arint))
-                     );
+                //            [this](Record * const record)-> WebView * {
+                //                return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);
+                //            }   // nested    //
+                //                [this](Record * const record)-> WebView * {return this->newTab(record);}
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
+                >(
+                    std::string(""), &TabWidget::ActiveRecordBinder::binder, std::forward<boost::shared_ptr<TabWidget::ActiveRecordBinder>>(arint))  //                _active
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
+                >(
+                    std::string(""), &TabWidget::ActiveRecordBinder::activator, std::forward<boost::shared_ptr<TabWidget::ActiveRecordBinder>>(arint))
+            );
             //            r->active();
         });
 
-        connect(_tabbar, &TabBar::closeTabSignal, this
-                , &TabWidget::closeTab
-               );
+        connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::requestCloseTab);
         connect(this, &TabWidget::tabsChanged, this, &TabWidget::onTabsChanged);
         connect(_tabbar, &TabBar::cloneTabSignal, this, &TabWidget::cloneTab);
         connect(_tabbar, &TabBar::closeOtherTabsSignal, this, &TabWidget::closeOtherTabs);
@@ -366,7 +370,7 @@ namespace browser {
         _recentlyclosedtabsaction->setMenu(_recentlyclosedtabsmenu);
         _recentlyclosedtabsaction->setEnabled(false);
 
-        connect(this, &QTabWidget::currentChanged, this, &TabWidget::currentChanged);
+        connect(static_cast<QTabWidget *>(this), &QTabWidget::currentChanged, this, &TabWidget::currentChanged);
 
         //        _lineedits = ;
 
@@ -640,7 +644,7 @@ namespace browser {
                                // , openinnewtab
                                , this, _record_controller
                                // , _page_controller
-                               ); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
+                              ); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
         }
 
         //        record->view(webView);  // inside PageView initialization
@@ -835,9 +839,10 @@ namespace browser {
                 lineEdit->deleteLater();
             }
 
-            QWidget *previous_webview = widget(index);
+            WebView *previous_webview = static_cast<WebView *>(widget(index));
 
             if(previous_webview) {
+                previous_webview->page()->break_records_which_page_point_to_me();
                 removeTab(index);
 
                 //        PageView *v = static_cast<PageView *>(previous_webview);
@@ -1424,12 +1429,12 @@ namespace browser {
               //                          , _record_ontroller    // globalparameters.getRecordTableScreen()->getRecordTableController()
               //                         )
               [this, url, profile, _record_controller
-              // , _page_controller
+               // , _page_controller
               ]
     {
         boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(this, profile, _record_controller
-                                                                                           // , _page_controller
-                                                                                           );
+                                                    // , _page_controller
+                                                                                          );
         std::shared_ptr<Record> record
             = _record_controller->request_record(
                   url

@@ -47,7 +47,7 @@
 #include <QLineEdit>
 #include <QNetworkReply>
 #include <QClipboard>
-#include <set>
+#include <map>
 
 
 #include "models/record_table/Record.h"
@@ -99,11 +99,14 @@ namespace browser {
             //                _record->page(nullptr); // globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
             //                _record = nullptr;
             //            }
-            std::set<std::shared_ptr<Record> > records = binded_records();
 
-            for(auto i : records) {
-                if(i->unique_page() == this)
-                    i->page_to_nullptr();
+            //            std::list<std::shared_ptr<Record> > records = binded_records();
+
+            for(auto &i : _records) {
+                if(i.second->unique_page() == this) {
+                    break_records_which_page_point_to_me();  //
+                    i.second->page_to_nullptr();
+                }
             }
         }
 
@@ -117,7 +120,7 @@ namespace browser {
         //        WebView *(*_load_record)(Record *const record);
         Browser *browser();
         WebView *view() {return _pageview;}
-        std::set<std::shared_ptr<Record> > binded_records()const;
+        std::map<QString, std::shared_ptr<Record> > binded_records()const;
 
         WebView *active();
         WebView *load(const std::shared_ptr<Record> record, bool checked = true);
@@ -161,9 +164,10 @@ namespace browser {
         };
 
         std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record);
-        void add_record_to_page_screen(std::shared_ptr<Record> record);
-        void remove_record_from_page_screen(std::shared_ptr<Record> record);
-
+        // void add_record_to_page_screen(std::shared_ptr<Record> record);
+        // void remove_record_from_page_screen(std::shared_ptr<Record> record);
+        void break_record_which_page_point_to_me(std::shared_ptr<Record> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        void break_records_which_page_point_to_me();
     protected:
 
         bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
@@ -174,7 +178,7 @@ namespace browser {
         virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
         WebView *bind(const std::shared_ptr<Record> record);
-        void break_record_which_page_point_to_me();    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+
         void update_record(const QUrl &url
                            // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
                            , const QString &title
@@ -197,7 +201,7 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
-        std::set<std::shared_ptr<Record> > _records;
+        std::map<QString, std::shared_ptr<Record> > _records;
         std::shared_ptr<Record> _record;
 
         WebView                 *_pageview;
@@ -234,7 +238,7 @@ namespace browser {
                 , TabWidget *parent
                 , TableController *table_controller
                 = globalparameters.table_screen()->table_controller()
-                  );
+               );
 
         ~WebView();
         WebPage *page() const { return _page; }

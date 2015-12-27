@@ -505,7 +505,7 @@ void FindScreen::enable_findbutton(const QString &text)
 void FindScreen::find_text(QString text)
 {
     //_findtext
-    _toolbarsearch->setText(text);
+    _toolbarsearch->text(text);
 
     emit textChangedFromAnother(text);
     emit findClickedAfterAnotherTextChanged();

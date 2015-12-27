@@ -1,6 +1,7 @@
 #include <QObject>
 #include <QMessageBox>
 #include <QDomElement>
+#include <map>
 
 #include "main.h"
 #include "Record.h"
@@ -105,15 +106,15 @@ Record *Record::bind(browser::WebPage *page)
     if(_page != page) {
 
         if(_page) {
-            std::set<std::shared_ptr<Record> > records = _page->binded_records() ;
+            std::map<QString, std::shared_ptr<Record> > records = _page->binded_records() ;
 
-            for(auto i : records) {
-                if(i.get() == this) {
-                    if(i->_page) {
-                        i->_page->break_record_which_page_point_to_me();
+            for(auto &i : records) {
+                if(i.second.get() == this) {
+                    if(i.second->_page) {
+                        i.second->_page->break_record_which_page_point_to_me(shared_from_this());
                         //                        i->_page->_record = nullptr;    // _page->break_record();
                         //                        i = nullptr;    // ?
-                        i->page_to_nullptr();
+                        i.second->page_to_nullptr();
                     }
 
 

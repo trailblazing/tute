@@ -358,7 +358,7 @@ namespace browser {
                     )
         : QMainWindow(0, flags)
         , _record_controller(record_controller)
-        // , _page_controller(_page_controller)
+          // , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
                                     // , _page_controller
                                     , this))
@@ -397,7 +397,7 @@ namespace browser {
                     )
         : QMainWindow(0, flags)
         , _record_controller(record_controller)
-        // , _page_controller(_page_controller)
+          // , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
                                     // , _page_controller
                                     , this))
@@ -440,6 +440,8 @@ namespace browser {
         _entrance->setWidget(this);
         this->setParent(_entrance);
         _entrance->on_activate_window();
+
+        globalparameters.find_screen()->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
         QMainWindow::activateWindow();
     }
