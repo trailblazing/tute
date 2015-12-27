@@ -179,12 +179,12 @@ Record::~Record()
         }
 
         if(_page->_record) {
-            assert(_page == _page->_record->unique_page());   // _page->rebind_record() make sure of this statement
+
 
             // multi record to one page:
             // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
             // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
-            // assert(_page->record() == this);
+            // assert(_page->record().get() == this);
 
             bool is_holder = (_page->_record.get() == this);     // _page->record() may mean some other record
 
@@ -195,8 +195,10 @@ Record::~Record()
 
             if(view && tabmanager && is_holder
                // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
-              )
+              ) {
+                assert(_page == _page->_record->unique_page());   // _page->rebind_record() make sure of this statement
                 tabmanager->closeTab(tabmanager->webViewIndex(view));
+            }
         }
 
         //

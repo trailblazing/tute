@@ -958,6 +958,9 @@ namespace browser {
 
                     _record->setNaturalFieldSource("name", title);
                     metaeditor->setName(title);
+                    TabWidget *tab_manager = view()->tabmanager();
+                    int index = tab_manager->webViewIndex(view());
+                    tab_manager->setTabToolTip(index, title);
                 }
 
                 //                }

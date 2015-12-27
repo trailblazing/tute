@@ -110,6 +110,7 @@ namespace browser {
         connect(static_cast<QTabBar *const>(this), &QTabBar::tabCloseRequested, this, &TabBar::closeTabSignal);
         setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
         setMovable(true);
+        setStyleSheet("QTabBar::tab { left: 1px; max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");  // ?
     }
 
     void TabBar::selectTabAction()
@@ -377,6 +378,10 @@ namespace browser {
         //        _lineedits->setMaximumSize(0, 0);
 
         _lineedits->hide();
+        setTabPosition(TabPosition::South);
+        setTabShape(TabShape::Triangular);
+        setStyleSheet("QTabWidget::tab-bar { left: 1px; max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}"); // alignment: left; // does not work
+        //        Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, 0, q));
     }
 
     void TabWidget::clear()
@@ -674,8 +679,8 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
         connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
-        addTab(view, record->getNaturalFieldSource("name"));    //, tr("(Untitled)")
-
+        int index = addTab(view, record->getNaturalFieldSource("name"));  //, tr("(Untitled)")
+        setTabToolTip(index, record->getNaturalFieldSource("name"));
         //record->page()->load(record);
         //globalparameters.entrance()->invoke_view(record);
 

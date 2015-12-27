@@ -280,10 +280,10 @@ void Editor::setup_signals(void)
     connect(this, SIGNAL(send_set_rightindent_pos(int)), indentSlider, SLOT(set_rightindent_pos(int)));
 
     // Соединение сигнал-слот чтобы показать контекстное меню по правому клику в редакторе
-    connect(textArea, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(on_customContextMenuRequested(const QPoint &)));
+    connect(textArea, &EditorTextArea::customContextMenuRequested, this, &Editor::on_customContextMenuRequested);
 
     // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
-    connect(textArea, SIGNAL(tapAndHoldGestureFinished(const QPoint &)), this, SLOT(on_customContextMenuRequested(const QPoint &)));
+    connect(textArea, &EditorTextArea::tap_and_hold_gesture_finished, this, &Editor::on_customContextMenuRequested);
 
     // connect(textArea->document(), SIGNAL(modificationChanged (bool )),
     //         this, SLOT(onModificationChanged(bool)));
@@ -296,12 +296,12 @@ void Editor::setup_signals(void)
     connect(editorContextMenu, SIGNAL(copy()), this, SLOT(on_copy()));
     connect(editorContextMenu, SIGNAL(paste()), this, SLOT(on_paste()));
     connect(editorContextMenu, SIGNAL(selectAll()), this, SLOT(on_selectAll()));
-    connect(editorContextMenu, SIGNAL(contextMenuEditImageProperties()), this, SLOT(on_context_menu_edit_image_properties()));
+    connect(editorContextMenu, &EditorContextMenu::contextMenuEditImageProperties, this, &Editor::on_context_menu_edit_image_properties);
 
     // Вызов диалога поиска в тексте
-    connect(findDialog, SIGNAL(find_text(const QString &, QTextDocument::FindFlags)), this, SLOT(on_findtext_signal_detect(const QString &, QTextDocument::FindFlags)));
+    connect(findDialog, &EditorFindDialog::find_text, this, &Editor::on_findtext_signal_detect);
 
-    connect(textArea, SIGNAL(updateIndentlineGeometrySignal()), this, SLOT(on_update_indentline_geometry_slot()));
+    connect(textArea, &EditorTextArea::update_indentline_geometry_signal, this, &Editor::on_update_indentline_geometry_slot);
     connect(this->_closebutton, &FlatToolButton::clicked, this, &Editor::widget_hide);
 
 }
