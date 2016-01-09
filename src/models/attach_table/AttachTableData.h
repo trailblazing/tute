@@ -20,7 +20,7 @@ public:
     virtual ~AttachTableData();
 
     void setupDataFromDom(QDomElement iDomElement);
-    QDomElement exportDataToDom(QDomDocument *doc) const;
+    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
 
     void setRecord(Record *iRecord);
     void setRelatedAttachTableModel(AttachTableModel *model);

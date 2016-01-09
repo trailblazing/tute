@@ -16,8 +16,9 @@ EditorMultiLineInputDialog::EditorMultiLineInputDialog(QWidget *parent) : QDialo
 
 EditorMultiLineInputDialog::~EditorMultiLineInputDialog()
 {
-    if(textArea!=NULL) delete textArea;
-    if(buttonBox!=NULL) delete buttonBox;
+    if(textArea != nullptr) delete textArea;
+
+    if(buttonBox != nullptr) delete buttonBox;
 }
 
 
@@ -27,18 +28,18 @@ void EditorMultiLineInputDialog::setup_ui()
     sizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
     sizePolicy.setVerticalPolicy(QSizePolicy::Expanding);
 
-    textArea=new QTextEdit(this);
+    textArea = new QTextEdit(this);
     textArea->setAcceptRichText(false);
     textArea->setSizePolicy(sizePolicy);
 
-    buttonBox=new QDialogButtonBox(Qt::Horizontal);
-    buttonBox->addButton(tr("OK"),QDialogButtonBox::AcceptRole);
-    buttonBox->addButton(tr("Cancel"),QDialogButtonBox::RejectRole);
+    buttonBox = new QDialogButtonBox(Qt::Horizontal);
+    buttonBox->addButton(tr("OK"), QDialogButtonBox::AcceptRole);
+    buttonBox->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
 
-// Устанавливается размер окна, равный виджету, из которого
-// этот виджет был вызван
+    // Устанавливается размер окна, равный виджету, из которого
+    // этот виджет был вызван
     if(this->parent()->isWidgetType()) {
-        QWidget *parentWidget=qobject_cast<QWidget *>(this->parent());
+        QWidget *parentWidget = qobject_cast<QWidget *>(this->parent());
         QRect geom(parentWidget->pos(), parentWidget->size());
 
         qDebug() << "Parent window geometry " << geom.x() << geom.y() << geom.width() << geom.height();
@@ -50,19 +51,19 @@ void EditorMultiLineInputDialog::setup_ui()
 
 void EditorMultiLineInputDialog::setup_signals()
 {
-    connect(buttonBox,SIGNAL(accepted()),this,SLOT(accept()));
-    connect(buttonBox,SIGNAL(rejected()),this,SLOT(reject()));
+    connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));
+    connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 }
 
 
 void EditorMultiLineInputDialog::assembly()
 {
-    QVBoxLayout *mainLayout=new QVBoxLayout(this);
+    QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-// Добавляется область текста
+    // Добавляется область текста
     mainLayout->addWidget(textArea);
 
-// Добавляется линейка кнопок OK и Cancel
+    // Добавляется линейка кнопок OK и Cancel
     mainLayout->addWidget(buttonBox);
 }
 

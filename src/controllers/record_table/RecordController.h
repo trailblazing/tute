@@ -4,18 +4,21 @@
 #include <QObject>
 #include <QModelIndexList>
 #include "utility/delegate.h"
+#include "models/record_table/RecordTable.h"
+#include "models/tree/TreeItem.h"
 
 //#include <boost/serialization/strong_typedef.hpp>
 
-extern const int add_new_record_after;
+//extern const int add_new_record_after;
 
 class Record;
-class TableView;
-class TableData;
-class TableModel;
-class TableProxyModel;
+class RecordView;
+class RecordTable;
+class RecordModel;
+class RecordProxyModel;
 class ClipboardRecords;
-class TableScreen;
+class RecordScreen;
+class TreeItem;
 
 namespace browser {
     class Entrance;
@@ -28,30 +31,30 @@ namespace browser {
 //BOOST_STRONG_TYPEDEF(QString, Id_T)
 
 
-class TableController : public QObject {
+class RecordController : public QObject {
     Q_OBJECT
 public:
-    TableController(QString screen_name, TableScreen *table_screen);
-    virtual ~TableController();
+    RecordController(QString screen_name, boost::intrusive_ptr<TreeItem> _tree_item, RecordScreen *table_screen);
+    virtual ~RecordController();
 
     void init(void);
 
-    TableView *view(void);
-    TableModel *table_model() {return _source_model;}
+    RecordView *view(void);
+    RecordModel *table_model() {return _source_model;}
 
     void click_record(const QModelIndex &index);
 
     bool is_table_notexists(void);
     //    void reset_tabledata_test(TableData *rtData);
-    void reset_tabledata(std::shared_ptr<TableData> table_data);
+    void reset_tabledata(std::shared_ptr<RecordTable> table_data);
 
     int row_count(void);
 
-    void add_records_toclipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
+    void add_records_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
 
     void open_website(QModelIndex proxyIndex);
     // Действия при редактировании инфополей записи из контекстного меню
-    void edit_fieldcontext(QModelIndex proxyIndex);
+    void edit_field_context(QModelIndex proxyIndex);
 
     QModelIndex pos_to_proxyindex(int pos);
     QModelIndex pos_to_sourceindex(int pos);
@@ -89,10 +92,11 @@ public:
         , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
     );
 
-    int addnew_page_record(std::shared_ptr<Record> record, int mode = add_new_record_after);
+    //    int addnew_page_record(std::shared_ptr<Record> record, int mode = add_new_record_after);
 
-    std::shared_ptr<TableData> table_data();
-
+    std::shared_ptr<RecordTable> table_data();
+    void sychronize_metaeditor_to_record(const int pos);
+    void sychronize_attachtable_to_record(const int pos);
 
 signals:
 
@@ -112,9 +116,9 @@ public slots:
     void delete_records_selected(void);
 
     // Вызов действий из контекстного меню для открытия окна с вводом новой записи
-    void addnew_to_end_context(void);
-    void addnew_before_context(void);
-    void addnew_after_context(void);
+    void addnew_to_end(void);
+    void addnew_before(void);
+    void addnew_after(void);
     //void autoAddNewAfterContext(void);
 
     // Вызов действий из контекстного меню для удаления конечной записи
@@ -137,26 +141,22 @@ public slots:
 
 protected:
 
-    void sychronize_metaeditor_to_record(const int pos);
-    void sychronize_attachtable_to_record(const int pos);
+
     void update_browser(const int source_pos);
 
-    TableView         *_view;
-    TableModel        *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
-    TableProxyModel   *_proxy_model;
 
-    void addnew_blank_record(int mode);
+    RecordModel        *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
+    RecordProxyModel   *_proxy_model;
+    RecordView         *_view;
 
-    int new_record_from_url(
-        const QUrl &url
-        , const int mode
-        = add_new_record_after
-    );
+    void addnew_blank(int mode);
 
-    int new_record(std::shared_ptr<Record> record
-                   , const int mode
-                   = add_new_record_after
-                  );
+    //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
+
+    int addnew_record_fat(std::shared_ptr<Record> record
+                          , const int mode
+                          = ADD_NEW_RECORD_AFTER // add_new_record_after
+                         );
 
     int addnew_record(std::shared_ptr<Record> record, int mode);
 

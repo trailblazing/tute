@@ -27,11 +27,11 @@ ClipboardRecords::~ClipboardRecords(void)
 // Подготовка объекта для загрузки данных
 void ClipboardRecords::init(void)
 {
-    if(records.table.size() > 0)
-        records.table.clear();
+    if(_records._record_table.size() > 0)
+        _records._record_table.clear();
 
-    clipbRecordsFormat.clear();
-    clipbRecordsFormat << "mytetra/records";
+    _clipboard_records_format.clear();
+    _clipboard_records_format << "mytetra/records";
 }
 
 
@@ -39,29 +39,29 @@ void ClipboardRecords::init(void)
 void ClipboardRecords::clear(void)
 {
     init();
-    clipbRecordsFormat << "";
+    _clipboard_records_format << "";
 }
 
 
-void ClipboardRecords::addRecord(std::shared_ptr<Record> record)
+void ClipboardRecords::add_record(std::shared_ptr<Record> record)
 {
-    records.table << record;
+    if(!_records._record_table.contains(record)) _records._record_table << record;
 }
 
 
 // Печать информации о содержимом записи
 void ClipboardRecords::print(void) const
 {
-    QListIterator< std::shared_ptr<Record> > list(records.table);
+    QListIterator< std::shared_ptr<Record> > list(_records._record_table);
 
     // Перебор записей
     while(list.hasNext()) {
         std::shared_ptr<Record> record = list.next();
 
-        qDebug() << record->getTextFromFat();
+        qDebug() << record->text_from_fat();
 
         // Перебор полей в записи
-        QMap<QString, QString> fieldList = record->getNaturalFieldList();
+        QMap<QString, QString> fieldList = record->natural_field_list();
         QMapIterator<QString, QString> currentField(fieldList);
 
         while(currentField.hasNext()) {
@@ -70,73 +70,73 @@ void ClipboardRecords::print(void) const
         }
 
         // Перебор информации о праттаченных файлах в записи
-        if(record->getAttachTable().size() > 0)
-            record->getAttachTable().print();
+        if(record->attach_table()->size() > 0)
+            record->attach_table()->print();
     }
 }
 
 
 // Количество хранимых записей
-int ClipboardRecords::getCount(void) const
+int ClipboardRecords::size(void) const
 {
-    return records.table.size();
+    return _records._record_table.size();
 }
 
 
-std::shared_ptr<Record> ClipboardRecords::getRecord(int n) const
+std::shared_ptr<Record> ClipboardRecords::record(int n) const
 {
-    if(n < records.table.size())
-        return records.table.at(n);
+    if(n < _records._record_table.size())
+        return _records._record_table.at(n);
     else {
-        criticalError("In ClipboardRecords::getRecord() unavailable number " + QString::number(n));
+        critical_error("In ClipboardRecords::getRecord() unavailable number " + QString::number(n));
         return std::make_shared<Record>();
     }
 }
 
 
 // Получение текста записи с указанным номером
-QString ClipboardRecords::getRecordText(int n) const
+QString ClipboardRecords::record_text(int n) const
 {
-    if(n < records.table.size())
-        return records.table.at(n)->getTextFromFat();
+    if(n < _records._record_table.size())
+        return _records._record_table.at(n)->text_from_fat();
     else {
-        criticalError("In ClipboardRecords::getRecordText() unavailable number " + QString::number(n));
+        critical_error("In ClipboardRecords::getRecordText() unavailable number " + QString::number(n));
         return QString();
     }
 }
 
 
 // Получение полей записи с указанным номером
-QMap<QString, QString> ClipboardRecords::getRecordFieldList(int n) const
+QMap<QString, QString> ClipboardRecords::record_field_list(int n) const
 {
-    if(n < records.table.size())
-        return records.table.at(n)->getNaturalFieldList();
+    if(n < _records._record_table.size())
+        return _records._record_table.at(n)->natural_field_list();
     else {
-        criticalError("In ClipboardRecords::getRecordFieldTable() unavailable number " + QString::number(n));
+        critical_error("In ClipboardRecords::getRecordFieldTable() unavailable number " + QString::number(n));
         return QMap<QString, QString>();
     }
 }
 
 
 // Получение информации о приаттаченных файлах для записи с указанным номером
-AttachTableData ClipboardRecords::getRecordAttachTable(int n) const
+AttachTableData ClipboardRecords::record_attach_table(int n) const
 {
-    if(n < records.table.size())
-        return getRecord(n)->getAttachTable();
+    if(n < _records._record_table.size())
+        return *record(n)->attach_table();
     else {
-        criticalError("In ClipboardRecords::getRecordAttachTable() unavailable number " + QString::number(n));
+        critical_error("In ClipboardRecords::getRecordAttachTable() unavailable number " + QString::number(n));
         return AttachTableData();
     }
 }
 
 
 // Получение файлов картинок
-QMap<QString, QByteArray> ClipboardRecords::getRecordPictureFiles(int n) const
+QMap<QString, QByteArray> ClipboardRecords::record_picture_files(int n) const
 {
-    if(n < records.table.size())
-        return records.table.at(n)->getPictureFiles();
+    if(n < _records._record_table.size())
+        return _records._record_table.at(n)->getPictureFiles();
     else {
-        criticalError("In ClipboardRecords::getRecordPictureFiles() unavailable number " + QString::number(n));
+        critical_error("In ClipboardRecords::getRecordPictureFiles() unavailable number " + QString::number(n));
         return QMap<QString, QByteArray>();
     }
 }
@@ -157,7 +157,7 @@ AttachTableData *ClipboardRecords::getRecordAttachFiles(int n) const
 
 QStringList ClipboardRecords::formats() const
 {
-    return clipbRecordsFormat;
+    return _clipboard_records_format;
 }
 
 
@@ -165,9 +165,9 @@ QVariant ClipboardRecords::retrieveData(const QString &format, QVariant::Type pr
 {
     Q_UNUSED(preferredType);
 
-    if(format == clipbRecordsFormat[0]) {
+    if(format == _clipboard_records_format[0]) {
         QVariant v;
-        v.setValue(records);
+        v.setValue(_records);
         return v;
     }
 

@@ -168,7 +168,7 @@ namespace qt4 {
             Sleep(DWORD(ms));
 #else
             struct timespec ts = { ms / 1000, (ms % 1000) * 1000 * 1000 };
-            nanosleep(&ts, NULL);
+            nanosleep(&ts, nullptr);
 #endif
         }
 

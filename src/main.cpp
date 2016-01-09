@@ -43,13 +43,13 @@
 #include "libraries/crypt/RC5Simple.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/GlobalParameters.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
-#include "controllers/record_table/TableController.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
+#include "controllers/record_table/RecordController.h"
 
-const int add_new_record_after = 2;
+//const int add_new_record_after = 2;
 using namespace std;
 
 // Фиксированные параметры программы (жестко заданные в текущей версии MyTetra)
@@ -74,7 +74,7 @@ WalkHistory walkhistory;
 QObject *mainwindow;
 
 
-std::string getDifference(const std::string &url_compare_stored, const std::string &url_compare_get)
+std::string difference(const std::string &url_compare_stored, const std::string &url_compare_get)
 {
     std::string compare = "";
 
@@ -102,7 +102,7 @@ std::string getDifference(const std::string &url_compare_stored, const std::stri
     return compare;
 }
 
-void logPrint(char *lpszText, ...)
+void log_print(char *lpszText, ...)
 {
     va_list argList;
     FILE *pFile;
@@ -111,7 +111,7 @@ void logPrint(char *lpszText, ...)
     va_start(argList, lpszText);
 
     // открываем лог-файл для добавления данных
-    if((pFile = fopen("mytetralog.txt", "a+")) == NULL) {
+    if((pFile = fopen("mytetralog.txt", "a+")) == nullptr) {
         printf("\nLog file not writable\n");
         return;
     }
@@ -132,7 +132,7 @@ void logPrint(char *lpszText, ...)
 }
 
 
-void criticalError(QString message)
+void critical_error(QString message)
 {
     qDebug() << " ";
     qDebug() << "---------------";
@@ -151,7 +151,7 @@ void criticalError(QString message)
 
 
 // Функция-помощник при отладке генерации XML-кода. Преобразует узел DOM в строку
-QString xmlNodeToString(QDomNode xmlData)
+QString xml_node_to_qstring(QDomNode xmlData)
 {
     // Если узел представляет собой полностью документ
     if(xmlData.isDocument()) {
@@ -176,7 +176,7 @@ QString xmlNodeToString(QDomNode xmlData)
 
 
 // Преобразование из QString в обычный char
-char *fromQStringToChar(const QString &str)
+char *qstring_to_char(const QString &str)
 {
     /*
     char *tmpC=new char [str.size() + 1];
@@ -215,9 +215,9 @@ void print_object_tree_recurse(QObject *pobj)
         for(int j = 0; j < indent; j++)indentline = indentline + ".";
 
         if((currobj->objectName()).length() == 0)
-            qDebug("%s%s", fromQStringToChar(indentline), currobj->metaObject()->className());
+            qDebug("%s%s", qstring_to_char(indentline), currobj->metaObject()->className());
         else
-            qDebug("%s%s, NAME %s", fromQStringToChar(indentline), currobj->metaObject()->className(), fromQStringToChar(currobj->objectName()));
+            qDebug("%s%s, NAME %s", qstring_to_char(indentline), currobj->metaObject()->className(), qstring_to_char(currobj->objectName()));
 
         indent++;
         print_object_tree_recurse(currobj);
@@ -235,37 +235,37 @@ void print_object_tree(void)
 }
 
 
-// Функция для сортировки массива из QStringList исходя из длин списков
-bool compare_QStringList_len(const QStringList &list1, const QStringList &list2)
-{
-    return list1.size() < list2.size();
-}
+//// Функция для сортировки массива из QStringList исходя из длин списков
+//bool compare_qstringlist_length(const QStringList &list1, const QStringList &list2)
+//{
+//    return list1.size() < list2.size();
+//}
 
 
-void insertActionAsButton(QToolBar *tools_line, QAction *action)
-{
-    tools_line->addAction(action);
-    qobject_cast<QToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(
-        true    //false
-    );
-}
+//void insertActionAsButton(QToolBar *tools_line, QAction *action)
+//{
+//    tools_line->addAction(action);
+//    qobject_cast<QToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(
+//        true    //false
+//    );
+//}
 
 
-int imax(int x1, int x2)
-{
-    if(x1 > x2)return x1;
-    else return x2;
-}
+//int imax(int x1, int x2)
+//{
+//    if(x1 > x2)return x1;
+//    else return x2;
+//}
 
 
-int imin(int x1, int x2)
-{
-    if(x1 < x2)return x1;
-    else return x2;
-}
+//int imin(int x1, int x2)
+//{
+//    if(x1 < x2)return x1;
+//    else return x2;
+//}
 
 
-void smartPrintDebugMessage(QString msg)
+void smart_print_debug_message(QString msg)
 {
     if(globalparameters.target_os() == "any" ||
        globalparameters.target_os() == "meego") {
@@ -286,9 +286,9 @@ void smartPrintDebugMessage(QString msg)
 // Обработчик (хендлер) вызовов qDebug()
 // Внутри этого обработчика нельзя использовать вызовы qDebug(), т. к. получится рекурсия
 #if QT_VERSION < 0x050000
-void myMessageOutput(QtMsgType type, const char *msg)
+void my_message_output(QtMsgType type, const char *msg)
 #else
-void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QString &msgText)
+void my_message_output(QtMsgType type, const QMessageLogContext &context, const QString &msgText)
 #endif
 {
 #if QT_VERSION >= 0x050000
@@ -303,7 +303,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
 
     if(!appconfig.is_init()) {
-        smartPrintDebugMessage("[INF] " + msgText + "\n");
+        smart_print_debug_message("[INF] " + msgText + "\n");
         return;
     }
 
@@ -313,23 +313,23 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 
     switch(type) {
         case QtInfoMsg:
-            smartPrintDebugMessage("[INF] " + msgText + "\n");
+            smart_print_debug_message("[INF] " + msgText + "\n");
             break;
 
         case QtDebugMsg:
-            smartPrintDebugMessage("[DBG] " + msgText + "\n");
+            smart_print_debug_message("[DBG] " + msgText + "\n");
             break;
 
         case QtWarningMsg:
-            smartPrintDebugMessage("[WRN] " + msgText + "\n");
+            smart_print_debug_message("[WRN] " + msgText + "\n");
             break;
 
         case QtCriticalMsg:
-            smartPrintDebugMessage("[CRERR] " + msgText + "\n");
+            smart_print_debug_message("[CRERR] " + msgText + "\n");
             break;
 
         case QtFatalMsg:
-            smartPrintDebugMessage("[FTERR] " + msgText + "\n");
+            smart_print_debug_message("[FTERR] " + msgText + "\n");
             abort();
     }
 
@@ -337,7 +337,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext &context, const QS
 }
 
 
-void setDebugMessageHandler()
+void set_debug_message_handler()
 {
     qDebug() << "Debug message before set message handler for target OS: " << globalparameters.target_os();
 
@@ -345,12 +345,12 @@ void setDebugMessageHandler()
     // Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
     if(globalparameters.target_os() == "any" ||
        globalparameters.target_os() == "meego") {
-        qDebug() << "Set alternative handler myMessageOutput() for debug message";
+        qDebug() << "Set alternative handler my_message_output() for debug message";
 
 #if QT_VERSION < 0x050000
-        qInstallMsgHandler(myMessageOutput);
+        qInstallMsgHandler(my_message_output);
 #else
-        qInstallMessageHandler(myMessageOutput);
+        qInstallMessageHandler(my_message_output);
 #endif
     }
 
@@ -359,15 +359,15 @@ void setDebugMessageHandler()
 
 
 // Выдача на экран простого окна с сообщением
-void showMessageBox(QString message)
+void show_message_box(QString message)
 {
-    QMessageBox msgBox;
-    msgBox.setText(message);
-    msgBox.exec();
+    QMessageBox msg_box;
+    msg_box.setText(message);
+    msg_box.exec();
 }
 
 
-int getScreenSizeY(void)
+int screen_size_y(void)
 {
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     int size = (qApp->desktop()->availableGeometry()).height();
@@ -381,7 +381,7 @@ int getScreenSizeY(void)
 }
 
 
-int getScreenSizeX(void)
+int screen_size_x(void)
 {
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     int size = (qApp->desktop()->availableGeometry()).width();
@@ -395,7 +395,7 @@ int getScreenSizeX(void)
 }
 
 
-qreal getCalculateIconSizePx(void)
+qreal calculate_iconsize_px(void)
 {
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     qreal dpiX = qApp->desktop()->physicalDpiX();
@@ -416,20 +416,20 @@ qreal getCalculateIconSizePx(void)
 
 
 // Замена в CSS-стиле все вхождения подстроки META_ICON_SIZE на вычисленный размер иконки в пикселях
-QString replaceCssMetaIconSize(QString styleText)
+QString replace_css_meta_iconsize(QString styleText)
 {
-    styleText.replace("META_ICON_SIZE", QString::number((int) getCalculateIconSizePx()));
-    styleText.replace("META_ICON_HALF_SIZE", QString::number((int)getCalculateIconSizePx() / 2));
-    styleText.replace("META_ICON_TWO_THIRDS_SIZE", QString::number(((int)getCalculateIconSizePx() * 2) / 3));
-    styleText.replace("META_ICON_QUARTER_SIZE", QString::number((int)getCalculateIconSizePx() / 4));
-    styleText.replace("META_ICON_FIFTH_SIZE", QString::number((int)getCalculateIconSizePx() / 5));
-    styleText.replace("META_ICON_SIXTH_SIZE", QString::number((int)getCalculateIconSizePx() / 6));
+    styleText.replace("META_ICON_SIZE", QString::number((int) calculate_iconsize_px()));
+    styleText.replace("META_ICON_HALF_SIZE", QString::number((int)calculate_iconsize_px() / 2));
+    styleText.replace("META_ICON_TWO_THIRDS_SIZE", QString::number(((int)calculate_iconsize_px() * 2) / 3));
+    styleText.replace("META_ICON_QUARTER_SIZE", QString::number((int)calculate_iconsize_px() / 4));
+    styleText.replace("META_ICON_FIFTH_SIZE", QString::number((int)calculate_iconsize_px() / 5));
+    styleText.replace("META_ICON_SIXTH_SIZE", QString::number((int)calculate_iconsize_px() / 6));
 
     return styleText;
 }
 
 
-void setCssStyle()
+void set_css_style()
 {
     QString csspath = globalparameters.work_directory() + "/stylesheet.css";
 
@@ -450,14 +450,14 @@ void setCssStyle()
         qDebug() << "Stylesheet success loaded from" << csspath;
         QString style = QTextStream(&css).readAll();
 
-        style = replaceCssMetaIconSize(style);
+        style = replace_css_meta_iconsize(style);
 
         qApp->setStyleSheet(style);
     }
 }
 
 
-void setKineticScrollArea(QAbstractItemView *object)
+void set_kinetic_scrollarea(QAbstractItemView *object)
 {
 #if QT_VERSION < 0x050000
 
@@ -466,7 +466,7 @@ void setKineticScrollArea(QAbstractItemView *object)
 
 #else
 
-    if(object == NULL)
+    if(object == nullptr)
         return;
 
     if(globalparameters.target_os() == "android") {
@@ -692,7 +692,7 @@ QString get_unical_id(void)
 
     // Количество секунд как число
     long seconds;
-    seconds = (long)time(NULL);
+    seconds = (long)time(nullptr);
 
     // Количество секунд как строка
     QString secondsLine = QString::number(seconds, 10);
@@ -737,7 +737,7 @@ void init_random(void)
 
     seed1 = seed1 - get_milli_count() + r;
 
-    unsigned int seed2 = time(NULL);
+    unsigned int seed2 = time(nullptr);
     unsigned int seed3 = seed1 + seed2;
     unsigned int seed = seed3;
 
@@ -765,7 +765,7 @@ int main(int argc, char **argv)
     globalparameters.main_program_file(mainProgramFile);
 
     // Перехват отладочных сообщений
-    setDebugMessageHandler();
+    set_debug_message_handler();
 
 
     //    QtSingleApplication application(argc, argv);

@@ -19,7 +19,7 @@
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 extern DataBaseConfig databaseconfig;
-
+extern const char* knowtreeview_singleton_name;
 
 Password::Password(void)
 {
@@ -143,7 +143,7 @@ bool Password::replacePassword(void)
 // ------------------------
 
 // Выясняется ссылка на модель дерева данных
-    KnowTreeModel *dataModel=static_cast<KnowTreeModel*>(find_object<KnowTreeView>("knowTreeView")->model());
+    KnowTreeModel *dataModel=static_cast<KnowTreeModel*>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
 // Перешифрация
     dataModel->reEncrypt(previousPassword, password);

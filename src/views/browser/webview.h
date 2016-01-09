@@ -51,15 +51,13 @@
 
 
 #include "models/record_table/Record.h"
-#include "controllers/record_table/TableController.h"
-#include "views/record_table/TableScreen.h"
+#include "controllers/record_table/RecordController.h"
+#include "views/record_table/RecordScreen.h"
 #include "models/record_table/Record.h"
 #include "libraries/GlobalParameters.h"
-//#include "tabwidget.h"
 #include "views/browser/featurepermissionbar.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
-#include "views/record_table/TableView.h"
-//#include "tabwidget.h"
+#include "views/record_table/RecordView.h"
 #include "models/record_table/Record.h"
 
 
@@ -78,6 +76,7 @@ class Record;
 
 QT_BEGIN_NAMESPACE
 
+//#define USE_POPUP_WINDOW
 
 namespace browser {
 
@@ -85,6 +84,44 @@ namespace browser {
     class PopupWindow;
     class WebView;
     class TabWidget;
+
+#ifdef USE_POPUP_WINDOW
+
+    class PopupPage : public QWebEnginePage {
+        Q_OBJECT
+
+    signals:
+        void loadingUrl(const QUrl &url);
+
+    public:
+        PopupPage(QWebEngineProfile *profile, QObject *parent = 0);
+        Browser *browser();
+
+    protected:
+        bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
+        //        QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;
+#if !defined(QT_NO_UITOOLS)
+        QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
+#endif
+        virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
+
+    private slots:
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
+        void handleUnsupportedContent(QNetworkReply *reply);
+#endif
+        void authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth);
+        void proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost);
+
+    private:
+        friend class PopupView;
+
+        // set the webview mousepressedevent
+        Qt::KeyboardModifiers m_keyboardModifiers;
+        Qt::MouseButtons m_pressedButtons;
+        QUrl m_loadingUrl;
+    };
+
+#endif // USE_POPUP_WINDOW
 
     class WebPage : public QWebEnginePage {
         Q_OBJECT
@@ -102,10 +139,12 @@ namespace browser {
 
             //            std::list<std::shared_ptr<Record> > records = binded_records();
 
-            for(auto &i : _records) {
-                if(i.second->unique_page() == this) {
-                    break_records_which_page_point_to_me();  //
-                    i.second->page_to_nullptr();
+            for(auto &j : _records) {
+                if(auto i = j.second.lock()) {
+                    if(i->unique_page() == this) {
+                        break_records();  //
+                        i->page_to_nullptr();
+                    }
                 }
             }
         }
@@ -113,14 +152,14 @@ namespace browser {
         WebPage(QWebEngineProfile *profile
                 , const std::shared_ptr<Record> record
                 // , bool openinnewtab
-                , TableController *_record_controller
-                // , TableController *_page_controller
+                , RecordController *_record_controller
+                //                , TableController *_page_controller
                 , WebView *parent = 0
                );
         //        WebView *(*_load_record)(Record *const record);
         Browser *browser();
         WebView *view() {return _pageview;}
-        std::map<QString, std::shared_ptr<Record> > binded_records()const;
+        std::map<QString, std::weak_ptr<Record> > binded_records()const;
 
         WebView *active();
         WebView *load(const std::shared_ptr<Record> record, bool checked = true);
@@ -164,10 +203,12 @@ namespace browser {
         };
 
         std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record);
-        // void add_record_to_page_screen(std::shared_ptr<Record> record);
-        // void remove_record_from_page_screen(std::shared_ptr<Record> record);
-        void break_record_which_page_point_to_me(std::shared_ptr<Record> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
-        void break_records_which_page_point_to_me();
+        void add_record_to_table_data(std::shared_ptr<Record> record);
+        void remove_record_from_table_data(std::shared_ptr<Record> record);
+        void break_record(std::shared_ptr<Record> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        void break_records();
+        void sychronize_metaeditor_to_record(std::shared_ptr<Record> record);
+
     protected:
 
         bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
@@ -177,14 +218,14 @@ namespace browser {
 #endif
         virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-        WebView *bind(const std::shared_ptr<Record> record);
+        WebView *bind(std::weak_ptr<Record> r);
 
         void update_record(const QUrl &url
                            // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
                            , const QString &title
                            // = title()
-                           , bool make_current = true
                           );
+
 
     private slots:
 
@@ -201,7 +242,7 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
-        std::map<QString, std::shared_ptr<Record> > _records;
+        std::map<QString, std::weak_ptr<Record> > _records;
         std::shared_ptr<Record> _record;
 
         WebView                 *_pageview;
@@ -211,8 +252,8 @@ namespace browser {
         // bool _openinnewtab;
         QUrl                    _loadingurl;
         //bool _create_window_generated;
-        TableController         *_record_controller;
-        // TableController         *_page_controller;
+        RecordController        *_record_controller;
+        //        TableController         *_page_controller;
 
         void record(std::shared_ptr<Record> record) {_record = record;}
         friend class Record;
@@ -223,6 +264,53 @@ namespace browser {
         friend WebPage *Record::unique_page();
         friend bool Record::is_holder();
     };
+
+#ifdef USE_POPUP_WINDOW
+
+    class PopupView : public QWebEngineView {
+        Q_OBJECT
+
+    public:
+        PopupView(QWidget *parent = 0);
+        PopupPage *webPage() const { return m_page; }
+        void setPage(PopupPage *page);
+
+        void loadUrl(const QUrl &url);
+        QUrl url() const;
+        QIcon icon() const;
+
+        QString lastStatusBarText() const;
+        inline int progress() const { return m_progress; }
+
+    protected:
+        void mousePressEvent(QMouseEvent *event);
+        void mouseReleaseEvent(QMouseEvent *event);
+        void contextMenuEvent(QContextMenuEvent *event);
+        void wheelEvent(QWheelEvent *event);
+
+    signals:
+        void iconChanged();
+
+    private slots:
+        void setProgress(int progress);
+        void loadFinished(bool success);
+        void setStatusBarText(const QString &string);
+        void openLinkInNewTab();
+        void onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature);
+        void onIconUrlChanged(const QUrl &url);
+        void iconLoaded();
+
+    private:
+        QString m_statusBarText;
+        QUrl m_initialUrl;
+        int m_progress;
+        PopupPage *m_page;
+        QIcon m_icon;
+        QNetworkReply *m_iconReply;
+    };
+
+
+#endif //USE_POPUP_WINDOW
 
 
     // template Q_ONJECT
@@ -236,8 +324,20 @@ namespace browser {
         WebView(std::shared_ptr<Record> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
-                , TableController *table_controller
+                , RecordController *table_controller
                 = globalparameters.table_screen()->table_controller()
+                  //                  , TableController *_page_controller
+                  //                = globalparameters.page_screen()->table_controller()
+               );
+
+        WebView(std::shared_ptr<Record> record
+                , QWebEngineProfile *profile    // , bool openinnewtab
+                , TabWidget *tabmanager
+                , QWidget *parent
+                , RecordController *table_controller
+                = globalparameters.table_screen()->table_controller()
+                  //                  , TableController *_page_controller
+                  //                = globalparameters.page_screen()->table_controller()
                );
 
         ~WebView();
@@ -252,8 +352,8 @@ namespace browser {
         QString lastStatusBarText() const;
         inline int progress() const { return _progress; }
 
-        TableController *table_controller() {return _record_controller;}
-        void bind_recordtabcontroller(TableController *recordtablecontroller) {_record_controller  = recordtablecontroller ;}
+        RecordController *table_controller() {return _record_controller;}
+        void bind_recordtabcontroller(RecordController *recordtablecontroller) {_record_controller  = recordtablecontroller ;}
         //        Record *const &record()const {return _record;}
         //        void record(Record *record) {if(record) {_record = record; _record->view(this);}}
 
@@ -290,8 +390,8 @@ namespace browser {
     private:
         TabWidget               *_tabmanager;
         //        Record *_record;
-        TableController         *_record_controller;
-        // TableController         *_page_controller;
+        RecordController         *_record_controller;
+        //        TableController         *_page_controller;
         WebPage                 *_page;
         QString                 _statusbartext;
         //        QUrl _initialurl;
@@ -302,8 +402,56 @@ namespace browser {
         friend class TabWidget;
     };
 
+#ifdef USE_POPUP_WINDOW
 
+    class PopupWindow : public QWidget {
+        Q_OBJECT
+    public:
 
+        PopupWindow(QWebEngineProfile *profile)
+            : QWidget()
+            , _addressbar(new QLineEdit(this))
+            , _view(new PopupView(this))
+        {
+            _view->setPage(new PopupPage(profile, _view));
+            QVBoxLayout *layout = new QVBoxLayout;
+            layout->setMargin(0);
+            setLayout(layout);
+            layout->addWidget(_addressbar);
+            layout->addWidget(_view);
+            _view->setFocus();
+
+            connect(_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
+            connect(_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
+            connect(page(), &PopupPage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
+            connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
+        }
+
+        QWebEnginePage *page() const { return _view->page(); }
+
+    private Q_SLOTS:
+        void setUrl(const QUrl &url)
+        {
+            _addressbar->setText(url.toString());
+        }
+
+        void adjustGeometry(const QRect &newGeometry)
+        {
+            const int x1 = frameGeometry().left() - geometry().left();
+            const int y1 = frameGeometry().top() - geometry().top();
+            const int x2 = frameGeometry().right() - geometry().right();
+            const int y2 = frameGeometry().bottom() - geometry().bottom();
+
+            setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
+        }
+
+    private:
+        QLineEdit *_addressbar;
+        PopupView *_view;
+
+    };
+
+#endif // USE_POPUP_WINDOW
 
 }
 

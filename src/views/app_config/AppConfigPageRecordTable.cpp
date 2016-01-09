@@ -8,8 +8,8 @@
 #include "AppConfigPageTable.h"
 #include "models/app_config/AppConfig.h"
 #include "libraries/FixedParameters.h"
-#include "models/record_table/TableModel.h"
-#include "controllers/record_table/TableController.h"
+#include "models/record_table/RecordModel.h"
+#include "controllers/record_table/RecordController.h"
 
 extern AppConfig appconfig;
 extern FixedParameters fixedparameters;
@@ -19,7 +19,7 @@ AppConfigPageTable::AppConfigPageTable(QWidget *parent) : ConfigPage(parent)
 {
     qDebug() << "Create record table config page";
 
-    QStringList allFieldNames = fixedparameters.recordFieldAvailableList;
+    QStringList allFieldNames = fixedparameters._record_field;
     QMap<QString, QString> descriptionFields = fixedparameters.recordFieldDescription(allFieldNames);
     QStringList showFields = appconfig.getRecordTableShowFields();
 
@@ -91,11 +91,11 @@ void AppConfigPageTable::setupSignals(void)
 
 
     // Указатель на контроллер таблицы конечных записей
-    TableController *table_controller = find_object<TableController>("table_screen_controller");
-    TableController *page_controller = find_object<TableController>("page_screen_controller");
+    RecordController *table_controller = find_object<RecordController>("table_screen_controller");
+    RecordController *page_controller = find_object<RecordController>("page_screen_controller");
     // При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
-    connect(this, &AppConfigPageTable::recordTableConfigChange, table_controller, &TableController::on_recordtable_configchange);
-    connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &TableController::on_recordtable_configchange);
+    connect(this, &AppConfigPageTable::recordTableConfigChange, table_controller, &RecordController::on_recordtable_configchange);
+    connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
 }
 
 

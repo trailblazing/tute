@@ -143,7 +143,7 @@ void EditorAbsTableCell::print_cell(void)
 void EditorAbsTableCell::set_supercell_size_is_modify(bool i)
 {
     if(cellType!=IS_SUPER_CELL) {
-        criticalError("Try set flag size_is_modify to not supercell");
+        critical_error("Try set flag size_is_modify to not supercell");
         return;
     } else
         superCellSizeIsModify=i;
@@ -153,7 +153,7 @@ void EditorAbsTableCell::set_supercell_size_is_modify(bool i)
 bool EditorAbsTableCell::get_supercell_size_is_modify(void)
 {
     if(cellType!=IS_SUPER_CELL) {
-        criticalError("Try get flag size_is_modify from not supercell");
+        critical_error("Try get flag size_is_modify from not supercell");
         return false;
     } else
         return superCellSizeIsModify;

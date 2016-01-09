@@ -64,7 +64,7 @@ void FindTableWidget::setupUI(void)
         _findtableview->verticalHeader()->setDefaultSectionSize(height);
 
     if(appconfig.getInterfaceMode() == "mobile")
-        _findtableview->verticalHeader()->setDefaultSectionSize(getCalculateIconSizePx());
+        _findtableview->verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
 
     // Устанавливается режим что могут выделяться только строки
     // а не отдельный item таблицы
@@ -74,7 +74,7 @@ void FindTableWidget::setupUI(void)
     _findtableview->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     // Настройка области виджета для кинетической прокрутки
-    setKineticScrollArea(qobject_cast<QAbstractItemView *>(_findtableview));
+    set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(_findtableview));
 }
 
 

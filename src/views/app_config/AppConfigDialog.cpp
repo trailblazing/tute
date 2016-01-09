@@ -18,8 +18,8 @@ extern AppConfig appconfig;
 AppConfigDialog::AppConfigDialog(QString firstPageName = "") : QWidget()
 {
     if(appconfig.getInterfaceMode() == "mobile") { // if(true)
-        qDebug() << "Screen size X Y: " << getScreenSizeX() << getScreenSizeY();
-        this->setMinimumSize(getScreenSizeX(), getScreenSizeY());
+        qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();
+        this->setMinimumSize(screen_size_x(), screen_size_y());
         this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     }
 
@@ -45,7 +45,7 @@ AppConfigDialog::AppConfigDialog(QString firstPageName = "") : QWidget()
 void AppConfigDialog::changePage(QString name)
 {
 
-    QListWidgetItem *item = NULL;
+    QListWidgetItem *item = nullptr;
 
     if(name == "pageMain")          item = pageMain;
 
@@ -57,7 +57,7 @@ void AppConfigDialog::changePage(QString name)
 
     if(name == "pageMisc")          item = pageMisc;
 
-    if(item != NULL)
+    if(item != nullptr)
         configDialog->externalChangePage(item);
     else
         qDebug() << "AppConfigDialog::changePage cant find item for name: " << name;

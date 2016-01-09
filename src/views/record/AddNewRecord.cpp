@@ -50,9 +50,9 @@ void AddNewRecord::setupUI(void)
     // Редактор текста записи
     recordTextEditor = new Editor();
     recordTextEditor->disable_tool_list(appconfig.getHideEditorTools() + (QStringList() << "save" << "show_text" << "attach"));
-    recordTextEditor->initEnableAssembly(true);
-    recordTextEditor->initConfigFileName(globalparameters.work_directory() + "/editorconf.ini");
-    recordTextEditor->initEnableRandomSeed(false);
+    recordTextEditor->init_enable_assembly(true);
+    recordTextEditor->init_config_file_name(globalparameters.work_directory() + "/editorconf.ini");
+    recordTextEditor->init_enable_random_seed(false);
     recordTextEditor->init(Editor::WYEDIT_DESKTOP_MODE); // Так как это окно, в мобильном режие его инициализировать ненужно, так как есть кнопка Отмена
 
     // Кнопки OK и Cancel
@@ -152,7 +152,7 @@ void AddNewRecord::okClick(void)
 
     // Картинки сохраняются
     imagesDirName = DiskHelper::createTempDirectory();
-    recordTextEditor->set_work_directory(imagesDirName);
+    recordTextEditor->work_directory(imagesDirName);
     recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
 
     emit(accept());
@@ -162,7 +162,7 @@ void AddNewRecord::okClick(void)
 QString AddNewRecord::getImagesDirectory(void)
 {
     if(imagesDirName.length() == 0) {
-        criticalError("In add new record function can not generate temp directory with saved images.");
+        critical_error("In add new record function can not generate temp directory with saved images.");
         return "";
     }
 

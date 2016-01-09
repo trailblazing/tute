@@ -5,7 +5,10 @@
 #include <QMap>
 #include <QWidget>
 #include <QToolBar>
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordTable.h"
+#include "models/tree/TreeItem.h"
+
+
 
 class QLineEdit;
 // class QPushButton;
@@ -25,7 +28,8 @@ class FindTableWidget;
 class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
-class TableData;
+class RecordTable;
+class TreeItem;
 
 namespace browser {
     class ChaseWidget;
@@ -39,14 +43,14 @@ class FindScreen : public QWidget {
 
 public:
     static const constexpr char *_find_in_base_expand = "findInBaseExpand"; // "find_in_base_expand";
-    FindScreen(QString object_name, QWidget *parent = 0);
+    FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _candidate_root, QWidget *parent = 0);
     virtual ~FindScreen(void);
     //QToolBar *navigater() {return _navigater;}
 
     //    void toolbarsearch(browser::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
     browser::ToolbarSearch *toolbarsearch() {return _toolbarsearch;}
 
-    FlatToolButton *findstartbutton() {return _findstartbutton;}
+    FlatToolButton *findstartbutton() {return _find_start_button;}
 
     QAction *historyback() {return _historyback;}
     QAction *historyforward() {return _historyforward;}
@@ -61,7 +65,7 @@ public slots:
 
     void widget_show(void);
     void widget_hide(void);
-    std::shared_ptr<TableData> find_clicked(void);
+    std::shared_ptr<RecordTable> find_clicked(void);
     void find_text(QString text);
 
 protected:
@@ -87,9 +91,8 @@ signals:
 
     // Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
     // был изменен текст для поиска
-    void textChangedFromAnother(const QString &);
-
-    void findClickedAfterAnotherTextChanged(void);
+    void text_changed_from_another(const QString &);
+    void find_clicked_after_another_text_changed(void);
 
 private:
 
@@ -97,54 +100,47 @@ private:
     //    QIcon _stopicon;
 
     QToolBar *_navigater;
-
     //    //    QHBoxLayout *_navigater;
-    //    //    FlatToolButton *historyback_;
-    QAction *_historyback;
-    QAction *_historyforward;
-    QAction *_historyhome;
-    QAction *_stopreload;
-    //    FlatToolButton *_history_back;
-    //    FlatToolButton *_history_forward;
-    //    FlatToolButton *_history_home;
-    //    FlatToolButton *_stop_reload;
+
+    QAction *_historyback;      //    FlatToolButton *_history_back;
+    QAction *_historyforward;   //    FlatToolButton *_history_forward;
+    QAction *_historyhome;      //    FlatToolButton *_history_home;
+    QAction *_stopreload;       //    FlatToolButton *_stop_reload;
+
     browser::ChaseWidget *_chasewidget;
 
-    QHBoxLayout     *toolsAreaFindTextAndButton;
+    QHBoxLayout     *_find_text_and_button_tools_area;
 
-    FlatToolButton  *_findstartbutton;   // QPushButton
-    FlatToolButton  *toolsExpand;
+    FlatToolButton  *_find_start_button;   // QPushButton
+    FlatToolButton  *_tools_expand;
 
-    QVBoxLayout     *toolsAreaCloseButton;
-    FlatToolButton  *closeButton;
+    QVBoxLayout     *_close_button_tools_area;
+    FlatToolButton  *_close_button;
 
-    QHBoxLayout *toolsAreaComboOption;
-    FlatComboBox *wordRegard;
-    FlatComboBox *howExtract;
-    FlatComboBox *treeSearchArea;
+    QHBoxLayout     *_combo_option_tools_area;
+    FlatComboBox    *_word_regard;
+    FlatComboBox    *_how_extract;
+    FlatComboBox    *_tree_search_area;
 
-    QHBoxLayout *whereFindLine;
-    QLabel      *whereFindLabel;
-    QCheckBox   *findInPin;
-    QCheckBox   *findInName;
-    QCheckBox   *findInAuthor;
-    QCheckBox   *findInHome;
-    QCheckBox   *findInUrl;
-    QCheckBox   *findInTags;
-    QCheckBox   *findInText;
+    QHBoxLayout     *_where_find_line;
+    QLabel          *_where_find_label;
+    QCheckBox       *_find_in_pin;
+    QCheckBox       *_find_in_name;
+    QCheckBox       *_find_in_author;
+    QCheckBox       *_find_in_home;
+    QCheckBox       *_find_in_url;
+    QCheckBox       *_find_in_tags;
+    QCheckBox       *_find_in_text;
 
-    QHBoxLayout *toolsLine;
-    QGridLayout *toolsGrid;
+    QHBoxLayout     *_tools_line;
+    QGridLayout     *_tools_grid;
 
-    QVBoxLayout *centralDesktopLayout;
+    QVBoxLayout     *_central_desktop_layout;
 
     QProgressDialog *_progress;
-    //    QLineEdit *_findtext;
-    //    QStackedWidget *_lineedits;
-    //    FindTableWidget             *_findtable;    // result of finding?
 
-    std::shared_ptr<TableData>  _result = std::make_shared<TableData>();
-    browser::ToolbarSearch      *_toolbarsearch;
+    boost::intrusive_ptr<TreeItem>  _candidate_root;         // std::shared_ptr<RecordTable>  _resultset_data;        // = std::make_shared<TableData>();      //    FindTableWidget     *_findtable;
+    browser::ToolbarSearch          *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
     void setup_navigate(void);
     void assembly_navigate(void);
@@ -168,21 +164,21 @@ private:
 
     void if_find_in_field(QString fieldname, int state);
 
-    std::shared_ptr<TableData> find_start(void);
-    void find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_ptr<TableData> result);
+    std::shared_ptr<RecordTable> find_start(void);
+    std::shared_ptr<RecordTable> find_recursive(boost::intrusive_ptr<TreeItem> curritem, boost::intrusive_ptr<TreeItem> _candidate_root);
     bool find_in_text_process(const QString &text);
 
     void switch_tools_expand(bool flag);
 
     // Поля, где нужно искать (Заголовок, текст, теги...)
-    QMap<QString, bool> searchArea;
+    QMap<QString, bool> _search_area;
 
     // Список слов, которые нужно искать
-    QStringList searchWordList;
+    QStringList _search_word_list;
 
-    int totalProgressCounter;
+    int         _total_progress_counter;
 
-    int cancelFlag;
+    int         _cancel_flag;
 
 };
 

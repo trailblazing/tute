@@ -27,7 +27,7 @@ Attach::Attach(AttachTableData *iParentTable)
 Attach::Attach(QString iType, AttachTableData *iParentTable)
 {
     if(!typeAvailableList().contains(iType))
-        criticalError("Incorrect attach type in Attach constructor: " + iType);
+        critical_error("Incorrect attach type in Attach constructor: " + iType);
 
     setField("type", iType);
 
@@ -37,21 +37,21 @@ Attach::Attach(QString iType, AttachTableData *iParentTable)
 
 Attach::~Attach()
 {
-    fileContent.clear();
+    _file_content.clear();
 }
 
 
 void Attach::init(AttachTableData *iParentTable)
 {
-    liteFlag = true; // By default, a light object    // По-умолчанию легкий объект
-    parentTable = iParentTable;
-    fileContent.clear();
+    _lite_flag = true; // By default, a light object    // По-умолчанию легкий объект
+    _parent_table = iParentTable;
+    _file_content.clear();
 }
 
 
 void Attach::setParentTable(AttachTableData *iParentTable)
 {
-    parentTable = iParentTable;
+    _parent_table = iParentTable;
 }
 
 
@@ -82,19 +82,19 @@ void Attach::setupDataFromDom(QDomElement iDomElement)
     QStringList fieldsName = fieldAvailableList();
 
     foreach(QString fieldName, fieldsName)   // Перебираются имена полей (XML-тегов)
-        fields[fieldName] = iDomElement.attribute(fieldName); // Напрямую устанавливаются значения из XML файла
+        _fields[fieldName] = iDomElement.attribute(fieldName); // Напрямую устанавливаются значения из XML файла
 }
 
 
-QDomElement Attach::exportDataToDom(QDomDocument *doc) const
+QDomElement Attach::export_to_dom(std::shared_ptr<QDomDocument> doc) const
 {
     QDomElement elem = doc->createElement("file");
 
     QStringList fieldsName = fieldAvailableList();
 
     foreach(QString fieldName, fieldsName)   // Перебираются имена полей (XML-тегов)
-        if(fields[fieldName].size() > 0)
-            elem.setAttribute(fieldName, fields[fieldName]);
+        if(_fields[fieldName].size() > 0)
+            elem.setAttribute(fieldName, _fields[fieldName]);
 
     return elem;
 }
@@ -103,7 +103,7 @@ QDomElement Attach::exportDataToDom(QDomDocument *doc) const
 bool Attach::isEmpty() const
 {
     // Заполненный аттач не может содержать пустой id
-    if(fields.contains("id") == false || getField("id").length() == 0)
+    if(_fields.contains("id") == false || getField("id").length() == 0)
         return true;
     else
         return false;
@@ -112,29 +112,29 @@ bool Attach::isEmpty() const
 
 bool Attach::isLite() const
 {
-    return liteFlag;
+    return _lite_flag;
 }
 
 
 void Attach::switchToLite()
 {
     // Переключение возможно только из полновесного состояния
-    if(liteFlag == true)
-        criticalError("Can't switch attach to lite state. Attach id: " + getField("id") + " File name: " + getField("fileName"));
+    if(_lite_flag == true)
+        critical_error("Can't switch attach to lite state. Attach id: " + getField("id") + " File name: " + getField("fileName"));
 
-    fileContent.clear();
+    _file_content.clear();
 
-    liteFlag = true;
+    _lite_flag = true;
 }
 
 
 void Attach::switchToFat()
 {
     // Переключение возможно только из легкого состояния
-    if(liteFlag != true)
-        criticalError("Unavailable switching attach object to fat state. Attach Id: " + getField("id") + " File name: " + getField("fileName"));
+    if(_lite_flag != true)
+        critical_error("Unavailable switching attach object to fat state. Attach Id: " + getField("id") + " File name: " + getField("fileName"));
 
-    liteFlag = false;
+    _lite_flag = false;
 }
 
 
@@ -144,7 +144,7 @@ QString Attach::getField(QString name) const
 {
     // Если имя поля недопустимо
     if(fieldAvailableList().contains(name) == false)
-        criticalError("Attach::getField() : get unavailable field " + name);
+        critical_error("Attach::getField() : get unavailable field " + name);
 
 
     // ------------------------------------------
@@ -153,8 +153,8 @@ QString Attach::getField(QString name) const
 
     // Если запрашивается линк на файл
     if(name == "link")
-        if(fields["type"] != "link") // И тип аттача не является линком
-            criticalError("Attach::getField() : Can't get link from non-link attach.");
+        if(_fields["type"] != "link") // И тип аттача не является линком
+            critical_error("Attach::getField() : Can't get link from non-link attach.");
 
 
     // -----------------------
@@ -164,8 +164,8 @@ QString Attach::getField(QString name) const
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то расшифровка невозможна
     if(fieldCryptedList().contains(name))
-        if(fields.contains("crypt"))
-            if(fields["crypt"] == "1")
+        if(_fields.contains("crypt"))
+            if(_fields["crypt"] == "1")
                 if(globalparameters.crypt_key().length() == 0)
                     return QString();
 
@@ -176,16 +176,16 @@ QString Attach::getField(QString name) const
     // и поле crypt установлено в 1
     // и запрашиваемое поле не пустое (пустые данные невозможно расшифровать)
     if(fieldCryptedList().contains(name))
-        if(fields.contains("crypt"))
-            if(fields["crypt"] == "1")
-                if(fields[name].length() > 0)
+        if(_fields.contains("crypt"))
+            if(_fields["crypt"] == "1")
+                if(_fields[name].length() > 0)
                     isCrypt = true;
 
     // Если поле не подлежит шифрованию
     if(isCrypt == false)
-        return fields[name]; // Возвращается значение поля
+        return _fields[name]; // Возвращается значение поля
     else
-        return CryptService::decryptString(globalparameters.crypt_key(), fields[name]); // Поле расшифровывается
+        return CryptService::decryptString(globalparameters.crypt_key(), _fields[name]); // Поле расшифровывается
 }
 
 
@@ -195,7 +195,7 @@ void Attach::setField(QString name, QString value)
 {
     // Если имя поля недопустимо
     if(fieldAvailableList().contains(name) == false)
-        criticalError("Attach::setField() : set unavailable field " + name);
+        critical_error("Attach::setField() : set unavailable field " + name);
 
 
     // ------------------------------------------
@@ -205,14 +205,14 @@ void Attach::setField(QString name, QString value)
     // Поле с типом аттача
     if(name == "type")
         if(!typeAvailableList().contains(value))
-            criticalError("Attach::setField() : Incorrect attach type : " + value);
+            critical_error("Attach::setField() : Incorrect attach type : " + value);
 
     // Поле с именем файла
     if(name == "fileName")
         if(getField("type") == "link") // Если устанавливается имя файла для линка
             if(getField("fileName").length() > 0 && value.length() > 0) { // Если имя уже было задано (при создании аттача), и новое имя не пустое
                 // Имя файла для линка менять нельзя
-                showMessageBox(QObject::tr("Can't modify file name for link type attach."));
+                show_message_box(QObject::tr("Can't modify file name for link type attach."));
                 return;
             }
 
@@ -222,7 +222,7 @@ void Attach::setField(QString name, QString value)
 
         // Если файла, на который ссылается линк, не существует
         if(!tempFile.exists()) {
-            showMessageBox(QObject::tr("Bad link. File not found."));
+            show_message_box(QObject::tr("Bad link. File not found."));
             return;
         }
     }
@@ -239,13 +239,13 @@ void Attach::setField(QString name, QString value)
     // и поле crypt установлено в 1
     // и поле не пустое (пустые данные ненужно шифровать)
     if(fieldCryptedList().contains(name))
-        if(fields.contains("crypt"))
-            if(fields["crypt"] == "1")
+        if(_fields.contains("crypt"))
+            if(_fields["crypt"] == "1")
                 if(value.length() > 0) {
                     if(globalparameters.crypt_key().length() > 0)
                         isCrypt = true;
                     else
-                        criticalError("In Attach::setField() can not set data to crypt field " + name + ". Password not setted");
+                        critical_error("In Attach::setField() can not set data to crypt field " + name + ". Password not setted");
                 }
 
     // Если нужно шифровать, значение поля шифруется
@@ -253,7 +253,7 @@ void Attach::setField(QString name, QString value)
         value = CryptService::encryptString(globalparameters.crypt_key(), value);
 
     // Устанавливается значение поля
-    fields.insert(name, value);
+    _fields.insert(name, value);
 }
 
 
@@ -264,26 +264,26 @@ void Attach::setFieldSource(QString name, QString value)
 {
     // Если имя поля недопустимо
     if(fieldAvailableList().contains(name) == false)
-        criticalError("Attach::setField() : set unavailable field " + name);
+        critical_error("Attach::setField() : set unavailable field " + name);
 
     // Устанавливается значение поля
-    fields.insert(name, value);
+    _fields.insert(name, value);
 }
 
 
 void Attach::pushFatDataToDisk()
 {
     if(getField("type") != "file")
-        criticalError("Can't push fat data for non-file attach.");
+        critical_error("Can't push fat data for non-file attach.");
 
-    if(liteFlag == true)
-        criticalError("Can't push fat data for lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
+    if(_lite_flag == true)
+        critical_error("Can't push fat data for lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
 
     QString innerFileName = getInnerFileName();
-    QString innerDirName = parentTable->record->getFullDirName();
+    QString innerDirName = _parent_table->record->full_dir();
 
     QMap<QString, QByteArray> fileList;
-    fileList[innerFileName] = fileContent;
+    fileList[innerFileName] = _file_content;
     DiskHelper::saveFilesToDirectory(innerDirName, fileList);
 }
 
@@ -292,13 +292,13 @@ void Attach::pushFatDataToDisk()
 void Attach::pushFatDataToDirectory(QString dirName)
 {
     if(getField("type") != "file")
-        criticalError("Can't save to directory " + dirName + " non-file attach.");
+        critical_error("Can't save to directory " + dirName + " non-file attach.");
 
-    if(liteFlag == true)
-        criticalError("Can't save to directory lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
+    if(_lite_flag == true)
+        critical_error("Can't save to directory lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
 
     QMap<QString, QByteArray> fileList;
-    fileList[ getInnerFileName() ] = fileContent;
+    fileList[ getInnerFileName() ] = _file_content;
     DiskHelper::saveFilesToDirectory(dirName, fileList);
 }
 
@@ -307,15 +307,15 @@ void Attach::pushFatDataToDirectory(QString dirName)
 void Attach::popFatDataFromDisk()
 {
     // Втаскивание возможно только в полновесном состоянии
-    if(liteFlag == true)
-        criticalError("Can't' pop data for lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
+    if(_lite_flag == true)
+        critical_error("Can't' pop data for lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
 
-    fileContent.clear();
+    _file_content.clear();
 
     QString innerFileName = getInnerFileName();
-    QString innerDirName = parentTable->record->getFullDirName();
+    QString innerDirName = _parent_table->record->full_dir();
 
-    fileContent.append((DiskHelper::getFilesFromDirectory(innerDirName, innerFileName)).value(innerFileName));
+    _file_content.append((DiskHelper::getFilesFromDirectory(innerDirName, innerFileName)).value(innerFileName));
 }
 
 
@@ -331,7 +331,7 @@ bool Attach::copyFileToBase(QString iFileName)
     qDebug() << "Check file finish";
 
     if(file.exists() == false) {
-        showMessageBox(QObject::tr("Can't open file %1. File not exists.").arg(iFileName));
+        show_message_box(QObject::tr("Can't open file %1. File not exists.").arg(iFileName));
         return false;
     }
 
@@ -342,7 +342,7 @@ bool Attach::copyFileToBase(QString iFileName)
     qDebug() << "After real copy file.";
 
     if(result == false)
-        showMessageBox(QObject::tr("Can't copy file %1. May be directory %2 not writable, or target file %3 already exists.").arg(iFileName).arg(getFullInnerDirName()).arg(getFullInnerFileName()));
+        show_message_box(QObject::tr("Can't copy file %1. May be directory %2 not writable, or target file %3 already exists.").arg(iFileName).arg(getFullInnerDirName()).arg(getFullInnerFileName()));
 
     return result;
 }
@@ -358,7 +358,7 @@ void Attach::removeFile()
     QFile file(getFullInnerFileName());
 
     if(file.exists() == false) {
-        showMessageBox(QObject::tr("Can't delete file %1 on disk. File not exists.").arg(getFullInnerFileName()));
+        show_message_box(QObject::tr("Can't delete file %1 on disk. File not exists.").arg(getFullInnerFileName()));
         return;
     }
 
@@ -384,7 +384,7 @@ QString Attach::getInnerFileName() const
     if(getField("type") == "link") // Для линка просто возвращается имя файла, куда указывает линк
         return getField("fileName");
 
-    criticalError("Bad attach type in getInnerFileName():" + getField("type"));
+    critical_error("Bad attach type in getInnerFileName():" + getField("type"));
 
     return "";
 }
@@ -401,7 +401,7 @@ QString Attach::getFullInnerFileName() const
     if(getField("type") == "link") // Для линка
         return getField("link");
 
-    criticalError("Bad attach type in getFullInnerFileName():" + getField("type"));
+    critical_error("Bad attach type in getFullInnerFileName():" + getField("type"));
 
     return "";
 }
@@ -419,7 +419,7 @@ QString Attach::getAbsoluteInnerFileName() const
 // Внутрисистемный путь к файлу (полный)
 QString Attach::getFullInnerDirName() const
 {
-    return parentTable->record->getFullDirName();
+    return _parent_table->record->full_dir();
 }
 
 
@@ -428,12 +428,12 @@ qint64 Attach::getFileSize() const
 {
     QString tempFileName;
 
-    if(fields["type"] == "file") {
-        QString recordDir = parentTable->record->getFullDirName();
+    if(_fields["type"] == "file") {
+        QString recordDir = _parent_table->record->full_dir();
         tempFileName = recordDir + "/" + getInnerFileName();
     }
 
-    if(fields["type"] == "link")
+    if(_fields["type"] == "link")
         tempFileName = getField("link");
 
     QFile tempFile(tempFileName);
@@ -454,7 +454,7 @@ void Attach::encrypt(unsigned int area)
 
     // Если аттач уже зашифрован, значит есть какая-то ошибка в логике выше
     if(getField("crypt") == "1")
-        criticalError("Attach::encrypt() : Cant encrypt already encrypted attach.");
+        critical_error("Attach::encrypt() : Cant encrypt already encrypted attach.");
 
 
     // Шифруется файл
@@ -464,8 +464,8 @@ void Attach::encrypt(unsigned int area)
 
     // Шифруется содержимое файла в памяти, если таковое есть
     if(area & areaMemory)
-        if(liteFlag == false && fileContent.length() > 0)
-            fileContent = CryptService::encryptByteArray(globalparameters.crypt_key(), fileContent);
+        if(_lite_flag == false && _file_content.length() > 0)
+            _file_content = CryptService::encryptByteArray(globalparameters.crypt_key(), _file_content);
 
 
     // Шифруются поля, которые подлежат шифрованию
@@ -489,7 +489,7 @@ void Attach::decrypt(unsigned int area)
 {
     // Если аттач не зашифрован, и происходит расшифровка, значит есть какая-то ошибка в логике выше
     if(getField("crypt") != "1")
-        criticalError("Attach::decrypt() : Cant decrypt unencrypted attach.");
+        critical_error("Attach::decrypt() : Cant decrypt unencrypted attach.");
 
     // Расшифровывается файл
     if(area & areaFile)
@@ -498,8 +498,8 @@ void Attach::decrypt(unsigned int area)
 
     // Расшифровывается содержимое файла в памяти, если таковое есть
     if(area & areaMemory)
-        if(liteFlag == false && fileContent.length() > 0)
-            fileContent = CryptService::decryptByteArray(globalparameters.crypt_key(), fileContent);
+        if(_lite_flag == false && _file_content.length() > 0)
+            _file_content = CryptService::decryptByteArray(globalparameters.crypt_key(), _file_content);
 
     // Расшифровываются поля, которые подлежат шифрованию
     foreach(QString fieldName, fieldCryptedList()) {
@@ -509,7 +509,7 @@ void Attach::decrypt(unsigned int area)
 
         // Если поле с указанным именем существует и содержит данные, оно расшифровывается из исходных зашифрованных данных
         if(getField(fieldName).length() > 0)
-            setFieldSource(fieldName, CryptService::decryptString(globalparameters.crypt_key(), fields[fieldName]));
+            setFieldSource(fieldName, CryptService::decryptString(globalparameters.crypt_key(), _fields[fieldName]));
     }
 
     // Устанавливается флаг, что запись не зашифрована

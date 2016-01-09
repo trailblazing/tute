@@ -47,11 +47,11 @@
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
 #include "libraries/GlobalParameters.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
-#include "controllers/record_table/TableController.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
+#include "controllers/record_table/RecordController.h"
 #include "main.h"
 #include <utility>
 
@@ -98,11 +98,11 @@
 #include "libraries/crypt/RC5Simple.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/GlobalParameters.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
-#include "controllers/record_table/TableController.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
+#include "controllers/record_table/RecordController.h"
 
 
 //using namespace std;
@@ -479,7 +479,7 @@ void QtSingleApplication::main_window()
     }
 
     // Установка CSS-оформления
-    setCssStyle();
+    set_css_style();
 
     // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
     QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
@@ -1478,6 +1478,18 @@ QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, cons
     key.setFragment(realm);
     return "auth:" + key.toEncoded();
 }
+
+
+void QtSingleApplication::setLastAuthenticator(QAuthenticator *authenticator)
+{
+    _last_authenticator = QAuthenticator(*authenticator);
+}
+
+void QtSingleApplication::setLastProxyAuthenticator(QAuthenticator *authenticator)
+{
+    _last_proxy_authenticator = QAuthenticator(*authenticator);
+}
+
 
 
 void QtSingleApplication::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator)

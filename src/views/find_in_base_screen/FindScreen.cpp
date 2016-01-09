@@ -32,19 +32,19 @@
 #include "views/browser/toolbarsearch.h"
 #include "views/browser/chasewidget.h"
 #include "libraries/FlatControl.h"
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordTable.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 
-FindScreen::FindScreen(QString object_name, QWidget *parent)
+FindScreen::FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _candidate_root, QWidget *parent)
     : QWidget(parent)
     , _navigater(new QToolBar(this))
     , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
     , _progress(new QProgressDialog(this))
       //    , _findtable(new FindTableWidget(this))
-      //    , _result
+    , _candidate_root(_candidate_root)    // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
     , _toolbarsearch(new browser::ToolbarSearch(this))
 {
     setObjectName(object_name);
@@ -109,7 +109,7 @@ void FindScreen::setup_navigate(void)
 
     _historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
 
-    insertActionAsButton(_navigater, _historyhome); // _navigater->addAction(_historyhome);
+    insert_action_as_button<QToolButton>(_navigater, _historyhome); // _navigater->addAction(_historyhome);
 
     //_history_back = new FlatToolButton(this);
     _historyback = new QAction(tr("Back"), _navigater);
@@ -122,7 +122,7 @@ void FindScreen::setup_navigate(void)
     //    _historyback->setMenu(_historybackmenu);
     //    connect(_historybackmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowBackMenu()));
     //    connect(_historybackmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
-    insertActionAsButton(_navigater, _historyback); // _navigater->addAction(_historyback);
+    insert_action_as_button<QToolButton>(_navigater, _historyback); // _navigater->addAction(_historyback);
     //insertActionAsButton(_container, _historyback);
 
     //_history_forward = new FlatToolButton(this);
@@ -133,14 +133,14 @@ void FindScreen::setup_navigate(void)
     //    connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
     //    connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
     //    _historyforward->setMenu(_historyforwardmenu);
-    insertActionAsButton(_navigater, _historyforward); // _navigater->addAction(_historyforward);
+    insert_action_as_button<QToolButton>(_navigater, _historyforward); // _navigater->addAction(_historyforward);
 
 
     //_stop_reload = new FlatToolButton(this);
     _stopreload = new QAction(_navigater);
     //_reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
     _stopreload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
-    insertActionAsButton(_navigater, _stopreload); // _navigater->addAction(_stopreload);
+    insert_action_as_button<QToolButton>(_navigater, _stopreload); // _navigater->addAction(_stopreload);
 
 
 }
@@ -160,26 +160,26 @@ void FindScreen::setup_findtext_and_button(void)
     //_findtext = new QLineEdit();
 
     // Кнопка "Поиск"
-    _findstartbutton = new FlatToolButton(this);    // QPushButton
-    _findstartbutton->setText(tr("Find"));
+    _find_start_button = new FlatToolButton(this);    // QPushButton
+    _find_start_button->setText(tr("Find"));
     //    _findstartbutton->setDefault(true);
-    _findstartbutton->setEnabled(false);
-    _findstartbutton->setFixedWidth(50);
+    _find_start_button->setEnabled(false);
+    _find_start_button->setFixedWidth(50);
     //    _findstartbutton->setFlat(true);
-    _findstartbutton->setAutoRaise(true);
+    _find_start_button->setAutoRaise(true);
 
     // Кнопка разворачивания инструментов
-    toolsExpand = new FlatToolButton(this);
-    toolsExpand->setIcon(QIcon(":/resource/pic/find_in_base_expand_tools.svg"));
-    toolsExpand->setEnabled(true);
-    toolsExpand->setAutoRaise(true);
+    _tools_expand = new FlatToolButton(this);
+    _tools_expand->setIcon(QIcon(":/resource/pic/find_in_base_expand_tools.svg"));
+    _tools_expand->setEnabled(true);
+    _tools_expand->setAutoRaise(true);
 }
 
 
 // Текст поиска и кнопка "Поиск"
 void FindScreen::assembly_findtext_and_button(void)
 {
-    toolsAreaFindTextAndButton = new QHBoxLayout();
+    _find_text_and_button_tools_area = new QHBoxLayout();
     //    QWidget *con = new QWidget(this);
     //    QHBoxLayout *addressbar = new QHBoxLayout();
     //    addressbar->addWidget(_toolbarsearch);
@@ -187,17 +187,17 @@ void FindScreen::assembly_findtext_and_button(void)
 
     //    addressbar->setContentsMargins(0, 0, 0, 0);
     //    con->setLayout(addressbar);
-    toolsAreaFindTextAndButton->addWidget(_navigater);
+    _find_text_and_button_tools_area->addWidget(_navigater);
     //    toolsAreaFindTextAndButton->addWidget(_history_home);
     //    toolsAreaFindTextAndButton->addWidget(_history_forward);
     //    toolsAreaFindTextAndButton->addWidget(_history_back);
     //    toolsAreaFindTextAndButton->addWidget(_stop_reload);
     //    toolsAreaFindTextAndButton->addLayout(addressbar);
-    toolsAreaFindTextAndButton->addWidget(_toolbarsearch);  //_findtext
+    _find_text_and_button_tools_area->addWidget(_toolbarsearch);  //_findtext
     //    toolsAreaFindTextAndButton->addWidget(con);
-    toolsAreaFindTextAndButton->addWidget(_chasewidget);
-    toolsAreaFindTextAndButton->addWidget(_findstartbutton);
-    toolsAreaFindTextAndButton->addWidget(toolsExpand);
+    _find_text_and_button_tools_area->addWidget(_chasewidget);
+    _find_text_and_button_tools_area->addWidget(_find_start_button);
+    _find_text_and_button_tools_area->addWidget(_tools_expand);
     //toolsAreaFindTextAndButton->addStretch();
     //toolsAreaFindTextAndButton->setContentsMargins(0, 0, 0, 0);
 }
@@ -207,25 +207,25 @@ void FindScreen::assembly_findtext_and_button(void)
 void FindScreen::setup_combooption(void)
 {
     // Выбор "Любое слово" - "Все слова"
-    wordRegard = new FlatComboBox();
-    wordRegard->addItem(QIcon(":/resource/pic/find_in_base_any.svg"), tr("Any word"));
-    wordRegard->addItem(QIcon(":/resource/pic/find_in_base_all.svg"), tr("All words"));
-    wordRegard->setCurrentIndex(appconfig.get_findscreen_wordregard());
+    _word_regard = new FlatComboBox();
+    _word_regard->addItem(QIcon(":/resource/pic/find_in_base_any.svg"), tr("Any word"));
+    _word_regard->addItem(QIcon(":/resource/pic/find_in_base_all.svg"), tr("All words"));
+    _word_regard->setCurrentIndex(appconfig.get_findscreen_wordregard());
 
     // Выбор "Только целые слова" - "Подстрока"
-    howExtract = new FlatComboBox();
-    howExtract->addItem(QIcon(":/resource/pic/find_in_base_separate.svg"), tr("Whole words"));
-    howExtract->addItem(QIcon(":/resource/pic/find_in_base_substring.svg"), tr("Substring"));
-    howExtract->setCurrentIndex(appconfig.get_findscreen_howextract());
+    _how_extract = new FlatComboBox();
+    _how_extract->addItem(QIcon(":/resource/pic/find_in_base_separate.svg"), tr("Whole words"));
+    _how_extract->addItem(QIcon(":/resource/pic/find_in_base_substring.svg"), tr("Substring"));
+    _how_extract->setCurrentIndex(appconfig.get_findscreen_howextract());
 
     // Выбор "Во всей базе" - "В текущей ветке"
-    treeSearchArea = new FlatComboBox();
-    treeSearchArea->addItem(QIcon(":/resource/pic/find_in_base_search_all.svg"), tr("Entire base")); // Вся база
-    treeSearchArea->addItem(QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch")); // Текущая ветка
-    treeSearchArea->setCurrentIndex(appconfig.getFindScreenTreeSearchArea());
+    _tree_search_area = new FlatComboBox();
+    _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_all.svg"), tr("Entire base")); // Вся база
+    _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch")); // Текущая ветка
+    _tree_search_area->setCurrentIndex(appconfig.getFindScreenTreeSearchArea());
 
     if(appconfig.getInterfaceMode() == "desktop") {
-        treeSearchArea->hide();
+        _tree_search_area->hide();
     }
 
     if(appconfig.getInterfaceMode() == "mobile") {
@@ -237,20 +237,20 @@ void FindScreen::setup_combooption(void)
         // howExtract->showMinimized();
         // treeSearchArea->showMinimized();
 
-        wordRegard->setMinimumContentsLength(1);
-        wordRegard->setMaximumWidth(getCalculateIconSizePx() * 2);
-        wordRegard->setMinimumWidth(getCalculateIconSizePx() * 2);
-        wordRegard->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+        _word_regard->setMinimumContentsLength(1);
+        _word_regard->setMaximumWidth(calculate_iconsize_px() * 2);
+        _word_regard->setMinimumWidth(calculate_iconsize_px() * 2);
+        _word_regard->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
 
-        howExtract->setMinimumContentsLength(1);
-        howExtract->setMaximumWidth(getCalculateIconSizePx() * 2);
-        howExtract->setMinimumWidth(getCalculateIconSizePx() * 2);
-        howExtract->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+        _how_extract->setMinimumContentsLength(1);
+        _how_extract->setMaximumWidth(calculate_iconsize_px() * 2);
+        _how_extract->setMinimumWidth(calculate_iconsize_px() * 2);
+        _how_extract->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
 
-        treeSearchArea->setMinimumContentsLength(1);
-        treeSearchArea->setMaximumWidth(getCalculateIconSizePx() * 2);
-        treeSearchArea->setMinimumWidth(getCalculateIconSizePx() * 2);
-        treeSearchArea->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
+        _tree_search_area->setMinimumContentsLength(1);
+        _tree_search_area->setMaximumWidth(calculate_iconsize_px() * 2);
+        _tree_search_area->setMinimumWidth(calculate_iconsize_px() * 2);
+        _tree_search_area->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     }
 }
 
@@ -258,7 +258,7 @@ void FindScreen::setup_combooption(void)
 // Набор опций поиска в виде выпадающих списков
 void FindScreen::assembly_combooption(void)
 {
-    toolsAreaComboOption = new QHBoxLayout();
+    _combo_option_tools_area = new QHBoxLayout();
     //    toolsAreaComboOption->addWidget(wordRegard);
     //    toolsAreaComboOption->addWidget(howExtract);
     //    toolsAreaComboOption->addWidget(treeSearchArea);
@@ -269,19 +269,19 @@ void FindScreen::assembly_combooption(void)
 void FindScreen::setup_closebutton(void)
 {
     // Кнопка закрытия виджета
-    closeButton = new FlatToolButton(this);
-    closeButton->setVisible(true);
-    closeButton->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton SP_DialogCloseButton
-    closeButton->setAutoRaise(true);
+    _close_button = new FlatToolButton(this);
+    _close_button->setVisible(true);
+    _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton SP_DialogCloseButton
+    _close_button->setAutoRaise(true);
 
     if(appconfig.getInterfaceMode() == "desktop") {
-        int w = closeButton->geometry().width();
-        int h = closeButton->geometry().height();
-        int x = imin(w, h) / 2;
-        closeButton->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::ToolButton));
-        closeButton->setMinimumSize(x, x);
-        closeButton->setMaximumSize(x, x);
-        closeButton->resize(x, x);
+        int w = _close_button->geometry().width();
+        int h = _close_button->geometry().height();
+        int x = min(w, h) / 2; // imin(w, h) / 2;
+        _close_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::ToolButton));
+        _close_button->setMinimumSize(x, x);
+        _close_button->setMaximumSize(x, x);
+        _close_button->resize(x, x);
     }
 }
 
@@ -290,70 +290,70 @@ void FindScreen::assembly_closebutton(void)
 {
     // Вертикальная область с кнопкой закрытия и распоркой
     // чтобы кнопка была вверху
-    toolsAreaCloseButton = new QVBoxLayout();
-    toolsAreaCloseButton->setContentsMargins(0, 0, 0, 0);
-    toolsAreaCloseButton->addWidget(closeButton);
-    toolsAreaCloseButton->addStretch();
+    _close_button_tools_area = new QVBoxLayout();
+    _close_button_tools_area->setContentsMargins(0, 0, 0, 0);
+    _close_button_tools_area->addWidget(_close_button);
+    _close_button_tools_area->addStretch();
 }
 
 
 void FindScreen::setup_wherefind_line(void)
 {
-    whereFindLabel = new QLabel(tr("Find in: "));
+    _where_find_label = new QLabel(tr("Find in: "));
 
-    findInPin = new QCheckBox(tr("Pin"));
-    findInPin->setChecked(appconfig.get_findscreen_find_in_field("pin"));
+    _find_in_pin = new QCheckBox(tr("Pin"));
+    _find_in_pin->setChecked(appconfig.get_findscreen_find_in_field("pin"));
 
-    findInName = new QCheckBox(tr("Title"));
-    findInName->setChecked(appconfig.get_findscreen_find_in_field("name"));
+    _find_in_name = new QCheckBox(tr("Title"));
+    _find_in_name->setChecked(appconfig.get_findscreen_find_in_field("name"));
 
-    findInAuthor = new QCheckBox(tr("Author(s)"));
-    findInAuthor->setChecked(appconfig.get_findscreen_find_in_field("author"));
+    _find_in_author = new QCheckBox(tr("Author(s)"));
+    _find_in_author->setChecked(appconfig.get_findscreen_find_in_field("author"));
 
-    findInAuthor = new QCheckBox(tr("Author(s)"));
-    findInAuthor->setChecked(appconfig.get_findscreen_find_in_field("author"));
+    _find_in_author = new QCheckBox(tr("Author(s)"));
+    _find_in_author->setChecked(appconfig.get_findscreen_find_in_field("author"));
 
-    findInHome = new QCheckBox(tr("Home"));
-    findInHome->setChecked(appconfig.get_findscreen_find_in_field("home"));
+    _find_in_home = new QCheckBox(tr("Home"));
+    _find_in_home->setChecked(appconfig.get_findscreen_find_in_field("home"));
 
-    findInUrl = new QCheckBox(tr("Url"));
-    findInUrl->setChecked(appconfig.get_findscreen_find_in_field("url"));
+    _find_in_url = new QCheckBox(tr("Url"));
+    _find_in_url->setChecked(appconfig.get_findscreen_find_in_field("url"));
 
-    findInTags = new QCheckBox(tr("Tags"));
-    findInTags->setChecked(appconfig.get_findscreen_find_in_field("tags"));
+    _find_in_tags = new QCheckBox(tr("Tags"));
+    _find_in_tags->setChecked(appconfig.get_findscreen_find_in_field("tags"));
 
-    findInText = new QCheckBox(tr("Text"));
-    findInText->setChecked(appconfig.get_findscreen_find_in_field("text"));
+    _find_in_text = new QCheckBox(tr("Text"));
+    _find_in_text->setChecked(appconfig.get_findscreen_find_in_field("text"));
 }
 
 
 void FindScreen::assembly_wherefind_line(void)
 {
-    whereFindLine = new QHBoxLayout();
-    whereFindLine->setEnabled(false);
+    _where_find_line = new QHBoxLayout();
+    _where_find_line->setEnabled(false);
 
     if(appconfig.getInterfaceMode() == "desktop")
-        whereFindLine->addWidget(whereFindLabel);
+        _where_find_line->addWidget(_where_find_label);
 
     if(appconfig.getInterfaceMode() == "mobile")
-        whereFindLabel->hide();
+        _where_find_label->hide();
 
-    whereFindLine->addWidget(wordRegard);
-    whereFindLine->addWidget(howExtract);
+    _where_find_line->addWidget(_word_regard);
+    _where_find_line->addWidget(_how_extract);
 
-    if(appconfig.getInterfaceMode() == "mobile") whereFindLine->addWidget(treeSearchArea);
+    if(appconfig.getInterfaceMode() == "mobile") _where_find_line->addWidget(_tree_search_area);
 
-    whereFindLine->addWidget(findInPin);
-    whereFindLine->addWidget(findInName);
-    whereFindLine->addWidget(findInAuthor);
-    whereFindLine->addWidget(findInHome);
-    whereFindLine->addWidget(findInUrl);
-    whereFindLine->addWidget(findInTags);
-    whereFindLine->addWidget(findInText);
+    _where_find_line->addWidget(_find_in_pin);
+    _where_find_line->addWidget(_find_in_name);
+    _where_find_line->addWidget(_find_in_author);
+    _where_find_line->addWidget(_find_in_home);
+    _where_find_line->addWidget(_find_in_url);
+    _where_find_line->addWidget(_find_in_tags);
+    _where_find_line->addWidget(_find_in_text);
 
-    whereFindLine->addStretch();
+    _where_find_line->addStretch();
 
-    whereFindLine->setContentsMargins(3, 0, 0, 0); // Устанавливаются границы
+    _where_find_line->setContentsMargins(3, 0, 0, 0); // Устанавливаются границы
 }
 
 
@@ -364,7 +364,7 @@ void FindScreen::setup_signals(void)
 
     // При каждом изменении текста извне может вырабатыватся этот сигнал
     // Он вырабатывается в слоте setFindText()
-    connect(this, &FindScreen::textChangedFromAnother, this, &FindScreen::enable_findbutton);
+    connect(this, &FindScreen::text_changed_from_another, this, &FindScreen::enable_findbutton);
 
 
     // При нажатии Enter в строке запроса
@@ -373,22 +373,22 @@ void FindScreen::setup_signals(void)
            );
 
     // При нажатии кнопки Find
-    connect(_findstartbutton, &QPushButton::clicked, this
+    connect(_find_start_button, &QPushButton::clicked, this
     , [this]() {FindScreen::find_clicked();}
            );
 
     // При нажатии кнопки разворачивания/сворачивания инструментов поиска
-    connect(toolsExpand, &FlatToolButton::clicked, this, &FindScreen::tools_expand_clicked);
+    connect(_tools_expand, &FlatToolButton::clicked, this, &FindScreen::tools_expand_clicked);
 
     // После установки текста извне, вырабатывается этот сигнал
-    connect(this, &FindScreen::findClickedAfterAnotherTextChanged, this
+    connect(this, &FindScreen::find_clicked_after_another_text_changed, this
     , [this]() {FindScreen::find_clicked();}
            );
 
 
     // При нажатии кнопки закрытия
-    connect(closeButton, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
-    connect(closeButton, &FlatToolButton::clicked, [] {
+    connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
+    connect(_close_button, &FlatToolButton::clicked, [] {
         auto win = globalparameters.entrance()->activiated_registered().first;
 
         if(win)win->updateToolbarActionText(false);
@@ -396,30 +396,30 @@ void FindScreen::setup_signals(void)
 
 
     // Сигналы для запоминания состояния интерфейса
-    connect(wordRegard, wordRegard->currentindexchanged, this, &FindScreen::word_regard);
+    connect(_word_regard, _word_regard->currentindexchanged, this, &FindScreen::word_regard);
 
-    connect(howExtract, howExtract->currentindexchanged, this, &FindScreen::how_extract);
+    connect(_how_extract, _how_extract->currentindexchanged, this, &FindScreen::how_extract);
 
-    connect(treeSearchArea, treeSearchArea->currentindexchanged, this, &FindScreen::tree_search_area);
+    connect(_tree_search_area, _tree_search_area->currentindexchanged, this, &FindScreen::tree_search_area);
 
     //    assert(globalparameters.vtab());
     //    connect(globalparameters.vtab(), &QTabWidget::currentChanged
     //            , this, &FindScreen::changedTreeSearchArea    // , &appconfig, &AppConfig::setFindScreenTreeSearchArea
     //           );
 
-    connect(findInPin, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_pin);
+    connect(_find_in_pin, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_pin);
 
-    connect(findInName, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_name);
+    connect(_find_in_name, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_name);
 
-    connect(findInAuthor, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_author);
+    connect(_find_in_author, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_author);
 
-    connect(findInHome, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_home);
+    connect(_find_in_home, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_home);
 
-    connect(findInUrl, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_url);
+    connect(_find_in_url, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_url);
 
-    connect(findInTags, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_tags);
+    connect(_find_in_tags, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_tags);
 
-    connect(findInText, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
+    connect(_find_in_text, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
 }
 
 
@@ -434,42 +434,42 @@ void FindScreen::setup_ui(void)
 
 void FindScreen::assembly(void)
 {
-    centralDesktopLayout = new QVBoxLayout(this);
+    _central_desktop_layout = new QVBoxLayout(this);
 
     if(appconfig.getInterfaceMode() == "desktop") {
-        toolsLine = new QHBoxLayout();
-        toolsLine->setEnabled(true);
-        toolsLine->addLayout(toolsAreaFindTextAndButton);
+        _tools_line = new QHBoxLayout();
+        _tools_line->setEnabled(true);
+        _tools_line->addLayout(_find_text_and_button_tools_area);
         //toolsLine->addLayout(toolsAreaComboOption);
-        toolsLine->addLayout(toolsAreaCloseButton);
+        _tools_line->addLayout(_close_button_tools_area);
 
-        centralDesktopLayout->addLayout(toolsLine);
+        _central_desktop_layout->addLayout(_tools_line);
     }
 
     if(appconfig.getInterfaceMode() == "mobile") {
-        toolsGrid = new QGridLayout();
-        toolsGrid->setEnabled(true);
-        toolsGrid->addLayout(toolsAreaFindTextAndButton, 0, 0);
-        toolsGrid->addLayout(toolsAreaCloseButton,       0, 1);
+        _tools_grid = new QGridLayout();
+        _tools_grid->setEnabled(true);
+        _tools_grid->addLayout(_find_text_and_button_tools_area, 0, 0);
+        _tools_grid->addLayout(_close_button_tools_area,       0, 1);
         //toolsGrid->addLayout(toolsAreaComboOption,       1, 0);
 
-        centralDesktopLayout->addLayout(toolsGrid);
+        _central_desktop_layout->addLayout(_tools_grid);
     }
 
-    centralDesktopLayout->addLayout(whereFindLine);
+    _central_desktop_layout->addLayout(_where_find_line);
     //    centralDesktopLayout->addWidget(_findtable, 10);
-    centralDesktopLayout->setContentsMargins(0, 0, 0, 0); // Boundaries removed // Границы убираются
-    centralDesktopLayout->setSizeConstraint(QLayout::   // SetFixedSize // this setting will lead TableScreen can not resize!!!
-                                            SetNoConstraint
-                                           );
-    centralDesktopLayout->setMargin(0);
-    centralDesktopLayout->setSpacing(0);
+    _central_desktop_layout->setContentsMargins(0, 0, 0, 0); // Boundaries removed // Границы убираются
+    _central_desktop_layout->setSizeConstraint(QLayout::   // SetFixedSize // this setting will lead TableScreen can not resize!!!
+                                               SetNoConstraint
+                                              );
+    _central_desktop_layout->setMargin(0);
+    _central_desktop_layout->setSpacing(0);
 
     // whereFindLine->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     // _findtable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
 
-    this->setLayout(centralDesktopLayout);
+    this->setLayout(_central_desktop_layout);
 
     switch_tools_expand(appconfig.getFindInBaseExpand());
 }
@@ -489,14 +489,14 @@ void FindScreen::resizeEvent(QResizeEvent *e)
     //    adjustSize();
     //    auto hint = whereFindLine->sizeHint();
     //    int height = whereFindLine->sizeHint().height();
-    setMinimumHeight(toolsLine->sizeHint().height() + whereFindLine->sizeHint().height());
-    setMaximumHeight(toolsLine->sizeHint().height() + whereFindLine->sizeHint().height());
+    setMinimumHeight(_tools_line->sizeHint().height() + _where_find_line->sizeHint().height());
+    setMaximumHeight(_tools_line->sizeHint().height() + _where_find_line->sizeHint().height());
     QWidget::resizeEvent(e);
 }
 
 void FindScreen::enable_findbutton(const QString &text)
 {
-    _findstartbutton->setEnabled(!text.isEmpty());
+    _find_start_button->setEnabled(!text.isEmpty());
 }
 
 
@@ -507,27 +507,27 @@ void FindScreen::find_text(QString text)
     //_findtext
     _toolbarsearch->text(text);
 
-    emit textChangedFromAnother(text);
-    emit findClickedAfterAnotherTextChanged();
+    emit text_changed_from_another(text);
+    emit find_clicked_after_another_text_changed();
 }
 
 
 // Слот, срабатывающий при нажатии на кнопку начала поиска
-std::shared_ptr<TableData> FindScreen::find_clicked(void)
+std::shared_ptr<RecordTable> FindScreen::find_clicked(void)
 {
     // Поля, где нужно искать (Заголовок, текст, теги...)
-    searchArea["pin"]       = findInPin->isChecked();
-    searchArea["name"]      = findInName->isChecked();
-    searchArea["author"]    = findInAuthor->isChecked();
-    searchArea["home"]      = findInHome->isChecked();
-    searchArea["url"]       = findInUrl->isChecked();
-    searchArea["tags"]      = findInTags->isChecked();
-    searchArea["text"]      = findInText->isChecked();
+    _search_area["pin"]       = _find_in_pin->isChecked();
+    _search_area["name"]      = _find_in_name->isChecked();
+    _search_area["author"]    = _find_in_author->isChecked();
+    _search_area["home"]      = _find_in_home->isChecked();
+    _search_area["url"]       = _find_in_url->isChecked();
+    _search_area["tags"]      = _find_in_tags->isChecked();
+    _search_area["text"]      = _find_in_text->isChecked();
 
     // Проверяется, установлено ли хоть одно поле для поиска
     int findEnableFlag = 0;
 
-    foreach(bool value, searchArea)
+    foreach(bool value, _search_area)
         if(value == true)findEnableFlag = 1;
 
     // Если не отмечены поля для поиска
@@ -541,9 +541,9 @@ std::shared_ptr<TableData> FindScreen::find_clicked(void)
     }
 
     // Выясняется список слов, которые нужно искать
-    searchWordList = text_delimiter_decompose(_toolbarsearch->text());
+    _search_word_list = text_delimiter_decompose(_toolbarsearch->text());
 
-    if(searchWordList.size() == 0) {
+    if(_search_word_list.size() == 0) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Can not start find process"));
         messageBox.setText(tr("The search request is too short. Enter at least one word."));
@@ -556,11 +556,11 @@ std::shared_ptr<TableData> FindScreen::find_clicked(void)
 }
 
 
-std::shared_ptr<TableData> FindScreen::find_start(void)
+std::shared_ptr<RecordTable> FindScreen::find_start(void)
 {
 
-    if(globalparameters.vtab()->currentWidget()->objectName() == "table_screen"
-       && !find_object<TreeScreen>("tree_screen")->getCurrentItemIndex().isValid()
+    if(globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
+       && !find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index().isValid()
       ) {
         appconfig.setFindScreenTreeSearchArea(2);
     }
@@ -573,54 +573,80 @@ std::shared_ptr<TableData> FindScreen::find_start(void)
     //    _findtable->re_initialize();
 
     // Выясняется ссылка на модель дерева данных
-    KnowTreeModel *search_model = static_cast<KnowTreeModel *>(find_object<KnowTreeView>("knowTreeView")->model());
+    KnowTreeModel *_search_model = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
 
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
-    std::shared_ptr<TreeItem> start_item;
-    std::shared_ptr<TableData> source;
-    int total_records = 0;
+    boost::intrusive_ptr<TreeItem> _search_start_item;
+
+    //    auto _candidate_root = find_object<TreeScreen>(tree_screen_singleton_name)->_shadow_candidate_model->_root_item;
+    _candidate_root->field("name", _toolbarsearch->text());
+
+    // globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true);
+    //    std::shared_ptr<RecordTable> _resultset_data = _candidate_root->tabledata();    // std::make_shared<RecordTable>(_resultset_item);
+    int _candidate_records = 0;
 
 
     //__________________________________________________________________________________________________
 
 
-    auto global_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result) {
+    auto global_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &search_start_item
+                                     , int                              &candidate_records
+                                     , boost::intrusive_ptr<TreeItem>   &resultset_item
+                                     // , std::shared_ptr<RecordTable>     &resultset_data
+    ) {
         // Корневой элемент дерева
-        start_item = search_model->_root_item;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+        search_start_item = _search_model->_root_item;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
-        total_records = search_model->getAllRecordCount();
-        result->empty();
+        candidate_records = _search_model->getAllRecordCount();
+        resultset_item->tabledata(resultset_item->tabledata()->active_subset(resultset_item));
     };
 
-    auto branch_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result) {
+    auto branch_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &search_start_item
+                                     , int                              &candidate_records
+                                     , boost::intrusive_ptr<TreeItem>   &resultset_item
+                                     // , std::shared_ptr<RecordTable>     &resultset_data
+    ) {
 
         // Индекс текущей выбранной ветки
-        QModelIndex currentItemIndex = find_object<TreeScreen>("tree_screen")->getCurrentItemIndex();
+        QModelIndex currentItemIndex = find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index();
 
         // Текущая ветка
-        start_item = search_model->item(currentItemIndex);
+        search_start_item = _search_model->item(currentItemIndex);
 
         // Количество элементов (веток) в текущей ветке и всех подветках
-        total_records = search_model->getRecordCountForItem(start_item);
-        result->empty();
+        candidate_records = _search_model->size_of(search_start_item);
+        resultset_item->tabledata(resultset_item->tabledata()->active_subset(resultset_item));
     };
 
     Q_UNUSED(branch_search_prepare)
 
-    auto result_set_search_prepare = [&](std::shared_ptr<TreeItem> &start_item, int &total_records , std::shared_ptr<TableData> &result, std::shared_ptr<TableData> &source) {
+    auto resultset_search_prepare = [&](boost::intrusive_ptr<TreeItem>      &search_start_item
+                                        , int                               &candidate_records
+                                        , boost::intrusive_ptr<TreeItem>    &resultset_item
+                                        // , std::shared_ptr<RecordTable>      &resultset_data
+                                        // , std::shared_ptr<RecordTable>      &resultset_data_source
+    ) {
         // to be done
-        QMap<QString, QString> data;
-        start_item = std::make_shared<TreeItem>(data, search_model->_root_item);
+        //        QMap<QString, QString> data;
 
-        source.swap(_result);
-        QDomDocument doc;
-        auto dommodel = source->dom_from_data(&doc);    // source->init(startItem, QDomElement());
-        start_item->table_init(dommodel);
 
-        result = std::make_shared<TableData>();        // assert(_result->size() == 0); //_result->empty();
-        total_records = source->size();
+        //        resultset_item.swap(_candidate_root);   // resultset_item == _candidate_root
+        //        std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+        auto dommodel = resultset_item->export_to_dom();    // source->init(startItem, QDomElement());
+        //        search_start_item->tabledata(dommodel);
+        //        QMap<QString, QString> field_data;
+        search_start_item = boost::intrusive_ptr<TreeItem>(new TreeItem(
+                                                               QMap<QString, QString>() // field_data // QMap<QString, QString> &_field_data
+                                                               , nullptr                // boost::intrusive_ptr<TreeItem> _parent_item
+                                                               , std::make_shared<RecordTable>(dommodel)    // std::shared_ptr<RecordTable> _table_data
+                                                           ));   // resultset_item;     // std::make_shared<TreeItem>(data, search_model->_root_item);
+
+        resultset_item->tabledata(resultset_item->tabledata()->active_subset(resultset_item));   // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
+        //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
+        candidate_records = search_start_item->tabledata()->size();
+
     };
 
 
@@ -628,14 +654,14 @@ std::shared_ptr<TableData> FindScreen::find_start(void)
         // Показывается виджет линейки наполняемости
         _progress->reset();
         _progress->setLabelText(tr("Search..."));
-        _progress->setRange(0, total_records);
+        _progress->setRange(0, _candidate_records);
         _progress->setModal(true);
         _progress->setMinimumDuration(0);
         _progress->show();
 
         // Обнуляется счетчик обработанных конечных записей
-        totalProgressCounter = 0;
-        cancelFlag = 0;
+        _total_progress_counter = 0;
+        _cancel_flag = 0;
 
     };
 
@@ -662,23 +688,26 @@ std::shared_ptr<TableData> FindScreen::find_start(void)
         _progress->close();
     };
 
-    auto final_search = [&](std::shared_ptr<TreeItem> &start_item, std::shared_ptr<TableData> &result) {
-        qDebug() << "Start finding in " << total_records << " records";
+    auto final_search = [&](boost::intrusive_ptr<TreeItem> &search_start_item
+                            , boost::intrusive_ptr<TreeItem> &candidate_root   // std::shared_ptr<RecordTable> &resultset_data
+    ) {
+        qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
+        candidate_root->tabledata()->empty();
         //Вызывается рекурсивный поиск в дереве
-        find_recursive(start_item, result);
+        //        find_recursive(search_start_item, candidate_root);
 
         //        if(result->size() == 0 && appconfig.getFindScreenTreeSearchArea() == 2) {
         //            global_search_prepare(start_item, total_records, result);
         //        }
-
+        return find_recursive(search_start_item, candidate_root);   // candidate_root->tabledata();
     };
 
-    auto output = [&](std::shared_ptr<TableData> &result) {
+    auto output = [&](boost::intrusive_ptr<TreeItem> &resultset_item) { // , std::shared_ptr<RecordTable> &resultset_data
 
         // После вставки всех данных подгоняется ширина колонок
         //        _findtable->updateColumnsWidth();
-        globalparameters.tree_screen()->on_found(result);
+        globalparameters.tree_screen()->candidate_from_search_result(resultset_item);   // dump to table screen
     };
 
 
@@ -686,41 +715,44 @@ std::shared_ptr<TableData> FindScreen::find_start(void)
 
 
 
-
+    // stage 1
     if( // appconfig.getFindScreenTreeSearchArea() == 2
-        //        globalparameters.vtab()->currentWidget()->objectName() == "table_screen"
-        //        && !find_object<TreeScreen>("tree_screen")->getCurrentItemIndex().isValid()
-        _result->size() > 0
+        //        globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
+        //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
+        _candidate_root->tabledata()->size() > 0
     ) { // search in last search result
-        result_set_search_prepare(start_item, total_records, _result, source);
+        resultset_search_prepare(_search_start_item, _candidate_records, _candidate_root);  // , _resultset_data, _resultset_data
 
-        if(!start_item) {assert_start_item(); return nullptr;}
+        if(!_search_start_item) {assert_start_item(); return nullptr;}
 
-        if(0 != total_records) {
-            final_search(start_item, _result);
+        if(0 != _candidate_records) {
+            _candidate_root->tabledata(final_search(_search_start_item, _candidate_root));
         }
     }
 
-    if(0 == _result->size()) {
+    // stage 2
+    if(0 == _candidate_root->tabledata()->size()) {
+        //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
+        //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
         //    if( // appconfig.getFindScreenTreeSearchArea() == 1
-        //        // globalparameters.vtab()->currentWidget()->objectName() == "tree_screen"
-        //        find_object<TreeScreen>("tree_screen")->getCurrentItemIndex().isValid()
+        //        // globalparameters.vtab()->currentWidget()->objectName() == tree_screen_singleton_name
+        //        find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
         //    ) { // If you want to search the current branch // Если нужен поиск в текущей ветке
         //        branch_search_prepare(start_item, total_records, _result);
         //    }
 
         //    if( // appconfig.getFindScreenTreeSearchArea() == 0
-        //        globalparameters.vtab()->currentWidget()->objectName() == "tree_screen"
-        //        && !find_object<TreeScreen>("tree_screen")->getCurrentItemIndex().isValid()
+        //        globalparameters.vtab()->currentWidget()->objectName() == tree_screen_singleton_name
+        //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
         //    ) { // Если нужен поиск во всем дереве
 
-        global_search_prepare(start_item, total_records, _result);
+        global_search_prepare(_search_start_item, _candidate_records, _candidate_root);   // , _resultset_data
 
-        if(!start_item) {assert_start_item(); return nullptr;}
+        if(!_search_start_item) {assert_start_item(); return nullptr;}
 
-        if(0 != total_records) {
-            final_search(start_item, _result);
+        if(0 != _candidate_records) {
+            _candidate_root->tabledata(final_search(_search_start_item, _candidate_root));
         }
 
         //    }
@@ -743,39 +775,43 @@ std::shared_ptr<TableData> FindScreen::find_start(void)
     // else, open from search engine
     //    }
 
-    output(_result);
+    output(_candidate_root);
 
 
-    return _result;
+    return _candidate_root->tabledata();
 }
 
 
-void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_ptr<TableData>  result)
+std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> curritem
+                                                        , boost::intrusive_ptr<TreeItem> _candidate_root   // std::shared_ptr<RecordTable> result
+                                                       )
 {
+    std::shared_ptr<RecordTable> result = _candidate_root->tabledata();
+
     // Если была нажата отмена поиска
-    if(cancelFlag == 1)return;
+    if(_cancel_flag == 1)return result;
 
     // Если ветка зашифрована, и пароль не был введен
     if(curritem->field("crypt") == "1" &&
        globalparameters.crypt_key().length() == 0)
-        return;
+        return result;
 
     // Если в ветке присутсвует таблица конечных записей
     if(curritem->row_count() > 0) {
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
-        std::shared_ptr<TableData> searchRecordTable = curritem->tabledata();
+        std::shared_ptr<RecordTable> _recordtable = curritem->tabledata();
 
         // Перебираются записи таблицы
-        for(int i = 0; i < searchRecordTable->size(); i++) {
+        for(int i = 0; i < _recordtable->size(); i++) {
             // Обновляется линейка наполняемости
-            _progress->setValue(++totalProgressCounter);
+            _progress->setValue(++ _total_progress_counter);
             qApp->processEvents();
 
             if(_progress->wasCanceled()) {
-                cancelFlag = 1;
-                return;
+                _cancel_flag = 1;
+                return result;
             }
 
             // Результаты поиска в полях
@@ -790,7 +826,7 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
             iteration_search_result["text"]     = false;
 
             // Текст в котором будет проводиться поиск
-            QString inspectText;
+            QString inspect_text;
 
             // Цикл поиска в отмеченных пользователем полях
             QMapIterator<QString, bool> j(iteration_search_result);
@@ -800,16 +836,18 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
                 QString key = j.key();
 
                 // Если в данном поле нужно проводить поиск
-                if(searchArea[key] == true) {
+                if(_search_area[key] == true) {
                     if(key != "text") {
                         // Поиск в обычном поле
-                        inspectText = searchRecordTable->field(key, i);
-                        iteration_search_result[key] = find_in_text_process(inspectText);
+                        inspect_text = _recordtable->field(i, key);
+                        iteration_search_result[key] = find_in_text_process(inspect_text);
                     } else {
                         // Поиск в тексте записи
-                        inspectText = searchRecordTable->text(i);
+                        if(_recordtable->record(i)->file_exists()) inspect_text = _recordtable->text(i);
+                        else inspect_text = QString();
+
                         QTextDocument textdoc;
-                        textdoc.setHtml(inspectText);
+                        textdoc.setHtml(inspect_text);
                         iteration_search_result[key] = find_in_text_process(textdoc.toPlainText());
                     }
                 }
@@ -817,14 +855,14 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
 
 
             // Проверяется, есть ли поле, в котором поиск был успешен
-            int findFlag = 0;
+            int found_flag = 0;
 
             foreach(bool value, iteration_search_result)
-                if(value == true)findFlag = 1;
+                if(value == true)found_flag = 1;
 
             // Если запись найдена
-            if(findFlag == 1) {
-                qDebug() << "Find succesfull in " << searchRecordTable->field("name", i);
+            if(found_flag == 1) {
+                qDebug() << "Find succesfull in " << _recordtable->field(i, "name");
 
                 // QString pin0 = curritem->getField("pin");
                 // QString pin1 = searchRecordTable->getField("pin", i);   // work
@@ -842,7 +880,18 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
                 //                                   , curritem->getPath()
                 //                                   , searchRecordTable->field("id", i)
                 //                                  );
-                result->insert_new_record(result->work_pos(), searchRecordTable->record_fat(i), ADD_NEW_RECORD_TO_END);
+
+                if(_recordtable->record(i)->is_lite())_recordtable->record(i)->to_fat();
+                result->insert_new_record(result->size(), _recordtable->record(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+
+                //                assert(_recordtable->record(i)->is_lite());
+                //                result->shadow_record_lite(result->size(), _recordtable->record(i));
+
+                //                if(_recordtable->record(i)->isLite()) {
+                //                    result->shadow_record(result->work_pos(), _recordtable->record_lite(i), ADD_NEW_RECORD_TO_END);
+                //                } else {
+                //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
+                //                }
             }
 
         } // Закрылся цикл перебора записей в таблице конечных записей
@@ -850,9 +899,9 @@ void FindScreen::find_recursive(std::shared_ptr<TreeItem> curritem, std::shared_
 
 
     // Рекурсивная обработка каждой подчиненной ветки
-    for(int i = 0; i < curritem->child_count(); i++)
-        find_recursive(curritem->child(i), result);
+    for(int i = 0; i < curritem->child_count(); i++) find_recursive(curritem->child(i), _candidate_root);
 
+    return result;
 }
 
 
@@ -864,18 +913,18 @@ bool FindScreen::find_in_text_process(const QString &text)
     int findFlag = 0;
 
     // Перебираются искомые слова
-    for(int i = 0; i < searchWordList.size(); ++i) {
+    for(int i = 0; i < _search_word_list.size(); ++i) {
         findFlag = 0;
 
         // Если надо найти совпадение целого слова
-        if(howExtract->currentIndex() == 0) {
+        if(_how_extract->currentIndex() == 0) {
             // Текст разбивается на слова с очисткой от лишних знаков
             // и проверяется, есть ли в полученном списке текущее слово
-            if(text_delimiter_decompose(text).contains(searchWordList.at(i), Qt::CaseInsensitive))
+            if(text_delimiter_decompose(text).contains(_search_word_list.at(i), Qt::CaseInsensitive))
                 findFlag = 1;
         } else {
             // Если надо найти слово как подстроку
-            if(text.contains(searchWordList.at(i), Qt::CaseInsensitive))
+            if(text.contains(_search_word_list.at(i), Qt::CaseInsensitive))
                 findFlag = 1;
         }
 
@@ -883,15 +932,15 @@ bool FindScreen::find_in_text_process(const QString &text)
         if(findFlag == 1)findWordCount++;
 
         // Если ищется хотя бы одно совпадение
-        if(findFlag == 1 && wordRegard->currentIndex() == 0)
+        if(findFlag == 1 && _word_regard->currentIndex() == 0)
             return true; // То при первом же совпадении цикл прекращается
     }
 
     // Искалось хотябы одно совпадение, но небыло найдено
-    if(wordRegard->currentIndex() == 0) return false;
+    if(_word_regard->currentIndex() == 0) return false;
     else {
         // Иначе требовалось найти все слова в запросе
-        if(findWordCount == searchWordList.size())
+        if(findWordCount == _search_word_list.size())
             return true;
         else
             return false;
@@ -995,7 +1044,7 @@ void FindScreen::widget_hide(void)
 void FindScreen::tools_expand_clicked(void)
 {
     // Если нужно сомкнуть инструменты
-    if(findInName->isVisible()) {
+    if(_find_in_name->isVisible()) {
         switch_tools_expand(false);
         appconfig.setFindInBaseExpand(false);
     } else {
@@ -1012,41 +1061,43 @@ void FindScreen::switch_tools_expand(bool flag)
 
     // Выпадающие списки скрываются в мобильном интерфейсе, так как они на отдельной строке
     if(appconfig.getInterfaceMode() == "mobile") {
-        findInPin->setVisible(flag);
-        wordRegard->setVisible(flag);
-        howExtract->setVisible(flag);
-        treeSearchArea->setVisible(flag);
+        _find_in_pin->setVisible(flag);
+        _word_regard->setVisible(flag);
+        _how_extract->setVisible(flag);
+        _tree_search_area->setVisible(flag);
     }
 
     // Надпись Find in видна и управляется только в desktop режиме интерфейса
     if(appconfig.getInterfaceMode() == "desktop") {
-        whereFindLabel->setVisible(flag);
+        _where_find_label->setVisible(flag);
     }
 
     // Флаги поиска скрываются для любого интерфейса, так как они всегда находятся на отдельной строке
-    wordRegard->setVisible(flag);
-    howExtract->setVisible(flag);
+    _word_regard->setVisible(flag);
+    _how_extract->setVisible(flag);
     //    treeSearchArea->setVisible(flag);
-    findInPin->setVisible(flag);
-    findInName->setVisible(flag);
-    findInAuthor->setVisible(flag);
-    findInHome->setVisible(flag);
-    findInUrl->setVisible(flag);
-    findInTags->setVisible(flag);
-    findInText->setVisible(flag);
+    _find_in_pin->setVisible(flag);
+    _find_in_name->setVisible(flag);
+    _find_in_author->setVisible(flag);
+    _find_in_home->setVisible(flag);
+    _find_in_url->setVisible(flag);
+    _find_in_tags->setVisible(flag);
+    _find_in_text->setVisible(flag);
 
-    whereFindLine->setEnabled(flag);
+    _where_find_line->setEnabled(flag);
     this->adjust_size();
 }
 
 // dangerous!
 void FindScreen::remove_id(const QString &id)
 {
-    _result->delete_record_by_id(id);     // _findtable->remove_id(id);
+    //    _resultset_data->
+    _candidate_root->tabledata()->delete_record_by_id(id);     // _findtable->remove_id(id);
 }
 
 // dangerous!
 void FindScreen::remove_row(const int row)
 {
-    _result->delete_record(row);     // _findtable->remove_row(row);
+    //    _resultset_data->
+    _candidate_root->tabledata()->delete_record_by_position(row);     // _findtable->remove_row(row);
 }

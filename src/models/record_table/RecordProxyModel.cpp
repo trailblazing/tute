@@ -1,11 +1,11 @@
 #include <QSortFilterProxyModel>
 
 #include "main.h"
-#include "TableProxyModel.h"
+#include "RecordProxyModel.h"
 
 
 // Конструктор модели
-TableProxyModel::TableProxyModel(QString screen_name, QObject *pobj) : QSortFilterProxyModel(pobj)
+RecordProxyModel::RecordProxyModel(QString screen_name, QObject *pobj) : QSortFilterProxyModel(pobj)
 {
     setObjectName(screen_name + "_proxymodel");
     // this->setSourceModel(this);
@@ -13,7 +13,7 @@ TableProxyModel::TableProxyModel(QString screen_name, QObject *pobj) : QSortFilt
 }
 
 // Деструктор модели
-TableProxyModel::~TableProxyModel()
+RecordProxyModel::~RecordProxyModel()
 {
     return;
 }

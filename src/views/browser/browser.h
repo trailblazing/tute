@@ -47,7 +47,7 @@
 #include <QtGui/QIcon>
 #include <QtCore/QUrl>
 #include <QWebEngineSettings>
-#include "controllers/record_table/TableController.h"
+#include "controllers/record_table/RecordController.h"
 //#include "tabmanager.h"
 
 
@@ -82,28 +82,32 @@ namespace browser {
 
     public:
         Browser(QUrl const &url         // Record *const record
-            , TableController *record_controller
-            , Entrance *_entrance   //, QDockWidget *parent
-            , const QString &style_source
-            , Qt::WindowFlags flags = 0
-        );
+                , RecordController *record_controller
+                //                , TableController *_page_controller
+                , boost::intrusive_ptr<TreeItem> _page_tree_item
+                , Entrance *_entrance   //, QDockWidget *parent
+                , const QString &style_source
+                , Qt::WindowFlags flags = 0
+               );
 
 
         Browser(const QByteArray &state
-            , TableController *record_controller
-            , Entrance *_entrance   //, QDockWidget *parent
-            , const QString &style_source
-            , Qt::WindowFlags flags = 0
-        );
+                , RecordController *record_controller
+                //                , TableController *_page_controller
+                , boost::intrusive_ptr<TreeItem> _page_tree_item
+                , Entrance *_entrance   //, QDockWidget *parent
+                , const QString &style_source
+                , Qt::WindowFlags flags = 0
+               );
 
-        Browser(
-            std::shared_ptr<Record> record
-            , TableController *record_controller
-            // , TableController *_page_controller
-            , Entrance *entrance   //, QDockWidget *parent
-            , const QString &style_source
-            , Qt::WindowFlags flags = 0
-        );
+        Browser(std::shared_ptr<Record> record
+                , RecordController *record_controller
+                //            , TableController *_page_controller
+                , boost::intrusive_ptr<TreeItem> _page_tree_item
+                , Entrance *entrance   //, QDockWidget *parent
+                , const QString &style_source
+                , Qt::WindowFlags flags = 0
+               );
 
         ~Browser();
         QSize sizeHint() const;
@@ -200,8 +204,8 @@ namespace browser {
         //    void initUrl();
     private:
 
-        TableController     *_record_controller;
-        // TableController     *_page_controller;
+        RecordController     *_record_controller;
+        //        TableController     *_page_controller;
         TabWidget           *_tabmanager;
         //    QDockWidget *dock_widget;
         //        QToolBar *navigater;

@@ -88,8 +88,8 @@ void AttachTableController::addSmart(QString attachType)
     // Указатель на данные таблицы приаттаченных файлов
     AttachTableData *attachTableData = getAttachTableData();
 
-    if(attachTableData == NULL)
-        criticalError("Unset attach table data in AttachTableController::addSmart()");
+    if(attachTableData == nullptr)
+        critical_error("Unset attach table data in AttachTableController::addSmart()");
 
     // Перебираются выбранные в диалоге файлы
     for(int i = 0; i < files.size(); ++i) {
@@ -100,7 +100,7 @@ void AttachTableController::addSmart(QString attachType)
 
         // Если пользователь выбрал директорию (директорию выбирать нельзя, пока что можно выбирать только файлы)
         if(currFileInfo.isDir()) {
-            showMessageBox(tr("Can't add directory. Please, select files."));
+            show_message_box(tr("Can't add directory. Please, select files."));
             break;
         }
 
@@ -125,7 +125,7 @@ void AttachTableController::addSmart(QString attachType)
             attach.setField("link", currFullFileName); // Запоминается куда указывает линк
             result = true;
         } else
-            criticalError("Unsupport adding mode");
+            critical_error("Unsupport adding mode");
 
 
         // Если запись, к которой добавляется аттач, зашифрована
@@ -137,19 +137,19 @@ void AttachTableController::addSmart(QString attachType)
             // Данные аттача добавляются в таблицу приаттаченных файлов
             attachTableData->addAttach(attach);
         } else {
-            showMessageBox(tr("An error occurred while copying file(s). File(s) can't attach."));
+            show_message_box(tr("An error occurred while copying file(s). File(s) can't attach."));
             break;
         }
 
     } // Закончился цикл перебора файлов
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("tree_screen")->saveKnowTree();
+    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() > 0) {
-        MetaEditor *edView = find_object<MetaEditor>("editor_screen");
-        edView->toAttach->setIcon(edView->iconAttachExists);
+        MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
+        edView->_to_attach->setIcon(edView->_icon_attach_exists);
     }
 }
 
@@ -204,7 +204,7 @@ void AttachTableController::onSaveAsAttach(void)
 
     // Если ни один аттач не выбран
     if(selectedId.size() == 0) {
-        showMessageBox(tr("Please select any attach(es) for save to your directory."));
+        show_message_box(tr("Please select any attach(es) for save to your directory."));
         return;
     }
 
@@ -248,7 +248,7 @@ void AttachTableController::onSaveAsAttach(void)
 
         // Должен быть выбран только один файл
         if(selectFiles.size() != 1) {
-            showMessageBox(tr("For save sigle file you must set single result file name."));
+            show_message_box(tr("For save sigle file you must set single result file name."));
             return;
         }
 
@@ -307,7 +307,7 @@ void AttachTableController::saveAttachToUserPlace(QString fromFullFileName, QStr
     QFile file(fromFullFileName);
 
     if(file.exists() == false) {
-        showMessageBox(tr("Can't save file. File %1 not exists in database.").arg(fromFullFileName));
+        show_message_box(tr("Can't save file. File %1 not exists in database.").arg(fromFullFileName));
         return;
     }
 
@@ -315,7 +315,7 @@ void AttachTableController::saveAttachToUserPlace(QString fromFullFileName, QStr
     bool result = file.copy(toFullFileName);
 
     if(!result) {
-        showMessageBox(tr("Can't save file %1. Any i/o problem.").arg(toFullFileName));
+        show_message_box(tr("Can't save file %1. Any i/o problem.").arg(toFullFileName));
         return;
     }
 
@@ -335,7 +335,7 @@ void AttachTableController::onEditFileName(void)
 
     // Если выбрано больше одного аттача
     if(selectedId.size() > 1) {
-        showMessageBox(tr("Please select single attach for edit."));
+        show_message_box(tr("Please select single attach for edit."));
         return;
     }
 
@@ -357,7 +357,7 @@ void AttachTableController::onEditFileName(void)
         return; // Была нажата кнопка Cancel
 
     if(newFileName.size() == 0) {
-        showMessageBox(tr("Cant save file with empty name."));
+        show_message_box(tr("Cant save file with empty name."));
         return;
     }
 
@@ -367,7 +367,7 @@ void AttachTableController::onEditFileName(void)
     attachTableData->modifyAttach(id, tempAttach);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("tree_screen")->saveKnowTree();
+    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 }
 
 
@@ -377,7 +377,7 @@ void AttachTableController::onDeleteAttach(void)
 
     // Если ни один аттач не выбран
     if(selectedId.size() == 0) {
-        showMessageBox(tr("Please select any attach(es) for delete."));
+        show_message_box(tr("Please select any attach(es) for delete."));
         return;
     }
 
@@ -400,12 +400,12 @@ void AttachTableController::onDeleteAttach(void)
 
 
     // Сохранение дерева веток
-    find_object<TreeScreen>("tree_screen")->saveKnowTree();
+    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() == 0) {
-        MetaEditor *edView = find_object<MetaEditor>("editor_screen");
-        edView->toAttach->setIcon(edView->iconAttachNotExists);
+        MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
+        edView->_to_attach->setIcon(edView->_icon_attach_not_exists);
     }
 }
 
@@ -426,7 +426,7 @@ void AttachTableController::onOpenAttach(void)
                 fullFileName = DiskHelper::copyFileToTrash(fullFileName); // Копирование
                 CryptService::decryptFile(globalparameters.crypt_key(), fullFileName); // Расшифровка
             } else {
-                showMessageBox(tr("Can't preview encrypted attach file %1.\n\nUse \"Save As...\" button or enable decrypt to temporary file in settings.").arg(fullFileName));
+                show_message_box(tr("Can't preview encrypted attach file %1.\n\nUse \"Save As...\" button or enable decrypt to temporary file in settings.").arg(fullFileName));
                 continue;
             }
         }
@@ -453,7 +453,7 @@ void AttachTableController::onShowAttachInfo(void)
 
     // Если выбрано больше одного аттача
     if(selectedId.size() > 1) {
-        showMessageBox(tr("Please select single attach for see info."));
+        show_message_box(tr("Please select single attach for see info."));
         return;
     }
 
@@ -481,7 +481,7 @@ void AttachTableController::onShowAttachInfo(void)
 
 void AttachTableController::onSwitchToEditor(void)
 {
-    MetaEditor *edView = find_object<MetaEditor>("editor_screen");
+    MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
     edView->switchToEditorLayout();
 }
 

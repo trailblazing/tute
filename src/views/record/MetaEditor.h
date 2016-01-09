@@ -26,8 +26,8 @@ class FindScreen;
 class ClickableLabel: public QLabel {
     Q_OBJECT
 public:
-    ClickableLabel(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(parent, f) {}
-    ClickableLabel(const QString &text, QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(text, parent, f) {}
+    ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(parent, f) {}
+    ClickableLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(text, parent, f) {}
 Q_SIGNALS:
     void mousePressEvent(QMouseEvent *ev);
 
@@ -65,6 +65,7 @@ public:
     void switchToEditorLayout(void);
     void switchToAttachLayout(void);
     void bind(std::shared_ptr<Record> r);   // {_record = r;}
+    std::shared_ptr<Record> record() {return _record;}
 
 private:
     void setupLabels(void);
@@ -72,38 +73,38 @@ private:
     void metaAssembly(void);
     void setupSignals(FindScreen *_find_screen);
 
-    QLabel      *treePath;       // Надпись Path (только для мобильного интерфейса)
-    QCheckBox   *recordPin;
+    QLabel          *_tree_path;       // Надпись Path (только для мобильного интерфейса)
+    QCheckBox       *_record_pin;
 
-    QLabel *recordName;     // Надпись Title
-    QLabel *recordAuthor;   // Надпись Author(s)
+    QLabel          *_record_name;     // Надпись Title
+    QLabel          *_record_author;   // Надпись Author(s)
 
-    QLabel          *labelHome;       // Inscription    // Надпись "Url"
-    ClickableLabel  *recordHome;
+    QLabel          *_label_home;       // Inscription    // Надпись "Url"
+    ClickableLabel  *_record_home;
 
-    QLabel          *labelUrl;       // Inscription    // Надпись "Url"
-    ClickableLabel  *recordUrl;
+    QLabel          *_label_url;       // Inscription    // Надпись "Url"
+    ClickableLabel  *_record_url;
 
-    QLabel          *labelTags;      // Надпись "Tags"
-    QWidget         *recordTagsContainer;
-    QHBoxLayout     *recordTagsLayout;
-    QScrollArea     *recordTagsScrollArea;
-    QString         recordTagsText;
-    QStringList     recordTagsTextList;
-    QList<QLabel *> recordTagsLabels;
+    QLabel          *_label_tags;      // Надпись "Tags"
+    QWidget         *_record_tags_container;
+    QHBoxLayout     *_record_tags_layout;
+    QScrollArea     *_record_tags_scrollarea;
+    QString         _record_tags_text;
+    QStringList     _record_tags_text_list;
+    QList<QLabel *> _record_tags_labels;
 
-    QSplitter       *editorAndFileTableSplitter;
+    QSplitter       *_editor_and_filetable_splitter;
 
     // Виджет слоя прикрепляемых файлов
-    AttachTableScreen *attachTableScreen;
+    AttachTableScreen   *_attachtable_screen;
 
     // Виджет слоя редактирования текста
-    QGridLayout *editorMainLayer;
-    QWidget     *editorMainScreen;
+    QGridLayout     *_editor_main_layer;
+    QWidget         *_editor_main_screen;
 
     // Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
-    QVBoxLayout *metaEditorJoinLayer;
-    QMetaObject::Connection _home_connection;    // for disconnect
+    QVBoxLayout     *_meta_editor_join_layer;
+    QMetaObject::Connection _home_connection;   // for disconnect
     QMetaObject::Connection _url_connection;    // for disconnect
     std::shared_ptr<Record> _record;
 };

@@ -91,7 +91,7 @@ class FlatToolButton: public QToolButton {
 private:
     Q_OBJECT
 public:
-    FlatToolButton(QWidget *parent = Q_NULLPTR);
+    FlatToolButton(QWidget *parent = nullptr);
     //    bool flat() const { return flat_; }
     //    void setFlat(bool flat);
     //    void setAutoRaise(bool yes) {QToolButton::setAutoRaise(yes);}

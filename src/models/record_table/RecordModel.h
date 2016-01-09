@@ -8,23 +8,27 @@
 #include <QObject>
 #include <QtXml>
 
+
+#include "models/tree/TreeItem.h"
+
 #define TABLE_DATA_ROLE Qt::UserRole+10
 #define ONE_RECORD_ROLE Qt::UserRole+11
 #define RECORD_ID_ROLE  Qt::UserRole+12
 #define SORT_ROLE       Qt::UserRole+13
 
 class Record;
-class TableData;
+class RecordTable;
+class TreeItem;
 
-class TableModel : public QAbstractTableModel {
+class RecordModel : public QAbstractTableModel {
     Q_OBJECT
 
     // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
-    friend class TableController;
+    friend class RecordController;
 
 public:
-    TableModel(QString screen_name, QObject *pobj = 0);
-    ~TableModel();
+    RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _tree_item, QObject *pobj = 0);
+    ~RecordModel();
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
 
@@ -36,7 +40,7 @@ public:
     // Interface model, saving data entry at the specified index
     bool setData(const QModelIndex &index, const QVariant &value, int role);
 
-    std::shared_ptr<TableData> table_data() {return _table;}
+    //    std::shared_ptr<RecordTable> table_data() {return _table;}
 
     // Интерфейс модели, сколько записей в таблице
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
@@ -46,6 +50,16 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
+    void tree_item(boost::intrusive_ptr<TreeItem>item)
+    {
+        beginResetModel();
+        _tree_item = item;
+        endResetModel();
+    }
+
+    boost::intrusive_ptr<TreeItem> tree_item() {return _tree_item;}
+
+
 
 public slots:
     void reset_internal_data();
@@ -53,22 +67,20 @@ public slots:
 private:
 
     // Установка указателя на таблицу данных, с которой нужно работать модели
-    void reset_tabledata(std::shared_ptr<TableData> rtData);
-
+    void reset_tabledata(std::shared_ptr<RecordTable> record_table);
     // Ссылка на данные, с которыми работает модель
-    std::shared_ptr<TableData> table_data_internal(void);
+    std::shared_ptr<RecordTable> table_data(void);
 
     // Добавление записей
-    int add_record(int mode,
-                     QModelIndex posIndex,
-                     std::shared_ptr<Record> record);
+    int insert_new_record(int mode, QModelIndex posIndex, std::shared_ptr<Record> record);
 
     void on_table_config_changed(void);
 
 protected:
 
     // Указатель на таблицу конечных записей
-    std::shared_ptr<TableData>  _table;
+    //    std::shared_ptr<RecordTable>  _table;
+    boost::intrusive_ptr<TreeItem> _tree_item;
 
 };
 

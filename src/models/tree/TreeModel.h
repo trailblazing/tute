@@ -8,6 +8,9 @@
 #include <QObject>
 #include <QtXml>
 
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+#include "TreeItem.h"
 
 // TreeModel - Это вспомогательный класс! От него наследуется KnowTreeModel
 
@@ -45,23 +48,23 @@ public:
 
     // Возвращение указателя на Item-элемент с указанным index
     // Где index - это индекс объекта в терминах структуры модель-вид
-    std::shared_ptr<TreeItem> item(const QModelIndex &index) const;
+    boost::intrusive_ptr<TreeItem> item(const QModelIndex &index) const;
 
     // Возвращение указателя на Item-элемент с указанным путем
     // в виде последовательности идентификаторов
-    std::shared_ptr<TreeItem> item(QStringList path) const;
+    boost::intrusive_ptr<TreeItem> item(QStringList path) const;
 
     bool is_item_valid(QStringList path) const;
 
-    QModelIndex index_item(std::shared_ptr<TreeItem> item);
+    QModelIndex index_item(boost::intrusive_ptr<TreeItem> item);
 
     void emit_datachanged_signal(const QModelIndex &index);
 
-    std::shared_ptr<TreeItem> _root_item; // Ссылка на первый (корневой) item-объект
+    boost::intrusive_ptr<TreeItem> _root_item; // Ссылка на первый (корневой) item-объект
 
 private:
 
-    QModelIndex index_recursive(QModelIndex index, std::shared_ptr<TreeItem> item, int mode);
+    QModelIndex index_recursive(QModelIndex index, boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Element over which the cursor will carry. Used in the Drag And Drop.    // Элемент, над которым проносят курсор. Используется при Drag And Drop.
     QModelIndex cursorOverIndex;

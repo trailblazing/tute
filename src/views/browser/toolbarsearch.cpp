@@ -127,9 +127,9 @@ namespace browser {
     {
         QString searchText = lineEdit()->text();
 
-        std::shared_ptr<TableData> recordtabledata = globalparameters.find_screen()->find_clicked();
+        std::shared_ptr<RecordTable> record_data = globalparameters.find_screen()->find_clicked();
 
-        if(!recordtabledata || 0 == recordtabledata->size()) {
+        if(!record_data || 0 == record_data->size()) {
 
             QUrl url = QUrl(searchText);
 

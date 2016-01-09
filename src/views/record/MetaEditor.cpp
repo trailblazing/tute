@@ -15,10 +15,10 @@
 #include "models/app_config/AppConfig.h"
 #include "views/attach_table/AttachTableScreen.h"
 #include "views/tree/TreeScreen.h"
-#include "views/record_table/TableView.h"
-#include "views/record_table/TableScreen.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
+#include "views/record_table/RecordView.h"
+#include "views/record_table/RecordScreen.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/FindScreen.h"
@@ -35,16 +35,16 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen) : Editor()
     setObjectName(object_name);
     Editor::disable_tool_list(appconfig.getHideEditorTools());
 
-    Editor::initEnableAssembly(false);
-    Editor::initConfigFileName(globalparameters.work_directory() + "/editorconf.ini");
-    Editor::initEnableRandomSeed(false);
+    Editor::init_enable_assembly(false);
+    Editor::init_config_file_name(globalparameters.work_directory() + "/editorconf.ini");
+    Editor::init_enable_random_seed(false);
 
     if(appconfig.getInterfaceMode() == "desktop")
         Editor::init(Editor::WYEDIT_DESKTOP_MODE);
     else if(appconfig.getInterfaceMode() == "mobile")
         Editor::init(Editor::WYEDIT_MOBILE_MODE);
     else
-        criticalError("In MetaEditor constructor unknown interface mode: " + appconfig.getInterfaceMode());
+        critical_error("In MetaEditor constructor unknown interface mode: " + appconfig.getInterfaceMode());
 
     setupLabels();
     setupUI();
@@ -77,74 +77,74 @@ void MetaEditor::setupSignals(FindScreen *_find_screen)
 void MetaEditor::setupLabels(void)
 {
     // Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
-    treePath = new QLabel(this);
-    treePath->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                      Qt::TextSelectableByKeyboard);
+    _tree_path = new QLabel(this);
+    _tree_path->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                        Qt::TextSelectableByKeyboard);
 
     if(appconfig.getInterfaceMode() == "desktop")
-        treePath->setVisible(false);
+        _tree_path->setVisible(false);
     else
-        treePath->setVisible(true);
+        _tree_path->setVisible(true);
 
-    treePath->setWordWrap(true);
+    _tree_path->setWordWrap(true);
 
-    recordPin = new QCheckBox(this);
+    _record_pin = new QCheckBox(this);
     //    recordPin->setTextInteractionFlags(Qt::TextSelectableByMouse |
     //                                       Qt::TextSelectableByKeyboard);
-    recordPin->setFixedWidth(17);
-    recordPin->setVisible(false);
+    _record_pin->setFixedWidth(17);
+    _record_pin->setVisible(false);
     //    recordPin->setCheckState(_state_check["0"]);
     //    recordPin->setWordWrap(true);
 
     // Название записи
-    recordName = new QLabel(this);
-    recordName->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                        Qt::TextSelectableByKeyboard);
-    recordName->setVisible(false);
-    recordName->setWordWrap(true);
+    _record_name = new QLabel(this);
+    _record_name->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                          Qt::TextSelectableByKeyboard);
+    _record_name->setVisible(false);
+    _record_name->setWordWrap(true);
 
     // Автор
-    recordAuthor = new QLabel(this);
-    recordAuthor->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                          Qt::TextSelectableByKeyboard);
-    recordAuthor->setVisible(false);
-    recordAuthor->setWordWrap(true);
+    _record_author = new QLabel(this);
+    _record_author->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                            Qt::TextSelectableByKeyboard);
+    _record_author->setVisible(false);
+    _record_author->setWordWrap(true);
 
 
     // Url
-    labelHome = new QLabel(this);
-    labelHome->setText(tr("<B>Home:</B> "));
-    labelHome->setVisible(false);
+    _label_home = new QLabel(this);
+    _label_home->setText(tr("<B>Home:</B> "));
+    _label_home->setVisible(false);
 
 
     // Url
-    labelUrl = new QLabel(this);
-    labelUrl->setText(tr("<B>Url:</B> "));
-    labelUrl->setVisible(false);
+    _label_url = new QLabel(this);
+    _label_url->setText(tr("<B>Url:</B> "));
+    _label_url->setVisible(false);
 
-    recordHome = new ClickableLabel(this);
+    _record_home = new ClickableLabel(this);
     //    recordHome->setOpenExternalLinks(true);
-    recordHome->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                        Qt::TextSelectableByKeyboard |
-                                        Qt::LinksAccessibleByMouse |
-                                        Qt::LinksAccessibleByKeyboard);
-    recordHome->setVisible(false);
-    recordHome->setWordWrap(true);
+    _record_home->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                          Qt::TextSelectableByKeyboard |
+                                          Qt::LinksAccessibleByMouse |
+                                          Qt::LinksAccessibleByKeyboard);
+    _record_home->setVisible(false);
+    _record_home->setWordWrap(true);
 
-    recordUrl = new ClickableLabel(this);
+    _record_url = new ClickableLabel(this);
     //    recordUrl->setOpenExternalLinks(true);
-    recordUrl->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                       Qt::TextSelectableByKeyboard |
-                                       Qt::LinksAccessibleByMouse |
-                                       Qt::LinksAccessibleByKeyboard);
-    recordUrl->setVisible(false);
-    recordUrl->setWordWrap(true);
+    _record_url->setTextInteractionFlags(Qt::TextSelectableByMouse |
+                                         Qt::TextSelectableByKeyboard |
+                                         Qt::LinksAccessibleByMouse |
+                                         Qt::LinksAccessibleByKeyboard);
+    _record_url->setVisible(false);
+    _record_url->setWordWrap(true);
 
 
     // Текстовые метки
-    labelTags = new QLabel(this);
-    labelTags->setText(tr("<B>Tags:</B> "));
-    labelTags->setVisible(false);
+    _label_tags = new QLabel(this);
+    _label_tags->setText(tr("<B>Tags:</B> "));
+    _label_tags->setVisible(false);
 }
 
 
@@ -152,11 +152,26 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
 {
     _record = r;
     assert(_record);
+    //    TableController *table_controller = globalparameters.table_screen()->table_controller();
+    //    assert(table_controller);
+    //    int pos = table_controller->table_model()->table_data()->get_pos_by_id(r->getNaturalFieldSource("id"));
+    //    table_controller->sychronize_metaeditor_to_record(pos);
 
+    //    setPin(r->getNaturalFieldSource("pin"));
+    //    setName(r->getNaturalFieldSource("name"));
+    //    setAuthor(r->getNaturalFieldSource("author"));
+    //    setTags(r->getNaturalFieldSource("tags"));
+    //    setHome(r->getNaturalFieldSource("home"));
+    //    setUrl(r->getNaturalFieldSource("url"));
+
+    //    if(r->isLite())
+    //        set_textarea(r->getTextDirectFromLite());
+    //    else
+    //        set_textarea(r->getTextFromFat());
 
     QObject::disconnect(_url_connection);
 
-    _url_connection = QObject::connect(recordUrl, &ClickableLabel::mousePressEvent
+    _url_connection = QObject::connect(_record_url, &ClickableLabel::mousePressEvent
                                        // linkActivated
                                        //            , _record->binded_only_page()
     , [this](QMouseEvent * ev) {
@@ -166,17 +181,17 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
     });
 
     QObject::disconnect(_home_connection);
-    _home_connection = QObject::connect(recordHome, &ClickableLabel::mousePressEvent
+    _home_connection = QObject::connect(_record_home, &ClickableLabel::mousePressEvent
                                         //            , _record->binded_only_page()
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
         //            Q_UNUSED(home)
         browser::WebPage *page = _record->unique_page();
         assert(page);
-        QString home = _record->getNaturalFieldSource("home");
+        QString home = _record->natural_field_source("home");
 
-        if(_record->getNaturalFieldSource("url") != home)
-            _record->setNaturalFieldSource("url", home);
+        if(_record->natural_field_source("url") != home)
+            _record->natural_field_source("url", home);
 
         page->equip_registered(_record)->active(); // page->load(_record, true);
         //        _record->active();
@@ -186,65 +201,65 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
 void MetaEditor::setupUI(void)
 {
     // Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...
-    recordTagsLayout = new QHBoxLayout();
-    recordTagsLayout->setAlignment(Qt::AlignLeft);
-    recordTagsLayout->setMargin(0);
+    _record_tags_layout = new QHBoxLayout();
+    _record_tags_layout->setAlignment(Qt::AlignLeft);
+    _record_tags_layout->setMargin(0);
 
     // QHBoxLayout невозможно добавить в QScrollArea, поэтому оборачивается в виджет
-    recordTagsContainer = new QWidget();
-    recordTagsContainer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-    recordTagsContainer->setLayout(recordTagsLayout);
+    _record_tags_container = new QWidget();
+    _record_tags_container->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+    _record_tags_container->setLayout(_record_tags_layout);
 
     // Создается QScrollArea и в нее добавляется виджет с QHBoxLayout
-    recordTagsScrollArea = new QScrollArea();
-    recordTagsScrollArea->setContentsMargins(0, 0, 0, 0);   // Убирается отступ от границ содержимого
-    recordTagsScrollArea->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
-    recordTagsScrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // Убирается горизонтальная полоса прокрутки
-    recordTagsScrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // Убирается вертикальная полоса прокрутки
-    recordTagsScrollArea->setFrameShape(QFrame::NoFrame); // Убирается тонкая линия вокруг QScrollArea
-    recordTagsScrollArea->setWidget(recordTagsContainer);
+    _record_tags_scrollarea = new QScrollArea();
+    _record_tags_scrollarea->setContentsMargins(0, 0, 0, 0);   // Убирается отступ от границ содержимого
+    _record_tags_scrollarea->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    _record_tags_scrollarea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // Убирается горизонтальная полоса прокрутки
+    _record_tags_scrollarea->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // Убирается вертикальная полоса прокрутки
+    _record_tags_scrollarea->setFrameShape(QFrame::NoFrame); // Убирается тонкая линия вокруг QScrollArea
+    _record_tags_scrollarea->setWidget(_record_tags_container);
 
-    attachTableScreen = new AttachTableScreen(this);
+    _attachtable_screen = new AttachTableScreen(this);
 }
 
 
 void MetaEditor::metaAssembly(void)
 {
     // Сборка виджета редактирования текста (основной виджет)
-    editorMainScreen    = new QWidget(this);
-    editorMainLayer     = new QGridLayout(editorMainScreen);
+    _editor_main_screen    = new QWidget(this);
+    _editor_main_layer     = new QGridLayout(_editor_main_screen);
 
-    editorMainLayer->addLayout(textformatButtonsLayout, 0, 0, 1, 2);
-    editorMainLayer->addWidget(treePath,                1, 0, 1, 2);
+    _editor_main_layer->addLayout(_textformat_buttons_layout, 0, 0, 1, 2);
+    _editor_main_layer->addWidget(_tree_path,                1, 0, 1, 2);
     //    editorMainLayer->addWidget(recordPin,               2, 0, 1, 2);
-    editorMainLayer->addWidget(recordName,              2, 0, 1, 2);
-    editorMainLayer->addWidget(recordAuthor,            3, 1, 1, 2);
+    _editor_main_layer->addWidget(_record_name,              2, 0, 1, 2);
+    _editor_main_layer->addWidget(_record_author,            3, 1, 1, 2);
 
-    editorMainLayer->addWidget(textArea,                4, 0, 1, 2);
+    _editor_main_layer->addWidget(_text_area,                4, 0, 1, 2);
 
-    editorMainLayer->addWidget(labelHome,               5, 0);
-    editorMainLayer->addWidget(recordHome,              5, 1);
+    _editor_main_layer->addWidget(_label_home,               5, 0);
+    _editor_main_layer->addWidget(_record_home,              5, 1);
 
-    editorMainLayer->addWidget(labelUrl,                6, 0);
-    editorMainLayer->addWidget(recordUrl,               6, 1);
+    _editor_main_layer->addWidget(_label_url,                6, 0);
+    _editor_main_layer->addWidget(_record_url,               6, 1);
 
-    editorMainLayer->addWidget(labelTags,               7, 0);
-    editorMainLayer->addWidget(recordTagsScrollArea,    7, 1); // Было addLayout(recordTagsLayout ...)
+    _editor_main_layer->addWidget(_label_tags,               7, 0);
+    _editor_main_layer->addWidget(_record_tags_scrollarea,    7, 1); // Было addLayout(recordTagsLayout ...)
 
-    editorMainLayer->setColumnStretch(1, 1);
-    editorMainLayer->setRowStretch(4, 1);   // for textArea auto fullfill
+    _editor_main_layer->setColumnStretch(1, 1);
+    _editor_main_layer->setRowStretch(4, 1);   // for textArea auto fullfill
 
-    editorMainLayer->setContentsMargins(0, 0, 0, 0);
+    _editor_main_layer->setContentsMargins(0, 0, 0, 0);
 
-    editorMainScreen->setLayout(editorMainLayer);
+    _editor_main_screen->setLayout(_editor_main_layer);
 
 
     // Сборка виджетов в один слой
-    metaEditorJoinLayer = new QVBoxLayout(this);
-    metaEditorJoinLayer->addWidget(editorMainScreen);
-    metaEditorJoinLayer->addWidget(attachTableScreen);
+    _meta_editor_join_layer = new QVBoxLayout(this);
+    _meta_editor_join_layer->addWidget(_editor_main_screen);
+    _meta_editor_join_layer->addWidget(_attachtable_screen);
 
-    this->setLayout(metaEditorJoinLayer);
+    this->setLayout(_meta_editor_join_layer);
 
 
     // Границы убираются, так как данный объект будет использоваться как виджет
@@ -259,22 +274,22 @@ void MetaEditor::metaAssembly(void)
 
 void MetaEditor::switchToEditorLayout(void)
 {
-    attachTableScreen->hide(); // Что бы небыло мерцания, вначале нужно делать сокрытие текущего виджета
-    editorMainScreen->show();
+    _attachtable_screen->hide(); // Что бы небыло мерцания, вначале нужно делать сокрытие текущего виджета
+    _editor_main_screen->show();
 }
 
 
 void MetaEditor::switchToAttachLayout(void)
 {
-    editorMainScreen->hide();
-    attachTableScreen->show();
+    _editor_main_screen->hide();
+    _attachtable_screen->show();
 }
 
 
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
 void MetaEditor::toAttachCallback(void)
 {
-    MetaEditor *edView = find_object<MetaEditor>("editor_screen");
+    MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
     edView->switchToAttachLayout();
 }
 
@@ -289,7 +304,7 @@ void MetaEditor::setField(QString n, QString v)
     else if(n == "url")     setUrl(v);
     else if(n == "tags")    setTags(v);
     else
-        criticalError("metaeditor.set_field Undestand field " + n + " with value " + v);
+        critical_error("metaeditor.set_field Undestand field " + n + " with value " + v);
 }
 
 
@@ -305,55 +320,55 @@ void MetaEditor::clearAll(void)
     setTags("");
     set_textarea("");
 
-    set_work_directory("");
+    work_directory("");
     set_file_name("");
 
     clear_all_misc_field();
 
     // Иконка аттачей должна показывать что аттачей нет
-    toAttach->setIcon(iconAttachNotExists);
+    _to_attach->setIcon(_icon_attach_not_exists);
 
     // Очистка для слоя приаттаченных файлов
-    attachTableScreen->clear();
+    _attachtable_screen->clear();
 }
 
 
 void MetaEditor::setTreePath(QString path)
 {
-    treePath->setVisible(true);
-    treePath->setText(tr("<b>Path: </b>") + path);
+    _tree_path->setVisible(true);
+    _tree_path->setText(tr("<b>Path: </b>") + path);
 }
 
 void MetaEditor::switch_pin()
 {
-    TableController *recordtablecontroller = globalparameters.table_screen()->table_controller();
+    RecordController *recordtablecontroller = globalparameters.table_screen()->table_controller();
 
     if(recordtablecontroller) {
-        TableModel *recordtablemodel = recordtablecontroller->table_model();
-        TableView *recordtableview = recordtablecontroller->view();
+        RecordModel *recordmodel = recordtablecontroller->table_model();
+        RecordView *recordtableview = recordtablecontroller->view();
         int pos = recordtablecontroller->first_selectionpos();
 
-        if(recordtablemodel && -1 != pos) {
+        if(recordmodel && -1 != pos) {
             // Выясняется ссылка на таблицу конечных данных
-            std::shared_ptr<TableData> table = recordtablemodel->table_data();    //getTableData();
+            std::shared_ptr<RecordTable> table = recordmodel->tree_item()->tabledata();    //getTableData();
 
-            QString pin = table->field("pin", pos);
-            recordPin->setCheckState(_state_check[pin]);
+            QString pin = table->field(pos, "pin");
+            _record_pin->setCheckState(_state_check[pin]);
 
-            QString home = table->field("url", pos);
+            QString home = table->field(pos, "url");
 
             // Переданные отредактированные поля преобразуются в вид имя-значение
             QMap<QString, QString> editData;
 
-            if(recordPin->checkState() == Qt::CheckState::Checked) {
-                recordPin->setCheckState(Qt::CheckState::Unchecked);
+            if(_record_pin->checkState() == Qt::CheckState::Checked) {
+                _record_pin->setCheckState(Qt::CheckState::Unchecked);
 
                 setPin(pin = _check_state[Qt::CheckState::Unchecked]);
 
                 editData["pin"] = pin;
 
             } else {
-                recordPin->setCheckState(Qt::CheckState::Checked);
+                _record_pin->setCheckState(Qt::CheckState::Checked);
 
                 setPin(pin = _check_state[Qt::CheckState::Checked]);
                 setHome(home);
@@ -377,10 +392,10 @@ void MetaEditor::switch_pin()
 
 
             // Сохранение дерева веток
-            //find_object<TreeScreen>("tree_screen")->saveKnowTree();
+            //find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
             TreeScreen *treescreen = globalparameters.tree_screen();
 
-            if(treescreen)treescreen->saveKnowTree();
+            if(treescreen)treescreen->save_knowtree();
 
             if(recordtableview)recordtableview->setSelectionToPos(pos);
         }
@@ -390,25 +405,25 @@ void MetaEditor::switch_pin()
 void MetaEditor::setPin(QString pin)
 {
     //recordPin->setVisible(true);
-    recordPin->setCheckState(_state_check[pin]);
+    _record_pin->setCheckState(_state_check[pin]);
     //    recordPin->setText("<b>" + pin + "</b>");
 }
 
 void MetaEditor::setName(QString name)
 {
-    recordName->setVisible(true);
-    recordName->setText("<b>" + name + "</b>");
+    _record_name->setVisible(true);
+    _record_name->setText("<b>" + name + "</b>");
 }
 
 
 void MetaEditor::setAuthor(QString author)
 {
     if(author.length() == 0) {
-        recordAuthor->setVisible(false);
-        recordAuthor->setText("");
+        _record_author->setVisible(false);
+        _record_author->setText("");
     } else {
-        recordAuthor->setVisible(true);
-        recordAuthor->setText("<i>" + author + "</i>");
+        _record_author->setVisible(true);
+        _record_author->setText("<i>" + author + "</i>");
     }
 }
 
@@ -416,18 +431,18 @@ void MetaEditor::setAuthor(QString author)
 void MetaEditor::setHome(QString url)
 {
     if(url.length() == 0) {
-        labelHome->setVisible(false);
-        recordHome->setVisible(false);
+        _label_home->setVisible(false);
+        _record_home->setVisible(false);
 
-        recordHome->setText("");
+        _record_home->setText("");
     } else {
-        labelHome->setVisible(true);
-        recordHome->setVisible(true);
+        _label_home->setVisible(true);
+        _record_home->setVisible(true);
 
         if(url.size() > 64)
-            recordHome->setText("<a href=\"" + url + "\">" + url.left(64) + "...</a>");
+            _record_home->setText("<a href=\"" + url + "\">" + url.left(64) + "...</a>");
         else
-            recordHome->setText("<a href=\"" + url + "\">" + url + "</a>");
+            _record_home->setText("<a href=\"" + url + "\">" + url + "</a>");
     }
 }
 
@@ -435,18 +450,18 @@ void MetaEditor::setHome(QString url)
 void MetaEditor::setUrl(QString url)
 {
     if(url.length() == 0) {
-        labelUrl->setVisible(false);
-        recordUrl->setVisible(false);
+        _label_url->setVisible(false);
+        _record_url->setVisible(false);
 
-        recordUrl->setText("");
+        _record_url->setText("");
     } else {
-        labelUrl->setVisible(true);
-        recordUrl->setVisible(true);
+        _label_url->setVisible(true);
+        _record_url->setVisible(true);
 
         if(url.size() > 64)
-            recordUrl->setText("<a href=\"" + url + "\">" + url.left(64) + "...</a>");
+            _record_url->setText("<a href=\"" + url + "\">" + url.left(64) + "...</a>");
         else
-            recordUrl->setText("<a href=\"" + url + "\">" + url + "</a>");
+            _record_url->setText("<a href=\"" + url + "\">" + url + "</a>");
     }
 }
 
@@ -454,34 +469,34 @@ void MetaEditor::setUrl(QString url)
 void MetaEditor::setTags(QString tags)
 {
     // Строка с метками запоминается в явном виде
-    recordTagsText = tags;
+    _record_tags_text = tags;
 
 
     // Строка с метками разделяется на отдельные меки
-    recordTagsTextList = recordTagsText.split(QRegExp("[,;]+"), QString::SkipEmptyParts);
+    _record_tags_text_list = _record_tags_text.split(QRegExp("[,;]+"), QString::SkipEmptyParts);
 
     // В каждой метке убираются лишние пробелы по краям
-    for(int i = 0; i < recordTagsTextList.size(); ++i)
-        recordTagsTextList[i] = recordTagsTextList.at(i).trimmed();
+    for(int i = 0; i < _record_tags_text_list.size(); ++i)
+        _record_tags_text_list[i] = _record_tags_text_list.at(i).trimmed();
 
 
     // Очищается слой с метками
     QLayoutItem *childItem;
 
-    while((childItem = recordTagsLayout->takeAt(0)) != 0) {
-        recordTagsLayout->removeItem(childItem);
+    while((childItem = _record_tags_layout->takeAt(0)) != 0) {
+        _record_tags_layout->removeItem(childItem);
 
-        if(childItem->widget() != NULL && childItem->widget() != 0)
+        if(childItem->widget() != nullptr && childItem->widget() != 0)
             delete(childItem->widget());
 
         delete childItem;
     }
 
     // Очищается список меток
-    recordTagsLabels.clear();
+    _record_tags_labels.clear();
 
     // Создаются метки для экрана и запоминаются в список
-    for(int i = 0; i < recordTagsTextList.size(); ++i) {
+    for(int i = 0; i < _record_tags_text_list.size(); ++i) {
         // Объект метки на экране
         QLabel *tempLabel = new QLabel(this);
         tempLabel->setOpenExternalLinks(false);
@@ -498,7 +513,7 @@ void MetaEditor::setTags(QString tags)
 
         // Метке задается текст
         // В Url указывается порядковый номер метки
-        QString labelText = "<a href=\"" + QString::number(i) + "\">" + recordTagsTextList.at(i) + "</a>";
+        QString labelText = "<a href=\"" + QString::number(i) + "\">" + _record_tags_text_list.at(i) + "</a>";
         tempLabel->setText(labelText);
 
         // Клик по метке будет вызывать сигнал, слот будет принимать Url метки,
@@ -508,30 +523,30 @@ void MetaEditor::setTags(QString tags)
         connect(tempLabel, SIGNAL(linkActivated(const QString &)), this, SLOT(onClickToTag(const QString &)));
 
         // Метка запоминается в список меток
-        recordTagsLabels << tempLabel;
+        _record_tags_labels << tempLabel;
 
         // Метка добавляется в область размещения
-        recordTagsLayout->addWidget(tempLabel);
+        _record_tags_layout->addWidget(tempLabel);
     }
 
     // В конец списка виджетов добавляется распорка
-    recordTagsLayout->addStretch();
+    _record_tags_layout->addStretch();
 
     // Если нечего выводить на экран
-    if(tags.length() == 0 || recordTagsTextList.size() == 0) {
-        labelTags->setVisible(false);
+    if(tags.length() == 0 || _record_tags_text_list.size() == 0) {
+        _label_tags->setVisible(false);
 
-        for(int i = 0; i < recordTagsLabels.size(); ++i)
-            recordTagsLabels.at(i)->setVisible(false);
+        for(int i = 0; i < _record_tags_labels.size(); ++i)
+            _record_tags_labels.at(i)->setVisible(false);
     } else {
-        labelTags->setVisible(true);
+        _label_tags->setVisible(true);
 
-        for(int i = 0; i < recordTagsLabels.size(); ++i)
-            recordTagsLabels.at(i)->setVisible(true);
+        for(int i = 0; i < _record_tags_labels.size(); ++i)
+            _record_tags_labels.at(i)->setVisible(true);
     }
 
-    recordTagsContainer->adjustSize();
-    recordTagsScrollArea->setMaximumHeight(recordTagsContainer->height());
+    _record_tags_container->adjustSize();
+    _record_tags_scrollarea->setMaximumHeight(_record_tags_container->height());
 }
 
 
@@ -544,7 +559,7 @@ void MetaEditor::onClickToTag(const QString &link_text)
     qDebug() << "Click to tag " << link_text;
 
     // Текст метки
-    QString tag = recordTagsTextList.at(link_text.toInt());
+    QString tag = _record_tags_text_list.at(link_text.toInt());
     qDebug() << "Tag text " << tag;
 
     // -----------------------------
@@ -552,7 +567,7 @@ void MetaEditor::onClickToTag(const QString &link_text)
     // -----------------------------
 
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen = find_object<FindScreen>("find_screen");
+    FindScreen *findScreen = find_object<FindScreen>(find_screen_singleton_name);
 
     // Если виджет не показан, он выводится на экран
     if(findScreen->isVisible() == false)

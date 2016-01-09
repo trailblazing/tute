@@ -9,17 +9,17 @@
 #include "libraries/ClipboardRecords.h"
 #include "libraries/GlobalParameters.h"
 #include "models/tree/KnowTreeModel.h"
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordTable.h"
 #include "models/tree/TreeItem.h"
-#include "models/record_table/TableModel.h"
+#include "models/record_table/RecordModel.h"
 #include "views/main_window/MainWindow.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "views/record/MetaEditor.h"
-#include "controllers/record_table/TableController.h"
+#include "controllers/record_table/RecordController.h"
 
 
 extern GlobalParameters globalparameters;
-
+const char *knowtreeview_singleton_name = "knowtreeview";
 
 KnowTreeView::KnowTreeView(QWidget *parent) : QTreeView(parent)
 {
@@ -31,7 +31,7 @@ KnowTreeView::KnowTreeView(QWidget *parent) : QTreeView(parent)
     grabGesture(Qt::TapAndHoldGesture);
 
     // Настройка области виджета для кинетической прокрутки
-    setKineticScrollArea(qobject_cast<QAbstractItemView *>(this));
+    set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));
 }
 
 
@@ -110,7 +110,7 @@ template <class X> bool KnowTreeView::isDragableData(X *event)
     // Проверяется, содержит ли объект переноса данные нужного формата
     const QMimeData *mimeData = event->mimeData();
 
-    if(mimeData == NULL)
+    if(mimeData == nullptr)
         return false;
 
     if(!(mimeData->hasFormat("mytetra/records")))
@@ -153,10 +153,10 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         auto treeItemDrop = parentPointer->_knowtreemodel->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
-        std::shared_ptr<TableData> recordTableData = treeItemDrop->tabledata();
+        std::shared_ptr<RecordTable> recordTableData = treeItemDrop->tabledata();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = find_object<TreeScreen>("tree_screen")->getCurrentItemIndex();
+        QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
         auto treeItemDrag = parentPointer->_knowtreemodel->item(indexFrom);
@@ -184,35 +184,35 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         // В настоящий момент в MimeData попадает только одна запись,
         // но в дальнейшем планируется переносить несколько записей
         // и здесь код подготовлен для переноса нескольких записей
-        TableController *recordTableController = find_object<TableController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
+        RecordController *recordTableController = find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
 
-        for(int i = 0; i < clipboardRecords->getCount(); i++) {
+        for(int i = 0; i < clipboardRecords->size(); i++) {
             // Полные данные записи
-            std::shared_ptr<Record> record = clipboardRecords->getRecord(i);
+            std::shared_ptr<Record> record = clipboardRecords->record(i);
 
             // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
             // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-            recordTableController->removerow_by_id(record->getField("id"));
+            recordTableController->removerow_by_id(record->field("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(recordTableController->row_count() == 0)
-                find_object<MetaEditor>("editor_screen")->clearAll(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+                find_object<MetaEditor>(meta_editor_singleton_name)->clearAll(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
 
-            find_object<TableScreen>("table_screen")->toolsUpdate();
+            find_object<RecordScreen>(table_screen_singleton_name)->tools_update();
 
             // Добавление записи в базу
             recordTableData->insert_new_record(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
-            find_object<TreeScreen>("tree_screen")->saveKnowTree();
+            find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось
-        parentPointer->updateBranchOnScreen(indexFrom);
+        parentPointer->update_branch_on_screen(indexFrom);
 
         // Обновлении конечной ветки чтобы было видно что записей прибавилось
-        parentPointer->updateBranchOnScreen(index);
+        parentPointer->update_branch_on_screen(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
         parentPointer->_knowtreemodel->setData(QModelIndex(), QVariant(false), Qt::UserRole);

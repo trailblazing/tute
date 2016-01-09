@@ -26,7 +26,7 @@ void TrashMonitoring::init(QString trashPath)
 // Инит объекта директории с указанным путем
     dir.setPath(trashPath);
     if(!dir.exists()) {
-        criticalError("Can not open trash directory "+trashPath);
+        critical_error("Can not open trash directory "+trashPath);
         exit(1);
     }
     path=trashPath; // Имя директории запоминается
@@ -113,7 +113,7 @@ void TrashMonitoring::removeOldesFile(void)
         // Файл удаляется из списка
         filesTable.removeLast();
     } else {
-        criticalError("In trash monitoring can not delete file "+fileName);
+        critical_error("In trash monitoring can not delete file "+fileName);
         exit(0);
     }
 }

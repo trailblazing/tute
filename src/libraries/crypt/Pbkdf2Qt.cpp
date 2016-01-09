@@ -30,13 +30,13 @@ Pbkdf2Qt::~Pbkdf2Qt(void)
 
 const char *Pbkdf2Qt::GetVersion(void)
 {
-    static const char *lib_version=PBKDF2QT_VERSION;
+    static const char *lib_version = PBKDF2QT_VERSION;
     return(lib_version);
 }
 
 unsigned int Pbkdf2Qt::Min(unsigned int a, unsigned int b)
 {
-    return (a<b)?a:b;
+    return (a < b) ? a : b;
 }
 
 
@@ -50,7 +50,7 @@ QByteArray Pbkdf2Qt::HmacSha1(QByteArray text,
         ctx.reset();
         ctx.addData(key);
 
-        key=ctx.result();
+        key = ctx.result();
         key.truncate(PBKDF2QT_SHA1_DIGEST_LENGTH);
     }
 
@@ -59,23 +59,25 @@ QByteArray Pbkdf2Qt::HmacSha1(QByteArray text,
 
     k_pad.fill(0);
     k_pad.replace(0, key.length(), key);
+
     for(int i = 0; i < PBKDF2QT_SHA1_BLOCK_LENGTH; i++)
-        k_pad[i]=k_pad[i]^0x36;
+        k_pad[i] = k_pad[i] ^ 0x36;
 
     ctx.reset();
     ctx.addData(k_pad, PBKDF2QT_SHA1_BLOCK_LENGTH);
     ctx.addData(text);
-    digest=ctx.result();
+    digest = ctx.result();
 
     k_pad.fill(0);
     k_pad.replace(0, key.length(), key);
+
     for(int i = 0; i < PBKDF2QT_SHA1_BLOCK_LENGTH; i++)
-        k_pad[i]=k_pad[i]^0x5c;
+        k_pad[i] = k_pad[i] ^ 0x5c;
 
     ctx.reset();
     ctx.addData(k_pad, PBKDF2QT_SHA1_BLOCK_LENGTH);
     ctx.addData(digest, PBKDF2QT_SHA1_DIGEST_LENGTH);
-    digest=ctx.result();
+    digest = ctx.result();
 
     return digest;
 }
@@ -96,11 +98,13 @@ int Pbkdf2Qt::Pbkdf2_calculate(const char *pass,
     unsigned int count;
     unsigned int r;
 
-    if (rounds < 1 || key_len == 0)
+    if(rounds < 1 || key_len == 0)
         return -1;
-    if (salt_len == 0 || salt_len > PBKDF2QT_SALT_SIZE_MAX - 1)
+
+    if(salt_len == 0 || salt_len > PBKDF2QT_SALT_SIZE_MAX - 1)
         return -1;
-    if ((asalt = (char*)malloc(salt_len + 4)) == NULL)
+
+    if((asalt = (char *)malloc(salt_len + 4)) == nullptr)
         return -1;
 
     memcpy(asalt, salt, salt_len);
@@ -114,14 +118,14 @@ int Pbkdf2Qt::Pbkdf2_calculate(const char *pass,
         asalt[salt_len + 2] = (count >> 8) & 0xff;
         asalt[salt_len + 3] = count & 0xff;
 
-        QByteArray ba_asalt((const char *)asalt, salt_len+4);
+        QByteArray ba_asalt((const char *)asalt, salt_len + 4);
         QByteArray ba_pass(pass, pass_len);
-        d1=HmacSha1(ba_asalt, ba_pass);
+        d1 = HmacSha1(ba_asalt, ba_pass);
 
         memcpy(obuf, d1.data(), sizeof(obuf));
 
         for(i = 1; i < rounds; i++) {
-            d2=HmacSha1(d1, ba_pass);
+            d2 = HmacSha1(d1, ba_pass);
 
             d1.replace(0, d1.size(), d2);
 
@@ -153,20 +157,20 @@ QByteArray Pbkdf2Qt::Pbkdf2(QByteArray pass,
                             unsigned int key_len)
 {
     char *key;
-    key=(char*)malloc(key_len);
+    key = (char *)malloc(key_len);
 
-    if(key==NULL)
+    if(key == nullptr)
         return QByteArray();
 
-    int calculate_result=Pbkdf2_calculate(pass,
-                                          pass.length(),
-                                          salt,
-                                          salt.length(),
-                                          key,
-                                          key_len,
-                                          rounds);
+    int calculate_result = Pbkdf2_calculate(pass,
+                                            pass.length(),
+                                            salt,
+                                            salt.length(),
+                                            key,
+                                            key_len,
+                                            rounds);
 
-    if(calculate_result==-1)
+    if(calculate_result == -1)
         return QByteArray();
 
     QByteArray result(key, key_len);

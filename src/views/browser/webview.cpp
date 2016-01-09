@@ -53,6 +53,8 @@
 #include "webview.h"
 #include "views/main_window/MainWindow.h"
 #include "views/find_in_base_screen/FindScreen.h"
+#include "libraries/WindowSwitcher.h"
+#include "libraries/WalkHistory.h"
 
 
 #include <QtGui/QClipboard>
@@ -75,14 +77,14 @@
 #include <QtCore/QBuffer>
 
 #include "main.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
 #include "models/record_table/Record.h"
-#include "views/record_table/TableView.h"
+#include "views/record_table/RecordView.h"
 #include "libraries/GlobalParameters.h"
 #include "views/browser/entrance.h"
-#include "views/record_table/TableScreen.h"
-#include "controllers/record_table/TableController.h"
+#include "views/record_table/RecordScreen.h"
+#include "controllers/record_table/RecordController.h"
 //#include "browserview.moc"
 #include "libraries/GlobalParameters.h"
 #include "views/record/MetaEditor.h"
@@ -94,13 +96,234 @@
 
 class GlobalParameters;
 extern GlobalParameters globalparameters;
+extern AppConfig appconfig;
 
 namespace browser {
+
+
+#ifdef USE_POPUP_WINDOW
+
+    PopupPage::PopupPage(QWebEngineProfile *profile, QObject *parent)
+        : QWebEnginePage(profile, parent)
+        , m_keyboardModifiers(Qt::NoModifier)
+        , m_pressedButtons(Qt::NoButton)
+    {
+#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+        setNetworkAccessManager(BrowserApplication::networkAccessManager());
+#endif
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
+        connect(this, SIGNAL(unsupportedContent(QNetworkReply *)),
+                this, SLOT(handleUnsupportedContent(QNetworkReply *)));
+#endif
+        connect(this, SIGNAL(authenticationRequired(const QUrl &, QAuthenticator *)),
+                SLOT(authenticationRequired(const QUrl &, QAuthenticator *)));
+        connect(this, SIGNAL(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)),
+                SLOT(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)));
+    }
+
+    Browser *PopupPage::browser()
+    {
+        QObject *w = this->parent();
+
+        while(w) {
+            if(Browser *mw = qobject_cast<Browser *>(w))
+                return mw;
+
+            w = w->parent();
+        }
+
+        return globalparameters.entrance()->equip_registered().first;   // BrowserApplication::instance()->mainWindow();
+    }
+
+    bool PopupPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
+    {
+        Q_UNUSED(type);
+
+        if(isMainFrame) {
+            m_loadingUrl = url;
+            emit loadingUrl(m_loadingUrl);
+        }
+
+        return true;
+    }
+
+    bool PopupPage::certificateError(const QWebEngineCertificateError &error)
+    {
+        if(error.isOverridable()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText(error.errorDescription());
+            msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certificate. "
+                                         "Accepting an unverified certificate means "
+                                         "you may not be connected with the host you tried to connect to.\n"
+                                         "Do you wish to override the security check and continue?"));
+            msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+            msgBox.setDefaultButton(QMessageBox::No);
+            return msgBox.exec() == QMessageBox::Yes;
+        }
+
+        QMessageBox::critical(view(), tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
+        return false;
+    }
+
+
+    //#include "webview.moc"
+
+    //    QWebEnginePage *PopupPage::createWindow(QWebEnginePage::WebWindowType type)
+    //    {
+    //        if(type == QWebEnginePage::WebBrowserTab) {
+    //            return mainWindow()->tabWidget()->newTab()->page();
+    //        } else if(type == QWebEnginePage::WebBrowserWindow) {
+    //            BrowserApplication::instance()->newMainWindow();
+    //            Browser *mainWindow = BrowserApplication::instance()->mainWindow();
+    //            return mainWindow->currentTab()->page();
+    //        } else {
+    //            PopupWindow *popup = new PopupWindow(profile());
+    //            popup->setAttribute(Qt::WA_DeleteOnClose);
+    //            popup->show();
+    //            return popup->page();
+    //        }
+    //    }
+
+#if !defined(QT_NO_UITOOLS)
+    QObject *PopupPage::createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues)
+    {
+        Q_UNUSED(url);
+        Q_UNUSED(paramNames);
+        Q_UNUSED(paramValues);
+        QUiLoader loader;
+        return loader.createWidget(classId, view());
+    }
+#endif // !defined(QT_NO_UITOOLS)
+
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
+    void WebPage::handleUnsupportedContent(QNetworkReply *reply)
+    {
+        QString errorString = reply->errorString();
+
+        if(m_loadingUrl != reply->url()) {
+            // sub resource of this page
+            qWarning() << "Resource" << reply->url().toEncoded() << "has unknown Content-Type, will be ignored.";
+            reply->deleteLater();
+            return;
+        }
+
+        if(reply->error() == QNetworkReply::NoError && !reply->header(QNetworkRequest::ContentTypeHeader).isValid()) {
+            errorString = "Unknown Content-Type";
+        }
+
+        QFile file(QLatin1String(":/notfound.html"));
+        bool isOpened = file.open(QIODevice::ReadOnly);
+        Q_ASSERT(isOpened);
+        Q_UNUSED(isOpened)
+
+        QString title = tr("Error loading page: %1").arg(reply->url().toString());
+        QString html = QString(QLatin1String(file.readAll()))
+                       .arg(title)
+                       .arg(errorString)
+                       .arg(reply->url().toString());
+
+        QBuffer imageBuffer;
+        imageBuffer.open(QBuffer::ReadWrite);
+        QIcon icon = view()->style()->standardIcon(QStyle::SP_MessageBoxWarning, 0, view());
+        QPixmap pixmap = icon.pixmap(QSize(32, 32));
+
+        if(pixmap.save(&imageBuffer, "PNG")) {
+            html.replace(QLatin1String("IMAGE_BINARY_DATA_HERE"),
+                         QString(QLatin1String(imageBuffer.buffer().toBase64())));
+        }
+
+        QList<QWebEngineFrame *> frames;
+        frames.append(mainFrame());
+
+        while(!frames.isEmpty()) {
+            QWebEngineFrame *frame = frames.takeFirst();
+
+            if(frame->url() == reply->url()) {
+                frame->setHtml(html, reply->url());
+                return;
+            }
+
+            QList<QWebEngineFrame *> children = frame->childFrames();
+
+            foreach(QWebEngineFrame *frame, children)
+                frames.append(frame);
+        }
+
+        if(m_loadingUrl == reply->url()) {
+            mainFrame()->setHtml(html, reply->url());
+        }
+    }
+#endif
+
+    void PopupPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
+    {
+        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;
+
+        QDialog dialog(mainWindow);
+        dialog.setWindowFlags(Qt::Sheet);
+
+        Ui::PasswordDialog passwordDialog;
+        passwordDialog.setupUi(&dialog);
+
+        passwordDialog.iconLabel->setText(QString());
+        passwordDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+
+        QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
+        introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
+        passwordDialog.introLabel->setText(introMessage);
+        passwordDialog.introLabel->setWordWrap(true);
+
+        if(dialog.exec() == QDialog::Accepted) {
+            QByteArray key = QtSingleApplication::authenticationKey(requestUrl, auth->realm());
+            auth->setUser(passwordDialog.userNameLineEdit->text());
+            auth->setPassword(passwordDialog.passwordLineEdit->text());
+            auth->setOption("key", key);
+            QtSingleApplication::instance()->setLastAuthenticator(auth);
+        } else {
+            // Set authenticator null if dialog is cancelled
+            *auth = QAuthenticator();
+        }
+    }
+
+    void PopupPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
+    {
+        Q_UNUSED(requestUrl);
+        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;
+
+        QDialog dialog(mainWindow);
+        dialog.setWindowFlags(Qt::Sheet);
+
+        Ui::ProxyDialog proxyDialog;
+        proxyDialog.setupUi(&dialog);
+
+        proxyDialog.iconLabel->setText(QString());
+        proxyDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+
+        QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
+        introMessage = introMessage.arg(proxyHost.toHtmlEscaped());
+        proxyDialog.introLabel->setText(introMessage);
+        proxyDialog.introLabel->setWordWrap(true);
+
+        if(dialog.exec() == QDialog::Accepted) {
+            QString user = proxyDialog.userNameLineEdit->text();
+            QByteArray key = QtSingleApplication::proxyAuthenticationKey(user, proxyHost, auth->realm());
+            auth->setUser(user);
+            auth->setPassword(proxyDialog.passwordLineEdit->text());
+            auth->setOption("key", key);
+            QtSingleApplication::instance()->setLastProxyAuthenticator(auth);
+        } else {
+            // Set authenticator null if dialog is cancelled
+            *auth = QAuthenticator();
+        }
+    }
+
+#endif // USE_POPUP_WINDOW
 
     WebPage::WebPage(QWebEngineProfile *profile
                      , std::shared_ptr<Record> record
                      // , bool openinnewtab
-                     , TableController *record_controller
+                     , RecordController *_record_controller
                      , WebView *parent
                     )
         : QWebEnginePage(profile, parent)
@@ -142,7 +365,7 @@ namespace browser {
     //              openinnewtab  //false
     //          )
     //, _create_window_generated(false)
-    , _record_controller(record_controller)
+    , _record_controller(_record_controller)
     //    , _page_controller(_page_controller)
     {
         //        assert(url != nullptr);
@@ -152,6 +375,12 @@ namespace browser {
 
         //            bind_record(record);
         //        }
+
+        settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
         setNetworkAccessManager(QtSingleApplication::networkAccessManager());
@@ -173,41 +402,45 @@ namespace browser {
         //            load(url);
         //        }
 
-        // add_record_to_page_screen(_record);
+        //        add_record_to_table_data(_record);
 
     }
 
-    //    void WebPage::add_record_to_page_screen(std::shared_ptr<Record> record)
-    //    {
-    //        auto table_data = _page_controller->table_data();
+    void WebPage::add_record_to_table_data(std::shared_ptr<Record> record)
+    {
+        auto tab_manager = view()->tabmanager();
+        auto table_data = tab_manager->table_data();
 
-    //        if(!table_data->is_record_exists(record->getNaturalFieldSource("id"))) {
-    //            //        auto records = table_data->records();
-    //            //        records.append(_record);    //
-    //            if(record->isLite())record->switchToFat();
+        if(!table_data->is_record_exists(record->natural_field_source("id"))) {
+            //        auto records = table_data->records();
+            //        records.append(_record);    //
+            if(record->is_lite())record->to_fat();
 
-    //            table_data->insert_new_record(table_data->size(), record);
-    //            _page_controller->reset_tabledata(table_data);
-    //        }
-    //    }
+            table_data->insert_new_record(table_data->size(), record);
+            //            tab_manager->reset_tabledata(table_data);
+        }
+    }
 
-    //    // this will delete record for ever from database
-    //    void WebPage::remove_record_from_page_screen(std::shared_ptr<Record> record)
-    //    {
-    //        std::shared_ptr<TableData> table_data = _page_controller->table_data();
+    // this will delete record for ever from database
+    void WebPage::remove_record_from_table_data(std::shared_ptr<Record> record)
+    {
+        auto tab_manager = view()->tabmanager();
+        assert(tab_manager->tree_item() != globalparameters.table_screen()->table_controller()->table_model()->tree_item());
+        std::shared_ptr<RecordTable> table_data = tab_manager->table_data();
 
-    //        //        for(int i = 0; i < table_data->size(); i++) {
-    //        //            auto r = table_data->record(i);
-    //        assert(record->unique_page() == this);
+        //        for(int i = 0; i < table_data->size(); i++) {
+        //            auto r = table_data->record(i);
+        assert(record->unique_page() == this);
 
-    //        if(table_data->is_record_exists(record->getNaturalFieldSource("id"))
-    //           //                && record->unique_page() == this
-    //          ) {
-    //            table_data->delete_record_by_id(record->getNaturalFieldSource("id"));    // this will delete record for ever from database
-    //        }
+        if(table_data->is_record_exists(record->natural_field_source("id"))
+           //                && record->unique_page() == this
+          ) {
+            table_data->delete_record_by_id(record->natural_field_source("id"));    // this will delete record for ever from database
+            //            tab_manager->reset_tabledata(table_data);  // _page_controller->removerow_by_id(record->getNaturalFieldSource("id"));
+        }
 
-    //        //        }
-    //    }
+        //        }
+    }
 
     Browser *WebPage::browser()
     {
@@ -283,10 +516,9 @@ namespace browser {
 
     WebView *WebPage::active()
     {
-        QUrl _url = QUrl(_record->getNaturalFieldSource("url"));
+        QUrl _url = QUrl(_record->natural_field_source("url"));
 
         if(_pageview
-
            //            _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
            && url() != _url   // url() may be nothing
           ) {
@@ -321,7 +553,7 @@ namespace browser {
             _pageview->show();
             //        if(checked) // globalparameters.mainwindow()
             _pageview->setFocus();   // make upate validate
-            _record_controller->select_id(_record->getNaturalFieldSource("id"));
+            _record_controller->select_id(_record->natural_field_source("id"));
         }
 
         return _pageview;
@@ -356,35 +588,36 @@ namespace browser {
 
         QMessageBox::critical(view(), tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
         return false;
+
     }
 
     //    class PopupWindow : public QWidget {
     //        Q_OBJECT
     //    public:
     //        PopupWindow(QWebEngineProfile *profile)
-    //            : _addressbar(new QLineEdit(this))
-    //            , _view(new BrowserView(nullptr, profile, globalParameters.getRecordTableScreen()->getRecordTableController(), this))
+    //            : m_addressBar(new QLineEdit(this))
+    //            , m_view(new PopupView(this))
     //        {
-    //            _view->setPage(new BrowserPage(profile, _view));
+    //            m_view->setPage(new PopupPage(profile, m_view));
     //            QVBoxLayout *layout = new QVBoxLayout;
     //            layout->setMargin(0);
     //            setLayout(layout);
-    //            layout->addWidget(_addressbar);
-    //            layout->addWidget(_view);
-    //            _view->setFocus();
+    //            layout->addWidget(m_addressBar);
+    //            layout->addWidget(m_view);
+    //            m_view->setFocus();
 
-    //            connect(_view, &BrowserView::titleChanged, this, &QWidget::setWindowTitle);
-    //            connect(_view, &BrowserView::urlChanged, this, &PopupWindow::setUrl);
-    //            connect(page(), &BrowserPage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
-    //            connect(page(), &BrowserPage::windowCloseRequested, this, &QWidget::close);
+    //            connect(m_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
+    //            connect(m_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
+    //            connect(page(), &PopupView::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
+    //            connect(page(), &PopupView::windowCloseRequested, this, &QWidget::close);
     //        }
 
-    //        QWebEnginePage *page() const { return _view->page(); }
+    //        QWebEnginePage *page() const { return m_view->page(); }
 
     //    private Q_SLOTS:
     //        void setUrl(const QUrl &url)
     //        {
-    //            _addressbar->setText(url.toString());
+    //            m_addressBar->setText(url.toString());
     //        }
 
     //        void adjustGeometry(const QRect &newGeometry)
@@ -394,12 +627,12 @@ namespace browser {
     //            const int x2 = frameGeometry().right() - geometry().right();
     //            const int y2 = frameGeometry().bottom() - geometry().bottom();
 
-    //            setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
+    //            setGeometry(newGeometry.adjusted(x1, y1 - m_addressBar->height(), x2, y2));
     //        }
 
     //    private:
-    //        QLineEdit *_addressbar;
-    //        BrowserView *_view;
+    //        QLineEdit *m_addressBar;
+    //        PopupView *m_view;
 
     //    };
 
@@ -412,85 +645,9 @@ namespace browser {
         //        QWebEnginePage
         WebPage *page = nullptr;
 
-        if(//_openinnewtab ||
-            type == QWebEnginePage::WebBrowserTab) {
 
-            // _openinnewtab = false;  // true
-
-
-            // assert(_record);
-
-            //            QUrl current = url();
-            //            QUrl requestedurl = requestedUrl();
-            //            QString previous_url = _record->getNaturalFieldSource("url");    // the parent page that host the new link
-
-            //            return globalparameters.entrance()->activebrowser()->tabWidget()->newTab()->page();
-
-            //assert(url == DockedWindow::_defaulthome);
-            //Record *new_record = register_record(QUrl(DockedWindow::_defaulthome));    // do not modify current this->_record!
-            //assert(_record->page() == this); //_record->page(this);
-
-            // return nullptr;
-
-            WebView *view = globalparameters.entrance()->find(QUrl(Browser::_defaulthome)).second;
-
-            if(view) {
-                //                return view->page();
-                auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
-
-                auto record = _record_controller->request_record(
-                                  QUrl(Browser::_defaulthome)
-                                  , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                                      ""
-                                      , &WebPage::ActiveRecordBinder::binder
-                                      , ar
-                                  )
-                                  , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                                      ""
-                                      , &WebPage::ActiveRecordBinder::activator
-                                      , ar
-                                  )
-                              );
-                //                record->generate();
-                record->active();
-                page = view->page();
-            } else {
-
-                // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
-                // page->bind_record(new_record);  //Record *record = request_record(page->url());
-                // page->update_record(page->url(), page->title());
-
-                // already create window, why do this? -- refer to demo browser
-                auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
-                std::shared_ptr<Record> r
-                    = _record_controller->request_record(
-                          QUrl(Browser::_defaulthome)
-                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                              ""
-                              , &TabWidget::ActiveRecordBinder::binder
-                              , arint
-                          )
-                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
-                              ""
-                              , &TabWidget::ActiveRecordBinder::activator
-                              , arint
-                          )
-                      );
-                //                return //_record->page();
-                // globalparameters.entrance()->invoke_view(new_record).second->page();
-                //                    this->dockedwindow()->tabWidget()->newTab(blank_record, true)->page();
-
-                //                if(!r->generator())browser()->equip_registered(r);
-                assert(r->binder());
-                //                r->generate();
-                r->active();
-                page = r->unique_page();
-
-            }
-
-
-
-        } else if(type == QWebEnginePage::WebBrowserWindow) {
+        //        else
+        if(type == QWebEnginePage::WebBrowserWindow) {
 
             std::pair<Browser *, WebView *> dp = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));               // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
@@ -498,16 +655,114 @@ namespace browser {
 
             page = dp.second->page();  // mainWindow->currentTab()->page();
 
-        } else {
+        } else
 
-            PopupWindow *popup = new PopupWindow(profile(), QUrl(Browser::_defaulthome), _record_controller
-                                                 // , _page_controller
-                                                 , view()->tabmanager()->browser());
-            popup->setAttribute(Qt::WA_DeleteOnClose);
-            popup->show();
-            //            return
-            page = popup->page();
-        }
+#ifdef USE_POPUP_WINDOW
+            if(//_openinnewtab ||
+                type == QWebEnginePage::WebBrowserTab)
+#endif  // USE_POPUP_WINDOW
+
+            {
+                // always open new window in new tab
+
+                // _openinnewtab = false;  // true
+
+
+                // assert(_record);
+
+                //            QUrl current = url();
+                //            QUrl requestedurl = requestedUrl();
+                //            QString previous_url = _record->getNaturalFieldSource("url");    // the parent page that host the new link
+
+                //            return globalparameters.entrance()->activebrowser()->tabWidget()->newTab()->page();
+
+                //assert(url == DockedWindow::_defaulthome);
+                //Record *new_record = register_record(QUrl(DockedWindow::_defaulthome));    // do not modify current this->_record!
+                //assert(_record->page() == this); //_record->page(this);
+
+                // return nullptr;
+
+                WebView *view = globalparameters.entrance()->find(QUrl(Browser::_defaulthome)).second;
+
+                if(view) {
+                    //                return view->page();
+                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
+
+                    auto record = _record_controller->request_record(
+                                      QUrl(Browser::_defaulthome)
+                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                          ""
+                                          , &WebPage::ActiveRecordBinder::binder
+                                          , ar
+                                      )
+                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                          ""
+                                          , &WebPage::ActiveRecordBinder::activator
+                                          , ar
+                                      )
+                                  );
+                    //                record->generate();
+                    record->active();
+                    page = view->page();
+                } else {
+
+                    // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
+                    // page->bind_record(new_record);  //Record *record = request_record(page->url());
+                    // page->update_record(page->url(), page->title());
+
+                    // already create window, why do this? -- refer to demo browser
+                    auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
+                    std::shared_ptr<Record> r
+                        = _record_controller->request_record(
+                              QUrl(Browser::_defaulthome)
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                  ""
+                                  , &TabWidget::ActiveRecordBinder::binder
+                                  , arint
+                              )
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                  ""
+                                  , &TabWidget::ActiveRecordBinder::activator
+                                  , arint
+                              )
+                          );
+                    //                return //_record->page();
+                    // globalparameters.entrance()->invoke_view(new_record).second->page();
+                    //                    this->dockedwindow()->tabWidget()->newTab(blank_record, true)->page();
+
+                    //                if(!r->generator())browser()->equip_registered(r);
+                    assert(r->binder());
+                    //                r->generate();
+                    r->active();
+                    page = r->unique_page();
+
+                }
+
+
+
+            }
+
+#ifdef USE_POPUP_WINDOW
+            else {
+
+                PopupWindow *popup = new PopupWindow(
+                    //                view()->tabmanager()
+                    //                ,
+                    profile()
+                    //                , QUrl(Browser::_defaulthome)
+                    //                , _record_controller
+                    //                , _page_controller
+                    //                                                 , view()->tabmanager()->browser()
+                );
+
+                popup->setAttribute(Qt::WA_DeleteOnClose);
+                popup->show();
+                //            return
+                //            page =
+                return popup->page();
+            }
+
+#endif // USE_POPUP_WINDOW
 
         assert(page);
 
@@ -522,7 +777,7 @@ namespace browser {
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
             std::shared_ptr<Record> record = page->_record;
-            record->setNaturalFieldSource("url", url.toString());
+            record->natural_field_source("url", url.toString());
             page->load(record); // record->generate();
             page->active();     // record->active();
         });
@@ -625,8 +880,14 @@ namespace browser {
         passwordDialog.introLabel->setWordWrap(true);
 
         if(dialog.exec() == QDialog::Accepted) {
+            QByteArray key = QtSingleApplication::authenticationKey(requestUrl, auth->realm());
             auth->setUser(passwordDialog.userNameLineEdit->text());
             auth->setPassword(passwordDialog.passwordLineEdit->text());
+            auth->setOption("key", key);
+            QtSingleApplication::instance()->setLastAuthenticator(auth);
+        } else {
+            // Set authenticator null if dialog is cancelled
+            *auth = QAuthenticator();
         }
     }
 
@@ -655,8 +916,15 @@ namespace browser {
         proxyDialog.introLabel->setWordWrap(true);
 
         if(dialog.exec() == QDialog::Accepted) {
-            auth->setUser(proxyDialog.userNameLineEdit->text());
+            QString user = proxyDialog.userNameLineEdit->text();
+            QByteArray key = QtSingleApplication::proxyAuthenticationKey(user, proxyHost, auth->realm());
+            auth->setUser(user);
             auth->setPassword(proxyDialog.passwordLineEdit->text());
+            auth->setOption("key", key);
+            QtSingleApplication::instance()->setLastProxyAuthenticator(auth);
+        } else {
+            // Set authenticator null if dialog is cancelled
+            *auth = QAuthenticator();
         }
     }
 
@@ -694,70 +962,212 @@ namespace browser {
         return record;
     }
 
-    WebView::~WebView()
-    {
-        //        if(_page->record()) {
-        //            _page->record()->page(nullptr);
-        //            //            globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
-        //            _page->record(nullptr);
-        //        }
+#ifdef USE_POPUP_WINDOW
 
-        if(_page)_page->deleteLater();
+    PopupView::PopupView(QWidget *parent)
+        : QWebEngineView(parent)
+        , m_progress(0)
+        , m_page(0)
+        , m_iconReply(0)
+    {
+        connect(this, SIGNAL(loadProgress(int)),
+                this, SLOT(setProgress(int)));
+        connect(this, SIGNAL(loadFinished(bool)),
+                this, SLOT(loadFinished(bool)));
+        connect(this, &QWebEngineView::renderProcessTerminated,
+        [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+            const char *status = "";
+
+            switch(termStatus) {
+                case QWebEnginePage::NormalTerminationStatus:
+                    status = "(normal exit)";
+                    break;
+
+                case QWebEnginePage::AbnormalTerminationStatus:
+                    status = "(abnormal exit)";
+                    break;
+
+                case QWebEnginePage::CrashedTerminationStatus:
+                    status = "(crashed)";
+                    break;
+
+                case QWebEnginePage::KilledTerminationStatus:
+                    status = "(killed)";
+                    break;
+            }
+
+            qInfo() << "Render process exited with code" << statusCode << status;
+            QTimer::singleShot(0, [this] { reload(); });
+        });
     }
 
-
-    WebView::WebView(const std::shared_ptr<Record> record
-                     , QWebEngineProfile *profile   // , bool openinnewtab
-                     , TabWidget *parent
-                     , TableController *table_controller
-                     // , TableController *_page_controller
-                    )
-        : QWebEngineView(static_cast<QWidget *>(parent))    // ->parent()
-        , _tabmanager(parent)                               //        , _record(record)
-        , _record_controller(table_controller)
-          // , _page_controller(_page_controller)
-        , _page(new WebPage(profile
-                            , record // , openinnewtab
-                            , table_controller
-                            // , _page_controller
-                            , this))
-          //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
-        , _progress(0)
-        , _iconreply(0)
+    void PopupView::setPage(PopupPage *_page)
     {
-        //        if(record) {record->view(this);}
+        if(m_page)
+            m_page->deleteLater();
 
-        connect(this, &WebView::loadProgress, this, &WebView::setProgress);
-
-        //    connect(this->webPage(), &WebPage::loadFinished, this, &WebView::onLoadFinished);
-        //    connect(this->webPage(), &WebPage::titleChanged, this, &WebView::onTitleChanged);
-        //    connect(this->webPage(), &WebPage::urlChanged, this, &WebView::onUrlChanged);
-        //    //    &WebPage::titleChanged(const QString &title);
-        //    //    &WebPage::urlChanged(const QUrl &url);
-
+        m_page = _page;
         QWebEngineView::setPage(_page);
-
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
-        connect(page(), &WebPage::statusBarMessage, &WebPage::setStatusBarText);
+        connect(page(), SIGNAL(statusBarMessage(QString)),
+                SLOT(setStatusBarText(QString)));
 #endif
-        connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
-        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::iconUrlChanged, this, &WebView::onIconUrlChanged);
-        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
+        connect(page(), SIGNAL(loadingUrl(QUrl)),
+                this, SIGNAL(urlChanged(QUrl)));
+        connect(page(), SIGNAL(iconUrlChanged(QUrl)),
+                this, SLOT(onIconUrlChanged(QUrl)));
+        connect(page(), &PopupPage::featurePermissionRequested, this, &PopupView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         page()->setForwardUnsupportedContent(true);
 #endif
-
-
-        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
-
-        //    &WebPage::titleChanged(const QString &title);
-        //    &WebPage::urlChanged(const QUrl &url);
-        //        _page->load(_record->getField("url"));    // auto  loaded
-
-        setFocus();
     }
 
-    std::map<QString, std::shared_ptr<Record> > WebPage::binded_records()const
+    void PopupView::contextMenuEvent(QContextMenuEvent *event)
+    {
+        QMenu *menu = page()->createStandardContextMenu();
+        const QList<QAction *> actions = menu->actions();
+        QList<QAction *>::const_iterator it = qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
+
+        if(it != actions.cend()) {
+            (*it)->setText(tr("Open Link in This Window"));
+            ++it;
+            menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewWindow));
+            menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewTab));
+        }
+
+        menu->popup(event->globalPos());
+    }
+
+    void PopupView::wheelEvent(QWheelEvent *event)
+    {
+#if defined(QWEBENGINEPAGE_SETTEXTSIZEMULTIPLIER)
+
+        if(QApplication::keyboardModifiers() & Qt::ControlModifier) {
+            int numDegrees = event->delta() / 8;
+            int numSteps = numDegrees / 15;
+            setTextSizeMultiplier(textSizeMultiplier() + numSteps * 0.1);
+            event->accept();
+            return;
+        }
+
+#endif
+        QWebEngineView::wheelEvent(event);
+    }
+
+    void PopupView::openLinkInNewTab()
+    {
+        pageAction(QWebEnginePage::OpenLinkInNewTab)->trigger();
+    }
+
+    void PopupView::onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature)
+    {
+        FeaturePermissionBar *permissionBar = new FeaturePermissionBar(this);
+        connect(permissionBar, &FeaturePermissionBar::featurePermissionProvided, page(), &QWebEnginePage::setFeaturePermission);
+
+        // Discard the bar on new loads (if we navigate away or reload).
+        connect(page(), &QWebEnginePage::loadStarted, permissionBar, &QObject::deleteLater);
+
+        permissionBar->requestPermission(securityOrigin, feature);
+    }
+
+    void PopupView::setProgress(int progress)
+    {
+        m_progress = progress;
+    }
+
+    void PopupView::loadFinished(bool success)
+    {
+        if(success && 100 != m_progress) {
+            qWarning() << "Received finished signal while progress is still:" << progress()
+                       << "Url:" << url();
+        }
+
+        m_progress = 0;
+    }
+
+    void PopupView::loadUrl(const QUrl &url)
+    {
+        m_initialUrl = url;
+        load(url);
+    }
+
+    QString PopupView::lastStatusBarText() const
+    {
+        return m_statusBarText;
+    }
+
+    QUrl PopupView::url() const
+    {
+        QUrl url = QWebEngineView::url();
+
+        if(!url.isEmpty())
+            return url;
+
+        return m_initialUrl;
+    }
+
+    QIcon PopupView::icon() const
+    {
+        if(!m_icon.isNull())
+            return m_icon;
+
+        return QtSingleApplication::instance()->defaultIcon();
+    }
+
+    void PopupView::onIconUrlChanged(const QUrl &url)
+    {
+        QNetworkRequest iconRequest(url);
+        m_iconReply = QtSingleApplication::networkAccessManager()->get(iconRequest);
+        m_iconReply->setParent(this);
+        connect(m_iconReply, SIGNAL(finished()), this, SLOT(iconLoaded()));
+    }
+
+    void PopupView::iconLoaded()
+    {
+        m_icon = QIcon();
+
+        if(m_iconReply) {
+            QByteArray data = m_iconReply->readAll();
+            QPixmap pixmap;
+            pixmap.loadFromData(data);
+            m_icon.addPixmap(pixmap);
+            m_iconReply->deleteLater();
+            m_iconReply = 0;
+        }
+
+        emit iconChanged();
+    }
+
+    void PopupView::mousePressEvent(QMouseEvent *event)
+    {
+        m_page->m_pressedButtons = event->buttons();
+        m_page->m_keyboardModifiers = event->modifiers();
+        QWebEngineView::mousePressEvent(event);
+    }
+
+    void PopupView::mouseReleaseEvent(QMouseEvent *event)
+    {
+        QWebEngineView::mouseReleaseEvent(event);
+
+        if(!event->isAccepted() && (m_page->m_pressedButtons & Qt::MidButton)) {
+            QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
+
+            if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
+                setUrl(url);
+            }
+        }
+    }
+
+    void PopupView::setStatusBarText(const QString &string)
+    {
+        m_statusBarText = string;
+    }
+
+#endif // USE_POPUP_WINDOW
+
+
+
+    std::map<QString, std::weak_ptr<Record> > WebPage::binded_records()const
     {
         //        Record *record = _record;   // maybe invalid
 
@@ -775,22 +1185,25 @@ namespace browser {
         return _records;
     }
 
-
-    void WebPage::break_records_which_page_point_to_me()
+    // which_page_point_to_me
+    void WebPage::break_records()
     {
-        for(auto &i : _records) {
-            break_record_which_page_point_to_me(i.second);
+        for(auto &j : _records) {
+            if(auto i = j.second.lock()) {
+                break_record(i);
+            }
         }
     }
 
-    void WebPage::break_record_which_page_point_to_me(std::shared_ptr<Record> record)
+    // which_page_point_to_me
+    void WebPage::break_record(std::shared_ptr<Record> record)
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
         if(record) {
 
             if(record->unique_page()) {
                 if(record->unique_page() == this) {
-                    // remove_record_from_page_screen(_record);    // this will delete record for ever from database
+                    remove_record_from_table_data(_record);    // this will delete record for ever from database
                     record->binder().reset();
                     record->activator().reset();
                     record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
@@ -801,15 +1214,15 @@ namespace browser {
             }
 
             if(_records.size() > 0
-               && _records.find(record->getNaturalFieldSource("id")) != _records.end()
-              ) _records.erase(record->getNaturalFieldSource("id"));
+               && _records.find(record->natural_field_source("id")) != _records.end()
+              ) _records.erase(record->natural_field_source("id"));
 
         }
 
         //        _record.reset();  // do not reset, you may need it later
     }
 
-    WebView *WebPage::bind(std::shared_ptr<Record> record)
+    WebView *WebPage::bind(std::weak_ptr<Record> r)
     {
         //        Record *new_record = nullptr;
         //        RecordTableData *data = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
@@ -841,76 +1254,102 @@ namespace browser {
         //            this->_openinnewtab = false;
         //        }
 
-        if(_record && _record != record) {
-            //            if(_record) {
-            //                if(_record->binded_page() != nullptr && _record->binded_page() == this) {
-            //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
+        //        std::shared_ptr<Record> record;
+        TabWidget *tabmanager = view()->tabmanager();
+        assert(tabmanager);
 
-            //                    // _record->linkpage(nullptr);
-            //                    _record->breakpage();
+        if(std::shared_ptr<Record> record = r.lock()) {
 
-            //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-            //                }
-            //            }
+            if(_record && _record != record) {
+                //                tabmanager->table_data()->delete_record_by_id(_record->natural_field_source("id"));
+                //                tabmanager->table_data()->shadow_record(tabmanager->table_data()->size(), record);
+                remove_record_from_table_data(_record);    // makes ure this will not delete record for ever from database
+                //            if(_record) {
+                //                if(_record->binded_page() != nullptr && _record->binded_page() == this) {
+                //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
 
-            //            if(_record && _record->unique_page() != nullptr)
+                //                    // _record->linkpage(nullptr);
+                //                    _record->breakpage();
 
-            // this->break_record_which_page_point_to_me(_record);
+                //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                //                }
+                //            }
 
-            if(_records.size() > 0
-               && _records.find(_record->getNaturalFieldSource("id")) != _records.end()
-              ) _records.erase(_record->getNaturalFieldSource("id"));
+                //            if(_record && _record->unique_page() != nullptr)
 
-            //            if(record) {
-            //                if((!record->binded_page()) || (record->binded_page() != this)) {
-            //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
+                // this->break_record_which_page_point_to_me(_record);
 
-            //                    // _record->linkpage(nullptr);
-            //                    _record = record->bind_page(this);  // record->breakpage();
-            //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-            //                }
-            //            }
+                if(_records.size() > 0
+                   && _records.find(_record->natural_field_source("id")) != _records.end()
+                  ) _records.erase(_record->natural_field_source("id"));
+
+                //            if(record) {
+                //                if((!record->binded_page()) || (record->binded_page() != this)) {
+                //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
+
+                //                    // _record->linkpage(nullptr);
+                //                    _record = record->bind_page(this);  // record->breakpage();
+                //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                //                }
+                //            }
+
+                //        else {
+                //            _record->breakpage();
+                //        }
+
+                //        _record = record;   // ->bind_page(this);   // just for close tab(==view)
+
+                // _record->linkpage(this);
+
+                // connect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+
+                //        WebView   *view = record->page()->view();
+                //        view->tabmanager()->setCurrentWidget(view);
+                //        view->show();
+                //        // _page->record(new_record);
+                //        update_record();
+
+                _record = record;
+
+
+            }
 
             //        else {
-            //            _record->breakpage();
+            //            if(_record)_record->bind_page(this);
             //        }
 
-            //        _record = record;   // ->bind_page(this);   // just for close tab(==view)
+            if(_record) {
+                if((!_record->unique_page()) || (_record->unique_page() != this)) {
+                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
 
-            // _record->linkpage(this);
+                    // _record->linkpage(nullptr);
+                    _record->bind(this);  // record->breakpage();
 
-            // connect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                    // if(_records.find(_record) == _records.end())
+                    if(_records.find(record->natural_field_source("id")) == _records.end())
+                        _records[_record->natural_field_source("id")] = _record;
 
-            //        WebView   *view = record->page()->view();
-            //        view->tabmanager()->setCurrentWidget(view);
-            //        view->show();
-            //        // _page->record(new_record);
-            //        update_record();
+                    //                MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
+                    //                assert(metaeditor);
+                    //                metaeditor->bind(_record);
+                }
+            }
 
-            _record = record;
+            MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
+            assert(metaeditor);
 
-            // add_record_to_page_screen(_record);    // may lead to recursive call
-        }
+            add_record_to_table_data(_record);    // may lead to recursive call?
+            TabWidget *tab_manager = view()->tabmanager();
 
-        //        else {
-        //            if(_record)_record->bind_page(this);
-        //        }
+            //            std::shared_ptr<TableData> table_data = tab_manager->tree_item()->tabledata();
 
-        if(_record) {
-            if((!_record->unique_page()) || (_record->unique_page() != this)) {
-                // assert(_record->linkpage() == this);    // should always be true -> if not move note
+            //            if(!table_data->is_record_exists(_record->getNaturalFieldSource("id"))) {
+            //                table_data->insert_new_record(table_data->work_pos(), _record);
+            //            }
 
-                // _record->linkpage(nullptr);
-                _record->bind(this);  // record->breakpage();
-
-                // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-                // if(_records.find(_record) == _records.end())
-                if(_records.find(record->getNaturalFieldSource("id")) == _records.end())
-                    _records[_record->getNaturalFieldSource("id")] = _record;
-
-                //                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
-                //                assert(metaeditor);
-                //                metaeditor->bind(_record);
+            if(view() == tab_manager->currentWebView()) {
+                if(metaeditor->record() != _record)sychronize_metaeditor_to_record(_record);  // metaeditor->bind(_record);
             }
         }
 
@@ -936,7 +1375,7 @@ namespace browser {
                && !url().scheme().isEmpty()
                && url() != QUrl(Browser::_defaulthome)
                && url() == _loadingurl
-               && url().toString() == _record->getNaturalFieldSource("url")
+               && url().toString() == _record->natural_field_source("url")
               ) {
 
                 //                if(//_state_check[_record->getNaturalFieldSource("pin")] == Qt::Unchecked &&
@@ -948,17 +1387,24 @@ namespace browser {
 
                 //                update_record(url(), title, true);
 
-                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
+                MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
                 assert(metaeditor);
 
                 if(title != ""
-                   && title != _record->getNaturalFieldSource("name")
+                   && title != _record->natural_field_source("name")
                    //                   && !QUrl(title).isValid()
                   ) {
 
-                    _record->setNaturalFieldSource("name", title);
-                    metaeditor->setName(title);
+                    _record->natural_field_source("name", title);
+
                     TabWidget *tab_manager = view()->tabmanager();
+
+                    if(view() == tab_manager->currentWebView()) {
+                        if(metaeditor->record() != _record)sychronize_metaeditor_to_record(_record);  // metaeditor->bind(_record);
+
+                        metaeditor->setName(title);
+                    }
+
                     int index = tab_manager->webViewIndex(view());
                     tab_manager->setTabToolTip(index, title);
                 }
@@ -969,60 +1415,7 @@ namespace browser {
     }
 
 
-    void WebView::onLoadFinished(bool success)
-    {
-        if(success && 100 != _progress) {
-            qWarning() << "Received finished signal while progress is still:" << progress()
-                       << "Url:" << _page->url();
-        }
 
-        if(success) {
-            //            assert(_page->url() != QUrl());
-
-            //            if(_page->record()->getNaturalFieldSource("url") != DockedWindow::_defaulthome)
-
-            //            if(_page->record()) {
-
-            //                Record *r = nullptr;
-
-            //                while((r = register_record(QUrl(DockedWindow::_defaulthome)))) {
-            //                    //                //r->page(_page);
-            //                    //                //_page->record(r);
-            //                    globalparameters.getRecordTableScreen()->getRecordTableController()->removeRowById(r->getNaturalFieldSource("id"));
-            //                    update_recordtableview(_page->url(), _page->title());
-            //                }
-
-            //                //_page->setUrl(_page->url());
-            //            }
-
-
-
-
-
-            //            if(! _page->record()) {
-            //                Record *record = nullptr;
-            //                //            RecordTableData *data = _record_ontroller->getRecordTableModel()->getRecordTableData();
-            //                //            record = data->record(_page->url());
-
-            //                //            if(!record)::register_record(_page->url());
-            //                record = request_record(_page->url());
-
-            //                if(record)_page->bind_record(record);
-            //            } else {
-
-            //                //            if(_page->record()) {
-            //                //                _page->update_record(_page->url(), _page->title());
-            //                //            }
-            _page->update_record(_page->url(), _page->title(), false);
-            //            }
-
-
-
-
-        }
-
-        _progress = 0;
-    }
 
     // This signal is emitted with the URL of the main frame when the main frame's title is received. The new URL is specified by url.
     void WebPage::onUrlChanged(const QUrl &url)
@@ -1040,7 +1433,7 @@ namespace browser {
                && !url.scheme().isEmpty()
                && url != QUrl(Browser::_defaulthome)
                && url != _loadingurl
-               && url.toString() != _record->getNaturalFieldSource("url")
+               && url.toString() != _record->natural_field_source("url")
               ) {
 
                 //            if(!_record) {
@@ -1105,12 +1498,18 @@ namespace browser {
 
                 //                //if(this->record())
                 // setUrl(url); // recursive
-                MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
+                MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
                 assert(metaeditor);
 
                 if(url.toString() != "") {
-                    _record->setNaturalFieldSource("url", url.toString());
-                    metaeditor->setUrl(url.toString());
+                    _record->natural_field_source("url", url.toString());
+                    TabWidget *tab_manager = view()->tabmanager();
+
+                    if(view() == tab_manager->currentWebView()) {
+                        if(metaeditor->record() != _record)sychronize_metaeditor_to_record(_record);  // metaeditor->bind(_record);
+
+                        metaeditor->setUrl(url.toString());
+                    }
                 }
 
                 //                    update_record(url, title(), true);
@@ -1137,9 +1536,10 @@ namespace browser {
 
     void WebPage::update_record(const QUrl &url
                                 , const QString &title
-                                , bool make_current)         //int pos = recordTableController->getFirstSelectionPos();
+                                // , bool make_current
+                               )         //int pos = recordTableController->getFirstSelectionPos();
     {
-        Q_UNUSED(make_current)
+        //        Q_UNUSED(make_current)
 
         //        //if(globalparameters.getRecordTableScreen()->getRecordTableController()) {
 
@@ -1173,29 +1573,36 @@ namespace browser {
 
 
             // Выясняется указатель на объект редактирования текста записи
-            MetaEditor *metaeditor = find_object<MetaEditor>("editor_screen");
+            MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
 
             // Выясняется ссылка на таблицу конечных данных
             //                RecordTableData *table = recordSourceModel->getTableData();
 
+            TabWidget *tab_manager = view()->tabmanager();
+
+            bool is_current = (view() == tab_manager->currentWebView()) ;
+
             if(title != ""
-               && title != _record->getNaturalFieldSource("name")
+               && title != _record->natural_field_source("name")
                //                   && !QUrl(title).isValid()
               ) {
 
-                _record->setNaturalFieldSource("name", title);
+                _record->natural_field_source("name", title);
                 //metaeditor->setName(title);
 
 
                 //                table->setWorkPos(pos);
-                metaeditor->setName(title);
+                if(is_current)metaeditor->setName(title);
             }
 
             if(url.toString() != "") {
-                _record->setNaturalFieldSource("url", url.toString());
-                metaeditor->setUrl(url.toString());
+                _record->natural_field_source("url", url.toString());
+
+                if(is_current)metaeditor->setUrl(url.toString());
 
             }
+
+            if(metaeditor->record() != _record && is_current)sychronize_metaeditor_to_record(_record);  // metaeditor->bind(_record);
 
             //metaeditor->setUrl(url.toString());
 
@@ -1217,10 +1624,15 @@ namespace browser {
 
             this->view()->setFocus();   // make upate validate
 
-            if(make_current) {// globalparameters.mainwindow()
-                _record_controller->select_id(_record->getNaturalFieldSource("id"));
+            if(is_current) {// globalparameters.mainwindow()
+                _record_controller->select_id(_record->natural_field_source("id"));
                 // _page_controller->select_id(_record->getNaturalFieldSource("id"));
             }
+
+
+
+
+
 
             //            if(_record->_active_request) {
             //                if(_record->_openlinkinnewwindow == 1) {
@@ -1281,6 +1693,381 @@ namespace browser {
 
 
 
+
+    void WebPage::sychronize_metaeditor_to_record(std::shared_ptr<Record> record)
+    {
+        //        std::shared_ptr<Record> record = this->table_model()->table_data()->record(pos);
+        assert(record);
+        assert(record == view()->tabmanager()->currentWebView()->page()->current_record()); // may be in backend
+
+        // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
+
+        // Выясняется указатель на объект редактирования текста записи
+        MetaEditor *meta_editor = find_object<MetaEditor>(meta_editor_singleton_name);
+        assert(meta_editor);
+        meta_editor->bind(record);
+
+        //        int pos = indexOf(currentWebView());
+        // Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
+        //        std::shared_ptr<TableData> table = std::make_shared<TableData>();   // _source_model->table_data_internal();
+
+        //        for(int i = 0; i < count(); i++) {
+        //            table->insert_new_record(table->work_pos(), static_cast<WebView *>(widget(i))->page()->current_record());
+        //        }
+
+        // В таблице конечных данных запоминается какая запись была выбрана
+        // чтобы затем при выборе этой же подветки засветка автоматически
+        // установилась на последнюю рабочую запись
+        //        table->work_pos(pos);
+
+
+        // Устанавливается функция обратного вызова для записи данных
+        meta_editor->set_save_callback( // table
+            meta_editor->editor_save_callback);
+
+        // Сохраняется текст и картинки в окне редактирования
+        find_object<MainWindow>("mainwindow")->saveTextarea();
+
+
+        // Для новой выбраной записи выясняется директория и основной файл
+        QString currentDir = record->field("dir");  // table->field(pos, "dir");
+        QString currentFile = record->field("file");  // table->field(pos, "file");
+        QString fullDir = appconfig.get_tetradir() + "/base/" + currentDir;
+        QString fullFileName = fullDir + "/" + currentFile;
+        qDebug() << " File " << fullFileName << "\n";
+
+        // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
+        if(meta_editor->work_directory() == fullDir
+           && meta_editor->get_file_name() == currentFile
+          ) {
+            globalparameters.window_switcher()->switchFromRecordtableToRecord();
+            return;
+        }
+
+        // Перед открытием редактора происходит попытка получения текста записи
+        // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
+        // Before the opening of the editor it attempts to get the text records
+        // This call will create a text file with the record if it is not already created (think remake)
+        meta_editor->save_textarea();   // table->text(pos);    // ?
+
+        // Редактору задаются имя файла и директории
+        // И дается команда загрузки файла
+        meta_editor->work_directory(fullDir);
+        meta_editor->set_file_name(currentFile);
+
+        // Если идет работа с зашифрованной записью
+        // И если имя директории или имя файла пусты, то это означает что
+        // запись не была расшифрована, и редактор должен просто показывать пустой текст
+        // ничего не сохранять и не считывать
+        qDebug() << "RecordTableView::onClickToRecord() : id " << record->field("id");       // table->field(pos, "id");
+        qDebug() << "RecordTableView::onClickToRecord() : name " << record->field("name");   // table->field(pos, "name");
+        qDebug() << "RecordTableView::onClickToRecord() : crypt " << record->field("crypt"); // table->field(pos, "crypt");
+
+        if(record->field("crypt")    // table->field(pos, "crypt")
+           == "1")
+            if(fullDir.length() == 0 || currentFile.length() == 0)
+                meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+
+        // В редактор заносится информация, идет ли работа с зашифрованным текстом
+        meta_editor->misc_field("crypt"
+                                , record->field("crypt") // table->field(pos, "crypt")
+                               );
+
+        // В редакторе устанавливается функция обратного вызова для чтения данных
+        meta_editor->set_load_callback( // table
+            meta_editor->editor_load_callback);
+
+        meta_editor->load_textarea();
+        // edView->set_textarea(table->get_text(index.row()));
+
+        // Заполняются прочие инфо-поля
+        meta_editor->setPin(
+            record->field("pin")   // table->field(pos, "pin")
+        );
+        meta_editor->setName(
+            record->field("name")   // table->field(pos, "name")
+        );
+        meta_editor->setAuthor(
+            record->field("author")   // table->field(pos, "author")
+        );
+        meta_editor->setHome(
+            record->field("home")   // table->field(pos, "home")
+        );
+        meta_editor->setUrl(
+            record->field("url")   // table->field(pos, "url")
+        );
+        meta_editor->setTags(
+            record->field("tags")   // table->field(pos, "tags")
+        );
+
+        QString id = record->field("id"); // table->field(pos, "id");
+        meta_editor->misc_field("id", id);
+
+        meta_editor->misc_field("title"
+                                , record->field("name") // table->field(pos, "name")
+                               );
+
+        // should each record carry it's tree path?
+        //        // Set the path to the branch in which lies the record (in the form of the names of the branches)   // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
+        //        QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
+
+        //        // В мобильном интерфейсе редактор должен показывать путь до записи
+        //        if(appconfig.getInterfaceMode() == "mobile")
+        //            meta_editor->setTreePath(path);
+
+        // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
+        if(appconfig.getRememberCursorAtOrdinarySelection()) {
+            meta_editor->cursor_position(walkhistory.getCursorPosition(id));
+            meta_editor->scrollbar_position(walkhistory.getScrollBarPosition(id));
+        }
+
+        // Обновление иконки аттачей
+        if(record->attach_table()->size()  // table->record(pos)->getAttachTablePointer()->size()
+           == 0)
+            meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_not_exists);   // Если нет приаттаченных файлов
+        else
+            meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_exists);   // Есть приаттаченные файлы
+    }
+
+
+    void WebView::onLoadFinished(bool success)
+    {
+        if(success && 100 != _progress) {
+            qWarning() << "Received finished signal while progress is still:" << progress()
+                       << "Url:" << _page->url();
+        }
+
+        if(success) {
+            //            assert(_page->url() != QUrl());
+
+            //            if(_page->record()->getNaturalFieldSource("url") != DockedWindow::_defaulthome)
+
+            //            if(_page->record()) {
+
+            //                Record *r = nullptr;
+
+            //                while((r = register_record(QUrl(DockedWindow::_defaulthome)))) {
+            //                    //                //r->page(_page);
+            //                    //                //_page->record(r);
+            //                    globalparameters.getRecordTableScreen()->getRecordTableController()->removeRowById(r->getNaturalFieldSource("id"));
+            //                    update_recordtableview(_page->url(), _page->title());
+            //                }
+
+            //                //_page->setUrl(_page->url());
+            //            }
+
+
+
+
+
+            //            if(! _page->record()) {
+            //                Record *record = nullptr;
+            //                //            RecordTableData *data = _record_ontroller->getRecordTableModel()->getRecordTableData();
+            //                //            record = data->record(_page->url());
+
+            //                //            if(!record)::register_record(_page->url());
+            //                record = request_record(_page->url());
+
+            //                if(record)_page->bind_record(record);
+            //            } else {
+
+            //                //            if(_page->record()) {
+            //                //                _page->update_record(_page->url(), _page->title());
+            //                //            }
+            _page->update_record(_page->url(), _page->title());
+            //            }
+
+
+
+
+        }
+
+        _progress = 0;
+    }
+
+
+    WebView::~WebView()
+    {
+        //        if(_page->record()) {
+        //            _page->record()->page(nullptr);
+        //            //            globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
+        //            _page->record(nullptr);
+        //        }
+
+        if(_page)_page->deleteLater();
+    }
+
+
+    WebView::WebView(const std::shared_ptr<Record> record
+                     , QWebEngineProfile *profile   // , bool openinnewtab
+                     , TabWidget *tabmanager
+                     , QWidget *parent
+                     , RecordController *table_controller
+                    )
+        : QWebEngineView(static_cast<QWidget *>(parent))   // ->parent()
+        , _tabmanager(tabmanager)                               //        , _record(record)
+        , _record_controller(table_controller)
+          //        , _page_controller(_page_controller)
+        , _page(new WebPage(profile
+                            , record // , openinnewtab
+                            , table_controller
+                            //                            , _page_controller
+                            , this))
+          //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
+        , _progress(0)
+        , _iconreply(0)
+    {
+        //        Q_UNUSED(parent)
+        settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+
+        //        if(record) {record->view(this);}
+
+        connect(this, &WebView::loadProgress, this, &WebView::setProgress);
+
+
+        connect(this, SIGNAL(loadFinished(bool)), this, SLOT(onLoadFinished(bool)));
+        connect(this, &QWebEngineView::renderProcessTerminated
+        , [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+            const char *status = "";
+
+            switch(termStatus) {
+                case QWebEnginePage::NormalTerminationStatus:
+                    status = "(normal exit)";
+                    break;
+
+                case QWebEnginePage::AbnormalTerminationStatus:
+                    status = "(abnormal exit)";
+                    break;
+
+                case QWebEnginePage::CrashedTerminationStatus:
+                    status = "(crashed)";
+                    break;
+
+                case QWebEnginePage::KilledTerminationStatus:
+                    status = "(killed)";
+                    break;
+            }            qInfo() << "Render process exited with code" << statusCode << status;
+
+            QTimer::singleShot(0, [this] { reload(); });
+        });
+
+        //    connect(this->webPage(), &WebPage::loadFinished, this, &WebView::onLoadFinished);
+        //    connect(this->webPage(), &WebPage::titleChanged, this, &WebView::onTitleChanged);
+        //    connect(this->webPage(), &WebPage::urlChanged, this, &WebView::onUrlChanged);
+        //    //    &WebPage::titleChanged(const QString &title);
+        //    //    &WebPage::urlChanged(const QUrl &url);
+
+        QWebEngineView::setPage(_page);
+
+#if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
+        connect(page(), &WebPage::statusBarMessage, &WebPage::setStatusBarText);
+#endif
+        connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::iconUrlChanged, this, &WebView::onIconUrlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
+        page()->setForwardUnsupportedContent(true);
+#endif
+
+
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
+
+        //    &WebPage::titleChanged(const QString &title);
+        //    &WebPage::urlChanged(const QUrl &url);
+        //        _page->load(_record->getField("url"));    // auto  loaded
+
+        setFocus();
+
+    }
+
+    WebView::WebView(const std::shared_ptr<Record> record
+                     , QWebEngineProfile *profile   // , bool openinnewtab
+                     , TabWidget *parent
+                     , RecordController *table_controller
+                    )
+        : QWebEngineView(static_cast<QWidget *>(parent))    // ->parent()
+        , _tabmanager(parent)                               //        , _record(record)
+        , _record_controller(table_controller)
+          //        , _page_controller(_page_controller)
+        , _page(new WebPage(profile
+                            , record // , openinnewtab
+                            , table_controller
+                            //                            , _page_controller
+                            , this))
+          //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
+        , _progress(0)
+        , _iconreply(0)
+    {
+
+        settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
+        settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
+        settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
+
+        //        if(record) {record->view(this);}
+
+        connect(this, &WebView::loadProgress, this, &WebView::setProgress);
+
+        connect(this, SIGNAL(loadFinished(bool)), this, SLOT(onLoadFinished(bool)));
+        connect(this, &QWebEngineView::renderProcessTerminated
+        , [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+            const char *status = "";
+
+            switch(termStatus) {
+                case QWebEnginePage::NormalTerminationStatus:
+                    status = "(normal exit)";
+                    break;
+
+                case QWebEnginePage::AbnormalTerminationStatus:
+                    status = "(abnormal exit)";
+                    break;
+
+                case QWebEnginePage::CrashedTerminationStatus:
+                    status = "(crashed)";
+                    break;
+
+                case QWebEnginePage::KilledTerminationStatus:
+                    status = "(killed)";
+                    break;
+            }            qInfo() << "Render process exited with code" << statusCode << status;
+
+            QTimer::singleShot(0, [this] { reload(); });
+        });
+
+        //    connect(this->webPage(), &WebPage::loadFinished, this, &WebView::onLoadFinished);
+        //    connect(this->webPage(), &WebPage::titleChanged, this, &WebView::onTitleChanged);
+        //    connect(this->webPage(), &WebPage::urlChanged, this, &WebView::onUrlChanged);
+        //    //    &WebPage::titleChanged(const QString &title);
+        //    //    &WebPage::urlChanged(const QUrl &url);
+
+        QWebEngineView::setPage(_page);
+
+#if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
+        connect(page(), &WebPage::statusBarMessage, &WebPage::setStatusBarText);
+#endif
+        connect(page(), &WebPage::loadingUrl, this, &WebView::urlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::iconUrlChanged, this, &WebView::onIconUrlChanged);
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::featurePermissionRequested, this, &WebView::onFeaturePermissionRequested);
+#if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
+        page()->setForwardUnsupportedContent(true);
+#endif
+
+
+        connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
+
+        //    &WebPage::titleChanged(const QString &title);
+        //    &WebPage::urlChanged(const QUrl &url);
+        //        _page->load(_record->getField("url"));    // auto  loaded
+
+        setFocus();
+    }
+
+
     void WebView::page(WebPage *_page)
     {
         if(_page)
@@ -1331,7 +2118,21 @@ namespace browser {
         }
 
 #endif
-        QWebEngineView::contextMenuEvent(event);
+
+        QMenu *menu = page()->createStandardContextMenu();
+        const QList<QAction *> actions = menu->actions();
+        QList<QAction *>::const_iterator it = qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
+
+        if(it != actions.cend()) {
+            (*it)->setText(tr("Open Link in This Window"));
+            ++it;
+            menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewWindow));
+            menu->insertAction(*it, page()->action(QWebEnginePage::OpenLinkInNewTab));
+        }
+
+        menu->popup(event->globalPos());
+
+        //        QWebEngineView::contextMenuEvent(event);
     }
 
 
@@ -1384,7 +2185,7 @@ namespace browser {
         //        //        _record_ontroller->getView()->setSelectionToPos(position);
         setFocus();
         //        globalparameters.mainwindow()
-        _record_controller->select_id(_page->current_record()->getNaturalFieldSource("id"));
+        _record_controller->select_id(_page->current_record()->natural_field_source("id"));
 
         //}
 

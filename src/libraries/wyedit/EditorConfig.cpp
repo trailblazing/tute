@@ -16,11 +16,11 @@ EditorConfig::EditorConfig(QString config_file_name, QWidget *parent) : QWidget(
 
     // Проверяется, есть ли файл конфигурации
     if(fileinfo.exists() == false)
-        criticalError("Editor config file " + config_file_name + " not found.");
+        critical_error("Editor config file " + config_file_name + " not found.");
 
     // Проверяется, доступен ли файл конфигурации на чтение или запись
     if(fileinfo.isWritable() == false || fileinfo.isReadable() == false)
-        criticalError("Editor config file " + config_file_name + " not writable or readable. Please check file permission.");
+        critical_error("Editor config file " + config_file_name + " not writable or readable. Please check file permission.");
 
     // Полное имя файла конфигурации разбивается на путь и имя файла
     QString file_name = fileinfo.fileName();
@@ -50,7 +50,7 @@ QString EditorConfig::get_parameter(QString name)
     QString t = conf->value(name).toString();
 
     if(t.length() == 0)
-        criticalError("In editor config not found parameter " + name);
+        critical_error("In editor config not found parameter " + name);
 
     return t;
 }
@@ -527,7 +527,7 @@ QString EditorConfig::update_version_allowcollision(int versionFrom,
                                                     QString toValue)
 {
 
-    criticalError("Error while update config version \nFrom: " + (QString::number(versionFrom)) +
+    critical_error("Error while update config version \nFrom: " + (QString::number(versionFrom)) +
                   "\nTo: " + (QString::number(versionTo)) +
                   "\nName: " + name +
                   "\nFrom type: " + fromType +
@@ -713,7 +713,7 @@ void EditorConfig::update_version(int versionFrom,
     if(controlList.size() > 0) {
         // Программа завершается
         qDebug() << "Can not compute parameter " << controlList;
-        criticalError("Error while update config from " + (QString::number(versionFrom)) + " to " + (QString::number(versionTo)));
+        critical_error("Error while update config from " + (QString::number(versionFrom)) + " to " + (QString::number(versionTo)));
     }
 
     // Конфиг обнуляется

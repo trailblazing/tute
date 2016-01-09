@@ -11,13 +11,56 @@ extern GlobalParameters globalparameters;
 
 
 
-TreeItem::TreeItem(const QMap<QString, QString> &data, std::shared_ptr<TreeItem> parent)
-    : std::enable_shared_from_this<TreeItem>()
-    , _parent_item(parent), _fieldtable(data)
+TreeItem::TreeItem(QMap<QString, QString> _field_data
+                   , boost::intrusive_ptr<TreeItem> _parent_item
+                   , std::shared_ptr<RecordTable>  _table_data
+                  )
+    :
+    boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>()  //      std::enable_shared_from_this<TreeItem>()
+    , _parent_item(_parent_item)
+    , _field_data([ & ]()
+{
+    if(_parent_item)
+        _field_data["crypt"] = (_parent_item->_field_data.contains("crypt") && _parent_item->_field_data["crypt"] == "1") ? "1" : "0";
+
+    return _field_data;
+}())
+, _record_data([ & ]()
+{
+    if(_parent_item) {
+        bool need_crypt = (_parent_item->_field_data.contains("crypt") && _parent_item->_field_data["crypt"] == "1") ? true : false;
+
+        if(need_crypt && !_table_data->crypt()) {
+            _table_data->switch_to_encrypt();
+        } else if(!need_crypt && _table_data->crypt()) {
+            _table_data->switch_to_decrypt();
+        }
+    }
+
+    return _table_data;
+}())
+//       std::make_shared<TableData>(
+//           boost::intrusive_ptr<TreeItem>(
+//               this // const_cast<TreeItem *>(this)
+//           )
+//       )
+
 
 {
     //    parentItem = parent;
     //    fieldsTable = data;
+}
+
+void TreeItem::tabledata(QDomElement i_dom_element)
+{
+    _record_data->delete_all_records();
+    _record_data.reset();
+    //    QDomElement *dom_element = &i_dom_element;
+    _record_data = std::make_shared<RecordTable>(
+                       i_dom_element  // boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+                   );
+
+    //    _record_data->import(dom_element);
 }
 
 
@@ -35,7 +78,7 @@ TreeItem::~TreeItem()
 
 // Возвращение ссылки на потомка, который хранится в списке childItems
 // под указанным номером
-std::shared_ptr<TreeItem> TreeItem::child(int number)
+boost::intrusive_ptr<TreeItem> TreeItem::child(int number)
 {
     return _child_items.value(number);
 }
@@ -50,11 +93,16 @@ int TreeItem::child_count() const
 
 // Возвращает номер, под которым данный объект хранится
 // в массиве childItems своего родителя
+
+// Returns the number under which the object is stored
+// Array of the parent child Items
 int TreeItem::child_index() const
 {
     if(_parent_item)
         return _parent_item->_child_items.indexOf(
-                   std::const_pointer_cast<TreeItem>(shared_from_this()) // const_cast<TreeItem *>(this)
+                   // boost::const_pointer_cast<TreeItem>(
+                   const_cast<TreeItem *>(this) // boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+                   // ) // const_cast<TreeItem *>(this)
                );
 
     return 0;
@@ -66,9 +114,9 @@ int TreeItem::child_index() const
 // а физические данные на диске не затрагиваются
 void TreeItem::empty(void)
 {
-    _fieldtable.clear();
+    _field_data.clear();
 
-    _recordtable->empty();
+    _record_data->empty();
 
     //    // Удаляются все подветки
     //    qDeleteAll(_child_items);
@@ -79,7 +127,7 @@ void TreeItem::empty(void)
 
 int TreeItem::fieldCount() const
 {
-    return _fieldtable.count();
+    return _field_data.count();
 }
 
 
@@ -89,12 +137,12 @@ QString TreeItem::field(QString name)
     // Если запрашивается динамическое имя из имени и количества потомков
     if(name == "dynamicname") {
         // Имя ветки
-        QString itemName = _fieldtable["name"];
+        QString itemName = _field_data["name"];
 
         // Если есть шифрование в этой ветке
         // и поле является зашифрованным
-        if(_fieldtable.contains("crypt"))
-            if(_fieldtable["crypt"] == "1") {
+        if(_field_data.contains("crypt"))
+            if(_field_data["crypt"] == "1") {
                 if(globalparameters.crypt_key().length() > 0)
                     itemName = CryptService::decryptString(globalparameters.crypt_key(), itemName);
                 else
@@ -120,13 +168,13 @@ QString TreeItem::field(QString name)
     // Если имя поля допустимо
     if(is_fieldname_available(name)) {
         // Если поле с таким именем существует
-        if(_fieldtable.contains(name)) {
-            QString value = _fieldtable[name];
+        if(_field_data.contains(name)) {
+            QString value = _field_data[name];
 
             // Если есть шифрование
             // и поле является зашифрованным
-            if(_fieldtable.contains("crypt"))
-                if(_fieldtable["crypt"] == "1")
+            if(_field_data.contains("crypt"))
+                if(_field_data["crypt"] == "1")
                     if(fieldname_for_cryptlist().contains(name)) {
                         if(globalparameters.crypt_key().length() > 0 &&
                            value != "")
@@ -139,7 +187,7 @@ QString TreeItem::field(QString name)
         } else
             return QString(""); // Если поле не существует, возвращается пустая строка
     } else {
-        criticalError("In TreeItem::get_field() unavailable name '" + name + "'");
+        critical_error("In TreeItem::get_field() unavailable name '" + name + "'");
         exit(1);
         return "";
     }
@@ -149,11 +197,11 @@ QString TreeItem::field(QString name)
 // Получение всех установленных полей "имя_поля"->"значение"
 QMap<QString, QString> TreeItem::all_fields()
 {
-    qDebug() << "TreeItem::getAllFields() : Fields data " << _fieldtable;
+    qDebug() << "TreeItem::getAllFields() : Fields data " << _field_data;
 
     QMap<QString, QString> result;
 
-    QList<QString> names = _fieldtable.keys();
+    QList<QString> names = _field_data.keys();
 
     foreach(QString name, names) {
         // В результат добаляются только параметры с разрешенным именем
@@ -169,20 +217,20 @@ QMap<QString, QString> TreeItem::all_fields()
 // Напрямую, без преобразований, без расшифровки
 QMap<QString, QString> TreeItem::all_fields_direct()
 {
-    return _fieldtable;
+    return _field_data;
 }
 
 
 // Установка данных
 // Первый параметр - имя поля
 // Второй параметр - устанавливаемое значение
-void TreeItem::set_field(QString name, QString value)
+void TreeItem::field(QString name, QString value)
 {
     if(is_fieldname_available(name)) {
         // Если поле нужно шифровать
         // и поле является зашифрованным
-        if(_fieldtable.contains("crypt"))
-            if(_fieldtable["crypt"] == "1")
+        if(_field_data.contains("crypt"))
+            if(_field_data["crypt"] == "1")
                 if(fieldname_for_cryptlist().contains(name)) {
                     // Если установлен пароль
                     if(globalparameters.crypt_key().length() > 0) {
@@ -190,13 +238,13 @@ void TreeItem::set_field(QString name, QString value)
                         if(value != "")
                             value = CryptService::encryptString(globalparameters.crypt_key(), value);
                     } else // Иначе пароль не установлен
-                        criticalError("TreeItem::setField() : Can not encrypt field \"" + name + "\". Password not setted.");
+                        critical_error("TreeItem::setField() : Can not encrypt field \"" + name + "\". Password not setted.");
                 }
 
         // qDebug() << "Set to item data " << name << value;
-        _fieldtable[name] = value;
+        _field_data[name] = value;
     } else
-        criticalError("TreeItem::setField() : Set unavailable field \"" + name + "\" to item of branch tree");
+        critical_error("TreeItem::setField() : Set unavailable field \"" + name + "\" to item of branch tree");
 }
 
 
@@ -205,9 +253,9 @@ void TreeItem::set_field(QString name, QString value)
 void TreeItem::set_field_direct(QString name, QString value)
 {
     if(is_fieldname_available(name)) {
-        _fieldtable[name] = value;
+        _field_data[name] = value;
     } else
-        criticalError("TreeItem::setFieldDirect() : Set unavailable field \"" + name + "\" to item of branch tree");
+        critical_error("TreeItem::setFieldDirect() : Set unavailable field \"" + name + "\" to item of branch tree");
 }
 
 
@@ -244,7 +292,7 @@ QStringList TreeItem::fieldname_for_cryptlist(void) const
 }
 
 
-std::shared_ptr<TreeItem> TreeItem::parent()
+boost::intrusive_ptr<TreeItem> TreeItem::parent()
 {
     return _parent_item;
 }
@@ -252,10 +300,10 @@ std::shared_ptr<TreeItem> TreeItem::parent()
 
 QString TreeItem::id()
 {
-    if(_fieldtable.contains("id"))
-        return (_fieldtable["id"]);
+    if(_field_data.contains("id"))
+        return (_field_data["id"]);
     else {
-        criticalError("In TreeItem data getting field with unavailable name 'id'");
+        critical_error("In TreeItem data getting field with unavailable name 'id'");
         exit(1);
         return "";
     }
@@ -284,7 +332,13 @@ bool TreeItem::insert_children(int position, int count, int columns)
 
     for(int row = 0; row < count; ++row) {
         QMap<QString, QString> data;
-        auto item = std::make_shared<TreeItem>(data, shared_from_this()); // Создается объект item
+        boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(
+                                                  new TreeItem   //
+                                                  (data
+                                                   , boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+                                                   , std::make_shared<RecordTable>(QDomElement())
+                                                  )
+                                              ); // Создается объект item
         _child_items.insert(position, item); // Вставка item в нужную позицию массива childItems
     }
 
@@ -298,7 +352,12 @@ bool TreeItem::add_children(void)
 {
     QMap<QString, QString> data;
 
-    std::shared_ptr<TreeItem> item = std::make_shared<TreeItem>(data, shared_from_this()); // Создается объект item
+    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(   // std::make_shared<TreeItem>
+                                              new TreeItem(data
+                                                           , boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+                                                           , std::make_shared<RecordTable>(QDomElement())
+                                                          )
+                                          ); // Создается объект item
 
     _child_items << item; // Добавление item в конец массива childItems
 
@@ -399,11 +458,13 @@ QString TreeItem::path_as_name_with_delimiter(QString delimeter)
 QStringList TreeItem::path_as_field(QString fieldName)
 {
     QStringList path;
-    std::shared_ptr<TreeItem> currentItem = shared_from_this();
+    boost::intrusive_ptr<TreeItem> currentItem =
+        boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+        ;
 
     path << currentItem->field(fieldName);
 
-    while(currentItem->parent() != NULL) {
+    while(currentItem->parent() != nullptr) {
         currentItem = currentItem->parent();
         path << currentItem->field(fieldName);
     }
@@ -422,10 +483,14 @@ QStringList TreeItem::path_as_field(QString fieldName)
 QList<QStringList> TreeItem::all_children_path(void)
 {
     // Очищение списка путей
-    all_children_path_as_field(shared_from_this(), "", 0);
+    all_children_path_as_field(
+        boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+        , "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = all_children_path_as_field(shared_from_this(), "id", 1);
+    QList<QStringList> pathList = all_children_path_as_field(
+                                      boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+                                      , "id", 1);
 
     return pathList;
 }
@@ -434,10 +499,14 @@ QList<QStringList> TreeItem::all_children_path(void)
 QList<QStringList> TreeItem::all_children_path_as_field(QString fieldName)
 {
     // Очищение списка путей
-    all_children_path_as_field(shared_from_this(), "", 0);
+    all_children_path_as_field(
+        boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+        , "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = all_children_path_as_field(shared_from_this(), fieldName, 1);
+    QList<QStringList> pathList = all_children_path_as_field(
+                                      boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
+                                      , fieldName, 1);
 
     return pathList;
 }
@@ -472,7 +541,7 @@ QList<QStringList> TreeItem::get_all_children_path_recurse(TreeItem *item,int mo
 
 // Возвращает массив указанных полей всех подветок, которые содержит ветка
 // Внутренняя рекурсивная функция
-QList<QStringList> TreeItem::all_children_path_as_field(std::shared_ptr<TreeItem> item, QString fieldName, int mode)
+QList<QStringList> TreeItem::all_children_path_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)
 {
     static QList<QStringList> pathList;
 
@@ -496,21 +565,21 @@ QList<QStringList> TreeItem::all_children_path_as_field(std::shared_ptr<TreeItem
 // Переключение ветки и всех подветок в зашифрованное состояние
 void TreeItem::to_encrypt(void)
 {
-    qDebug() << "TreeItem::switchToEncrypt() : Crypt branch" << _fieldtable["name"] << "id" << _fieldtable["id"];
+    qDebug() << "TreeItem::switchToEncrypt() : Crypt branch" << _field_data["name"] << "id" << _field_data["id"];
 
     // Если ветка оказалось заашифрованной ее нельзя зашифровывать второй раз
-    if(_fieldtable["crypt"] == "1")
+    if(_field_data["crypt"] == "1")
         return;
 
     // Устанавливается поле, что ветка зашифрована
-    _fieldtable["crypt"] = "1";
+    _field_data["crypt"] = "1";
 
     // Шифруется имя ветки
-    _fieldtable["name"] = CryptService::encryptString(globalparameters.crypt_key(), _fieldtable["name"]);
+    _field_data["name"] = CryptService::encryptString(globalparameters.crypt_key(), _field_data["name"]);
 
 
     // Шифрация конечных записей для этой ветки
-    _recordtable->switch_to_encrypt();
+    _record_data->switch_to_encrypt();
 
 
     // Шифрация подветок
@@ -522,22 +591,22 @@ void TreeItem::to_encrypt(void)
 // Переключение ветки и всех подветок в расшифрованное состояние
 void TreeItem::to_decrypt(void)
 {
-    qDebug() << "TreeItem::switchToDecrypt() : Decrypt branch" << _fieldtable["name"] << "id" << _fieldtable["id"];
+    qDebug() << "TreeItem::switchToDecrypt() : Decrypt branch" << _field_data["name"] << "id" << _field_data["id"];
 
     // Если ветка оказалось незашифрованной, нечего расшифровывать
-    if(_fieldtable["crypt"].length() == 0 ||
-       _fieldtable["crypt"] == "0")
+    if(_field_data["crypt"].length() == 0 ||
+       _field_data["crypt"] == "0")
         return;
 
     // Устанавливается поле, что ветка не зашифрована
-    _fieldtable["crypt"] = "0";
+    _field_data["crypt"] = "0";
 
     // Расшифровка имени ветки
-    _fieldtable["name"] = CryptService::decryptString(globalparameters.crypt_key(), _fieldtable["name"]);
+    _field_data["name"] = CryptService::decryptString(globalparameters.crypt_key(), _field_data["name"]);
 
 
     // Дешифрация конечных записей для этой ветки
-    _recordtable->switch_to_decrypt();
+    _record_data->switch_to_decrypt();
 
 
     // Дешифрация подветок
@@ -546,33 +615,34 @@ void TreeItem::to_decrypt(void)
 }
 
 
-void TreeItem::table_init(QDomElement domModel)
-{
-    _recordtable->init(shared_from_this(), domModel);
-}
-
-
 int TreeItem::row_count(void)
 {
-    return _recordtable->size();
+    return _record_data->size();
 }
 
-
-QDomElement TreeItem::export_to_dom(QDomDocument *doc)
+QDomElement TreeItem::export_to_dom()
 {
-    return _recordtable->dom_from_data(doc);
+    return _record_data->export_to_dom();
 }
 
-
-void TreeItem::table_clear(void)
+QDomElement TreeItem::export_to_dom(std::shared_ptr<QDomDocument> doc)
 {
-    _recordtable->delete_all_records();
+    return _record_data->export_to_dom(doc);
 }
 
 
-std::shared_ptr<TableData> TreeItem::tabledata(void)
+void TreeItem::clear_tabledata(void)
 {
-    return _recordtable;
+    _record_data->delete_all_records();
 }
 
 
+std::shared_ptr<RecordTable> TreeItem::tabledata(void)
+{
+    return _record_data;
+}
+
+void TreeItem::tabledata(std::shared_ptr<RecordTable> _table_data)
+{
+    _record_data = _table_data;
+}

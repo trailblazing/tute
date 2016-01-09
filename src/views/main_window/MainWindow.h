@@ -51,7 +51,7 @@
 //#include "models/database_config/DataBaseConfig.h"
 
 
-
+extern const char *meta_editor_singleton_name;
 
 namespace browser {
     class Entrance;
@@ -61,11 +61,11 @@ namespace browser {
 
 class TreeScreen;
 class MetaEditor;
-class TableScreen;
+class RecordScreen;
 class FindScreen;
 class WindowSwitcher;
 class QtSingleApplication;
-class TableController;
+class RecordController;
 class GlobalParameters;
 class AppConfig;
 class DataBaseConfig;
@@ -137,8 +137,8 @@ private slots:
 
 private:
 
-    void setupUI(void);
-    void setupSignals(void);
+    void setup_ui(void);
+    void setup_signals(void);
     void assembly(void);
 
     void initFileMenu(void);
@@ -184,15 +184,15 @@ private:
     QMenu *_helpmenu;
 
     TreeScreen          *_tree_screen;
-    TableScreen         *_table_screen;
-    // TableScreen         *_page_screen;
+    RecordScreen         *_table_screen;
+    //    TableScreen         *_page_screen;
     browser::DownloadManager *_download;
     FindScreen          *_find_screen;
     MetaEditor          *_editor_screen;
     QStatusBar          *_statusbar;
     WindowSwitcher      *_switcher;
-    TableController     *_record_controller;
-    // TableController     *_page_controller;
+    RecordController     *_record_controller;
+    //    TableController     *_page_controller;
     browser::Entrance   *_entrance;
 
     //    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();

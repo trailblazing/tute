@@ -4,10 +4,10 @@
 #include <QSortFilterProxyModel>
 
 
-class TableProxyModel : public QSortFilterProxyModel {
+class RecordProxyModel : public QSortFilterProxyModel {
 public:
-    TableProxyModel(QString screen_name, QObject *pobj=0);
-    ~TableProxyModel();
+    RecordProxyModel(QString screen_name, QObject *pobj = 0);
+    ~RecordProxyModel();
 
 };
 

@@ -1,5 +1,5 @@
 #include "main.h"
-
+#include <QToolButton>
 #include "AttachTableScreen.h"
 #include "AttachTableView.h"
 #include "controllers/attach_table/AttachTableController.h"
@@ -80,17 +80,17 @@ void AttachTableScreen::setupUI(void)
     toolsLine = new QToolBar(this);
 
     // Создание кнопок на тулбаре
-    insertActionAsButton(toolsLine, actionAddAttach);
-    insertActionAsButton(toolsLine, actionAddLink);
-    insertActionAsButton(toolsLine, actionEditFileName);
-    insertActionAsButton(toolsLine, actionDeleteAttach);
-    insertActionAsButton(toolsLine, actionOpenAttach);
-    insertActionAsButton(toolsLine, actionSaveAsAttach);
-    insertActionAsButton(toolsLine, actionShowAttachInfo);
+    insert_action_as_button<QToolButton>(toolsLine, actionAddAttach);
+    insert_action_as_button<QToolButton>(toolsLine, actionAddLink);
+    insert_action_as_button<QToolButton>(toolsLine, actionEditFileName);
+    insert_action_as_button<QToolButton>(toolsLine, actionDeleteAttach);
+    insert_action_as_button<QToolButton>(toolsLine, actionOpenAttach);
+    insert_action_as_button<QToolButton>(toolsLine, actionSaveAsAttach);
+    insert_action_as_button<QToolButton>(toolsLine, actionShowAttachInfo);
 
     toolsLine->addSeparator();
 
-    insertActionAsButton(toolsLine, actionSwitchToEditor);
+    insert_action_as_button<QToolButton>(toolsLine, actionSwitchToEditor);
 }
 
 
@@ -132,5 +132,5 @@ void AttachTableScreen::assembly(void)
 // Вызывается в моменты, когда ни одна запись не выбрана или содержимое записи недоступно
 void AttachTableScreen::clear()
 {
-    attachTableController->setAttachTableData(NULL);
+    attachTableController->setAttachTableData(nullptr);
 }

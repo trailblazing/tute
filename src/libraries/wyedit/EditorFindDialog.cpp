@@ -95,7 +95,7 @@ void EditorFindDialog::hideEvent(QHideEvent *event)
 
     if(this->width() > 0 && this->height() > 0 && !(this->x() <= 0 && this->y() <= 0)) {
         // Получение ссылки в parent виджете на нужное поле
-        EditorConfig *edConf = qobject_cast<Editor *>(parent())->editorConfig;
+        EditorConfig *edConf = qobject_cast<Editor *>(parent())->_editor_config;
 
         // Запоминается геометрия
         QRect g = this->frameGeometry();
@@ -118,7 +118,7 @@ void EditorFindDialog::showEvent(QShowEvent *event)
     lineEdit->setFocus();
 
     // Получение ссылки в parent виджете на нужное свойство
-    EditorConfig *edConf = qobject_cast<Editor *>(parent())->editorConfig;
+    EditorConfig *edConf = qobject_cast<Editor *>(parent())->_editor_config;
 
     QString geometry = edConf->get_finddialog_geometry();
 

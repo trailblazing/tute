@@ -1,6 +1,7 @@
 #ifndef __ATTACH_H__
 #define __ATTACH_H__
 
+#include <memory>
 #include <QString>
 #include <QMap>
 #include <QByteArray>
@@ -14,7 +15,7 @@ class Attach {
 
 public:
 
-    enum EncryptDecryptArea {areaMemory=0x1, areaFile=0x2, areaAll=0xFF};
+    enum EncryptDecryptArea {areaMemory = 0x1, areaFile = 0x2, areaAll = 0xFF};
 
 
     Attach(AttachTableData *iParentTable);
@@ -23,7 +24,7 @@ public:
 
 
     void setupDataFromDom(QDomElement iDomElement);
-    QDomElement exportDataToDom(QDomDocument *doc) const;
+    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
 
     QString getField(QString name) const;
     void setField(QString name, QString value);
@@ -52,8 +53,8 @@ public:
     bool copyFileToBase(QString iFileName);
     void removeFile();
 
-    void encrypt(unsigned int area=areaAll);
-    void decrypt(unsigned int area=areaAll);
+    void encrypt(unsigned int area = areaAll);
+    void decrypt(unsigned int area = areaAll);
 
 
 protected:
@@ -67,13 +68,13 @@ protected:
 
     void setFieldSource(QString name, QString value);
 
-    bool liteFlag;
+    bool                    _lite_flag;
 
-    AttachTableData *parentTable; // Указатель на таблицу приаттаченных файлов, которой принадлежит данный аттач
+    AttachTableData         *_parent_table; // Указатель на таблицу приаттаченных файлов, которой принадлежит данный аттач
 
-    QMap<QString, QString> fields;
+    QMap<QString, QString>  _fields;
 
-    QByteArray fileContent; // Содержимое файла, используется в режиме полных данных
+    QByteArray              _file_content; // Содержимое файла, используется в режиме полных данных
 };
 
 #endif // __ATTACH_H__

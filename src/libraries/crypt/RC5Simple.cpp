@@ -137,7 +137,7 @@ RC5Simple::RC5Simple(bool enableRandomInit)
 
     // Init random generator
     if(enableRandomInit)
-        srand(time(NULL));
+        srand(time(nullptr));
 }
 
 
@@ -709,7 +709,7 @@ void RC5Simple::RC5_EncDecFile(unsigned char *in_name, unsigned char *out_name, 
     FILE *in_file;
     FILE *out_file;
 
-    if((in_file = fopen((const char *)in_name, "rb")) == NULL) {
+    if((in_file = fopen((const char *)in_name, "rb")) == nullptr) {
         errorCode = RC5_ERROR_CODE_2;
         return;
     }
@@ -746,7 +746,7 @@ void RC5Simple::RC5_EncDecFile(unsigned char *in_name, unsigned char *out_name, 
         RC5_Decrypt(in, out); // Decrypt data vector
 
     // Create output file
-    if((out_file = fopen((const char *)out_name, "wb")) == NULL) {
+    if((out_file = fopen((const char *)out_name, "wb")) == nullptr) {
         errorCode = RC5_ERROR_CODE_4;
         return;
     }

@@ -1,26 +1,29 @@
 #include "main.h"
 #include "Record.h"
-#include "TableModel.h"
-#include "TableData.h"
+#include "RecordModel.h"
+#include "RecordTable.h"
 
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "models/app_config/AppConfig.h"
 #include "views/main_window/MainWindow.h"
 #include "libraries/FixedParameters.h"
-#include "views/record_table/TableView.h"
+#include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
+#include "views/record_table/RecordScreen.h"
+#include "libraries/GlobalParameters.h"
 
 extern FixedParameters fixedparameters;
 extern AppConfig appconfig;
-
+extern GlobalParameters globalparameters;
 
 // Конструктор модели
-TableModel::TableModel(QString screen_name, QObject *pobj)
+RecordModel::RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _tree_item, QObject *pobj)
     : QAbstractTableModel(pobj)
-    , _table(new TableData())
+    , _tree_item(_tree_item)
+      //    , _table(new RecordTable(_tree_item, QDomElement()))
 {
-    setObjectName(screen_name + "_sourcemodel");
+    setObjectName(screen_name + "_source_model");
     // При создании модели она должна брать данные как минимум из
     // пустой таблицы данных
     // When you create a model, it has to take the data from at least
@@ -32,7 +35,7 @@ TableModel::TableModel(QString screen_name, QObject *pobj)
 
 
 // Деструктор модели
-TableModel::~TableModel()
+RecordModel::~RecordModel()
 {
     return;
 }
@@ -40,14 +43,14 @@ TableModel::~TableModel()
 
 // Предоставление данных табличной модели
 // Provide tabular data model
-QVariant TableModel::data(const QModelIndex &index, int role) const
+QVariant RecordModel::data(const QModelIndex &index, int role) const
 {
     // Если таблица данных не создана
-    if(!_table)
+    if(!_tree_item->tabledata())    // if(!_table)
         return QVariant();
 
     // Если таблица пустая
-    if(_table->size() == 0)
+    if(0 == _tree_item->tabledata()->size()) // if(_table->size() == 0)
         return QVariant();
 
     // Если индекс недопустимый, возвращается пустой объект
@@ -64,7 +67,8 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
         if(index.column() < showFields.size()) {
             QString fieldName = showFields.value(index.column());
 
-            QString field = _table->field(fieldName, index.row());
+            QString field = // _table
+                _tree_item->tabledata()->field(index.row(), fieldName);
 
 
             // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
@@ -95,7 +99,8 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
     }
 
     if(role == RECORD_ID_ROLE) {
-        return _table->field("id", index.row());
+        return // _table
+            _tree_item->tabledata()->field(index.row(), "id");
     }
 
     // Если происходит запрос ссылки на таблицу данных
@@ -113,14 +118,14 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
 
 
 // Save the input data at the specified index   // Сохранение вводимых данных по указанному индексу
-bool TableModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     // Если таблица данных не создана
-    if(!_table)
+    if(!_tree_item->tabledata())    // if(!_table)
         return false;
 
     // Если таблица пустая
-    if(_table->size() == 0)
+    if(0 == _tree_item->tabledata()->size())    //if(_table->size() == 0)
         return false;
 
     // Если индекс недопустимый
@@ -141,7 +146,8 @@ bool TableModel::setData(const QModelIndex &index, const QVariant &value, int ro
             cellValue = value.value<QString>();
 
             // Изменяется поле в таблице конечных записей
-            _table->field(fieldName, cellValue, index.row());
+            //            _table
+            _tree_item->tabledata()->field(index.row(), fieldName, cellValue);
 
             emit dataChanged(index, index); // Посылается сигнал что данные были изменены
 
@@ -171,7 +177,7 @@ bool TableModel::setData(const QModelIndex &index, const QVariant &value, int ro
 
 
 // Получение заголовков столбцов и строк
-QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
     QStringList showFields = appconfig.getRecordTableShowFields();
@@ -204,19 +210,20 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
 
 
 // Сколько записей в таблице
-int TableModel::rowCount(const QModelIndex &parent) const
+int RecordModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
-    if(!_table)
+    if(!_tree_item->tabledata())    // if(!_table)
         return 0;
 
-    return _table->size();
+    return // _table
+        _tree_item->tabledata()->size();
 }
 
 
 // Сколько столбцов в таблице
-int TableModel::columnCount(const QModelIndex &parent) const
+int RecordModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
@@ -239,13 +246,13 @@ int TableModel::columnCount(const QModelIndex &parent) const
 // Delete rows in the table
 // Note: Override removeRows () method affects the removeRow (),
 // Because it simply calls removeRows () to remove a single line
-bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
+bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     Q_UNUSED(parent);
 
 
     if(row < 0 || row >= rowCount() || (row + count - 1) < 0 || (row + count - 1) >= rowCount()) {
-        criticalError("Bad arguments in RecordTableModel::removeRows(). row: " + QString::number(row) + " count: " + QString::number(count));
+        critical_error("Bad arguments in RecordTableModel::removeRows(). row: " + QString::number(row) + " count: " + QString::number(count));
         return false;
     }
 
@@ -260,8 +267,9 @@ bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
 
     // Удаляются строки непосредственно в таблице
     for(int i = row; i < row + count; ++i) {
-        _table->delete_record(i);
-        globalparameters.find_screen()->remove_row(row);
+        //        _table
+        _tree_item->tabledata()->delete_record_by_position(i);
+        globalparameters.find_screen()->remove_row(i);  // ?
     }
 
     view->reset();
@@ -273,32 +281,33 @@ bool TableModel::removeRows(int row, int count, const QModelIndex &parent)
 
 
 // Установка данных в таблицу данных
-void TableModel::reset_tabledata(std::shared_ptr<TableData> rtData)
+void RecordModel::reset_tabledata(std::shared_ptr<RecordTable> record_table)
 {
     beginResetModel();
-
-    _table = rtData;
+    //    _table
+    _tree_item->tabledata(record_table);
 
     endResetModel();
 }
 
 
 // Получение ссылки на таблицу данных
-std::shared_ptr<TableData> TableModel::table_data_internal(void)
+std::shared_ptr<RecordTable> RecordModel::table_data(void)
 {
     // Возвращается ссылка на данные, с которыми в данный момент работает модель
-    return _table;
+    return _tree_item->tabledata(); // _table;
 }
 
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int TableModel::add_record(int mode, QModelIndex posIndex, std::shared_ptr<Record> record)
+int RecordModel::insert_new_record(int mode, QModelIndex posIndex, std::shared_ptr<Record> record)
 {
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
     // Вставка новых данных в таблицу конечных записей
-    int selPos = _table->insert_new_record(posIndex.row(), record, mode);
+    int selPos = // _table
+        _tree_item->tabledata()->insert_new_record(posIndex.row(), record, mode);
 
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 
@@ -306,13 +315,13 @@ int TableModel::add_record(int mode, QModelIndex posIndex, std::shared_ptr<Recor
 }
 
 
-void TableModel::on_table_config_changed(void)
+void RecordModel::on_table_config_changed(void)
 {
     beginResetModel();
     endResetModel();
 }
 
-void TableModel::reset_internal_data()
+void RecordModel::reset_internal_data()
 {
     QAbstractTableModel::resetInternalData();
 }

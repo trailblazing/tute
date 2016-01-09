@@ -204,7 +204,6 @@ HEADERS     =   \
     src/views/attach_table/AttachTableScreen.h \
     src/views/attach_table/AttachTableView.h \
     src/controllers/attach_table/AttachTableController.h \
-    src/controllers/record_table/TableController.h \
     src/models/app_config/AppConfig.h \
     src/models/app_config/AppConfigUpdater.h \
     src/models/attach_table/Attach.h \
@@ -212,9 +211,6 @@ HEADERS     =   \
     src/models/attach_table/AttachTableModel.h \
     src/models/database_config/DataBaseConfig.h \
     src/models/record_table/Record.h \
-    src/models/record_table/TableData.h \
-    src/models/record_table/TableModel.h \
-    src/models/record_table/TableProxyModel.h \
     src/views/console_emulator/ConsoleEmulator.h \
     src/views/console_emulator/ExecuteCommand.h \
     src/views/enter_password/EnterPassword.h \
@@ -224,12 +220,16 @@ HEADERS     =   \
     src/views/main_window/MainWindow.h \
     src/views/print_preview/PreviewView.h \
     src/views/print_preview/PrintPreview.h \
-    src/views/record_table/TablePrint.h \
-    src/views/record_table/TableScreen.h \
-    src/views/record_table/TableView.h \
     src/views/record_table/verticalscrollarea.h \
     src/views/wait_clock/WaitClock.h \
-    src/views/browser/edittableview.hxx
+    src/views/browser/edittableview.hxx \
+    src/models/record_table/RecordTable.h \
+    src/models/record_table/RecordModel.h \
+    src/models/record_table/RecordProxyModel.h \
+    src/views/record_table/RecordScreen.h \
+    src/views/record_table/RecordView.h \
+    src/views/record_table/RecordPrint.h \
+    src/controllers/record_table/RecordController.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -329,7 +329,6 @@ SOURCES     =   src/main.cpp \
     src/views/attach_table/AttachTableScreen.cpp \
     src/views/attach_table/AttachTableView.cpp \
     src/controllers/attach_table/AttachTableController.cpp \
-    src/controllers/record_table/TableController.cpp \
     src/models/app_config/AppConfig.cpp \
     src/models/app_config/AppConfigUpdater.cpp \
     src/models/attach_table/Attach.cpp \
@@ -337,9 +336,6 @@ SOURCES     =   src/main.cpp \
     src/models/attach_table/AttachTableModel.cpp \
     src/models/database_config/DataBaseConfig.cpp \
     src/models/record_table/Record.cpp \
-    src/models/record_table/TableData.cpp \
-    src/models/record_table/TableModel.cpp \
-    src/models/record_table/TableProxyModel.cpp \
     src/views/console_emulator/ConsoleEmulator.cpp \
     src/views/console_emulator/ExecuteCommand.cpp \
     src/views/enter_password/EnterPassword.cpp \
@@ -349,11 +345,15 @@ SOURCES     =   src/main.cpp \
     src/views/main_window/MainWindow.cpp \
     src/views/print_preview/PreviewView.cpp \
     src/views/print_preview/PrintPreview.cpp \
-    src/views/record_table/TablePrint.cpp \
-    src/views/record_table/TableScreen.cpp \
-    src/views/record_table/TableView.cpp \
     src/views/record_table/verticalscrollarea.cpp \
-    src/views/wait_clock/WaitClock.cpp
+    src/views/wait_clock/WaitClock.cpp \
+    src/models/record_table/RecordTable.cpp \
+    src/models/record_table/RecordModel.cpp \
+    src/models/record_table/RecordProxyModel.cpp \
+    src/views/record_table/RecordPrint.cpp \
+    src/views/record_table/RecordScreen.cpp \
+    src/views/record_table/RecordView.cpp \
+    src/controllers/record_table/RecordController.cpp
 #    src/views/browser/cookiejar.cpp \
 
 

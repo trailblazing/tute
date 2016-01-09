@@ -68,19 +68,26 @@
 #include <QException>
 
 
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "libraries/GlobalParameters.h"
 #include "models/record_table/Record.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
-#include "views/record_table/TableView.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
+#include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "toolbarsearch.h"
 #include "entrance.h"
 #include "views/main_window/MainWindow.h"
 #include "main.h"
+#include "views/record/MetaEditor.h"
+#include "libraries/WindowSwitcher.h"
+#include "libraries/WalkHistory.h"
+#include "libraries/wyedit/EditorTextArea.h"
+
+
 
 extern GlobalParameters globalparameters;
+extern AppConfig appconfig;
 extern QMap<Qt::CheckState, QString> _check_state;
 extern QMap<QString, Qt::CheckState> _state_check;
 class QException;
@@ -253,8 +260,8 @@ namespace browser {
 
     }
 
-    TabWidget::TabWidget(TableController *_record_controller
-                         // , TableController *_page_controller
+    TabWidget::TabWidget(RecordController *_record_controller
+                         , boost::intrusive_ptr<TreeItem> _page_tree_item
                          , Browser *parent)
         : QTabWidget(parent)
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
@@ -273,9 +280,12 @@ namespace browser {
         , _fullscreenview(nullptr)
         , _fullscreennotification(nullptr)
         , _record_controller(_record_controller)
-          // , _page_controller(_page_controller)
+          //        , _page_controller(_page_controller)
           //        , _active_record(this)
           //        , _active("", &active_record::operator(), &_active_record)
+        , _page_tree_item(_page_tree_item)
+          //        , _shadow_source_model(new TableModel(QString(table_screen_singleton_name) + QString("_shadow"), _tree_item, this))
+          //        , _table_data(std::make_shared<TableData>(_tree_item))
         , _window(parent)
     {
         //        _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
@@ -474,9 +484,15 @@ namespace browser {
                     //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
                     webView->setFocus();
                     //                    globalparameters.mainwindow()
-                    _record_controller->select_id(record->getNaturalFieldSource("id"));
+                    _record_controller->select_id(record->natural_field_source("id"));
                     //                    webView->setFocus();
+                    MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
+                    assert(metaeditor);
 
+                    if(metaeditor->record() != record) {
+
+                        webView->page()->sychronize_metaeditor_to_record(record);  // metaeditor->bind(record);
+                    }
                 }
             }
         }
@@ -607,8 +623,7 @@ namespace browser {
 
     WebView *TabWidget::newTab(std::shared_ptr<Record> record   // , bool openinnewtab
                                , bool make_current
-                               , TableController *_record_controller
-                               // , TableController *_page_controller
+                               , RecordController *_record_controller
                               )
     {
         //        if(record == nullptr) {
@@ -648,8 +663,9 @@ namespace browser {
         if(!record->unique_page()) {
             view = new WebView(record, _profile // use record for return
                                // , openinnewtab
-                               , this, _record_controller
-                               // , _page_controller
+                               , this
+                               , _record_controller
+                               //                               , _page_controller
                               ); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
         }
 
@@ -680,8 +696,8 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
         connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
-        int index = addTab(view, record->getNaturalFieldSource("name"));  //, tr("(Untitled)")
-        setTabToolTip(index, record->getNaturalFieldSource("name"));
+        int index = addTab(view, record->natural_field_source("name"));  //, tr("(Untitled)")
+        setTabToolTip(index, record->natural_field_source("name"));
         //record->page()->load(record);
         //globalparameters.entrance()->invoke_view(record);
 
@@ -848,7 +864,7 @@ namespace browser {
             WebView *previous_webview = static_cast<WebView *>(widget(index));
 
             if(previous_webview) {
-                previous_webview->page()->break_records_which_page_point_to_me();
+                previous_webview->page()->break_records();
                 removeTab(index);
 
                 //        PageView *v = static_cast<PageView *>(previous_webview);
@@ -884,7 +900,7 @@ namespace browser {
                         //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
                         view->setFocus();
                         //                        globalparameters.mainwindow()
-                        _record_controller->select_id(record->getNaturalFieldSource("id"));
+                        _record_controller->select_id(record->natural_field_source("id"));
                     }
                 }
             }
@@ -980,6 +996,8 @@ namespace browser {
         QUrl url = action->data().toUrl();
         loadUrlInCurrentTab(url);
     }
+
+
 
     void TabWidget::mouseDoubleClickEvent(QMouseEvent *event)
     {
@@ -1256,7 +1274,7 @@ namespace browser {
 
             if(vi != nullptr) {
                 if(vi->page()->current_record()) {
-                    if(vi->page()->current_record()->getNaturalFieldSource("pin")
+                    if(vi->page()->current_record()->natural_field_source("pin")
                        == _check_state[Qt::Unchecked]
                       ) {
                         bv = vi; break;
@@ -1284,10 +1302,10 @@ namespace browser {
 
 
                 if(vi->page()->current_record()) {
-                    QString checkrecordurl = vi->page()->current_record()->getNaturalFieldSource("url");
+                    QString checkrecordurl = vi->page()->current_record()->natural_field_source("url");
                     assert(checkrecordurl != "");
 
-                    if(vi->page()->current_record()->getNaturalFieldSource("url")
+                    if(vi->page()->current_record()->natural_field_source("url")
                        == url.toString()   // record->getNaturalFieldSource("url")
                       ) {
                         bv = vi; break;
@@ -1421,90 +1439,128 @@ namespace browser {
     }
 
 
-    PopupWindow::PopupWindow(QWebEngineProfile *profile, QUrl const &url, TableController *_record_controller
-                             // , TableController *_page_controller
-                             , Browser *parent)
-        : TabWidget(_record_controller
-                    // , _page_controller
-                    , parent)
-        , _addressbar(new QLineEdit(this))
-        , _view(
-              //              new WebView(record, profile
-              //                          // , false
-              //                          , this
-              //                          , _record_ontroller    // globalparameters.getRecordTableScreen()->getRecordTableController()
-              //                         )
-              [this, url, profile, _record_controller
-               // , _page_controller
-              ]
-    {
-        boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(this, profile, _record_controller
-                                                    // , _page_controller
-                                                                                          );
-        std::shared_ptr<Record> record
-            = _record_controller->request_record(
-                  url
-                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
-                      ""
-                      , &ActiveRecordBinder::binder
-                      , wvh
-                  )
-                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
-                      ""
-                      , &ActiveRecordBinder::activator
-                      , wvh
-                  )
-              );  // ->binded_only_page()->view();
-        record->active();
-        return record->unique_page()->view();
-    }()
+    //    PopupWindow::PopupWindow(TabWidget *tabmanager
+    //                             , QWebEngineProfile *profile
+    //                             , QUrl const &url
+    //                             , TableController *_record_controller
+    //                             , TableController *_page_controller
+    //                             //                             , Browser *parent
+    //                            ) :
+    //        //        QWidget(nullptr)
+    //        //        TabWidget(_record_controller, _page_controller, parent)
+    //        Browser(url         // Record *const record
+    //                , _record_controller
+    //                , _page_controller
+    //                , nullptr   //_entrance   // nullptr can not work!
+    //                //, QDockWidget *parent
+    //                , QString()
+    //               )
+    //        , _addressbar(new QLineEdit(this))
+    //        , _view(nullptr
+    //                //              new WebView(record, profile
+    //                //                          // , false
+    //                //                          , this
+    //                //                          , _record_ontroller    // globalparameters.getRecordTableScreen()->getRecordTableController()
+    //                //                         )
 
-      )
-    {
-        //        assert(record);
-        //        assert(record->binded_only_page());
+    //                //            [tabmanager, this, url, profile, _record_controller, _page_controller]
+    //                //    {
+    //                //        boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(
+    //                //                                                        tabmanager
+    //                //                                                        , this
+    //                //                                                        , profile
+    //                //                                                        , _record_controller
+    //                //                                                        , _page_controller
+    //                //                                                    );
+    //                //        std::shared_ptr<Record> record
+    //                //            = _record_controller->request_record(
+    //                //                  url
+    //                //                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                //                      ""
+    //                //                      , &ActiveRecordBinder::binder
+    //                //                      , wvh
+    //                //                  )
+    //                //                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                //                      ""
+    //                //                      , &ActiveRecordBinder::activator
+    //                //                      , wvh
+    //                //                  )
+    //                //              );  // ->binded_only_page()->view();
+    //                //        record->active();
+    //                //        return record->unique_page()->view();
+    //                //    }()
 
-        //        _view->page(new WebPage(profile, url
-        //                                // , false
-        //                                , _record_ontroller
-        //                                , _view));
+    //               )
+    //    {
+    //        //        assert(record);
+    //        //        assert(record->binded_only_page());
+
+    //        //        _view->page(new WebPage(profile, url
+    //        //                                // , false
+    //        //                                , _record_ontroller
+    //        //                                , _view));
+    //        _view = [tabmanager, this, url, profile, _record_controller, _page_controller] {
+    //            boost::shared_ptr<ActiveRecordBinder> wvh = boost::make_shared<ActiveRecordBinder>(
+    //                tabmanager
+    //                , this
+    //                , profile
+    //                , _record_controller
+    //                , _page_controller
+    //            );
+    //            std::shared_ptr<Record> record
+    //            = _record_controller->request_record(
+    //                url
+    //                , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                    ""
+    //                    , &ActiveRecordBinder::binder
+    //                    , wvh
+    //                )
+    //                , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                    ""
+    //                    , &ActiveRecordBinder::activator
+    //                    , wvh
+    //                )
+    //            );  // ->binded_only_page()->view();
+    //            record->active();
+    //            return record->unique_page()->view();
+    //        }();
 
 
+    //        //        _addressbar->hide();
+    //        QVBoxLayout *layout = new QVBoxLayout(this);
+    //        layout->setMargin(0);
+
+    //        layout->addWidget(_addressbar);
+    //        layout->addWidget(_view);
+    //        setLayout(layout);
+
+    //        _view->setFocus();
+
+    //        connect(_view, &WebView::titleChanged, static_cast<QWidget *const>(this), &QWidget::setWindowTitle);
+    //        connect(_view, &WebView::urlChanged, this, &PopupWindow::setUrl);
+    //        connect(static_cast<QWebEnginePage *>(page()), &QWebEnginePage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
+    //        connect(static_cast<QWebEnginePage *>(page()), &QWebEnginePage::windowCloseRequested, static_cast<QWidget *const>(this), &QWidget::close);
+    //    }
+
+    //    //    QWebEnginePage
+    //    WebPage *PopupWindow::page() const { return _view->page(); }
 
 
-        QVBoxLayout *layout = new QVBoxLayout;
-        layout->setMargin(0);
-        setLayout(layout);
-        layout->addWidget(_addressbar);
-        layout->addWidget(_view);
-
-        _view->setFocus();
-
-        connect(_view, &WebView::titleChanged, this, &QWidget::setWindowTitle);
-        connect(_view, &WebView::urlChanged, this, &PopupWindow::setUrl);
-        connect(static_cast<QWebEnginePage *>(page()), &QWebEnginePage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
-        connect(static_cast<QWebEnginePage *>(page()), &QWebEnginePage::windowCloseRequested, this, &QWidget::close);
-    }
-
-    //    QWebEnginePage
-    WebPage *PopupWindow::page() const { return _view->page(); }
+    //    void PopupWindow::setUrl(const QUrl &url)
+    //    {
+    //        _addressbar->setText(url.toString());
+    //    }
 
 
-    void PopupWindow::setUrl(const QUrl &url)
-    {
-        _addressbar->setText(url.toString());
-    }
+    //    void PopupWindow::adjustGeometry(const QRect &newGeometry)
+    //    {
+    //        const int x1 = frameGeometry().left() - geometry().left();
+    //        const int y1 = frameGeometry().top() - geometry().top();
+    //        const int x2 = frameGeometry().right() - geometry().right();
+    //        const int y2 = frameGeometry().bottom() - geometry().bottom();
 
-
-    void PopupWindow::adjustGeometry(const QRect &newGeometry)
-    {
-        const int x1 = frameGeometry().left() - geometry().left();
-        const int y1 = frameGeometry().top() - geometry().top();
-        const int x2 = frameGeometry().right() - geometry().right();
-        const int y2 = frameGeometry().bottom() - geometry().bottom();
-
-        setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
-    }
+    //        setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
+    //    }
 
 
 }

@@ -51,7 +51,7 @@ void ClipboardBranch::print(void) const
         foreach(std::shared_ptr<Record> current_record, branchData.record.values(branch_id)) {
             qDebug() << "Record:";
 
-            QMap<QString, QString> current_record_fields = current_record->getNaturalFieldList();
+            QMap<QString, QString> current_record_fields = current_record->natural_field_list();
 
             foreach(QString field_name, current_record_fields.keys())
                 if(field_name == "id" || field_name == "name")
@@ -133,7 +133,7 @@ QMap<QString, QString> ClipboardBranch::getBranchFieldsById(QString id)
                 return current_branch;
     }
 
-    criticalError("Can not find id " + id + " in clipboard data");
+    critical_error("Can not find id " + id + " in clipboard data");
     exit(1);
     return QMap<QString, QString>();
 }

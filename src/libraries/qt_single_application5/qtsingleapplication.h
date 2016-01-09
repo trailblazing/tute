@@ -181,6 +181,11 @@ public:
     bool canRestoreSession() const;
     bool privateBrowsing() const { return _private_browsing; }
 
+
+    void setLastAuthenticator(QAuthenticator *);
+    void setLastProxyAuthenticator(QAuthenticator *);
+
+
     // TODO: Remove these functions (QTBUG-47967)
     static QByteArray authenticationKey(const QUrl &, const QString &);
     static QByteArray proxyAuthenticationKey(const QNetworkProxy &, const QString &);

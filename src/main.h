@@ -1,7 +1,7 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include <stdio.h>
+#include <cstdio>
 #include <cassert>
 #include <QApplication>
 #include <QClipboard>
@@ -18,10 +18,10 @@
 #include <QToolBar>
 #include <QAbstractItemView>
 #include <QThread>
-#include "utility/delegate.h"
-#include "models/record_table/Record.h"
-#include "libraries/GlobalParameters.h"
-#include "views/record_table/TableScreen.h"
+//#include "utility/delegate.h"
+//#include "models/record_table/Record.h"
+//#include "libraries/GlobalParameters.h"
+//#include "views/record_table/TableScreen.h"
 
 using namespace std;
 
@@ -38,6 +38,7 @@ using namespace std;
 // MyTetra - a program to accumulate meaningful information
 // Volgodonsk, 2010 - 2015 g.
 // Contact: xintrea@gmail.com, www.webhamster.ru
+// hughvonyoung@gmail.com (version 1.32.164)
 // This source code is licensed under:
 // - GPL v.3
 // - Modified BSD
@@ -58,37 +59,55 @@ using namespace std;
 //#define ADD_NEW_RECORD_BEFORE 1
 //#define ADD_NEW_RECORD_AFTER 2
 
-extern const int add_new_record_after;
+//extern const int add_new_record_after;
+
 // Прототипы функций, которые могут использоваться в других файлах
 // Function prototypes, which can be used in other files
-void logPrint(char *lpszText, ...);
-void criticalError(QString message);
-QString xmlNodeToString(QDomNode xmlData);
+void    log_print(char *lpszText, ...);
+void    critical_error(QString message);
+QString xml_node_to_qstring(QDomNode xmlData);
 
-void print_object_tree(void);
-bool compare_QStringList_len(const QStringList &list1, const QStringList &list2);
-void insertActionAsButton(QToolBar *tools_line, QAction *action);
-int imax(int x1, int x2);
-int imin(int x1, int x2);
-void myMessageOutput(QtMsgType type, const char *msg);
+void    print_object_tree(void);
+//bool    compare_qstringlist_length(const QStringList &list1, const QStringList &list2);
+
+template<typename ToolButton>
+void    insert_action_as_button(QToolBar *tools_line, QAction *action)  // void    insert_action_as_button(QToolBar *tools_line, QAction *action);
+{
+    tools_line->addAction(action);
+    qobject_cast<ToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(true);    // false
+}
+
+//int     imax(int x1, int x2);
+//int     imin(int x1, int x2);
+void    my_message_output(QtMsgType type, const char *msg);
 QStringList text_delimiter_decompose(QString text);
-QString get_unical_id(void);
-int get_milli_count(void);
-void init_random(void);
+QString     get_unical_id(void);
+int     get_milli_count(void);
+void    init_random(void);
 
-void setKineticScrollArea(QAbstractItemView *object);
+void    set_kinetic_scrollarea(QAbstractItemView *object);
 
-int getScreenSizeX(void);
-int getScreenSizeY(void);
-qreal getCalculateIconSizePx(void);
+int     screen_size_x(void);
+int     screen_size_y(void);
+qreal   calculate_iconsize_px(void);
 
-void
-showMessageBox(QString message); // Выдача на экран простого окна с сообщением
-extern void setCssStyle();
+void    show_message_box(QString message); // Выдача на экран простого окна с сообщением
+extern void set_css_style();
+
 class WalkHistory;
-extern WalkHistory walkhistory;
 class GlobalParameters;
+
+extern WalkHistory walkhistory;
 extern GlobalParameters globalparameters;
+extern const char *meta_editor_singleton_name;
+extern const char *table_screen_singleton_name;
+extern const char *tree_screen_singleton_name;
+extern const char *find_screen_singleton_name;
+extern const char *download_manager_singleton_name;
+extern const char *windowswitcher_singleton_name;
+extern const char *entrance_singleton_name;
+extern const char *table_controller_singleton_name;
+extern const char *knowtreeview_singleton_name;
 
 // template <class X> inline X *find_object(QString n);
 
@@ -109,7 +128,7 @@ template <class X> inline X *find_object(QString objectName)
             printf("find_object(): Can't find mainwindow object. Check <type> in "
                    "function call\n");
             exit(1);
-            return NULL;
+            return nullptr;
         } else
             return qobject_cast<X *>(mainwindow);
     }
@@ -118,7 +137,7 @@ template <class X> inline X *find_object(QString objectName)
     // findObj=qFindChild<X *>(mainwindow, objectName);
     findObj = mainwindow->findChild<X *>(objectName);
 
-    if(findObj == NULL) {
+    if(findObj == nullptr) {
         // Если объекта с указанным именем не найдено
         // print_object_tree();
         printf("find_object(): Can't find object with name %s\n",
@@ -133,7 +152,7 @@ template <class X> inline X *find_object(QString objectName)
         */
 
         exit(1);
-        return NULL;
+        return nullptr;
     } else {
         // ОБъект был найден, и нужно преобразовать указатель на него
         // к указателю c заданным в шаблоне типом
@@ -146,7 +165,7 @@ template <class X> inline X *find_object(QString objectName)
                    "<type> in function call\n",
                    qPrintable(objectName));
             exit(1);
-            return NULL;
+            return nullptr;
         } else
             return obj; // Объект найден нормально
     }
@@ -168,9 +187,9 @@ public:
     }
 };
 
-class Record;
+//class Record;
 
-extern std::string getDifference(const std::string &url_compare_stored, const std::string &url_compare_get);
+extern std::string difference(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 //extern Record *register_record(const QUrl &_url
 //                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
@@ -181,13 +200,12 @@ extern std::string getDifference(const std::string &url_compare_stored, const st
 //                                               , TableController *record_controller = globalparameters.table_screen()->table_controller());
 //extern std::shared_ptr<Record> check_record(const QUrl &_url);
 
-namespace browser {
-    class Browser;
-    class WebView;
-}
+//namespace browser {
+//    class Browser;
+//    class WebView;
+//}
 
-template<typename>
-struct active_record;
+//template<typename> struct active_record;
 
 //extern std::shared_ptr<Record> request_record(const QUrl &_url
 //                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator

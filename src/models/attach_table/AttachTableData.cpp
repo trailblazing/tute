@@ -14,7 +14,7 @@ AttachTableData::AttachTableData(Record *iRecord)
     liteFlag = true;
     attachTable.clear();
     record = iRecord;
-    relatedAttachTableModel = NULL;
+    relatedAttachTableModel = nullptr;
 }
 
 
@@ -33,8 +33,8 @@ AttachTableData::AttachTableData()
 {
     liteFlag = true;
     attachTable.clear();
-    record = NULL;
-    relatedAttachTableModel = NULL;
+    record = nullptr;
+    relatedAttachTableModel = nullptr;
 }
 
 
@@ -65,7 +65,7 @@ void AttachTableData::setupDataFromDom(QDomElement iDomElement)
 }
 
 
-QDomElement AttachTableData::exportDataToDom(QDomDocument *doc) const
+QDomElement AttachTableData::export_to_dom(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у записи нет таблицы приаттаченных файлов
     if(attachTable.size() == 0)
@@ -75,7 +75,7 @@ QDomElement AttachTableData::exportDataToDom(QDomDocument *doc) const
 
     // Пробегаются все приаттаченные файлы
     for(int i = 0; i < attachTable.size(); i++)
-        attachTableDom.appendChild(attachTable.at(i).exportDataToDom(doc));     // К элементу files прикрепляются элементы file
+        attachTableDom.appendChild(attachTable.at(i).export_to_dom(doc));     // К элементу files прикрепляются элементы file
 
     return attachTableDom;
 }
@@ -121,7 +121,7 @@ void AttachTableData::setRecord(Record *iRecord)
 void AttachTableData::clear()
 {
     attachTable.clear();
-    record = NULL;
+    record = nullptr;
     liteFlag = true;
 }
 
@@ -141,7 +141,7 @@ Attach AttachTableData::getAttach(QString id)
     int row = getRowById(id);
 
     if(row < 0)
-        criticalError("Attach with ID: " + id + " not found");
+        critical_error("Attach with ID: " + id + " not found");
 
     return attachTable.at(row);
 }
@@ -150,13 +150,13 @@ Attach AttachTableData::getAttach(QString id)
 // Добавление аттача
 void AttachTableData::addAttach(Attach attach)
 {
-    if(relatedAttachTableModel != NULL)
+    if(relatedAttachTableModel != nullptr)
         relatedAttachTableModel->setData(QModelIndex(), QVariant(), ATTACHTABLE_COMMAND_BEGIN_RESET_MODEL);
 
     // Аттач добавляется в таблицу приаттаченных файлов
     attachTable.append(attach);
 
-    if(relatedAttachTableModel != NULL)
+    if(relatedAttachTableModel != nullptr)
         relatedAttachTableModel->setData(QModelIndex(), QVariant(), ATTACHTABLE_COMMAND_END_RESET_MODEL);
 }
 
@@ -185,7 +185,7 @@ void AttachTableData::deleteAttach(QString id)
     attachTable[row].removeFile();
 
     // Если связанной модели нет
-    if(relatedAttachTableModel == NULL) {
+    if(relatedAttachTableModel == nullptr) {
         attachTable.removeAt(row); // Просто удаляется запись в данных
         return;
     } else {
@@ -309,7 +309,7 @@ void AttachTableData::switchToLite()
 {
     // Переключение возможно только из полновесного состояния
     if(liteFlag == true)
-        criticalError("Can't switch attach table to lite state");
+        critical_error("Can't switch attach table to lite state");
 
     for(int i = 0; i < attachTable.size(); ++i) {
         // Тяжелые данные сохраняются на диск
@@ -327,7 +327,7 @@ void AttachTableData::switchToFat()
 {
     // Переключение возможно только из легкого состояния
     if(liteFlag != true)
-        criticalError("Unavailable switching attach table to fat state");
+        critical_error("Unavailable switching attach table to fat state");
 
     for(int i = 0; i < attachTable.size(); ++i) {
         attachTable[i].switchToFat();
@@ -343,7 +343,7 @@ void AttachTableData::switchToFat()
 
 bool AttachTableData::isRecordCrypt()
 {
-    if(record->getField("crypt") == "1")
+    if(record->field("crypt") == "1")
         return true;
     else
         return false;

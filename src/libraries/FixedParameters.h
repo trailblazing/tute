@@ -15,10 +15,10 @@ public:
     FixedParameters(QObject *parent=0);
     virtual ~FixedParameters();
 
-    QStringList recordFieldAvailableList;
-    QStringList recordNaturalFieldAvailableList;
-    QStringList recordCalculableFieldAvailableList;
-    QStringList recordFieldCryptedList;
+    QStringList _record_field;
+    QStringList _record_natural_field;
+    QStringList _record_calculable_field;
+    QStringList _record_field_crypted;
 
     bool isRecordFieldAvailable(QString name) const;
     bool isRecordFieldNatural(QString name) const;

@@ -9,17 +9,17 @@
 #include <QTextEdit>
 
 
-class TableProxyModel;
+class RecordProxyModel;
 
 
-class TablePrint : public QDialog {
+class RecordPrint : public QDialog {
     Q_OBJECT
 
 public:
-    TablePrint(QWidget *parent=0);
-    virtual ~TablePrint();
+    RecordPrint(QWidget *parent=0);
+    virtual ~RecordPrint();
 
-    void setModel(TableProxyModel *iModel);
+    void setModel(RecordProxyModel *iModel);
     void generateHtmlTableFromModel(void);
     void setTitleToHtml(QString title);
 
@@ -37,7 +37,7 @@ private:
     QPushButton *saveButton;
     QPushButton *cancelButton;
 
-    TableProxyModel *model;
+    RecordProxyModel *model;
 
     void setup_ui(void);
     void setup_signals(void);

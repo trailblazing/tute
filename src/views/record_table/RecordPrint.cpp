@@ -6,12 +6,12 @@
 #include <QMessageBox>
 
 #include "views/print_preview/PrintPreview.h"
-#include "models/record_table/TableProxyModel.h"
+#include "models/record_table/RecordProxyModel.h"
 
-#include "TablePrint.h"
+#include "RecordPrint.h"
 
 
-TablePrint::TablePrint(QWidget *parent) : QDialog(parent)
+RecordPrint::RecordPrint(QWidget *parent) : QDialog(parent)
 {
     setup_ui();
     setup_signals();
@@ -19,7 +19,7 @@ TablePrint::TablePrint(QWidget *parent) : QDialog(parent)
 }
 
 
-TablePrint::~TablePrint()
+RecordPrint::~RecordPrint()
 {
     delete textArea;
 
@@ -31,7 +31,7 @@ TablePrint::~TablePrint()
 }
 
 
-void TablePrint::setup_ui()
+void RecordPrint::setup_ui()
 {
     setModal(true);
 
@@ -70,7 +70,7 @@ void TablePrint::setup_ui()
 }
 
 
-void TablePrint::setup_signals()
+void RecordPrint::setup_signals()
 {
     // connect(buttonBox, SIGNAL(accepted()), this, SLOT(print()));
     // connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
@@ -81,7 +81,7 @@ void TablePrint::setup_signals()
 }
 
 
-void TablePrint::assembly()
+void RecordPrint::assembly()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
@@ -94,14 +94,14 @@ void TablePrint::assembly()
 
 
 // Метод установки модели данных, из которой будет формироваться таблица
-void TablePrint::setModel(TableProxyModel *iModel)
+void RecordPrint::setModel(RecordProxyModel *iModel)
 {
     model = iModel;
 }
 
 
 // Формирование HTML-кода таблицы
-void TablePrint::generateHtmlTableFromModel(void)
+void RecordPrint::generateHtmlTableFromModel(void)
 {
     QString html = "<table border='1' style='border-style:solid; margin-top:0; margin-bottom:0; margin-left:0; margin-right:0;' cellspacing='0' cellpadding='0'>";
 
@@ -141,14 +141,14 @@ void TablePrint::generateHtmlTableFromModel(void)
 }
 
 
-void TablePrint::setTitleToHtml(QString title)
+void RecordPrint::setTitleToHtml(QString title)
 {
     textArea->setHtml("<p>" + title + "</p>" + textArea->toHtml());
 }
 
 
 // Слот в котором происходит вызов служебного окна предпросмотра тачатаемой таблицы
-void TablePrint::print(void)
+void RecordPrint::print(void)
 {
     QTextDocument doc; // Документ, который будет отправлен на печать
 
@@ -162,7 +162,7 @@ void TablePrint::print(void)
 }
 
 
-void TablePrint::save(void)
+void RecordPrint::save(void)
 {
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("HTML Files (*.html)"));
 

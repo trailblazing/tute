@@ -9,7 +9,7 @@ FixedParameters::FixedParameters(QObject *parent) : QObject(parent)
 {
     Q_UNUSED(parent);
 
-    recordFieldAvailableList = (QStringList()   \
+    _record_field = (QStringList()              \
                                 << "id"         \
                                 << "pin"        \
                                 << "name"       \
@@ -24,7 +24,7 @@ FixedParameters::FixedParameters(QObject *parent) : QObject(parent)
                                 << "hasAttach"  \
                                 << "attachCount");
 
-    recordNaturalFieldAvailableList = (QStringList()\
+    _record_natural_field = (QStringList()          \
                                        << "id"      \
                                        << "pin"     \
                                        << "name"    \
@@ -37,11 +37,11 @@ FixedParameters::FixedParameters(QObject *parent) : QObject(parent)
                                        << "file"    \
                                        << "crypt");
 
-    recordCalculableFieldAvailableList = (QStringList()     \
+    _record_calculable_field = (QStringList()               \
                                           << "hasAttach"    \
                                           << "attachCount");
 
-    recordFieldCryptedList = (QStringList() \
+    _record_field_crypted = (QStringList()  \
                               << "pin"      \
                               << "name"     \
                               << "author"   \
@@ -104,7 +104,7 @@ QStringList FixedParameters::recordCalculableFieldAvailableList(void) const
 
 bool FixedParameters::isRecordFieldAvailable(QString name) const
 {
-    if(recordFieldAvailableList.contains(name))
+    if(_record_field.contains(name))
         return true;
     else
         return false;
@@ -113,7 +113,7 @@ bool FixedParameters::isRecordFieldAvailable(QString name) const
 
 bool FixedParameters::isRecordFieldNatural(QString name) const
 {
-    if(recordNaturalFieldAvailableList.contains(name))
+    if(_record_natural_field.contains(name))
         return true;
     else
         return false;
@@ -123,7 +123,7 @@ bool FixedParameters::isRecordFieldNatural(QString name) const
 
 bool FixedParameters::isRecordFieldCalculable(QString name) const
 {
-    if(recordCalculableFieldAvailableList.contains(name))
+    if(_record_calculable_field.contains(name))
         return true;
     else
         return false;
@@ -135,19 +135,19 @@ QMap<QString, QString> FixedParameters::recordFieldDescription(QStringList list)
 {
     QMap<QString, QString> names;
 
-    names["id"] = tr("ID");
-    names["pin"] = tr("Pin");
-    names["name"] = tr("Title");
-    names["author"] = tr("Author");
-    names["home"] = tr("Home");
-    names["url"] = tr("Url");
-    names["tags"] = tr("Tags");
-    names["ctime"] = tr("Create time");
-    names["dir"] = tr("Directory name");
-    names["file"] = tr("File name");
-    names["crypt"] = tr("Is crypt");
-    names["hasAttach"] = tr("Has attachs");
-    names["attachCount"] = tr("Attachs count");
+    names["id"]             = tr("ID");
+    names["pin"]            = tr("Pin");
+    names["name"]           = tr("Title");
+    names["author"]         = tr("Author");
+    names["home"]           = tr("Home");
+    names["url"]            = tr("Url");
+    names["tags"]           = tr("Tags");
+    names["ctime"]          = tr("Create time");
+    names["dir"]            = tr("Directory name");
+    names["file"]           = tr("File name");
+    names["crypt"]          = tr("Is crypt");
+    names["hasAttach"]      = tr("Has attachs");
+    names["attachCount"]    = tr("Attachs count");
 
 
     // Удаляются строчки, которых нет в переданном списке

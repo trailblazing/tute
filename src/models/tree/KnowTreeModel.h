@@ -25,7 +25,7 @@ public:
     void initFromXML(QString fileName);
     void reload(void);
 
-    QDomElement full_modeldata_to_dom(std::shared_ptr<TreeItem> root);
+    QDomElement export_to_dom(boost::intrusive_ptr<TreeItem> root);
 
     void save(void);
 
@@ -36,7 +36,7 @@ public:
     void addNewSiblingBranch(const QModelIndex &index, QString id, QString name);
 
     // Добавление новой подветки к Item элементу
-    void addNewBranch(std::shared_ptr<TreeItem> parent, QString id, QString name);
+    void addNewBranch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
 
     // Перемещение ветки вверх и вниз
     QModelIndex moveUpBranch(const QModelIndex &index);
@@ -45,16 +45,16 @@ public:
     // Получение индекса подчиненного элемента с указанным номером
     QModelIndex indexChildren(const QModelIndex &parent, int n) const;
 
-    QModelIndex index_item(std::shared_ptr<TreeItem> item);
+    QModelIndex index_item(boost::intrusive_ptr<TreeItem> item);
 
     // Поиск ветки с указанным ID
-    std::shared_ptr<TreeItem> getItemById(QString id);
+    boost::intrusive_ptr<TreeItem> getItemById(QString id);
 
     // Возвращает общее количество записей, хранимых в дереве
     int getAllRecordCount(void);
 
     // Возвращает количество записей в ветке и всех подветках
-    int getRecordCountForItem(std::shared_ptr<TreeItem> item);
+    int size_of(boost::intrusive_ptr<TreeItem> item);
 
     QString pasteNewChildBranch(const QModelIndex &index, ClipboardBranch *subbranch);
     QString pasteNewSiblingBranch(const QModelIndex &index, ClipboardBranch *subbranch);
@@ -78,38 +78,38 @@ private:
     void init(QDomDocument *domModel);
 
     // Функция заполнения дерева из DOM-документа
-    void setup_modeldata(QDomDocument *dommodel, std::shared_ptr<TreeItem> parent);
+    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> parent);
 
     // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
-    void node_from_dom(QDomElement n, std::shared_ptr<TreeItem> parent);
+    void node_from_dom(QDomElement n, boost::intrusive_ptr<TreeItem> parent);
 
     // Преобразование Item в DOM модель
-    void tree_to_dom(QDomDocument *doc, QDomElement &xmlData, std::shared_ptr<TreeItem> currItem);
+    void export_to_dom(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
 
     // Перемещение ветки вверх или вниз
     QModelIndex moveUpDnBranch(const QModelIndex &index, int direction);
 
-    int getAllRecordCountRecurse(std::shared_ptr<TreeItem> item, int mode);
+    int getAllRecordCountRecurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
-    QString pasteSubbranchRecurse(std::shared_ptr<TreeItem> item,
+    QString pasteSubbranchRecurse(boost::intrusive_ptr<TreeItem> item,
                                   QString startBranchId,
                                   ClipboardBranch *subbranch);
 
-    std::shared_ptr<TreeItem> getItemByIdRecurse(std::shared_ptr<TreeItem> item, QString id, int mode);
+    boost::intrusive_ptr<TreeItem> getItemByIdRecurse(boost::intrusive_ptr<TreeItem> item, QString id, int mode);
 
-    bool isContainsCryptBranchesRecurse(std::shared_ptr<TreeItem> item, int mode);
+    bool isContainsCryptBranchesRecurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString pasteSubbranch(std::shared_ptr<TreeItem> item, ClipboardBranch *subbranch);
+    QString pasteSubbranch(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch);
 
-    QStringList getRecordPathRecurse(std::shared_ptr<TreeItem> item,
+    QStringList getRecordPathRecurse(boost::intrusive_ptr<TreeItem> item,
                                      QStringList currentPath,
                                      QString recordId,
                                      int mode);
 
-    bool isItemIdExistsRecurse(std::shared_ptr<TreeItem> item, QString findId, int mode);
+    bool isItemIdExistsRecurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode);
 
-    bool isRecordIdExistsRecurse(std::shared_ptr<TreeItem> item, QString findId, int mode);
+    bool isRecordIdExistsRecurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode);
 
     bool checkFormat(QDomElement elementFormat);
 

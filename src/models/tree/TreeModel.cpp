@@ -1,7 +1,7 @@
 #include "TreeItem.h"
 #include "TreeModel.h"
 #include "main.h"
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordTable.h"
 #include "libraries/GlobalParameters.h"
 
 extern GlobalParameters globalparameters;
@@ -39,7 +39,7 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается окраска текста элемента
     if(role == Qt::ForegroundRole) {
-        std::shared_ptr<TreeItem> it = item(index);
+        boost::intrusive_ptr<TreeItem> it = item(index);
 
         if(it->row_count() > 0)
             return QColor(Qt::black);// Если узел содержит таблицу конечных записей
@@ -56,14 +56,14 @@ QVariant TreeModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается содержимое текста элемента
     if(role == Qt::DisplayRole || role == Qt::EditRole) {
-        std::shared_ptr<TreeItem> it = item(index);
+        boost::intrusive_ptr<TreeItem> it = item(index);
 
         return QVariant(it->field("dynamicname"));   // Запрашивается строка имени с количеством элементов
     }
 
     // Если запрашиваются элементы оформления
     if(role == Qt::DecorationRole) {
-        std::shared_ptr<TreeItem> it = item(index);
+        boost::intrusive_ptr<TreeItem> it = item(index);
 
         // Если ветка зашифрована
         if(it->field("crypt") == "1") {
@@ -90,10 +90,13 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &index) const
 
 
 // Получение указателя на Item-злемент связанный с заданным QModelIndex
-std::shared_ptr<TreeItem> TreeModel::item(const QModelIndex &index) const
+boost::intrusive_ptr<TreeItem> TreeModel::item(const QModelIndex &index) const
 {
     if(index.isValid()) {
-        std::shared_ptr<TreeItem> item = const_pointer_cast<TreeItem>(static_cast<TreeItem *>(index.internalPointer())->shared_from_this());
+        boost::intrusive_ptr<TreeItem> item = boost::const_pointer_cast<TreeItem>(
+                                                  boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *const>(index.internalPointer()))
+                                                  //->shared_from_this()
+                                              );
 
         if(item) {
             // qDebug() << "Get tree item " << item->data("name").toString();
@@ -110,7 +113,7 @@ std::shared_ptr<TreeItem> TreeModel::item(const QModelIndex &index) const
 }
 
 
-QModelIndex TreeModel::index_item(std::shared_ptr<TreeItem> item)
+QModelIndex TreeModel::index_item(boost::intrusive_ptr<TreeItem> item)
 {
     // Инициализация рекурсивной функции
     index_recursive(QModelIndex(), item, 0);
@@ -119,7 +122,7 @@ QModelIndex TreeModel::index_item(std::shared_ptr<TreeItem> item)
 }
 
 
-QModelIndex TreeModel::index_recursive(QModelIndex index, std::shared_ptr<TreeItem> item, int mode)
+QModelIndex TreeModel::index_recursive(QModelIndex index, boost::intrusive_ptr<TreeItem> item, int mode)
 {
     static QModelIndex find_index;
     static bool is_find = false;
@@ -133,7 +136,7 @@ QModelIndex TreeModel::index_recursive(QModelIndex index, std::shared_ptr<TreeIt
 
     if(mode == 1) {
         // Если указатель узла совпадает с заданным item
-        if(item.get() == static_cast<TreeItem * >(index.internalPointer())) {
+        if(item.get() == static_cast<TreeItem *const>(index.internalPointer())) {
             is_find = true;
             find_index = index;
             return find_index;
@@ -150,9 +153,9 @@ QModelIndex TreeModel::index_recursive(QModelIndex index, std::shared_ptr<TreeIt
 
 
 // Получение указателя на Item-злемент с указанным путем
-std::shared_ptr<TreeItem> TreeModel::item(QStringList path) const
+boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
 {
-    std::shared_ptr<TreeItem> curritem = _root_item;
+    boost::intrusive_ptr<TreeItem> curritem = _root_item;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
@@ -169,7 +172,7 @@ std::shared_ptr<TreeItem> TreeModel::item(QStringList path) const
 
         // Если очередной идентификатор пути не был найден
         if(found == 0)
-            criticalError("Detect bad path in getItem() method " + path.join(","));
+            critical_error("Detect bad path in getItem() method " + path.join(","));
     }
 
     return curritem;
@@ -181,7 +184,7 @@ bool TreeModel::is_item_valid(QStringList path) const
     if(path.count() == 1 && path[0] == "0")
         return false;
 
-    std::shared_ptr<TreeItem> curritem = _root_item;
+    boost::intrusive_ptr<TreeItem> curritem = _root_item;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
@@ -243,9 +246,9 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
     if(parent.isValid() && parent.column() != 0)
         return QModelIndex();
 
-    std::shared_ptr<TreeItem> parentItem = item(parent);
+    boost::intrusive_ptr<TreeItem> parentItem = item(parent);
 
-    std::shared_ptr<TreeItem> childItem = parentItem->child(row);
+    boost::intrusive_ptr<TreeItem> childItem = parentItem->child(row);
 
     if(childItem)
         return createIndex(row, column, static_cast<void *>(childItem.get()));
@@ -257,7 +260,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 // Вставка пустых строк с позиции position в количестве rows
 bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 {
-    std::shared_ptr<TreeItem> parentItem = item(parent);
+    boost::intrusive_ptr<TreeItem> parentItem = item(parent);
     bool success;
 
     beginInsertRows(parent, position, position + rows - 1);
@@ -277,8 +280,8 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
     if(!index.isValid())
         return QModelIndex();
 
-    std::shared_ptr<TreeItem> childItem = item(index);
-    std::shared_ptr<TreeItem> parentItem;
+    boost::intrusive_ptr<TreeItem> childItem = item(index);
+    boost::intrusive_ptr<TreeItem> parentItem;
 
     if(childItem) {
         parentItem = childItem->parent();
@@ -295,7 +298,7 @@ QModelIndex TreeModel::parent(const QModelIndex &index) const
 
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
-    std::shared_ptr<TreeItem> parentItem = item(parent);
+    boost::intrusive_ptr<TreeItem> parentItem = item(parent);
     bool success = true;
 
     beginRemoveRows(parent, position, position + rows - 1);
@@ -308,7 +311,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 
 int TreeModel::rowCount(const QModelIndex &itemIndex) const
 {
-    std::shared_ptr<TreeItem> it = item(itemIndex);
+    boost::intrusive_ptr<TreeItem> it = item(itemIndex);
     return it->child_count();
 }
 
@@ -341,10 +344,10 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 
         // Вычисляется указатель на Item элемент по QModelIndex
         // в визуальной модели дерева
-        std::shared_ptr<TreeItem> it = item(index);
+        boost::intrusive_ptr<TreeItem> it = item(index);
 
         // Устанавливаются данные в Item элемент
-        it->set_field("name", value.toString());
+        it->field("name", value.toString());
 
         return true;
     }
@@ -353,13 +356,12 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 }
 
 
-bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
-                              const QVariant &value, int role)
+bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role)
 {
     if(role != Qt::EditRole || orientation != Qt::Horizontal)
         return false;
 
     Q_UNUSED(section);
-    _root_item->set_field("name", value.toString());
+    _root_item->field("name", value.toString());
     return true;
 }

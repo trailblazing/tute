@@ -1,3 +1,5 @@
+
+#include <string>
 #include <QString>
 #include <QDir>
 #include <QString>
@@ -13,7 +15,7 @@
 #include "libraries/TrashMonitoring.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "models/tree/TreeItem.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "models/tree/KnowTreeModel.h"
@@ -32,6 +34,14 @@ extern AppConfig appconfig;
 extern TrashMonitoring trashmonitoring;
 extern GlobalParameters globalparameters;
 extern WalkHistory walkhistory;
+const char *meta_editor_singleton_name  = "editor_screen";
+const char *table_screen_singleton_name = "table_screen";
+const char *tree_screen_singleton_name  = "tree_screen";
+const char *find_screen_singleton_name  = "find_screen";
+const char *download_manager_singleton_name = "download_manager";
+const char *windowswitcher_singleton_name   = "window_switcher";
+const char *entrance_singleton_name     = "entrance";
+const char *table_controller_singleton_name = "table_screen_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
 
 
 MainWindow::MainWindow(
@@ -51,18 +61,19 @@ MainWindow::MainWindow(
     , _filemenu(new QMenu(tr("&File"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
-    , _tree_screen(new TreeScreen("tree_screen", appconfig, _filemenu, _toolsmenu, this))
-    , _table_screen(new TableScreen("table_screen", this))
-    // , _page_screen(new TableScreen("page_screen", this))
-    , _download(new browser::DownloadManager("download_manager", this))
-    , _find_screen(new FindScreen("find_screen", this))
-    , _editor_screen(new MetaEditor("editor_screen", _find_screen))
+    , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, this))
+    , _table_screen(new RecordScreen(table_screen_singleton_name, _tree_screen->_shadow_candidate_model->_root_item, this))
+      //    , _page_screen(new TableScreen("page_screen", _tree_screen->_shadowmodel->_root_item, this))
+    , _download(new browser::DownloadManager(download_manager_singleton_name, this))
+    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_shadow_candidate_model->_root_item, this))
+    , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
     , _statusbar(new QStatusBar(this))
-    , _switcher(new WindowSwitcher("window_switcher", _editor_screen, this))
+    , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
     , _record_controller(_table_screen->table_controller())
-    // , _page_controller(_page_screen->table_controller())
-    , _entrance(new browser::Entrance("entrance"
+      //    , _page_controller(_page_screen->table_controller())
+    , _entrance(new browser::Entrance(entrance_singleton_name
                                       , _record_controller
+                                      , _tree_screen->_shadow_page_model->_root_item
                                       // , _page_controller
                                       , _find_screen->toolbarsearch()
                                       , globalparameters.style_source()
@@ -71,6 +82,9 @@ MainWindow::MainWindow(
                                      ))
     , _enable_real_close(false)
 {
+    //    _page_screen->setVisible(false);
+    //    _page_screen->hide();
+
     _globalparameters.mainwindow(this);
     _globalparameters.vtab(_vtabwidget);
 
@@ -85,8 +99,8 @@ MainWindow::MainWindow(
     //    initHelpMenu();
     QMainWindow::menuBar()->hide();
 
-    setupUI();
-    setupSignals();
+    setup_ui();
+    setup_signals();
     assembly();
 
     //    initFileMenu();
@@ -125,7 +139,7 @@ MainWindow::~MainWindow()
     delete  _find_screen;
     delete  _download;
 
-    // if(_page_screen)delete  _page_screen;
+    //    if(_page_screen)delete  _page_screen;
 
     delete  _table_screen;
     delete  _tree_screen;
@@ -144,19 +158,19 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::setupUI(void)
+void MainWindow::setup_ui(void)
 {
     // При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
 
     //    _tree_screen = new TreeScreen(_appconfig, this);
-    //    _tree_screen->setObjectName("tree_screen");  // "treeScreen"
+    //    _tree_screen->setObjectName(tree_screen_singleton_name);  // "treeScreen"
     _globalparameters.tree_screen(_tree_screen);
     //    _treetable_hidden = treeScreen->isHidden();
     //    connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
     //    connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
 
     //    _table_screen = new TableScreen(this);
-    //    _table_screen->setObjectName("table_screen"); // "recordTableScreen"
+    //    _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
     _globalparameters.table_screen(_table_screen);
     //    _recordtable_hidden = recordTableScreen->isHidden();
     //    connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
@@ -164,20 +178,20 @@ void MainWindow::setupUI(void)
 
     //    _page_screen = new TableScreen(this);
     //    _page_screen->setObjectName("page_screen");
-    // _globalparameters.page_screen(_page_screen);
+    //    _globalparameters.page_screen(_page_screen);
 
     //    _download = new browser::DownloadManager(this);
-    //    _download->setObjectName("download_manager");
+    //    _download->setObjectName(download_manager_singleton_name);
     _globalparameters.download_manager(_download);
 
 
     //    _editor_screen = new MetaEditor();
-    //    _editor_screen->setObjectName("editor_screen");  // "editorScreen"
+    //    _editor_screen->setObjectName(meta_editor_singleton_name);  // "editorScreen"
     _globalparameters.meta_editor(_editor_screen);
 
 
     //    _find_screen = new FindScreen(this);
-    //    _find_screen->setObjectName("find_screen");  // "findScreenDisp"
+    //    _find_screen->setObjectName(find_screen_singleton_name);  // "findScreenDisp"
     _globalparameters.find_screen(_find_screen);
     //findScreenDisp->hide();
 
@@ -193,7 +207,7 @@ void MainWindow::setupUI(void)
 
     // Вспомогательный объект переключения окон, используется в мобильном интерфейсе
     //    _switcher = new WindowSwitcher(this);
-    //    _switcher->setObjectName("window_switcher"); // "windowSwitcher"
+    //    _switcher->setObjectName(windowswitcher_singleton_name); // "windowSwitcher"
     _globalparameters.window_switcher(_switcher);
     //    windowSwitcher->findInBaseClick();
 
@@ -206,17 +220,17 @@ void MainWindow::setupUI(void)
     //            , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
     //        );
     //        //    browsermanager->adjustSize();
-    _entrance->setScrollbars(true);
-    //    _entrance->setObjectName("entrance");
+    _entrance->set_scrollbars(true);
+    //    _entrance->setObjectName(entrance_singleton_name);
     _globalparameters.entrance(_entrance);
     //    }
 
     // todo: Для проверки, почему то в этом месте поиск объекта по имени не работает, разобраться.
-    // MetaEditor *edView=find_object<MetaEditor>("editor_screen");
+    // MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name);
 }
 
 
-void MainWindow::setupSignals(void)
+void MainWindow::setup_signals(void)
 {
     connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &MainWindow::onExpandEditArea);
 
@@ -228,7 +242,7 @@ void MainWindow::setupSignals(void)
     // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
     connect(_tree_screen->_actionlist["find_in_base"], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
     //    connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
-    connect(_table_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
     // if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
@@ -259,20 +273,22 @@ void MainWindow::assembly(void)
     _vtabwidget->setTabPosition(QTabWidget::West);  // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
     _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
 
-    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Record");
+    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
 
     // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
     _vtabwidget->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/holly.svg"), "Download");
 
     auto hide_others = [this](int index) {
-        auto count = _vtabwidget->count();
+        if(-1 != index) {
+            auto count = _vtabwidget->count();
 
-        for(int i = 0; i < count; i++) {
-            if(i != index)_vtabwidget->widget(i)->hide();
+            for(int i = 0; i < count; i++) {
+                if(i != index)_vtabwidget->widget(i)->hide();
+            }
+
+            _vtabwidget->widget(index)->show();
         }
-
-        _vtabwidget->widget(index)->show();
     };
 
     hide_others(_vtabwidget->currentIndex());
@@ -284,10 +300,12 @@ void MainWindow::assembly(void)
     // deprecated: ignoring Tree Search Area
     connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
     , [this](int index) {
-        if(_vtabwidget->widget(index)->objectName() == "tree_screen") {
-            _appconfig.setFindScreenTreeSearchArea(0);
-        } else if(_vtabwidget->widget(index)->objectName() == "table_screen") {
-            _appconfig.setFindScreenTreeSearchArea(1);
+        if(-1 != index) {
+            if(_vtabwidget->widget(index)->objectName() == tree_screen_singleton_name) {
+                _appconfig.setFindScreenTreeSearchArea(0);
+            } else if(_vtabwidget->widget(index)->objectName() == table_screen_singleton_name) {
+                _appconfig.setFindScreenTreeSearchArea(1);
+            }
         }
     }   // &AppConfig::setFindScreenTreeSearchArea
            );   // , findScreenDisp, &FindScreen::changedTreeSearchArea
@@ -422,7 +440,7 @@ void MainWindow::restore_tree_position(void)
 void MainWindow::save_tree_position(void)
 {
     // Получение QModelIndex выделенного в дереве элемента
-    QModelIndex index = _tree_screen->getCurrentItemIndex();
+    QModelIndex index = _tree_screen->currentitem_index();
 
     // Получаем указатель вида TreeItem
     auto item = _tree_screen->_knowtreemodel->item(index);
@@ -446,7 +464,7 @@ void MainWindow::set_tree_position(QStringList path)
     QModelIndex setto = _tree_screen->_knowtreemodel->index_item(item);
 
     // Курсор устанавливается в нужную позицию
-    _tree_screen->setCursorToIndex(setto);
+    _tree_screen->cursor_to_index(setto);
 }
 
 
@@ -477,7 +495,7 @@ void MainWindow::restore_recordtable_position(void)
 
 void MainWindow::save_recordtable_position(void)
 {
-    QString id = _table_screen->getFirstSelectionId();
+    QString id = _table_screen->first_selection_id();
 
     appconfig.set_recordtable_selected_record_id(id);
 }
@@ -526,7 +544,7 @@ void MainWindow::restoreFindOnBaseVisible(void)
     bool n = appconfig.get_findscreen_show();
 
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel = find_object<FindScreen>("find_screen");
+    FindScreen *findScreenRel = find_object<FindScreen>(find_screen_singleton_name);
 
     if(n)
         findScreenRel->show();
@@ -788,7 +806,7 @@ void MainWindow::applicationFastExit(void)
 void MainWindow::toolsFind(void)
 {
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel = find_object<FindScreen>("find_screen");
+    FindScreen *findScreenRel = find_object<FindScreen>(find_screen_singleton_name);
 
     if(!(findScreenRel->isVisible()))
         findScreenRel->show();
@@ -799,7 +817,7 @@ void MainWindow::toolsFind(void)
 void MainWindow::editor_switch(void)
 {
 
-    MetaEditor *editorScreen = find_object<MetaEditor>("editor_screen");
+    MetaEditor *editorScreen = find_object<MetaEditor>(meta_editor_singleton_name);
 
     if(!(editorScreen->isVisible())) {
         editorScreen->show();
@@ -986,7 +1004,7 @@ void MainWindow::synchronization(void)
     walkhistory.setDrop(true);
 
     // Заново считываются данные в дерево
-    _tree_screen->reloadKnowTree();
+    _tree_screen->reload_knowtree();
     restore_tree_position();
     restore_recordtable_position();
     restoreEditorCursorPosition();
@@ -1188,7 +1206,7 @@ void MainWindow::onFocusChanged(QWidget *widgetFrom, QWidget *widgetTo)
 {
     Q_UNUSED(widgetFrom);
 
-    if(widgetTo == NULL)
+    if(widgetTo == nullptr)
         return;
 
     qDebug() << "MainWindow::onFocusChanged() to " << widgetTo->objectName();

@@ -48,11 +48,11 @@
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QShortcut>
 #include "models/record_table/Record.h"
-#include "controllers/record_table/TableController.h"
-#include "views/record_table/TableScreen.h"
+#include "controllers/record_table/RecordController.h"
+#include "views/record_table/RecordScreen.h"
 #include "libraries/GlobalParameters.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
 #include "views/browser/history.h"
 #include "views/browser/browser.h"
 #include "views/browser/webview.h"
@@ -222,7 +222,11 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(TableController *_record_controller, Browser *parent);
+        TabWidget(RecordController *_record_controller
+                  //                  , TableController *_page_controller
+                  , boost::intrusive_ptr<TreeItem> _page_tree_item
+                  , Browser *parent
+                 );
         ~TabWidget();
         void clear();
         void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
@@ -254,27 +258,28 @@ namespace browser {
         struct ActiveRecordBinder {
             TabWidget       *_the;
             bool            _make_current;
-            TableController *_record_controller;
-            // TableController *_page_controller;
+            //            TableController *_record_controller;
+            //            TableController *_page_controller;
             // WebView *view;
             ActiveRecordBinder(TabWidget *the
                                , bool make_current
                                = true
-                                 , TableController *_record_controller
-                               = globalparameters.table_screen()->table_controller()
-                                 // , TableController *_page_controller
-                                 // = globalparameters.page_screen()->table_controller()
-                              ): _the(the) , _make_current(make_current), _record_controller(_record_controller)
-                // , _page_controller(_page_controller)
+                                 //                                 , TableController *_record_controller
+                                 //                               = globalparameters.table_screen()->table_controller()
+                                 //                                 , TableController *_page_controller
+                                 //                               = globalparameters.page_screen()->table_controller()
+                              ): _the(the) , _make_current(make_current)
+                //                , _record_controller(_record_controller)
+                //                , _page_controller(_page_controller)
                 //  , view(nullptr)
             {}
 
             WebView *binder(std::shared_ptr<Record> record)
             {
                 return // view =
-                    _the->newTab(record, _make_current, _record_controller
-                                 // , _page_controller
-                                 );
+                    _the->newTab(record, _make_current, _the->_record_controller
+                                 //                                 , _the->_page_controller
+                                );
             }
 
             WebView *activator(std::shared_ptr<Record> record)
@@ -284,11 +289,17 @@ namespace browser {
 
         };
 
+        //        void sychronize_metaeditor_to_record(std::shared_ptr<Record> record);
+        boost::intrusive_ptr<TreeItem> tree_item() {return _page_tree_item;}
+        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->tabledata();}
+        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->tabledata(table_data);}
+
     protected:
         void mouseDoubleClickEvent(QMouseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void resizeEvent(QResizeEvent *);   // Q_DECL_OVERRIDE;
+
     public slots:
         void loadUrlInCurrentTab(const QUrl &url);
 
@@ -300,9 +311,11 @@ namespace browser {
                         //  , bool openinnewtab = false
                         , bool make_current
                         = true
-                          , TableController *_record_controller
+                          , RecordController *_record_controller
                         = globalparameters.table_screen()->table_controller()
-                          );
+                          //                          , TableController *_page_controller
+                          //                        = globalparameters.page_screen()->table_controller()
+                       );
 
         //        void new_view(bool make_current = false);    //true
 
@@ -349,76 +362,94 @@ namespace browser {
         QWebEngineProfile       *_profile;
         QWebEngineView          *_fullscreenview;
         FullScreenNotification  *_fullscreennotification;
-        TableController         *_record_controller;
-        // TableController         *_page_controller;
+    protected:
+        RecordController         *_record_controller;
+        //        TableController         *_page_controller;
 
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
         //        //        sd::method<sd::meta_info<void *const>> _active_r;
+        boost::intrusive_ptr<TreeItem> _page_tree_item;
+        //        TableModel              *_shadow_source_model;
+        //        std::shared_ptr<TableData>  _table_data;
         Browser                 *_window;
 
         friend class Browser;
         friend class ToolbarSearch;
     };
 
-    class PopupWindow :
-        public TabWidget {  // public QWidget
-        Q_OBJECT
-    public:
-        PopupWindow(QWebEngineProfile *const setProfile, QUrl const &url, TableController *_record_controller
-                    // , TableController *_page_controller
-                    , Browser *parent);
+    //    class PopupWindow :
+    //    //        public TabWidget {  //
+    //    //        public QWidget {
+    //        public Browser {
+    //        Q_OBJECT
+    //    public:
+    //        PopupWindow(TabWidget *tabmanager, QWebEngineProfile *const setProfile, QUrl const &url, TableController *_record_controller
+    //                    , TableController *_page_controller
+    //                    //                    , Browser *parent
+    //                   );
 
-        //        QWebEnginePage
-        WebPage *page() const;
+    //        //        QWebEnginePage
+    //        WebPage *page() const;
 
-    private Q_SLOTS:
-        void setUrl(const QUrl &url);
+    //    private Q_SLOTS:
+    //        void setUrl(const QUrl &url);
 
-        void adjustGeometry(const QRect &newGeometry);
+    //        void adjustGeometry(const QRect &newGeometry);
 
-    private:
-        QLineEdit   *_addressbar;
-        WebView     *_view;
+    //    private:
+    //        QLineEdit   *_addressbar;
+    //        WebView     *_view;
 
-        struct ActiveRecordBinder {
-            PopupWindow *_the;
-            QWebEngineProfile *_profile;
-            TableController *_record_controller;
-            TableController *_page_controller;
-            // WebView *_view;
-            ActiveRecordBinder(
-                PopupWindow *const the, QWebEngineProfile *profile, TableController *_record_controller
-                // , TableController *_page_controller
-            ) :
-                _the(the)
-                , _profile(profile)
-                , _record_controller(_record_controller)
-                // , _page_controller(_page_controller)
-                // , _view(nullptr)
-            {}
+    //        struct ActiveRecordBinder {
+    //            PopupWindow         *_the;
+    //            TabWidget           *_tabmanager;
+    //            QWebEngineProfile   *_profile;
+    //            TableController     *_record_controller;
+    //            TableController     *_page_controller;
+    //            WebView             *_view;
 
-            WebView *binder(std::shared_ptr<Record> record)
-            {
-                //            assert(!record->unique_page());   // assert by record it self
+    //            ~ActiveRecordBinder() {delete _view;}
+    //            ActiveRecordBinder(
+    //                TabWidget *tabmanager
+    //                , PopupWindow *const the
+    //                , QWebEngineProfile *profile
+    //                , TableController *_record_controller
+    //                , TableController *_page_controller
+    //            ) :
+    //                _the(the)
+    //                , _tabmanager(tabmanager)
+    //                , _profile(profile)
+    //                , _record_controller(_record_controller)
+    //                , _page_controller(_page_controller)
+    //                , _view(nullptr)
+    //            {}
 
-                //            if(!record->unique_page())
-                return // _view =
-                    new WebView(record, _profile, _the, _record_controller
-                                // , _page_controller
-                               );
-                //            else
-                //                return record->unique_page()->view();
-            }
+    //            WebView *binder(std::shared_ptr<Record> record)
+    //            {
+    //                //            assert(!record->unique_page());   // assert by record it self
 
-            WebView *activator(std::shared_ptr<Record> record)
-            {
-                return record->unique_page()->active();
-            }
+    //                //            if(!record->unique_page())
+    //                return  _view =
+    //                            new WebView(record, _profile, _tabmanager, _the, _record_controller
+    //                                        , _page_controller
+    //                                       );
+    //                //                _the->newTab(record, true, _the->_record_controller
+    //                //                             , _the->_page_controller
+    //                //                            );
 
-        };
+    //                //            else
+    //                //                return record->unique_page()->view();
+    //            }
 
-    };
+    //            WebView *activator(std::shared_ptr<Record> record)
+    //            {
+    //                return record->unique_page()->active();
+    //            }
+
+    //        };
+
+    //    };
 
 }
 

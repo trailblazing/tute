@@ -8,7 +8,7 @@
 
 AttachTableModel::AttachTableModel(QObject *parent) : QAbstractTableModel(parent)
 {
-    table=NULL;
+    table = NULL;
 }
 
 
@@ -19,7 +19,7 @@ AttachTableModel::~AttachTableModel()
 
 
 // Число столбцов
-int AttachTableModel::columnCount(const QModelIndex & parent) const
+int AttachTableModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
@@ -28,11 +28,11 @@ int AttachTableModel::columnCount(const QModelIndex & parent) const
 
 
 // Число файлов
-int AttachTableModel::rowCount(const QModelIndex& parent) const
+int AttachTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
-    if(table==NULL)
+    if(table == nullptr)
         return 0;
 
     return table->size();
@@ -40,37 +40,37 @@ int AttachTableModel::rowCount(const QModelIndex& parent) const
 
 
 // Получение данных
-QVariant AttachTableModel::data(const QModelIndex& index, int role) const
+QVariant AttachTableModel::data(const QModelIndex &index, int role) const
 {
-    if (index.isValid() && role == Qt::DisplayRole)
+    if(index.isValid() && role == Qt::DisplayRole)
         return getCell(index.row(), index.column());
 
     // Указатель на связанные с моделью данные
-    if(role==ATTACHTABLE_ROLE_TABLE_DATA) {
-        if(table==NULL)
+    if(role == ATTACHTABLE_ROLE_TABLE_DATA) {
+        if(table == nullptr)
             return QVariant(0);
         else
             return QVariant::fromValue(table);
     }
 
     // Идентификатор аттача
-    if(role==ATTACHTABLE_ROLE_ID) {
-        int row=index.row();
-        QString id=table->getIdByRow(row);
+    if(role == ATTACHTABLE_ROLE_ID) {
+        int row = index.row();
+        QString id = table->getIdByRow(row);
 
         return QVariant::fromValue(id);
     }
 
     // В колонке с именем файла отображается иконка файла или линка
-    if(role==Qt::DecorationRole && index.column()==ATTACHTABLE_COLUMN_FILENAME) {
-        int row=index.row();
-        QString id=table->getIdByRow(row);
-        QString attachType=table->getAttach(id).getField("type");
+    if(role == Qt::DecorationRole && index.column() == ATTACHTABLE_COLUMN_FILENAME) {
+        int row = index.row();
+        QString id = table->getIdByRow(row);
+        QString attachType = table->getAttach(id).getField("type");
 
-        if(attachType=="file")
+        if(attachType == "file")
             return QIcon(":/resource/pic/attach_is_file.svg");
 
-        if(attachType=="link")
+        if(attachType == "link")
             return QIcon(":/resource/pic/attach_is_link.svg");
     }
 
@@ -81,13 +81,15 @@ QVariant AttachTableModel::data(const QModelIndex& index, int role) const
 // Получение значения ячейки, защищенный метод
 QVariant AttachTableModel::getCell(int row, int column) const
 {
-    switch (column) {
-    case ATTACHTABLE_COLUMN_FILENAME:
-        return QVariant(table->getFileName(row));
-    case ATTACHTABLE_COLUMN_FILESIZE:
-        return QVariant(table->getFileSize(row));
-    default:
-        return QVariant();
+    switch(column) {
+        case ATTACHTABLE_COLUMN_FILENAME:
+            return QVariant(table->getFileName(row));
+
+        case ATTACHTABLE_COLUMN_FILESIZE:
+            return QVariant(table->getFileSize(row));
+
+        default:
+            return QVariant();
     }
 }
 
@@ -95,50 +97,50 @@ QVariant AttachTableModel::getCell(int row, int column) const
 // Сохранение вводимых данных по указанному индексу
 bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if(role==ATTACHTABLE_COMMAND_RESET_MODEL) {
+    if(role == ATTACHTABLE_COMMAND_RESET_MODEL) {
         beginResetModel();
         endResetModel();
         return true;
     }
 
-    if(role==ATTACHTABLE_COMMAND_BEGIN_RESET_MODEL) {
+    if(role == ATTACHTABLE_COMMAND_BEGIN_RESET_MODEL) {
         beginResetModel();
         return true;
     }
 
-    if(role==ATTACHTABLE_COMMAND_END_RESET_MODEL) {
+    if(role == ATTACHTABLE_COMMAND_END_RESET_MODEL) {
         endResetModel();
         return true;
     }
 
-    if(role==ATTACHTABLE_COMMAND_BEGIN_REMOVE_ROW) {
+    if(role == ATTACHTABLE_COMMAND_BEGIN_REMOVE_ROW) {
         beginRemoveRows(QModelIndex(), value.toInt(), value.toInt());
         return true;
     }
 
-    if(role==ATTACHTABLE_COMMAND_BEGIN_REMOVE_ROWS) {
-        typeIntPair pair=value.value<typeIntPair>();
+    if(role == ATTACHTABLE_COMMAND_BEGIN_REMOVE_ROWS) {
+        typeIntPair pair = value.value<typeIntPair>();
         beginRemoveRows(QModelIndex(), pair.first, pair.second);
         return true;
     }
 
-    if(role==ATTACHTABLE_COMMAND_END_REMOVE_ROW || role==ATTACHTABLE_COMMAND_END_REMOVE_ROWS) {
+    if(role == ATTACHTABLE_COMMAND_END_REMOVE_ROW || role == ATTACHTABLE_COMMAND_END_REMOVE_ROWS) {
         endRemoveRows();
         return true;
     }
 
     // Если индекс недопустимый
-    if(!index.isValid() && role!=ATTACHTABLE_ROLE_TABLE_DATA)
+    if(!index.isValid() && role != ATTACHTABLE_ROLE_TABLE_DATA)
         return false;
 
     // Если происходит установка ссылки на таблицу с данными
-    if(role==ATTACHTABLE_ROLE_TABLE_DATA || role==ATTACHTABLE_ROLE_TABLE_DATA_ONLY) {
+    if(role == ATTACHTABLE_ROLE_TABLE_DATA || role == ATTACHTABLE_ROLE_TABLE_DATA_ONLY) {
         beginResetModel();
 
         // Устанавливается данные переданной по указателю таблицы
-        table=value.value<AttachTableDataPointer>();
+        table = value.value<AttachTableDataPointer>();
 
-        if(table!=NULL)
+        if(table != nullptr)
             qDebug() << "Set new data to AttachTableModel with rows: " << table->size();
         else
             qDebug() << "Set new AttachTableModel to NULL data";
@@ -146,25 +148,25 @@ bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, 
         endResetModel();
 
         // Устанавливается перекрестная ссылка в связанных данных
-        if(role==ATTACHTABLE_ROLE_TABLE_DATA && table!=NULL)
+        if(role == ATTACHTABLE_ROLE_TABLE_DATA && table != nullptr)
             table->setRelatedAttachTableModelOnly(this);
 
         return true;
     }
 
     // Если таблица данных не создана
-    if(table==NULL)
+    if(table == nullptr)
         return false;
 
     // Если таблица пустая
-    if(table->size()==0)
+    if(table->size() == 0)
         return false;
 
     // Если происходит редактирование
-    if(role==Qt::EditRole) {
+    if(role == Qt::EditRole) {
         // todo: Дописать эту часть
 
-        emit dataChanged(index,index); // Посылается сигнал что данные были изменены
+        emit dataChanged(index, index); // Посылается сигнал что данные были изменены
 
         return true;
     }
@@ -176,19 +178,21 @@ bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, 
 
 QVariant AttachTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (role != Qt::DisplayRole)
+    if(role != Qt::DisplayRole)
         return QVariant();
-    if (orientation == Qt::Vertical)
+
+    if(orientation == Qt::Vertical)
         return QVariant(section + 1);
     else
-        switch (section) {
-        case 0:
-            return QVariant(tr("File name"));
-        case 1:
-            return QVariant(tr("File size"));
+        switch(section) {
+            case 0:
+                return QVariant(tr("File name"));
 
-        default:
-            return QVariant();
+            case 1:
+                return QVariant(tr("File size"));
+
+            default:
+                return QVariant();
         }
 }
 

@@ -6,7 +6,7 @@
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/browser/entrance.h"
 #include "views/record/MetaEditor.h"
@@ -21,7 +21,7 @@ WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QOb
     enableSwitch();
 
     // Редактор является встраиваемым, поэтому работа кнопки Back у него идет через callback функцию
-    // MetaEditor *edView=find_object<MetaEditor>("editor_screen"); // Выясняется указатель на объект редактирования текста записи
+    // MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name); // Выясняется указатель на объект редактирования текста записи
 
     //    MetaEditor *metaEditor = globalparameters.getMetaEditor();
     meta_editor->set_back_callback(this->switchFromRecordToRecordtable);   // Устанавливается функция обратного вызова при клике на кнопку Back
@@ -81,7 +81,7 @@ void WindowSwitcher::switchFromTreeToFindInBase(void)
 // Статическая функция, используется редактором как callback функция при нажатии кнопки back в редакторе конечной записи
 void WindowSwitcher::switchFromRecordToRecordtable(void)
 {
-    if(globalparameters.window_switcher() == NULL)
+    if(globalparameters.window_switcher() == nullptr)
         return;
 
     // Если переключение запрещено
@@ -163,7 +163,7 @@ void WindowSwitcher::closeFindInBase(void)
 void WindowSwitcher::findInBaseClick(void)
 {
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen = find_object<FindScreen>("find_screen");
+    FindScreen *findScreen = find_object<FindScreen>(find_screen_singleton_name);
     QSplitter *vrs = find_object<QSplitter>("v_right_splitter");
     //    browser::Entrance *entrance = globalparameters.entrance();
 
@@ -198,19 +198,19 @@ void WindowSwitcher::restoreFocusWidget()
     QString widgetName = appconfig.getFocusWidget();
 
     // Оформить через case
-    if(widgetName == "tree_screen") {
+    if(widgetName == tree_screen_singleton_name) {
         globalparameters.tree_screen()->show();
         globalparameters.tree_screen()->setFocus();
         return;
     }
 
-    if(widgetName == "table_screen") {
+    if(widgetName == table_screen_singleton_name) {
         globalparameters.table_screen()->show();
         globalparameters.table_screen()->setFocus();
         return;
     }
 
-    if(widgetName == "editor_screen") {
+    if(widgetName == meta_editor_singleton_name) {
         globalparameters.meta_editor()->show();
         globalparameters.meta_editor()->setFocus();
         return;

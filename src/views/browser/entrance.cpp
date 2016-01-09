@@ -38,11 +38,11 @@
 #include "entrance.h"
 #include "entranceinfo.h"
 #include "toolbarsearch.h"
-#include "views/record_table/TableScreen.h"
-#include "controllers/record_table/TableController.h"
-#include "views/record_table/TableView.h"
-#include "models/record_table/TableData.h"
-#include "models/record_table/TableModel.h"
+#include "views/record_table/RecordScreen.h"
+#include "controllers/record_table/RecordController.h"
+#include "views/record_table/RecordView.h"
+#include "models/record_table/RecordTable.h"
+#include "models/record_table/RecordModel.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/webview.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
@@ -135,7 +135,7 @@ namespace browser {
     //    return _record;
     //}
 
-    void Entrance::initSetting(void)
+    void Entrance::init_setting(void)
     {
         //    QUrl _url;
 
@@ -207,8 +207,8 @@ namespace browser {
 #endif
         }
 
-        this->setScrollbars(settings.value("hide_scrollbars", false).toBool());
-        this->setCache(settings.value("enable_cache", false).toBool(), settings.value("cache_size_megabytes", 5).toInt());
+        this->set_scrollbars(settings.value("hide_scrollbars", false).toBool());
+        this->set_cache(settings.value("enable_cache", false).toBool(), settings.value("cache_size_megabytes", 5).toInt());
 
         settings.endGroup();
 
@@ -341,13 +341,13 @@ namespace browser {
                 if(page) {
                     std::shared_ptr<Record> record = page->current_record();
                     assert(record);
-                    QString home = record->getNaturalFieldSource("home");
+                    QString home = record->natural_field_source("home");
                     QUrl homeurl = QUrl(home);
 
                     if(homeurl.isValid()
                        && homeurl != page->url()
                       ) {
-                        record->setNaturalFieldSource("url", home);
+                        record->natural_field_source("url", home);
                         page->equip_registered(record)->active(); // page->load(record, true);
                     }
                 }
@@ -361,7 +361,7 @@ namespace browser {
     {
 
         Browser *browser = new Browser(state, _record_controller
-                                       // , _page_controller
+                                       , _page_tree_item
                                        , this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
@@ -384,7 +384,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    // , _page_controller
+                    , _page_tree_item
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -401,7 +401,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(record
                     , _record_controller
-                    // , _page_controller
+                    , _page_tree_item
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -425,7 +425,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    // , _page_controller
+                    , _page_tree_item
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -523,16 +523,21 @@ namespace browser {
     //        qobject_cast<Entrance *>(parent)->window_list().prepend(browser);
     //    }
 
-    Entrance::Entrance(QString object_name, TableController *record_controller
-                       // , TableController *_page_controller
-                       , browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent, Qt::WindowFlags flags)
+    Entrance::Entrance(QString object_name
+                       , RecordController *record_controller
+                       , boost::intrusive_ptr<TreeItem> _page_tree_item
+                       , browser::ToolbarSearch *toolbarsearch
+                       , const QString &style_source
+                       , QWidget *parent
+                       , Qt::WindowFlags flags
+                      )
         : QDockWidget(parent, flags)  //, _application(application)
         , _main_windows(QList<QPointer<Browser> >())
         , _record_controller(record_controller)
-        // , _page_controller(_page_controller)
+        , _page_tree_item(_page_tree_item)
         , _style_source(style_source)
-        , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint //| Qt::SplashScreen
-                                   ))
+        , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)) //| Qt::SplashScreen
+
 
           //    , _dockwidget(new DockWidget(
           //                      this
@@ -613,8 +618,10 @@ namespace browser {
         //_hidetitlebar->setLayout(main);
 
         setTitleBarWidget(_hidetitlebar);
+        _hidetitlebar->setGeometry(0, 0, 0, 0);
         //_hidetitlebar->hide();
         _hidetitlebar->setVisible(false);
+
         //        _hidetitlebar->setMaximumWidth(0);
         _hidetitlebar->close();
         //        _hidetitlebar->setCollapsible(true);
@@ -623,14 +630,14 @@ namespace browser {
 
         delete titleBar;
 
-        setupActions();
+        setup_actions();
 
-        setupUI();
+        setup_ui();
         assembly();
 
-        initSetting();
+        init_setting();
 
-        setupSignals(toolbarsearch);
+        setup_signals(toolbarsearch);
 
         //        new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));  // main_window() will never fail
 
@@ -662,14 +669,14 @@ namespace browser {
     }
 
 
-    void Entrance::setupActions()
+    void Entrance::setup_actions()
     {
         //        _actionFreeze = new QAction(tr("Pin / freeze browser view"), this);
         //        _actionFreeze->setStatusTip(tr("Pin / freeze browser view"));
         //        _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
     }
 
-    void Entrance::setupUI(void)
+    void Entrance::setup_ui(void)
     {
 
     }
@@ -757,7 +764,7 @@ namespace browser {
         //        return active_record(r);
     }
 
-    void Entrance::setupSignals(browser::ToolbarSearch *toolbarsearch)
+    void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
     {
         //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
         connect(toolbarsearch, &ToolbarSearch::search, this, &Entrance::active_url);
@@ -776,7 +783,7 @@ namespace browser {
     //        main_window()->loadPage(_url.toString());
     //    }
 
-    void Entrance::setScrollbars(bool hide)
+    void Entrance::set_scrollbars(bool hide)
     {
         if(!hide) {
             //d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
@@ -784,17 +791,17 @@ namespace browser {
         }
     }
 
-    void Entrance::setCache(bool cache, int cacheSize)
+    void Entrance::set_cache(bool cache, int cache_size)
     {
         if(cache) {
             QNetworkDiskCache *diskCache = new QNetworkDiskCache(this);
             QString location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
             diskCache->setCacheDirectory(location);
-            diskCache->setMaximumCacheSize(cacheSize * 1024 * 1024); //in MB's
+            diskCache->setMaximumCacheSize(cache_size * 1024 * 1024); //in MB's
             //d->nam->setCache(diskCache);
             //        browser->setCache(diskCache);
             qDebug() << QString("Cache location: %1").arg(location);
-            qDebug() << QString("Cache maximum size: %1MB").arg(cacheSize);
+            qDebug() << QString("Cache maximum size: %1MB").arg(cache_size);
         }
     }
 
@@ -931,7 +938,7 @@ namespace browser {
 
     }
 
-    void Entrance::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
+    void Entrance::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors)
     {
         foreach(const QSslError &error, errors) {
             qDebug() << QString("SSL Error: %1").arg(error.errorString());
@@ -993,10 +1000,10 @@ namespace browser {
 
         if(record) {
             //            assert(!record->generator()); // maybe Entrance::ActiveRecordBinder registered
-            assert(QUrl(record->getNaturalFieldSource("url")).isValid());
+            assert(QUrl(record->natural_field_source("url")).isValid());
 
             if(// !record->generator() && // maybe Entrance::ActiveRecordBinder registered
-                QUrl(record->getNaturalFieldSource("url")).isValid()) {
+                QUrl(record->natural_field_source("url")).isValid()) {
                 //        QUrl url = QUrl(record->getNaturalFieldSource("url"));
 
 
@@ -1030,7 +1037,7 @@ namespace browser {
 
                     for(auto &i : _main_windows) {
 
-                        dp.second = i->tabWidget()->find(record->getNaturalFieldSource("url"));
+                        dp.second = i->tabWidget()->find(record->natural_field_source("url"));
 
                         if(dp.second != nullptr) {
                             //setWidget(i.data());
@@ -1211,7 +1218,7 @@ namespace browser {
 #endif
 
 
-    void Entrance::openUrl(const QUrl &url)
+    void Entrance::open_url(const QUrl &url)
     {
         active_url(url); // active_record()->loadPage(url.toString());
     }
@@ -1226,7 +1233,7 @@ namespace browser {
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
         for(auto &i : _main_windows) {
-            dp.second = i->tabWidget()->find(record->getNaturalFieldSource("url"));
+            dp.second = i->tabWidget()->find(record->natural_field_source("url"));
 
             if(dp.second != nullptr) {
                 //setWidget(i.data());

@@ -47,45 +47,49 @@ public:
 
     browser::WebPage *unique_page();   // const; // {return _page;}
 
-    void setupDataFromDom(QDomElement iDomElement);
-    QDomElement exportDataToDom(QDomDocument *doc) const;
+    void import_from_dom(const QDomElement &iDomElement);
+    //    QDomElement export_to_dom(QDomDocument *doc) const;
+    QDomElement export_to_dom() const;
+    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
 
-    QString getTextFromFat() const;
-    QString getTextDirectFromLite();
+
+    QString text_from_fat() const;
+    QString text_direct_from_lite();
     void setTextToFat(QString iText);
 
-    QString getField(QString name) const;
-    void setField(QString name, QString value);
-    bool isNaturalFieldExists(QString name) const;
+    QString field(QString name) const;
+    void field(QString name, QString value);
+    bool is_natural_field_exists(QString name) const;
 
 
     // Setting and reading data without transformation. Used to generate / XML readers    // Установка и чтение данных без преобразований. Используется при генерации/чтении XML
-    QString getNaturalFieldSource(QString name) const;
-    void setNaturalFieldSource(QString name, QString value);
+    QString natural_field_source(QString name) const;
+    void natural_field_source(QString name, QString value);
 
-    QMap<QString, QString> getNaturalFieldList() const;
+    QMap<QString, QString> natural_field_list() const;
 
     QMap<QString, QByteArray> getPictureFiles() const;
-    void setPictureFiles(QMap<QString, QByteArray> iPictureFiles);
+    void picture_files(QMap<QString, QByteArray> iPictureFiles);
 
-    AttachTableData getAttachTable() const;
-    AttachTableData *getAttachTablePointer();
-    void setAttachTable(AttachTableData iAttachTable);
+    AttachTableData attach_table() const;
+    AttachTableData *attach_table();
+    void attach_table(AttachTableData iAttachTable);
 
-    bool isEmpty() const;
-    bool isLite() const;
-    void switchToLite();
-    void switchToFat();
+    bool is_empty() const;
+    bool is_lite() const;
+    void to_lite();
+    void to_fat();
 
     // Шифрация
-    void switchToEncryptAndSaveLite(void);
-    void switchToEncryptAndSaveFat(void);
+    void to_encrypt_and_save_lite(void);
+    void to_encrypt_and_save_fat(void);
 
     // Расшифровка
-    void switchToDecryptAndSaveLite(void);
-    void switchToDecryptAndSaveFat(void);
+    void to_decrypt_and_save_lite(void);
+    void to_decrypt_and_save_fat(void);
 
-    void pushFatAttributes();
+    void push_lite_attributes();
+    void push_fat_attributes();
     bool is_holder();
     void active_request(int pos, int openLinkIn);
     //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
@@ -102,67 +106,70 @@ public:
 
     browser::WebView *bind();
     browser::WebView *active();
+    bool dir_exists();
+    bool file_exists();
+
 protected:
 
-    browser::WebPage *_page;
+    browser::WebPage            *_page;
     // ---------------------------------------------------------------------
     // Свойства класса (не забыть перечислить все в конструкторе копривания)
     // Class properties (do not forget to list all the constructor koprivaniya)
     // ---------------------------------------------------------------------
 
-    bool liteFlag;
+    bool                        _lite_flag;
+    bool                        _is_registered = false;
+    //    bool                        _active_request = false;
+    int                         _position = -1;
+    int                         _open_link_in_new_window = 0;
+    //    bool                        _active_immediately = false;
 
     // Установка содержимого свойств происходит в вышестоящем коде
     // Set the properties of the contents occurs in the upstream code
 
     // Light properties // Легкие свойства
-    QMap<QString, QString> fieldList;   // // A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
+    QMap<QString, QString>      _field_list;    // // A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
 
     // Полновесные свойства
-    QByteArray text; // Содержимое файла с текстом записи
-    QMap<QString, QByteArray> pictureFiles; // Содержимое картинок, используемых в тексте записи (используется при переносе через буфер обмена, при DragAndDrop)
+    QByteArray                  _text;          // Содержимое файла с текстом записи
+    QMap<QString, QByteArray>   _picture_files; // Содержимое картинок, используемых в тексте записи (используется при переносе через буфер обмена, при DragAndDrop)
 
     // Таблица прикрепляемых файлов
-    AttachTableData attachTableData;
+    AttachTableData             _attach_table_data;
 
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _binder;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _activator;
 
     // -----------------
     // Защищенные методы
     // -----------------
 
-    void saveTextDirect(QString iText);
-    void saveText();
+    void save_text_direct(QString iText);
+    void create_file_and_save_text();
 
-    QString getIdAndNameAsString() const; // Внутренний метод для облегчения печати отладочной информации
+    QString id_and_name() const; // Внутренний метод для облегчения печати отладочной информации
 
-    QString getFullDirName() const;
-    QString getShortDirName() const;
+    QString full_dir() const;
+    QString short_dir() const;
 
-    QString getFullTextFileName() const;
-    QString getFullFileName(QString fileName) const;
+    QString full_text_file_name() const;
+    QString full_file_name(QString fileName) const;
 
-    void switchToEncryptFields(void);
-    void switchToDecryptFields(void);
+    void to_encrypt_fields(void);
+    void to_decrypt_fields(void);
 
-    void checkAndFillFileDir(QString &nameDirFull, QString &nameFileFull);
-    void checkAndCreateTextFile();
+    void check_and_fill_file_dir(QString &nameDirFull, QString &nameFileFull);
+    void check_and_create_text_file();
 
-    QString getNaturalField(QString name) const;
-    QString getCalculableField(QString name) const;
+    QString natural_field(QString name) const;
+    QString calculable_field(QString name) const;
 private:
     Record *bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
     void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
-    friend browser::WebPage;
-
-    bool    _is_registered = false;
-    //    bool    _active_request = false;
-    int     _position = -1;
-    int     _open_link_in_new_window = 0;
-    //    bool    _active_immediately = false;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _binder;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _activator;
+    friend class browser::WebPage;
 
     explicit Record(const Record &obj) = delete;
+    friend class RecordTable;
 };
 
 #endif // __RECORD_H__

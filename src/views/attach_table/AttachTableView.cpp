@@ -17,7 +17,7 @@ AttachTableView::AttachTableView(QWidget *parent) : QTableView(parent)
     this->setSelectionBehavior(QAbstractItemView::SelectRows); // Выделяется вся строка
 
     // Настройка области виджета для кинетической прокрутки
-    setKineticScrollArea(qobject_cast<QAbstractItemView *>(this));
+    set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));
 
     // Разрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);

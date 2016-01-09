@@ -199,7 +199,7 @@ namespace sd {
 
         ~Agency()
         {
-            if(NULL != invoke_functee) del(invoke_functee);
+            if(nullptr != invoke_functee) del(invoke_functee);
         }
 
     };
@@ -234,7 +234,7 @@ namespace sd {
 
         ~AgencyReturn()
         {
-            if(NULL != invoke_functee)
+            if(nullptr != invoke_functee)
                 del(invoke_functee);
         }
 
@@ -265,7 +265,7 @@ namespace sd {
 
         ~AgencyRead()
         {
-            if(NULL != invoke_functee) del(invoke_functee);
+            if(nullptr != invoke_functee) del(invoke_functee);
         }
     };
 

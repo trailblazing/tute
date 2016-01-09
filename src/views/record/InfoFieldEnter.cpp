@@ -87,7 +87,7 @@ void InfoFieldEnter::setup_ui(void)
     expandInfo->setVisible(true);
     int w = expandInfo->geometry().width();
     int h = expandInfo->geometry().height();
-    int x = imin(w, h) / 2;
+    int x = min(w, h) / 2; // imin(w, h) / 2;
     expandInfo->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::ToolButton));
     expandInfo->setMinimumSize(x, x);
     expandInfo->setMaximumSize(x, x);
@@ -238,7 +238,7 @@ QString InfoFieldEnter::getField(QString name)
 
         if(name == "tags")  return  recordTags->text();
     } else
-        criticalError("Can not get field " + name + " in InfoFieldEnter method get_field");
+        critical_error("Can not get field " + name + " in InfoFieldEnter method get_field");
 
     return QString();
 }
@@ -259,5 +259,5 @@ void InfoFieldEnter::setField(QString name, QString value)
 
         if(name == "tags")      recordTags->setText(value);
     } else
-        criticalError("Can not set field " + name + " in InfoFieldEnter method set_field");
+        critical_error("Can not set field " + name + " in InfoFieldEnter method set_field");
 }

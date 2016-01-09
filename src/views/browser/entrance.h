@@ -15,7 +15,7 @@
 class QNetworkReply;
 class QSslError;
 class QtSingleApplication;
-class TableController;
+class RecordController;
 extern GlobalParameters globalparameters;
 namespace browser {
     class WebView;
@@ -55,9 +55,16 @@ namespace browser {
     public:
 
 
-        Entrance(QString object_name, TableController *record_controller
-                 // , TableController *_page_controller
-                 , browser::ToolbarSearch *toolbarsearch, const QString &style_source, QWidget *parent = 0, Qt::WindowFlags flags = 0);
+        Entrance(QString object_name
+                 , RecordController *record_controller
+                 , boost::intrusive_ptr<TreeItem> _page_tree_item
+                 , browser::ToolbarSearch *toolbarsearch
+                 , const QString &style_source
+                 , QWidget *parent
+                 = 0
+                   , Qt::WindowFlags flags
+                 = 0
+                );
         ~Entrance();
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
         //        void setupDynamicSignals(void);
@@ -97,17 +104,17 @@ namespace browser {
 
     public slots:
 
-        void initSetting(void);
+        void init_setting(void);
 
 
-        void setScrollbars(bool hide);
-        void setCache(bool cache, int cacheSize);
+        void set_scrollbars(bool hide);
+        void set_cache(bool cache, int cache_size);
         void finished(QNetworkReply *reply);
-        void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
+        void ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors);
         //        QAction *getactionFreeze() { return _actionFreeze; }
         //        void openLinkInNewTab();
         //        void onLoadFinished(bool);
-        void setupActions(void);
+        void setup_actions(void);
 
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &url);
@@ -125,7 +132,7 @@ namespace browser {
     private slots:
         //        void loadUrl(Record *record);
         //        void loadUrl(const int pos);
-        void openUrl(const QUrl &url);
+        void open_url(const QUrl &url);
         //        void setUrl(const QUrl &url);
     protected:
         void resizeEvent(QResizeEvent *);
@@ -133,21 +140,21 @@ namespace browser {
 
         //        void(Entrance::*invoke_ptr)(const QUrl &url);
 
-        void setupUI(void);
-        void setupSignals(ToolbarSearch *toolbarsearch);
+        void setup_ui(void);
+        void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
 
-        QList<QPointer<Browser> >   _main_windows;
-        TableController             *_record_controller;
-        // TableController             *_page_controller;
-        QString                     _style_source;
+        QList<QPointer<Browser> >       _main_windows;
+        RecordController                 *_record_controller;
+        boost::intrusive_ptr<TreeItem>  _page_tree_item;
+        QString                         _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
-        QAction                     *_actionFreeze;
+        QAction                         *_actionFreeze;
         //struct BrowserViewPrivate *d;
         //        QDockWidget *_dockwidget;
         //        DockedWindow *_browser;
-        QWidget                     *_hidetitlebar;
-        QMetaObject::Connection     _home_connection;    // for disconnect
+        QWidget                         *_hidetitlebar;
+        QMetaObject::Connection         _home_connection;    // for disconnect
         friend class QtSingleApplication;
     };
 

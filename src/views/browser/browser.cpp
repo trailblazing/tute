@@ -79,14 +79,14 @@
 
 
 #include "main.h"
-#include "models/record_table/TableModel.h"
-#include "models/record_table/TableData.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/RecordTable.h"
 #include "models/record_table/Record.h"
-#include "views/record_table/TableView.h"
+#include "views/record_table/RecordView.h"
 #include "libraries/GlobalParameters.h"
 #include "views/browser/entrance.h"
-#include "views/record_table/TableScreen.h"
-#include "controllers/record_table/TableController.h"
+#include "views/record_table/RecordScreen.h"
+#include "controllers/record_table/RecordController.h"
 #include "views/browser/tabwidget.h"
 #include "views/main_window/MainWindow.h"
 #include "views/find_in_base_screen/FindScreen.h"
@@ -137,7 +137,7 @@ namespace browser {
         //        browser->setWidget(this);
         //        this->setParent(browser);
         setWebAttribute(QWebEngineSettings::JavascriptEnabled, true);
-        setWebAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
+        //        setWebAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
         setWebAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
         setWebAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
         setWebAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
@@ -312,16 +312,17 @@ namespace browser {
     }
 
     Browser::Browser(const QByteArray &state
-                     , TableController *record_controller
-                     // , TableController *_page_controller
+                     , RecordController *record_controller
+                     , boost::intrusive_ptr<TreeItem> _page_tree_item
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     ) : QMainWindow(0, flags)
         , _record_controller(record_controller)
-        // , _page_controller(_page_controller)
+        //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    // , _page_controller
+                                    , _page_tree_item
+                                    //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
@@ -350,17 +351,18 @@ namespace browser {
     }
 
     Browser::Browser(const QUrl &url
-                     , TableController *record_controller
-                     // , TableController *_page_controller
+                     , RecordController *record_controller
+                     , boost::intrusive_ptr<TreeItem> _page_tree_item
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
         , _record_controller(record_controller)
-          // , _page_controller(_page_controller)
+          //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    // , _page_controller
+                                    , _page_tree_item
+                                    //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
@@ -389,17 +391,18 @@ namespace browser {
 
 
     Browser::Browser(std::shared_ptr<Record> record
-                     , TableController *record_controller
-                     // , TableController *_page_controller
+                     , RecordController *record_controller
+                     , boost::intrusive_ptr<TreeItem> _page_tree_item
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
         , _record_controller(record_controller)
-          // , _page_controller(_page_controller)
+          //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    // , _page_controller
+                                    , _page_tree_item
+                                    //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
@@ -1437,7 +1440,7 @@ namespace browser {
         //        } else
         //        {
         //        for(auto &i : _mainWindows) {
-        view = tabWidget()->find(record->getNaturalFieldSource("url"));
+        view = tabWidget()->find(record->natural_field_source("url"));
 
         if(view != nullptr) {
             //            dp.first = i.data();
@@ -1489,7 +1492,7 @@ namespace browser {
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
-                if(view->page()->url().toString() != record->getNaturalFieldSource("url")) {
+                if(view->page()->url().toString() != record->natural_field_source("url")) {
 
                     view->page()->equip_registered(record)->active(); // view->page()->load(record);
                 }

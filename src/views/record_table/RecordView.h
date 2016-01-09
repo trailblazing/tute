@@ -14,17 +14,17 @@
 #include <QGestureEvent>
 
 class ClipboardRecords;
-class TableController;
-class TableScreen;
+class RecordController;
+class RecordScreen;
 
-class TableView : public QTableView {
+class RecordView : public QTableView {
     Q_OBJECT
 
 public:
-    TableView(QString screen_name, TableScreen *recordtablescreen, TableController *controller);
-    virtual ~TableView();
+    RecordView(QString screen_name, RecordScreen *recordtablescreen, RecordController *controller);
+    virtual ~RecordView();
 
-    void setController(TableController *pController);
+    void setController(RecordController *pController);
 
     void init(void);
 
@@ -36,8 +36,8 @@ public:
 
     void setSelectionToPos(int pos);
 
-    QModelIndex getFirstSelectionProxyIndex(void);
-    QModelIndex getFirstSelectionSourceIndex(void);
+    QModelIndex first_selection_proxy_index(void);
+    QModelIndex first_selection_source_index(void);
 
     bool isSelectedSetToTop(void);
     bool isSelectedSetToBottom(void);
@@ -51,7 +51,6 @@ public:
 signals:
 
     void listSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-
     void tapAndHoldGestureFinished(const QPoint &);
 
 
@@ -82,22 +81,18 @@ protected slots:
 
 protected:
 
-    QMenu           *contextMenu;
-    TableScreen     *_tablescreen;
-    TableController *_controller;
+    QMenu           *_context_menu;
+    RecordScreen     *_table_screen;
+    RecordController *_table_controller;
     QVBoxLayout     *_layout;
+    QPoint          _mouse_start_position;
+    bool            _enable_move_section;
 
     void setupSignals(void);
-
     void assemblyContextMenu(void);
 
-    void editField(int pos,
-                   QString name,
-                   QString author,
-                   QString url,
-                   QString tags);
-
-    void deleteRecords(void);
+    //    void editField(int pos, QString name, QString author, QString url, QString tags);
+    //    void deleteRecords(void);
 
     // Реакия на выбор записи мышкой или клавишами
     // The response to the record selection with the mouse or keys
@@ -107,22 +102,18 @@ protected:
     bool gestureEvent(QGestureEvent *event);
     void tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture);
 
-    QPoint mouseStartPos;
-
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 
     void saveColumnWidth(void);
 
-    bool enableMoveSection;
-
     void resizeEvent(QResizeEvent *e);
 
 private:
 
     void startDrag();
-    friend class TableScreen;
+    friend class RecordScreen;
     friend class VerticalScrollArea;
 };
 

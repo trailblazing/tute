@@ -50,7 +50,7 @@ void DiskHelper::removeDirectoryToTrash(QString nameDirFrom)
         if(QFile::rename(fileNameFrom, fileNameTo) == true)
             trashmonitoring.addFile(fileNameToShort); // Оповещение что в корзину добавлен файл
         else
-            criticalError("Can not remove file\n" + fileNameFrom + "\nto directory\n" + nameDirTo + "\nwith new name\n" + fileNameTo);
+            critical_error("Can not remove file\n" + fileNameFrom + "\nto directory\n" + nameDirTo + "\nwith new name\n" + fileNameTo);
     }
 
     // Удаление директории
@@ -89,7 +89,7 @@ void DiskHelper::removeFileToTrash(QString fileNameFrom)
     if(QFile::rename(fileNameFrom, fileNameTo) == true)
         trashmonitoring.addFile(fileNameToShort); // Оповещение что в корзину добавлен файл
     else
-        criticalError("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 }
 
 
@@ -111,7 +111,7 @@ QString DiskHelper::copyFileToTrash(QString fileNameFrom)
     if(QFile::copy(fileNameFrom, fileNameTo) == true)
         trashmonitoring.addFile(fileNameToShort); // Оповещение что в корзину добавлен файл
     else
-        criticalError("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 
     QFileInfo fileInfoTo(fileNameTo);
     return fileInfoTo.absoluteFilePath();
@@ -195,7 +195,7 @@ QMap<QString, QByteArray> DiskHelper::getFilesFromDirectory(QString dirName, QSt
             QFile f(info.absoluteFilePath());
 
             if(!f.open(QIODevice::ReadOnly))
-                criticalError("DiskHelper::getFilesFromDirectory() : File '" + info.absoluteFilePath() + "' open error");
+                critical_error("DiskHelper::getFilesFromDirectory() : File '" + info.absoluteFilePath() + "' open error");
 
             // Содержимое файла
             QByteArray b = f.readAll();

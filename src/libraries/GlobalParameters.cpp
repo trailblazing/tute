@@ -13,7 +13,7 @@
 
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
-#include "views/record_table/TableScreen.h"
+#include "views/record_table/RecordScreen.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/entrance.h"
@@ -64,7 +64,7 @@ void GlobalParameters::init(void)
 // Если ребочая директория не будет найдена, будут создана новая рабочая директория
 // с начальными файлами и она будет установлена как рабочая
 
-//Initialization working directory
+// SInitialization working directory
 // If the working directory already exists, it will be installed as a working directory.
 // If the directory is not found, it will create a new working directory with initial files and it will be set as the working directory
 void GlobalParameters::init_workdirectory(void)
@@ -182,7 +182,7 @@ void GlobalParameters::create_standard_programfiles(void)
 
         create_first_programfiles(createFilePath);
     } else {
-        criticalError("Can not created directory \"" + dataDirName + "\" in user directory \"" + QDir::homePath() + "\"");
+        critical_error("Can not created directory \"" + dataDirName + "\" in user directory \"" + QDir::homePath() + "\"");
         exit(0);
     }
 }
@@ -315,7 +315,7 @@ bool GlobalParameters::find_workdirectory(void)
         if(QDir::setCurrent(_work_directory))
             return true;
         else {
-            criticalError("Can not set work directory as '" + _work_directory + "'. System problem.");
+            critical_error("Can not set work directory as '" + _work_directory + "'. System problem.");
             return false;
         }
     }
@@ -463,23 +463,23 @@ void GlobalParameters::entrance(browser::Entrance *&b)
 }
 
 
-void GlobalParameters::table_screen(TableScreen *point)
+void GlobalParameters::table_screen(RecordScreen *point)
 {
     _table_screen = point;
 }
 
-TableScreen *GlobalParameters::table_screen()
+RecordScreen *GlobalParameters::table_screen()
 {
     return _table_screen;
 }
 
-TableScreen *GlobalParameters::page_screen()
+RecordScreen *GlobalParameters::page_screen()
 {
     return _page_screen;
 }
 
 
-void GlobalParameters::page_screen(TableScreen *page)
+void GlobalParameters::page_screen(RecordScreen *page)
 {
     _page_screen = page;
 }

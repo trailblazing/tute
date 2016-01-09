@@ -9,14 +9,14 @@ CryptService::CryptService() {}
 
 CryptService::~CryptService() {}
 
-void CryptService::convertByteArrayToVector(const QByteArray &qba, vector<unsigned char> &vec)
+void CryptService::convertByteArrayToVector(const QByteArray &qba, std::vector<unsigned char> &vec)
 {
     unsigned int size = qba.size();
     vec.resize(size, 0);
     memcpy(&vec[0], qba.constData(), size * sizeof(unsigned char));
 }
 
-void CryptService::convertVectorToByteArray(const vector<unsigned char> &vec, QByteArray &qba)
+void CryptService::convertVectorToByteArray(const std::vector<unsigned char> &vec, QByteArray &qba)
 {
     unsigned int size = vec.size();
     qba.clear();
@@ -248,7 +248,7 @@ void CryptService::encDecFileSmart(QByteArray key, QString fileName, int mode)
     QFile file(fileName);
 
     if (!file.open(QIODevice::ReadOnly))
-        criticalError("encDecFileSmart() : Cant open binary file " + fileName +
+        critical_error("encDecFileSmart() : Cant open binary file " + fileName +
                       " for reading.");
 
     vector<unsigned char> vectorKey;
@@ -273,7 +273,7 @@ void CryptService::encDecFileSmart(QByteArray key, QString fileName, int mode)
     convertVectorToByteArray(vectorDataOut, result);
 
     if (!file.open(QIODevice::WriteOnly))
-        criticalError("encryptFile() : Cant open binary file " + fileName +
+        critical_error("encryptFile() : Cant open binary file " + fileName +
                       " for write.");
     file.write(result);
 
