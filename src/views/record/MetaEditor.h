@@ -38,8 +38,8 @@ class MetaEditor: public Editor {
 
 public slots:
 
-    void setField(QString n, QString v);
-    void clearAll(void);
+    void field(QString n, QString v);
+    void clear_all(void);
     void onClickToTag(const QString &text);
 
 
@@ -51,26 +51,26 @@ public:
     MetaEditor(QString object_name, FindScreen *_find_screen);
     ~MetaEditor(void);
 
-    void setTreePath(QString path);
-    void setPin(QString pin);
+    void tree_path(QString path);
+    void pin(QString p);
     void switch_pin();
-    void setName(QString name);
-    void setAuthor(QString author);
-    void setHome(QString url);
-    void setUrl(QString url);
-    void setTags(QString tags);
+    void name(QString name);
+    void author(QString author);
+    void home(QString url);
+    void url(QString url);
+    void tags(QString tags);
 
-    static void toAttachCallback(void);
+    static void to_attach_callback(void);
 
-    void switchToEditorLayout(void);
-    void switchToAttachLayout(void);
+    void to_editor_layout(void);
+    void to_attach_layout(void);
     void bind(std::shared_ptr<Record> r);   // {_record = r;}
     std::shared_ptr<Record> record() {return _record;}
 
 private:
     void setupLabels(void);
-    void setupUI(void);
-    void metaAssembly(void);
+    void setup_ui(void);
+    void assembly(void);
     void setupSignals(FindScreen *_find_screen);
 
     QLabel          *_tree_path;       // Надпись Path (только для мобильного интерфейса)

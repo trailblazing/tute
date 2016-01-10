@@ -102,79 +102,79 @@ class Editor : public QWidget {
     Q_OBJECT
 
 public:
-    Editor(QWidget *parent = 0);
+    Editor(QWidget *parent = nullptr);
     ~Editor(void);
 
-    EditorConfig  *_editor_config = nullptr;
+    EditorConfig        *_editor_config = nullptr;
 
     // Кнопки форматирования текста
-    FlatToolButton   *_bold = nullptr;
-    FlatToolButton   *_italic = nullptr;
-    FlatToolButton   *_underline = nullptr;
-    FlatToolButton   *_monospace = nullptr;
-    FlatToolButton   *_code = nullptr;
-    FlatToolButton   *_clear = nullptr;
+    FlatToolButton      *_bold = nullptr;
+    FlatToolButton      *_italic = nullptr;
+    FlatToolButton      *_underline = nullptr;
+    FlatToolButton      *_monospace = nullptr;
+    FlatToolButton      *_code = nullptr;
+    FlatToolButton      *_clear = nullptr;
 
-    FlatToolButton   *_numeric_list = nullptr;
-    FlatToolButton   *_dot_list = nullptr;
+    FlatToolButton      *_numeric_list = nullptr;
+    FlatToolButton      *_dot_list = nullptr;
 
-    FlatToolButton   *_indent_plus = nullptr;
-    FlatToolButton   *_indent_minus = nullptr;
+    FlatToolButton      *_indent_plus = nullptr;
+    FlatToolButton      *_indent_minus = nullptr;
 
-    FlatToolButton   *_align_left = nullptr;
-    FlatToolButton   *_align_center = nullptr;
-    FlatToolButton   *_align_right = nullptr;
-    FlatToolButton   *_align_width = nullptr;
+    FlatToolButton      *_align_left = nullptr;
+    FlatToolButton      *_align_center = nullptr;
+    FlatToolButton      *_align_right = nullptr;
+    FlatToolButton      *_align_width = nullptr;
 
-    FlatToolButton   *_settings = nullptr;
+    FlatToolButton      *_settings = nullptr;
 
     // QFontComboBox
-    FlatFontComboBox *_font_select = nullptr;
-    FlatComboBox     *_font_size = nullptr;
-    FlatToolButton   *_font_color = nullptr;
+    FlatFontComboBox    *_font_select = nullptr;
+    FlatComboBox        *_font_size = nullptr;
+    FlatToolButton      *_font_color = nullptr;
 
-    FlatToolButton   *_show_html = nullptr;
+    FlatToolButton      *_show_html = nullptr;
 
-    FlatToolButton   *_find_text = nullptr;
+    FlatToolButton      *_find_text = nullptr;
 
-    FlatToolButton   *_show_formatting = nullptr;
+    FlatToolButton      *_show_formatting = nullptr;
 
-    FlatToolButton   *_create_table = nullptr;
-    FlatToolButton   *_table_remove_row = nullptr;
-    FlatToolButton   *_table_remove_col = nullptr;
-    FlatToolButton   *_table_add_row = nullptr;
-    FlatToolButton   *_table_add_col = nullptr;
-    FlatToolButton   *_table_merge_cells = nullptr;
-    FlatToolButton   *_table_split_cell = nullptr;
+    FlatToolButton      *_create_table = nullptr;
+    FlatToolButton      *_table_remove_row = nullptr;
+    FlatToolButton      *_table_remove_col = nullptr;
+    FlatToolButton      *_table_add_row = nullptr;
+    FlatToolButton      *_table_add_col = nullptr;
+    FlatToolButton      *_table_merge_cells = nullptr;
+    FlatToolButton      *_table_split_cell = nullptr;
 
-    FlatToolButton   *_insert_image_from_file = nullptr;
-    FlatToolButton   *_expand_edit_area = nullptr;
-    FlatToolButton   *_expand_tools_lines = nullptr;
-    FlatToolButton   *_save = nullptr;
+    FlatToolButton      *_insert_image_from_file = nullptr;
+    FlatToolButton      *_expand_edit_area = nullptr;
+    FlatToolButton      *_expand_tools_lines = nullptr;
+    FlatToolButton      *_save = nullptr;
 
-    FlatToolButton   *_back = nullptr;
-    FlatToolButton   *_freeze = nullptr;  // reserved for read only
-    FlatToolButton   *_find_in_base = nullptr;
+    FlatToolButton      *_back = nullptr;
+    FlatToolButton      *_freeze = nullptr;  // reserved for read only
+    FlatToolButton      *_find_in_base = nullptr;
 
-    FlatToolButton   *_show_text = nullptr;
+    FlatToolButton      *_show_text = nullptr;
 
-    FlatToolButton   *_to_attach = nullptr;
-    QIcon         _icon_attach_exists; // Иконка, когда аттачи есть
-    QIcon         _icon_attach_not_exists; // Иконка, когда аттачей нет
+    FlatToolButton      *_to_attach = nullptr;
+    QIcon               _icon_attach_exists; // Иконка, когда аттачи есть
+    QIcon               _icon_attach_not_exists; // Иконка, когда аттачей нет
 
-    IndentSlider  *_indent_slider = nullptr;
+    IndentSlider        *_indent_slider = nullptr;
 
     // Горизонтальная линейка, содержащая кнопки форматирования
-    QVBoxLayout *_textformat_buttons_layout = nullptr;
-    QToolBar    *_tools_line_0 = nullptr;
-    QToolBar    *_tools_line_1 = nullptr;
+    QVBoxLayout         *_textformat_buttons_layout = nullptr;
+    QToolBar            *_tools_line_0 = nullptr;
+    QToolBar            *_tools_line_1 = nullptr;
     void insert_button_to_tools_line(QString toolName, QToolBar *line);
 
     // Вертикальная группировалка линеек кнопок и области редактирования
-    QVBoxLayout   *_buttons_and_edit_layout = nullptr;
+    QVBoxLayout         *_buttons_and_edit_layout = nullptr;
 
     // Контекстное меню редактора
-    EditorContextMenu *_editor_context_menu = nullptr;
+    EditorContextMenu   *_editor_context_menu = nullptr;
 
     const char *version(void);
 
@@ -184,22 +184,22 @@ public:
     void init(int mode);
 
     // Методы работы с textarea
-    void set_textarea(QString text);
-    void set_textarea_editable(bool editable);
-    QString get_textarea(void);
-    QTextDocument *get_textarea_document(void);
-    void set_textarea_modified(bool modify);
-    bool get_textarea_modified(void);
+    void textarea(QString text);
+    void textarea_editable(bool editable);
+    QString textarea(void);
+    QTextDocument *textarea_document(void);
+    void textarea_modified(bool modify);
+    bool textarea_modified(void);
 
     // Абсолютный или относительный путь (т.е. директория),
     // куда будет сохраняться текст. Без завершающего слеша
-    bool work_directory(QString dirName);
+    bool work_directory(QString dir_name);
     QString work_directory(void);
 
     // Имя файла, куда должен сохраняться текст
     // Без пути, только имя
-    void set_file_name(QString fileName);
-    QString get_file_name(void);
+    void file_name(QString _file_name);
+    QString file_name(void);
 
     static void editor_load_callback(QObject *editor, QString &loadText);
     static void editor_save_callback(QObject *editor, QString saveText);
@@ -209,14 +209,14 @@ public:
     bool load_textarea();
 
     // Методы установки нестандартных процедур чтения и сохранения текста
-    void set_save_callback(void (*func)(QObject *editor, QString saveString));
-    void set_load_callback(void (*func)(QObject *editor, QString &loadString));
+    void save_callback(void (*func)(QObject *editor, QString saveString));
+    void load_callback(void (*func)(QObject *editor, QString &loadString));
 
     // Метод установки функции переключения на предыдущее окно (для мобильного интерфейса)
-    void set_back_callback(void (*func)(void));
+    void back_callback(void (*func)(void));
 
     // Метод установки функции нажатия на кнопку Attach
-    void set_attach_callback(void (*func)(void));
+    void attach_callback(void (*func)(void));
 
     // Методы установки и чтения произвольных нестандартных данных
     // которые может хранить объект редактора
@@ -371,7 +371,7 @@ private:
     void hide_all_tools_elements(void);
     void format_to_list(QTextListFormat::Style setFormat);
     void align_text(Qt::AlignmentFlag mode);
-    void updateToolsLines(void);
+    void update_tools_lines(void);
 
     bool is_block_select(void);
     bool is_cursor_on_empty_line(void);

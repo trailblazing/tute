@@ -72,12 +72,21 @@ void RecordScreen::setup_actions(void)
         TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
 
         if(tree_screen) {
-            boost::intrusive_ptr<TreeItem> tree_item = tree_screen->add_branch(tree_screen->last_index(), "", true);
+            boost::intrusive_ptr<TreeItem> tree_item = tree_screen->_knowtreemodel->item_by_name(tree_screen->_shadow_page_model->_root_item->field("name"));
+
+            if(!tree_item) {
+
+                tree_item = tree_screen->add_branch(tree_screen->last_index()
+                                                    , tree_screen->_shadow_page_model->_root_item->field("name") // ""
+                                                    , true);
+                //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
+            }
+
             std::shared_ptr<RecordTable> target = tree_item->tabledata();   // std::make_shared<RecordTable>(tree_item);
             std::shared_ptr<RecordTable> source = tree_screen->_shadow_page_model->_root_item->tabledata();
 
             for(int i = 0; i < source->size(); i++) {
-                if(!globalparameters.tree_screen()->_knowtreemodel->isRecordIdExists(source->record(i)->natural_field_source("id"))) {
+                if(!globalparameters.tree_screen()->_knowtreemodel->is_record_id_exists(source->record(i)->natural_field_source("id"))) {
                     if(source->record(i)->is_lite())source->record(i)->to_fat();
 
                     target->insert_new_record(target->work_pos(), source->record(i));
@@ -85,8 +94,9 @@ void RecordScreen::setup_actions(void)
             }
 
             tree_item->tabledata(target);
-            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
+
             tree_screen->save_knowtree();
+            tree_screen->to_candidate_screen(tree_screen->_shadow_page_model->index_item(tree_item));
         }
     }
            );
@@ -553,10 +563,10 @@ void RecordScreen::tools_update(void)
       ) {
         qDebug() << "In table select present";
         qDebug() << "In table row count is" << _table_controller->row_count();
-        find_object<MetaEditor>(meta_editor_singleton_name)->set_textarea_editable(true);
+        find_object<MetaEditor>(meta_editor_singleton_name)->textarea_editable(true);
     } else {
         qDebug() << "In table select non present";
-        find_object<MetaEditor>(meta_editor_singleton_name)->set_textarea_editable(false);
+        find_object<MetaEditor>(meta_editor_singleton_name)->textarea_editable(false);
     }
 }
 

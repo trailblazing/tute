@@ -184,7 +184,7 @@ void RecordTable::editor_load_callback(QObject *editor, QString &loadText)
     }
 
     // Файл, с которым работает редактор
-    QString fileName = currEditor->work_directory() + "/" + currEditor->get_file_name();
+    QString fileName = currEditor->work_directory() + "/" + currEditor->file_name();
 
     QFile f(fileName);
 
@@ -233,7 +233,7 @@ void RecordTable::editor_save_callback(QObject *editor, QString saveText)
         workWithCrypt = true;
     }
 
-    QString fileName = currEditor->work_directory() + "/" + currEditor->get_file_name();
+    QString fileName = currEditor->work_directory() + "/" + currEditor->file_name();
 
     // Если шифровать ненужно
     if(workWithCrypt == false) {
@@ -465,7 +465,7 @@ int RecordTable::insert_new_record(int pos, std::shared_ptr<Record> record, int 
     int insert_position = -1;
     KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
-    if(!find(record) && !dataModel->isRecordIdExists(record->field("id"))) {
+    if(!find(record) && !dataModel->is_record_id_exists(record->field("id"))) {
 
         //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
 

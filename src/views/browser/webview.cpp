@@ -1402,7 +1402,7 @@ namespace browser {
                     if(view() == tab_manager->currentWebView()) {
                         if(metaeditor->record() != _record)sychronize_metaeditor_to_record(_record);  // metaeditor->bind(_record);
 
-                        metaeditor->setName(title);
+                        metaeditor->name(title);
                     }
 
                     int index = tab_manager->webViewIndex(view());
@@ -1508,7 +1508,7 @@ namespace browser {
                     if(view() == tab_manager->currentWebView()) {
                         if(metaeditor->record() != _record)sychronize_metaeditor_to_record(_record);  // metaeditor->bind(_record);
 
-                        metaeditor->setUrl(url.toString());
+                        metaeditor->url(url.toString());
                     }
                 }
 
@@ -1592,13 +1592,13 @@ namespace browser {
 
 
                 //                table->setWorkPos(pos);
-                if(is_current)metaeditor->setName(title);
+                if(is_current)metaeditor->name(title);
             }
 
             if(url.toString() != "") {
                 _record->natural_field_source("url", url.toString());
 
-                if(is_current)metaeditor->setUrl(url.toString());
+                if(is_current)metaeditor->url(url.toString());
 
             }
 
@@ -1722,7 +1722,7 @@ namespace browser {
 
 
         // Устанавливается функция обратного вызова для записи данных
-        meta_editor->set_save_callback( // table
+        meta_editor->save_callback( // table
             meta_editor->editor_save_callback);
 
         // Сохраняется текст и картинки в окне редактирования
@@ -1738,7 +1738,7 @@ namespace browser {
 
         // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
         if(meta_editor->work_directory() == fullDir
-           && meta_editor->get_file_name() == currentFile
+           && meta_editor->file_name() == currentFile
           ) {
             globalparameters.window_switcher()->switchFromRecordtableToRecord();
             return;
@@ -1753,7 +1753,7 @@ namespace browser {
         // Редактору задаются имя файла и директории
         // И дается команда загрузки файла
         meta_editor->work_directory(fullDir);
-        meta_editor->set_file_name(currentFile);
+        meta_editor->file_name(currentFile);
 
         // Если идет работа с зашифрованной записью
         // И если имя директории или имя файла пусты, то это означает что
@@ -1774,29 +1774,29 @@ namespace browser {
                                );
 
         // В редакторе устанавливается функция обратного вызова для чтения данных
-        meta_editor->set_load_callback( // table
+        meta_editor->load_callback( // table
             meta_editor->editor_load_callback);
 
         meta_editor->load_textarea();
         // edView->set_textarea(table->get_text(index.row()));
 
         // Заполняются прочие инфо-поля
-        meta_editor->setPin(
+        meta_editor->pin(
             record->field("pin")   // table->field(pos, "pin")
         );
-        meta_editor->setName(
+        meta_editor->name(
             record->field("name")   // table->field(pos, "name")
         );
-        meta_editor->setAuthor(
+        meta_editor->author(
             record->field("author")   // table->field(pos, "author")
         );
-        meta_editor->setHome(
+        meta_editor->home(
             record->field("home")   // table->field(pos, "home")
         );
-        meta_editor->setUrl(
+        meta_editor->url(
             record->field("url")   // table->field(pos, "url")
         );
-        meta_editor->setTags(
+        meta_editor->tags(
             record->field("tags")   // table->field(pos, "tags")
         );
 

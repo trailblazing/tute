@@ -736,7 +736,7 @@ void MainWindow::filePrint(void)
     dlg->setWindowTitle(tr("Print Document"));
 
     if(dlg->exec() == QDialog::Accepted)
-        _editor_screen->get_textarea_document()->print(&printer);
+        _editor_screen->textarea_document()->print(&printer);
 
     delete dlg;
 #endif
@@ -746,7 +746,7 @@ void MainWindow::filePrint(void)
 // Предпросмотр печати текущей статьи
 void MainWindow::filePrintPreview(void)
 {
-    PrintPreview *preview = new PrintPreview(_editor_screen->get_textarea_document(), this);
+    PrintPreview *preview = new PrintPreview(_editor_screen->textarea_document(), this);
 
     preview->setModal(true);
     preview->setAttribute(Qt::WA_DeleteOnClose);
@@ -768,7 +768,7 @@ void MainWindow::filePrintPdf(void)
         QPrinter printer(QPrinter::HighResolution);
         printer.setOutputFormat(QPrinter::PdfFormat);
         printer.setOutputFileName(fileName);
-        _editor_screen->get_textarea_document()->print(&printer);
+        _editor_screen->textarea_document()->print(&printer);
     }
 
 #endif
@@ -1154,7 +1154,7 @@ void MainWindow::goWalkHistory(void)
     }
 
     // Выясняется путь к ветке, где находится данная запись
-    QStringList path = _tree_screen->_knowtreemodel->getRecordPath(id);
+    QStringList path = _tree_screen->_knowtreemodel->record_path(id);
 
     // Проверяем, есть ли такая ветка
     if(_tree_screen->_knowtreemodel->is_item_valid(path) == false) {

@@ -700,7 +700,7 @@ void Editor::assembly_buttons(void)
     _tools_line_0 = new QToolBar();
     _tools_line_1 = new QToolBar();
 
-    updateToolsLines();
+    update_tools_lines();
 
     /*
     QSize toolIconSize(16, 16);
@@ -730,7 +730,7 @@ void Editor::assembly_buttons(void)
 }
 
 
-void Editor::updateToolsLines(void)
+void Editor::update_tools_lines(void)
 {
     for(int i = 0; i < _tools_list_in_line_0.size(); ++i) {
         QString b = _tools_list_in_line_0.at(i).trimmed();
@@ -791,7 +791,7 @@ void Editor::update_indentline_geometry()
 
 
 // Установка текста области редактирования
-void Editor::set_textarea(QString text)
+void Editor::textarea(QString text)
 {
     _text_area->setHtml(text);
 
@@ -801,7 +801,7 @@ void Editor::set_textarea(QString text)
 
 
 // Установка запрета или разрешения редактирования
-void Editor::set_textarea_editable(bool editable)
+void Editor::textarea_editable(bool editable)
 {
     if(editable == true) {
         // Если редактирование разрешено
@@ -824,29 +824,43 @@ void Editor::set_textarea_editable(bool editable)
 
 
 // Получение текста области редактирования в формате HTML
-QString Editor::get_textarea(void)
+QString Editor::textarea(void)
 {
     return _text_area->document()->toHtml("UTF-8");
 }
 
 
 
-QTextDocument *Editor::get_textarea_document(void)
+QTextDocument *Editor::textarea_document(void)
 {
     return _text_area->document();
 }
 
 
-bool Editor::work_directory(QString dirName)
+bool Editor::work_directory(QString dir_name)
 {
-    QDir directory(dirName);
+    QDir directory(dir_name);
+    //    QDir directory_child(dir_name);
 
     if(directory.exists()) {
-        _work_directory = dirName;
+        _work_directory = dir_name;
         return true;
     } else {
-        critical_error("WyEdit: Can not set work directory to " + dirName + ". Directory not exists.");
-        return false;
+        QString child_dir = directory.dirName();
+        QString path = directory.absolutePath();
+        path.remove(child_dir);
+        directory.setPath(path);
+        //        directory.rmdir(child_dir);// "mytetra" + get_unical_id();
+
+        bool result = directory.mkdir(
+                          child_dir // _work_directory // short_dir()
+                      );
+
+        if(!result)
+            critical_error("Editor::work_directory(QString dir_name) : Can't create directory '" + _work_directory + "'");
+
+        //        critical_error("WyEdit: Can not set work directory to " + dirName + ". Directory not exists.");
+        return result;  // false;
     }
 }
 
@@ -857,13 +871,24 @@ QString Editor::work_directory(void)
 }
 
 
-void Editor::set_file_name(QString fileName)
+void Editor::file_name(QString _file_name)
 {
-    _work_file_name = fileName;
+
+    //    QString fileName = full_text_file_name();
+
+    QFile f(_file_name);
+    QFileInfo fileInfo(f);
+
+    if(!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))
+        critical_error("Editor::file_name(QString _file_name) : Cant open text file " + _file_name + " for read / write.");
+
+    if(fileInfo.absoluteDir().exists() && f.exists()) {
+        _work_file_name = _file_name;
+    }
 }
 
 
-QString Editor::get_file_name(void)
+QString Editor::file_name(void)
 {
     return _work_file_name;
 }
@@ -895,7 +920,7 @@ void Editor::editor_load_callback(QObject *editor, QString &loadText)
     }
 
     // Файл, с которым работает редактор
-    QString fileName = currEditor->work_directory() + "/" + currEditor->get_file_name();
+    QString fileName = currEditor->work_directory() + "/" + currEditor->file_name();
 
     QFile f(fileName);
 
@@ -943,7 +968,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText)
         workWithCrypt = true;
     }
 
-    QString fileName = currEditor->work_directory() + "/" + currEditor->get_file_name();
+    QString fileName = currEditor->work_directory() + "/" + currEditor->file_name();
 
     // Если шифровать ненужно
     if(workWithCrypt == false) {
@@ -1091,14 +1116,14 @@ void Editor::save_textarea(void)
 
     // Если запись была открыта на просмотр и изменена
     if(work_directory().length() != 0 &&
-       get_file_name().length() != 0 &&
-       get_textarea_modified() == true) {
+       file_name().length() != 0 &&
+       textarea_modified() == true) {
         // Перенос текущего файла записи в корзину
-        qDebug() << "Try remove file " << get_file_name() << " from directory " << work_directory();
+        qDebug() << "Try remove file " << file_name() << " from directory " << work_directory();
 
-        if(QFileInfo(work_directory() + "/" + get_file_name()).exists()) {
+        if(QFileInfo(work_directory() + "/" + file_name()).exists()) {
             qDebug() << "File exists. Remove it.";
-            DiskHelper::removeFileToTrash(work_directory() + "/" + get_file_name());
+            DiskHelper::removeFileToTrash(work_directory() + "/" + file_name());
         } else
             qDebug() << "Cant remove file. File not exists.";
 
@@ -1118,7 +1143,7 @@ void Editor::save_textarea(void)
 
         // Так как произошло сохранение,
         // отмечается что новый текст небыл еще изменен
-        set_textarea_modified(false);
+        textarea_modified(false);
     }
 }
 
@@ -1193,14 +1218,14 @@ bool Editor::load_textarea()
 }
 
 
-void Editor::set_textarea_modified(bool modify)
+void Editor::textarea_modified(bool modify)
 {
     qDebug() << "Editor::set_textarea_modified() :" << modify;
     _text_area->document()->setModified(modify);
 }
 
 
-bool Editor::get_textarea_modified(void)
+bool Editor::textarea_modified(void)
 {
     qDebug() << "Editor::get_textarea_modified() :" << _text_area->document()->isModified();
     return _text_area->document()->isModified();
@@ -3024,25 +3049,25 @@ void Editor::on_show_text_clicked(void)
 }
 
 
-void Editor::set_save_callback(void (*func)(QObject *editor, QString saveString))
+void Editor::save_callback(void (*func)(QObject *editor, QString saveString))
 {
     save_callback_func = func;
 }
 
 
-void Editor::set_load_callback(void (*func)(QObject *editor, QString &String))
+void Editor::load_callback(void (*func)(QObject *editor, QString &String))
 {
     load_callback_func = func;
 }
 
 
-void Editor::set_back_callback(void (*func)(void))
+void Editor::back_callback(void (*func)(void))
 {
     back_callback_func = func;
 }
 
 
-void Editor::set_attach_callback(void (*func)(void))
+void Editor::attach_callback(void (*func)(void))
 {
     attach_callback_func = func;
 }

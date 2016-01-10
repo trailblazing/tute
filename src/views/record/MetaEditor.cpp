@@ -47,13 +47,13 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen) : Editor()
         critical_error("In MetaEditor constructor unknown interface mode: " + appconfig.getInterfaceMode());
 
     setupLabels();
-    setupUI();
-    metaAssembly();
+    setup_ui();
+    assembly();
 
     setupSignals(_find_screen);
 
     // В редакторе устанавливается функция обратного вызова на кнопку Attach
-    set_attach_callback(toAttachCallback);
+    attach_callback(to_attach_callback);
 
     update_indentline_geometry();
 }
@@ -198,7 +198,7 @@ void MetaEditor::bind(std::shared_ptr<Record> r)
     });
 
 }
-void MetaEditor::setupUI(void)
+void MetaEditor::setup_ui(void)
 {
     // Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...
     _record_tags_layout = new QHBoxLayout();
@@ -223,7 +223,7 @@ void MetaEditor::setupUI(void)
 }
 
 
-void MetaEditor::metaAssembly(void)
+void MetaEditor::assembly(void)
 {
     // Сборка виджета редактирования текста (основной виджет)
     _editor_main_screen    = new QWidget(this);
@@ -268,18 +268,18 @@ void MetaEditor::metaAssembly(void)
     lt->setContentsMargins(0, 2, 0, 0);
 
     // По-умолчанию отображается слой редатирования
-    switchToEditorLayout();
+    to_editor_layout();
 }
 
 
-void MetaEditor::switchToEditorLayout(void)
+void MetaEditor::to_editor_layout(void)
 {
     _attachtable_screen->hide(); // Что бы небыло мерцания, вначале нужно делать сокрытие текущего виджета
     _editor_main_screen->show();
 }
 
 
-void MetaEditor::switchToAttachLayout(void)
+void MetaEditor::to_attach_layout(void)
 {
     _editor_main_screen->hide();
     _attachtable_screen->show();
@@ -287,41 +287,41 @@ void MetaEditor::switchToAttachLayout(void)
 
 
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
-void MetaEditor::toAttachCallback(void)
+void MetaEditor::to_attach_callback(void)
 {
     MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
-    edView->switchToAttachLayout();
+    edView->to_attach_layout();
 }
 
 
 // Слот для установки значений инфополей на экране
-void MetaEditor::setField(QString n, QString v)
+void MetaEditor::field(QString n, QString v)
 {
-    if(n == "pin")          setPin(v);
-    else if(n == "name")    setName(v);
-    else if(n == "author")  setAuthor(v);
-    else if(n == "home")    setHome(v);
-    else if(n == "url")     setUrl(v);
-    else if(n == "tags")    setTags(v);
+    if(n == "pin")          pin(v);
+    else if(n == "name")    name(v);
+    else if(n == "author")  author(v);
+    else if(n == "home")    home(v);
+    else if(n == "url")     url(v);
+    else if(n == "tags")    tags(v);
     else
         critical_error("metaeditor.set_field Undestand field " + n + " with value " + v);
 }
 
 
-void MetaEditor::clearAll(void)
+void MetaEditor::clear_all(void)
 {
     qDebug() << "MetaEditor::clearAll()" ;
 
     // Очистка для слоя редактора
-    setPin("");
-    setName("");
-    setAuthor("");
-    setUrl("");
-    setTags("");
-    set_textarea("");
+    pin("");
+    name("");
+    author("");
+    url("");
+    tags("");
+    textarea("");
 
     work_directory("");
-    set_file_name("");
+    file_name("");
 
     clear_all_misc_field();
 
@@ -333,7 +333,7 @@ void MetaEditor::clearAll(void)
 }
 
 
-void MetaEditor::setTreePath(QString path)
+void MetaEditor::tree_path(QString path)
 {
     _tree_path->setVisible(true);
     _tree_path->setText(tr("<b>Path: </b>") + path);
@@ -352,10 +352,10 @@ void MetaEditor::switch_pin()
             // Выясняется ссылка на таблицу конечных данных
             std::shared_ptr<RecordTable> table = recordmodel->tree_item()->tabledata();    //getTableData();
 
-            QString pin = table->field(pos, "pin");
-            _record_pin->setCheckState(_state_check[pin]);
+            QString p = table->field(pos, "pin");
+            _record_pin->setCheckState(_state_check[p]);
 
-            QString home = table->field(pos, "url");
+            QString h = table->field(pos, "url");
 
             // Переданные отредактированные поля преобразуются в вид имя-значение
             QMap<QString, QString> editData;
@@ -363,18 +363,18 @@ void MetaEditor::switch_pin()
             if(_record_pin->checkState() == Qt::CheckState::Checked) {
                 _record_pin->setCheckState(Qt::CheckState::Unchecked);
 
-                setPin(pin = _check_state[Qt::CheckState::Unchecked]);
+                pin(p = _check_state[Qt::CheckState::Unchecked]);
 
-                editData["pin"] = pin;
+                editData["pin"] = p;
 
             } else {
                 _record_pin->setCheckState(Qt::CheckState::Checked);
 
-                setPin(pin = _check_state[Qt::CheckState::Checked]);
-                setHome(home);
+                pin(p = _check_state[Qt::CheckState::Checked]);
+                home(h);
 
-                editData["pin"] = pin;
-                editData["home"] = home;
+                editData["pin"] = p;
+                editData["home"] = h;
 
             }
 
@@ -402,21 +402,21 @@ void MetaEditor::switch_pin()
     }
 }
 
-void MetaEditor::setPin(QString pin)
+void MetaEditor::pin(QString p)
 {
     //recordPin->setVisible(true);
-    _record_pin->setCheckState(_state_check[pin]);
+    _record_pin->setCheckState(_state_check[p]);
     //    recordPin->setText("<b>" + pin + "</b>");
 }
 
-void MetaEditor::setName(QString name)
+void MetaEditor::name(QString name)
 {
     _record_name->setVisible(true);
     _record_name->setText("<b>" + name + "</b>");
 }
 
 
-void MetaEditor::setAuthor(QString author)
+void MetaEditor::author(QString author)
 {
     if(author.length() == 0) {
         _record_author->setVisible(false);
@@ -428,7 +428,7 @@ void MetaEditor::setAuthor(QString author)
 }
 
 
-void MetaEditor::setHome(QString url)
+void MetaEditor::home(QString url)
 {
     if(url.length() == 0) {
         _label_home->setVisible(false);
@@ -447,7 +447,7 @@ void MetaEditor::setHome(QString url)
 }
 
 
-void MetaEditor::setUrl(QString url)
+void MetaEditor::url(QString url)
 {
     if(url.length() == 0) {
         _label_url->setVisible(false);
@@ -466,7 +466,7 @@ void MetaEditor::setUrl(QString url)
 }
 
 
-void MetaEditor::setTags(QString tags)
+void MetaEditor::tags(QString tags)
 {
     // Строка с метками запоминается в явном виде
     _record_tags_text = tags;

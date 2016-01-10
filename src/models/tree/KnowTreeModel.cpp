@@ -37,14 +37,14 @@ KnowTreeModel::~KnowTreeModel()
 }
 
 
-void KnowTreeModel::initFromXML(QString fileName)
+void KnowTreeModel::init_from_xml(QString fileName)
 {
-    xmlFileName = fileName;
+    _xml_file_name = fileName;
 
     // Загрузка файла и преобразование его в DOM модель
     XmlTree xmlt;
 
-    if(!xmlt.load(xmlFileName))
+    if(!xmlt.load(_xml_file_name))
         return;
 
     init(xmlt.getDomModel());
@@ -54,7 +54,7 @@ void KnowTreeModel::initFromXML(QString fileName)
 void KnowTreeModel::init(QDomDocument *domModel)
 {
     // Проверка формата XML-файла
-    if(!checkFormat(domModel->documentElement().firstChildElement("format"))) {
+    if(!check_format(domModel->documentElement().firstChildElement("format"))) {
         critical_error(tr("Unsupported format version for data base.\nPlease upgrade your MyTetra application."));
         return;
     }
@@ -81,7 +81,7 @@ void KnowTreeModel::init(QDomDocument *domModel)
 }
 
 
-bool KnowTreeModel::checkFormat(QDomElement elementFormat)
+bool KnowTreeModel::check_format(QDomElement elementFormat)
 {
     int baseVersion = 0;
     int baseSubVersion = 0;
@@ -100,7 +100,7 @@ bool KnowTreeModel::checkFormat(QDomElement elementFormat)
     // В настоящий момент поддерживается формат 1.2
     // В настоящий момент предполагается, что номер версии всегда 1, поэтому вся работа идет по номеру подверсии
     if(baseSubVersion <= 1)
-        if(updateSubVersionFrom1To2() == false) // Смена формата с 1.1 на 1.2
+        if(update_sub_version_from_1_to_2() == false) // Смена формата с 1.1 на 1.2
             return false;
 
     // На будущее, для перехода с подверии 2 на подверсию 3, эти строки надо добавлять к существующим (а не заменять)
@@ -112,7 +112,7 @@ bool KnowTreeModel::checkFormat(QDomElement elementFormat)
 }
 
 
-bool KnowTreeModel::updateSubVersionFrom1To2(void)
+bool KnowTreeModel::update_sub_version_from_1_to_2(void)
 {
 
 
@@ -122,7 +122,7 @@ bool KnowTreeModel::updateSubVersionFrom1To2(void)
 
 void KnowTreeModel::reload(void)
 {
-    initFromXML(xmlFileName);
+    init_from_xml(_xml_file_name);
 }
 
 
@@ -265,7 +265,7 @@ void KnowTreeModel::export_to_dom(std::shared_ptr<QDomDocument> doc, QDomElement
 void KnowTreeModel::save()
 {
     // Если имя файла небыло проинициализировано
-    if(xmlFileName == "")
+    if(_xml_file_name == "")
         critical_error(tr("In KnowTreeModel can't set file name for XML file"));
 
     // Коструирование DOM документа для записи в файл
@@ -296,13 +296,13 @@ void KnowTreeModel::save()
     // qDebug() << "Doc document for write " << doc.toString();
 
     // Перенос текущего файла дерева в корзину
-    DiskHelper::removeFileToTrash(xmlFileName);
+    DiskHelper::removeFileToTrash(_xml_file_name);
 
     // Запись DOM данных в файл
-    QFile wfile(xmlFileName);
+    QFile wfile(_xml_file_name);
 
     if(!wfile.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        qDebug() << "Cant open file " << xmlFileName << " for write.";
+        qDebug() << "Cant open file " << _xml_file_name << " for write.";
         exit(1);
     }
 
@@ -313,19 +313,19 @@ void KnowTreeModel::save()
 
 
 // Добавление новой подветки к указанной ветке
-void KnowTreeModel::addNewChildBranch(const QModelIndex &index, QString id, QString name)
+void KnowTreeModel::add_new_child_branch(const QModelIndex &index, QString id, QString name)
 {
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(index);
 
     beginInsertRows(index, parent->child_count(), parent->child_count());
-    addNewBranch(parent, id, name);
+    add_new_branch(parent, id, name);
     endInsertRows();
 }
 
 
 // Добавление новой ветки после указанной ветки
-void KnowTreeModel::addNewSiblingBranch(const QModelIndex &index, QString id, QString name)
+void KnowTreeModel::add_new_sibling_branch(const QModelIndex &index, QString id, QString name)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(index);
@@ -334,7 +334,7 @@ void KnowTreeModel::addNewSiblingBranch(const QModelIndex &index, QString id, QS
 
     if(parent) {
         beginInsertRows(index.parent(), parent->child_count(), parent->child_count());
-        addNewBranch(parent, id, name);
+        add_new_branch(parent, id, name);
         endInsertRows();
     }
 
@@ -347,7 +347,7 @@ void KnowTreeModel::addNewSiblingBranch(const QModelIndex &index, QString id, QS
 
 
 // Добавление новой подветки к Item элементу
-void KnowTreeModel::addNewBranch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name)
+void KnowTreeModel::add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name)
 {
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
@@ -374,7 +374,7 @@ void KnowTreeModel::addNewBranch(boost::intrusive_ptr<TreeItem> parent, QString 
 
 
 // Добавление новой подветки к указанной ветке из буфера обмена
-QString KnowTreeModel::pasteNewChildBranch(const QModelIndex &index, ClipboardBranch *subbranch)
+QString KnowTreeModel::paste_new_child_branch(const QModelIndex &index, ClipboardBranch *subbranch)
 {
     QString pasted_branch_id;
 
@@ -382,14 +382,14 @@ QString KnowTreeModel::pasteNewChildBranch(const QModelIndex &index, ClipboardBr
     boost::intrusive_ptr<TreeItem> parent = item(index);
 
     beginInsertRows(index, parent->child_count(), parent->child_count());
-    pasted_branch_id = pasteSubbranch(parent, (ClipboardBranch *)subbranch);
+    pasted_branch_id = paste_sub_branch(parent, (ClipboardBranch *)subbranch);
     endInsertRows();
 
     return pasted_branch_id;
 }
 
 
-QString KnowTreeModel::pasteNewSiblingBranch(const QModelIndex &index, ClipboardBranch *subbranch)
+QString KnowTreeModel::paste_new_sibling_branch(const QModelIndex &index, ClipboardBranch *subbranch)
 {
     QString pasted_branch_id;
 
@@ -398,7 +398,7 @@ QString KnowTreeModel::pasteNewSiblingBranch(const QModelIndex &index, Clipboard
     boost::intrusive_ptr<TreeItem> parent = current->parent();
 
     beginInsertRows(index.parent(), parent->child_count(), parent->child_count());
-    pasted_branch_id = pasteSubbranch(parent, (ClipboardBranch *)subbranch);
+    pasted_branch_id = paste_sub_branch(parent, (ClipboardBranch *)subbranch);
     endInsertRows();
 
     return pasted_branch_id;
@@ -406,21 +406,21 @@ QString KnowTreeModel::pasteNewSiblingBranch(const QModelIndex &index, Clipboard
 
 
 // Перемещение ветки вверх
-QModelIndex KnowTreeModel::moveUpBranch(const QModelIndex &index)
+QModelIndex KnowTreeModel::move_up_branch(const QModelIndex &index)
 {
-    return moveUpDnBranch(index, 1);
+    return move_up_dn_branch(index, 1);
 }
 
 
 // Перемещение ветки вниз
-QModelIndex KnowTreeModel::moveDnBranch(const QModelIndex &index)
+QModelIndex KnowTreeModel::move_dn_branch(const QModelIndex &index)
 {
-    return moveUpDnBranch(index, -1);
+    return move_up_dn_branch(index, -1);
 }
 
 
 // Перемещение ветки вверх или вниз
-QModelIndex KnowTreeModel::moveUpDnBranch(const QModelIndex &index, int direction)
+QModelIndex KnowTreeModel::move_up_dn_branch(const QModelIndex &index, int direction)
 {
     // Получение QModelIndex расположенного над или под элементом index
     QModelIndex swap_index = index.sibling(index.row() - direction, 0);
@@ -461,7 +461,7 @@ QModelIndex KnowTreeModel::moveUpDnBranch(const QModelIndex &index, int directio
 
 // Получение индекса подчиненного элемента с указанным номером
 // Нумерация элементов считается что идет с нуля
-QModelIndex KnowTreeModel::indexChildren(const QModelIndex &parent, int n) const
+QModelIndex KnowTreeModel::index_children(const QModelIndex &parent, int n) const
 {
     // Проверяется, передан ли правильный QModelIndex
     // Если он неправильный, возвращается пустой индекс
@@ -506,12 +506,12 @@ QModelIndex KnowTreeModel::index_item(boost::intrusive_ptr<TreeItem> item)
 
 
 // Возвращает общее количество записей, хранимых в дереве
-int KnowTreeModel::getAllRecordCount(void)
+int KnowTreeModel::get_all_record_count(void)
 {
     // Обнуление счетчика
-    getAllRecordCountRecurse(_root_item, 0);
+    get_all_record_count_recurse(_root_item, 0);
 
-    return getAllRecordCountRecurse(_root_item, 1);
+    return get_all_record_count_recurse(_root_item, 1);
 }
 
 
@@ -519,13 +519,13 @@ int KnowTreeModel::getAllRecordCount(void)
 int KnowTreeModel::size_of(boost::intrusive_ptr<TreeItem> item)
 {
     // Обнуление счетчика
-    getAllRecordCountRecurse(_root_item, 0);
+    get_all_record_count_recurse(_root_item, 0);
 
-    return getAllRecordCountRecurse(item, 1);
+    return get_all_record_count_recurse(item, 1);
 }
 
 
-int KnowTreeModel::getAllRecordCountRecurse(boost::intrusive_ptr<TreeItem> item, int mode)
+int KnowTreeModel::get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode)
 {
     static int n = 0;
 
@@ -537,23 +537,23 @@ int KnowTreeModel::getAllRecordCountRecurse(boost::intrusive_ptr<TreeItem> item,
     n = n + item->row_count();
 
     for(int i = 0; i < item->child_count(); i++)
-        getAllRecordCountRecurse(item->child(i), 1);
+        get_all_record_count_recurse(item->child(i), 1);
 
     return n;
 }
 
 
 // Проверка наличия идентификатора ветки во всем дереве
-bool KnowTreeModel::isItemIdExists(QString findId)
+bool KnowTreeModel::is_item_id_exists(QString findId)
 {
     // Обнуление счетчика
-    isItemIdExistsRecurse(_root_item, findId, 0);
+    is_item_id_exists_recurse(_root_item, findId, 0);
 
-    return isItemIdExistsRecurse(_root_item, findId, 1);
+    return is_item_id_exists_recurse(_root_item, findId, 1);
 }
 
 
-bool KnowTreeModel::isItemIdExistsRecurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode)
+bool KnowTreeModel::is_item_id_exists_recurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode)
 {
     static bool isExists = false;
 
@@ -575,23 +575,23 @@ bool KnowTreeModel::isItemIdExistsRecurse(boost::intrusive_ptr<TreeItem> item, Q
 
     // Перебираются подветки
     for(int i = 0; i < item->child_count(); i++)
-        isItemIdExistsRecurse(item->child(i), findId, 1);
+        is_item_id_exists_recurse(item->child(i), findId, 1);
 
     return isExists;
 }
 
 
 // Проверка наличия идентификатора записи во всем дереве
-bool KnowTreeModel::isRecordIdExists(QString findId)
+bool KnowTreeModel::is_record_id_exists(QString findId)
 {
     // Обнуление счетчика
-    isRecordIdExistsRecurse(_root_item, findId, 0);
+    is_record_id_exists_recurse(_root_item, findId, 0);
 
-    return isRecordIdExistsRecurse(_root_item, findId, 1);
+    return is_record_id_exists_recurse(_root_item, findId, 1);
 }
 
 
-bool KnowTreeModel::isRecordIdExistsRecurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode)
+bool KnowTreeModel::is_record_id_exists_recurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode)
 {
     static bool isExists = false;
 
@@ -613,7 +613,7 @@ bool KnowTreeModel::isRecordIdExistsRecurse(boost::intrusive_ptr<TreeItem> item,
 
     // Перебираются подветки
     for(int i = 0; i < item->child_count(); i++)
-        isRecordIdExistsRecurse(item->child(i), findId, 1);
+        is_record_id_exists_recurse(item->child(i), findId, 1);
 
     return isExists;
 }
@@ -622,7 +622,7 @@ bool KnowTreeModel::isRecordIdExistsRecurse(boost::intrusive_ptr<TreeItem> item,
 
 // Добавление подветки из буфера обмена относительно указанного элемента
 // Функция возвращает новый идентификатор стартовой добавленной подветки
-QString KnowTreeModel::pasteSubbranch(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch)
+QString KnowTreeModel::paste_sub_branch(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch)
 {
     qDebug() << "In paste_subbranch()";
 
@@ -632,7 +632,7 @@ QString KnowTreeModel::pasteSubbranch(boost::intrusive_ptr<TreeItem> item, Clipb
     // Идентификатор стартовой ветки лежит в первом элементе списка
     QString start_branch_id = tree[0].branch_id;
 
-    return pasteSubbranchRecurse(item, start_branch_id, subbranch);
+    return paste_sub_branch_recurse(item, start_branch_id, subbranch);
 }
 
 
@@ -641,9 +641,9 @@ QString KnowTreeModel::pasteSubbranch(boost::intrusive_ptr<TreeItem> item, Clipb
 // start_branch_id - идентификатор ветки в переданном линейном представлении
 //                   добавляемого дерева
 // subbranch - добавляемое дерево
-QString KnowTreeModel::pasteSubbranchRecurse(boost::intrusive_ptr<TreeItem> item,
-                                             QString startBranchId,
-                                             ClipboardBranch *subbranch)
+QString KnowTreeModel::paste_sub_branch_recurse(boost::intrusive_ptr<TreeItem> item,
+                                                QString startBranchId,
+                                                ClipboardBranch *subbranch)
 {
     qDebug() << "In paste_subbranch_recurse()";
 
@@ -661,10 +661,10 @@ QString KnowTreeModel::pasteSubbranchRecurse(boost::intrusive_ptr<TreeItem> item
     QString id = get_unical_id();
 
     // Стартовая ветка добавляется
-    addNewBranch(item, id, subbranch_name);
+    add_new_branch(item, id, subbranch_name);
 
     // Выясняется указатель на эту добавленную ветку
-    auto newitem = getItemById(id);
+    auto newitem = item_by_id(id);
 
     qDebug() << "KnowTreeModel::paste_subbranch_recurse() : create branch with field" << newitem->all_fields();
 
@@ -695,14 +695,14 @@ QString KnowTreeModel::pasteSubbranchRecurse(boost::intrusive_ptr<TreeItem> item
             subbranch_list = one_line.subbranches_id;
 
     foreach(QString current_subbranch, subbranch_list)
-        pasteSubbranchRecurse(newitem, current_subbranch, subbranch);
+        paste_sub_branch_recurse(newitem, current_subbranch, subbranch);
 
     return id;
 }
 
 
 // Перешифрование базы с новым паролем
-void KnowTreeModel::reEncrypt(QString previousPassword, QString currentPassword)
+void KnowTreeModel::re_encrypt(QString previousPassword, QString currentPassword)
 {
     // Получение путей ко всем подветкам дерева
     QList<QStringList> subbranchespath = _root_item->all_children_path();
@@ -732,20 +732,52 @@ void KnowTreeModel::reEncrypt(QString previousPassword, QString currentPassword)
     find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 }
 
+// Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
+// Если ветка с указанным ID не будет найдена, возвращается NULL
+boost::intrusive_ptr<TreeItem> KnowTreeModel::item_by_name(QString name)
+{
+    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, QString, int)> item_by_name_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
+    = [&](boost::intrusive_ptr<TreeItem> item, QString name, int mode) {
+        static boost::intrusive_ptr<TreeItem> find_item;
+
+        if(mode == 0) {
+            find_item = boost::intrusive_ptr<TreeItem>(nullptr);
+            return find_item;   // nullptr;
+        }
+
+        if(find_item) return find_item;
+
+        if(item->name() == name) {
+            find_item = item;
+            return find_item;
+        } else {
+            for(int i = 0; i < item->child_count(); i++)
+                item_by_name_recurse(item->child(i), name, 1);
+
+            return find_item;
+        }
+    };
+
+    // Инициализация поиска
+    item_by_name_recurse(_root_item, "", 0);
+
+    // Запуск поиска и возврат результата
+    return item_by_name_recurse(_root_item, name, 1);
+}
 
 // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
 // Если ветка с указанным ID не будет найдена, возвращается NULL
-boost::intrusive_ptr<TreeItem> KnowTreeModel::getItemById(QString id)
+boost::intrusive_ptr<TreeItem> KnowTreeModel::item_by_id(QString id)
 {
-    // Инициализация поиска
-    getItemByIdRecurse(_root_item, 0, 0);
+    // Initialize the search    // Инициализация поиска
+    item_by_id_recurse(_root_item, "0", 0);
 
     // Запуск поиска и возврат результата
-    return getItemByIdRecurse(_root_item, id, 1);
+    return item_by_id_recurse(_root_item, id, 1);
 }
 
 
-boost::intrusive_ptr<TreeItem> KnowTreeModel::getItemByIdRecurse(boost::intrusive_ptr<TreeItem> item, QString id, int mode)
+boost::intrusive_ptr<TreeItem> KnowTreeModel::item_by_id_recurse(boost::intrusive_ptr<TreeItem> item, QString id, int mode)
 {
     static boost::intrusive_ptr<TreeItem> find_item;
 
@@ -761,7 +793,7 @@ boost::intrusive_ptr<TreeItem> KnowTreeModel::getItemByIdRecurse(boost::intrusiv
         return find_item;
     } else {
         for(int i = 0; i < item->child_count(); i++)
-            getItemByIdRecurse(item->child(i), id, 1);
+            item_by_id_recurse(item->child(i), id, 1);
 
         return find_item;
     }
@@ -769,18 +801,18 @@ boost::intrusive_ptr<TreeItem> KnowTreeModel::getItemByIdRecurse(boost::intrusiv
 
 
 // Получение пути к ветке, где находится запись
-QStringList KnowTreeModel::getRecordPath(QString recordId)
+QStringList KnowTreeModel::record_path(QString recordId)
 {
-    getRecordPathRecurse(_root_item, QStringList(), "0", 0);
+    record_path_recurse(_root_item, QStringList(), "0", 0);
 
-    return getRecordPathRecurse(_root_item, QStringList(), recordId, 1);
+    return record_path_recurse(_root_item, QStringList(), recordId, 1);
 }
 
 
-QStringList KnowTreeModel::getRecordPathRecurse(boost::intrusive_ptr<TreeItem> item,
-                                                QStringList currentPath,
-                                                QString recordId,
-                                                int mode)
+QStringList KnowTreeModel::record_path_recurse(boost::intrusive_ptr<TreeItem> item,
+                                               QStringList currentPath,
+                                               QString recordId,
+                                               int mode)
 {
     static QStringList findPath;
     static bool isFind;
@@ -804,7 +836,7 @@ QStringList KnowTreeModel::getRecordPathRecurse(boost::intrusive_ptr<TreeItem> i
     } else {
         // Иначе перебираются подветки
         for(int i = 0; i < item->child_count(); i++)
-            getRecordPathRecurse(item->child(i), currentPath, recordId, 1);
+            record_path_recurse(item->child(i), currentPath, recordId, 1);
     }
 
     return findPath;
@@ -812,15 +844,15 @@ QStringList KnowTreeModel::getRecordPathRecurse(boost::intrusive_ptr<TreeItem> i
 
 
 // Метод определяющий есть ли в дереве зашифрованные ветки
-bool KnowTreeModel::isContainsCryptBranches(void)
+bool KnowTreeModel::is_contains_crypt_branches(void)
 {
-    isContainsCryptBranchesRecurse(_root_item, 0);
+    is_contains_crypt_branches_recurse(_root_item, 0);
 
-    return isContainsCryptBranchesRecurse(_root_item, 1);
+    return is_contains_crypt_branches_recurse(_root_item, 1);
 }
 
 
-bool KnowTreeModel::isContainsCryptBranchesRecurse(boost::intrusive_ptr<TreeItem> item, int mode)
+bool KnowTreeModel::is_contains_crypt_branches_recurse(boost::intrusive_ptr<TreeItem> item, int mode)
 {
     static bool isCrypt = false;
 
@@ -835,7 +867,7 @@ bool KnowTreeModel::isContainsCryptBranchesRecurse(boost::intrusive_ptr<TreeItem
     }
 
     for(int i = 0; i < item->child_count(); i++)
-        isContainsCryptBranchesRecurse(item->child(i), 1);
+        is_contains_crypt_branches_recurse(item->child(i), 1);
 
     return isCrypt;
 }

@@ -182,7 +182,7 @@ QString AddNewRecord::getField(QString name)
         return infoField->getField(name);
 
     if(name == "text")
-        return recordTextEditor->get_textarea();
+        return recordTextEditor->textarea();
 
     // Если запрашиваемого поля нет, возвращается пустая строка
     return QString();

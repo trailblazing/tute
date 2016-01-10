@@ -146,7 +146,7 @@ bool Password::replacePassword(void)
     KnowTreeModel *dataModel=static_cast<KnowTreeModel*>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
 // Перешифрация
-    dataModel->reEncrypt(previousPassword, password);
+    dataModel->re_encrypt(previousPassword, password);
 
 
 // Вычисляется и запоминается в память ключ шифрования

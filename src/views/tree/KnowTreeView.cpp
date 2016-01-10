@@ -197,7 +197,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(recordTableController->row_count() == 0)
-                find_object<MetaEditor>(meta_editor_singleton_name)->clearAll(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+                find_object<MetaEditor>(meta_editor_singleton_name)->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
 
             find_object<RecordScreen>(table_screen_singleton_name)->tools_update();
 

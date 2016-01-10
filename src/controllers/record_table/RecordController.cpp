@@ -309,7 +309,7 @@ void RecordController::sychronize_metaeditor_to_record(const int pos)
 
 
     // Устанавливается функция обратного вызова для записи данных
-    meta_editor->set_save_callback(table->editor_save_callback);
+    meta_editor->save_callback(table->editor_save_callback);
 
     // Сохраняется текст и картинки в окне редактирования
     find_object<MainWindow>("mainwindow")->saveTextarea();
@@ -324,7 +324,7 @@ void RecordController::sychronize_metaeditor_to_record(const int pos)
 
     // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
     if(meta_editor->work_directory() == fullDir
-       && meta_editor->get_file_name() == currentFile
+       && meta_editor->file_name() == currentFile
       ) {
         globalparameters.window_switcher()->switchFromRecordtableToRecord();
         return;
@@ -339,7 +339,7 @@ void RecordController::sychronize_metaeditor_to_record(const int pos)
     // Редактору задаются имя файла и директории
     // И дается команда загрузки файла
     meta_editor->work_directory(fullDir);
-    meta_editor->set_file_name(currentFile);
+    meta_editor->file_name(currentFile);
 
     // Если идет работа с зашифрованной записью
     // И если имя директории или имя файла пусты, то это означает что
@@ -357,18 +357,18 @@ void RecordController::sychronize_metaeditor_to_record(const int pos)
     meta_editor->misc_field("crypt", table->field(pos, "crypt"));
 
     // В редакторе устанавливается функция обратного вызова для чтения данных
-    meta_editor->set_load_callback(table->editor_load_callback);
+    meta_editor->load_callback(table->editor_load_callback);
 
     meta_editor->load_textarea();
     // edView->set_textarea(table->get_text(index.row()));
 
     // Заполняются прочие инфо-поля
-    meta_editor->setPin(table->field(pos, "pin"));
-    meta_editor->setName(table->field(pos, "name"));
-    meta_editor->setAuthor(table->field(pos, "author"));
-    meta_editor->setHome(table->field(pos, "home"));
-    meta_editor->setUrl(table->field(pos, "url"));
-    meta_editor->setTags(table->field(pos, "tags"));
+    meta_editor->pin(table->field(pos, "pin"));
+    meta_editor->name(table->field(pos, "name"));
+    meta_editor->author(table->field(pos, "author"));
+    meta_editor->home(table->field(pos, "home"));
+    meta_editor->url(table->field(pos, "url"));
+    meta_editor->tags(table->field(pos, "tags"));
 
     QString id = table->field(pos, "id");
     meta_editor->misc_field("id", id);
@@ -380,7 +380,7 @@ void RecordController::sychronize_metaeditor_to_record(const int pos)
 
     // В мобильном интерфейсе редактор должен показывать путь до записи
     if(appconfig.getInterfaceMode() == "mobile")
-        meta_editor->setTreePath(path);
+        meta_editor->tree_path(path);
 
     // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
     if(appconfig.getRememberCursorAtOrdinarySelection()) {
@@ -476,7 +476,7 @@ void RecordController::reset_tabledata(std::shared_ptr<RecordTable> table_data)
     // If the selection does not need to install    // Если выделение устанавливать ненужно
     if(removeSelection) {
         // Надо очистить поля области редактировния
-        find_object<MetaEditor>(meta_editor_singleton_name)->clearAll();
+        find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
 
         // При выборе записи обновление инструментов было бы вызвано автоматически
         // в альтернативной ветке (там "эмулируется" клик по записи)
@@ -1175,11 +1175,11 @@ void RecordController::edit_field(int pos
 
     // Обновление инфополей в области редактирования записи
     MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
-    metaEditor->setPin(pin);
-    metaEditor->setName(name);
-    metaEditor->setAuthor(author);
-    metaEditor->setUrl(url);
-    metaEditor->setTags(tags);
+    metaEditor->pin(pin);
+    metaEditor->name(name);
+    metaEditor->author(author);
+    metaEditor->url(url);
+    metaEditor->tags(tags);
 
     // Сохранение дерева веток
     find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
@@ -1259,7 +1259,7 @@ void RecordController::delete_records_selected(void)
     qDebug() << "After delete cursor set to" << selectionRowNum << "row";
 
     // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
-    find_object<MetaEditor>(meta_editor_singleton_name)->clearAll();
+    find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
 
     // Вызывается удаление отмеченных записей
     removerows_by_idlist(delIds);
@@ -1279,7 +1279,7 @@ void RecordController::delete_records_selected(void)
     if(_proxy_model->rowCount() == 0) {
         // Нужно очистить поле редактирования чтобы невидно было текста
         // последней удаленной записи
-        find_object<MetaEditor>(meta_editor_singleton_name)->clearAll();
+        find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
     }
 
     qobject_cast<RecordScreen *>(parent())->tools_update();

@@ -482,7 +482,7 @@ void AttachTableController::onShowAttachInfo(void)
 void AttachTableController::onSwitchToEditor(void)
 {
     MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
-    edView->switchToEditorLayout();
+    edView->to_editor_layout();
 }
 
 

@@ -57,7 +57,7 @@ public:
     QModelIndex currentitem_index(void);
     QModelIndex last_index(void);
 
-    QItemSelectionModel *get_selectionmodel(void);
+    QItemSelectionModel *selection_model(void);
 
     // Установка курсора на указанный элемент
     void cursor_to_index(QModelIndex index);
@@ -70,6 +70,7 @@ public:
     boost::intrusive_ptr<TreeItem> insert_branch_process(QModelIndex current_index, QString name, bool insert_sibling_branch);
 
     //    TreeController *treecontroller() {return _tree_controller;}
+    void to_candidate_screen(const QModelIndex &index);
 
 public slots:
     void candidate_from_search_result(boost::intrusive_ptr<TreeItem> resultset_item); // , std::shared_ptr<RecordTable> resultset_data
@@ -98,7 +99,7 @@ private slots:
 
     // Действия при клике на ветку дерева
     void candidate_from_knowtree_item(const QModelIndex &index);
-    void switch_to_candidate_screen(const QModelIndex &index);
+
     // Открытие контекстного меню
     void on_custom_contextmenu_requested(const QPoint &pos);
 

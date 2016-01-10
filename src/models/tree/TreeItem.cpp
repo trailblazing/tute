@@ -309,6 +309,16 @@ QString TreeItem::id()
     }
 }
 
+QString TreeItem::name()
+{
+    if(_field_data.contains("name"))
+        return (_field_data["name"]);
+    else {
+        critical_error("In TreeItem data getting field with unavailable name 'name'");
+        exit(1);
+        return "";
+    }
+}
 
 QString TreeItem::parent_id()
 {
