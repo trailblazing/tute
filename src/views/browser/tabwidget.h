@@ -291,8 +291,8 @@ namespace browser {
 
         //        void sychronize_metaeditor_to_record(std::shared_ptr<Record> record);
         boost::intrusive_ptr<TreeItem> tree_item() {return _page_tree_item;}
-        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->tabledata();}
-        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->tabledata(table_data);}
+        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
+        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
     protected:
         void mouseDoubleClickEvent(QMouseEvent *event);

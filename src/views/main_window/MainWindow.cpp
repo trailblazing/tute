@@ -1167,7 +1167,7 @@ void MainWindow::goWalkHistory(void)
     auto item = _tree_screen->_knowtreemodel->item(path);
 
     // Проверяем, есть ли такая позиция
-    if(item->tabledata()->is_record_exists(id) == false) {
+    if(item->record_table()->is_record_exists(id) == false) {
         walkhistory.setDrop(false);
         return;
     }

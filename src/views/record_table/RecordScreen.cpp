@@ -82,8 +82,8 @@ void RecordScreen::setup_actions(void)
                 //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
             }
 
-            std::shared_ptr<RecordTable> target = tree_item->tabledata();   // std::make_shared<RecordTable>(tree_item);
-            std::shared_ptr<RecordTable> source = tree_screen->_shadow_page_model->_root_item->tabledata();
+            std::shared_ptr<RecordTable> target = tree_item->record_table();   // std::make_shared<RecordTable>(tree_item);
+            std::shared_ptr<RecordTable> source = tree_screen->_shadow_page_model->_root_item->record_table();
 
             for(int i = 0; i < source->size(); i++) {
                 if(!globalparameters.tree_screen()->_knowtreemodel->is_record_id_exists(source->record(i)->natural_field_source("id"))) {
@@ -93,7 +93,7 @@ void RecordScreen::setup_actions(void)
                 }
             }
 
-            tree_item->tabledata(target);
+            tree_item->record_table(target);
 
             tree_screen->save_knowtree();
             tree_screen->to_candidate_screen(tree_screen->_shadow_page_model->index_item(tree_item));
@@ -450,8 +450,8 @@ void RecordScreen::tools_update(void)
     // Отключаются все действия
     disable_all_actions();
 
-    if(_table_controller->is_table_notexists())
-        return;
+    //    if(_table_controller->is_tree_item_notexists())
+    //        return;
 
     // Выясняется, содержит ли текущая ветка подчиненные ветки
     /*
@@ -468,12 +468,15 @@ void RecordScreen::tools_update(void)
     // Добавлять можно к любой ветке
     _addnew_to_end->setEnabled(true);
 
+    QItemSelectionModel *itemselectionmodel = _table_controller->view()->selectionModel();
+    RecordView *view = _table_controller->view();
+
     // Добавление записи до
     // Добавлять "до" можно только тогда, когда выбрана только одна строка
     // и не включена сортировка
-    if(_table_controller->view()->selectionModel()->hasSelection()
-       && (_table_controller->view()->selectionModel()->selectedRows()).size() == 1
-       && _table_controller->view()->isSortingEnabled() == false
+    if(itemselectionmodel->hasSelection()
+       && (itemselectionmodel->selectedRows()).size() == 1
+       && view->isSortingEnabled() == false
       ) {
         _addnew_before->setEnabled(true);
     }
@@ -481,36 +484,36 @@ void RecordScreen::tools_update(void)
     // Добавление записи после
     // Добавлять "после" можно только тогда, когда выбрана только одна строка
     // и не включена сортировка
-    if(_table_controller->view()->selectionModel()->hasSelection()
-       && (_table_controller->view()->selectionModel()->selectedRows()).size() == 1
-       && _table_controller->view()->isSortingEnabled() == false
+    if(itemselectionmodel->hasSelection()
+       && (itemselectionmodel->selectedRows()).size() == 1
+       && view->isSortingEnabled() == false
       ) {
         _addnew_after->setEnabled(true);
     }
 
     // Редактирование записи
     // Редактировать можно только тогда, когда выбрана только одна строка
-    if(_table_controller->view()->selectionModel()->hasSelection()
-       && (_table_controller->view()->selectionModel()->selectedRows()).size() == 1
+    if(itemselectionmodel->hasSelection()
+       && (itemselectionmodel->selectedRows()).size() == 1
       ) {
         _edit_field->setEnabled(true);
     }
 
     // Удаление записи
     // Пункт активен только если запись (или записи) выбраны в списке
-    if(_table_controller->view()->selectionModel()->hasSelection()) {
+    if(itemselectionmodel->hasSelection()) {
         _delete->setEnabled(true);
     }
 
     // Удаление с копированием записи в буфер обмена
     // Пункт активен только если запись (или записи) выбраны в списке
-    if(_table_controller->view()->selectionModel()->hasSelection()) {
+    if(itemselectionmodel->hasSelection()) {
         _cut->setEnabled(true);
     }
 
     // Копирование записи в буфер обмена
     // Пункт активен только если запись (или записи) выбраны в списке
-    if(_table_controller->view()->selectionModel()->hasSelection()) {
+    if(itemselectionmodel->hasSelection()) {
         _copy->setEnabled(true);
     }
 
@@ -520,9 +523,9 @@ void RecordScreen::tools_update(void)
     // или не выбрано ни одной строки (тогда добавляется в конец списка)
     // или записей вообще нет
     // И проверяется, содержит ли буфер обмена данные нужного формата
-    if((_table_controller->view()->selectionModel()->hasSelection() && (_table_controller->view()->selectionModel()->selectedRows()).size() == 1)
-       || _table_controller->view()->selectionModel()->hasSelection() == false
-       || _table_controller->view()->model()->rowCount() == 0
+    if((itemselectionmodel->hasSelection() && (itemselectionmodel->selectedRows()).size() == 1)
+       || itemselectionmodel->hasSelection() == false
+       || view->model()->rowCount() == 0
       ) {
         const QMimeData *mimeData = QApplication::clipboard()->mimeData();
 
@@ -537,10 +540,10 @@ void RecordScreen::tools_update(void)
     // Пункт возможен только когда выбрана одна строка
     // и указатель стоит не на начале списка
     // и не включена сортировка
-    if(_table_controller->view()->selectionModel()->hasSelection()
-       && (_table_controller->view()->selectionModel()->selectedRows()).size() == 1
-       && _table_controller->view()->isSelectedSetToTop() == false
-       && _table_controller->view()->isSortingEnabled() == false
+    if(itemselectionmodel->hasSelection()
+       && (itemselectionmodel->selectedRows()).size() == 1
+       && view->isSelectedSetToTop() == false
+       && view->isSortingEnabled() == false
       ) {
         _action_move_up->setEnabled(true);
     }
@@ -549,16 +552,16 @@ void RecordScreen::tools_update(void)
     // Пункт возможен только когда выбрана одна строка
     // и указатель стоит не в конце списка
     // и не включена сортировка
-    if(_table_controller->view()->selectionModel()->hasSelection()
-       && (_table_controller->view()->selectionModel()->selectedRows()).size() == 1
-       && _table_controller->view()->isSelectedSetToBottom() == false
-       && _table_controller->view()->isSortingEnabled() == false
+    if(itemselectionmodel->hasSelection()
+       && (itemselectionmodel->selectedRows()).size() == 1
+       && view->isSelectedSetToBottom() == false
+       && view->isSortingEnabled() == false
       ) {
         _action_move_dn->setEnabled(true);
     }
 
     // Обновляется состояние области редактирования текста
-    if(_table_controller->view()->selectionModel()->hasSelection()
+    if(itemselectionmodel->hasSelection()
        && _table_controller->row_count() > 0
       ) {
         qDebug() << "In table select present";

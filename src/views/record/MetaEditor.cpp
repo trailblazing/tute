@@ -350,7 +350,7 @@ void MetaEditor::switch_pin()
 
         if(recordmodel && -1 != pos) {
             // Выясняется ссылка на таблицу конечных данных
-            std::shared_ptr<RecordTable> table = recordmodel->tree_item()->tabledata();    //getTableData();
+            std::shared_ptr<RecordTable> table = recordmodel->tree_item()->record_table();    //getTableData();
 
             QString p = table->field(pos, "pin");
             _record_pin->setCheckState(_state_check[p]);

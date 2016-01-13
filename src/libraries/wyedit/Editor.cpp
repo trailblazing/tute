@@ -856,9 +856,11 @@ bool Editor::work_directory(QString dir_name)
                           child_dir // _work_directory // short_dir()
                       );
 
-        if(!result)
+        if(!result) {
             critical_error("Editor::work_directory(QString dir_name) : Can't create directory '" + _work_directory + "'");
+        }
 
+        _work_directory = dir_name;
         //        critical_error("WyEdit: Can not set work directory to " + dirName + ". Directory not exists.");
         return result;  // false;
     }

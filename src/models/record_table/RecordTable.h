@@ -99,7 +99,7 @@ public:
     void work_pos(int pos);
 
     void check_and_create_textfile(int pos, QString fullFileName);
-    QList< std::shared_ptr<Record> > &records() {return _tabledata;}
+    QList< std::shared_ptr<Record> > &records() {return _record_data;}
 
     bool crypt() {return _is_crypt;}
     void crypt(const bool _is_crypt);   // {this->_is_crypt = _is_crypt;}
@@ -120,7 +120,7 @@ private:
     //    boost::intrusive_ptr<TreeItem>      _tree_item;
 
     // Table entries (in the normal form contains only "light" objects records) // Таблица записей (в нормальном виде содержит только "легкие" объекты записей)
-    QList<std::shared_ptr<Record>>      _tabledata;
+    QList<std::shared_ptr<Record>>      _record_data;
 
     // Number of entries with which the user works  // Номер записи, с которой работал пользователь
     int                                 _workpos = -1;

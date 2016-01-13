@@ -153,7 +153,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         auto treeItemDrop = parentPointer->_knowtreemodel->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
-        std::shared_ptr<RecordTable> recordTableData = treeItemDrop->tabledata();
+        std::shared_ptr<RecordTable> recordTableData = treeItemDrop->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
         QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index();

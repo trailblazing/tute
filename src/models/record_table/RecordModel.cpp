@@ -46,11 +46,11 @@ RecordModel::~RecordModel()
 QVariant RecordModel::data(const QModelIndex &index, int role) const
 {
     // Если таблица данных не создана
-    if(!_tree_item->tabledata())    // if(!_table)
+    if(!_tree_item->record_table())    // if(!_table)
         return QVariant();
 
     // Если таблица пустая
-    if(0 == _tree_item->tabledata()->size()) // if(_table->size() == 0)
+    if(0 == _tree_item->record_table()->size()) // if(_table->size() == 0)
         return QVariant();
 
     // Если индекс недопустимый, возвращается пустой объект
@@ -68,7 +68,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
             QString fieldName = showFields.value(index.column());
 
             QString field = // _table
-                _tree_item->tabledata()->field(index.row(), fieldName);
+                _tree_item->record_table()->field(index.row(), fieldName);
 
 
             // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
@@ -100,7 +100,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 
     if(role == RECORD_ID_ROLE) {
         return // _table
-            _tree_item->tabledata()->field(index.row(), "id");
+            _tree_item->record_table()->field(index.row(), "id");
     }
 
     // Если происходит запрос ссылки на таблицу данных
@@ -121,11 +121,11 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     // Если таблица данных не создана
-    if(!_tree_item->tabledata())    // if(!_table)
+    if(!_tree_item->record_table())    // if(!_table)
         return false;
 
     // Если таблица пустая
-    if(0 == _tree_item->tabledata()->size())    //if(_table->size() == 0)
+    if(0 == _tree_item->record_table()->size())    //if(_table->size() == 0)
         return false;
 
     // Если индекс недопустимый
@@ -147,7 +147,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 
             // Изменяется поле в таблице конечных записей
             //            _table
-            _tree_item->tabledata()->field(index.row(), fieldName, cellValue);
+            _tree_item->record_table()->field(index.row(), fieldName, cellValue);
 
             emit dataChanged(index, index); // Посылается сигнал что данные были изменены
 
@@ -214,11 +214,11 @@ int RecordModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
-    if(!_tree_item->tabledata())    // if(!_table)
+    if(!_tree_item->record_table())    // if(!_table)
         return 0;
 
     return // _table
-        _tree_item->tabledata()->size();
+        _tree_item->record_table()->size();
 }
 
 
@@ -268,7 +268,7 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     // Удаляются строки непосредственно в таблице
     for(int i = row; i < row + count; ++i) {
         //        _table
-        _tree_item->tabledata()->delete_record_by_position(i);
+        _tree_item->record_table()->delete_record_by_position(i);
         globalparameters.find_screen()->remove_row(i);  // ?
     }
 
@@ -279,23 +279,29 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
-
-// Установка данных в таблицу данных
-void RecordModel::reset_tabledata(std::shared_ptr<RecordTable> record_table)
+void RecordModel::tree_item(boost::intrusive_ptr<TreeItem>item)
 {
     beginResetModel();
-    //    _table
-    _tree_item->tabledata(record_table);
-
+    _tree_item = item;
     endResetModel();
 }
+
+//// Установка данных в таблицу данных
+//void RecordModel::reset_tabledata(std::shared_ptr<RecordTable> record_table)
+//{
+//    beginResetModel();
+//    //    _table
+//    _tree_item->record_table(record_table);
+
+//    endResetModel();
+//}
 
 
 // Получение ссылки на таблицу данных
 std::shared_ptr<RecordTable> RecordModel::table_data(void)
 {
     // Возвращается ссылка на данные, с которыми в данный момент работает модель
-    return _tree_item->tabledata(); // _table;
+    return _tree_item->record_table(); // _table;
 }
 
 
@@ -307,7 +313,7 @@ int RecordModel::insert_new_record(int mode, QModelIndex posIndex, std::shared_p
 
     // Вставка новых данных в таблицу конечных записей
     int selPos = // _table
-        _tree_item->tabledata()->insert_new_record(posIndex.row(), record, mode);
+        _tree_item->record_table()->insert_new_record(posIndex.row(), record, mode);
 
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 

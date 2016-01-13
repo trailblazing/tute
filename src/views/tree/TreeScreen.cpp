@@ -1153,7 +1153,7 @@ void TreeScreen::add_branch_to_clipboard(ClipboardBranch *branch_clipboard_data,
                                          curr_item_fields);
 
     // Добавление конечных записей
-    curr_item_record_table = curr_item->tabledata();
+    curr_item_record_table = curr_item->record_table();
 
     for(int i = 0; i < curr_item_record_table->size(); i++) {
         // Полный образ записи (с файлами и текстом)
@@ -1363,7 +1363,7 @@ void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> res
 
 
     //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    auto dommodel = resultset_item->tabledata()->export_to_dom();    // source->init(startItem, QDomElement());
+    auto dommodel = resultset_item->record_table()->export_to_dom();    // source->init(startItem, QDomElement());
     resultset_item->remove_all_children();              // dommodel has noting to do with children!
 
     auto result_data = std::make_shared<RecordTable>(dommodel); //    resultset_item->tabledata(dommodel);               //    resultset_item->table_clear();    // already insert into table_init
@@ -1372,7 +1372,7 @@ void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> res
 
     //    _knowtreemodel->save();
 
-    controller->table_model()->tree_item()->tabledata(result_data);
+    controller->table_model()->tree_item()->record_table(result_data);
 
     //    for(int i = 0; i < resultset_item->tabledata()->size(); i++) {
 
@@ -1443,7 +1443,8 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
             if(password.retrievePassword() == false) {
                 // Устанавливаем пустые данные для отображения таблицы конечных записей
-                find_object<RecordController>("table_screen_controller")->reset_tabledata(nullptr);
+                find_object<RecordController>("table_screen_controller")->tree_item(boost::intrusive_ptr<TreeItem>(nullptr));
+                //                        reset_tabledata(nullptr);
 
                 // Все инструменты работы с веткой отключаются
                 QMapIterator<QString, QAction *> i(_actionlist);
@@ -1482,7 +1483,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
     //    std::shared_ptr<TableData> record_tabledata = item->tabledata();
     //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    _shadow_candidate_model->_root_item->tabledata(item->tabledata()->export_to_dom());
+    _shadow_candidate_model->_root_item->record_table(item->record_table()->export_to_dom());
 
 
 

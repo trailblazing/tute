@@ -76,20 +76,20 @@ RecordTable::~RecordTable()
 QString RecordTable::field(int pos, QString name) const
 {
     // Если индекс недопустимый
-    if(pos < 0 || pos >= _tabledata.size()) {
+    if(pos < 0 || pos >= _record_data.size()) {
         QString i;
         i.setNum(pos);
         critical_error("RecordTableData::getField() : get unavailable record index " + i);
     }
 
-    return _tabledata.at(pos)->field(name);
+    return _record_data.at(pos)->field(name);
 }
 
 std::shared_ptr<Record> RecordTable::find(const QUrl &url)
 {
     std::shared_ptr<Record> record;
 
-    for(auto &i : _tabledata) {
+    for(auto &i : _record_data) {
         // QString _u = i.getNaturalFieldSource("url") ;
 
         if(i->natural_field_source("url") == url.toString()) {
@@ -106,7 +106,7 @@ std::shared_ptr<Record> RecordTable::find(std::shared_ptr<Record> r)
 {
     std::shared_ptr<Record> record;
 
-    for(auto &i : _tabledata) {
+    for(auto &i : _record_data) {
         // QString _u = i.getNaturalFieldSource("url") ;
 
         if(i->natural_field_source("id") == r->natural_field_source("id")) {
@@ -123,13 +123,13 @@ std::shared_ptr<Record> RecordTable::find(std::shared_ptr<Record> r)
 void RecordTable::field(int pos, QString name, QString value)
 {
     // Если индекс недопустимый
-    if(pos < 0 || pos >= _tabledata.size()) {
+    if(pos < 0 || pos >= _record_data.size()) {
         QString i;
         i.setNum(pos);
         critical_error("In RecordTableData::setField() unavailable record index " + i + " in table while field " + name + " try set to " + value);
     }
 
-    _tabledata[pos]->field(name, value);
+    _record_data[pos]->field(name, value);
 }
 
 
@@ -145,10 +145,10 @@ QString RecordTable::text(int pos)
     if(pos < 0 || pos >= size())
         return QString();
 
-    if(_tabledata[pos]->is_lite())
-        return _tabledata[pos]->text_direct_from_lite();
+    if(_record_data[pos]->is_lite())
+        return _record_data[pos]->text_direct_from_lite();
     else
-        return _tabledata[pos]->text_from_fat();
+        return _record_data[pos]->text_from_fat();
 }
 
 
@@ -278,10 +278,10 @@ std::shared_ptr<Record> RecordTable::record_lite(int pos)
         return std::make_shared<Record>();
 
     // Хранимая в дереве запись не может быть "тяжелой"
-    if(!_tabledata.at(pos)->is_lite())
+    if(!_record_data.at(pos)->is_lite())
         critical_error("In RecordTableData::getRecordLite() try get fat record");
 
-    return _tabledata.at(pos);
+    return _record_data.at(pos);
 }
 
 
@@ -315,7 +315,7 @@ std::shared_ptr<Record> RecordTable::record(int pos)
     if(pos < 0 || pos >= size())
         return nullptr;
 
-    return _tabledata[pos];
+    return _record_data[pos];
 }
 
 //void RecordTable::tree_item(boost::intrusive_ptr<TreeItem> item)
@@ -365,13 +365,13 @@ void RecordTable::import_from_dom(const QDomElement &dom_model)
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)
-        _tabledata << currentRecord;
+        _record_data << currentRecord;
 
         // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
         // чтобы в подчиненных объектах прописались правильные указатели на данную запись
         // Write initialized data. It should initsializirovatsya after placement in the list tableData,
         // Order in subordinate objects have registered a valid pointer to this entry
-        (_tabledata.last())->import_from_dom(currentRecordDom);
+        (_record_data.last())->import_from_dom(currentRecordDom);
 
         currentRecordDom = currentRecordDom.nextSiblingElement("record");
     } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
@@ -391,14 +391,14 @@ QDomElement RecordTable::export_to_dom() const
 QDomElement RecordTable::export_to_dom(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-    if(_tabledata.size() == 0)
+    if(_record_data.size() == 0)
         return QDomElement();
 
     QDomElement record_dom_data = doc->createElement("recordtable");
 
     // Пробегаются все записи в таблице
-    for(int i = 0; i < _tabledata.size(); i++)
-        record_dom_data.appendChild(_tabledata.at(i)->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+    for(int i = 0; i < _record_data.size(); i++)
+        record_dom_data.appendChild(_record_data.at(i)->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
 
     // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
@@ -428,15 +428,15 @@ QDomElement RecordTable::export_to_dom(std::shared_ptr<QDomDocument> doc) const
 QDomElement RecordTable::export_activated_dom(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-    if(_tabledata.size() == 0)
+    if(_record_data.size() == 0)
         return QDomElement();
 
     QDomElement record_dom_data = doc->createElement("recordtable");
 
     // Пробегаются все записи в таблице
-    for(int i = 0; i < _tabledata.size(); i++) {
-        if(_tabledata.at(i)->unique_page()) {
-            record_dom_data.appendChild(_tabledata.at(i)->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+    for(int i = 0; i < _record_data.size(); i++) {
+        if(_record_data.at(i)->unique_page()) {
+            record_dom_data.appendChild(_record_data.at(i)->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
         }
     }
 
@@ -541,13 +541,13 @@ int RecordTable::insert_new_record(int pos, std::shared_ptr<Record> record, int 
         record->is_registered(true);
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-            _tabledata << record;
-            insert_position = _tabledata.size() - 1;
+            _record_data << record;
+            insert_position = _record_data.size() - 1;
         } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-            _tabledata.insert(pos, record);
+            _record_data.insert(pos, record);
             insert_position = pos;
         } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-            _tabledata.insert(pos + 1, record);
+            _record_data.insert(pos + 1, record);
             insert_position = pos + 1;
         }
 
@@ -654,13 +654,13 @@ int RecordTable::shadow_record_lite(int pos, std::shared_ptr<Record> record, int
         assert(record->is_registered());
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-            _tabledata << record;
-            insert_position = _tabledata.size() - 1;
+            _record_data << record;
+            insert_position = _record_data.size() - 1;
         } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-            _tabledata.insert(pos, record);
+            _record_data.insert(pos, record);
             insert_position = pos;
         } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-            _tabledata.insert(pos + 1, record);
+            _record_data.insert(pos + 1, record);
             insert_position = pos + 1;
         }
 
@@ -694,10 +694,10 @@ void RecordTable::edit_record_fields(int pos, QMap<QString, QString> edit_fields
 // todo: добавить удаление приаттаченных файлов и очистку таблицы приаттаченных файлов
 void RecordTable::delete_record_by_position(int i)
 {
-    qDebug() << "Try delete record num " << i << " table count " << _tabledata.size();
+    qDebug() << "Try delete record num " << i << " table count " << _record_data.size();
 
     // Нельзя удалять с недопустимым индексом
-    if(i >= _tabledata.size())
+    if(i >= _record_data.size())
         return;
 
     // Удаление директории и файлов внутри, с сохранением в резервной директории
@@ -722,7 +722,7 @@ void RecordTable::delete_record_by_position(int i)
     // beginRemoveRows(QModelIndex(),i,i);
 
     // Удаляется элемент
-    _tabledata.removeAt(i); // Было takeAt
+    _record_data.removeAt(i); // Было takeAt
     qDebug() << "Delete record succesfull";
 
     //    //
@@ -762,7 +762,7 @@ void RecordTable::delete_all_records(void)
 // а физически данные на диске не затрагиваются
 void RecordTable::empty(void)
 {
-    _tabledata.clear();
+    _record_data.clear();
     //    _tree_item = nullptr;
 }
 
@@ -779,8 +779,8 @@ std::shared_ptr<RecordTable> RecordTable::active_subset(boost::intrusive_ptr<Tre
     //    auto start_item = _treeitem;   // std::make_shared<TreeItem>(data, search_model->_root_item);
     std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
     auto dommodel = this->export_activated_dom(doc);    // source->init(startItem, QDomElement());
-    start_item->tabledata(dommodel);
-    return start_item->tabledata();
+    start_item->record_table(dommodel);
+    return start_item->record_table();
 
     //    return result;
 }
@@ -824,7 +824,7 @@ int RecordTable::get_pos_by_id(QString id)
 // Количество записей в таблице данных
 int RecordTable::size(void) const
 {
-    return _tabledata.size();
+    return _record_data.size();
 }
 
 
@@ -833,7 +833,7 @@ void RecordTable::move_up(int pos)
 {
     if(pos > 0) {
         // Данные перемещаются
-        _tabledata.move(pos, pos - 1);
+        _record_data.move(pos, pos - 1);
 
         // Обновляется экран
         // QModelIndex from=index(pos-1);
@@ -847,9 +847,9 @@ void RecordTable::move_up(int pos)
 // Move write down one line
 void RecordTable::move_dn(int pos)
 {
-    if(pos < _tabledata.count()) {
+    if(pos < _record_data.count()) {
         // Данные перемещаются
-        _tabledata.move(pos, pos + 1);
+        _record_data.move(pos, pos + 1);
 
         // Обновляется экран
         // QModelIndex from=index(pos);
@@ -870,7 +870,7 @@ void RecordTable::switch_to_encrypt(void)
             continue;
 
         // Шифрация записи
-        _tabledata[i]->to_encrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
+        _record_data[i]->to_encrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 
@@ -886,7 +886,7 @@ void RecordTable::switch_to_decrypt(void)
             continue;
 
         // Расшифровка записи
-        _tabledata[i]->to_decrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
+        _record_data[i]->to_decrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 

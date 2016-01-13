@@ -602,7 +602,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
         search_start_item = _search_model->_root_item;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
         candidate_records = _search_model->get_all_record_count();
-        resultset_item->tabledata(resultset_item->tabledata()->active_subset(resultset_item));
+        resultset_item->record_table(resultset_item->record_table()->active_subset(resultset_item));
     };
 
     auto branch_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &search_start_item
@@ -619,7 +619,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
 
         // Количество элементов (веток) в текущей ветке и всех подветках
         candidate_records = _search_model->size_of(search_start_item);
-        resultset_item->tabledata(resultset_item->tabledata()->active_subset(resultset_item));
+        resultset_item->record_table(resultset_item->record_table()->active_subset(resultset_item));
     };
 
     Q_UNUSED(branch_search_prepare)
@@ -645,9 +645,9 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
                                                                , std::make_shared<RecordTable>(dommodel)    // std::shared_ptr<RecordTable> _table_data
                                                            ));   // resultset_item;     // std::make_shared<TreeItem>(data, search_model->_root_item);
 
-        resultset_item->tabledata(resultset_item->tabledata()->active_subset(resultset_item));   // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
+        resultset_item->record_table(resultset_item->record_table()->active_subset(resultset_item));   // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
         //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
-        candidate_records = search_start_item->tabledata()->size();
+        candidate_records = search_start_item->record_table()->size();
 
     };
 
@@ -695,7 +695,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     ) {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
-        candidate_root->tabledata()->empty();
+        candidate_root->record_table()->empty();
         //Вызывается рекурсивный поиск в дереве
         //        find_recursive(search_start_item, candidate_root);
 
@@ -721,19 +721,19 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     if( // appconfig.getFindScreenTreeSearchArea() == 2
         //        globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
         //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
-        _candidate_root->tabledata()->size() > 0
+        _candidate_root->record_table()->size() > 0
     ) { // search in last search result
         resultset_search_prepare(_search_start_item, _candidate_records, _candidate_root);  // , _resultset_data, _resultset_data
 
         if(!_search_start_item) {assert_start_item(); return nullptr;}
 
         if(0 != _candidate_records) {
-            _candidate_root->tabledata(final_search(_search_start_item, _candidate_root));
+            _candidate_root->record_table(final_search(_search_start_item, _candidate_root));
         }
     }
 
     // stage 2
-    if(0 == _candidate_root->tabledata()->size()) {
+    if(0 == _candidate_root->record_table()->size()) {
         //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
         //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -754,7 +754,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
         if(!_search_start_item) {assert_start_item(); return nullptr;}
 
         if(0 != _candidate_records) {
-            _candidate_root->tabledata(final_search(_search_start_item, _candidate_root));
+            _candidate_root->record_table(final_search(_search_start_item, _candidate_root));
         }
 
         //    }
@@ -780,7 +780,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     output(_candidate_root);
 
 
-    return _candidate_root->tabledata();
+    return _candidate_root->record_table();
 }
 
 
@@ -788,7 +788,7 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
                                                         , boost::intrusive_ptr<TreeItem> _candidate_root   // std::shared_ptr<RecordTable> result
                                                        )
 {
-    std::shared_ptr<RecordTable> result = _candidate_root->tabledata();
+    std::shared_ptr<RecordTable> result = _candidate_root->record_table();
 
     // Если была нажата отмена поиска
     if(_cancel_flag == 1)return result;
@@ -803,7 +803,7 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
-        std::shared_ptr<RecordTable> _recordtable = curritem->tabledata();
+        std::shared_ptr<RecordTable> _recordtable = curritem->record_table();
 
         // Перебираются записи таблицы
         for(int i = 0; i < _recordtable->size(); i++) {
@@ -1095,12 +1095,12 @@ void FindScreen::switch_tools_expand(bool flag)
 void FindScreen::remove_id(const QString &id)
 {
     //    _resultset_data->
-    _candidate_root->tabledata()->delete_record_by_id(id);     // _findtable->remove_id(id);
+    _candidate_root->record_table()->delete_record_by_id(id);     // _findtable->remove_id(id);
 }
 
 // dangerous!
 void FindScreen::remove_row(const int row)
 {
     //    _resultset_data->
-    _candidate_root->tabledata()->delete_record_by_position(row);     // _findtable->remove_row(row);
+    _candidate_root->record_table()->delete_record_by_position(row);     // _findtable->remove_row(row);
 }

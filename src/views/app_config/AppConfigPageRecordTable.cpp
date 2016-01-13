@@ -92,10 +92,10 @@ void AppConfigPageTable::setupSignals(void)
 
     // Указатель на контроллер таблицы конечных записей
     RecordController *table_controller = find_object<RecordController>("table_screen_controller");
-    RecordController *page_controller = find_object<RecordController>("page_screen_controller");
+    //    RecordController *page_controller = find_object<RecordController>("page_screen_controller");
     // При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
     connect(this, &AppConfigPageTable::recordTableConfigChange, table_controller, &RecordController::on_recordtable_configchange);
-    connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
+    //    connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
 }
 
 

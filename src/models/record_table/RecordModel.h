@@ -50,12 +50,12 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    void tree_item(boost::intrusive_ptr<TreeItem>item)
-    {
-        beginResetModel();
-        _tree_item = item;
-        endResetModel();
-    }
+    void tree_item(boost::intrusive_ptr<TreeItem>item);
+    //    {
+    //        beginResetModel();
+    //        _tree_item = item;
+    //        endResetModel();
+    //    }
 
     boost::intrusive_ptr<TreeItem> tree_item() {return _tree_item;}
 
@@ -66,8 +66,8 @@ public slots:
 
 private:
 
-    // Установка указателя на таблицу данных, с которой нужно работать модели
-    void reset_tabledata(std::shared_ptr<RecordTable> record_table);
+    //    // Установка указателя на таблицу данных, с которой нужно работать модели
+    //    void reset_tabledata(std::shared_ptr<RecordTable> record_table);
     // Ссылка на данные, с которыми работает модель
     std::shared_ptr<RecordTable> table_data(void);
 

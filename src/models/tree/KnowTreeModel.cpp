@@ -149,7 +149,7 @@ void KnowTreeModel::node_from_dom(QDomElement domElement, boost::intrusive_ptr<T
 
     // У данного Dom-элемента ищется таблица конечных записей
     // и данные заполняются в Item-таблицу конечных записей
-    parent->tabledata(domElement);
+    parent->record_table(domElement);
 
     // Пробегаются все DOM элементы текущего уровня
     // и рекурсивно вызывается обработка подуровней
@@ -606,7 +606,7 @@ bool KnowTreeModel::is_record_id_exists_recurse(boost::intrusive_ptr<TreeItem> i
         return true;
 
     // Если таблица записей текущей ветки содержит искомый идентификатор
-    if(item->tabledata()->is_record_exists(findId)) {
+    if(item->record_table()->is_record_exists(findId)) {
         isExists = true;
         return true;
     }
@@ -677,7 +677,7 @@ QString KnowTreeModel::paste_sub_branch_recurse(boost::intrusive_ptr<TreeItem> i
 
     foreach(std::shared_ptr<Record> record, records) {
         qDebug() << "Add table record " + record->field("name");
-        newitem->tabledata()->insert_new_record(0, record, ADD_NEW_RECORD_TO_END);
+        newitem->record_table()->insert_new_record(0, record, ADD_NEW_RECORD_TO_END);
     }
 
     // --------------------
@@ -830,7 +830,7 @@ QStringList KnowTreeModel::record_path_recurse(boost::intrusive_ptr<TreeItem> it
     currentPath << item->id();
 
     // Если в данной ветке есть искомая запись
-    if(item->tabledata()->is_record_exists(recordId)) {
+    if(item->record_table()->is_record_exists(recordId)) {
         isFind = true;
         findPath = currentPath;
     } else {

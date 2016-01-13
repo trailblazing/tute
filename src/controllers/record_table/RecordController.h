@@ -44,9 +44,10 @@ public:
 
     void click_record(const QModelIndex &index);
 
-    bool is_table_notexists(void);
+    bool is_tree_item_notexists(void);
     //    void reset_tabledata_test(TableData *rtData);
-    void reset_tabledata(std::shared_ptr<RecordTable> table_data);
+    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
+    //    void reset_tabledata(std::shared_ptr<RecordTable> table_data);
 
     int row_count(void);
 

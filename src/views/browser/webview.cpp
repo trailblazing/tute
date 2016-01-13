@@ -1698,7 +1698,7 @@ namespace browser {
     {
         //        std::shared_ptr<Record> record = this->table_model()->table_data()->record(pos);
         assert(record);
-        assert(record == view()->tabmanager()->currentWebView()->page()->current_record()); // may be in backend
+        //        assert(record == view()->tabmanager()->currentWebView()->page()->current_record()); // may be in backend?
 
         // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -1730,15 +1730,15 @@ namespace browser {
 
 
         // Для новой выбраной записи выясняется директория и основной файл
-        QString currentDir = record->field("dir");  // table->field(pos, "dir");
-        QString currentFile = record->field("file");  // table->field(pos, "file");
-        QString fullDir = appconfig.get_tetradir() + "/base/" + currentDir;
-        QString fullFileName = fullDir + "/" + currentFile;
-        qDebug() << " File " << fullFileName << "\n";
+        QString current_dir = record->field("dir");  // table->field(pos, "dir");
+        QString current_file = record->field("file");  // table->field(pos, "file");
+        QString full_dir = appconfig.get_tetradir() + "/base/" + current_dir;
+        QString full_file_name = full_dir + "/" + current_file;
+        qDebug() << " File " << full_file_name << "\n";
 
         // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
-        if(meta_editor->work_directory() == fullDir
-           && meta_editor->file_name() == currentFile
+        if(meta_editor->work_directory() == full_dir
+           && meta_editor->file_name() == current_file
           ) {
             globalparameters.window_switcher()->switchFromRecordtableToRecord();
             return;
@@ -1752,8 +1752,8 @@ namespace browser {
 
         // Редактору задаются имя файла и директории
         // И дается команда загрузки файла
-        meta_editor->work_directory(fullDir);
-        meta_editor->file_name(currentFile);
+        meta_editor->work_directory(full_dir);
+        meta_editor->file_name(current_file);
 
         // Если идет работа с зашифрованной записью
         // И если имя директории или имя файла пусты, то это означает что
@@ -1765,7 +1765,7 @@ namespace browser {
 
         if(record->field("crypt")    // table->field(pos, "crypt")
            == "1")
-            if(fullDir.length() == 0 || currentFile.length() == 0)
+            if(full_dir.length() == 0 || current_file.length() == 0)
                 meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
         // В редактор заносится информация, идет ли работа с зашифрованным текстом

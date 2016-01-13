@@ -25,7 +25,7 @@ TreeItem::TreeItem(QMap<QString, QString> _field_data
 
     return _field_data;
 }())
-, _record_data([ & ]()
+, _record_table([ & ]()
 {
     if(_parent_item) {
         bool need_crypt = (_parent_item->_field_data.contains("crypt") && _parent_item->_field_data["crypt"] == "1") ? true : false;
@@ -51,12 +51,12 @@ TreeItem::TreeItem(QMap<QString, QString> _field_data
     //    fieldsTable = data;
 }
 
-void TreeItem::tabledata(QDomElement i_dom_element)
+void TreeItem::record_table(QDomElement i_dom_element)
 {
-    _record_data->delete_all_records();
-    _record_data.reset();
+    _record_table->delete_all_records();
+    _record_table.reset();
     //    QDomElement *dom_element = &i_dom_element;
-    _record_data = std::make_shared<RecordTable>(
+    _record_table = std::make_shared<RecordTable>(
                        i_dom_element  // boost::intrusive_ptr<TreeItem>(this)   // shared_from_this()
                    );
 
@@ -116,7 +116,7 @@ void TreeItem::empty(void)
 {
     _field_data.clear();
 
-    _record_data->empty();
+    _record_table->empty();
 
     //    // Удаляются все подветки
     //    qDeleteAll(_child_items);
@@ -589,7 +589,7 @@ void TreeItem::to_encrypt(void)
 
 
     // Шифрация конечных записей для этой ветки
-    _record_data->switch_to_encrypt();
+    _record_table->switch_to_encrypt();
 
 
     // Шифрация подветок
@@ -616,7 +616,7 @@ void TreeItem::to_decrypt(void)
 
 
     // Дешифрация конечных записей для этой ветки
-    _record_data->switch_to_decrypt();
+    _record_table->switch_to_decrypt();
 
 
     // Дешифрация подветок
@@ -627,32 +627,32 @@ void TreeItem::to_decrypt(void)
 
 int TreeItem::row_count(void)
 {
-    return _record_data->size();
+    return _record_table->size();
 }
 
 QDomElement TreeItem::export_to_dom()
 {
-    return _record_data->export_to_dom();
+    return _record_table->export_to_dom();
 }
 
 QDomElement TreeItem::export_to_dom(std::shared_ptr<QDomDocument> doc)
 {
-    return _record_data->export_to_dom(doc);
+    return _record_table->export_to_dom(doc);
 }
 
 
 void TreeItem::clear_tabledata(void)
 {
-    _record_data->delete_all_records();
+    _record_table->delete_all_records();
 }
 
 
-std::shared_ptr<RecordTable> TreeItem::tabledata(void)
+std::shared_ptr<RecordTable> TreeItem::record_table(void)
 {
-    return _record_data;
+    return _record_table;
 }
 
-void TreeItem::tabledata(std::shared_ptr<RecordTable> _table_data)
+void TreeItem::record_table(std::shared_ptr<RecordTable> _table_data)
 {
-    _record_data = _table_data;
+    _record_table = _table_data;
 }

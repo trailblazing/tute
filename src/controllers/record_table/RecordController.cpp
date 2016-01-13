@@ -93,7 +93,7 @@ void RecordController::click_record(const QModelIndex &index)
     int source_pos = sourceIndex.row();
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
-
+    qobject_cast<RecordScreen *>(parent())->tools_update();
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
     sychronize_attachtable_to_record(source_pos);
     update_browser(source_pos); // if new one, create it? no, you can't click a record which does not exist.
@@ -407,12 +407,13 @@ void RecordController::sychronize_attachtable_to_record(const int pos)
 }
 
 
-bool RecordController::is_table_notexists(void)
+bool RecordController::is_tree_item_notexists(void)
 {
-    if(_source_model->table_data() == nullptr)
-        return true;
-    else
-        return false;
+    //    if(_source_model->table_data() == nullptr)
+    //        return true;
+    //    else
+    //        return false;
+    return _source_model->tree_item() ? true : false;
 }
 
 //// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
@@ -438,10 +439,9 @@ bool RecordController::is_table_notexists(void)
 //    reset_tabledata(rtData);
 //}
 
-// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
-void RecordController::reset_tabledata(std::shared_ptr<RecordTable> table_data)
+void RecordController::tree_item(boost::intrusive_ptr<TreeItem> tree_item)
 {
-    qDebug() << "In RecordTableView reset_tabledata() start";
+    qDebug() << "In RecordController reset_tree_item() start";
 
     // Обновление набора данных с последующим выбором первой строки
     // может быть очень длительным, поэтому показывается что процесс выполняется
@@ -450,7 +450,7 @@ void RecordController::reset_tabledata(std::shared_ptr<RecordTable> table_data)
     find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
 
     // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
-    _source_model->reset_tabledata(table_data);
+    _source_model->tree_item(tree_item);    // reset_tabledata(table_data);
 
     // Надо обязательно сбросить selection model
     _view->selectionModel()->clear();
@@ -460,7 +460,7 @@ void RecordController::reset_tabledata(std::shared_ptr<RecordTable> table_data)
 
     if(_source_model->rowCount() > 0) {
         // Нужно выяснить, на какой записи ранее стояло выделение
-        int workPos = table_data->work_pos();
+        int workPos = tree_item->record_table()->work_pos();
 
         // Если номер записи допустимый
         if(workPos > 0 && workPos < _source_model->rowCount()) {
@@ -490,6 +490,60 @@ void RecordController::reset_tabledata(std::shared_ptr<RecordTable> table_data)
 
     qDebug() << "In RecordTableView set new model stop";
 }
+
+
+//// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
+//void RecordController::reset_tabledata(std::shared_ptr<RecordTable> table_data)
+//{
+//    qDebug() << "In RecordTableView reset_tabledata() start";
+
+//    // Обновление набора данных с последующим выбором первой строки
+//    // может быть очень длительным, поэтому показывается что процесс выполняется
+//    // QCursor cursor_wait=QCursor(Qt::BusyCursor);
+//    // qApp->setOverrideCursor(cursor_wait);
+//    find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
+
+//    // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
+//    _source_model->reset_tabledata(table_data);
+
+//    // Надо обязательно сбросить selection model
+//    _view->selectionModel()->clear();
+
+//    // Если список конечных записей не пуст
+//    bool removeSelection = true;
+
+//    if(_source_model->rowCount() > 0) {
+//        // Нужно выяснить, на какой записи ранее стояло выделение
+//        int workPos = table_data->work_pos();
+
+//        // Если номер записи допустимый
+//        if(workPos > 0 && workPos < _source_model->rowCount()) {
+//            // Выделение устанавливается на нужную запись
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            _view->selectRow(workPos);
+//            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
+
+//            removeSelection = false;
+//        }
+//    }
+
+//    // If the selection does not need to install    // Если выделение устанавливать ненужно
+//    if(removeSelection) {
+//        // Надо очистить поля области редактировния
+//        find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
+
+//        // При выборе записи обновление инструментов было бы вызвано автоматически
+//        // в альтернативной ветке (там "эмулируется" клик по записи)
+//        // А так как записей нет, то обновление инструментов надо
+//        // вызвать принудительно
+//        qobject_cast<RecordScreen *>(parent())->tools_update();
+//    }
+
+//    // qApp->restoreOverrideCursor();
+//    find_object<MainWindow>("mainwindow")->unsetCursor();
+
+//    qDebug() << "In RecordTableView set new model stop";
+//}
 
 
 // Заполнение переданного объекта буфера обмена данными из указанных записей
@@ -876,9 +930,9 @@ void RecordController::addnew_blank(int mode)
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
 int RecordController::addnew_record_fat(std::shared_ptr<Record> record
-                                       , const int mode
-                                       //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
-                                      )
+                                        , const int mode
+                                        //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
+                                       )
 {
     qDebug() << "In add_new_record()";
 
@@ -1148,13 +1202,13 @@ void RecordController::edit_field_context(QModelIndex proxyIndex)
 
 // Функция сохранения отредактированных полей записи в таблицу конечных записей
 void RecordController::edit_field(int pos
-                                 , QString pin
-                                 , QString name
-                                 , QString author
-                                 , QString home
-                                 , QString url
-                                 , QString tags
-                                )
+                                  , QString pin
+                                  , QString name
+                                  , QString author
+                                  , QString home
+                                  , QString url
+                                  , QString tags
+                                 )
 {
     qDebug() << "In edit_field()";
 
