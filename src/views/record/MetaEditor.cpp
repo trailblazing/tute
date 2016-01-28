@@ -148,9 +148,9 @@ void MetaEditor::setupLabels(void)
 }
 
 
-void MetaEditor::bind(std::shared_ptr<Record> r)
+void MetaEditor::bind(boost::intrusive_ptr<Record> record)
 {
-    _record = r;
+    _record = record;
     assert(_record);
     //    TableController *table_controller = globalparameters.table_screen()->table_controller();
     //    assert(table_controller);

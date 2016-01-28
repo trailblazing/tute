@@ -19,23 +19,23 @@ PreviewView::PreviewView(QTextDocument *document)
 
     viewport()->setBackgroundRole(QPalette::Dark);
 
-    doc = document;
-    scale = 1.0;
-    interPageSpacing = 30;
+    _doc = document;
+    _scale = 1.0;
+    _inter_page_spacing = 30;
 }
 
 
-void PreviewView::zoomIn()
+void PreviewView::zoom_in()
 {
-    scale += 0.2;
+    _scale += 0.2;
     resizeEvent(0);
     viewport()->update();
 }
 
 
-void PreviewView::zoomOut()
+void PreviewView::zoom_out()
 {
-    scale -= 0.2;
+    _scale -= 0.2;
     resizeEvent(0);
     viewport()->update();
 }
@@ -46,24 +46,24 @@ void PreviewView::paintEvent(QPaintEvent *)
     QPainter p(viewport());
 
     p.translate(-horizontalScrollBar()->value(), -verticalScrollBar()->value());
-    p.translate(interPageSpacing, interPageSpacing);
+    p.translate(_inter_page_spacing, _inter_page_spacing);
 
-    const int pages = doc->pageCount();
+    const int pages = _doc->pageCount();
     for (int i = 0; i < pages; ++i) {
         p.save();
-        p.scale(scale, scale);
+        p.scale(_scale, _scale);
 
-        paintPage(&p, i);
+        paint_page(&p, i);
 
         p.restore();
-        p.translate(0, interPageSpacing + doc->pageSize().height() * scale);
+        p.translate(0, _inter_page_spacing + _doc->pageSize().height() * _scale);
     }
 }
 
 
-void PreviewView::paintPage(QPainter *painter, int page)
+void PreviewView::paint_page(QPainter *painter, int page)
 {
-    const QSizeF pgSize = doc->pageSize();
+    const QSizeF pgSize = _doc->pageSize();
 
     QColor col(Qt::black);
 
@@ -89,7 +89,7 @@ void PreviewView::paintPage(QPainter *painter, int page)
 
     painter->translate(0, - page * pgSize.height());
     painter->setClipRect(docRect);
-    doc->documentLayout()->draw(painter, ctx);
+    _doc->documentLayout()->draw(painter, ctx);
 }
 
 
@@ -98,9 +98,9 @@ void PreviewView::resizeEvent(QResizeEvent *)
     const QSize viewportSize = viewport()->size();
 
     QSize docSize;
-    docSize.setWidth(qRound(doc->pageSize().width() * scale + 2 * interPageSpacing));
-    const int pageCount = doc->pageCount();
-    docSize.setHeight(qRound(pageCount * doc->pageSize().height() * scale + (pageCount + 1) * interPageSpacing));
+    docSize.setWidth(qRound(_doc->pageSize().width() * _scale + 2 * _inter_page_spacing));
+    const int pageCount = _doc->pageCount();
+    docSize.setHeight(qRound(pageCount * _doc->pageSize().height() * _scale + (pageCount + 1) * _inter_page_spacing));
 
     horizontalScrollBar()->setRange(0, docSize.width() - viewportSize.width());
     horizontalScrollBar()->setPageStep(viewportSize.width());
@@ -112,22 +112,22 @@ void PreviewView::resizeEvent(QResizeEvent *)
 
 void PreviewView::mousePressEvent(QMouseEvent *e)
 {
-    mousePressPos = e->pos();
-    scrollBarValuesOnMousePress.rx() = horizontalScrollBar()->value();
-    scrollBarValuesOnMousePress.ry() = verticalScrollBar()->value();
+    _mouse_press_pos = e->pos();
+    _scroll_bar_values_on_mouse_press.rx() = horizontalScrollBar()->value();
+    _scroll_bar_values_on_mouse_press.ry() = verticalScrollBar()->value();
     e->accept();
 }
 
 
 void PreviewView::mouseMoveEvent(QMouseEvent *e)
 {
-    if (mousePressPos.isNull()) {
+    if (_mouse_press_pos.isNull()) {
         e->ignore();
         return;
     }
 
-    horizontalScrollBar()->setValue(scrollBarValuesOnMousePress.x() - e->pos().x() + mousePressPos.x());
-    verticalScrollBar()->setValue(scrollBarValuesOnMousePress.y() - e->pos().y() + mousePressPos.y());
+    horizontalScrollBar()->setValue(_scroll_bar_values_on_mouse_press.x() - e->pos().x() + _mouse_press_pos.x());
+    verticalScrollBar()->setValue(_scroll_bar_values_on_mouse_press.y() - e->pos().y() + _mouse_press_pos.y());
     horizontalScrollBar()->update();
     verticalScrollBar()->update();
     e->accept();
@@ -136,7 +136,7 @@ void PreviewView::mouseMoveEvent(QMouseEvent *e)
 
 void PreviewView::mouseReleaseEvent(QMouseEvent *e)
 {
-    mousePressPos = QPoint();
+    _mouse_press_pos = QPoint();
     e->accept();
 }
 

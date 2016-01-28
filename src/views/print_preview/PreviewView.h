@@ -18,8 +18,8 @@ public:
     }
 
 public slots:
-    void zoomIn();
-    void zoomOut();
+    void zoom_in();
+    void zoom_out();
 
 protected:
     virtual void paintEvent(QPaintEvent *e);
@@ -29,12 +29,12 @@ protected:
     virtual void mouseReleaseEvent(QMouseEvent *e);
 
 private:
-    void paintPage(QPainter *painter, int page);
-    QTextDocument *doc;
-    qreal scale;
-    int interPageSpacing;
-    QPoint mousePressPos;
-    QPoint scrollBarValuesOnMousePress;
+    void paint_page(QPainter *painter, int page);
+    QTextDocument   *_doc;
+    qreal           _scale;
+    int             _inter_page_spacing;
+    QPoint          _mouse_press_pos;
+    QPoint          _scroll_bar_values_on_mouse_press;
 };
 
 #endif // _PREVIEWVIEW_H_

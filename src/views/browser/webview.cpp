@@ -55,7 +55,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 #include "libraries/WindowSwitcher.h"
 #include "libraries/WalkHistory.h"
-
+#include "models/attach_table/AttachTableData.h"
 
 #include <QtGui/QClipboard>
 #include <QtNetwork/QAuthenticator>
@@ -321,7 +321,7 @@ namespace browser {
 #endif // USE_POPUP_WINDOW
 
     WebPage::WebPage(QWebEngineProfile *profile
-                     , std::shared_ptr<Record> record
+                     , boost::intrusive_ptr<Record> record
                      // , bool openinnewtab
                      , RecordController *_record_controller
                      , WebView *parent
@@ -330,21 +330,21 @@ namespace browser {
           //        , _load_record(&WebPage::load)
         , _record([ & ]()
     {
-        std::shared_ptr<Record> record_result;
+        boost::intrusive_ptr<Record> record_result;
 
         if(!record->is_registered()) {
             auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(this);
             record_result = _record_controller->request_record(
                                 record
                                 , std::make_shared <
-                                sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                                sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>
                                 > (
                                     ""
                                     , &WebPage::ActiveRecordBinder::binder
                                     , ar  // boost::make_shared<WebPage::active_record>(this, true)
                                 )
                                 , std::make_shared <
-                                sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
+                                sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>
                                 > (
                                     ""
                                     , &WebPage::ActiveRecordBinder::activator
@@ -406,7 +406,7 @@ namespace browser {
 
     }
 
-    void WebPage::add_record_to_table_data(std::shared_ptr<Record> record)
+    void WebPage::add_record_to_table_data(boost::intrusive_ptr<Record> record)
     {
         auto tab_manager = view()->tabmanager();
         auto table_data = tab_manager->table_data();
@@ -422,7 +422,7 @@ namespace browser {
     }
 
     // this will delete record for ever from database
-    void WebPage::remove_record_from_table_data(std::shared_ptr<Record> record)
+    void WebPage::remove_record_from_table_data(boost::intrusive_ptr<Record> record)
     {
         auto tab_manager = view()->tabmanager();
         assert(tab_manager->tree_item() != globalparameters.table_screen()->table_controller()->table_model()->tree_item());
@@ -469,7 +469,7 @@ namespace browser {
     //        QWebEnginePage::load(url);
     //    }
 
-    WebView *WebPage::load(std::shared_ptr<Record> record, bool checked)
+    WebView *WebPage::load(boost::intrusive_ptr<Record> record, bool checked)
     {
         Q_UNUSED(checked)
         assert(record);
@@ -690,12 +690,12 @@ namespace browser {
 
                     auto record = _record_controller->request_record(
                                       QUrl(Browser::_defaulthome)
-                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                           ""
                                           , &WebPage::ActiveRecordBinder::binder
                                           , ar
                                       )
-                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                           ""
                                           , &WebPage::ActiveRecordBinder::activator
                                           , ar
@@ -712,15 +712,15 @@ namespace browser {
 
                     // already create window, why do this? -- refer to demo browser
                     auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
-                    std::shared_ptr<Record> r
+                    boost::intrusive_ptr<Record> r
                         = _record_controller->request_record(
                               QUrl(Browser::_defaulthome)
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                   ""
                                   , &TabWidget::ActiveRecordBinder::binder
                                   , arint
                               )
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                   ""
                                   , &TabWidget::ActiveRecordBinder::activator
                                   , arint
@@ -768,7 +768,7 @@ namespace browser {
 
         //        // never called
         //        connect(page, &QWebEnginePage::load, page, [&](const QUrl & url) {
-        //            std::shared_ptr<Record> record = page->current_record();
+        //            boost::intrusive_ptr<Record> record = page->current_record();
         //            record->setNaturalFieldSource("url", url.toString());
         //            record->generate();
         //            record->active();
@@ -776,7 +776,7 @@ namespace browser {
 
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
-            std::shared_ptr<Record> record = page->_record;
+            boost::intrusive_ptr<Record> record = page->_record;
             record->natural_field_source("url", url.toString());
             page->load(record); // record->generate();
             page->active();     // record->active();
@@ -930,19 +930,19 @@ namespace browser {
 
 
 
-    std::shared_ptr<Record>  WebPage::equip_registered(std::shared_ptr<Record> record
+    boost::intrusive_ptr<Record>  WebPage::equip_registered(boost::intrusive_ptr<Record> record
                                                        //                                                       , browser::WebPage *page
                                                       )
     {
         auto binder = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                        ""
                        , &browser::WebPage::ActiveRecordBinder::binder
                        , ar
                    );
         };
         auto activator = [](boost::shared_ptr<browser::WebPage::ActiveRecordBinder> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                        ""
                        , &browser::WebPage::ActiveRecordBinder::activator
                        , ar
@@ -1167,7 +1167,7 @@ namespace browser {
 
 
 
-    std::map<QString, std::weak_ptr<Record> > WebPage::binded_records()const
+    std::map<QString, boost::intrusive_ptr<Record> > WebPage::binded_records()const
     {
         //        Record *record = _record;   // maybe invalid
 
@@ -1189,14 +1189,14 @@ namespace browser {
     void WebPage::break_records()
     {
         for(auto &j : _records) {
-            if(auto i = j.second.lock()) {
+            if(auto i = j.second) {
                 break_record(i);
             }
         }
     }
 
     // which_page_point_to_me
-    void WebPage::break_record(std::shared_ptr<Record> record)
+    void WebPage::break_record(boost::intrusive_ptr<Record> record)
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
         if(record) {
@@ -1222,7 +1222,7 @@ namespace browser {
         //        _record.reset();  // do not reset, you may need it later
     }
 
-    WebView *WebPage::bind(std::weak_ptr<Record> r)
+    WebView *WebPage::bind(boost::intrusive_ptr<Record> record)
     {
         //        Record *new_record = nullptr;
         //        RecordTableData *data = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
@@ -1254,11 +1254,11 @@ namespace browser {
         //            this->_openinnewtab = false;
         //        }
 
-        //        std::shared_ptr<Record> record;
+        //        boost::intrusive_ptr<Record> record;
         TabWidget *tabmanager = view()->tabmanager();
         assert(tabmanager);
 
-        if(std::shared_ptr<Record> record = r.lock()) {
+        if(record) {
 
             if(_record && _record != record) {
                 //                tabmanager->table_data()->delete_record_by_id(_record->natural_field_source("id"));
@@ -1694,9 +1694,9 @@ namespace browser {
 
 
 
-    void WebPage::sychronize_metaeditor_to_record(std::shared_ptr<Record> record)
+    void WebPage::sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record)
     {
-        //        std::shared_ptr<Record> record = this->table_model()->table_data()->record(pos);
+        //        boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
         assert(record);
         //        assert(record == view()->tabmanager()->currentWebView()->page()->current_record()); // may be in backend?
 
@@ -1898,7 +1898,7 @@ namespace browser {
     }
 
 
-    WebView::WebView(const std::shared_ptr<Record> record
+    WebView::WebView(const boost::intrusive_ptr<Record> record
                      , QWebEngineProfile *profile   // , bool openinnewtab
                      , TabWidget *tabmanager
                      , QWidget *parent
@@ -1984,7 +1984,7 @@ namespace browser {
 
     }
 
-    WebView::WebView(const std::shared_ptr<Record> record
+    WebView::WebView(const boost::intrusive_ptr<Record> record
                      , QWebEngineProfile *profile   // , bool openinnewtab
                      , TabWidget *parent
                      , RecordController *table_controller
@@ -2297,7 +2297,7 @@ namespace browser {
     }
 
 
-    WebView *WebView::load(std::shared_ptr<Record> record)
+    WebView *WebView::load(boost::intrusive_ptr<Record> record)
     {
         //        _page->record(record);
         return _page->equip_registered(record)->active();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));

@@ -147,7 +147,7 @@ MainWindow::~MainWindow()
 
     delete  _v_right_splitter;
     delete  _find_splitter;
-    delete  _vtabwidget;
+    //    delete  _vtabwidget;
     delete  _v_left_splitter;
     delete  _h_splitter;
 
@@ -440,13 +440,15 @@ void MainWindow::restore_tree_position(void)
 void MainWindow::save_tree_position(void)
 {
     // Получение QModelIndex выделенного в дереве элемента
-    QModelIndex index = _tree_screen->currentitem_index();
+    QModelIndex index = _tree_screen->current_index();
 
-    // Получаем указатель вида TreeItem
-    auto item = _tree_screen->_knowtreemodel->item(index);
+    if(index.isValid()) {   // this line is to be remove
+        // Получаем указатель вида TreeItem
+        auto item = _tree_screen->_knowtreemodel->item(index);
 
-    // Сохраняем путь к элементу item
-    appconfig.set_tree_position(item->path());
+        // Сохраняем путь к элементу item
+        appconfig.set_tree_position(item->path());
+    }
 }
 
 
@@ -461,7 +463,7 @@ void MainWindow::set_tree_position(QStringList path)
     qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
     // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = _tree_screen->_knowtreemodel->index_item(item);
+    QModelIndex setto = _tree_screen->_knowtreemodel->index(item);
 
     // Курсор устанавливается в нужную позицию
     _tree_screen->cursor_to_index(setto);

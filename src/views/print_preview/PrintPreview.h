@@ -18,7 +18,7 @@ public:
 
 private slots:
     void print();
-    void pageSetup();
+    void page_setup();
 
 private:
     void setup();

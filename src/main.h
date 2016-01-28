@@ -195,10 +195,10 @@ extern std::string difference(const std::string &url_compare_stored, const std::
 //                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator
 //                               , RecordTableController *record_controller = globalparameters.getRecordTableScreen()->getRecordTableController());
 
-//extern std::shared_ptr<Record> register_record(std::shared_ptr<Record> record
+//extern boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record
 //                                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
 //                                               , TableController *record_controller = globalparameters.table_screen()->table_controller());
-//extern std::shared_ptr<Record> check_record(const QUrl &_url);
+//extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
 //namespace browser {
 //    class Browser;
@@ -207,13 +207,13 @@ extern std::string difference(const std::string &url_compare_stored, const std::
 
 //template<typename> struct active_record;
 
-//extern std::shared_ptr<Record> request_record(const QUrl &_url
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator);
-//extern std::shared_ptr<Record> request_record(const std::shared_ptr<Record> record
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator);
+//extern boost::intrusive_ptr<Record> request_record(const QUrl &_url
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator);
+//extern boost::intrusive_ptr<Record> request_record(const boost::intrusive_ptr<Record> record
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator);
 
-//std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record, browser::WebPage *page);
+//boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record, browser::WebPage *page);
 
 #endif // __MAIN_H__

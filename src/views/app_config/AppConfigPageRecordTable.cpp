@@ -20,7 +20,7 @@ AppConfigPageTable::AppConfigPageTable(QWidget *parent) : ConfigPage(parent)
     qDebug() << "Create record table config page";
 
     QStringList allFieldNames = fixedparameters._record_field;
-    QMap<QString, QString> descriptionFields = fixedparameters.recordFieldDescription(allFieldNames);
+    QMap<QString, QString> descriptionFields = fixedparameters.record_field_description(allFieldNames);
     QStringList showFields = appconfig.getRecordTableShowFields();
 
     // Создаются чекбоксы для каждого поля, хранимого в записи

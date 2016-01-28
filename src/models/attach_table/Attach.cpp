@@ -280,7 +280,7 @@ void Attach::pushFatDataToDisk()
         critical_error("Can't push fat data for lite attach. Attach id: " + getField("id") + " File name: " + getField("fileName"));
 
     QString innerFileName = getInnerFileName();
-    QString innerDirName = _parent_table->record->full_dir();
+    QString innerDirName = _parent_table->_record->full_dir();
 
     QMap<QString, QByteArray> fileList;
     fileList[innerFileName] = _file_content;
@@ -313,7 +313,7 @@ void Attach::popFatDataFromDisk()
     _file_content.clear();
 
     QString innerFileName = getInnerFileName();
-    QString innerDirName = _parent_table->record->full_dir();
+    QString innerDirName = _parent_table->_record->full_dir();
 
     _file_content.append((DiskHelper::getFilesFromDirectory(innerDirName, innerFileName)).value(innerFileName));
 }
@@ -419,7 +419,7 @@ QString Attach::getAbsoluteInnerFileName() const
 // Внутрисистемный путь к файлу (полный)
 QString Attach::getFullInnerDirName() const
 {
-    return _parent_table->record->full_dir();
+    return _parent_table->_record->full_dir();
 }
 
 
@@ -429,7 +429,7 @@ qint64 Attach::getFileSize() const
     QString tempFileName;
 
     if(_fields["type"] == "file") {
-        QString recordDir = _parent_table->record->full_dir();
+        QString recordDir = _parent_table->_record->full_dir();
         tempFileName = recordDir + "/" + getInnerFileName();
     }
 

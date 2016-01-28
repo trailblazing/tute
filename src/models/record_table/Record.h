@@ -8,10 +8,11 @@
 #include <QDomElement>
 
 #include "utility/delegate.h"
-#include "models/attach_table/Attach.h"
-#include "models/attach_table/AttachTableData.h"
-#include "views/browser/browser.h"
 
+//#include "views/browser/browser.h"
+
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 // Класс одной записи в таблице записей
 // Class entries in the table of records
@@ -33,8 +34,14 @@ namespace browser {
     class WebPage;
 }
 
+class TreeItem;
+class AttachTableData;
 
-class Record : public std::enable_shared_from_this<Record> {
+
+class Record :
+    public boost::intrusive_ref_counter<Record, boost::thread_safe_counter>
+//        std::enable_shared_from_this<Record>
+{
 
     // К закрытым функциям может иметь доступ объекты приаттаченного файла
     friend class Attach;
@@ -42,8 +49,8 @@ class Record : public std::enable_shared_from_this<Record> {
 
 public:
     Record();
+    Record(boost::intrusive_ptr<Record> obj);
     virtual ~Record();
-
 
     browser::WebPage *unique_page();   // const; // {return _page;}
 
@@ -55,10 +62,10 @@ public:
 
     QString text_from_fat() const;
     QString text_direct_from_lite();
-    void setTextToFat(QString iText);
+    void text_to_fat(QString i_text);
 
-    QString field(QString name) const;
-    void field(QString name, QString value);
+    QString field(QString _name) const;
+    void field(QString _name, QString value);
     bool is_natural_field_exists(QString name) const;
 
 
@@ -68,12 +75,12 @@ public:
 
     QMap<QString, QString> natural_field_list() const;
 
-    QMap<QString, QByteArray> getPictureFiles() const;
-    void picture_files(QMap<QString, QByteArray> iPictureFiles);
+    QMap<QString, QByteArray> picture_files() const;
+    void picture_files(QMap<QString, QByteArray> picture_files);
 
-    AttachTableData attach_table() const;
-    AttachTableData *attach_table();
-    void attach_table(AttachTableData iAttachTable);
+    std::shared_ptr<AttachTableData> attach_table() const;
+    std::shared_ptr<AttachTableData> attach_table();
+    void attach_table(std::shared_ptr<AttachTableData> iAttachTable);
 
     bool is_empty() const;
     bool is_lite() const;
@@ -98,11 +105,11 @@ public:
     bool is_registered() {return _is_registered;}
     void is_registered(bool reg) {_is_registered = reg;}
 
-    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> g) {_binder = g;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> binder() const {return _binder;}
+    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
 
-    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> a) {_activator = a;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator() const {return _activator;}
+    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> a) {_activator = a;}
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator() const {return _activator;}
 
     browser::WebView *bind();
     browser::WebView *active();
@@ -128,17 +135,17 @@ protected:
     // Set the properties of the contents occurs in the upstream code
 
     // Light properties // Легкие свойства
-    QMap<QString, QString>      _field_list;    // // A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
+    QMap<QString, QString>      _field_data;    // // A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
 
     // Полновесные свойства
     QByteArray                  _text;          // Содержимое файла с текстом записи
     QMap<QString, QByteArray>   _picture_files; // Содержимое картинок, используемых в тексте записи (используется при переносе через буфер обмена, при DragAndDrop)
 
     // Таблица прикрепляемых файлов
-    AttachTableData             _attach_table_data;
+    std::shared_ptr<AttachTableData>    _attach_table_data;
 
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _binder;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> _activator;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _binder;
+    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _activator;
 
     // -----------------
     // Защищенные методы
@@ -158,7 +165,7 @@ protected:
     void to_encrypt_fields(void);
     void to_decrypt_fields(void);
 
-    void check_and_fill_file_dir(QString &nameDirFull, QString &nameFileFull);
+    void check_and_fill_file_dir(QString &nameDirFull, QString &i_file_name);
     void check_and_create_text_file();
 
     QString natural_field(QString name) const;
@@ -166,9 +173,10 @@ protected:
 private:
     Record *bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
     void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
+    explicit Record(const Record &obj) = delete;
+
     friend class browser::WebPage;
 
-    explicit Record(const Record &obj) = delete;
     friend class RecordTable;
 };
 

@@ -54,7 +54,7 @@ public:
 
     int first_selecteditem_row(void);
 
-    QModelIndex currentitem_index(void);
+    QModelIndex current_index(void);
     QModelIndex last_index(void);
 
     QItemSelectionModel *selection_model(void);
@@ -66,8 +66,8 @@ public:
 
     QMenu *buttonmenu() {return _menus_in_button;}
 
-    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex current_index, QString name, bool insert_sibling_branch);
-    boost::intrusive_ptr<TreeItem> insert_branch_process(QModelIndex current_index, QString name, bool insert_sibling_branch);
+    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
+    boost::intrusive_ptr<TreeItem> insert_branch_process(QModelIndex _current_index, QString name, bool insert_sibling_branch);
 
     //    TreeController *treecontroller() {return _tree_controller;}
     void to_candidate_screen(const QModelIndex &index);
@@ -114,11 +114,11 @@ private:
     QWidgetAction   *_menuaction;
     QMenu           *_menus_in_button;
 
-    KnowTreeView            *_knowtreeview;
-    QHBoxLayout             *_toolslayout;
+    KnowTreeView    *_knowtreeview;
+    QHBoxLayout     *_toolslayout;
     //    browser::ToolbarSearch  *_recordtree_search;
     //    QHBoxLayout             *_recordtree_searchlayout;
-    QVBoxLayout             *_treescreenlayout;
+    QVBoxLayout     *_treescreenlayout;
 
     const AppConfig &_appconfig;
 

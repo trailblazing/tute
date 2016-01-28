@@ -302,7 +302,7 @@ browser::HistoryManager     *QtSingleApplication::_historymanager = nullptr;
 QNetworkAccessManager       *QtSingleApplication::_networkaccessmanager = nullptr;
 browser::BookmarksManager   *QtSingleApplication::_bookmarksmanager = nullptr;
 
-static void setUserStyleSheet(QWebEngineProfile *profile
+static void set_user_style_sheet(QWebEngineProfile *profile
                               , const QString &styleSheet
                               , browser::Entrance *browsemanager  //, browser::BrowserWindow *mainWindow = 0
                              )
@@ -922,12 +922,12 @@ void QtSingleApplication::newLocalSocketConnection()
             auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
             auto record = globalparameters.table_screen()->table_controller()->request_record(
                               url
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                   ""
                                   , &browser::Entrance::ActiveRecordBinder::binder
                                   , arb
                               )
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                   ""
                                   , &browser::Entrance::ActiveRecordBinder::activator
                                   , arb
@@ -1071,7 +1071,7 @@ void QtSingleApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
-    setUserStyleSheet(defaultProfile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
+    set_user_style_sheet(defaultProfile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
 
     defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());

@@ -411,7 +411,7 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
     menu.addAction(_actionlist["decryptBranch"]);
 
     // Получение индекса выделенной ветки
-    QModelIndex index = currentitem_index();
+    QModelIndex index = current_index();
 
     // Выясняется, зашифрована ли ветка или нет
     QString cryptFlag = _knowtreemodel->item(index)->field("crypt");
@@ -575,7 +575,7 @@ void TreeScreen::moveupdn_branch(int direction)
     if(!move_checkenable()) return;
 
     // Получение индекса выделенной строки
-    QModelIndex index = currentitem_index();
+    QModelIndex index = current_index();
 
     // Ветка перемещается
     QModelIndex index_after_move;
@@ -638,7 +638,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
 {
     // Получение списка индексов QModelIndex выделенных элементов
     QModelIndexList selectitems = _knowtreeview->selectionModel()->selectedIndexes();
-    QModelIndex current_index;
+    QModelIndex _current_index;
 
     // Если выбрано более одной ветки
     if(selectitems.size() > 1) {
@@ -654,7 +654,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
     //    else if(selectitems.size() == 0) {
     //        current_index = last_index();
     //    } else {
-    current_index = currentitem_index();
+    _current_index = current_index();
     //    }
 
     // Создается окно ввода данных
@@ -678,18 +678,18 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
     //    current_index = currentitem_index();
 
     // Введенные данные добавляются
-    return insert_branch_process(current_index, name, insert_sibling_branch);
+    return insert_branch_process(_current_index, name, insert_sibling_branch);
 }
 
-boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex current_index, QString name, bool insert_sibling_branch)
+boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch)
 {
-    return insert_branch_process(current_index, name, insert_sibling_branch);
+    return insert_branch_process(_current_index, name, insert_sibling_branch);
 }
 
-boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_process(QModelIndex current_index, QString name, bool insert_sibling_branch)
+boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_process(QModelIndex _current_index, QString name, bool insert_sibling_branch)
 {
     // Получение ссылки на узел, который соответствует выделенной строке
-    auto item = _knowtreemodel->item(current_index);
+    auto item = _knowtreemodel->item(_current_index);
 
     find_object<MainWindow>("mainwindow")->setDisabled(true);
 
@@ -702,7 +702,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_process(QModelIndex cur
     // Одноранговая ветка
     if(insert_sibling_branch) {
         // Вставка новых данных в модель дерева записей
-        _knowtreemodel->add_new_sibling_branch(current_index, id, name);
+        _knowtreemodel->add_new_sibling_branch(_current_index, id, name);
 
         // Установка курсора на только что созданную позицию
 
@@ -712,17 +712,17 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_process(QModelIndex cur
         // Затем у объекта Item выяснить количество элементов, и установить
         // засветку через метод index() относительно parent в виде QModelIndex
         //        QModelIndex
-        setto = _knowtreemodel->index(item->parent()->child_count() - 1, 0, current_index.parent());
+        setto = static_cast<TreeModel *>(_knowtreemodel)->index(item->parent()->child_count() - 1, 0, _current_index.parent());
         _knowtreeview->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
     } else {
         // Подветка
 
         // Вставка новых данных в модель дерева записей
-        _knowtreemodel->add_new_child_branch(current_index, id, name);
+        _knowtreemodel->add_new_child_branch(_current_index, id, name);
 
         // Установка курсора на только что созданную позицию
         //        QModelIndex
-        setto = _knowtreemodel->index_children(current_index, item->child_count() - 1);
+        setto = _knowtreemodel->index_child(_current_index, item->child_count() - 1);
         _knowtreeview->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
 
         // А можно было установить курсор на нужную позицию и так
@@ -756,7 +756,7 @@ void TreeScreen::edit_branch(void)
     }
 
     // Получение индекса выделенной строки
-    QModelIndex index = currentitem_index();
+    QModelIndex index = current_index();
 
     // Получение ссылки на узел, который соответствует выделенной строке
     auto item = _knowtreemodel->item(index);
@@ -1050,7 +1050,7 @@ bool TreeScreen::copy_branch(void)
 
 
     // Получение индекса выделенной ветки
-    QModelIndex index = currentitem_index();
+    QModelIndex index = current_index();
 
     // Получение ссылки на узел, который соответствует выделенной ветке
     auto item = _knowtreemodel->item(index);
@@ -1157,7 +1157,7 @@ void TreeScreen::add_branch_to_clipboard(ClipboardBranch *branch_clipboard_data,
 
     for(int i = 0; i < curr_item_record_table->size(); i++) {
         // Полный образ записи (с файлами и текстом)
-        std::shared_ptr<Record> record = curr_item_record_table->record_fat(i);
+        boost::intrusive_ptr<Record> record = curr_item_record_table->record_fat(i);
 
         branch_clipboard_data->addRecord(branch_id, record);
     }
@@ -1222,7 +1222,7 @@ void TreeScreen::paste_branch_smart(bool is_branch)
 
 
     // Получение индекса выделенной строки
-    QModelIndex index = currentitem_index();
+    QModelIndex index = current_index();
 
     // Добавление ветки
     QString pasted_branch_id;
@@ -1286,7 +1286,7 @@ void TreeScreen::decrypt_branch(void)
 void TreeScreen::encrypt_branch_item(void)
 {
     // Получаем указатель на текущую выбранную ветку дерева
-    auto item = _knowtreemodel->item(currentitem_index());
+    auto item = _knowtreemodel->item(current_index());
 
     // Шифрация ветки и всех подветок
     item->to_encrypt();
@@ -1295,14 +1295,14 @@ void TreeScreen::encrypt_branch_item(void)
     find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 
     // Обновляеются на экране ветка и ее подветки
-    update_branch_on_screen(currentitem_index());
+    update_branch_on_screen(current_index());
 }
 
 
 void TreeScreen::decrypt_branch_item(void)
 {
     // Получаем указатель на текущую выбранную ветку дерева
-    auto item = _knowtreemodel->item(currentitem_index());
+    auto item = _knowtreemodel->item(current_index());
 
     // Расшифровка ветки и всех подветок
     item->to_decrypt();
@@ -1311,7 +1311,7 @@ void TreeScreen::decrypt_branch_item(void)
     find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 
     // Обновляеются на экране ветка и ее подветки
-    update_branch_on_screen(currentitem_index());
+    update_branch_on_screen(current_index());
 
     // Проверяется, остались ли в дереве зашифрованные данные
     // если зашифрованных данных нет, будет предложено сбросить пароль
@@ -1334,7 +1334,7 @@ void TreeScreen::update_branch_on_screen(const QModelIndex &index)
     foreach(QStringList currentPath, updatePathts) {
         auto currentItem = _knowtreemodel->item(currentPath);
 
-        QModelIndex currentIndex = _knowtreemodel->index_item(currentItem);
+        QModelIndex currentIndex = _knowtreemodel->index(currentItem);
 
         // Для подветки дается команда чтобы модель сообщила о своем изменении
         _knowtreemodel->emit_datachanged_signal(currentIndex);
@@ -1344,6 +1344,7 @@ void TreeScreen::update_branch_on_screen(const QModelIndex &index)
 void TreeScreen::to_candidate_screen(const QModelIndex &index)
 {
     candidate_from_knowtree_item(index);
+    _knowtreemodel->record_to_item();
     globalparameters.vtab()->setCurrentWidget(globalparameters.table_screen());
 }
 
@@ -1578,40 +1579,101 @@ int TreeScreen::first_selecteditem_row(void)
 
 
 // Получение индекса текущего элемента на котором стоит курсор
-QModelIndex TreeScreen::currentitem_index(void)
+QModelIndex TreeScreen::current_index(void)
 {
+    boost::intrusive_ptr<TreeItem> item = nullptr;
+
     if(0 == _knowtreemodel->_root_item->child_count()) {
-        _knowtreemodel->_root_item->add_children();
+        item = _knowtreemodel->_root_item->add_child();
+    } else {
+        item = _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1);
     }
+
+    assert(item);
+
+    QModelIndex cur_index;
 
     if(!_knowtreeview->selectionModel()->currentIndex().isValid()) {
-        _knowtreeview->selectionModel()->setCurrentIndex(
-            _knowtreemodel->index_item(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1))
-            //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
-            //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
-            , QItemSelectionModel::SelectCurrent);
+
+        if(item) {
+            cur_index = // _knowtreemodel->index(item);
+                _knowtreemodel->index(
+                    item    // item->parent()->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
+                );
+            assert(cur_index.isValid());
+            candidate_from_knowtree_item(cur_index);
+
+            _knowtreeview->selectionModel()->setCurrentIndex(
+                cur_index   // _knowtreemodel->index(item)
+                , QItemSelectionModel::SelectCurrent);
+        }
+
+        //        else {
+        //            //            cur_index = _knowtreemodel->index_child(
+        //            //                            _knowtreemodel->index(_knowtreemodel->_root_item)   // does not work!
+        //            //                            , _knowtreemodel->_root_item->child_count() - 1);
+
+        //            cur_index = _knowtreemodel->index(
+        //                            _knowtreemodel->_root_item->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
+        //                        );
+
+        //            assert(cur_index.isValid());
+        //            _knowtreeview->selectionModel()->setCurrentIndex(
+        //                cur_index
+        //                //                _knowtreemodel->index_child(
+        //                //                    _knowtreemodel->index(_knowtreemodel->_root_item)
+        //                //                    , _knowtreemodel->_root_item->child_count() - 1)
+
+
+
+        //                //                _knowtreemodel->index(
+        //                //                    _knowtreemodel->_root_item->child
+        //                //                    (
+        //                //                        _knowtreemodel->_root_item->child_count() - 1
+        //                //                    )
+        //                //                )
+        //                //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
+        //                //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
+        //                , QItemSelectionModel::SelectCurrent
+        //            );
+        //        }
     }
 
-    assert(_knowtreeview->selectionModel()->currentIndex().isValid());
+    //    candidate_from_knowtree_item(cur_index);
+    assert(_knowtreeview->selectionModel()->currentIndex().isValid());    // this line is to be recovery
     return _knowtreeview->selectionModel()->currentIndex();
 }
 
 // Получение индекса текущего элемента на котором стоит курсор
 QModelIndex TreeScreen::last_index(void)
 {
+    boost::intrusive_ptr<TreeItem> item = nullptr;
+
     if(0 == _knowtreemodel->_root_item->child_count()) {
-        _knowtreemodel->_root_item->add_children();
+        item = _knowtreemodel->_root_item->add_child();
+    } else {
+        item = _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1);
     }
+
+    assert(item);
+    QModelIndex cur_index = _knowtreemodel->index(
+                                item   // item->parent()->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
+                            );
+    assert(cur_index.isValid());
+    candidate_from_knowtree_item(cur_index);
 
     //    if(!_knowtreeview->selectionModel()->currentIndex().isValid()) {
     _knowtreeview->selectionModel()->setCurrentIndex(
-        _knowtreemodel->index_item(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1))
+        cur_index
+        //        _knowtreemodel->index(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1))
+
+
         //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
         //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
         , QItemSelectionModel::SelectCurrent);
     //    }
-
-    assert(_knowtreeview->selectionModel()->currentIndex().isValid());
+    //    candidate_from_knowtree_item(cur_index);
+    assert(_knowtreeview->selectionModel()->currentIndex().isValid());    // this line is to be recovery
     return _knowtreeview->selectionModel()->currentIndex();
 }
 

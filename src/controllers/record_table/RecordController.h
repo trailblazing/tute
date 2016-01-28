@@ -77,23 +77,23 @@ public:
     void removerow_by_id(QString delId);
     void removerows_by_idlist(QVector<QString> delIds);
 
-    std::shared_ptr<Record> register_record(std::shared_ptr<Record> record);
+    boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record);
 
-    std::shared_ptr<Record> check_record(const QUrl &_url);
+    boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
-    std::shared_ptr<Record> request_record(
-        std::shared_ptr<Record> record
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
+    boost::intrusive_ptr<Record> request_record(
+        boost::intrusive_ptr<Record> record
+        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
+        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator
     );
 
-    std::shared_ptr<Record> request_record(
+    boost::intrusive_ptr<Record> request_record(
         const QUrl &_url
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
+        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
+        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator
     );
 
-    //    int addnew_page_record(std::shared_ptr<Record> record, int mode = add_new_record_after);
+    //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
     std::shared_ptr<RecordTable> table_data();
     void sychronize_metaeditor_to_record(const int pos);
@@ -154,12 +154,12 @@ protected:
 
     //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
-    int addnew_record_fat(std::shared_ptr<Record> record
+    int addnew_record_fat(boost::intrusive_ptr<Record> record
                           , const int mode
                           = ADD_NEW_RECORD_AFTER // add_new_record_after
                          );
 
-    int addnew_record(std::shared_ptr<Record> record, int mode);
+    int addnew_record(boost::intrusive_ptr<Record> record, int mode);
 
     void edit_field(int pos
                     , QString pin
@@ -172,7 +172,7 @@ protected:
     friend class browser::Entrance;
     //friend class WebView;
 
-    //    friend std::shared_ptr<Record> register_record(std::shared_ptr<Record> record);
+    //    friend boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record);
 
     //    friend Record *register_record(const QUrl &_url);
 };

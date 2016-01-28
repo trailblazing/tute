@@ -339,7 +339,7 @@ namespace browser {
                 WebPage *page = view->page();
 
                 if(page) {
-                    std::shared_ptr<Record> record = page->current_record();
+                    boost::intrusive_ptr<Record> record = page->current_record();
                     assert(record);
                     QString home = record->natural_field_source("home");
                     QUrl homeurl = QUrl(home);
@@ -395,7 +395,7 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::new_browser(std::shared_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::new_browser(boost::intrusive_ptr<Record> record)
     {
 
         //        DockedWindow *browser =
@@ -748,12 +748,12 @@ namespace browser {
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
         auto r = _record_controller->request_record(
                      url
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                          ""
                          , &Entrance::ActiveRecordBinder::binder
                          , ara
                      )
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                          ""
                          , &Entrance::ActiveRecordBinder::activator
                          , ara
@@ -990,7 +990,7 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    std::pair<Browser *, WebView *> Entrance::equip_registered(std::shared_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::equip_registered(boost::intrusive_ptr<Record> record)
     {
         assert(record);
         assert(record->is_registered());
@@ -1018,14 +1018,14 @@ namespace browser {
                          );
                 } else {
                     auto generator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::binder
                                    , ar
                                );
                     };
                     auto activator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::activator
                                    , ar
@@ -1224,7 +1224,7 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::find(std::shared_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::find(boost::intrusive_ptr<Record> record)
     {
         std::pair<Browser *, WebView *> dp{nullptr, nullptr};
 

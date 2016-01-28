@@ -12,6 +12,9 @@
 #include <QSlider>
 #include <QStringList>
 
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
 #include "EditorFindDialog.h"
 #include "EditorShowText.h"
 

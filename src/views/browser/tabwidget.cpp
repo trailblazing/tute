@@ -308,12 +308,12 @@ namespace browser {
                 //                return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);
                 //            }   // nested    //
                 //                [this](Record * const record)-> WebView * {return this->newTab(record);}
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>
+                , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(boost::intrusive_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
                 >(
                     std::string(""), &TabWidget::ActiveRecordBinder::binder, std::forward<boost::shared_ptr<TabWidget::ActiveRecordBinder>>(arint))  //                _active
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>
-                , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(std::shared_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>
+                , std::string, browser::WebView *(TabWidget::ActiveRecordBinder::*)(boost::intrusive_ptr<Record>), boost::shared_ptr<TabWidget::ActiveRecordBinder>
                 >(
                     std::string(""), &TabWidget::ActiveRecordBinder::activator, std::forward<boost::shared_ptr<TabWidget::ActiveRecordBinder>>(arint))
             );
@@ -345,9 +345,9 @@ namespace browser {
             auto arint = boost::make_shared<ActiveRecordBinder>(this, make_current);
             this->_record_controller->request_record(
                 QUrl(Browser::_defaulthome)
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                     "", &ActiveRecordBinder::binder, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                     "", &ActiveRecordBinder::activator, arint)
             );
         });
@@ -621,7 +621,7 @@ namespace browser {
     //    }
 
 
-    WebView *TabWidget::newTab(std::shared_ptr<Record> record   // , bool openinnewtab
+    WebView *TabWidget::newTab(boost::intrusive_ptr<Record> record   // , bool openinnewtab
                                , bool make_current
                                , RecordController *_record_controller
                               )
@@ -889,7 +889,7 @@ namespace browser {
 
                 if(view != nullptr) {
                     view->setFocus();
-                    std::shared_ptr<Record> record = view->page()->current_record();
+                    boost::intrusive_ptr<Record> record = view->page()->current_record();
 
                     if(record) {
                         assert(record->unique_page());
@@ -1012,9 +1012,9 @@ namespace browser {
             auto arint = boost::make_shared<ActiveRecordBinder>(this, true);
             _record_controller->request_record(
                 QUrl(Browser::_defaulthome)
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                     "", &ActiveRecordBinder::binder, arint)
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                     "", &ActiveRecordBinder::activator, arint)
             );
             return;
@@ -1061,9 +1061,9 @@ namespace browser {
                 auto arint = boost::make_shared<ActiveRecordBinder>(this, true);
                 auto r = _record_controller->request_record(
                              url
-                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                  "", &ActiveRecordBinder::binder, arint)
-                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                  "", &ActiveRecordBinder::activator, arint)
                          );
                 r->active();
@@ -1077,7 +1077,7 @@ namespace browser {
 
         if(webView) {
             //            Record *record;
-            std::shared_ptr<Record> record_ = webView->page()->current_record();
+            boost::intrusive_ptr<Record> record_ = webView->page()->current_record();
 
             if(record_->unique_page()->url() != url) {
                 //                //                record = record_;
@@ -1092,12 +1092,12 @@ namespace browser {
                 auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page());
                 auto r = _record_controller->request_record(
                              url
-                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<Record>>> (
                                  std::string("")
                                  , &WebPage::ActiveRecordBinder::binder
                                  , ar
                              )
-                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<Record>>> (
                                  std::string("")
                                  , &WebPage::ActiveRecordBinder::activator
                                  , ar
@@ -1199,9 +1199,9 @@ namespace browser {
                 auto r
                     = _record_controller->request_record(
                           url
-                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                               "", &ActiveRecordBinder::binder, arint)
-                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                               "", &ActiveRecordBinder::activator, arint)
                       );
                 r->active();
@@ -1211,12 +1211,12 @@ namespace browser {
                     auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
                     auto r = _record_controller->request_record(
                                  url
-                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
+                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
                                      ""
                                      , &WebPage::ActiveRecordBinder::binder
                                      , ar
                                  )
-                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> (
+                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
                                      ""
                                      , &WebPage::ActiveRecordBinder::activator
                                      , ar
@@ -1472,15 +1472,15 @@ namespace browser {
     //                //                                                        , _record_controller
     //                //                                                        , _page_controller
     //                //                                                    );
-    //                //        std::shared_ptr<Record> record
+    //                //        boost::intrusive_ptr<Record> record
     //                //            = _record_controller->request_record(
     //                //                  url
-    //                //                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                //                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<Record>>> (
     //                //                      ""
     //                //                      , &ActiveRecordBinder::binder
     //                //                      , wvh
     //                //                  )
-    //                //                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                //                  , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<Record>>> (
     //                //                      ""
     //                //                      , &ActiveRecordBinder::activator
     //                //                      , wvh
@@ -1507,15 +1507,15 @@ namespace browser {
     //                , _record_controller
     //                , _page_controller
     //            );
-    //            std::shared_ptr<Record> record
+    //            boost::intrusive_ptr<Record> record
     //            = _record_controller->request_record(
     //                url
-    //                , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<Record>>> (
     //                    ""
     //                    , &ActiveRecordBinder::binder
     //                    , wvh
     //                )
-    //                , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, std::shared_ptr<Record>>> (
+    //                , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<Record>>> (
     //                    ""
     //                    , &ActiveRecordBinder::activator
     //                    , wvh

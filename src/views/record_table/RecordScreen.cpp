@@ -96,7 +96,7 @@ void RecordScreen::setup_actions(void)
             tree_item->record_table(target);
 
             tree_screen->save_knowtree();
-            tree_screen->to_candidate_screen(tree_screen->_shadow_page_model->index_item(tree_item));
+            tree_screen->to_candidate_screen(tree_screen->_shadow_page_model->index(tree_item));
         }
     }
            );

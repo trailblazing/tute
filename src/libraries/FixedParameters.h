@@ -20,11 +20,11 @@ public:
     QStringList _record_calculable_field;
     QStringList _record_field_crypted;
 
-    bool isRecordFieldAvailable(QString name) const;
-    bool isRecordFieldNatural(QString name) const;
-    bool isRecordFieldCalculable(QString name) const;
+    bool is_record_field_available(QString name) const;
+    bool is_record_field_natural(QString name) const;
+    bool is_record_field_calculable(QString name) const;
 
-    QMap<QString, QString> recordFieldDescription(QStringList list) const;
+    QMap<QString, QString> record_field_description(QStringList list) const;
 
 signals:
 

@@ -176,12 +176,12 @@ namespace browser {
                 auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
                 auto r = globalparameters.table_screen()->table_controller()->request_record(
                              url
-                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                  ""
                                  , &browser::Entrance::ActiveRecordBinder::binder
                                  , ara
                              )
-                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>(
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
                                  ""
                                  , &browser::Entrance::ActiveRecordBinder::activator
                                  , ara

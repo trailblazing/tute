@@ -156,7 +156,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         std::shared_ptr<RecordTable> recordTableData = treeItemDrop->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index();
+        QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->current_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
         auto treeItemDrag = parentPointer->_knowtreemodel->item(indexFrom);
@@ -188,7 +188,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
 
         for(int i = 0; i < clipboardRecords->size(); i++) {
             // Полные данные записи
-            std::shared_ptr<Record> record = clipboardRecords->record(i);
+            boost::intrusive_ptr<Record> record = clipboardRecords->record(i);
 
             // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag

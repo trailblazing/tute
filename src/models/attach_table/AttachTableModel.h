@@ -24,8 +24,8 @@
 #define ATTACHTABLE_COMMAND_END_REMOVE_ROW    Qt::UserRole+59
 #define ATTACHTABLE_COMMAND_END_REMOVE_ROWS   Qt::UserRole+60
 
-typedef QPair<int, int> typeIntPair;
-Q_DECLARE_METATYPE(typeIntPair);
+typedef QPair<int, int> type_int_pair;
+Q_DECLARE_METATYPE(type_int_pair);
 
 // class AttachTableData;
 

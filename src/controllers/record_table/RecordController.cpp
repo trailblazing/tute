@@ -124,7 +124,7 @@ void RecordController::open_website(QModelIndex proxyIndex)
 
     //    //    browser_view->loadUrl(pos);   //table->getField("url", pos)
 
-    //    std::shared_ptr<Record> record = this->table_model()->table_data()->record(pos);
+    //    boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
     //    assert(record->is_registered());
 
     //    //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
@@ -200,7 +200,7 @@ void RecordController::update_browser(const int source_pos)
 
 
 
-    std::shared_ptr<Record> record = this->table_model()->table_data()->record(source_pos);
+    boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(source_pos);
     assert(record->is_registered());
     record->active_request(source_pos, 0);
 
@@ -290,7 +290,7 @@ void RecordController::update_browser(const int source_pos)
 void RecordController::sychronize_metaeditor_to_record(const int pos)
 {
 
-    std::shared_ptr<Record> record = this->table_model()->table_data()->record(pos);
+    boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
     assert(record);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -403,7 +403,7 @@ void RecordController::sychronize_attachtable_to_record(const int pos)
 
     // Устанавливается таблица приаттаченных файлов
     AttachTableController *attachTableController = find_object<AttachTableController>("attachTableController");
-    attachTableController->setAttachTableData(table->record(pos)->attach_table());
+    attachTableController->attach_table_data(table->record(pos)->attach_table());
 }
 
 
@@ -560,7 +560,7 @@ void RecordController::add_records_to_clipboard(ClipboardRecords *clipboardRecor
         QModelIndex index = proxyindex_to_sourceindex(items_copy.at(i));
 
         // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-        std::shared_ptr<Record> record = table->record_fat(index.row());
+        boost::intrusive_ptr<Record> record = table->record_fat(index.row());
 
         clipboardRecords->add_record(record);
     }
@@ -895,7 +895,7 @@ void RecordController::addnew_blank(int mode)
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
-    std::shared_ptr<Record> record = std::make_shared<Record>();
+    boost::intrusive_ptr<Record> record = boost::intrusive_ptr<Record>(new Record());
     record->to_fat();
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -903,7 +903,7 @@ void RecordController::addnew_blank(int mode)
     //    record.setField("author", addNewRecordWin.getField("author"));
     //    record.setField("url",    addNewRecordWin.getField("url"));
     //    record.setField("tags",   addNewRecordWin.getField("tags"));
-    record->setTextToFat("");
+    record->text_to_fat("");
     record->field("pin",   _check_state[Qt::Unchecked]);
     record->field("name",   "");
     record->field("author", "");
@@ -929,7 +929,7 @@ void RecordController::addnew_blank(int mode)
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-int RecordController::addnew_record_fat(std::shared_ptr<Record> record
+int RecordController::addnew_record_fat(boost::intrusive_ptr<Record> record
                                         , const int mode
                                         //    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>> generator
                                        )
@@ -993,7 +993,7 @@ int RecordController::addnew_record_fat(std::shared_ptr<Record> record
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-int RecordController::addnew_record(std::shared_ptr<Record> record, int mode)
+int RecordController::addnew_record(boost::intrusive_ptr<Record> record, int mode)
 {
     qDebug() << "In add_new()";
 
@@ -1039,7 +1039,7 @@ int RecordController::addnew_record(std::shared_ptr<Record> record, int mode)
 
 //// Функция добавления новой записи в таблицу конечных записей
 //// Принимает полный формат записи
-//int TableController::addnew_page_record(std::shared_ptr<Record> record, int mode)
+//int TableController::addnew_page_record(boost::intrusive_ptr<Record> record, int mode)
 //{
 //    qDebug() << "In add_new()";
 
@@ -1112,7 +1112,7 @@ int RecordController::addnew_record(std::shared_ptr<Record> record, int mode)
 
 //    // todo: сделать заполнение таблицы приаттаченных файлов
 
-//    std::shared_ptr<Record> record = std::make_shared<Record>();
+//    boost::intrusive_ptr<Record> record = boost::intrusive_ptr<Record>(new Record());
 //    record->switchToFat();
 //    //    record.setText(addNewRecordWin.getField("text"));
 //    //    record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -1488,7 +1488,7 @@ void RecordController::on_print_click(void)
 }
 
 
-std::shared_ptr<Record> RecordController::register_record(std::shared_ptr<Record> record)
+boost::intrusive_ptr<Record> RecordController::register_record(boost::intrusive_ptr<Record> record)
 {
     //    assert(record_controller);
     std::shared_ptr<RecordTable> recordtabledata = this->table_model()->table_data();
@@ -1552,9 +1552,9 @@ std::shared_ptr<Record> RecordController::register_record(std::shared_ptr<Record
 //    return record_; //_record;
 //}
 
-std::shared_ptr<Record> RecordController::check_record(const QUrl &_url)
+boost::intrusive_ptr<Record> RecordController::check_record(const QUrl &_url)
 {
-    std::shared_ptr<Record> _record = nullptr;
+    boost::intrusive_ptr<Record> _record = nullptr;
 
 
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
@@ -1578,13 +1578,13 @@ std::shared_ptr<Record> RecordController::check_record(const QUrl &_url)
 //    class WebView;
 //}
 
-std::shared_ptr<Record> RecordController::request_record(
-    std::shared_ptr<Record> record
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
+boost::intrusive_ptr<Record> RecordController::request_record(
+    boost::intrusive_ptr<Record> record
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator
 )
 {
-    std::shared_ptr<Record> _record;
+    boost::intrusive_ptr<Record> _record;
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
 
@@ -1628,13 +1628,13 @@ std::shared_ptr<Record> RecordController::request_record(
 
 }
 
-std::shared_ptr<Record> RecordController::request_record(
+boost::intrusive_ptr<Record> RecordController::request_record(
     const QUrl &_url
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> generator
-    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>> activator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
+    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator
 )
 {
-    std::shared_ptr<Record> _record = nullptr;
+    boost::intrusive_ptr<Record> _record = nullptr;
 
     //    QString l = _url.toString();
 
@@ -1702,7 +1702,7 @@ std::shared_ptr<Record> RecordController::request_record(
             // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
             QString directory = DiskHelper::createTempDirectory();  //
 
-            std::shared_ptr<Record> record = std::make_shared<Record>();
+            boost::intrusive_ptr<Record> record = boost::intrusive_ptr<Record>(new Record());
 
             //                if(record.isLite())
             record->to_fat();

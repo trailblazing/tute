@@ -100,7 +100,7 @@ namespace browser {
                 , Qt::WindowFlags flags = 0
                );
 
-        Browser(std::shared_ptr<Record> record
+        Browser(boost::intrusive_ptr<Record> record
                 , RecordController *record_controller
                 //            , TableController *_page_controller
                 , boost::intrusive_ptr<TreeItem> _page_tree_item
@@ -130,8 +130,8 @@ namespace browser {
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();       // {return globalparameters.getStatusBar();};
         QStatusBar  *status_bar() const; // {return globalparameters.getStatusBar();};
-        WebView     *invoke_page(std::shared_ptr<Record> record);
-        std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record);
+        WebView     *invoke_page(boost::intrusive_ptr<Record> record);
+        boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record);
 
     public slots:
         void loadPage(const QString &url);
@@ -193,7 +193,7 @@ namespace browser {
 
     private:
         void init();
-        std::shared_ptr<Record> register_url(QUrl const &url);
+        boost::intrusive_ptr<Record> register_url(QUrl const &url);
 
         void run_script(const QString &style_source);
         void loadDefaultState();

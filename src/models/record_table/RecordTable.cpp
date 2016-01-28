@@ -85,9 +85,9 @@ QString RecordTable::field(int pos, QString name) const
     return _record_data.at(pos)->field(name);
 }
 
-std::shared_ptr<Record> RecordTable::find(const QUrl &url)
+boost::intrusive_ptr<Record> RecordTable::find(const QUrl &url)
 {
-    std::shared_ptr<Record> record;
+    boost::intrusive_ptr<Record> record;
 
     for(auto &i : _record_data) {
         // QString _u = i.getNaturalFieldSource("url") ;
@@ -102,9 +102,9 @@ std::shared_ptr<Record> RecordTable::find(const QUrl &url)
     return record;
 }
 
-std::shared_ptr<Record> RecordTable::find(std::shared_ptr<Record> r)
+boost::intrusive_ptr<Record> RecordTable::find(boost::intrusive_ptr<Record> r)
 {
-    std::shared_ptr<Record> record;
+    boost::intrusive_ptr<Record> record;
 
     for(auto &i : _record_data) {
         // QString _u = i.getNaturalFieldSource("url") ;
@@ -271,11 +271,11 @@ void RecordTable::editor_save_callback(QObject *editor, QString saveText)
 // Эти образы используются для хранения в дереве знаний
 // Get a copy of a light image recording
 // These images are used to store the tree of knowledge
-std::shared_ptr<Record> RecordTable::record_lite(int pos)
+boost::intrusive_ptr<Record> RecordTable::record_lite(int pos)
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
-        return std::make_shared<Record>();
+        return boost::intrusive_ptr<Record>(nullptr);
 
     // Хранимая в дереве запись не может быть "тяжелой"
     if(!_record_data.at(pos)->is_lite())
@@ -289,17 +289,17 @@ std::shared_ptr<Record> RecordTable::record_lite(int pos)
 // Возвращается запись с "сырыми" данными. Если запись была зашифрована, метод вернет зашифрованные данные
 // Get a copy of the full image recording
 // Returns the record with "raw" data. If the record was encrypted, the method returns the encrypted data
-std::shared_ptr<Record> RecordTable::record_fat(int pos)
+boost::intrusive_ptr<Record> RecordTable::record_fat(int pos)
 {
     // Копия записи из дерева
-    std::shared_ptr<Record> resultRecord = record(pos);  //std::shared_ptr<Record> resultRecord = getRecordLite(pos);
+    boost::intrusive_ptr<Record> resultRecord = record(pos);  //boost::intrusive_ptr<Record> resultRecord = getRecordLite(pos);
 
     // original
     // Переключение копии записи на режим с хранением полного содержимого
     if(resultRecord->is_lite())resultRecord->to_fat();
 
     // Добавление текста записи
-    resultRecord->setTextToFat(text(pos));
+    resultRecord->text_to_fat(text(pos));
 
     // Добавление бинарных образов файлов картинок
     QString directory = appconfig.get_tetradir() + "/base/" + resultRecord->field("dir");
@@ -309,7 +309,7 @@ std::shared_ptr<Record> RecordTable::record_fat(int pos)
 }
 
 
-std::shared_ptr<Record> RecordTable::record(int pos)
+boost::intrusive_ptr<Record> RecordTable::record(int pos)
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
@@ -360,7 +360,7 @@ void RecordTable::import_from_dom(const QDomElement &dom_model)
     while(!currentRecordDom.isNull()) {
         // Структура, куда будет помещена текущая запись
         // The structure, which will put the current record
-        std::shared_ptr<Record> currentRecord = std::make_shared<Record>();
+        boost::intrusive_ptr<Record> currentRecord = boost::intrusive_ptr<Record>(new Record());
         currentRecord->is_registered(true);
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
@@ -458,9 +458,8 @@ QDomElement RecordTable::export_activated_dom(std::shared_ptr<QDomDocument> doc)
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-int RecordTable::insert_new_record(int pos, std::shared_ptr<Record> record, int mode)
+int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record, int mode)
 {
-    //    std::shared_ptr<Record> record = std::make_shared<Record>(record_);
     // Запись добавляется в таблицу конечных записей
     int insert_position = -1;
     KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
@@ -561,9 +560,8 @@ int RecordTable::insert_new_record(int pos, std::shared_ptr<Record> record, int 
 
 }
 
-int RecordTable::shadow_record_lite(int pos, std::shared_ptr<Record> record, int mode)
+int RecordTable::shadow_record_lite(int pos, boost::intrusive_ptr<Record> record, int mode)
 {
-    //    std::shared_ptr<Record> record = std::make_shared<Record>(record_);
     // Запись добавляется в таблицу конечных записей
     int insert_position = -1;
 
@@ -861,7 +859,7 @@ void RecordTable::move_dn(int pos)
 
 // Переключение таблицы в зашифрованное состояние
 // todo: Добавить шифрацию имени приаттаченных файлов и содержимого файлов
-void RecordTable::switch_to_encrypt(void)
+void RecordTable::to_encrypt(void)
 {
     // Перебор записей
     for(int i = 0; i < size(); i++) {
@@ -877,7 +875,7 @@ void RecordTable::switch_to_encrypt(void)
 
 // Переключение таблицы в расшифрованное состояние
 // todo: добавить расшифрацию имени приаттаченных файлов и содержимого файлов
-void RecordTable::switch_to_decrypt(void)
+void RecordTable::to_decrypt(void)
 {
     // Перебор записей
     for(int i = 0; i < size(); i++) {

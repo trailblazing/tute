@@ -23,70 +23,74 @@ extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
 
-AttachTableController::AttachTableController(QObject *parent) : QObject(parent)
+AttachTableController::AttachTableController(QObject *parent)
+    :
+    QObject(parent)
+    , _view(new AttachTableView(qobject_cast<QWidget * >(parent)))
+    , _model(new AttachTableModel(this))
 {
     // Создается область со списком файлов
-    view = new AttachTableView(qobject_cast<QWidget *>(parent)); // Вид размещается внутри виджета Screen
-    view->setObjectName("attachTableView");
-    view->setController(this);
-    view->init(); // Инициализация запускается только после установки контроллера
+    //    _view = new AttachTableView(qobject_cast<QWidget *>(parent)); // Вид размещается внутри виджета Screen
+    _view->setObjectName("attachTableView");
+    _view->setController(this);
+    _view->init(); // Инициализация запускается только после установки контроллера
 
     // Создание модели данных (тонкой обертки над AttachTableData)
-    model = new AttachTableModel(this);
-    model->setObjectName("attachTableModel");
+    //    _model = new AttachTableModel(this);
+    _model->setObjectName("attachTableModel");
 
     // Модель данных задается для вида
-    view->setModel(model);
+    _view->setModel(_model);
 }
 
 
 AttachTableController::~AttachTableController()
 {
-    delete view;
-    delete model;
+    delete _view;
+    delete _model;
 }
 
 
-AttachTableView *AttachTableController::getView(void)
+AttachTableView *AttachTableController::view(void)
 {
-    return view;
+    return _view;
 }
 
 
 // Основной метод установки указателя на данные
-void AttachTableController::setAttachTableData(AttachTableData *attachTableData)
+void AttachTableController::attach_table_data(std::shared_ptr<AttachTableData> attach_table_data)
 {
-    model->setData(QModelIndex(), QVariant::fromValue(attachTableData), ATTACHTABLE_ROLE_TABLE_DATA);
+    _model->setData(QModelIndex(), QVariant::fromValue(*attach_table_data), ATTACHTABLE_ROLE_TABLE_DATA);
 }
 
 
-AttachTableData *AttachTableController::getAttachTableData()
+AttachTableData *AttachTableController::attach_table_data()
 {
-    return (model->data(QModelIndex(), ATTACHTABLE_ROLE_TABLE_DATA)).value<AttachTableData *>();
+    return (_model->data(QModelIndex(), ATTACHTABLE_ROLE_TABLE_DATA)).value<AttachTableData *>();
 }
 
 
-void AttachTableController::onAddAttach(void)
+void AttachTableController::on_add_attach(void)
 {
-    addSmart("file");
+    add_smart("file");
 }
 
 
-void AttachTableController::onAddLink()
+void AttachTableController::on_add_link()
 {
-    addSmart("link");
+    add_smart("link");
 }
 
 
-void AttachTableController::addSmart(QString attachType)
+void AttachTableController::add_smart(QString attach_type)
 {
-    QStringList files = selectFilesForAdding(attachType);
+    QStringList files = select_files_for_adding(attach_type);
 
     if(files.size() == 0)
         return; // Если ни один файл не выбран
 
     // Указатель на данные таблицы приаттаченных файлов
-    AttachTableData *attachTableData = getAttachTableData();
+    AttachTableData *attachTableData = attach_table_data();
 
     if(attachTableData == nullptr)
         critical_error("Unset attach table data in AttachTableController::addSmart()");
@@ -113,15 +117,15 @@ void AttachTableController::addSmart(QString attachType)
         QString id = get_unical_id();
 
         // Конструируется Attach, который нужно добавить
-        Attach attach(attachType, attachTableData);
+        Attach attach(attach_type, attachTableData);
         attach.setField("id", id);
         attach.setField("fileName", currShortFileName);
 
         bool result = false;
 
-        if(attachType == "file")
+        if(attach_type == "file")
             result = attach.copyFileToBase(currFullFileName); // Файл аттача копируется в базу
-        else if(attachType == "link") {
+        else if(attach_type == "link") {
             attach.setField("link", currFullFileName); // Запоминается куда указывает линк
             result = true;
         } else
@@ -129,13 +133,13 @@ void AttachTableController::addSmart(QString attachType)
 
 
         // Если запись, к которой добавляется аттач, зашифрована
-        if(attachTableData->isRecordCrypt())
+        if(attachTableData->is_record_crypt())
             attach.encrypt();
 
 
         if(result) {
             // Данные аттача добавляются в таблицу приаттаченных файлов
-            attachTableData->addAttach(attach);
+            attachTableData->add_attach(attach);
         } else {
             show_message_box(tr("An error occurred while copying file(s). File(s) can't attach."));
             break;
@@ -154,17 +158,17 @@ void AttachTableController::addSmart(QString attachType)
 }
 
 
-QStringList AttachTableController::selectFilesForAdding(QString attachType)
+QStringList AttachTableController::select_files_for_adding(QString attach_type)
 {
     // Диалог выбора файлов
     QFileDialog fileSelectDialog;
 
     QString title;
 
-    if(attachType == "file")
+    if(attach_type == "file")
         title = tr("Attach file");
 
-    if(attachType == "link")
+    if(attach_type == "link")
         title = tr("Add link to file");
 
     fileSelectDialog.setWindowTitle(title);
@@ -198,9 +202,9 @@ QStringList AttachTableController::selectFilesForAdding(QString attachType)
 
 
 // Выбрано действие "Сохранить как..."
-void AttachTableController::onSaveAsAttach(void)
+void AttachTableController::on_save_as_attach(void)
 {
-    QList<QString> selectedId = getSelectedId();
+    QList<QString> selectedId = selected_id();
 
     // Если ни один аттач не выбран
     if(selectedId.size() == 0) {
@@ -226,10 +230,10 @@ void AttachTableController::onSaveAsAttach(void)
 
         // В диалоге устанавливается имя файла выбранного аттача
         QString id = selectedId.at(0);
-        AttachTableData *attachTableData = getAttachTableData();
-        QString attachType = attachTableData->getAttach(id).getField("type");
-        QString fileName = attachTableData->getFileNameById(id);
-        QString fullFileName = attachTableData->getAbsoluteInnerFileNameById(id);
+        AttachTableData *attachTableData = attach_table_data();
+        QString attachType = attachTableData->attach(id).getField("type");
+        QString fileName = attachTableData->file_name_by_id(id);
+        QString fullFileName = attachTableData->absolute_inner_file_name_by_id(id);
         fileSelectDialog.selectFile(fileName);
 
         // Отрисовка диалога выбора
@@ -256,7 +260,7 @@ void AttachTableController::onSaveAsAttach(void)
         QString targetFileName = selectFiles.at(0);
 
         // Непосредственное сохранение файла
-        saveAttachToUserPlace(fullFileName, targetFileName, attachType, attachTableData->isRecordCrypt());
+        save_attach_to_user_place(fullFileName, targetFileName, attachType, attachTableData->is_record_crypt());
     } else if(selectedId.size() > 1) { // Если выбрано несколько аттачей
         // Диалог выбора имени директории
         QFileDialog fileSelectDialog;
@@ -284,50 +288,50 @@ void AttachTableController::onSaveAsAttach(void)
         // Выбранная директория
         QString toDir = fileSelectDialog.directory().absolutePath();
 
-        AttachTableData *attachTableData = getAttachTableData();
+        AttachTableData *attachTableData = attach_table_data();
 
         // Перебор выбранных для сохранения аттачей
         foreach(QString id, selectedId) {
-            QString attachType = attachTableData->getAttach(id).getField("type");
-            QString fileName = attachTableData->getFileNameById(id);
-            QString fromFileName = attachTableData->getInnerFileNameById(id);
-            QString fromFullFileName = attachTableData->getAbsoluteInnerFileNameById(id);
+            QString attachType = attachTableData->attach(id).getField("type");
+            QString fileName = attachTableData->file_name_by_id(id);
+            QString fromFileName = attachTableData->inner_file_name_by_id(id);
+            QString fromFullFileName = attachTableData->absolute_inner_file_name_by_id(id);
             QString toFullFileName = toDir + "/" + fileName;
 
             // Непосредственное сохранение файла
-            saveAttachToUserPlace(fromFullFileName, toFullFileName, attachType, attachTableData->isRecordCrypt());
+            save_attach_to_user_place(fromFullFileName, toFullFileName, attachType, attachTableData->is_record_crypt());
         }
     }
 }
 
 
-void AttachTableController::saveAttachToUserPlace(QString fromFullFileName, QString toFullFileName, QString attachType, bool isAttachCrypt)
+void AttachTableController::save_attach_to_user_place(QString from_full_file_name, QString to_full_file_name, QString attach_type, bool is_attach_crypt)
 {
     // Проверка наличия исходного файла (ведь по каким-то причинам его может не быть, например после какого-нибудь сбоя)
-    QFile file(fromFullFileName);
+    QFile file(from_full_file_name);
 
     if(file.exists() == false) {
-        show_message_box(tr("Can't save file. File %1 not exists in database.").arg(fromFullFileName));
+        show_message_box(tr("Can't save file. File %1 not exists in database.").arg(from_full_file_name));
         return;
     }
 
     // Сохранение
-    bool result = file.copy(toFullFileName);
+    bool result = file.copy(to_full_file_name);
 
     if(!result) {
-        show_message_box(tr("Can't save file %1. Any i/o problem.").arg(toFullFileName));
+        show_message_box(tr("Can't save file %1. Any i/o problem.").arg(to_full_file_name));
         return;
     }
 
     // Расшифровка файла, если он был зашифрован и данные хранились в базе (то есть, это именно тип file, а не линк на файл)
-    if(isAttachCrypt && attachType == "file")
-        CryptService::decryptFile(globalparameters.crypt_key(), toFullFileName);
+    if(is_attach_crypt && attach_type == "file")
+        CryptService::decryptFile(globalparameters.crypt_key(), to_full_file_name);
 }
 
 
-void AttachTableController::onEditFileName(void)
+void AttachTableController::on_edit_file_name(void)
 {
-    QList<QString> selectedId = getSelectedId();
+    QList<QString> selectedId = selected_id();
 
     // Если ни один аттач не выбран
     if(selectedId.size() == 0)
@@ -341,12 +345,12 @@ void AttachTableController::onEditFileName(void)
 
     // Имя файла выбранного аттача
     QString id = selectedId.at(0);
-    AttachTableData *attachTableData = getAttachTableData();
-    QString fileName = attachTableData->getFileNameById(id);
+    AttachTableData *attachTableData = attach_table_data();
+    QString fileName = attachTableData->file_name_by_id(id);
 
     // Запрос нового имени файла
     bool isOk;
-    QString newFileName = QInputDialog::getText(view,
+    QString newFileName = QInputDialog::getText(_view,
                                                 tr("File name editing"),
                                                 tr("File name:"),
                                                 QLineEdit::Normal,
@@ -362,18 +366,18 @@ void AttachTableController::onEditFileName(void)
     }
 
     // Данные изменяются
-    Attach tempAttach = attachTableData->getAttach(id);
+    Attach tempAttach = attachTableData->attach(id);
     tempAttach.setField("fileName", newFileName);
-    attachTableData->modifyAttach(id, tempAttach);
+    attachTableData->attach(id, tempAttach);
 
     // Сохранение дерева веток
     find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
 }
 
 
-void AttachTableController::onDeleteAttach(void)
+void AttachTableController::on_delete_attach(void)
 {
-    QList<QString> selectedId = getSelectedId();
+    QList<QString> selectedId = selected_id();
 
     // Если ни один аттач не выбран
     if(selectedId.size() == 0) {
@@ -393,10 +397,10 @@ void AttachTableController::onDeleteAttach(void)
 
 
     // Удаление выбранных аттачей
-    AttachTableData *attachTableData = getAttachTableData();
+    AttachTableData *attachTableData = attach_table_data();
 
     foreach(QString id, selectedId)
-        attachTableData->deleteAttach(id);
+        attachTableData->delete_attach(id);
 
 
     // Сохранение дерева веток
@@ -411,17 +415,17 @@ void AttachTableController::onDeleteAttach(void)
 
 
 // Открытие аттача (аттачей) на просмотр
-void AttachTableController::onOpenAttach(void)
+void AttachTableController::on_open_attach(void)
 {
-    AttachTableData *attachTableData = getAttachTableData();
+    AttachTableData *attachTableData = attach_table_data();
 
-    QList<QString> selectedId = getSelectedId();
+    QList<QString> selectedId = selected_id();
 
     foreach(QString id, selectedId) {
-        QString fullFileName = attachTableData->getAbsoluteInnerFileNameById(id);
+        QString fullFileName = attachTableData->absolute_inner_file_name_by_id(id);
 
         // Если запись зашифрована и открывается файл (не линк), аттач надо скопировать в директорию корзины и расшифровать
-        if(attachTableData->isRecordCrypt() && attachTableData->getAttach(id).getField("type") == "file") {
+        if(attachTableData->is_record_crypt() && attachTableData->attach(id).getField("type") == "file") {
             if(appconfig.getEnableDecryptFileToTrashDirectory()) {
                 fullFileName = DiskHelper::copyFileToTrash(fullFileName); // Копирование
                 CryptService::decryptFile(globalparameters.crypt_key(), fullFileName); // Расшифровка
@@ -443,9 +447,9 @@ void AttachTableController::onOpenAttach(void)
 }
 
 
-void AttachTableController::onShowAttachInfo(void)
+void AttachTableController::on_show_attach_info(void)
 {
-    QList<QString> selectedId = getSelectedId();
+    QList<QString> selectedId = selected_id();
 
     // Если ни один аттач не выбран
     if(selectedId.size() == 0)
@@ -458,16 +462,16 @@ void AttachTableController::onShowAttachInfo(void)
     }
 
     QString id = selectedId.at(0);
-    AttachTableData *attachTableData = getAttachTableData();
+    AttachTableData *attachTableData = attach_table_data();
 
     ReduceMessageBox messageBox;
     messageBox.setText("Attach file info");
     messageBox.setDetailedText(QString("<pre><p style='font-family:monospace'>") + \
-                               "<b>Attach:</b> " + attachTableData->getFileNameById(id) + "\n" + \
+                               "<b>Attach:</b> " + attachTableData->file_name_by_id(id) + "\n" + \
                                "<b>Attach ID:</b> " + id + "\n" + \
-                               "<b>Attach type:</b> " + attachTableData->getAttach(id).getField("type") + "\n" + \
-                               "<b>File size:</b> " + QString::number(attachTableData->getAttach(id).getFileSize()) + " bytes\n" + \
-                               "<b>Full path:</b> " + attachTableData->getAbsoluteInnerFileNameById(id) + \
+                               "<b>Attach type:</b> " + attachTableData->attach(id).getField("type") + "\n" + \
+                               "<b>File size:</b> " + QString::number(attachTableData->attach(id).getFileSize()) + " bytes\n" + \
+                               "<b>Full path:</b> " + attachTableData->absolute_inner_file_name_by_id(id) + \
                                "</p></pre>"
                               );
     messageBox.setDetailedTextReadOnly(true);
@@ -479,7 +483,7 @@ void AttachTableController::onShowAttachInfo(void)
 }
 
 
-void AttachTableController::onSwitchToEditor(void)
+void AttachTableController::on_switch_to_editor(void)
 {
     MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
     edView->to_editor_layout();
@@ -487,12 +491,12 @@ void AttachTableController::onSwitchToEditor(void)
 
 
 // Получение списка идентификаторов аттачей, выделенных в представлении
-QList<QString> AttachTableController::getSelectedId(void)
+QList<QString> AttachTableController::selected_id(void)
 {
     QList<QString> selectedId;
 
     // Получение списка выделенных в таблице на экране Item-элементов
-    QModelIndexList selectItems = view->selectionModel()->selectedIndexes();
+    QModelIndexList selectItems = _view->selectionModel()->selectedIndexes();
 
     // Перебор выделенных элементов. Так как имеем несколько столбцов, то для одной строки будет несколько QModelIndex
     int previousRow = -1;
@@ -504,7 +508,7 @@ QList<QString> AttachTableController::getSelectedId(void)
         if(row != previousRow) {
             previousRow = row;
 
-            selectedId.append(model->data(selectItems.at(i), ATTACHTABLE_ROLE_ID).toString());
+            selectedId.append(_model->data(selectItems.at(i), ATTACHTABLE_ROLE_ID).toString());
         }
     }
 

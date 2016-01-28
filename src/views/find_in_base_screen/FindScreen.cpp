@@ -560,7 +560,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
 {
 
     if(globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
-       && !find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index().isValid()
+       && !find_object<TreeScreen>(tree_screen_singleton_name)->current_index().isValid()
       ) {
         appconfig.setFindScreenTreeSearchArea(2);
     }
@@ -612,7 +612,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     ) {
 
         // Индекс текущей выбранной ветки
-        QModelIndex currentItemIndex = find_object<TreeScreen>(tree_screen_singleton_name)->currentitem_index();
+        QModelIndex currentItemIndex = find_object<TreeScreen>(tree_screen_singleton_name)->current_index();
 
         // Текущая ветка
         search_start_item = _search_model->item(currentItemIndex);

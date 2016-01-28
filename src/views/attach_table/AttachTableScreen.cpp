@@ -116,7 +116,7 @@ void AttachTableScreen::assembly(void)
     screenLayout = new QVBoxLayout(); // todo: Добавить this?
 
     screenLayout->addWidget(toolsLine);
-    screenLayout->addWidget(attachTableController->getView());
+    screenLayout->addWidget(attachTableController->view());
 
     setLayout(screenLayout);
 
@@ -132,5 +132,5 @@ void AttachTableScreen::assembly(void)
 // Вызывается в моменты, когда ни одна запись не выбрана или содержимое записи недоступно
 void AttachTableScreen::clear()
 {
-    attachTableController->setAttachTableData(nullptr);
+    attachTableController->attach_table_data(nullptr);
 }

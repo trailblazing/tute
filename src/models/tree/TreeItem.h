@@ -3,6 +3,7 @@
 
 
 #include <memory>
+//#include <map>
 #include <QList>
 #include <QVariant>
 #include <QVector>
@@ -12,20 +13,28 @@
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
-
+#include "models/record_table/Record.h"
 #include "models/record_table/RecordTable.h"
 
 class TreeItem
 //        : public std::enable_shared_from_this<TreeItem>
-    : public boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> {
+    : public Record { // boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
 public:
 
     typedef boost::sp_adl_block::thread_safe_counter counter_type; // boost::intrusive_ref_counter<TreeItem>::counter_type
 
     typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
-    TreeItem(QMap<QString, QString> _field_data, boost::intrusive_ptr<TreeItem> _parent_item, std::shared_ptr<RecordTable> _table_data);  // = nullptr
+    TreeItem(QMap<QString, QString>         field_data
+        , boost::intrusive_ptr<TreeItem>    parent_item
+        , std::shared_ptr<RecordTable>      table_data
+    );
 
+    TreeItem(
+        boost::intrusive_ptr<Record>        record
+        , boost::intrusive_ptr<TreeItem>    parent_item
+        , std::shared_ptr<RecordTable>      table_data
+    );
 
     ~TreeItem();
 
@@ -37,10 +46,11 @@ public:
     int child_count() const;
 
     // Возвращение количества полей, которые хранит данный элемент.
-    int fieldCount() const;
+    int field_count() const;
 
     // Получение значения поля по имени
-    QString field(QString name);
+    QString field(QString _name);
+    void field(QString _name, QString value) {Record::field(_name, value);}
 
     // Получение всех полей данных
     QMap<QString, QString> all_fields();
@@ -49,10 +59,10 @@ public:
     QMap<QString, QString> all_fields_direct();
 
     // Заполнение указанного поля
-    void field(QString name, QString value);
+    //    void field(QString name, QString value);
 
     // Заполнение указанного поля данными напрямую, без преобразований
-    void set_field_direct(QString name, QString value);
+    //    void field_direct(QString name, QString value);
 
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
@@ -62,7 +72,10 @@ public:
 
     // Добавление нового подчиненного элемента
     // в конец списка подчиненных элементов
-    bool add_children(void);
+    boost::intrusive_ptr<TreeItem> add_child(void);
+
+    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record);
+    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
 
     // Возвращение ссылки на родительский элемент
     boost::intrusive_ptr<TreeItem> parent();
@@ -75,7 +88,7 @@ public:
 
     // Возвращает номер, под которым данный объект хранится
     // в массиве childItems своего родителя
-    int child_index() const;
+    int self_index() const;
 
     bool move_up(void);
     bool move_dn(void);
@@ -126,6 +139,7 @@ public:
     void record_table(std::shared_ptr<RecordTable> _table_data);
     // Первичное заполнение таблицы конечных записей, "промежуточный" метод
     void record_table(QDomElement i_dom_element);
+    void records_to_children();
 
 private:
     bool remove_children_link(int position, int count);
@@ -135,15 +149,15 @@ private:
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
     QList<QStringList> all_children_path_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode);
 
-    bool is_fieldname_available(QString name) const;
-    QStringList fieldname_availablelist(void) const;
-    QStringList fieldname_for_cryptlist(void) const;
+    //    bool is_field_name_available(QString name) const;
+    //    QStringList field_name_available_list(void) const;
+    QStringList field_name_for_crypt_list(void) const;
 
     QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
     boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
 
-    // Таблица инфополей данной ветки
-    QMap<QString, QString>                  _field_data;
+    //    // Таблица инфополей данной ветки
+    //    QMap<QString, QString>                  _field_data;
 
     // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
     std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();

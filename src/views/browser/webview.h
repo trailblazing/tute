@@ -70,7 +70,7 @@ class QSslError;
 QT_END_NAMESPACE
 
 extern GlobalParameters globalparameters;
-extern std::shared_ptr<Record> check_record(const QUrl &_url);
+extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
 class Record;
 
@@ -137,20 +137,21 @@ namespace browser {
             //                _record = nullptr;
             //            }
 
-            //            std::list<std::shared_ptr<Record> > records = binded_records();
+            //            std::list<boost::intrusive_ptr<Record> > records = binded_records();
 
             for(auto &j : _records) {
-                if(auto i = j.second.lock()) {
-                    if(i->unique_page() == this) {
-                        break_records();  //
-                        i->page_to_nullptr();
-                    }
+                //                if(auto i = j.second) {
+                if(j.second && j.second->unique_page() == this) {
+                    break_records();  //
+                    j.second->page_to_nullptr();
                 }
+
+                //                }
             }
         }
 
         WebPage(QWebEngineProfile *profile
-                , const std::shared_ptr<Record> record
+                , const boost::intrusive_ptr<Record> record
                 // , bool openinnewtab
                 , RecordController *_record_controller
                 //                , TableController *_page_controller
@@ -159,10 +160,12 @@ namespace browser {
         //        WebView *(*_load_record)(Record *const record);
         Browser *browser();
         WebView *view() {return _pageview;}
-        std::map<QString, std::weak_ptr<Record> > binded_records()const;
+        std::map<QString, boost::intrusive_ptr<Record>> binded_records()const;
 
         WebView *active();
-        WebView *load(const std::shared_ptr<Record> record, bool checked = true);
+        WebView *load(const boost::intrusive_ptr<Record> record, bool checked = true);
+        WebView *bind(boost::intrusive_ptr<Record> record);
+
         void load(const QUrl &url) = delete;
 
         //        void synchronize_title_to_record()
@@ -171,7 +174,7 @@ namespace browser {
         //            //if(_record)_record->setNaturalFieldSource("name", webPage()->title());
         //        }
 
-        std::shared_ptr<Record> current_record()const {return _record;}
+        boost::intrusive_ptr<Record> current_record()const {return _record;}
 
         struct ActiveRecordBinder {
             WebPage *_the;
@@ -188,26 +191,27 @@ namespace browser {
                   //              , _record_ontroller(recordtablecontroller)
             {}
 
-            WebView *binder(std::shared_ptr<Record> record)
+            WebView *binder(boost::intrusive_ptr<Record> record)
             {
                 return _the->bind(record);  // _the->load(record, _make_current);
                 //                                    , _record_ontroller
 
             }
 
-            WebView *activator(std::shared_ptr<Record> record)
+            WebView *activator(boost::intrusive_ptr<Record> record)
             {
                 assert(record->unique_page() == _the);
                 return _the->active();
             }
         };
 
-        std::shared_ptr<Record> equip_registered(std::shared_ptr<Record> record);
-        void add_record_to_table_data(std::shared_ptr<Record> record);
-        void remove_record_from_table_data(std::shared_ptr<Record> record);
-        void break_record(std::shared_ptr<Record> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record);
+        void add_record_to_table_data(boost::intrusive_ptr<Record> record);
+        void remove_record_from_table_data(boost::intrusive_ptr<Record> record);
+        void break_record(boost::intrusive_ptr<Record> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
         void break_records();
-        void sychronize_metaeditor_to_record(std::shared_ptr<Record> record);
+        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
+
 
     protected:
 
@@ -217,8 +221,6 @@ namespace browser {
         QObject *createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues);
 #endif
         virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
-
-        WebView *bind(std::weak_ptr<Record> r);
 
         void update_record(const QUrl &url
                            // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
@@ -242,8 +244,8 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
-        std::map<QString, std::weak_ptr<Record> > _records;
-        std::shared_ptr<Record> _record;
+        std::map<QString, boost::intrusive_ptr<Record> > _records;
+        boost::intrusive_ptr<Record> _record;
 
         WebView                 *_pageview;
         // set the webview mousepressedevent
@@ -255,7 +257,7 @@ namespace browser {
         RecordController        *_record_controller;
         //        TableController         *_page_controller;
 
-        void record(std::shared_ptr<Record> record) {_record = record;}
+        void record(boost::intrusive_ptr<Record> record) {_record = record;}
         friend class Record;
         friend void Record::page_to_nullptr();
         //        friend Record::Record(const Record &obj);
@@ -321,7 +323,7 @@ namespace browser {
         Q_OBJECT
 
     public:
-        WebView(std::shared_ptr<Record> record
+        WebView(boost::intrusive_ptr<Record> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
                 , RecordController *table_controller
@@ -330,7 +332,7 @@ namespace browser {
                   //                = globalparameters.page_screen()->table_controller()
                );
 
-        WebView(std::shared_ptr<Record> record
+        WebView(boost::intrusive_ptr<Record> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *tabmanager
                 , QWidget *parent
@@ -345,7 +347,7 @@ namespace browser {
         void page(WebPage *page);
 
 
-        WebView *load(const std::shared_ptr<Record> record);
+        WebView *load(const boost::intrusive_ptr<Record> record);
         QUrl url() const = delete;
         QIcon icon() const;
 

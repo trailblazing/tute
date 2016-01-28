@@ -43,7 +43,7 @@ void ClipboardRecords::clear(void)
 }
 
 
-void ClipboardRecords::add_record(std::shared_ptr<Record> record)
+void ClipboardRecords::add_record(boost::intrusive_ptr<Record> record)
 {
     if(!_records._record_table.contains(record)) _records._record_table << record;
 }
@@ -52,11 +52,11 @@ void ClipboardRecords::add_record(std::shared_ptr<Record> record)
 // Печать информации о содержимом записи
 void ClipboardRecords::print(void) const
 {
-    QListIterator< std::shared_ptr<Record> > list(_records._record_table);
+    QListIterator< boost::intrusive_ptr<Record> > list(_records._record_table);
 
     // Перебор записей
     while(list.hasNext()) {
-        std::shared_ptr<Record> record = list.next();
+        boost::intrusive_ptr<Record> record = list.next();
 
         qDebug() << record->text_from_fat();
 
@@ -83,13 +83,13 @@ int ClipboardRecords::size(void) const
 }
 
 
-std::shared_ptr<Record> ClipboardRecords::record(int n) const
+boost::intrusive_ptr<Record> ClipboardRecords::record(int n) const
 {
     if(n < _records._record_table.size())
         return _records._record_table.at(n);
     else {
         critical_error("In ClipboardRecords::getRecord() unavailable number " + QString::number(n));
-        return std::make_shared<Record>();
+        return boost::intrusive_ptr<Record>(nullptr);
     }
 }
 
@@ -134,7 +134,7 @@ AttachTableData ClipboardRecords::record_attach_table(int n) const
 QMap<QString, QByteArray> ClipboardRecords::record_picture_files(int n) const
 {
     if(n < _records._record_table.size())
-        return _records._record_table.at(n)->getPictureFiles();
+        return _records._record_table.at(n)->picture_files();
     else {
         critical_error("In ClipboardRecords::getRecordPictureFiles() unavailable number " + QString::number(n));
         return QMap<QString, QByteArray>();

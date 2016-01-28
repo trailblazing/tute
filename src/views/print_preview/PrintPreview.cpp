@@ -18,13 +18,13 @@
 #include "PrintPreview.h"
 
 
-static inline int inchesToPixels(float inches, QPaintDevice *device)
+static inline int inches_to_pixels(float inches, QPaintDevice *device)
 {
     return qRound(inches * device->logicalDpiY());
 }
 
 
-static inline qreal mmToInches(double mm)
+static inline qreal mm_to_inches(double mm)
 {
     return mm*0.039370147;
 }
@@ -44,7 +44,7 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     doc->documentLayout()->setPaintDevice(view->viewport());
 
     // add a nice 2 cm margin
-    const qreal margin = inchesToPixels(mmToInches(20), this);
+    const qreal margin = inches_to_pixels(mm_to_inches(20), this);
     QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
     fmt.setMargin(margin);
     doc->rootFrame()->setFrameFormat(fmt);
@@ -66,7 +66,7 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     FlatToolButton *button_page_setup=new FlatToolButton(this);
     button_page_setup->setText(tr("Page Setup..."));
     button_page_setup->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
-    connect(button_page_setup, SIGNAL(clicked()), this, SLOT(pageSetup()));
+    connect(button_page_setup, SIGNAL(clicked()), this, SLOT(page_setup()));
 
     FlatToolButton *button_zoom_in=new FlatToolButton(this);
     button_zoom_in->setText(tr("Zoom In"));
@@ -113,7 +113,7 @@ void PrintPreview::setup()
     page.setHeight(page.height() * view->logicalDpiY() / printer.logicalDpiY());
 
     // add a nice 2 cm margin
-    const qreal margin = inchesToPixels(mmToInches(20), this);
+    const qreal margin = inches_to_pixels(mm_to_inches(20), this);
     QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
     fmt.setMargin(margin);
     doc->rootFrame()->setFrameFormat(fmt);
@@ -138,7 +138,7 @@ void PrintPreview::print()
 }
 
 
-void PrintPreview::pageSetup()
+void PrintPreview::page_setup()
 {
     QPageSetupDialog dlg(&printer, this);
     if (dlg.exec() == QDialog::Accepted) {

@@ -89,10 +89,10 @@ namespace browser {
     class WebView;
 }
 
-//extern std::shared_ptr<Record> request_record(
+//extern boost::intrusive_ptr<Record> request_record(
 //    const QUrl &_url
-//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
-//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
+//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
+//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
 //);
 
 QT_BEGIN_NAMESPACE
@@ -274,7 +274,7 @@ namespace browser {
                 //  , view(nullptr)
             {}
 
-            WebView *binder(std::shared_ptr<Record> record)
+            WebView *binder(boost::intrusive_ptr<Record> record)
             {
                 return // view =
                     _the->newTab(record, _make_current, _the->_record_controller
@@ -282,14 +282,14 @@ namespace browser {
                                 );
             }
 
-            WebView *activator(std::shared_ptr<Record> record)
+            WebView *activator(boost::intrusive_ptr<Record> record)
             {
                 return record->unique_page()->active();
             }
 
         };
 
-        //        void sychronize_metaeditor_to_record(std::shared_ptr<Record> record);
+        //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
         boost::intrusive_ptr<TreeItem> tree_item() {return _page_tree_item;}
         std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
         void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
@@ -306,7 +306,7 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(const std::shared_ptr<Record> record
+        WebView *newTab(const boost::intrusive_ptr<Record> record
                         // = request_record(QUrl(DockedWindow::_defaulthome))
                         //  , bool openinnewtab = false
                         , bool make_current
@@ -425,7 +425,7 @@ namespace browser {
     //                , _view(nullptr)
     //            {}
 
-    //            WebView *binder(std::shared_ptr<Record> record)
+    //            WebView *binder(boost::intrusive_ptr<Record> record)
     //            {
     //                //            assert(!record->unique_page());   // assert by record it self
 
@@ -442,7 +442,7 @@ namespace browser {
     //                //                return record->unique_page()->view();
     //            }
 
-    //            WebView *activator(std::shared_ptr<Record> record)
+    //            WebView *activator(boost::intrusive_ptr<Record> record)
     //            {
     //                return record->unique_page()->active();
     //            }

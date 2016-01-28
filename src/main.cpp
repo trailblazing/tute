@@ -53,25 +53,25 @@
 using namespace std;
 
 // Фиксированные параметры программы (жестко заданные в текущей версии MyTetra)
-FixedParameters fixedparameters;
+FixedParameters     fixedparameters;
 
 // Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
-GlobalParameters globalparameters;
+GlobalParameters    globalparameters;
 
 // Конфигурация программы (считанная из файла конфигурации)
-AppConfig appconfig;
+AppConfig           appconfig;
 
 // Конфигурация данных
-DataBaseConfig databaseconfig;
+DataBaseConfig      databaseconfig;
 
 // Объект слежения за состоянием корзины
-TrashMonitoring trashmonitoring;
+TrashMonitoring     trashmonitoring;
 
 // Объект с историей посещаемых записей
-WalkHistory walkhistory;
+WalkHistory         walkhistory;
 
 // Указатель на основное окно программы
-QObject *mainwindow;
+QObject             *mainwindow;
 
 
 std::string difference(const std::string &url_compare_stored, const std::string &url_compare_get)

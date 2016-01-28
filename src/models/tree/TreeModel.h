@@ -23,32 +23,26 @@ public:
     TreeModel(QObject *parent = 0);
     ~TreeModel(void);
 
-    QVariant data(const QModelIndex &index, int role) const;
-    QVariant headerData(int section, Qt::Orientation orientation,
-                        int role = Qt::DisplayRole) const;
+    QVariant data(const QModelIndex &_index, int role) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(int row, int column,
-                      const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex parent(const QModelIndex &index) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex parent(const QModelIndex &_index) const;
 
     int rowCount(const QModelIndex &itemIndex = QModelIndex()) const;
     int columnCount(const QModelIndex &itemIndex = QModelIndex()) const;
 
 
-    Qt::ItemFlags flags(const QModelIndex &index) const;
-    bool setData(const QModelIndex &index, const QVariant &value,
-                 int role = Qt::EditRole);
-    bool setHeaderData(int section, Qt::Orientation orientation,
-                       const QVariant &value, int role = Qt::EditRole);
+    Qt::ItemFlags flags(const QModelIndex &_index) const;
+    bool setData(const QModelIndex &_index, const QVariant &value, int role = Qt::EditRole);
+    bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole);
 
-    bool insertRows(int position, int rows,
-                    const QModelIndex &parent = QModelIndex());
-    bool removeRows(int position, int rows,
-                    const QModelIndex &parent = QModelIndex());
+    bool insertRows(int position, int rows, const QModelIndex &parent = QModelIndex());
+    bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 
     // Возвращение указателя на Item-элемент с указанным index
     // Где index - это индекс объекта в терминах структуры модель-вид
-    boost::intrusive_ptr<TreeItem> item(const QModelIndex &index) const;
+    boost::intrusive_ptr<TreeItem> item(const QModelIndex &_index) const;
 
     // Возвращение указателя на Item-элемент с указанным путем
     // в виде последовательности идентификаторов
@@ -56,18 +50,18 @@ public:
 
     bool is_item_valid(QStringList path) const;
 
-    QModelIndex index_item(boost::intrusive_ptr<TreeItem> item);
+    QModelIndex index(boost::intrusive_ptr<TreeItem> _item);
 
-    void emit_datachanged_signal(const QModelIndex &index);
+    void emit_datachanged_signal(const QModelIndex &_index);
 
-    boost::intrusive_ptr<TreeItem> _root_item; // Ссылка на первый (корневой) item-объект
+    boost::intrusive_ptr<TreeItem>  _root_item; // Ссылка на первый (корневой) item-объект
 
 private:
 
-    QModelIndex index_recursive(QModelIndex index, boost::intrusive_ptr<TreeItem> item, int mode);
+    //    QModelIndex index_recursive(QModelIndex _index, boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Element over which the cursor will carry. Used in the Drag And Drop.    // Элемент, над которым проносят курсор. Используется при Drag And Drop.
-    QModelIndex cursorOverIndex;
+    QModelIndex                     _cursor_over_index;
 };
 
 #endif

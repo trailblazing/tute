@@ -56,7 +56,7 @@ QVariant AttachTableModel::data(const QModelIndex &index, int role) const
     // Идентификатор аттача
     if(role == ATTACHTABLE_ROLE_ID) {
         int row = index.row();
-        QString id = table->getIdByRow(row);
+        QString id = table->id_by_row(row);
 
         return QVariant::fromValue(id);
     }
@@ -64,8 +64,8 @@ QVariant AttachTableModel::data(const QModelIndex &index, int role) const
     // В колонке с именем файла отображается иконка файла или линка
     if(role == Qt::DecorationRole && index.column() == ATTACHTABLE_COLUMN_FILENAME) {
         int row = index.row();
-        QString id = table->getIdByRow(row);
-        QString attachType = table->getAttach(id).getField("type");
+        QString id = table->id_by_row(row);
+        QString attachType = table->attach(id).getField("type");
 
         if(attachType == "file")
             return QIcon(":/resource/pic/attach_is_file.svg");
@@ -83,10 +83,10 @@ QVariant AttachTableModel::getCell(int row, int column) const
 {
     switch(column) {
         case ATTACHTABLE_COLUMN_FILENAME:
-            return QVariant(table->getFileName(row));
+            return QVariant(table->file_name(row));
 
         case ATTACHTABLE_COLUMN_FILESIZE:
-            return QVariant(table->getFileSize(row));
+            return QVariant(table->file_size(row));
 
         default:
             return QVariant();
@@ -119,7 +119,7 @@ bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, 
     }
 
     if(role == ATTACHTABLE_COMMAND_BEGIN_REMOVE_ROWS) {
-        typeIntPair pair = value.value<typeIntPair>();
+        type_int_pair pair = value.value<type_int_pair>();
         beginRemoveRows(QModelIndex(), pair.first, pair.second);
         return true;
     }
@@ -149,7 +149,7 @@ bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, 
 
         // Устанавливается перекрестная ссылка в связанных данных
         if(role == ATTACHTABLE_ROLE_TABLE_DATA && table != nullptr)
-            table->setRelatedAttachTableModelOnly(this);
+            table->related_attach_table_model_only(this);
 
         return true;
     }

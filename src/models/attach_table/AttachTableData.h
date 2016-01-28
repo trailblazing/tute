@@ -5,7 +5,12 @@
 #include <QMetaType>
 #include <QDomElement>
 
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
 #include "models/attach_table/Attach.h"
+#include "models/record_table/Record.h"
+
 
 class Record;
 class AttachTableModel;
@@ -14,71 +19,71 @@ class AttachTableData {
     friend class Attach;
 
 public:
-    AttachTableData(Record *iRecord);
+    AttachTableData(boost::intrusive_ptr<Record> record = nullptr);
     // AttachTableData(const AttachTableData &obj);
-    AttachTableData();
+    //    AttachTableData();
     virtual ~AttachTableData();
 
     void setupDataFromDom(QDomElement iDomElement);
     QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
 
-    void setRecord(Record *iRecord);
-    void setRelatedAttachTableModel(AttachTableModel *model);
-    void setRelatedAttachTableModelOnly(AttachTableModel *model);
+    void record(boost::intrusive_ptr<Record> record);
+    void related_attach_table_model(AttachTableModel *model);
+    void related_attach_table_model_only(AttachTableModel *model);
 
     void clear();
     int size() const;
 
-    Attach getAttach(QString id); // Получение объекта аттача
-    void addAttach(Attach attach); // Добавление аттача в таблицу приаттаченных файлов
-    void modifyAttach(QString id, Attach iAttach); // Изменение данных аттача
-    void deleteAttach(QString id); // Удаление аттача по идентификатору
+    Attach attach(QString id); // Получение объекта аттача
+    void add_attach(Attach attach); // Добавление аттача в таблицу приаттаченных файлов
+    void attach(QString id, Attach iAttach); // Изменение данных аттача
+    void delete_attach(QString id); // Удаление аттача по идентификатору
 
-    int getRowById(QString id);
-    QString getIdByRow(int row);
+    int row_by_id(QString id);
+    QString id_by_row(int row);
 
-    QString getFileName(int row);
-    QString getFileNameById(QString id);
+    QString file_name(int row);
+    QString file_name_by_id(QString id);
 
-    QString getInnerFileName(int row);
-    QString getInnerFileNameById(QString id);
+    QString inner_file_name(int row);
+    QString inner_file_name_by_id(QString id);
 
-    QString getFullInnerFileName(int row);
-    QString getFullInnerFileNameById(QString id);
+    QString full_inner_file_name(int row);
+    QString full_inner_file_name_by_id(QString id);
 
-    QString getAbsoluteInnerFileName(int row);
-    QString getAbsoluteInnerFileNameById(QString id);
+    QString absolute_inner_file_name(int row);
+    QString absolute_inner_file_name_by_id(QString id);
 
-    qint64 getFileSize(int row);
+    qint64 file_size(int row);
 
-    bool isEmpty() const;
-    bool isLite() const;
+    bool is_empty() const;
+    bool is_lite() const;
 
-    void switchToLite();
-    void switchToFat();
+    void switch_to_lite();
+    void switch_to_fat();
 
     void print();
 
-    bool isRecordCrypt();
+    bool is_record_crypt();
     void encrypt(unsigned int area);
     void decrypt(unsigned int area);
 
-    void saveAttachFilesToDirectory(QString dirName);
+    void save_attach_files_to_directory(QString dirName);
 
     // Обновление ссылок на таблицу аттачей внутри аттачей
-    void updateAttachTableBackLink();
+    void update_attach_table_back_link();
 
 protected:
 
-    bool liteFlag;
+    bool                            _lite_flag;
 
     // Перечень файлов и их свойств
-    QList< Attach > attachTable;
+    QList< Attach >                 _attach_table;
 
     // Какой записи принадлежит таблица файлов
-    Record *record;
+    boost::intrusive_ptr<Record>    _record;
 
-    AttachTableModel *relatedAttachTableModel;
+    AttachTableModel                *_related_attach_table_model;
 };
 
 // Регистрация в QVariant типа AttachTableData

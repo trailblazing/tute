@@ -21,9 +21,9 @@ namespace browser {
     class WebView;
 }
 
-//extern std::shared_ptr<Record> request_record(const QUrl &_url
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
-//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, std::shared_ptr<Record>>>
+//extern boost::intrusive_ptr<Record> request_record(const QUrl &_url
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
+//                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
 //                                             );
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +71,8 @@ namespace browser {
 
         std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
 
-        std::pair<Browser *, WebView *> equip_registered(std::shared_ptr<Record> record = std::shared_ptr<Record>(nullptr));
+        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<Record> record    // = boost::intrusive_ptr<Record>(nullptr)
+                                                        );
         //        WebView *active_record_alternative(Record *const record) ;
 
         struct ActiveRecordBinder {
@@ -80,13 +81,13 @@ namespace browser {
             ActiveRecordBinder(Entrance *the): _the(the)    //              , _page(nullptr)
             {}
 
-            WebView *binder(std::shared_ptr<Record> record)
+            WebView *binder(boost::intrusive_ptr<Record> record)
             {
                 //                _page = _the->equip_registered(record).second->page();
                 return _the->equip_registered(record).second;
             }
 
-            WebView *activator(std::shared_ptr<Record> record) {return record->unique_page()->active();}
+            WebView *activator(boost::intrusive_ptr<Record> record) {return record->unique_page()->active();}
         };
 
         std::pair<Browser *, WebView *> activiated_registered();
@@ -95,7 +96,7 @@ namespace browser {
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
         void active_url(const QUrl &url);
         bool restore_state(const QByteArray &state);
-        std::pair<Browser *, WebView *> find(std::shared_ptr<Record> record);
+        std::pair<Browser *, WebView *> find(boost::intrusive_ptr<Record> record);
         std::pair<Browser *, WebView *> find(QUrl url);
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
@@ -119,7 +120,7 @@ namespace browser {
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &url);
         std::pair<Browser *, WebView *> new_browser(QUrl const &url);
-        std::pair<Browser *, WebView *> new_browser(std::shared_ptr<Record> record);
+        std::pair<Browser *, WebView *> new_browser(boost::intrusive_ptr<Record> record);
         Browser *new_browser(const QByteArray &state);
         Entrance *prepend(Browser *);
         void on_activate_window();

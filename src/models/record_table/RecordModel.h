@@ -72,7 +72,7 @@ private:
     std::shared_ptr<RecordTable> table_data(void);
 
     // Добавление записей
-    int insert_new_record(int mode, QModelIndex posIndex, std::shared_ptr<Record> record);
+    int insert_new_record(int mode, QModelIndex posIndex, boost::intrusive_ptr<Record> record);
 
     void on_table_config_changed(void);
 

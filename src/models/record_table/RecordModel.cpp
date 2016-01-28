@@ -8,10 +8,13 @@
 #include "models/app_config/AppConfig.h"
 #include "views/main_window/MainWindow.h"
 #include "libraries/FixedParameters.h"
+#include "libraries/GlobalParameters.h"
 #include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/record_table/RecordScreen.h"
-#include "libraries/GlobalParameters.h"
+#include "controllers/record_table/RecordController.h"
+
+
 
 extern FixedParameters fixedparameters;
 extern AppConfig appconfig;
@@ -182,7 +185,7 @@ QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int r
     // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
     QStringList showFields = appconfig.getRecordTableShowFields();
 
-    QMap<QString, QString> descriptionFields = fixedparameters.recordFieldDescription(showFields);
+    QMap<QString, QString> descriptionFields = fixedparameters.record_field_description(showFields);
 
     // Если ни один столбец не показывается (чего, впринципе не может быть)
     if(showFields.size() == 0)
@@ -307,7 +310,7 @@ std::shared_ptr<RecordTable> RecordModel::table_data(void)
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int RecordModel::insert_new_record(int mode, QModelIndex posIndex, std::shared_ptr<Record> record)
+int RecordModel::insert_new_record(int mode, QModelIndex posIndex, boost::intrusive_ptr<Record> record)
 {
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
