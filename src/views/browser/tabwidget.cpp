@@ -262,7 +262,6 @@ namespace browser {
     }
 
     TabWidget::TabWidget(RecordController *_record_controller
-                         , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                          , Browser *parent)
         : QTabWidget(parent)
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
@@ -282,7 +281,7 @@ namespace browser {
           //        , _page_controller(_page_controller)
           //        , _active_record(this)
           //        , _active("", &active_record::operator(), &_active_record)
-        , _shadow_branch_root(_shadow_branch_root)
+          //        , _shadow_branch_root(_shadow_branch_root)
           //        , _shadow_source_model(new TableModel(QString(table_screen_singleton_name) + QString("_shadow"), _tree_item, this))
           //        , _table_data(std::make_shared<TableData>(_tree_item))
         , _window(parent)

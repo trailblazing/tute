@@ -1018,8 +1018,10 @@ QString Record::short_dir() const
 // Полное имя файла с текстом записи
 QString Record::full_text_file_name() const
 {
-    if(_field_data.contains("file") == false)
-        critical_error("Record::getFullDirName() : Not present file field");
+    if(_field_data.contains("file") == false) {
+        //        critical_error("Record::getFullDirName() : Not present file field");
+        return "";
+    }
 
     return full_dir() + "/" + _field_data.value("file");
 }
@@ -1081,10 +1083,12 @@ bool Record::file_exists()
     bool file_exists = false;
     QString fileName = full_text_file_name();
 
-    QFile f(fileName);
-    QFileInfo fileInfo(f);
+    if("" != fileName) {
+        QFile f(fileName);
+        QFileInfo fileInfo(f);
 
-    if(fileInfo.absoluteDir().exists() && f.exists()) {file_exists = true;}
+        if(fileInfo.absoluteDir().exists() && f.exists()) {file_exists = true;}
+    }
 
     return file_exists;
 }

@@ -312,7 +312,7 @@ namespace browser {
 
     Browser::Browser(const QByteArray &state
                      , RecordController *record_controller
-                     , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                     // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -320,7 +320,7 @@ namespace browser {
         , _record_controller(record_controller)
         //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    , _shadow_branch_root
+                                    // , _shadow_branch_root
                                     //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -351,7 +351,7 @@ namespace browser {
 
     Browser::Browser(const QUrl &url
                      , RecordController *record_controller
-                     , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                     // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -360,7 +360,7 @@ namespace browser {
         , _record_controller(record_controller)
           //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    , _shadow_branch_root
+                                    // , _shadow_branch_root
                                     //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -391,7 +391,6 @@ namespace browser {
 
     Browser::Browser(boost::intrusive_ptr<TreeItem> record
                      , RecordController *record_controller
-                     , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -400,7 +399,7 @@ namespace browser {
         , _record_controller(record_controller)
           //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    , _shadow_branch_root
+                                    // , _shadow_branch_root
                                     //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))

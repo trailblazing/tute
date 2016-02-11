@@ -62,6 +62,7 @@ TreeScreen::TreeScreen(QString      object_name
 {
     // Загрузка данных
     _root->init_from_xml(_appconfig.get_tetradir() + "/mytetra.xml");
+    _selected_branch->_root_item = _root->_root_item;
 
     //    _selected_branch->init_from_xml(_appconfig.get_tetradir() + "/candidate.xml");
     //    _selected_branch->_root_item->field("id", get_unical_id());   // come from _root
@@ -1412,7 +1413,7 @@ void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> res
     setup_model(_selected_branch);
     _actionlist["return_to_root"]->setEnabled(true);
 
-    assert(controller_source_model->tree_item() == _selected_branch->_root_item);
+    //    assert(controller_source_model->tree_item() == _selected_branch->_root_item);
     controller_source_model->reset_internal_data();  // delete source_model;   // dangerous!!!
     //    std::shared_ptr<RecordTable> target_data = source_model->tree_item()->tabledata();    // resultset_item->tabledata();
     //    controller->init();

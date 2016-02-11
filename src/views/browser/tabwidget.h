@@ -227,7 +227,7 @@ namespace browser {
     public:
         TabWidget(RecordController *_record_controller
                   //                  , TableController *_page_controller
-                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                  //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                   , Browser *parent
                  );
         ~TabWidget();
@@ -293,7 +293,9 @@ namespace browser {
         };
 
         //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
-        boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
+        boost::intrusive_ptr<TreeItem> tree_item() {return _record_controller->tree_item();}
+        //        void tree_item(boost::intrusive_ptr<TreeItem> item) {_shadow_branch_root = item;}
+
         //        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
         //        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
@@ -372,7 +374,7 @@ namespace browser {
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
         //        //        sd::method<sd::meta_info<void *const>> _active_r;
-        boost::intrusive_ptr<TreeItem> _shadow_branch_root;
+        //        boost::intrusive_ptr<TreeItem> _shadow_branch_root;
         //        TableModel              *_shadow_source_model;
         //        std::shared_ptr<TableData>  _table_data;
         Browser                 *_window;

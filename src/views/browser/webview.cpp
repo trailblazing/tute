@@ -423,20 +423,24 @@ namespace browser {
     }
 
     // this will delete record for ever from database
-    void WebPage::remove_record_from_table_data(boost::intrusive_ptr<TreeItem> record)
+    void WebPage::remove_record_from_table_data(boost::intrusive_ptr<TreeItem> item)
     {
         auto tab_manager = view()->tabmanager();
-        assert(tab_manager->tree_item() == globalparameters.table_screen()->table_controller()->tree_item());
-        auto table_data = tab_manager->tree_item();
+
+        //        if(tab_manager->tree_item() != globalparameters.table_screen()->table_controller()->tree_item()) {
+        //            tab_manager->tree_item(globalparameters.table_screen()->table_controller()->tree_item());
+        //        }
+
+        auto item_flat = tab_manager->tree_item();
 
         //        for(int i = 0; i < table_data->size(); i++) {
         //            auto r = table_data->record(i);
-        assert(record->page_valid() && record->unique_page() == this);
+        assert(item->page_valid() && item->unique_page() == this);
 
-        if(table_data->is_item_exists(record->field("id"))
+        if(item_flat->is_item_exists(item->field("id"))
            //                && record->unique_page() == this
           ) {
-            table_data->delete_item_by_id(record->field("id"));    // this will delete record for ever from database
+            item_flat->delete_item_by_id(item->field("id"));    // this will delete record for ever from database
             //            tab_manager->reset_tabledata(table_data);  // _page_controller->removerow_by_id(record->getNaturalFieldSource("id"));
         }
 

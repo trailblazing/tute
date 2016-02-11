@@ -497,6 +497,8 @@ void RecordController::tree_item(boost::intrusive_ptr<TreeItem> tree_item)
     // qApp->restoreOverrideCursor();
     find_object<MainWindow>("mainwindow")->unsetCursor();
 
+    //    globalparameters.entrance()->activiated_registered().first->tabWidget()->tree_item(tree_item);
+
     qDebug() << "In RecordTableView set new model stop";
 }
 

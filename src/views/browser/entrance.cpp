@@ -361,7 +361,7 @@ namespace browser {
     {
 
         Browser *browser = new Browser(state, _record_controller
-                                       , _shadow_branch_root
+                                       // , _shadow_branch_root
                                        , this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
@@ -384,7 +384,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    , _shadow_branch_root
+                    // , _shadow_branch_root
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -401,7 +401,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(record
                     , _record_controller
-                    , _shadow_branch_root
+                    // , _shadow_branch_root
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -425,7 +425,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    , _shadow_branch_root
+                    // , _shadow_branch_root
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint

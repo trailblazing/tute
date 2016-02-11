@@ -84,7 +84,7 @@ namespace browser {
         Browser(QUrl const &url         // Record *const record
                 , RecordController *record_controller
                 //                , TableController *_page_controller
-                , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                 , Entrance *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
@@ -94,7 +94,6 @@ namespace browser {
         Browser(const QByteArray &state
                 , RecordController *record_controller
                 //                , TableController *_page_controller
-                , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                 , Entrance *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
@@ -103,7 +102,7 @@ namespace browser {
         Browser(boost::intrusive_ptr<TreeItem> record
                 , RecordController *record_controller
                 //            , TableController *_page_controller
-                , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                 , Entrance *entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
