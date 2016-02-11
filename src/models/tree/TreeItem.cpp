@@ -267,7 +267,7 @@ TreeItem::~TreeItem()
 
             bool is_holder = (_page->_tree_item.get() == this);     // _page->record() may mean some other record
 
-            page_to_nullptr();
+            //            page_to_nullptr();
 
             //        _page->record(nullptr);
             //        _page = nullptr;
@@ -278,6 +278,8 @@ TreeItem::~TreeItem()
                 assert(_page == _page->_tree_item->unique_page());   // _page->rebind_record() make sure of this statement
                 tabmanager->closeTab(tabmanager->webViewIndex(view));
             }
+
+            page_to_nullptr();
         }
 
         //

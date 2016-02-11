@@ -165,7 +165,7 @@ namespace browser {
 
         WebView *active();
         WebView *load(const boost::intrusive_ptr<TreeItem> record, bool checked = true);
-        WebView *bind(boost::intrusive_ptr<TreeItem> record);
+        WebView *bind(boost::intrusive_ptr<TreeItem> item);
 
         void load(const QUrl &url) = delete;
 
@@ -210,8 +210,8 @@ namespace browser {
 
         boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
         void add_record_to_table_data(boost::intrusive_ptr<TreeItem> item);
-        void remove_record_from_table_data(boost::intrusive_ptr<TreeItem> item);
-        void break_record(boost::intrusive_ptr<TreeItem> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        void remove_item_from_itemsflat(boost::intrusive_ptr<TreeItem> item);
+        void break_record(boost::intrusive_ptr<TreeItem> item);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
         void break_records();
         void sychronize_metaeditor_to_record(boost::intrusive_ptr<TreeItem> record);
 

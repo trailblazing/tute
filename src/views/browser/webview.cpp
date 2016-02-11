@@ -423,7 +423,7 @@ namespace browser {
     }
 
     // this will delete record for ever from database
-    void WebPage::remove_record_from_table_data(boost::intrusive_ptr<TreeItem> item)
+    void WebPage::remove_item_from_itemsflat(boost::intrusive_ptr<TreeItem> item)
     {
         auto tab_manager = view()->tabmanager();
 
@@ -431,16 +431,16 @@ namespace browser {
         //            tab_manager->tree_item(globalparameters.table_screen()->table_controller()->tree_item());
         //        }
 
-        auto item_flat = tab_manager->tree_item();
+        auto itemsflat = tab_manager->tree_item();
 
         //        for(int i = 0; i < table_data->size(); i++) {
         //            auto r = table_data->record(i);
         assert(item->page_valid() && item->unique_page() == this);
 
-        if(item_flat->is_item_exists(item->field("id"))
+        if(itemsflat->is_item_exists(item->field("id"))
            //                && record->unique_page() == this
           ) {
-            item_flat->delete_item_by_id(item->field("id"));    // this will delete record for ever from database
+            itemsflat->delete_item_by_id(item->field("id"));    // this will delete record for ever from database
             //            tab_manager->reset_tabledata(table_data);  // _page_controller->removerow_by_id(record->getNaturalFieldSource("id"));
         }
 
@@ -1202,33 +1202,33 @@ namespace browser {
     }
 
     // which_page_point_to_me
-    void WebPage::break_record(boost::intrusive_ptr<TreeItem> record)
+    void WebPage::break_record(boost::intrusive_ptr<TreeItem> item)
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
-        if(record) {
+        if(item) {
 
-            if(record->page_valid() && record->unique_page()) {
-                if(record->unique_page() == this) {
-                    remove_record_from_table_data(_tree_item);    // this will delete record for ever from database
-                    record->binder().reset();
-                    record->activator().reset();
-                    record->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
+            if(item->page_valid() && item->unique_page()) {
+                if(item->unique_page() == this) {
+                    remove_item_from_itemsflat(item);    // this will delete record for ever from database
+                    item->binder().reset();
+                    item->activator().reset();
+                    item->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
                     //                    assert(!record->binder());
                     //                    assert(!record->activator());
-                    assert(!record->page_valid() && !record->unique_page());
+                    assert(!item->page_valid() && !item->unique_page());
                 }
             }
 
             if(_records.size() > 0
-               && _records.find(record->natural_field_source("id")) != _records.end()
-              ) _records.erase(record->natural_field_source("id"));
+               && _records.find(item->field("id")) != _records.end()
+              ) _records.erase(item->field("id"));
 
         }
 
         //        _record.reset();  // do not reset, you may need it later
     }
 
-    WebView *WebPage::bind(boost::intrusive_ptr<TreeItem> record)
+    WebView *WebPage::bind(boost::intrusive_ptr<TreeItem> item)
     {
         //        Record *new_record = nullptr;
         //        RecordTableData *data = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
@@ -1264,58 +1264,60 @@ namespace browser {
         TabWidget *tabmanager = view()->tabmanager();
         assert(tabmanager);
 
-        if(record) {
+        if(item) {
 
-            if(_tree_item && _tree_item != record) {
-                //                tabmanager->table_data()->delete_record_by_id(_record->natural_field_source("id"));
-                //                tabmanager->table_data()->shadow_record(tabmanager->table_data()->size(), record);
-                remove_record_from_table_data(_tree_item);    // makes ure this will not delete record for ever from database
-                //            if(_record) {
-                //                if(_record->binded_page() != nullptr && _record->binded_page() == this) {
-                //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
+            if(_tree_item && _tree_item.get() != item.get()) {
 
-                //                    // _record->linkpage(nullptr);
-                //                    _record->breakpage();
+                break_record(_tree_item);
+                //                //                tabmanager->table_data()->delete_record_by_id(_record->natural_field_source("id"));
+                //                //                tabmanager->table_data()->shadow_record(tabmanager->table_data()->size(), record);
+                //                remove_item_from_itemsflat(_tree_item);    // makes ure this will not delete record for ever from database
+                //                //            if(_record) {
+                //                //                if(_record->binded_page() != nullptr && _record->binded_page() == this) {
+                //                //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
 
-                //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-                //                }
-                //            }
+                //                //                    // _record->linkpage(nullptr);
+                //                //                    _record->breakpage();
 
-                //            if(_record && _record->unique_page() != nullptr)
+                //                //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                //                //                }
+                //                //            }
 
-                // this->break_record_which_page_point_to_me(_record);
+                //                //            if(_record && _record->unique_page() != nullptr)
 
-                if(_records.size() > 0
-                   && _records.find(_tree_item->natural_field_source("id")) != _records.end()
-                  ) _records.erase(_tree_item->natural_field_source("id"));
+                //                // this->break_record_which_page_point_to_me(_record);
 
-                //            if(record) {
-                //                if((!record->binded_page()) || (record->binded_page() != this)) {
-                //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
+                //                if(_records.size() > 0
+                //                   && _records.find(_tree_item->field("id")) != _records.end()
+                //                  ) _records.erase(_tree_item->field("id"));
 
-                //                    // _record->linkpage(nullptr);
-                //                    _record = record->bind_page(this);  // record->breakpage();
-                //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
-                //                }
-                //            }
+                //                //            if(record) {
+                //                //                if((!record->binded_page()) || (record->binded_page() != this)) {
+                //                //                    // assert(_record->linkpage() == this);    // should always be true -> if not move note
 
-                //        else {
-                //            _record->breakpage();
-                //        }
+                //                //                    // _record->linkpage(nullptr);
+                //                //                    _record = record->bind_page(this);  // record->breakpage();
+                //                //                    // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                //                //                }
+                //                //            }
 
-                //        _record = record;   // ->bind_page(this);   // just for close tab(==view)
+                //                //        else {
+                //                //            _record->breakpage();
+                //                //        }
 
-                // _record->linkpage(this);
+                //                //        _record = record;   // ->bind_page(this);   // just for close tab(==view)
 
-                // connect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
+                //                // _record->linkpage(this);
 
-                //        WebView   *view = record->page()->view();
-                //        view->tabmanager()->setCurrentWidget(view);
-                //        view->show();
-                //        // _page->record(new_record);
-                //        update_record();
+                //                // connect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
 
-                _tree_item = record;
+                //                //        WebView   *view = record->page()->view();
+                //                //        view->tabmanager()->setCurrentWidget(view);
+                //                //        view->show();
+                //                //        // _page->record(new_record);
+                //                //        update_record();
+
+                _tree_item = item;
 
 
             }
@@ -1336,7 +1338,7 @@ namespace browser {
 
                     // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
                     // if(_records.find(_record) == _records.end())
-                    if(_records.find(record->natural_field_source("id")) == _records.end())
+                    if(_records.find(item->natural_field_source("id")) == _records.end())
                         _records[_tree_item->natural_field_source("id")] = _tree_item;
 
                     //                MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
