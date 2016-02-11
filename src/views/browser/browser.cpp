@@ -80,7 +80,7 @@
 
 #include "main.h"
 #include "models/record_table/RecordModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "models/record_table/Record.h"
 #include "views/record_table/RecordView.h"
 #include "libraries/GlobalParameters.h"
@@ -131,8 +131,7 @@ namespace browser {
 
     }
 
-    void Browser::init(// QUrl const &url,
-    )
+    void Browser::init()    // QUrl const &url,
     {
         //        browser->setWidget(this);
         //        this->setParent(browser);
@@ -205,14 +204,14 @@ namespace browser {
             //                , Arg &&... arg
             //            );
             auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager, true);
-            auto record = _record_controller->request_record(
+            auto record = _record_controller->request_item(
                 QUrl(Browser::_defaulthome)
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                     ""
                     , &TabWidget::ActiveRecordBinder::binder
                     , arint
                 )
-                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                     ""
                     , &TabWidget::ActiveRecordBinder::activator
                     , arint
@@ -245,17 +244,17 @@ namespace browser {
         QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    boost::intrusive_ptr<Record> Browser::equip_registered(boost::intrusive_ptr<Record> record)
+    boost::intrusive_ptr<TreeItem> Browser::equip_registered(boost::intrusive_ptr<TreeItem> record)
     {
         auto generator = [](boost::shared_ptr<TabWidget::ActiveRecordBinder> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
                        ""
                        , &TabWidget::ActiveRecordBinder::binder
                        , ar
                    );
         };
         auto activator = [](boost::shared_ptr<TabWidget::ActiveRecordBinder> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
+            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> (
                        ""
                        , &TabWidget::ActiveRecordBinder::activator
                        , ar
@@ -277,7 +276,7 @@ namespace browser {
         return record;
     }
 
-    boost::intrusive_ptr<Record> Browser::register_url(QUrl const &url)
+    boost::intrusive_ptr<TreeItem> Browser::register_url(QUrl const &url)
     {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
@@ -287,17 +286,17 @@ namespace browser {
 
         //        _tabmanager->newTab(url);  // , false
         auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager, true);
-        boost::intrusive_ptr<Record> record
-            = _record_controller->request_record(    // why do this?
+        boost::intrusive_ptr<TreeItem> record
+            = _record_controller->request_item(    // why do this?
                   url
                   , std::make_shared <
-                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record> >> (
+                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *) >> (
                       ""
                       , &TabWidget::ActiveRecordBinder::binder
                       , arint
                   )
                   , std::make_shared <
-                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record> >> (
+                  sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> >> (
                       ""
                       , &TabWidget::ActiveRecordBinder::activator
                       , arint
@@ -307,13 +306,13 @@ namespace browser {
         //assert(new_view->page());
         //record->page(new_view->page());
         //assert(_backup->page());
-        assert(record->unique_page());
+        assert(record->page_valid() && record->unique_page());
         return record;
     }
 
     Browser::Browser(const QByteArray &state
                      , RecordController *record_controller
-                     , boost::intrusive_ptr<TreeItem> _page_tree_item
+                     , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -321,7 +320,7 @@ namespace browser {
         , _record_controller(record_controller)
         //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    , _page_tree_item
+                                    , _shadow_branch_root
                                     //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -352,7 +351,7 @@ namespace browser {
 
     Browser::Browser(const QUrl &url
                      , RecordController *record_controller
-                     , boost::intrusive_ptr<TreeItem> _page_tree_item
+                     , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -361,7 +360,7 @@ namespace browser {
         , _record_controller(record_controller)
           //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    , _page_tree_item
+                                    , _shadow_branch_root
                                     //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -390,9 +389,9 @@ namespace browser {
     }
 
 
-    Browser::Browser(boost::intrusive_ptr<Record> record
+    Browser::Browser(boost::intrusive_ptr<TreeItem> record
                      , RecordController *record_controller
-                     , boost::intrusive_ptr<TreeItem> _page_tree_item
+                     , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                      , Entrance *entrance   //, QDockWidget *parent
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -401,7 +400,7 @@ namespace browser {
         , _record_controller(record_controller)
           //        , _page_controller(_page_controller)
         , _tabmanager(new TabWidget(record_controller
-                                    , _page_tree_item
+                                    , _shadow_branch_root
                                     //                                    , _page_controller
                                     , this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -421,11 +420,11 @@ namespace browser {
         equip_registered(record);
 
         if(record->binder()) {
-            record->bind();
+            record->self_bind();
             record->active();
         }
 
-        assert(record->unique_page());
+        assert(record->page_valid() && record->unique_page());
 
         run_script(style_source);       //        assert(record->linkpage());
 
@@ -1220,19 +1219,20 @@ namespace browser {
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         //loadPage(home);
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(_entrance);
-        auto r = _record_controller->request_record(
+        auto r = _record_controller->request_item(
                      QUrl(home)
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                          ""
                          , &Entrance::ActiveRecordBinder::binder
                          , ara
                      )
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                          ""
                          , &Entrance::ActiveRecordBinder::activator
                          , ara
                      )
                  );
+        r->self_bind();
         r->active();
     }
 
@@ -1429,7 +1429,7 @@ namespace browser {
 
 
 
-    WebView *Browser::invoke_page(boost::intrusive_ptr<Record> record)
+    WebView *Browser::invoke_page(boost::intrusive_ptr<TreeItem> record)
     {
         // clean();
 

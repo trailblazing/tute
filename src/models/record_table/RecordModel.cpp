@@ -1,7 +1,7 @@
 #include "main.h"
 #include "Record.h"
 #include "RecordModel.h"
-#include "RecordTable.h"
+#include "ItemsFlat.h"
 
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
@@ -21,10 +21,9 @@ extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 // Конструктор модели
-RecordModel::RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _tree_item, QObject *pobj)
+RecordModel::RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QObject *pobj)
     : QAbstractTableModel(pobj)
-    , _tree_item(_tree_item)
-      //    , _table(new RecordTable(_tree_item, QDomElement()))
+    , _shadow_branch_root(_shadow_branch_root)      //    , _table(new RecordTable(_tree_item, QDomElement()))
 {
     setObjectName(screen_name + "_source_model");
     // При создании модели она должна брать данные как минимум из
@@ -49,11 +48,11 @@ RecordModel::~RecordModel()
 QVariant RecordModel::data(const QModelIndex &index, int role) const
 {
     // Если таблица данных не создана
-    if(!_tree_item->record_table())    // if(!_table)
+    if(!_shadow_branch_root)    // if(!_table)
         return QVariant();
 
     // Если таблица пустая
-    if(0 == _tree_item->record_table()->size()) // if(_table->size() == 0)
+    if(0 == _shadow_branch_root->size()) // if(_table->size() == 0)
         return QVariant();
 
     // Если индекс недопустимый, возвращается пустой объект
@@ -70,8 +69,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
         if(index.column() < showFields.size()) {
             QString fieldName = showFields.value(index.column());
 
-            QString field = // _table
-                _tree_item->record_table()->field(index.row(), fieldName);
+            QString field = _shadow_branch_root->child(index.row())->field(fieldName);
 
 
             // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
@@ -103,7 +101,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 
     if(role == RECORD_ID_ROLE) {
         return // _table
-            _tree_item->record_table()->field(index.row(), "id");
+            _shadow_branch_root->child(index.row())->field("id");
     }
 
     // Если происходит запрос ссылки на таблицу данных
@@ -124,11 +122,11 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     // Если таблица данных не создана
-    if(!_tree_item->record_table())    // if(!_table)
+    if(!_shadow_branch_root)    // if(!_table)
         return false;
 
     // Если таблица пустая
-    if(0 == _tree_item->record_table()->size())    //if(_table->size() == 0)
+    if(0 == _shadow_branch_root->size())    //if(_table->size() == 0)
         return false;
 
     // Если индекс недопустимый
@@ -150,7 +148,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 
             // Изменяется поле в таблице конечных записей
             //            _table
-            _tree_item->record_table()->field(index.row(), fieldName, cellValue);
+            _shadow_branch_root->child(index.row())->field(fieldName, cellValue);
 
             emit dataChanged(index, index); // Посылается сигнал что данные были изменены
 
@@ -217,11 +215,10 @@ int RecordModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
-    if(!_tree_item->record_table())    // if(!_table)
+    if(!_shadow_branch_root)    // if(!_table)
         return 0;
 
-    return // _table
-        _tree_item->record_table()->size();
+    return _shadow_branch_root->size();
 }
 
 
@@ -271,8 +268,8 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     // Удаляются строки непосредственно в таблице
     for(int i = row; i < row + count; ++i) {
         //        _table
-        _tree_item->record_table()->delete_record_by_position(i);
-        globalparameters.find_screen()->remove_row(i);  // ?
+        _shadow_branch_root->delete_item_by_position(i);
+        //        globalparameters.find_screen()->remove_row(i);  // ?
     }
 
     view->reset();
@@ -282,10 +279,10 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     return true;
 }
 
-void RecordModel::tree_item(boost::intrusive_ptr<TreeItem>item)
+void RecordModel::tree_item(boost::intrusive_ptr<TreeItem> item)
 {
     beginResetModel();
-    _tree_item = item;
+    _shadow_branch_root = item;
     endResetModel();
 }
 
@@ -300,27 +297,26 @@ void RecordModel::tree_item(boost::intrusive_ptr<TreeItem>item)
 //}
 
 
-// Получение ссылки на таблицу данных
-std::shared_ptr<RecordTable> RecordModel::table_data(void)
-{
-    // Возвращается ссылка на данные, с которыми в данный момент работает модель
-    return _tree_item->record_table(); // _table;
-}
+//// Получение ссылки на таблицу данных
+//boost::intrusive_ptr<TreeItem> RecordModel::tree_item(void)
+//{
+//    // Возвращается ссылка на данные, с которыми в данный момент работает модель
+//    return _tree_item;  // ->record_table(); // _table;
+//}
 
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int RecordModel::insert_new_record(int mode, QModelIndex posIndex, boost::intrusive_ptr<Record> record)
+int RecordModel::insert_new_item(int mode, QModelIndex pos_index, boost::intrusive_ptr<TreeItem> item)
 {
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
     // Вставка новых данных в таблицу конечных записей
-    int selPos = // _table
-        _tree_item->record_table()->insert_new_record(posIndex.row(), record, mode);
-
+    int selected_position = _shadow_branch_root->insert_new_item(pos_index.row(), item, mode);   // _table
+    assert(_shadow_branch_root->item(selected_position) == item);
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 
-    return selPos;
+    return selected_position;
 }
 
 

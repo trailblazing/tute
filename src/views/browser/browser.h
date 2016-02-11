@@ -84,7 +84,7 @@ namespace browser {
         Browser(QUrl const &url         // Record *const record
                 , RecordController *record_controller
                 //                , TableController *_page_controller
-                , boost::intrusive_ptr<TreeItem> _page_tree_item
+                , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                 , Entrance *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
@@ -94,16 +94,16 @@ namespace browser {
         Browser(const QByteArray &state
                 , RecordController *record_controller
                 //                , TableController *_page_controller
-                , boost::intrusive_ptr<TreeItem> _page_tree_item
+                , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                 , Entrance *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
                );
 
-        Browser(boost::intrusive_ptr<Record> record
+        Browser(boost::intrusive_ptr<TreeItem> record
                 , RecordController *record_controller
                 //            , TableController *_page_controller
-                , boost::intrusive_ptr<TreeItem> _page_tree_item
+                , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                 , Entrance *entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
@@ -130,8 +130,8 @@ namespace browser {
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();       // {return globalparameters.getStatusBar();};
         QStatusBar  *status_bar() const; // {return globalparameters.getStatusBar();};
-        WebView     *invoke_page(boost::intrusive_ptr<Record> record);
-        boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record);
+        WebView     *invoke_page(boost::intrusive_ptr<TreeItem> record);
+        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
 
     public slots:
         void loadPage(const QString &url);
@@ -193,7 +193,7 @@ namespace browser {
 
     private:
         void init();
-        boost::intrusive_ptr<Record> register_url(QUrl const &url);
+        boost::intrusive_ptr<TreeItem> register_url(QUrl const &url);
 
         void run_script(const QString &style_source);
         void loadDefaultState();
@@ -204,7 +204,7 @@ namespace browser {
         //    void initUrl();
     private:
 
-        RecordController     *_record_controller;
+        RecordController    *_record_controller;
         //        TableController     *_page_controller;
         TabWidget           *_tabmanager;
         //    QDockWidget *dock_widget;
@@ -222,18 +222,18 @@ namespace browser {
         QMenu               *_historyforwardmenu;
         QMenu               *_windowmenu;
 
-        QAction *_stop;
-        QAction *_reload;
-        QAction *_stopreload;
-        QAction *_viewmenubar;
-        QAction *_viewbookmarkbar;
-        QAction *_viewtoolbar;
-        QAction *_viewstatusbar;
-        QAction *_restorelastsession;
-        QAction *_addbookmark;
+        QAction             *_stop;
+        QAction             *_reload;
+        QAction             *_stopreload;
+        QAction             *_viewmenubar;
+        QAction             *_viewbookmarkbar;
+        QAction             *_viewtoolbar;
+        QAction             *_viewstatusbar;
+        QAction             *_restorelastsession;
+        QAction             *_addbookmark;
 
-        QIcon _reloadicon;
-        QIcon _stopicon;
+        QIcon               _reloadicon;
+        QIcon               _stopicon;
 
         QString                             _lastsearch;
         //    QAction *actionFreeze;

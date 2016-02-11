@@ -24,48 +24,74 @@ extern GlobalParameters globalparameters;
 
 Record::Record()
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
-    , _page(nullptr)
     , _lite_flag(true)
     , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
 }
 
-void Record::page_to_nullptr()
+Record::Record(const Record &obj)
+    : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()
+      //    , _page(nullptr)
+    , _lite_flag(true)
+      //    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
-    //    QSet<Record *> binded_records = _page->binded_records();
 
-    //    for(auto i : binded_records) {
-    //        if(i == this) {
-    //            i->_page = nullptr;    // _page->break_record();  // _page->bind_record(nullptr);
+    //        if(obj->_page != nullptr) {
+
+    //            _page = obj->_page;
+    //            _page->bind(boost::intrusive_ptr<Record>(this)); // does not work?
+    //            obj->page_to_nullptr();
+
+    //            //        obj.breakpage();
+
+    //            //        obj._page->record(nullptr);   // dangerous
+    //            //        obj._page = nullptr;          // readonly
     //        }
-    //    }
 
-    _page = nullptr;
+    // Скопировать нужно каждый кусочек класса, сами они не копируются
+    _lite_flag = obj._lite_flag;
+    _field_data = obj._field_data;
+    _text = obj._text;
+    _picture_files = obj._picture_files;
+    //        _attach_table_data = std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)));
+    assert(obj._attach_table_data);
+    _attach_table_data = obj._attach_table_data; // *_attach_table_data = *obj->_attach_table_data;
+
+    // Обратный указатель во включенном объекте должен указывать на новый экземпляр
+    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
+    _attach_table_data->update_attach_table_back_link();
+    _is_registered = obj._is_registered;
+    //        _position = obj->_position;
+    //        _open_link_in_new_window = obj->_open_link_in_new_window;
+    //    bool    _active_immediately = false;
+    //        _binder = obj->_binder;
+    //        _activator = obj->_activator;
+
+
 }
-
 
 // Конструктор копирования
 Record::Record(boost::intrusive_ptr<Record> obj)
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()
-    , _page(nullptr)
+      //    , _page(nullptr)
     , _lite_flag(true)
       //    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     if(obj
        //       && obj.get() != this
       ) {
-        if(obj->_page != nullptr) {
+        //        if(obj->_page != nullptr) {
 
-            _page = obj->_page;
-            _page->bind(boost::intrusive_ptr<Record>(this)); // does not work?
-            obj->page_to_nullptr();
+        //            _page = obj->_page;
+        //            _page->bind(boost::intrusive_ptr<Record>(this)); // does not work?
+        //            obj->page_to_nullptr();
 
-            //        obj.breakpage();
+        //            //        obj.breakpage();
 
-            //        obj._page->record(nullptr);   // dangerous
-            //        obj._page = nullptr;          // readonly
-        }
+        //            //        obj._page->record(nullptr);   // dangerous
+        //            //        obj._page = nullptr;          // readonly
+        //        }
 
         // Скопировать нужно каждый кусочек класса, сами они не копируются
         _lite_flag = obj->_lite_flag;
@@ -80,146 +106,92 @@ Record::Record(boost::intrusive_ptr<Record> obj)
         _attach_table_data->record(boost::intrusive_ptr<Record>(this));
         _attach_table_data->update_attach_table_back_link();
         _is_registered = obj->_is_registered;
-        _position = obj->_position;
-        _open_link_in_new_window = obj->_open_link_in_new_window;
+        //        _position = obj->_position;
+        //        _open_link_in_new_window = obj->_open_link_in_new_window;
         //    bool    _active_immediately = false;
-        _binder = obj->_binder;
-        _activator = obj->_activator;
+        //        _binder = obj->_binder;
+        //        _activator = obj->_activator;
     }
 }
 
 
-browser::WebPage *Record::unique_page()
-{
-    //    browser::WebPage *page = nullptr;
+//browser::WebPage *Record::unique_page()
+//{
+//    //    browser::WebPage *page = nullptr;
 
-    //    //    if(_page) {
-    //    //        if(_page->record() == this)
-    //    //            page = _page;
-    //    //        else
-    //    //            page = _page->record()->_page;
-    //    //    }
+//    //    //    if(_page) {
+//    //    //        if(_page->record() == this)
+//    //    //            page = _page;
+//    //    //        else
+//    //    //            page = _page->record()->_page;
+//    //    //    }
 
-    //    page = _page;
+//    //    page = _page;
 
-    //    while(page && page->_record && page->_record != this) {
-    //        // if(page->binded_record())
-    //        page = page->_record->_page;
-    //    }
+//    //    while(page && page->_record && page->_record != this) {
+//    //        // if(page->binded_record())
+//    //        page = page->_record->_page;
+//    //    }
 
-    //    return page;
+//    //    return page;
 
-    return _page;
-}
-
-Record *Record::bind(browser::WebPage *page)
-{
-    if(_page != page) {
-
-        if(_page) {
-            std::map<QString, boost::intrusive_ptr<Record> > records = _page->binded_records() ;
-
-            for(auto &j : records) {
-                if(j.second) {
-                    if(j.second.get() == this) {
-                        if(j.second->_page) {
-                            j.second->_page->break_record(
-                                boost::intrusive_ptr<Record>(this)  // shared_from_this()
-                            );
-                            //                        i->_page->_record = nullptr;    // _page->break_record();
-                            //                        i = nullptr;    // ?
-                            j.second->page_to_nullptr();
-                        }
+//    return _page;
+//}
 
 
-                    }
-                }
-            }
-        }
 
-        //        if(page) {
-        //            if((!page->binded_record()) || (page->binded_record() != this)) {
-        //                page->bind_record(this);
-        //            }
-        //        }
+//void Record::active_request(int pos, int openLinkIn)
+//{
+//    //    _active_request = true;
+//    _position = pos;
+//    _open_link_in_new_window = openLinkIn;
+//}
 
+//bool Record::is_holder()
+//{
+//    bool is_holder_ = false;
 
-        //    else {
-        //        _page->break_record();
-        //    }
+//    if(_page) is_holder_ = _page->_tree_item.get() == this;
 
-        _page = page;
-    }
-
-    if(_page) {
-
-        if(!_page->_record || _page->_record.get() != this) {
-            _page->bind(
-                boost::intrusive_ptr<Record>(this)  // shared_from_this()
-            );
-        }
-
-        //        if((!_page->binded_records()) || (_page->binded_records() != this)) {
-        //            _page->bind_record(this);
-        //        }
-    }
-
-
-    return this;
-}
-
-void Record::active_request(int pos, int openLinkIn)
-{
-    //    _active_request = true;
-    _position = pos;
-    _open_link_in_new_window = openLinkIn;
-}
-
-bool Record::is_holder()
-{
-    bool is_holder_ = false;
-
-    if(_page) is_holder_ = _page->_record.get() == this;
-
-    return is_holder_;
-}
+//    return is_holder_;
+//}
 
 Record::~Record()
 {
-    if(_page != nullptr) {
-        //
-        browser::WebView *view = _page->view();
-        browser::TabWidget *tabmanager = nullptr;
+    //    if(_page != nullptr) {
+    //        //
+    //        browser::WebView *view = _page->view();
+    //        browser::TabWidget *tabmanager = nullptr;
 
-        if(view) {
-            tabmanager = view->tabmanager();
-        }
+    //        if(view) {
+    //            tabmanager = view->tabmanager();
+    //        }
 
-        if(_page->_record) {
+    //        if(_page->_tree_item) {
 
 
-            // multi record to one page:
-            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
-            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
-            // assert(_page->record().get() == this);
+    //            // multi record to one page:
+    //            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
+    //            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
+    //            // assert(_page->record().get() == this);
 
-            bool is_holder = (_page->_record.get() == this);     // _page->record() may mean some other record
+    //            bool is_holder = (_page->_tree_item.get() == this);     // _page->record() may mean some other record
 
-            page_to_nullptr();
+    //            page_to_nullptr();
 
-            //        _page->record(nullptr);
-            //        _page = nullptr;
+    //            //        _page->record(nullptr);
+    //            //        _page = nullptr;
 
-            if(view && tabmanager && is_holder
-               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
-              ) {
-                assert(_page == _page->_record->unique_page());   // _page->rebind_record() make sure of this statement
-                tabmanager->closeTab(tabmanager->webViewIndex(view));
-            }
-        }
+    //            if(view && tabmanager && is_holder
+    //               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+    //              ) {
+    //                assert(_page == _page->_tree_item->unique_page());   // _page->rebind_record() make sure of this statement
+    //                tabmanager->closeTab(tabmanager->webViewIndex(view));
+    //            }
+    //        }
 
-        //
-    }
+    //        //
+    //    }
 }
 
 
@@ -1161,28 +1133,28 @@ void Record::check_and_create_text_file()
     }
 }
 
-browser::WebView *Record::bind()
-{
-    if(!_page)
-        return (*binder())(
-                   boost::intrusive_ptr<Record>(this)  // shared_from_this()
-               );
-    else
-        return _page->view();
-}
+//browser::WebView *Record::bind()
+//{
+//    if(!_page)
+//        return (*binder())(
+//                   boost::intrusive_ptr<Record>(this)  // shared_from_this()
+//               );
+//    else
+//        return _page->view();
+//}
 
-browser::WebView *Record::active()
-{
-    if(!_page)
-        (*binder())(
-            boost::intrusive_ptr<Record>(this)  // shared_from_this()
-        );
+//browser::WebView *Record::active()
+//{
+//    if(!_page)
+//        (*binder())(
+//            boost::intrusive_ptr<Record>(this)  // shared_from_this()
+//        );
 
-    assert(_page);
-    //    if(_page->url().toString() != getNaturalFieldSource("url"))   // wrong! just activate the wiew
-    return (*activator())(
-               boost::intrusive_ptr<Record>(this)  // shared_from_this()
-           );
-    //    else
-    //        return _page->view();
-}
+//    assert(_page);
+//    //    if(_page->url().toString() != getNaturalFieldSource("url"))   // wrong! just activate the wiew
+//    return (*activator())(
+//               boost::intrusive_ptr<Record>(this)  // shared_from_this()
+//           );
+//    //    else
+//    //        return _page->view();
+//}

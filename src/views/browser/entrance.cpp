@@ -41,7 +41,7 @@
 #include "views/record_table/RecordScreen.h"
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordView.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "models/record_table/RecordModel.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/webview.h"
@@ -339,7 +339,7 @@ namespace browser {
                 WebPage *page = view->page();
 
                 if(page) {
-                    boost::intrusive_ptr<Record> record = page->current_record();
+                    boost::intrusive_ptr<TreeItem> record = page->current_item();
                     assert(record);
                     QString home = record->natural_field_source("home");
                     QUrl homeurl = QUrl(home);
@@ -361,7 +361,7 @@ namespace browser {
     {
 
         Browser *browser = new Browser(state, _record_controller
-                                       , _page_tree_item
+                                       , _shadow_branch_root
                                        , this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
@@ -384,7 +384,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    , _page_tree_item
+                    , _shadow_branch_root
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -395,13 +395,13 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::new_browser(boost::intrusive_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::new_browser(boost::intrusive_ptr<TreeItem> record)
     {
 
         //        DockedWindow *browser =
         new Browser(record
                     , _record_controller
-                    , _page_tree_item
+                    , _shadow_branch_root
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -425,7 +425,7 @@ namespace browser {
         //        DockedWindow *browser =
         new Browser(url
                     , _record_controller
-                    , _page_tree_item
+                    , _shadow_branch_root
                     , this
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
@@ -525,7 +525,7 @@ namespace browser {
 
     Entrance::Entrance(QString object_name
                        , RecordController *record_controller
-                       , boost::intrusive_ptr<TreeItem> _page_tree_item
+                       , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                        , browser::ToolbarSearch *toolbarsearch
                        , const QString &style_source
                        , QWidget *parent
@@ -534,7 +534,7 @@ namespace browser {
         : QDockWidget(parent, flags)  //, _application(application)
         , _main_windows(QList<QPointer<Browser> >())
         , _record_controller(record_controller)
-        , _page_tree_item(_page_tree_item)
+        , _shadow_branch_root(_shadow_branch_root)
         , _style_source(style_source)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)) //| Qt::SplashScreen
 
@@ -746,19 +746,43 @@ namespace browser {
     {
         //        Record *r =
         auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
-        auto r = _record_controller->request_record(
+        auto r = _record_controller->request_item(
                      url
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                          ""
                          , &Entrance::ActiveRecordBinder::binder
                          , ara
                      )
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                          ""
                          , &Entrance::ActiveRecordBinder::activator
                          , ara
                      )
                  );
+        r->self_bind();
+        r->active();
+        //        r->active_immediately(true);
+        //        return active_record(r);
+    }
+
+    void Entrance::active(boost::intrusive_ptr<TreeItem> item)
+    {
+        //        Record *r =
+        auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
+        auto r = _record_controller->request_item(
+                     item
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
+                         ""
+                         , &Entrance::ActiveRecordBinder::binder
+                         , ara
+                     )
+                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+                         ""
+                         , &Entrance::ActiveRecordBinder::activator
+                         , ara
+                     )
+                 );
+        r->self_bind();
         r->active();
         //        r->active_immediately(true);
         //        return active_record(r);
@@ -990,7 +1014,7 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    std::pair<Browser *, WebView *> Entrance::equip_registered(boost::intrusive_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::equip_registered(boost::intrusive_ptr<TreeItem> record)
     {
         assert(record);
         assert(record->is_registered());
@@ -1018,14 +1042,14 @@ namespace browser {
                          );
                 } else {
                     auto generator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::binder
                                    , ar
                                );
                     };
                     auto activator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
-                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> (
+                        return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> (
                                    ""
                                    , &WebPage::ActiveRecordBinder::activator
                                    , ar
@@ -1218,13 +1242,13 @@ namespace browser {
 #endif
 
 
-    void Entrance::open_url(const QUrl &url)
-    {
-        active_url(url); // active_record()->loadPage(url.toString());
-    }
+    //    void Entrance::open_url(const QUrl &url)
+    //    {
+    //        active_url(url); // active_record()->loadPage(url.toString());
+    //    }
 
 
-    std::pair<Browser *, WebView *> Entrance::find(boost::intrusive_ptr<Record> record)
+    std::pair<Browser *, WebView *> Entrance::find(boost::intrusive_ptr<TreeItem> record)
     {
         std::pair<Browser *, WebView *> dp{nullptr, nullptr};
 

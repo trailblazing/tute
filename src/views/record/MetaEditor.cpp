@@ -11,14 +11,15 @@
 #include "libraries/wyedit/Editor.h"
 #include "libraries/wyedit/EditorTextArea.h"
 #include "libraries/GlobalParameters.h"
-#include "views/find_in_base_screen/FindScreen.h"
 #include "models/app_config/AppConfig.h"
 #include "views/attach_table/AttachTableScreen.h"
-#include "views/tree/TreeScreen.h"
+#include "models/record_table/Record.h"
 #include "views/record_table/RecordView.h"
 #include "views/record_table/RecordScreen.h"
 #include "models/record_table/RecordModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
+#include "models/tree/TreeItem.h"
+#include "views/tree/TreeScreen.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/FindScreen.h"
@@ -30,7 +31,8 @@ namespace browser {
     class WebPage;
 }
 
-MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen) : Editor()
+MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
+    : Editor()
 {
     setObjectName(object_name);
     Editor::disable_tool_list(appconfig.getHideEditorTools());
@@ -148,7 +150,7 @@ void MetaEditor::setupLabels(void)
 }
 
 
-void MetaEditor::bind(boost::intrusive_ptr<Record> record)
+void MetaEditor::bind(boost::intrusive_ptr<TreeItem> record)
 {
     _record = record;
     assert(_record);
@@ -176,7 +178,7 @@ void MetaEditor::bind(boost::intrusive_ptr<Record> record)
                                        //            , _record->binded_only_page()
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
-        assert(_record->unique_page());
+        assert(_record->page_valid() && _record->unique_page());
         _record->active();
     });
 
@@ -186,6 +188,7 @@ void MetaEditor::bind(boost::intrusive_ptr<Record> record)
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
         //            Q_UNUSED(home)
+        assert(_record->page_valid());
         browser::WebPage *page = _record->unique_page();
         assert(page);
         QString home = _record->natural_field_source("home");
@@ -198,6 +201,10 @@ void MetaEditor::bind(boost::intrusive_ptr<Record> record)
     });
 
 }
+
+
+boost::intrusive_ptr<TreeItem> MetaEditor::record() {return _record;}
+
 void MetaEditor::setup_ui(void)
 {
     // Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...
@@ -344,28 +351,28 @@ void MetaEditor::switch_pin()
     RecordController *recordtablecontroller = globalparameters.table_screen()->table_controller();
 
     if(recordtablecontroller) {
-        RecordModel *recordmodel = recordtablecontroller->table_model();
+        RecordModel *source_model = recordtablecontroller->source_model();
         RecordView *recordtableview = recordtablecontroller->view();
         int pos = recordtablecontroller->first_selectionpos();
 
-        if(recordmodel && -1 != pos) {
+        if(source_model && -1 != pos) {
             // Выясняется ссылка на таблицу конечных данных
-            std::shared_ptr<RecordTable> table = recordmodel->tree_item()->record_table();    //getTableData();
+            auto item = source_model->tree_item();  //->record_table();    //getTableData();
 
-            QString p = table->field(pos, "pin");
+            QString p = item->child(pos)->field("pin");
             _record_pin->setCheckState(_state_check[p]);
 
-            QString h = table->field(pos, "url");
+            QString h = item->child(pos)->field("url");
 
             // Переданные отредактированные поля преобразуются в вид имя-значение
-            QMap<QString, QString> editData;
+            QMap<QString, QString> edit_data;
 
             if(_record_pin->checkState() == Qt::CheckState::Checked) {
                 _record_pin->setCheckState(Qt::CheckState::Unchecked);
 
                 pin(p = _check_state[Qt::CheckState::Unchecked]);
 
-                editData["pin"] = p;
+                edit_data["pin"] = p;
 
             } else {
                 _record_pin->setCheckState(Qt::CheckState::Checked);
@@ -373,8 +380,8 @@ void MetaEditor::switch_pin()
                 pin(p = _check_state[Qt::CheckState::Checked]);
                 home(h);
 
-                editData["pin"] = p;
-                editData["home"] = h;
+                edit_data["pin"] = p;
+                edit_data["home"] = h;
 
             }
 
@@ -388,7 +395,7 @@ void MetaEditor::switch_pin()
             //    editData["tags"] = tags;
 
             // Обновление новых данных в таблице конечных записей
-            table->edit_record_fields(pos, editData);
+            item->fields(pos, edit_data);
 
 
             // Сохранение дерева веток

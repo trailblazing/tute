@@ -52,7 +52,7 @@ public:
     Record(boost::intrusive_ptr<Record> obj);
     virtual ~Record();
 
-    browser::WebPage *unique_page();   // const; // {return _page;}
+    //    browser::WebPage *unique_page();   // const; // {return _page;}
 
     void import_from_dom(const QDomElement &iDomElement);
     //    QDomElement export_to_dom(QDomDocument *doc) const;
@@ -97,28 +97,28 @@ public:
 
     void push_lite_attributes();
     void push_fat_attributes();
-    bool is_holder();
-    void active_request(int pos, int openLinkIn);
+    //    bool is_holder();
+    //    void active_request(int pos, int openLinkIn);
     //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
     //    bool active_immediately() {return _active_immediately;}
 
     bool is_registered() {return _is_registered;}
     void is_registered(bool reg) {_is_registered = reg;}
 
-    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
+    //    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
+    //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
 
-    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> a) {_activator = a;}
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator() const {return _activator;}
+    //    void activator(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> a) {_activator = a;}
+    //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator() const {return _activator;}
 
-    browser::WebView *bind();
-    browser::WebView *active();
+    //    browser::WebView *bind();
+    //    browser::WebView *active();
     bool dir_exists();
     bool file_exists();
 
 protected:
 
-    browser::WebPage            *_page;
+    //    browser::WebPage            *_page;
     // ---------------------------------------------------------------------
     // Свойства класса (не забыть перечислить все в конструкторе копривания)
     // Class properties (do not forget to list all the constructor koprivaniya)
@@ -127,8 +127,8 @@ protected:
     bool                        _lite_flag;
     bool                        _is_registered = false;
     //    bool                        _active_request = false;
-    int                         _position = -1;
-    int                         _open_link_in_new_window = 0;
+    //    int                         _position = -1;
+    //    int                         _open_link_in_new_window = 0;
     //    bool                        _active_immediately = false;
 
     // Установка содержимого свойств происходит в вышестоящем коде
@@ -144,8 +144,8 @@ protected:
     // Таблица прикрепляемых файлов
     std::shared_ptr<AttachTableData>    _attach_table_data;
 
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _binder;
-    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _activator;
+    //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _binder;
+    //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _activator;
 
     // -----------------
     // Защищенные методы
@@ -170,14 +170,14 @@ protected:
 
     QString natural_field(QString name) const;
     QString calculable_field(QString name) const;
+    explicit Record(const Record &obj); // = delete;
 private:
-    Record *bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
-    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
-    explicit Record(const Record &obj) = delete;
+
+
+
 
     friend class browser::WebPage;
-
-    friend class RecordTable;
+    friend class ItemsFlat;
 };
 
 #endif // __RECORD_H__

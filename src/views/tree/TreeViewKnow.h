@@ -10,12 +10,12 @@
 #include <QGestureEvent>
 
 
-class KnowTreeView : public QTreeView {
+class TreeViewKnow : public QTreeView {
     Q_OBJECT
 
 public:
-    explicit KnowTreeView(QWidget *parent = 0);
-    virtual ~KnowTreeView();
+    explicit TreeViewKnow(QWidget *parent = 0);
+    virtual ~TreeViewKnow();
 
 signals:
     void tapAndHoldGestureFinished(const QPoint &);

@@ -50,7 +50,7 @@
 #include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
 #include "models/record_table/RecordModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "controllers/record_table/RecordController.h"
 #include "main.h"
 #include <utility>
@@ -101,7 +101,7 @@
 #include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
 #include "models/record_table/RecordModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "controllers/record_table/RecordController.h"
 
 
@@ -920,14 +920,14 @@ void QtSingleApplication::newLocalSocketConnection()
             //Record *record = register_record(url);
             //            dp = browser_entrance->active_record(record);
             auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
-            auto record = globalparameters.table_screen()->table_controller()->request_record(
+            auto record = globalparameters.table_screen()->table_controller()->request_item(
                               url
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
                                   ""
                                   , &browser::Entrance::ActiveRecordBinder::binder
                                   , arb
                               )
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                                   ""
                                   , &browser::Entrance::ActiveRecordBinder::activator
                                   , arb

@@ -14,27 +14,43 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include "models/record_table/Record.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 
-class TreeItem
-//        : public std::enable_shared_from_this<TreeItem>
-    : public Record { // boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
+
+namespace browser {
+    class WebPage;
+    class TabWidget;
+}
+
+class TreeItem  //        : public std::enable_shared_from_this<TreeItem>
+    : public Record
+    , public ItemsFlat {
+    // boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
 public:
+
+    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)>> bind_helper;
+    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> active_helper;
 
     typedef boost::sp_adl_block::thread_safe_counter counter_type; // boost::intrusive_ref_counter<TreeItem>::counter_type
 
     typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
-    TreeItem(QMap<QString, QString>         field_data
-        , boost::intrusive_ptr<TreeItem>    parent_item
-        , std::shared_ptr<RecordTable>      table_data
+    TreeItem(
+        QMap<QString, QString>             field_data
+        , boost::intrusive_ptr<TreeItem>   parent_item
+        , const QDomElement &i_dom_element
+        = QDomElement()
     );
 
     TreeItem(
         boost::intrusive_ptr<Record>        record
         , boost::intrusive_ptr<TreeItem>    parent_item
-        , std::shared_ptr<RecordTable>      table_data
+        , const QDomElement &i_dom_element
+        = QDomElement()
     );
+
+    TreeItem(const TreeItem &item);
+    TreeItem &operator =(const TreeItem &item);
 
     ~TreeItem();
 
@@ -42,8 +58,9 @@ public:
     // под указанным номером
     boost::intrusive_ptr<TreeItem> child(int number);
 
-    // Возвращение количества потомков (т.е. количество записей в списке childItems)
-    int child_count() const;
+    int size()const;
+    //    // Возвращение количества потомков (т.е. количество записей в списке childItems)
+    //    int size() const;
 
     // Возвращение количества полей, которые хранит данный элемент.
     int field_count() const;
@@ -74,7 +91,7 @@ public:
     // в конец списка подчиненных элементов
     boost::intrusive_ptr<TreeItem> add_child(void);
 
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record);
+    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
 
     // Возвращение ссылки на родительский элемент
@@ -88,11 +105,12 @@ public:
 
     // Возвращает номер, под которым данный объект хранится
     // в массиве childItems своего родителя
-    int self_index() const;
+    int sibling_order() const;
 
     bool move_up(void);
     bool move_dn(void);
-
+    void move_up(int pos) {ItemsFlat::move_up(pos);}
+    void move_dn(int pos) {ItemsFlat::move_dn(pos);}
     // Возвращает id путь (список идентификаторов от корня до текущего элемента)
     QStringList path(void);
 
@@ -123,28 +141,54 @@ public:
     // Расшифровка данной ветки и всех подветок
     void to_decrypt(void);
 
-    // Взятие количества записей в таблице конечных записей, "промежуточный" метод
-    int row_count(void);
+    //    // Взятие количества записей в таблице конечных записей, "промежуточный" метод
+    //    int size(void);
 
-    // Удаление всех элементов в таблице конечных записей, "промежуточный" метод
-    void clear_tabledata(void);
+    //    // Удаление всех элементов в таблице конечных записей, "промежуточный" метод
+    //    void clear_tabledata(void);
 
-    // Преобразование таблицы конечных записей в DOM представление, "промежуточный" метод
-    // Convert the table of final entries in the DOM representation "intermediate" method
+    //    // Преобразование таблицы конечных записей в DOM представление, "промежуточный" метод
+    //    // Convert the table of final entries in the DOM representation "intermediate" method
     QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc);
     QDomElement export_to_dom();
+    void import_from_dom(const QDomElement &dom_model);
 
-    // Взятие ссылки на данные конечных записей
-    std::shared_ptr<RecordTable> record_table(void);
-    void record_table(std::shared_ptr<RecordTable> _table_data);
-    // Первичное заполнение таблицы конечных записей, "промежуточный" метод
-    void record_table(QDomElement i_dom_element);
+    boost::intrusive_ptr<TreeItem> active_subset();
+
+    //    // Взятие ссылки на данные конечных записей
+    //    std::shared_ptr<RecordTable> record_table(void);
+    //    void record_table(std::shared_ptr<RecordTable> _table_data);
+    //    // Первичное заполнение таблицы конечных записей, "промежуточный" метод
+    //    void record_table(QDomElement i_dom_element);
+
+#ifdef _with_record_table   // deprecated
     void records_to_children();
+#endif
+
+    void clear_children(void);
+
+    browser::WebPage *unique_page();   // const; // {return _page;}
+    browser::WebView *self_bind();
+    boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
+    browser::WebView *active();
+
+    void binder(bind_helper g); // {_binder = g;}
+    bind_helper binder() const; // {return _binder;}
+
+    void activator(active_helper a);    // {_activator = a;}
+    active_helper activator() const;    // {return _activator;}
+
+    void active_request(int pos, int openLinkIn);
+    bool page_valid()const {return _page_valid;}
+protected:
+
+    bind_helper _binder;
+    active_helper _activator;
 
 private:
     bool remove_children_link(int position, int count);
 
-    void empty(void);
+    void clear(void);
 
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
     QList<QStringList> all_children_path_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode);
@@ -153,18 +197,27 @@ private:
     //    QStringList field_name_available_list(void) const;
     QStringList field_name_for_crypt_list(void) const;
 
-    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
-    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
+    //    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
+    //    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
 
     //    // Таблица инфополей данной ветки
     //    QMap<QString, QString>                  _field_data;
 
-    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
-    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
+    //    //    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
+    //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
+    browser::WebPage    *_page;
+    bool                _page_valid = false;
+    int                 _position = -1;
+    int                 _open_link_in_new_window = 0;
     //    friend void intrusive_ptr_add_ref(TreeItem *px);
     //    friend void intrusive_ptr_release(TreeItem *px);
     //    friend void boost::sp_adl_block::intrusive_ptr_add_ref< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;
     //    friend void boost::sp_adl_block::intrusive_ptr_release< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;
+
+    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
+    bool is_holder();
+    friend class browser::WebPage;
+
 };
 
 //inline void intrusive_ptr_add_ref(TreeItem *px){boost::sp_adl_block::intrusive_ptr_add_ref(px);}

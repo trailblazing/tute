@@ -88,7 +88,7 @@ public:
     void restoreEditorScrollBarPosition(void);
     void restoreFindOnBaseVisible(void);
 
-    void set_tree_position(QStringList path);
+    void tree_position(QStringList path);
     bool isTreePositionCrypt();
 
     void select_id(QString id);
@@ -153,7 +153,7 @@ private:
     void setIcon(void);
 
     void saveGeometry(void);
-    void save_tree_position(void);
+    void tree_position(void);
     void save_recordtable_position(void);
     void saveEditorCursorPosition(void);
     void saveEditorScrollBarPosition(void);

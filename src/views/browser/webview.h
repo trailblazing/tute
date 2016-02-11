@@ -73,6 +73,7 @@ extern GlobalParameters globalparameters;
 extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
 class Record;
+class TreeItem;
 
 QT_BEGIN_NAMESPACE
 
@@ -151,7 +152,7 @@ namespace browser {
         }
 
         WebPage(QWebEngineProfile *profile
-                , const boost::intrusive_ptr<Record> record
+                , const boost::intrusive_ptr<TreeItem> record
                 // , bool openinnewtab
                 , RecordController *_record_controller
                 //                , TableController *_page_controller
@@ -160,11 +161,11 @@ namespace browser {
         //        WebView *(*_load_record)(Record *const record);
         Browser *browser();
         WebView *view() {return _pageview;}
-        std::map<QString, boost::intrusive_ptr<Record>> binded_records()const;
+        std::map<QString, boost::intrusive_ptr<TreeItem>> binded_records()const;
 
         WebView *active();
-        WebView *load(const boost::intrusive_ptr<Record> record, bool checked = true);
-        WebView *bind(boost::intrusive_ptr<Record> record);
+        WebView *load(const boost::intrusive_ptr<TreeItem> record, bool checked = true);
+        WebView *bind(boost::intrusive_ptr<TreeItem> record);
 
         void load(const QUrl &url) = delete;
 
@@ -174,7 +175,7 @@ namespace browser {
         //            //if(_record)_record->setNaturalFieldSource("name", webPage()->title());
         //        }
 
-        boost::intrusive_ptr<Record> current_record()const {return _record;}
+        boost::intrusive_ptr<TreeItem> current_item()const {return _tree_item;}
 
         struct ActiveRecordBinder {
             WebPage *_the;
@@ -191,26 +192,28 @@ namespace browser {
                   //              , _record_ontroller(recordtablecontroller)
             {}
 
-            WebView *binder(boost::intrusive_ptr<Record> record)
+            WebView *binder(boost::intrusive_ptr<TreeItem> record, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
             {
-                return _the->bind(record);  // _the->load(record, _make_current);
+                WebView *view = _the->bind(record);
+                (record.get()->*_bind)(_the);
+                return view;  // _the->load(record, _make_current);
                 //                                    , _record_ontroller
 
             }
 
-            WebView *activator(boost::intrusive_ptr<Record> record)
+            WebView *activator(boost::intrusive_ptr<TreeItem> record)
             {
                 assert(record->unique_page() == _the);
                 return _the->active();
             }
         };
 
-        boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record);
-        void add_record_to_table_data(boost::intrusive_ptr<Record> record);
-        void remove_record_from_table_data(boost::intrusive_ptr<Record> record);
-        void break_record(boost::intrusive_ptr<Record> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
+        void add_record_to_table_data(boost::intrusive_ptr<TreeItem> item);
+        void remove_record_from_table_data(boost::intrusive_ptr<TreeItem> record);
+        void break_record(boost::intrusive_ptr<TreeItem> record);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
         void break_records();
-        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
+        void sychronize_metaeditor_to_record(boost::intrusive_ptr<TreeItem> record);
 
 
     protected:
@@ -244,8 +247,8 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
-        std::map<QString, boost::intrusive_ptr<Record> > _records;
-        boost::intrusive_ptr<Record> _record;
+        std::map<QString, boost::intrusive_ptr<TreeItem> > _records;
+        boost::intrusive_ptr<TreeItem> _tree_item;
 
         WebView                 *_pageview;
         // set the webview mousepressedevent
@@ -257,14 +260,18 @@ namespace browser {
         RecordController        *_record_controller;
         //        TableController         *_page_controller;
 
-        void record(boost::intrusive_ptr<Record> record) {_record = record;}
+        void record(boost::intrusive_ptr<TreeItem> item) {_tree_item = item;}
         friend class Record;
-        friend void Record::page_to_nullptr();
+        friend class TreeItem;
+        //        friend void TreeItem::page_to_nullptr();
         //        friend Record::Record(const Record &obj);
         friend Record::~Record();
-        friend Record *Record::bind(WebPage *page);
-        friend WebPage *Record::unique_page();
-        friend bool Record::is_holder();
+        //        friend Record *TreeItem::bind(WebPage *page);
+        //        friend WebPage *TreeItem::unique_page();
+        //        friend bool TreeItem::is_holder();
+        friend TreeItem::~TreeItem();
+        friend boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page);
+        friend bool TreeItem::is_holder();
     };
 
 #ifdef USE_POPUP_WINDOW
@@ -323,7 +330,7 @@ namespace browser {
         Q_OBJECT
 
     public:
-        WebView(boost::intrusive_ptr<Record> record
+        WebView(boost::intrusive_ptr<TreeItem> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
                 , RecordController *table_controller
@@ -332,7 +339,7 @@ namespace browser {
                   //                = globalparameters.page_screen()->table_controller()
                );
 
-        WebView(boost::intrusive_ptr<Record> record
+        WebView(const boost::intrusive_ptr<TreeItem> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *tabmanager
                 , QWidget *parent
@@ -347,7 +354,7 @@ namespace browser {
         void page(WebPage *page);
 
 
-        WebView *load(const boost::intrusive_ptr<Record> record);
+        WebView *load(boost::intrusive_ptr<TreeItem> record);
         QUrl url() const = delete;
         QIcon icon() const;
 

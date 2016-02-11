@@ -14,12 +14,12 @@
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/RecordProxyModel.h"
 #include "models/app_config/AppConfig.h"
-#include "models/tree/KnowTreeModel.h"
+#include "models/tree/TreeModelKnow.h"
 #include "libraries/GlobalParameters.h"
 #include "views/main_window/MainWindow.h"
 #include "libraries/WindowSwitcher.h"
 #include "controllers/record_table/RecordController.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
@@ -186,7 +186,7 @@ void RecordView::restoreHeaderState(void)
 
 
 void RecordView::onSelectionChanged(const QItemSelection &selected,
-                                   const QItemSelection &deselected)
+                                    const QItemSelection &deselected)
 {
     QModelIndex selectRecord;
     QModelIndex deselectRecord;
@@ -221,7 +221,7 @@ void RecordView::onClickToRecord(const QModelIndex &index)
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
 void RecordView::click_record(const QModelIndex &index)
 {
-    _table_controller->click_record(index);
+    _table_controller->click_item(index);
 
     globalparameters.window_switcher()->switchFromRecordtableToRecord();
 }
@@ -373,13 +373,13 @@ QModelIndex RecordView::first_selection_proxy_index(void)
 // Получение модельного индекса первого выделенного элемента в Source модели
 QModelIndex RecordView::first_selection_source_index(void)
 {
-    QModelIndex proxyIndex = first_selection_proxy_index();
+    QModelIndex proxy_index = first_selection_proxy_index();
 
-    if(!proxyIndex.isValid())
+    if(!proxy_index.isValid())
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
-    QModelIndex index = _table_controller->proxyindex_to_sourceindex(proxyIndex);
+    QModelIndex index = _table_controller->proxyindex_to_sourceindex(proxy_index);
 
     return index;
 }
@@ -462,13 +462,15 @@ void RecordView::moveCursorToNewRecord(int mode, int pos)
     // Прокрутка к только что созданной строке через selectRow() показывает только
     // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
     // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-    if(mode == ADD_NEW_RECORD_TO_END ||
-       (mode == ADD_NEW_RECORD_AFTER && pos >= (model()->rowCount() - 1)))
+    if(mode == ADD_NEW_RECORD_TO_END
+       || (mode == ADD_NEW_RECORD_AFTER && pos >= (model()->rowCount() - 1))
+      ) {
         scrollToBottom();
+    }
 
-    int proxyPos = _table_controller->pos_to_proxyindex(pos).row();
+    int proxy_pos = _table_controller->pos_to_proxyindex(pos).row();
 
-    selectRow(proxyPos);
+    selectRow(proxy_pos);
 }
 
 
@@ -573,7 +575,7 @@ void RecordView::startDrag()
             // delete drag;
 
             // В модели данных обнуляется оформление элемента, который (возможно) подсвечивался при Drag And Drop
-            find_object<TreeScreen>(tree_screen_singleton_name)->_knowtreemodel->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+            find_object<TreeScreen>(tree_screen_singleton_name)->_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
         }
     }
 }
@@ -619,7 +621,7 @@ ClipboardRecords *RecordView::getSelectedRecords(void)
     clipboardRecords->clear();
 
     // Объект заполняется выбранными записями
-    _table_controller->add_records_to_clipboard(clipboardRecords, itemsForCopy);
+    _table_controller->add_items_to_clipboard(clipboardRecords, itemsForCopy);
 
     return clipboardRecords;
 }
@@ -627,7 +629,7 @@ ClipboardRecords *RecordView::getSelectedRecords(void)
 
 // Переопределенный сигнал (virtual protected slot)
 void RecordView::selectionChanged(const QItemSelection &selected,
-                                 const QItemSelection &deselected)
+                                  const QItemSelection &deselected)
 {
     // qDebug() << "RecordTableView::selectionChanged()";
 

@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QModelIndexList>
 #include "utility/delegate.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
 
 //#include <boost/serialization/strong_typedef.hpp>
@@ -13,7 +13,7 @@
 
 class Record;
 class RecordView;
-class RecordTable;
+class ItemsFlat;
 class RecordModel;
 class RecordProxyModel;
 class ClipboardRecords;
@@ -34,42 +34,45 @@ namespace browser {
 class RecordController : public QObject {
     Q_OBJECT
 public:
-    RecordController(QString screen_name, boost::intrusive_ptr<TreeItem> _tree_item, RecordScreen *table_screen);
+
+    typedef TreeItem::bind_helper bind_helper;
+    typedef TreeItem::active_helper active_helper;
+    RecordController(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, RecordScreen *table_screen);
     virtual ~RecordController();
 
     void init(void);
 
     RecordView *view(void);
-    RecordModel *table_model() {return _source_model;}
+    RecordModel *source_model();    // {return _source_model;}
 
-    void click_record(const QModelIndex &index);
+    void click_item(const QModelIndex &index);
 
-    bool is_tree_item_notexists(void);
+    bool is_tree_item_exists(void);
     //    void reset_tabledata_test(TableData *rtData);
     void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
     //    void reset_tabledata(std::shared_ptr<RecordTable> table_data);
 
-    int row_count(void);
+    int row_count(void)const;
 
-    void add_records_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
+    void add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
 
     void open_website(QModelIndex proxyIndex);
     // Действия при редактировании инфополей записи из контекстного меню
     void edit_field_context(QModelIndex proxyIndex);
 
-    QModelIndex pos_to_proxyindex(int pos);
-    QModelIndex pos_to_sourceindex(int pos);
-    int         proxyindex_to_pos(QModelIndex index);
-    int         sourceindex_to_pos(QModelIndex index);
-    QModelIndex proxyindex_to_sourceindex(QModelIndex proxyIndex);
-    QModelIndex sourceindex_to_proxyindex(QModelIndex sourceIndex);
-    int         sourcepos_to_proxypos(int sourcePos);
-    int         proxypos_to_sourcepos(int proxyPos);
-    QModelIndex id_to_sourceindex(QString id);
-    QModelIndex id_to_proxyindex(QString id);
+    QModelIndex pos_to_proxyindex(int pos)const;
+    QModelIndex pos_to_sourceindex(int pos)const;
+    int         proxyindex_to_pos(QModelIndex index)const;
+    int         sourceindex_to_pos(QModelIndex index)const;
+    QModelIndex proxyindex_to_sourceindex(QModelIndex proxyIndex)const;
+    QModelIndex sourceindex_to_proxyindex(QModelIndex sourceIndex)const;
+    int         sourcepos_to_proxypos(int sourcePos)const;
+    int         proxypos_to_sourcepos(int proxyPos)const;
+    QModelIndex id_to_sourceindex(QString id)const;
+    QModelIndex id_to_proxyindex(QString id)const;
 
-    int     first_selectionpos(void);
-    QString first_selectionid(void);
+    int     first_selectionpos(void) const;
+    QString first_selectionid(void)const;
     void    select_pos(int pos);
     void    select_id(QString id);
 
@@ -77,27 +80,27 @@ public:
     void removerow_by_id(QString delId);
     void removerows_by_idlist(QVector<QString> delIds);
 
-    boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record);
+    boost::intrusive_ptr<TreeItem> register_item_to_shadow_branch(boost::intrusive_ptr<TreeItem> item);
 
-    boost::intrusive_ptr<Record> check_record(const QUrl &_url);
+    boost::intrusive_ptr<TreeItem> check_item(const QUrl &_url);
 
-    boost::intrusive_ptr<Record> request_record(
-        boost::intrusive_ptr<Record> record
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator
+    boost::intrusive_ptr<TreeItem> request_item(
+        boost::intrusive_ptr<TreeItem> item
+        , bind_helper generator
+        , active_helper activator
     );
 
-    boost::intrusive_ptr<Record> request_record(
+    boost::intrusive_ptr<TreeItem> request_item(
         const QUrl &_url
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> generator
-        , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator
+        , bind_helper generator
+        , active_helper activator
     );
 
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
-    std::shared_ptr<RecordTable> table_data();
-    void sychronize_metaeditor_to_record(const int pos);
-    void sychronize_attachtable_to_record(const int pos);
+    boost::intrusive_ptr<TreeItem> tree_item();
+    void sychronize_metaeditor_to_item(const int pos);
+    void sychronize_attachtable_to_item(const int pos);
 
 signals:
 
@@ -114,7 +117,7 @@ public slots:
 
     void on_edit_fieldcontext(void);
 
-    void delete_records_selected(void);
+    void delete_items_selected(void);
 
     // Вызов действий из контекстного меню для открытия окна с вводом новой записи
     void addnew_to_end(void);
@@ -154,12 +157,12 @@ protected:
 
     //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
-    int addnew_record_fat(boost::intrusive_ptr<Record> record
-                          , const int mode
-                          = ADD_NEW_RECORD_AFTER // add_new_record_after
-                         );
+    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item
+                        , const int mode
+                        = ADD_NEW_RECORD_AFTER // add_new_record_after
+                       );
 
-    int addnew_record(boost::intrusive_ptr<Record> record, int mode);
+    int addnew_item(boost::intrusive_ptr<TreeItem> item, const int mode = ADD_NEW_RECORD_AFTER);
 
     void edit_field(int pos
                     , QString pin

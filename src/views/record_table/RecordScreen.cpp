@@ -18,7 +18,7 @@
 #include "controllers/record_table/RecordController.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/toolbarsearch.h"
-#include "views/tree/KnowTreeView.h"
+#include "views/tree/TreeViewKnow.h"
 #include "views/tree/TreeScreen.h"
 #include "views/browser/entrance.h"
 
@@ -29,9 +29,9 @@ extern AppConfig appconfig;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
-RecordScreen::RecordScreen(QString object_name, boost::intrusive_ptr<TreeItem> _tree_item, QWidget *parent)
+RecordScreen::RecordScreen(QString object_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QWidget *parent)
     : QWidget(parent)
-    , _table_controller(new RecordController(object_name, _tree_item, this))
+    , _table_controller(new RecordController(object_name, _shadow_branch_root, this))
       //    , _recordtree_search(new browser::ToolbarSearch(this))
 {
     // Инициализируется контроллер списка записей
@@ -62,41 +62,41 @@ RecordScreen::~RecordScreen()
 // Настройка возможных действий
 void RecordScreen::setup_actions(void)
 {
-    _new_branch = new QAction(tr("Save in new branch"), this);
-    _new_branch->setStatusTip(tr("Save new records in new branch"));
-    _new_branch->setIcon(QIcon(":/resource/pic/trace.svg"));
+    _save_in_new_branch = new QAction(tr("Save in new branch"), this);
+    _save_in_new_branch->setStatusTip(tr("Save new records in new branch"));
+    _save_in_new_branch->setIcon(QIcon(":/resource/pic/trace.svg"));
 
-    connect(_new_branch, &QAction::triggered
+    connect(_save_in_new_branch, &QAction::triggered
     , [](bool checked = false) {
         Q_UNUSED(checked)
         TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
 
         if(tree_screen) {
-            boost::intrusive_ptr<TreeItem> tree_item = tree_screen->_knowtreemodel->item_by_name(tree_screen->_shadow_page_model->_root_item->field("name"));
+            boost::intrusive_ptr<TreeItem> tree_item = tree_screen->_root->item_by_name(tree_screen->_shadow_branch->_root_item->field("name"));
 
             if(!tree_item) {
 
                 tree_item = tree_screen->add_branch(tree_screen->last_index()
-                                                    , tree_screen->_shadow_page_model->_root_item->field("name") // ""
+                                                    , tree_screen->_shadow_branch->_root_item->field("name") // ""
                                                     , true);
                 //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
             }
 
-            std::shared_ptr<RecordTable> target = tree_item->record_table();   // std::make_shared<RecordTable>(tree_item);
-            std::shared_ptr<RecordTable> source = tree_screen->_shadow_page_model->_root_item->record_table();
+            auto target = tree_item;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
+            auto source = tree_screen->_shadow_branch->_root_item;  // ->record_table();
 
             for(int i = 0; i < source->size(); i++) {
-                if(!globalparameters.tree_screen()->_knowtreemodel->is_record_id_exists(source->record(i)->natural_field_source("id"))) {
-                    if(source->record(i)->is_lite())source->record(i)->to_fat();
+                if(!globalparameters.tree_screen()->_root->is_record_id_exists(source->item(i)->natural_field_source("id"))) {
+                    if(source->item(i)->is_lite())source->item(i)->to_fat();
 
-                    target->insert_new_record(target->work_pos(), source->record(i));
+                    target->insert_new_item(target->work_pos(), source->item(i));
                 }
             }
 
-            tree_item->record_table(target);
+            tree_item = target;
 
             tree_screen->save_knowtree();
-            tree_screen->to_candidate_screen(tree_screen->_shadow_page_model->index(tree_item));
+            tree_screen->to_candidate_screen(tree_screen->_shadow_branch->index(tree_item));
         }
     }
            );
@@ -242,7 +242,7 @@ void RecordScreen::setup_ui(void)
         _toolsline->addSeparator();
     }
 
-    insert_action_as_button<QToolButton>(_toolsline, _new_branch);
+    insert_action_as_button<QToolButton>(_toolsline, _save_in_new_branch);
     insert_action_as_button<QToolButton>(_toolsline, _pin);
     insert_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
 
@@ -450,7 +450,7 @@ void RecordScreen::tools_update(void)
     // Отключаются все действия
     disable_all_actions();
 
-    //    if(_table_controller->is_tree_item_notexists())
+    //    if(!_table_controller->is_tree_item_exists())
     //        return;
 
     // Выясняется, содержит ли текущая ветка подчиненные ветки

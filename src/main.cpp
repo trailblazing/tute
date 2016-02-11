@@ -46,7 +46,7 @@
 #include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
 #include "models/record_table/RecordModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "controllers/record_table/RecordController.h"
 
 //const int add_new_record_after = 2;

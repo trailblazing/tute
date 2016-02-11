@@ -6,20 +6,21 @@
 
 #include "main.h"
 #include "Record.h"
-#include "RecordTable.h"
+#include "ItemsFlat.h"
 
 #include "models/app_config/AppConfig.h"
 #include "views/main_window/MainWindow.h"
 #include "libraries/GlobalParameters.h"
 #include "models/tree/TreeItem.h"
 #include "libraries/WalkHistory.h"
-#include "models/tree/KnowTreeModel.h"
-#include "views/tree/KnowTreeView.h"
+#include "models/tree/TreeModelKnow.h"
+#include "views/tree/TreeViewKnow.h"
 #include "libraries/crypt/CryptService.h"
 #include "libraries/DiskHelper.h"
 #include "views/browser/webview.h"
 #include "views/browser/tabwidget.h"
 #include "libraries/wyedit/Editor.h"
+#include "views/tree/TreeScreen.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -44,55 +45,91 @@ extern WalkHistory walkhistory;
 //}
 
 // Конструктор
-RecordTable::RecordTable(const QDomElement &i_dom_element, const bool _is_crypt): _is_crypt(_is_crypt)
+ItemsFlat::ItemsFlat(boost::intrusive_ptr<TreeItem> parent_item
+                     , const bool _is_crypt
+                    )
+    :
     //    : _tree_item(_tree_item)
     //    , _workpos(-1)
+    _parent_item([ & ]()
+{
+    if(parent_item) {
+        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+        //        QString crypt_value = "1";
+        QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
+        QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
+                                                           && parent_item->_field_data.contains(crypt_key)
+                                                           && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
+
+        //        field(crypt_key, crypt_value);
+
+        if(crypt_1 == crypt_value
+           //           && !table_data->crypt()
+          ) {
+            this->to_encrypt(); // table_data->to_encrypt();
+        } else if(crypt_0 == crypt_value
+                  //                  && table_data->crypt()
+                 ) {
+            this->to_decrypt(); // table_data->to_decrypt();
+        }
+    }
+
+    return parent_item;
+}())
+//    , _field_data([ & ]()
+//{
+//    if(_parent_item)
+//        _field_data["crypt"] = (_parent_item->_field_data.contains("crypt") && _parent_item->_field_data["crypt"] == "1") ? "1" : "0";
+
+//    return _field_data;
+//}())
+//    , _record_table()
+, _is_crypt(_is_crypt)
 {
     //    treeItem = nullptr;
     //    workPos = -1;
 
     //    init(i_dom_element);  // i_dom_element
 
-    // Создание таблицы
-    if(!i_dom_element.isNull()) {
-        //        QDomElement *dom_element = &i_dom_element;
-        import_from_dom(
-            i_dom_element  // dom_element
-        );
-    }
+    //    // Создание таблицы
+    //    if(!i_dom_element.isNull()) {
+    //        //        QDomElement *dom_element = &i_dom_element;
+    //        import_from_dom(
+    //            i_dom_element  // dom_element
+    //        );
+    //    }
 
     //    return;
 }
 // Деструктор
-RecordTable::~RecordTable()
+ItemsFlat::~ItemsFlat()
 {
-    empty();
+    clear();
     return;
 }
 
 
 // Получение значения указанного поля для указанного имени поля
 // Имя поля - все возможные имена полей, кроме text (такого поля теперь вообще нет, текст запрашивается как отдельное свойство)
-QString RecordTable::field(int pos, QString name) const
+QString ItemsFlat::field(int pos, QString name) const
 {
     // Если индекс недопустимый
-    if(pos < 0 || pos >= _record_data.size()) {
+    if(pos < 0 || pos >= _child_items.size()) {
         QString i;
         i.setNum(pos);
         critical_error("RecordTableData::getField() : get unavailable record index " + i);
     }
 
-    return _record_data.at(pos)->field(name);
+    return _child_items.at(pos)->field(name);
 }
 
-boost::intrusive_ptr<Record> RecordTable::find(const QUrl &url)
+boost::intrusive_ptr<TreeItem> ItemsFlat::find(const QUrl &url)const
 {
-    boost::intrusive_ptr<Record> record;
+    boost::intrusive_ptr<TreeItem> record;
 
-    for(auto &i : _record_data) {
-        // QString _u = i.getNaturalFieldSource("url") ;
-
-        if(i->natural_field_source("url") == url.toString()) {
+    for(auto &i : _child_items) {
+        if(i->field("url") == url.toString()) {
             assert(i->is_registered());
             record = i;
             break;
@@ -102,34 +139,49 @@ boost::intrusive_ptr<Record> RecordTable::find(const QUrl &url)
     return record;
 }
 
-boost::intrusive_ptr<Record> RecordTable::find(boost::intrusive_ptr<Record> r)
+int ItemsFlat::locate(boost::intrusive_ptr<TreeItem> item)const
 {
-    boost::intrusive_ptr<Record> record;
+    int pos = -1;
 
-    for(auto &i : _record_data) {
-        // QString _u = i.getNaturalFieldSource("url") ;
+    for(int i = 0 ; i < _child_items.size(); i++) {
+        auto it = _child_items.value(i);
 
-        if(i->natural_field_source("id") == r->natural_field_source("id")) {
-            assert(i->is_registered());
-            record = i;
+        if(it->field("id") == item->field("id")) {
+            assert(it->is_registered());
+            pos = i;
             break;
         }
     }
 
-    return record;
+    return pos;
+}
+
+boost::intrusive_ptr<TreeItem> ItemsFlat::find(boost::intrusive_ptr<TreeItem> item)const
+{
+    boost::intrusive_ptr<TreeItem> result;
+
+    for(auto &i : _child_items) {
+        if(i->field("id") == item->field("id")) {
+            assert(i->is_registered());
+            result = i;
+            break;
+        }
+    }
+
+    return result;
 }
 
 // Установка значения указанного поля для указанного элемента
-void RecordTable::field(int pos, QString name, QString value)
+void ItemsFlat::field(int pos, QString name, QString value)
 {
     // Если индекс недопустимый
-    if(pos < 0 || pos >= _record_data.size()) {
+    if(pos < 0 || pos >= _child_items.size()) {
         QString i;
         i.setNum(pos);
         critical_error("In RecordTableData::setField() unavailable record index " + i + " in table while field " + name + " try set to " + value);
     }
 
-    _record_data[pos]->field(name, value);
+    _child_items[pos]->field(name, value);
 }
 
 
@@ -139,16 +191,16 @@ void RecordTable::field(int pos, QString name, QString value)
 // Get the value of the text of the specified record
 // Method returns the decrypted data
 // If there is a problem that file with text entries, will create an empty file
-QString RecordTable::text(int pos)
+QString ItemsFlat::text(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая строка
     if(pos < 0 || pos >= size())
         return QString();
 
-    if(_record_data[pos]->is_lite())
-        return _record_data[pos]->text_direct_from_lite();
+    if(_child_items[pos]->is_lite())
+        return _child_items[pos]->text_direct_from_lite();
     else
-        return _record_data[pos]->text_from_fat();
+        return _child_items[pos]->text_from_fat();
 }
 
 
@@ -163,7 +215,7 @@ QString RecordTable::text(int pos)
 // She is editor of passing a pointer to itself
 // And variable reference loadText, which must be filled
 // Attention! The method does not contain the data recording operation. Think about where to place it
-void RecordTable::editor_load_callback(QObject *editor, QString &loadText)
+void ItemsFlat::editor_load_callback(QObject *editor, QString &loadText)
 {
     // qDebug() << "RecordTableScreen::editor_load_callback() : Dir" << dir << "File" << file;
 
@@ -215,7 +267,7 @@ void RecordTable::editor_load_callback(QObject *editor, QString &loadText)
 // She is editor of passing a pointer to itself
 // And the text to be written in the variable saveText
 // Attention! The method does not contain the data recording operation. Think about where to place it
-void RecordTable::editor_save_callback(QObject *editor, QString saveText)
+void ItemsFlat::editor_save_callback(QObject *editor, QString saveText)
 {
     // qDebug() << "RecordTableScreen::editor_load_callback() : Dir" << dir << "File" << file;
 
@@ -271,17 +323,17 @@ void RecordTable::editor_save_callback(QObject *editor, QString saveText)
 // Эти образы используются для хранения в дереве знаний
 // Get a copy of a light image recording
 // These images are used to store the tree of knowledge
-boost::intrusive_ptr<Record> RecordTable::record_lite(int pos)
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_lite(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
-        return boost::intrusive_ptr<Record>(nullptr);
+        return boost::intrusive_ptr<TreeItem>(nullptr);
 
     // Хранимая в дереве запись не может быть "тяжелой"
-    if(!_record_data.at(pos)->is_lite())
+    if(!_child_items.at(pos)->is_lite())
         critical_error("In RecordTableData::getRecordLite() try get fat record");
 
-    return _record_data.at(pos);
+    return _child_items.at(pos);
 }
 
 
@@ -289,33 +341,33 @@ boost::intrusive_ptr<Record> RecordTable::record_lite(int pos)
 // Возвращается запись с "сырыми" данными. Если запись была зашифрована, метод вернет зашифрованные данные
 // Get a copy of the full image recording
 // Returns the record with "raw" data. If the record was encrypted, the method returns the encrypted data
-boost::intrusive_ptr<Record> RecordTable::record_fat(int pos)
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
 {
     // Копия записи из дерева
-    boost::intrusive_ptr<Record> resultRecord = record(pos);  //boost::intrusive_ptr<Record> resultRecord = getRecordLite(pos);
+    boost::intrusive_ptr<TreeItem> result = item(pos);  //boost::intrusive_ptr<Record> resultRecord = getRecordLite(pos);
 
     // original
     // Переключение копии записи на режим с хранением полного содержимого
-    if(resultRecord->is_lite())resultRecord->to_fat();
+    if(result->is_lite())result->to_fat();
 
     // Добавление текста записи
-    resultRecord->text_to_fat(text(pos));
+    result->text_to_fat(text(pos));
 
     // Добавление бинарных образов файлов картинок
-    QString directory = appconfig.get_tetradir() + "/base/" + resultRecord->field("dir");
-    resultRecord->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    QString directory = appconfig.get_tetradir() + "/base/" + result->field("dir");
+    result->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
-    return resultRecord;
+    return result;
 }
 
 
-boost::intrusive_ptr<Record> RecordTable::record(int pos)
+boost::intrusive_ptr<TreeItem> ItemsFlat::item(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= size())
         return nullptr;
 
-    return _record_data[pos];
+    return _child_items.at(pos);    // _child_items[pos];
 }
 
 //void RecordTable::tree_item(boost::intrusive_ptr<TreeItem> item)
@@ -341,68 +393,79 @@ boost::intrusive_ptr<Record> RecordTable::record(int pos)
 //}
 
 
-// Разбор DOM модели и преобразование ее в таблицу
-void RecordTable::import_from_dom(const QDomElement &dom_model)
-{
-    // QDomElement n = dommodel.documentElement();
-    // QDomElement n = dommodel;
+//// Разбор DOM модели и преобразование ее в таблицу
+//void RecordTable::import_from_dom(const QDomElement &dom_model)
+//{
+//    // QDomElement n = dommodel.documentElement();
+//    // QDomElement n = dommodel;
 
-    // qDebug() << "In recordtabledata setup_data_from_dom() start";
+//    // qDebug() << "In recordtabledata setup_data_from_dom() start";
 
-    // Если принятый элемент не является таблицей
-    if(dom_model.tagName() != "recordtable")
-        return;
+//    // Если принятый элемент не является таблицей
+//    if(dom_model.tagName() != "recordtable")
+//        return;
 
-    // Определяется указатель на первый элемент с записью
-    // Define a pointer to the first element of the recording
-    QDomElement currentRecordDom = dom_model.firstChildElement("record");
+//    // Определяется указатель на первый элемент с записью
+//    // Define a pointer to the first element of the recording
+//    QDomElement current_record_dom = dom_model.firstChildElement("record");
 
-    while(!currentRecordDom.isNull()) {
-        // Структура, куда будет помещена текущая запись
-        // The structure, which will put the current record
-        boost::intrusive_ptr<Record> currentRecord = boost::intrusive_ptr<Record>(new Record());
-        currentRecord->is_registered(true);
+//    while(!current_record_dom.isNull()) {
+//        QMap<QString, QString> data;
+//        // Структура, куда будет помещена текущая запись
+//        // The structure, which will put the current record
+//        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
+//                                                          new TreeItem(
+//                                                              data
+//                                                              , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem>(this))    // _parent_item
+//                                                          )
+//                                                      );
+//        current_item->is_registered(true);
 
-        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
-        // The current record is added to the final table of records (and located at a certain address in memory)
-        _record_data << currentRecord;
+//        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
+//        // The current record is added to the final table of records (and located at a certain address in memory)
+//        _child_items << current_item;
 
-        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
-        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
-        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
-        // Order in subordinate objects have registered a valid pointer to this entry
-        (_record_data.last())->import_from_dom(currentRecordDom);
+//        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
+//        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
+//        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
+//        // Order in subordinate objects have registered a valid pointer to this entry
+//        (_child_items.last())->import_from_dom(current_record_dom);
 
-        currentRecordDom = currentRecordDom.nextSiblingElement("record");
-    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
+//        current_record_dom = current_record_dom.nextSiblingElement("record");
+//    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
 
 
 
-    return;
-}
+//    return;
+//}
 
-QDomElement RecordTable::export_to_dom() const
+QDomElement ItemsFlat::export_to_dom() const
 {
     std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
     return export_to_dom(doc);
 }
 
 // Преобразование таблицы конечных записей в Dom документ
-QDomElement RecordTable::export_to_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement ItemsFlat::export_to_dom(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-    if(_record_data.size() == 0)
+    if(_child_items.size() == 0)
         return QDomElement();
 
-    QDomElement record_dom_data = doc->createElement("recordtable");
+    QDomElement item_flat_dom = doc->createElement("recordtable");
 
     // Пробегаются все записи в таблице
-    for(int i = 0; i < _record_data.size(); i++)
-        record_dom_data.appendChild(_record_data.at(i)->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+    for(int i = 0; i < _child_items.size(); i++) {
+        //        assert(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this);
+
+        if(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this)
+            item_flat_dom.appendChild(
+                boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get())->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+    }
 
     // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
-    return record_dom_data;
+    return item_flat_dom;
 }
 
 //// Преобразование таблицы конечных записей в Dom документ
@@ -425,18 +488,19 @@ QDomElement RecordTable::export_to_dom(std::shared_ptr<QDomDocument> doc) const
 
 
 // Преобразование таблицы конечных записей в Dom документ
-QDomElement RecordTable::export_activated_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement ItemsFlat::export_activated_dom(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
-    if(_record_data.size() == 0)
+    if(_child_items.size() == 0)
         return QDomElement();
 
     QDomElement record_dom_data = doc->createElement("recordtable");
 
     // Пробегаются все записи в таблице
-    for(int i = 0; i < _record_data.size(); i++) {
-        if(_record_data.at(i)->unique_page()) {
-            record_dom_data.appendChild(_record_data.at(i)->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+    for(int i = 0; i < _child_items.size(); i++) {
+        if(_child_items.at(i)->page_valid() //unique_page()
+          ) {
+            record_dom_data.appendChild(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get())->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
         }
     }
 
@@ -458,18 +522,22 @@ QDomElement RecordTable::export_activated_dom(std::shared_ptr<QDomDocument> doc)
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record, int mode)
+int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int mode)
 {
     // Запись добавляется в таблицу конечных записей
     int insert_position = -1;
-    KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
-    if(!find(record) && !dataModel->is_record_id_exists(record->field("id"))) {
+    // get shadow_branch
+    //    TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
+
+    if(!find(item)
+       //       && !shadow_branch->is_record_id_exists(item->field("id"))
+      ) {
 
         //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
 
         // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
-        if(record->is_lite() == true)
+        if(item->is_lite() == true)
             critical_error("RecordTable::insert_new_record() can't insert lite record");
 
         // Выясняется, есть ли в дереве запись с указанным ID
@@ -482,8 +550,7 @@ int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record,
         // And it is desirable to stick with the same ID and the same name directory
         //        KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
-        if(0 == record->field("id").length()
-           //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
+        if(0 == item->field("id").length()  //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
           ) {
             // Создается новая запись (ID был пустой) или
             // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
@@ -492,13 +559,13 @@ int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record,
 
             QString id = get_unical_id();
             // Store directory entries and files    // Директория хранения записи и файл
-            record->field("dir", id);   // get_unical_id()
+            item->field("dir", id);   // get_unical_id()
 
-            record->field("file", "text.html");
+            item->field("file", "text.html");
 
             // Unique ID of XML records             // Уникальный идентификатор XML записи
             //            QString id = get_unical_id();
-            record->field("id", id);
+            item->field("id", id);
         }
 
 
@@ -507,7 +574,7 @@ int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record,
         // Время создания данной записи
         QDateTime ctime_dt = QDateTime::currentDateTime();
         QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
-        record->field("ctime", ctime);
+        item->field("ctime", ctime);
 
 
         // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
@@ -524,29 +591,30 @@ int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record,
         //        }
 
         // Запись полновесных данных с учетом шифрации
-        if(is_crypt && record->field("crypt") != "1")        // В зашифрованную ветку незашифрованную запись
-            record->to_encrypt_and_save_fat();
-        else if(!is_crypt && record->field("crypt") == "1")  // В незашифрованную ветку зашифрованную запись
-            record->to_decrypt_and_save_fat();
-        else
-            record->push_fat_attributes();
+        if(is_crypt && item->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
+            item->to_encrypt_and_save_fat();
+        } else if(!is_crypt && item->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
+            item->to_decrypt_and_save_fat();
+        } else {
+            item->push_fat_attributes();
+        }
 
         // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
-        record->to_lite();
+        item->to_lite();
 
         //        // Запись добавляется в таблицу конечных записей
         //        int insertPos = -1;
 
-        record->is_registered(true);
+        item->is_registered(true);
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-            _record_data << record;
-            insert_position = _record_data.size() - 1;
+            _child_items << item;
+            insert_position = _child_items.size() - 1;
         } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-            _record_data.insert(pos, record);
+            _child_items.insert(pos, item);
             insert_position = pos;
         } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-            _record_data.insert(pos + 1, record);
+            _child_items.insert(pos + 1, item);
             insert_position = pos + 1;
         }
 
@@ -556,11 +624,12 @@ int RecordTable::insert_new_record(int pos, boost::intrusive_ptr<Record> record,
 
     }
 
+    assert(_child_items[insert_position] == item);
     return insert_position;
 
 }
 
-int RecordTable::shadow_record_lite(int pos, boost::intrusive_ptr<Record> record, int mode)
+int ItemsFlat::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> record, int mode)
 {
     // Запись добавляется в таблицу конечных записей
     int insert_position = -1;
@@ -652,13 +721,13 @@ int RecordTable::shadow_record_lite(int pos, boost::intrusive_ptr<Record> record
         assert(record->is_registered());
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-            _record_data << record;
-            insert_position = _record_data.size() - 1;
+            _child_items << record;
+            insert_position = _child_items.size() - 1;
         } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-            _record_data.insert(pos, record);
+            _child_items.insert(pos, record);
             insert_position = pos;
         } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-            _record_data.insert(pos + 1, record);
+            _child_items.insert(pos + 1, record);
             insert_position = pos + 1;
         }
 
@@ -673,9 +742,9 @@ int RecordTable::shadow_record_lite(int pos, boost::intrusive_ptr<Record> record
 
 
 // Замена в указанной записи переданных полей на новые значения
-void RecordTable::edit_record_fields(int pos, QMap<QString, QString> edit_fields)
+void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields)
 {
-    qDebug() << "In recordtabledata method edit_record()";
+    qDebug() << "In RecordTable method edit_record_fields()";
 
     QMapIterator<QString, QString> i(edit_fields);
 
@@ -690,12 +759,12 @@ void RecordTable::edit_record_fields(int pos, QMap<QString, QString> edit_fields
 
 // Удаление записи с указанным индексом
 // todo: добавить удаление приаттаченных файлов и очистку таблицы приаттаченных файлов
-void RecordTable::delete_record_by_position(int i)
+void ItemsFlat::delete_item_by_position(int i)
 {
-    qDebug() << "Try delete record num " << i << " table count " << _record_data.size();
+    qDebug() << "Try delete record num " << i << " table count " << _child_items.size();
 
     // Нельзя удалять с недопустимым индексом
-    if(i >= _record_data.size())
+    if(i >= _child_items.size())
         return;
 
     // Удаление директории и файлов внутри, с сохранением в резервной директории
@@ -720,7 +789,7 @@ void RecordTable::delete_record_by_position(int i)
     // beginRemoveRows(QModelIndex(),i,i);
 
     // Удаляется элемент
-    _record_data.removeAt(i); // Было takeAt
+    _child_items.removeAt(i); // Было takeAt
     qDebug() << "Delete record succesfull";
 
     //    //
@@ -734,11 +803,11 @@ void RecordTable::delete_record_by_position(int i)
 }
 
 
-void RecordTable::delete_record_by_id(QString id)
+void ItemsFlat::delete_item_by_id(QString id)
 {
     for(int i = 0; i < size(); i++) {
         if(field(i, "id") == id) {
-            delete_record_by_position(i); // Так как id уникальный, удаляться будет только одна запись
+            delete_item_by_position(i); // Так как id уникальный, удаляться будет только одна запись
             break;
         }
     }
@@ -746,45 +815,53 @@ void RecordTable::delete_record_by_id(QString id)
 
 
 // Удаление всех элементов таблицы конечных записей
-void RecordTable::delete_all_records(void)
+void ItemsFlat::delete_all_items(void)
 {
     int tableSize = size(); // Запоминается размер таблицы, так как он при удалении меняется
 
     for(int i = 0; i < tableSize; i++)
-        delete_record_by_position(0);   // Deleted very first record many times   // Удаляется самая первая запись много раз
+        delete_item_by_position(0);   // Deleted very first record many times   // Удаляется самая первая запись много раз
 }
 
 
 // Метод мягкого удаления данных
 // Данные очищаются только у объекта
 // а физически данные на диске не затрагиваются
-void RecordTable::empty(void)
+void ItemsFlat::clear(void)
 {
-    _record_data.clear();
+    _child_items.clear();
     //    _tree_item = nullptr;
 }
 
-std::shared_ptr<RecordTable> RecordTable::active_subset(boost::intrusive_ptr<TreeItem> start_item)
-{
-    //    std::shared_ptr<TableData> result = std::make_shared<TableData>();
+//boost::intrusive_ptr<TreeItem> RecordTable::active_subset(
+//    //    boost::intrusive_ptr<TreeItem> start_item
+//)
+//{
+//    //    std::shared_ptr<TableData> result = std::make_shared<TableData>();
 
-    //    for(auto &i : _tabledata) {
-    //        if(i->unique_page())result->insert_new_record(work_pos(), i);
-    //    }
+//    //    for(auto &i : _tabledata) {
+//    //        if(i->unique_page())result->insert_new_record(work_pos(), i);
+//    //    }
 
-    // bypass slite fat switch:
+//    // bypass slite fat switch:
 
-    //    auto start_item = _treeitem;   // std::make_shared<TreeItem>(data, search_model->_root_item);
-    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    auto dommodel = this->export_activated_dom(doc);    // source->init(startItem, QDomElement());
-    start_item->record_table(dommodel);
-    return start_item->record_table();
+//    //    auto start_item = _treeitem;   // std::make_shared<TreeItem>(data, search_model->_root_item);
+//    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+//    auto dommodel = this->export_activated_dom(doc);    // source->init(startItem, QDomElement());
+//    QMap<QString, QString> data;
+//    boost::intrusive_ptr<TreeItem> tree = new TreeItem(
+//        data
+//        , boost::intrusive_ptr<TreeItem>(this)   // _parent_item
+//    );
+//    tree->import_from_dom(dommodel);
 
-    //    return result;
-}
+//    return  tree;   // new TreeItem(data, _parent_item);
+
+//    //    return result;
+//}
 
 
-bool RecordTable::is_record_exists(const QString &id)
+bool ItemsFlat::is_item_exists(const QString &id)const
 {
     for(int i = 0; i < size(); i++)
         if(field(i, "id") == id)
@@ -793,7 +870,7 @@ bool RecordTable::is_record_exists(const QString &id)
     return false;
 }
 
-bool RecordTable::is_record_exists(const QUrl &url)
+bool ItemsFlat::is_item_exists(const QUrl &url)const
 {
     bool found = false;
 
@@ -809,7 +886,7 @@ bool RecordTable::is_record_exists(const QUrl &url)
     return found;
 }
 
-int RecordTable::get_pos_by_id(QString id)
+int ItemsFlat::get_pos_by_id(QString id)const
 {
     for(int i = 0; i < size(); i++)
         if(field(i, "id") == id)
@@ -820,18 +897,18 @@ int RecordTable::get_pos_by_id(QString id)
 
 
 // Количество записей в таблице данных
-int RecordTable::size(void) const
+int ItemsFlat::size(void) const
 {
-    return _record_data.size();
+    return _child_items.size();
 }
 
 
 // Перемещение записи вверх на одну строку
-void RecordTable::move_up(int pos)
+void ItemsFlat::move_up(int pos)
 {
     if(pos > 0) {
         // Данные перемещаются
-        _record_data.move(pos, pos - 1);
+        _child_items.move(pos, pos - 1);
 
         // Обновляется экран
         // QModelIndex from=index(pos-1);
@@ -843,11 +920,11 @@ void RecordTable::move_up(int pos)
 
 // Перемещение записи вниз на одну строку
 // Move write down one line
-void RecordTable::move_dn(int pos)
+void ItemsFlat::move_dn(int pos)
 {
-    if(pos < _record_data.count()) {
+    if(pos < _child_items.count()) {
         // Данные перемещаются
-        _record_data.move(pos, pos + 1);
+        _child_items.move(pos, pos + 1);
 
         // Обновляется экран
         // QModelIndex from=index(pos);
@@ -859,7 +936,7 @@ void RecordTable::move_dn(int pos)
 
 // Переключение таблицы в зашифрованное состояние
 // todo: Добавить шифрацию имени приаттаченных файлов и содержимого файлов
-void RecordTable::to_encrypt(void)
+void ItemsFlat::to_encrypt(void)
 {
     // Перебор записей
     for(int i = 0; i < size(); i++) {
@@ -868,14 +945,14 @@ void RecordTable::to_encrypt(void)
             continue;
 
         // Шифрация записи
-        _record_data[i]->to_encrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
+        _child_items[i]->to_encrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 
 
 // Переключение таблицы в расшифрованное состояние
 // todo: добавить расшифрацию имени приаттаченных файлов и содержимого файлов
-void RecordTable::to_decrypt(void)
+void ItemsFlat::to_decrypt(void)
 {
     // Перебор записей
     for(int i = 0; i < size(); i++) {
@@ -884,7 +961,7 @@ void RecordTable::to_decrypt(void)
             continue;
 
         // Расшифровка записи
-        _record_data[i]->to_decrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
+        _child_items[i]->to_decrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
     }
 }
 
@@ -896,28 +973,28 @@ void RecordTable::to_decrypt(void)
 //}
 
 
-int RecordTable::work_pos(void)
+int ItemsFlat::work_pos(void)const
 {
     return _workpos;
 }
 
 
-void RecordTable::work_pos(int pos)
+void ItemsFlat::work_pos(int pos)
 {
     _workpos = pos;
 }
 
-void RecordTable::crypt(const bool _is_crypt)
+void ItemsFlat::crypt(const bool _is_crypt)
 {
     if(_is_crypt && !this->_is_crypt) {
         for(int i = 0; i < size(); i++) {
-            record(i)->to_encrypt_fields();
+            item(i)->to_encrypt_fields();
         }
     }
 
     if(!_is_crypt && this->_is_crypt) {
         for(int i = 0; i < size(); i++) {
-            record(i)->to_decrypt_fields();
+            item(i)->to_decrypt_fields();
         }
     }
 

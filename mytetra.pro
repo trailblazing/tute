@@ -149,7 +149,6 @@ HEADERS     =   \
     src/models/tree/XmlTree.h \
     src/models/tree/TreeModel.h \
     src/models/tree/TreeItem.h \
-    src/models/tree/KnowTreeModel.h \
     src/views/record/AddNewRecord.h \
     src/libraries/ClipboardRecords.h \
     src/views/tree/TreeScreen.h \
@@ -223,13 +222,15 @@ HEADERS     =   \
     src/views/record_table/verticalscrollarea.h \
     src/views/wait_clock/WaitClock.h \
     src/views/browser/edittableview.hxx \
-    src/models/record_table/RecordTable.h \
     src/models/record_table/RecordModel.h \
     src/models/record_table/RecordProxyModel.h \
     src/views/record_table/RecordScreen.h \
     src/views/record_table/RecordView.h \
     src/views/record_table/RecordPrint.h \
-    src/controllers/record_table/RecordController.h
+    src/controllers/record_table/RecordController.h \
+    src/views/tree/TreeViewKnow.h \
+    src/models/tree/TreeModelKnow.h \
+    src/models/record_table/ItemsFlat.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -259,7 +260,6 @@ HEADERS     +=  \
     src/libraries/crypt/RC5Simple.h \
     src/libraries/crypt/Password.h  \
     src/libraries/MtTableWidget.h   \
-    src/views/tree/KnowTreeView.h   \
     src/libraries/MtStyledItemDelegate.h
 
 SOURCES     =   src/main.cpp \
@@ -275,7 +275,6 @@ SOURCES     =   src/main.cpp \
     src/models/tree/XmlTree.cpp \
     src/models/tree/TreeModel.cpp \
     src/models/tree/TreeItem.cpp \
-    src/models/tree/KnowTreeModel.cpp \
     src/views/record/AddNewRecord.cpp \
     src/libraries/ClipboardRecords.cpp \
     src/views/tree/TreeScreen.cpp \
@@ -347,13 +346,15 @@ SOURCES     =   src/main.cpp \
     src/views/print_preview/PrintPreview.cpp \
     src/views/record_table/verticalscrollarea.cpp \
     src/views/wait_clock/WaitClock.cpp \
-    src/models/record_table/RecordTable.cpp \
     src/models/record_table/RecordModel.cpp \
     src/models/record_table/RecordProxyModel.cpp \
     src/views/record_table/RecordPrint.cpp \
     src/views/record_table/RecordScreen.cpp \
     src/views/record_table/RecordView.cpp \
-    src/controllers/record_table/RecordController.cpp
+    src/controllers/record_table/RecordController.cpp \
+    src/views/tree/TreeViewKnow.cpp \
+    src/models/tree/TreeModelKnow.cpp \
+    src/models/record_table/ItemsFlat.cpp
 #    src/views/browser/cookiejar.cpp \
 
 
@@ -385,7 +386,6 @@ SOURCES     +=  \
     src/libraries/crypt/RC5Simple.cpp \
     src/libraries/crypt/Password.cpp \
     src/libraries/MtTableWidget.cpp \
-    src/views/tree/KnowTreeView.cpp \
     src/libraries/MtStyledItemDelegate.cpp
 
 

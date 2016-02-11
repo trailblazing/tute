@@ -18,7 +18,7 @@
 #include "views/record_table/RecordScreen.h"
 #include "models/tree/TreeItem.h"
 #include "views/find_in_base_screen/FindScreen.h"
-#include "models/tree/KnowTreeModel.h"
+#include "models/tree/TreeModelKnow.h"
 #include "libraries/GlobalParameters.h"
 #include "views/console_emulator/ExecuteCommand.h"
 #include "libraries/WalkHistory.h"
@@ -56,16 +56,16 @@ MainWindow::MainWindow(
     , _v_right_splitter(new QSplitter(Qt::Vertical))
     , _find_splitter(new QSplitter(Qt::Vertical))
     , _vtabwidget(new HidableTabWidget(this))
-    , _v_left_splitter(new QSplitter(Qt::Horizontal))    // Qt::Vertical
+    , _v_left_splitter(new QSplitter(Qt::Horizontal))      // Qt::Vertical
     , _h_splitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
     , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, this))
-    , _table_screen(new RecordScreen(table_screen_singleton_name, _tree_screen->_shadow_candidate_model->_root_item, this))
+    , _table_screen(new RecordScreen(table_screen_singleton_name, _tree_screen->_shadow_branch->_root_item, this))
       //    , _page_screen(new TableScreen("page_screen", _tree_screen->_shadowmodel->_root_item, this))
     , _download(new browser::DownloadManager(download_manager_singleton_name, this))
-    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_shadow_candidate_model->_root_item, this))
+    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_selected_branch->_root_item, this))
     , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
     , _statusbar(new QStatusBar(this))
     , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
@@ -73,7 +73,7 @@ MainWindow::MainWindow(
       //    , _page_controller(_page_screen->table_controller())
     , _entrance(new browser::Entrance(entrance_singleton_name
                                       , _record_controller
-                                      , _tree_screen->_shadow_page_model->_root_item
+                                      , _tree_screen->_shadow_branch->_root_item
                                       // , _page_controller
                                       , _find_screen->toolbarsearch()
                                       , globalparameters.style_source()
@@ -356,7 +356,7 @@ void MainWindow::saveAllState(void)
 
     // Сохраняются данные сеанса работы
     saveGeometry();
-    save_tree_position();
+    tree_position();
     save_recordtable_position();
     saveEditorCursorPosition();
     saveEditorScrollBarPosition();
@@ -433,37 +433,37 @@ void MainWindow::restore_tree_position(void)
 
     qDebug() << "MainWindow::restoreTreePosition() : " << path;
 
-    set_tree_position(path);
+    tree_position(path);
 }
 
-
-void MainWindow::save_tree_position(void)
+// save
+void MainWindow::tree_position(void)
 {
     // Получение QModelIndex выделенного в дереве элемента
     QModelIndex index = _tree_screen->current_index();
 
     if(index.isValid()) {   // this line is to be remove
         // Получаем указатель вида TreeItem
-        auto item = _tree_screen->_knowtreemodel->item(index);
+        auto item = _tree_screen->_root->item(index);
 
         // Сохраняем путь к элементу item
         appconfig.set_tree_position(item->path());
     }
 }
 
-
-void MainWindow::set_tree_position(QStringList path)
+// set
+void MainWindow::tree_position(QStringList path)
 {
-    if(_tree_screen->_knowtreemodel->is_item_valid(path) == false)
+    if(_tree_screen->_root->is_item_valid(path) == false)
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->_knowtreemodel->item(path);
+    auto item = _tree_screen->_root->item(path);
 
     qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
     // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = _tree_screen->_knowtreemodel->index(item);
+    QModelIndex setto = _tree_screen->_root->index(item);
 
     // Курсор устанавливается в нужную позицию
     _tree_screen->cursor_to_index(setto);
@@ -474,10 +474,10 @@ bool MainWindow::isTreePositionCrypt()
 {
     QStringList path = appconfig.get_tree_position();
 
-    if(_tree_screen->_knowtreemodel->is_item_valid(path) == false) return false;
+    if(_tree_screen->_root->is_item_valid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->_knowtreemodel->item(path);
+    auto item = _tree_screen->_root->item(path);
 
     if(item->field("crypt") == "1")
         return true;
@@ -969,7 +969,7 @@ void MainWindow::synchronization(void)
     saveTextarea();
 
     // Сохраняются данные о курсорах в дереве и таблице конечных записей
-    save_tree_position();
+    tree_position();
     save_recordtable_position();
     saveEditorCursorPosition();
     saveEditorScrollBarPosition();
@@ -1156,25 +1156,25 @@ void MainWindow::goWalkHistory(void)
     }
 
     // Выясняется путь к ветке, где находится данная запись
-    QStringList path = _tree_screen->_knowtreemodel->record_path(id);
+    QStringList path = _tree_screen->_root->record_path(id);
 
     // Проверяем, есть ли такая ветка
-    if(_tree_screen->_knowtreemodel->is_item_valid(path) == false) {
+    if(_tree_screen->_root->is_item_valid(path) == false) {
         walkhistory.setDrop(false);
         return;
     }
 
 
     // Выясняется позицию записи в таблице конечных записей
-    auto item = _tree_screen->_knowtreemodel->item(path);
+    auto item = _tree_screen->_root->item(path);
 
     // Проверяем, есть ли такая позиция
-    if(item->record_table()->is_record_exists(id) == false) {
+    if(item->is_item_exists(id) == false) {
         walkhistory.setDrop(false);
         return;
     }
 
-    set_tree_position(path);
+    tree_position(path);
     select_id(id);
 
     if(appconfig.getRememberCursorAtHistoryNavigation()) {

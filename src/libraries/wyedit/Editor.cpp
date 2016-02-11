@@ -877,15 +877,18 @@ void Editor::file_name(QString _file_name)
 {
 
     //    QString fileName = full_text_file_name();
+    if(_file_name.size() > 0) {
+        QFile f(_file_name);
+        QFileInfo fileInfo(f);
 
-    QFile f(_file_name);
-    QFileInfo fileInfo(f);
+        if(!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))
+            critical_error("Editor::file_name(QString _file_name) : Cant open text file " + _file_name + " for read / write.");
 
-    if(!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))
-        critical_error("Editor::file_name(QString _file_name) : Cant open text file " + _file_name + " for read / write.");
-
-    if(fileInfo.absoluteDir().exists() && f.exists()) {
-        _work_file_name = _file_name;
+        if(fileInfo.absoluteDir().exists() && f.exists()) {
+            _work_file_name = _file_name;
+        }
+    } else {
+        _work_file_name = "";
     }
 }
 

@@ -57,7 +57,7 @@ namespace browser {
 
         Entrance(QString object_name
                  , RecordController *record_controller
-                 , boost::intrusive_ptr<TreeItem> _page_tree_item
+                 , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                  , browser::ToolbarSearch *toolbarsearch
                  , const QString &style_source
                  , QWidget *parent
@@ -71,7 +71,7 @@ namespace browser {
 
         std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
 
-        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<Record> record    // = boost::intrusive_ptr<Record>(nullptr)
+        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<TreeItem> record    // = boost::intrusive_ptr<Record>(nullptr)
                                                         );
         //        WebView *active_record_alternative(Record *const record) ;
 
@@ -81,13 +81,15 @@ namespace browser {
             ActiveRecordBinder(Entrance *the): _the(the)    //              , _page(nullptr)
             {}
 
-            WebView *binder(boost::intrusive_ptr<Record> record)
+            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
             {
                 //                _page = _the->equip_registered(record).second->page();
-                return _the->equip_registered(record).second;
+                WebView *view = _the->equip_registered(item).second;
+                (item.get()->*_bind)(view->page());
+                return view;
             }
 
-            WebView *activator(boost::intrusive_ptr<Record> record) {return record->unique_page()->active();}
+            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item->page_valid()); return item->unique_page()->active();}
         };
 
         std::pair<Browser *, WebView *> activiated_registered();
@@ -95,8 +97,9 @@ namespace browser {
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
         void active_url(const QUrl &url);
+        void active(boost::intrusive_ptr<TreeItem> item);
         bool restore_state(const QByteArray &state);
-        std::pair<Browser *, WebView *> find(boost::intrusive_ptr<Record> record);
+        std::pair<Browser *, WebView *> find(boost::intrusive_ptr<TreeItem> record);
         std::pair<Browser *, WebView *> find(QUrl url);
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
@@ -120,7 +123,7 @@ namespace browser {
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &url);
         std::pair<Browser *, WebView *> new_browser(QUrl const &url);
-        std::pair<Browser *, WebView *> new_browser(boost::intrusive_ptr<Record> record);
+        std::pair<Browser *, WebView *> new_browser(boost::intrusive_ptr<TreeItem> record);
         Browser *new_browser(const QByteArray &state);
         Entrance *prepend(Browser *);
         void on_activate_window();
@@ -133,7 +136,7 @@ namespace browser {
     private slots:
         //        void loadUrl(Record *record);
         //        void loadUrl(const int pos);
-        void open_url(const QUrl &url);
+        //        void open_url(const QUrl &url);
         //        void setUrl(const QUrl &url);
     protected:
         void resizeEvent(QResizeEvent *);
@@ -146,8 +149,8 @@ namespace browser {
         void assembly(void);
 
         QList<QPointer<Browser> >       _main_windows;
-        RecordController                 *_record_controller;
-        boost::intrusive_ptr<TreeItem>  _page_tree_item;
+        RecordController                *_record_controller;
+        boost::intrusive_ptr<TreeItem>  _shadow_branch_root;
         QString                         _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
         QAction                         *_actionFreeze;

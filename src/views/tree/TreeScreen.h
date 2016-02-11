@@ -14,17 +14,17 @@
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
-#include "models/tree/KnowTreeModel.h"
+#include "models/tree/TreeModelKnow.h"
 
 
 
-class KnowTreeModel;
-class KnowTreeView;
+class TreeModelKnow;
+class TreeViewKnow;
 class ClipboardBranch;
 class AppConfig;
 class QMenuBar;
 class QWidgetAction;
-class RecordTable;
+class ItemsFlat;
 class TreeItem;
 class TreeController;
 
@@ -38,14 +38,14 @@ class TreeScreen : public QWidget {
     Q_OBJECT
 
 public:
-    TreeScreen(QString object_name, const AppConfig &appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *parent = 0);
+    TreeScreen(QString object_name, const AppConfig &appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *_parent = 0);
     virtual ~TreeScreen();
 
     QMap<QString, QAction *> _actionlist;
 
-    KnowTreeModel   *_knowtreemodel;
-    KnowTreeModel   *_shadow_candidate_model;
-    KnowTreeModel   *_shadow_page_model;
+    TreeModelKnow   *_root;             // for tree screen
+    TreeModelKnow   *_selected_branch;  // for tree screen
+    TreeModelKnow   *_shadow_branch;    // for record screen
 
     void save_knowtree(void);
     void reload_knowtree(void);
@@ -87,8 +87,10 @@ private slots:
     void delete_branchs(QString mode = "delete");
     void delete_one_branch(QModelIndex index);
 
-    void move_up_branch(void);
-    void move_dn_branch(void);
+    void move_up_one_level(void);
+    void return_to_root(void);
+    void move_item_up_branch(void);
+    void move_item_dn_branch(void);
     void cut_branch(void);
     bool copy_branch(void);
     void paste_branch(void);
@@ -114,7 +116,7 @@ private:
     QWidgetAction   *_menuaction;
     QMenu           *_menus_in_button;
 
-    KnowTreeView    *_knowtreeview;
+    TreeViewKnow    *_treeviewknow;
     QHBoxLayout     *_toolslayout;
     //    browser::ToolbarSearch  *_recordtree_search;
     //    QHBoxLayout             *_recordtree_searchlayout;
@@ -123,12 +125,12 @@ private:
     const AppConfig &_appconfig;
 
     void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
-    void setup_models(void);
+    void setup_model(TreeModelKnow *treemodel);
     void setup_signals(void);
     void setup_actions(void);
     void assembly(void);
 
-    void moveupdn_branch(int direction);
+    void move_item_up_dn_branch(int direction);
     bool move_checkenable(void);
 
     boost::intrusive_ptr<TreeItem> insert_branch_smart(bool insert_sibling_branch);

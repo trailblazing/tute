@@ -8,6 +8,7 @@
 
 #include "main.h"
 #include "models/record_table/Record.h"
+#include "models/tree/TreeItem.h"
 #include "models/attach_table/AttachTableData.h"
 #include "ClipboardRecords.h"
 
@@ -27,8 +28,8 @@ ClipboardRecords::~ClipboardRecords(void)
 // Подготовка объекта для загрузки данных
 void ClipboardRecords::init(void)
 {
-    if(_records._record_table.size() > 0)
-        _records._record_table.clear();
+    if(_records._child_items.size() > 0)
+        _records._child_items.clear();
 
     _clipboard_records_format.clear();
     _clipboard_records_format << "mytetra/records";
@@ -43,20 +44,20 @@ void ClipboardRecords::clear(void)
 }
 
 
-void ClipboardRecords::add_record(boost::intrusive_ptr<Record> record)
+void ClipboardRecords::add_record(boost::intrusive_ptr<TreeItem> record)
 {
-    if(!_records._record_table.contains(record)) _records._record_table << record;
+    if(!_records._child_items.contains(record)) _records._child_items << record;
 }
 
 
 // Печать информации о содержимом записи
 void ClipboardRecords::print(void) const
 {
-    QListIterator< boost::intrusive_ptr<Record> > list(_records._record_table);
+    QListIterator< boost::intrusive_ptr<TreeItem> > list(_records._child_items);
 
     // Перебор записей
     while(list.hasNext()) {
-        boost::intrusive_ptr<Record> record = list.next();
+        boost::intrusive_ptr<TreeItem> record = list.next();
 
         qDebug() << record->text_from_fat();
 
@@ -79,17 +80,17 @@ void ClipboardRecords::print(void) const
 // Количество хранимых записей
 int ClipboardRecords::size(void) const
 {
-    return _records._record_table.size();
+    return _records._child_items.size();
 }
 
 
-boost::intrusive_ptr<Record> ClipboardRecords::record(int n) const
+boost::intrusive_ptr<TreeItem> ClipboardRecords::record(int n) const
 {
-    if(n < _records._record_table.size())
-        return _records._record_table.at(n);
+    if(n < _records._child_items.size())
+        return _records._child_items.at(n);
     else {
         critical_error("In ClipboardRecords::getRecord() unavailable number " + QString::number(n));
-        return boost::intrusive_ptr<Record>(nullptr);
+        return boost::intrusive_ptr<TreeItem>(nullptr);
     }
 }
 
@@ -97,8 +98,8 @@ boost::intrusive_ptr<Record> ClipboardRecords::record(int n) const
 // Получение текста записи с указанным номером
 QString ClipboardRecords::record_text(int n) const
 {
-    if(n < _records._record_table.size())
-        return _records._record_table.at(n)->text_from_fat();
+    if(n < _records._child_items.size())
+        return _records._child_items.at(n)->text_from_fat();
     else {
         critical_error("In ClipboardRecords::getRecordText() unavailable number " + QString::number(n));
         return QString();
@@ -109,8 +110,8 @@ QString ClipboardRecords::record_text(int n) const
 // Получение полей записи с указанным номером
 QMap<QString, QString> ClipboardRecords::record_field_list(int n) const
 {
-    if(n < _records._record_table.size())
-        return _records._record_table.at(n)->natural_field_list();
+    if(n < _records._child_items.size())
+        return _records._child_items.at(n)->natural_field_list();
     else {
         critical_error("In ClipboardRecords::getRecordFieldTable() unavailable number " + QString::number(n));
         return QMap<QString, QString>();
@@ -121,7 +122,7 @@ QMap<QString, QString> ClipboardRecords::record_field_list(int n) const
 // Получение информации о приаттаченных файлах для записи с указанным номером
 AttachTableData ClipboardRecords::record_attach_table(int n) const
 {
-    if(n < _records._record_table.size())
+    if(n < _records._child_items.size())
         return *record(n)->attach_table();
     else {
         critical_error("In ClipboardRecords::getRecordAttachTable() unavailable number " + QString::number(n));
@@ -133,8 +134,8 @@ AttachTableData ClipboardRecords::record_attach_table(int n) const
 // Получение файлов картинок
 QMap<QString, QByteArray> ClipboardRecords::record_picture_files(int n) const
 {
-    if(n < _records._record_table.size())
-        return _records._record_table.at(n)->picture_files();
+    if(n < _records._child_items.size())
+        return _records._child_items.at(n)->picture_files();
     else {
         critical_error("In ClipboardRecords::getRecordPictureFiles() unavailable number " + QString::number(n));
         return QMap<QString, QByteArray>();

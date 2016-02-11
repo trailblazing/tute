@@ -29,7 +29,7 @@ class RecordScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordScreen(QString object_name, boost::intrusive_ptr<TreeItem> _tree_item, QWidget *parent = 0);
+    RecordScreen(QString object_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QWidget *parent = 0);
     virtual ~RecordScreen();
 
     int     first_selection_pos(void);
@@ -47,7 +47,7 @@ public:
     }
 
     // The steps used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
-    QAction *_new_branch;
+    QAction *_save_in_new_branch;
     QAction *_pin;
     QAction *_addnew_to_end;
     QAction *_addnew_before;

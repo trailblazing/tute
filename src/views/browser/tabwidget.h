@@ -48,11 +48,12 @@
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QShortcut>
 #include "models/record_table/Record.h"
+#include "models/tree/TreeItem.h"
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordScreen.h"
 #include "libraries/GlobalParameters.h"
 #include "models/record_table/RecordModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "views/browser/history.h"
 #include "views/browser/browser.h"
 #include "views/browser/webview.h"
@@ -83,6 +84,8 @@ class QCompleter;
 class QLineEdit;
 class QMenu;
 class QStackedWidget;
+class TreeItem;
+
 QT_END_NAMESPACE
 
 namespace browser {
@@ -224,7 +227,7 @@ namespace browser {
     public:
         TabWidget(RecordController *_record_controller
                   //                  , TableController *_page_controller
-                  , boost::intrusive_ptr<TreeItem> _page_tree_item
+                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
                   , Browser *parent
                  );
         ~TabWidget();
@@ -274,25 +277,25 @@ namespace browser {
                 //  , view(nullptr)
             {}
 
-            WebView *binder(boost::intrusive_ptr<Record> record)
+            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
             {
-                return // view =
-                    _the->newTab(record, _make_current, _the->_record_controller
-                                 //                                 , _the->_page_controller
-                                );
+                WebView *view = _the->newTab(item, _make_current, _the->_record_controller);
+                (item.get()->*_bind)(view->page());
+                return view;
             }
 
-            WebView *activator(boost::intrusive_ptr<Record> record)
+            WebView *activator(boost::intrusive_ptr<TreeItem> item)
             {
-                return record->unique_page()->active();
+                assert(item->page_valid());
+                return item->unique_page()->active();
             }
 
         };
 
         //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
-        boost::intrusive_ptr<TreeItem> tree_item() {return _page_tree_item;}
-        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
-        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
+        boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
+        //        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
+        //        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
     protected:
         void mouseDoubleClickEvent(QMouseEvent *event);
@@ -306,7 +309,7 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(const boost::intrusive_ptr<Record> record
+        WebView *newTab(boost::intrusive_ptr<TreeItem> record
                         // = request_record(QUrl(DockedWindow::_defaulthome))
                         //  , bool openinnewtab = false
                         , bool make_current
@@ -369,7 +372,7 @@ namespace browser {
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
         //        //        sd::method<sd::meta_info<void *const>> _active_r;
-        boost::intrusive_ptr<TreeItem> _page_tree_item;
+        boost::intrusive_ptr<TreeItem> _shadow_branch_root;
         //        TableModel              *_shadow_source_model;
         //        std::shared_ptr<TableData>  _table_data;
         Browser                 *_window;

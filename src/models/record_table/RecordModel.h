@@ -17,7 +17,7 @@
 #define SORT_ROLE       Qt::UserRole+13
 
 class Record;
-class RecordTable;
+class ItemsFlat;
 class TreeItem;
 
 class RecordModel : public QAbstractTableModel {
@@ -27,7 +27,7 @@ class RecordModel : public QAbstractTableModel {
     friend class RecordController;
 
 public:
-    RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _tree_item, QObject *pobj = 0);
+    RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QObject *pobj = 0);
     ~RecordModel();
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
@@ -50,14 +50,9 @@ public:
 
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    void tree_item(boost::intrusive_ptr<TreeItem>item);
-    //    {
-    //        beginResetModel();
-    //        _tree_item = item;
-    //        endResetModel();
-    //    }
+    void tree_item(boost::intrusive_ptr<TreeItem> item);
 
-    boost::intrusive_ptr<TreeItem> tree_item() {return _tree_item;}
+    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
 
 
 
@@ -68,19 +63,19 @@ private:
 
     //    // Установка указателя на таблицу данных, с которой нужно работать модели
     //    void reset_tabledata(std::shared_ptr<RecordTable> record_table);
-    // Ссылка на данные, с которыми работает модель
-    std::shared_ptr<RecordTable> table_data(void);
+    //    // Ссылка на данные, с которыми работает модель
+    //    boost::intrusive_ptr<TreeItem> tree_item(void);
 
     // Добавление записей
-    int insert_new_record(int mode, QModelIndex posIndex, boost::intrusive_ptr<Record> record);
+    int insert_new_item(int mode, QModelIndex pos_index, boost::intrusive_ptr<TreeItem> item);
 
     void on_table_config_changed(void);
 
 protected:
 
     // Указатель на таблицу конечных записей
-    //    std::shared_ptr<RecordTable>  _table;
-    boost::intrusive_ptr<TreeItem> _tree_item;
+    //    std::shared_ptr<RecordTable>  _table; // flat one
+    boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
 
 };
 

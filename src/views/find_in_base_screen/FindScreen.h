@@ -5,7 +5,7 @@
 #include <QMap>
 #include <QWidget>
 #include <QToolBar>
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
 
 
@@ -20,7 +20,7 @@ class QLabel;
 class QCheckBox;
 class QProgressDialog;
 
-class KnowTreeModel;
+class TreeModelKnow;
 class TreeItem;
 
 class FindTableWidget;
@@ -28,7 +28,7 @@ class FindTableWidget;
 class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
-class RecordTable;
+class ItemsFlat;
 class TreeItem;
 
 namespace browser {
@@ -43,7 +43,7 @@ class FindScreen : public QWidget {
 
 public:
     static const constexpr char *_find_in_base_expand = "findInBaseExpand"; // "find_in_base_expand";
-    FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _candidate_root, QWidget *parent = 0);
+    FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _selected_branch_root, QWidget *parent = 0);
     virtual ~FindScreen(void);
     //QToolBar *navigater() {return _navigater;}
 
@@ -65,7 +65,7 @@ public slots:
 
     void widget_show(void);
     void widget_hide(void);
-    std::shared_ptr<RecordTable> find_clicked(void);
+    boost::intrusive_ptr<TreeItem> find_clicked(void);
     void find_text(QString text);
 
 protected:
@@ -139,7 +139,7 @@ private:
 
     QProgressDialog *_progress;
 
-    boost::intrusive_ptr<TreeItem>  _candidate_root;         // std::shared_ptr<RecordTable>  _resultset_data;        // = std::make_shared<TableData>();      //    FindTableWidget     *_findtable;
+    boost::intrusive_ptr<TreeItem>  _selected_branch_root;         // std::shared_ptr<RecordTable>  _resultset_data;        // = std::make_shared<TableData>();      //    FindTableWidget     *_findtable;
     browser::ToolbarSearch          *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
     void setup_navigate(void);
@@ -164,8 +164,8 @@ private:
 
     void if_find_in_field(QString fieldname, int state);
 
-    std::shared_ptr<RecordTable> find_start(void);
-    std::shared_ptr<RecordTable> find_recursive(boost::intrusive_ptr<TreeItem> curritem, boost::intrusive_ptr<TreeItem> _candidate_root);
+    boost::intrusive_ptr<TreeItem> find_start(void);
+    boost::intrusive_ptr<TreeItem> find_recursive(boost::intrusive_ptr<TreeItem> curritem, boost::intrusive_ptr<TreeItem> _selected_branch_root);
     bool find_in_text_process(const QString &text);
 
     void switch_tools_expand(bool flag);

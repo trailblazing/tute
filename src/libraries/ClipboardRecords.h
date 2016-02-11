@@ -1,6 +1,10 @@
 #ifndef _CLIPBRECORDS_H_
 #define _CLIPBRECORDS_H_
 
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
+
 #include <QWidget>
 #include <QMimeData>
 #include <QMap>
@@ -8,12 +12,16 @@
 
 // class Record;
 #include "models/record_table/Record.h"
+#include "models/tree/TreeItem.h"
 #include "models/attach_table/AttachTableData.h"
+
+
+class TreeItem;
 
 // Определяется структура данных набора записей
 // которая будет передаваться через буфер обмена
 struct CLIPB_RECORDS_STRUCT {
-    QList< boost::intrusive_ptr<Record> > _record_table;
+    QList< boost::intrusive_ptr<TreeItem> > _child_items;
 };
 
 Q_DECLARE_METATYPE(CLIPB_RECORDS_STRUCT);
@@ -28,11 +36,11 @@ public:
 
     void init(void);
     void clear(void);
-    void add_record(boost::intrusive_ptr<Record> record);
+    void add_record(boost::intrusive_ptr<TreeItem> record);
     void print(void) const;
     int size(void) const;
 
-    boost::intrusive_ptr<Record> record(int n) const;
+    boost::intrusive_ptr<TreeItem> record(int n) const;
     QString record_text(int n) const;
     QMap<QString, QString> record_field_list(int n) const;
     QMap<QString, QByteArray > record_picture_files(int n) const;

@@ -20,31 +20,31 @@
 #include "views/main_window/MainWindow.h"
 #include "FindScreen.h"
 #include "FindTableWidget.h"
-#include "models/tree/KnowTreeModel.h"
+#include "models/tree/TreeModelKnow.h"
 #include "models/app_config/AppConfig.h"
 #include "models/tree/TreeItem.h"
 #include "views/record/MetaEditor.h"
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 #include "libraries/FlatControl.h"
-#include "views/tree/KnowTreeView.h"
+#include "views/tree/TreeViewKnow.h"
 #include "views/browser/entrance.h"
 #include "views/browser/toolbarsearch.h"
 #include "views/browser/chasewidget.h"
 #include "libraries/FlatControl.h"
-#include "models/record_table/RecordTable.h"
+#include "models/record_table/ItemsFlat.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 
-FindScreen::FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _candidate_root, QWidget *parent)
+FindScreen::FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _selected_branch_root, QWidget *parent)
     : QWidget(parent)
     , _navigater(new QToolBar(this))
     , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
     , _progress(new QProgressDialog(this))
       //    , _findtable(new FindTableWidget(this))
-    , _candidate_root(_candidate_root)    // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
+    , _selected_branch_root(_selected_branch_root)    // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
     , _toolbarsearch(new browser::ToolbarSearch(this))
 {
     setObjectName(object_name);
@@ -513,7 +513,7 @@ void FindScreen::find_text(QString text)
 
 
 // Слот, срабатывающий при нажатии на кнопку начала поиска
-std::shared_ptr<RecordTable> FindScreen::find_clicked(void)
+boost::intrusive_ptr<TreeItem> FindScreen::find_clicked(void)
 {
     // Поля, где нужно искать (Заголовок, текст, теги...)
     _search_area["pin"]       = _find_in_pin->isChecked();
@@ -556,7 +556,7 @@ std::shared_ptr<RecordTable> FindScreen::find_clicked(void)
 }
 
 
-std::shared_ptr<RecordTable> FindScreen::find_start(void)
+boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 {
 
     if(globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
@@ -573,7 +573,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     //    _findtable->re_initialize();
 
     // Выясняется ссылка на модель дерева данных
-    KnowTreeModel *_search_model = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
+    TreeModelKnow *_search_model = static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
 
 
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
@@ -581,9 +581,9 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     boost::intrusive_ptr<TreeItem> _search_start_item;
 
     //    auto _candidate_root = find_object<TreeScreen>(tree_screen_singleton_name)->_shadow_candidate_model->_root_item;
-    _candidate_root->field("name", _toolbarsearch->text());
+    _selected_branch_root->field("name", _toolbarsearch->text());
     TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
-    tree_screen->_shadow_page_model->_root_item->field("name", _toolbarsearch->text());
+    tree_screen->_shadow_branch->_root_item->field("name", _toolbarsearch->text());
 
     // globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true);
     //    std::shared_ptr<RecordTable> _resultset_data = _candidate_root->tabledata();    // std::make_shared<RecordTable>(_resultset_item);
@@ -602,7 +602,9 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
         search_start_item = _search_model->_root_item;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
         candidate_records = _search_model->get_all_record_count();
-        resultset_item->record_table(resultset_item->record_table()->active_subset(resultset_item));
+        resultset_item = resultset_item->active_subset(
+                             // resultset_item
+                         );
     };
 
     auto branch_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &search_start_item
@@ -619,7 +621,9 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
 
         // Количество элементов (веток) в текущей ветке и всех подветках
         candidate_records = _search_model->size_of(search_start_item);
-        resultset_item->record_table(resultset_item->record_table()->active_subset(resultset_item));
+        resultset_item = resultset_item->active_subset(
+                             // resultset_item
+                         );
     };
 
     Q_UNUSED(branch_search_prepare)
@@ -642,12 +646,14 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
         search_start_item = boost::intrusive_ptr<TreeItem>(new TreeItem(
                                                                QMap<QString, QString>() // field_data // QMap<QString, QString> &_field_data
                                                                , nullptr                // boost::intrusive_ptr<TreeItem> _parent_item
-                                                               , std::make_shared<RecordTable>(dommodel)    // std::shared_ptr<RecordTable> _table_data
+                                                               // , std::make_shared<RecordTable>(dommodel)    // std::shared_ptr<RecordTable> _table_data
                                                            ));   // resultset_item;     // std::make_shared<TreeItem>(data, search_model->_root_item);
 
-        resultset_item->record_table(resultset_item->record_table()->active_subset(resultset_item));   // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
+        resultset_item = resultset_item->active_subset(
+                             // resultset_item
+                         );  // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
         //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
-        candidate_records = search_start_item->record_table()->size();
+        candidate_records = search_start_item->size();
 
     };
 
@@ -695,7 +701,7 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     ) {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
-        candidate_root->record_table()->empty();
+        candidate_root->clear_children();
         //Вызывается рекурсивный поиск в дереве
         //        find_recursive(search_start_item, candidate_root);
 
@@ -721,19 +727,19 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     if( // appconfig.getFindScreenTreeSearchArea() == 2
         //        globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
         //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
-        _candidate_root->record_table()->size() > 0
+        _selected_branch_root->size() > 0
     ) { // search in last search result
-        resultset_search_prepare(_search_start_item, _candidate_records, _candidate_root);  // , _resultset_data, _resultset_data
+        resultset_search_prepare(_search_start_item, _candidate_records, _selected_branch_root);  // , _resultset_data, _resultset_data
 
         if(!_search_start_item) {assert_start_item(); return nullptr;}
 
         if(0 != _candidate_records) {
-            _candidate_root->record_table(final_search(_search_start_item, _candidate_root));
+            _selected_branch_root = final_search(_search_start_item, _selected_branch_root);
         }
     }
 
     // stage 2
-    if(0 == _candidate_root->record_table()->size()) {
+    if(0 == _selected_branch_root->size()) {
         //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
         //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -749,12 +755,12 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
         //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
         //    ) { // Если нужен поиск во всем дереве
 
-        global_search_prepare(_search_start_item, _candidate_records, _candidate_root);   // , _resultset_data
+        global_search_prepare(_search_start_item, _candidate_records, _selected_branch_root);   // , _resultset_data
 
         if(!_search_start_item) {assert_start_item(); return nullptr;}
 
         if(0 != _candidate_records) {
-            _candidate_root->record_table(final_search(_search_start_item, _candidate_root));
+            _selected_branch_root = final_search(_search_start_item, _selected_branch_root);
         }
 
         //    }
@@ -777,18 +783,18 @@ std::shared_ptr<RecordTable> FindScreen::find_start(void)
     // else, open from search engine
     //    }
 
-    output(_candidate_root);
+    output(_selected_branch_root);
 
 
-    return _candidate_root->record_table();
+    return _selected_branch_root; // ->record_table();
 }
 
 
-std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> curritem
-                                                        , boost::intrusive_ptr<TreeItem> _candidate_root   // std::shared_ptr<RecordTable> result
-                                                       )
+boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> curritem
+                                                          , boost::intrusive_ptr<TreeItem> _candidate_root   // std::shared_ptr<RecordTable> result
+                                                         )
 {
-    std::shared_ptr<RecordTable> result = _candidate_root->record_table();
+    auto result = _candidate_root;  // ->record_table();
 
     // Если была нажата отмена поиска
     if(_cancel_flag == 1)return result;
@@ -799,11 +805,11 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
         return result;
 
     // Если в ветке присутсвует таблица конечных записей
-    if(curritem->row_count() > 0) {
+    if(curritem->size() > 0) {
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
-        std::shared_ptr<RecordTable> _recordtable = curritem->record_table();
+        auto _recordtable = curritem;   // ->record_table();
 
         // Перебираются записи таблицы
         for(int i = 0; i < _recordtable->size(); i++) {
@@ -841,11 +847,11 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
                 if(_search_area[key] == true) {
                     if(key != "text") {
                         // Поиск в обычном поле
-                        inspect_text = _recordtable->field(i, key);
+                        inspect_text = _recordtable->child(i)->field(key);
                         iteration_search_result[key] = find_in_text_process(inspect_text);
                     } else {
                         // Поиск в тексте записи
-                        if(_recordtable->record(i)->file_exists()) inspect_text = _recordtable->text(i);
+                        if(_recordtable->item(i)->file_exists()) inspect_text = _recordtable->text(i);
                         else inspect_text = QString();
 
                         QTextDocument textdoc;
@@ -864,7 +870,7 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
 
             // Если запись найдена
             if(found_flag == 1) {
-                qDebug() << "Find succesfull in " << _recordtable->field(i, "name");
+                qDebug() << "Find succesfull in " << _recordtable->child(i)->field("name");
 
                 // QString pin0 = curritem->getField("pin");
                 // QString pin1 = searchRecordTable->getField("pin", i);   // work
@@ -883,9 +889,9 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
                 //                                   , searchRecordTable->field("id", i)
                 //                                  );
 
-                if(_recordtable->record(i)->is_lite())_recordtable->record(i)->to_fat();
+                if(_recordtable->item(i)->is_lite())_recordtable->item(i)->to_fat();
 
-                result->insert_new_record(result->size(), _recordtable->record(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+                result->insert_new_item(result->size(), _recordtable->item(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
 
                 //                assert(_recordtable->record(i)->is_lite());
                 //                result->shadow_record_lite(result->size(), _recordtable->record(i));
@@ -902,7 +908,7 @@ std::shared_ptr<RecordTable> FindScreen::find_recursive(boost::intrusive_ptr<Tre
 
 
     // Рекурсивная обработка каждой подчиненной ветки
-    for(int i = 0; i < curritem->child_count(); i++) find_recursive(curritem->child(i), _candidate_root);
+    for(int i = 0; i < curritem->size(); i++) find_recursive(curritem->child(i), _candidate_root);
 
     return result;
 }
@@ -1095,12 +1101,12 @@ void FindScreen::switch_tools_expand(bool flag)
 void FindScreen::remove_id(const QString &id)
 {
     //    _resultset_data->
-    _candidate_root->record_table()->delete_record_by_id(id);     // _findtable->remove_id(id);
+    _selected_branch_root->delete_item_by_id(id);     // _findtable->remove_id(id);
 }
 
 // dangerous!
 void FindScreen::remove_row(const int row)
 {
     //    _resultset_data->
-    _candidate_root->record_table()->delete_record_by_position(row);     // _findtable->remove_row(row);
+    _selected_branch_root->delete_item_by_position(row);     // _findtable->remove_row(row);
 }

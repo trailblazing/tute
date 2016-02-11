@@ -15,12 +15,12 @@
 
 class ClipboardBranch;
 
-class KnowTreeModel : public TreeModel {
+class TreeModelKnow : public TreeModel {
     Q_OBJECT
 
 public:
-    KnowTreeModel(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
-    ~KnowTreeModel();
+    TreeModelKnow(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+    ~TreeModelKnow();
 
     void init_from_xml(QString fileName);
     void reload(void);
@@ -73,11 +73,15 @@ public:
 
     // Проверка наличия идентификатора записи во всем дереве
     bool is_record_id_exists(QString findId);
+
+#ifdef _with_record_table
     void record_to_item();
+#endif
+
 private:
 
 
-    void init(QDomDocument *domModel);
+    void init(QDomDocument *dom_model);
 
     // Функция заполнения дерева из DOM-документа
     void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> parent);

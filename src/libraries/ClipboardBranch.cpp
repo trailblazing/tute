@@ -7,6 +7,7 @@
 #include <QtDebug>
 
 #include "main.h"
+#include "models/tree/TreeItem.h"
 #include "ClipboardBranch.h"
 
 ClipboardBranch::ClipboardBranch(void) : QMimeData()
@@ -48,7 +49,7 @@ void ClipboardBranch::print(void) const
         QString branch_id = current_branch.value("id");
 
         // Находятся все записи, принадлежащие текущей ветке
-        foreach(boost::intrusive_ptr<Record> current_record, branchData.record.values(branch_id)) {
+        foreach(boost::intrusive_ptr<TreeItem> current_record, branchData.record.values(branch_id)) {
             qDebug() << "Record:";
 
             QMap<QString, QString> current_record_fields = current_record->natural_field_list();
@@ -114,7 +115,7 @@ void ClipboardBranch::addBranch(QString parent_id, QMap<QString, QString> branch
 
 
 // Добавление конечной записи
-void ClipboardBranch::addRecord(QString branch_id, boost::intrusive_ptr<Record> record)
+void ClipboardBranch::addRecord(QString branch_id, boost::intrusive_ptr<TreeItem> record)
 {
     // todo: Сделать проверку, есть ли ветка с указанным id
     branchData.record.insert(branch_id, record);
@@ -140,14 +141,14 @@ QMap<QString, QString> ClipboardBranch::getBranchFieldsById(QString id)
 
 
 // Получение списка записей для указанной ветки
-QList< boost::intrusive_ptr<Record> > ClipboardBranch::getBranchRecords(QString id)
+QList< boost::intrusive_ptr<TreeItem>> ClipboardBranch::getBranchRecords(QString id)
 {
-    QList< boost::intrusive_ptr<Record> > records;
+    QList< boost::intrusive_ptr<TreeItem> > records;
 
     // Находятся записи с нужным идентификатором
     // Записи добавляются в records в последовательности задом-наперёд
     // из-за особенностей реализации foreach для QMultiMap
-    foreach(boost::intrusive_ptr<Record> current_record, branchData.record.values(id))
+    foreach(boost::intrusive_ptr<TreeItem> current_record, branchData.record.values(id))
         records.insert(0, current_record);
 
     return records;

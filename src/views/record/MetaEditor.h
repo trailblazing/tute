@@ -11,7 +11,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "libraries/wyedit/Editor.h"
-#include "models/record_table/Record.h"
+
 
 extern QMap<Qt::CheckState, QString> _check_state;
 extern QMap<QString, Qt::CheckState> _state_check;
@@ -23,6 +23,7 @@ class QScrollArea;
 class QSplitter;
 class AttachTableScreen;
 class Record;
+class TreeItem;
 class FindScreen;
 
 
@@ -67,8 +68,8 @@ public:
 
     void to_editor_layout(void);
     void to_attach_layout(void);
-    void bind(boost::intrusive_ptr<Record> record);   // {_record = r;}
-    boost::intrusive_ptr<Record> record() {return _record;}
+    void bind(boost::intrusive_ptr<TreeItem> record);   // {_record = r;}
+    boost::intrusive_ptr<TreeItem> record();    // {return _record;}
 
 private:
     void setupLabels(void);
@@ -109,7 +110,7 @@ private:
     QVBoxLayout     *_meta_editor_join_layer;
     QMetaObject::Connection _home_connection;   // for disconnect
     QMetaObject::Connection _url_connection;    // for disconnect
-    boost::intrusive_ptr<Record> _record;
+    boost::intrusive_ptr<TreeItem> _record;
 };
 
 #endif /* _METAEDITOR_H_ */

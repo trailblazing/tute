@@ -127,7 +127,7 @@ namespace browser {
     {
         QString searchText = lineEdit()->text();
 
-        std::shared_ptr<RecordTable> record_data = globalparameters.find_screen()->find_clicked();
+        auto record_data = globalparameters.find_screen()->find_clicked();
 
         if(!record_data || 0 == record_data->size()) {
 
@@ -174,14 +174,14 @@ namespace browser {
 
                 //            globalparameters.entrance()->active_record(request_record(url));
                 auto ara = boost::make_shared<browser::Entrance::ActiveRecordBinder>(globalparameters.entrance());
-                auto r = globalparameters.table_screen()->table_controller()->request_record(
+                auto r = globalparameters.table_screen()->table_controller()->request_item(
                              url
-                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                                  ""
                                  , &browser::Entrance::ActiveRecordBinder::binder
                                  , ara
                              )
-                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>(
+                             , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                                  ""
                                  , &browser::Entrance::ActiveRecordBinder::activator
                                  , ara

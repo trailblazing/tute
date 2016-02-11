@@ -4,12 +4,12 @@
 #include <QMessageBox>
 
 #include "main.h"
-#include "KnowTreeView.h"
+#include "TreeViewKnow.h"
 #include "TreeScreen.h"
 #include "libraries/ClipboardRecords.h"
 #include "libraries/GlobalParameters.h"
-#include "models/tree/KnowTreeModel.h"
-#include "models/record_table/RecordTable.h"
+#include "models/tree/TreeModelKnow.h"
+#include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
 #include "models/record_table/RecordModel.h"
 #include "views/main_window/MainWindow.h"
@@ -21,7 +21,7 @@
 extern GlobalParameters globalparameters;
 const char *knowtreeview_singleton_name = "knowtreeview";
 
-KnowTreeView::KnowTreeView(QWidget *parent) : QTreeView(parent)
+TreeViewKnow::TreeViewKnow(QWidget *parent) : QTreeView(parent)
 {
     // Разрешение принимать Drop-события
     setAcceptDrops(true);
@@ -35,14 +35,14 @@ KnowTreeView::KnowTreeView(QWidget *parent) : QTreeView(parent)
 }
 
 
-KnowTreeView::~KnowTreeView()
+TreeViewKnow::~TreeViewKnow()
 {
 
 }
 
 
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
-bool KnowTreeView::event(QEvent *event)
+bool TreeViewKnow::event(QEvent *event)
 {
     if(event->type() == QEvent::Gesture) {
         qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
@@ -55,7 +55,7 @@ bool KnowTreeView::event(QEvent *event)
 
 // Обработчик жестов
 // Вызывается из обработчика событий
-bool KnowTreeView::gestureEvent(QGestureEvent *event)
+bool TreeViewKnow::gestureEvent(QGestureEvent *event)
 {
     qDebug() << "In gestureEvent()" << event;
 
@@ -68,7 +68,7 @@ bool KnowTreeView::gestureEvent(QGestureEvent *event)
 
 // Обработчик жеста TapAndHoldGesture
 // Вызывается из обработчика жестов
-void KnowTreeView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
+void TreeViewKnow::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 {
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
 
@@ -78,7 +78,7 @@ void KnowTreeView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture)
 }
 
 
-void KnowTreeView::dragEnterEvent(QDragEnterEvent *event)
+void TreeViewKnow::dragEnterEvent(QDragEnterEvent *event)
 {
     if(isDragableData(event)) {
         event->setDropAction(Qt::MoveAction);
@@ -87,7 +87,7 @@ void KnowTreeView::dragEnterEvent(QDragEnterEvent *event)
 }
 
 
-void KnowTreeView::dragMoveEvent(QDragMoveEvent *event)
+void TreeViewKnow::dragMoveEvent(QDragMoveEvent *event)
 {
     if(isDragableData(event)) {
         event->acceptProposedAction();
@@ -99,13 +99,13 @@ void KnowTreeView::dragMoveEvent(QDragMoveEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // В модели данных отмечается элемент дерева, над которым находится курсор
-        parentPointer->_knowtreemodel->setData(index, QVariant(true), Qt::UserRole);
+        parentPointer->_root->setData(index, QVariant(true), Qt::UserRole);
     } else
         event->ignore();
 }
 
 
-template <class X> bool KnowTreeView::isDragableData(X *event)
+template <class X> bool TreeViewKnow::isDragableData(X *event)
 {
     // Проверяется, содержит ли объект переноса данные нужного формата
     const QMimeData *mimeData = event->mimeData();
@@ -125,7 +125,7 @@ template <class X> bool KnowTreeView::isDragableData(X *event)
 }
 
 
-void KnowTreeView::dropEvent(QDropEvent *event)
+void TreeViewKnow::dropEvent(QDropEvent *event)
 {
     qDebug() << "dropEvent() - Start";
 
@@ -150,16 +150,16 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto treeItemDrop = parentPointer->_knowtreemodel->item(index);
+        auto treeItemDrop = parentPointer->_root->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
-        std::shared_ptr<RecordTable> recordTableData = treeItemDrop->record_table();
+        auto recordTableData = treeItemDrop;    // ->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
         QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->current_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = parentPointer->_knowtreemodel->item(indexFrom);
+        auto treeItemDrag = parentPointer->_root->item(indexFrom);
 
         // Если перенос происходит в ту же самую ветку
         if(indexFrom == index)
@@ -188,7 +188,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
 
         for(int i = 0; i < clipboardRecords->size(); i++) {
             // Полные данные записи
-            boost::intrusive_ptr<Record> record = clipboardRecords->record(i);
+            boost::intrusive_ptr<TreeItem> record = clipboardRecords->record(i);
 
             // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
@@ -202,7 +202,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
             find_object<RecordScreen>(table_screen_singleton_name)->tools_update();
 
             // Добавление записи в базу
-            recordTableData->insert_new_record(0, record, ADD_NEW_RECORD_TO_END);
+            recordTableData->insert_new_item(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
             find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
@@ -215,7 +215,7 @@ void KnowTreeView::dropEvent(QDropEvent *event)
         parentPointer->update_branch_on_screen(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
-        parentPointer->_knowtreemodel->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+        parentPointer->_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
     }
 }
 
