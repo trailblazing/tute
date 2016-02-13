@@ -12,6 +12,7 @@
 #include "webview.h"
 
 
+class TreeModelKnow;
 class QNetworkReply;
 class QSslError;
 class QtSingleApplication;
@@ -56,10 +57,11 @@ namespace browser {
 
 
         Entrance(QString object_name
-                 , RecordController *record_controller
-                 , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                 , browser::ToolbarSearch *toolbarsearch
-                 , const QString &style_source
+                 , TreeScreen *_tree_screen
+                 , FindScreen *_find_screen
+                 , RecordController *_record_controller
+                 // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                 , AppConfig &_appconfig, const QString &style_source
                  , QWidget *parent
                  = 0
                    , Qt::WindowFlags flags
@@ -105,7 +107,7 @@ namespace browser {
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
         void settingstylesource(const QString &style_source) {_style_source = style_source;}
-
+        TreeModelKnow const *shadow_branch()const {return _shadow_branch;}
     public slots:
 
         void init_setting(void);
@@ -149,8 +151,8 @@ namespace browser {
         void assembly(void);
 
         QList<QPointer<Browser> >       _main_windows;
+        TreeModelKnow                   *_shadow_branch;
         RecordController                *_record_controller;
-        boost::intrusive_ptr<TreeItem>  _shadow_branch_root;
         QString                         _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
         QAction                         *_actionFreeze;

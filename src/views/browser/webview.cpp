@@ -329,7 +329,7 @@ namespace browser {
                     )
         : QWebEnginePage(profile, parent)
           //        , _load_record(&WebPage::load)
-        , _tree_item([ & ]()
+        , _item([ & ]()
     {
         boost::intrusive_ptr<TreeItem> item_result;
 
@@ -358,7 +358,7 @@ namespace browser {
 
         return item_result;
     }()
-                )
+           )
     , _pageview(parent)
     , _keyboardmodifiers(Qt::NoModifier)
     , _pressedbuttons(Qt::NoButton)
@@ -399,7 +399,7 @@ namespace browser {
 
         //        if(url != nullptr) {
 
-        _tree_item->active();
+        _item->active();
         //            load(url);
         //        }
 
@@ -483,7 +483,7 @@ namespace browser {
         //            if(_record->getNaturalFieldSource("url") != DockedWindow::_defaulthome) {
         // _record = record;
         if(
-            (_tree_item != record)
+            (_item != record)
             //            || ((_record == record) && (_record->_page != record->_page))
             //            (!_record)
             //            || (
@@ -494,7 +494,7 @@ namespace browser {
             bind(record);
         }
 
-        assert(_tree_item);
+        assert(_item);
 
         //        QUrl _url = QUrl(_record->getNaturalFieldSource("url"));
 
@@ -516,16 +516,22 @@ namespace browser {
         //        return active();
 
         //        _record->active_immediately(true);
+        active();
         return view();
     }
 
     WebView *WebPage::active()
     {
-        QUrl _url = QUrl(_tree_item->natural_field_source("url"));
+        QString _url_str = _item->field("url");
+        QUrl _url = QUrl(_url_str);
 
         if(_pageview
+           // && _loadingurl.isValid()
            //            _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
-           && url() != _url   // url() may be nothing
+           // && url().isValid()
+           && url().toString() != _url_str
+           && _url_str != Browser::_defaulthome  // url() may be nothing
+           && _url != _loadingurl
           ) {
             triggerAction(QWebEnginePage::Stop);
 
@@ -538,11 +544,9 @@ namespace browser {
 
         }
 
-        if(_tree_item
-           // ->_active_request
-          ) {
+        if(_item) {  // ->_active_request
 
-            if(_tree_item->_open_link_in_new_window == 1) {
+            if(_item->_open_link_in_new_window == 1) {
 
             }
 
@@ -554,11 +558,18 @@ namespace browser {
                 win->activateWindow();
             }
 
-            _pageview->tabmanager()->setCurrentWidget(view());
-            _pageview->show();
-            //        if(checked) // globalparameters.mainwindow()
-            _pageview->setFocus();   // make upate validate
-            _record_controller->select_id(_tree_item->natural_field_source("id"));
+            if(_url_str != Browser::_defaulthome
+               // && _loadingurl.isValid()
+               // && _loadingurl == _url
+              ) {
+                if(_record_controller->first_selectionid() != _item->field("id") || _pageview->tabmanager()->currentWebView() != view()) {
+                    _pageview->tabmanager()->setCurrentWidget(view());
+                    _pageview->show();
+                    //        if(checked) // globalparameters.mainwindow()
+                    _pageview->setFocus();   // make upate validate
+                    _record_controller->select_id(_item->field("id"));
+                }
+            }
         }
 
         return _pageview;
@@ -782,7 +793,7 @@ namespace browser {
 
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
-            boost::intrusive_ptr<TreeItem> record = page->_tree_item;
+            boost::intrusive_ptr<TreeItem> record = page->_item;
             record->natural_field_source("url", url.toString());
             page->load(record); // record->generate();
             page->active();     // record->active();
@@ -1188,13 +1199,13 @@ namespace browser {
 
         //        return
         //            records;    // (url().isValid()) ? check_record(url()) : nullptr;
-        return _records;
+        return _items;
     }
 
     // which_page_point_to_me
     void WebPage::break_records()
     {
-        for(auto &j : _records) {
+        for(auto &j : _items) {
             if(auto i = j.second) {
                 break_record(i);
             }
@@ -1219,9 +1230,9 @@ namespace browser {
                 }
             }
 
-            if(_records.size() > 0
-               && _records.find(item->field("id")) != _records.end()
-              ) _records.erase(item->field("id"));
+            if(_items.size() > 0
+               && _items.find(item->field("id")) != _items.end()
+              ) _items.erase(item->field("id"));
 
         }
 
@@ -1266,9 +1277,9 @@ namespace browser {
 
         if(item) {
 
-            if(_tree_item && _tree_item.get() != item.get()) {
+            if(_item && _item.get() != item.get()) {
 
-                break_record(_tree_item);
+                break_record(_item);
                 //                //                tabmanager->table_data()->delete_record_by_id(_record->natural_field_source("id"));
                 //                //                tabmanager->table_data()->shadow_record(tabmanager->table_data()->size(), record);
                 //                remove_item_from_itemsflat(_tree_item);    // makes ure this will not delete record for ever from database
@@ -1317,7 +1328,7 @@ namespace browser {
                 //                //        // _page->record(new_record);
                 //                //        update_record();
 
-                _tree_item = item;
+                _item = item;
 
 
             }
@@ -1326,20 +1337,20 @@ namespace browser {
             //            if(_record)_record->bind_page(this);
             //        }
 
-            if(_tree_item) {
-                if((!_tree_item->page_valid()
+            if(_item) {
+                if((!_item->page_valid()
                     // && !_tree_item->unique_page()
-                   ) || (_tree_item->page_valid() && _tree_item->unique_page() != this)
+                   ) || (_item->page_valid() && _item->unique_page() != this)
                   ) {
                     // assert(_record->linkpage() == this);    // should always be true -> if not move note
 
                     // _record->linkpage(nullptr);
-                    _tree_item->bind(this);  // record->breakpage();
+                    _item->bind(this);  // record->breakpage();
 
                     // disconnect(_record, &Record::distructed, this, [this]() {_record->linkpage(nullptr); _record = nullptr;});
                     // if(_records.find(_record) == _records.end())
-                    if(_records.find(item->natural_field_source("id")) == _records.end())
-                        _records[_tree_item->natural_field_source("id")] = _tree_item;
+                    if(_items.find(item->natural_field_source("id")) == _items.end())
+                        _items[_item->natural_field_source("id")] = _item;
 
                     //                MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
                     //                assert(metaeditor);
@@ -1350,7 +1361,7 @@ namespace browser {
             MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
             assert(metaeditor);
 
-            add_record_to_table_data(_tree_item);    // may lead to recursive call?
+            add_record_to_table_data(_item);    // may lead to recursive call?
             TabWidget *tab_manager = view()->tabmanager();
 
             //            std::shared_ptr<TableData> table_data = tab_manager->tree_item()->tabledata();
@@ -1360,7 +1371,7 @@ namespace browser {
             //            }
 
             if(view() == tab_manager->currentWebView()) {
-                if(metaeditor->record() != _tree_item)sychronize_metaeditor_to_record(_tree_item);  // metaeditor->bind(_record);
+                if(metaeditor->record() != _item)sychronize_metaeditor_to_record(_item);  // metaeditor->bind(_record);
             }
         }
 
@@ -1380,13 +1391,13 @@ namespace browser {
         //        record = request_record(url());
 
         //        bind_record(record);
-        if(_tree_item) {
+        if(_item) {
             if(url() != QUrl()
                && !url().host().isEmpty()
                && !url().scheme().isEmpty()
                && url() != QUrl(Browser::_defaulthome)
                && url() == _loadingurl
-               && url().toString() == _tree_item->natural_field_source("url")
+               && url().toString() == _item->natural_field_source("url")
               ) {
 
                 //                if(//_state_check[_record->getNaturalFieldSource("pin")] == Qt::Unchecked &&
@@ -1402,16 +1413,16 @@ namespace browser {
                 assert(metaeditor);
 
                 if(title != ""
-                   && title != _tree_item->natural_field_source("name")
+                   && title != _item->natural_field_source("name")
                    //                   && !QUrl(title).isValid()
                   ) {
 
-                    _tree_item->natural_field_source("name", title);
+                    _item->natural_field_source("name", title);
 
                     TabWidget *tab_manager = view()->tabmanager();
 
                     if(view() == tab_manager->currentWebView()) {
-                        if(metaeditor->record() != _tree_item)sychronize_metaeditor_to_record(_tree_item);  // metaeditor->bind(_record);
+                        if(metaeditor->record() != _item)sychronize_metaeditor_to_record(_item);  // metaeditor->bind(_record);
 
                         metaeditor->name(title);
                     }
@@ -1435,7 +1446,7 @@ namespace browser {
         //        assert(url != QUrl());
 
         //        assert(_page->url() == url);
-        if(_tree_item
+        if(_item
            //           && url == _loadingurl
           ) {
 
@@ -1444,7 +1455,7 @@ namespace browser {
                && !url.scheme().isEmpty()
                && url != QUrl(Browser::_defaulthome)
                && url != _loadingurl
-               && url.toString() != _tree_item->natural_field_source("url")
+               && url.toString() != _item->natural_field_source("url")
               ) {
 
                 //            if(!_record) {
@@ -1513,11 +1524,11 @@ namespace browser {
                 assert(metaeditor);
 
                 if(url.toString() != "") {
-                    _tree_item->natural_field_source("url", url.toString());
+                    _item->natural_field_source("url", url.toString());
                     TabWidget *tab_manager = view()->tabmanager();
 
                     if(view() == tab_manager->currentWebView()) {
-                        if(metaeditor->record() != _tree_item)sychronize_metaeditor_to_record(_tree_item);  // metaeditor->bind(_record);
+                        if(metaeditor->record() != _item)sychronize_metaeditor_to_record(_item);  // metaeditor->bind(_record);
 
                         metaeditor->url(url.toString());
                     }
@@ -1569,7 +1580,7 @@ namespace browser {
 
         //        //        Record *record = this->record();
 
-        if(_tree_item) {
+        if(_item) {
             //            _record->active_immediately(true);
 
             //            //            WebView *view = record->page()->view();
@@ -1594,11 +1605,11 @@ namespace browser {
             bool is_current = (view() == tab_manager->currentWebView()) ;
 
             if(title != ""
-               && title != _tree_item->natural_field_source("name")
+               && title != _item->natural_field_source("name")
                //                   && !QUrl(title).isValid()
               ) {
 
-                _tree_item->natural_field_source("name", title);
+                _item->natural_field_source("name", title);
                 //metaeditor->setName(title);
 
 
@@ -1607,13 +1618,13 @@ namespace browser {
             }
 
             if(url.toString() != "") {
-                _tree_item->natural_field_source("url", url.toString());
+                _item->natural_field_source("url", url.toString());
 
                 if(is_current)metaeditor->url(url.toString());
 
             }
 
-            if(metaeditor->record() != _tree_item && is_current)sychronize_metaeditor_to_record(_tree_item);  // metaeditor->bind(_record);
+            if(metaeditor->record() != _item && is_current)sychronize_metaeditor_to_record(_item);  // metaeditor->bind(_record);
 
             //metaeditor->setUrl(url.toString());
 
@@ -1636,7 +1647,7 @@ namespace browser {
             this->view()->setFocus();   // make upate validate
 
             if(is_current) {// globalparameters.mainwindow()
-                _record_controller->select_id(_tree_item->natural_field_source("id"));
+                _record_controller->select_id(_item->natural_field_source("id"));
                 // _page_controller->select_id(_record->getNaturalFieldSource("id"));
             }
 

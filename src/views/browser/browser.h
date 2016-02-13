@@ -131,7 +131,7 @@ namespace browser {
         QStatusBar  *status_bar() const; // {return globalparameters.getStatusBar();};
         WebView     *invoke_page(boost::intrusive_ptr<TreeItem> record);
         boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
-
+        Entrance    *entrance() {return _entrance;}
     public slots:
         void loadPage(const QString &url);
         void slotHome();

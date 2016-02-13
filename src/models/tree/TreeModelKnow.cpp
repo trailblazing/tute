@@ -14,6 +14,8 @@
 #include "views/tree/TreeScreen.h"
 #include "libraries/crypt/Password.h"
 #include "libraries/DiskHelper.h"
+#include "views/browser/browser.h"
+
 
 extern AppConfig appconfig;
 
@@ -326,7 +328,7 @@ void TreeModelKnow::save()
 
 
 // Добавление новой подветки к указанной ветке
-void TreeModelKnow::add_new_child_branch(const QModelIndex &_index, QString id, QString name)
+void TreeModelKnow::add_child_branch(const QModelIndex &_index, QString id, QString name)
 {
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
@@ -336,9 +338,20 @@ void TreeModelKnow::add_new_child_branch(const QModelIndex &_index, QString id, 
     endInsertRows();
 }
 
+// Добавление новой подветки к указанной ветке
+void TreeModelKnow::add_child_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
+{
+    // Получение ссылки на Item элемент по QModelIndex
+    boost::intrusive_ptr<TreeItem> parent = item(_index);
+
+    beginInsertRows(_index, parent->size(), parent->size());
+    add_new_branch(parent, it);
+    endInsertRows();
+}
+
 
 // Добавление новой ветки после указанной ветки
-void TreeModelKnow::add_new_sibling_branch(const QModelIndex &_index, QString id, QString name)
+void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, QString id, QString name)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(_index);
@@ -350,14 +363,47 @@ void TreeModelKnow::add_new_sibling_branch(const QModelIndex &_index, QString id
         add_new_branch(parent, id, name);
         endInsertRows();
     }
-
-    //    else {
-    //        beginInsertRows(index, current->childCount(), current->childCount());
-    //        addNewBranch(current, id, name);
-    //        endInsertRows();
-    //    }
 }
 
+// Добавление новой ветки после указанной ветки
+void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
+{
+    // Получение ссылки на родительский Item элемент по QModelIndex
+    boost::intrusive_ptr<TreeItem> current = item(_index);
+    boost::intrusive_ptr<TreeItem> parent = current->parent();
+    assert(parent);
+
+    if(parent) {
+        beginInsertRows(_index.parent(), parent->size(), parent->size());
+        add_new_branch(it, parent);
+        endInsertRows();
+    }
+}
+
+boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent)
+{
+    boost::intrusive_ptr<TreeItem> current;
+
+    if(item->field("url") != browser::Browser::_defaulthome) {
+        // Подузел прикрепляется к указанному элементу
+        // в конец списка подчиненных элементов
+        current = parent->add_child(item);
+
+        //    // Определяется ссылка на только что созданную ветку
+        //    boost::intrusive_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
+
+        //    // Инициализируется таблица конечных записей
+        //    current->tabledata(std::make_shared<RecordTable>(current));
+
+        // Определяется, является ли родительская ветка зашифрованной
+        if(parent->field("crypt") == "1") {
+            // Новая ветка превращается в зашифрованную
+            current->to_encrypt();
+        }
+    }
+
+    return current;
+}
 
 // Добавление новой подветки к Item элементу
 boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name)
@@ -458,7 +504,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<Tre
 
 
 // Добавление новой подветки к указанной ветке из буфера обмена
-QString TreeModelKnow::paste_new_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
+QString TreeModelKnow::paste_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
 {
     QString pasted_branch_id;
 
@@ -473,7 +519,7 @@ QString TreeModelKnow::paste_new_child_branch(const QModelIndex &_index, Clipboa
 }
 
 
-QString TreeModelKnow::paste_new_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
+QString TreeModelKnow::paste_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
 {
     QString pasted_branch_id;
 

@@ -37,7 +37,9 @@ public:
 
     typedef TreeItem::bind_helper bind_helper;
     typedef TreeItem::active_helper active_helper;
-    RecordController(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, RecordScreen *table_screen);
+    RecordController(QString screen_name
+                     // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                     , RecordScreen *table_screen);
     virtual ~RecordController();
 
     void init(void);

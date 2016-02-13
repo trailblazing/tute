@@ -257,7 +257,7 @@ TreeItem::~TreeItem()
             tabmanager = view->tabmanager();
         }
 
-        if(_page->_tree_item) {
+        if(_page->_item) {
 
 
             // multi record to one page:
@@ -265,7 +265,7 @@ TreeItem::~TreeItem()
             // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
             // assert(_page->record().get() == this);
 
-            bool is_holder = (_page->_tree_item.get() == this);     // _page->record() may mean some other record
+            bool is_holder = (_page->_item.get() == this);     // _page->record() may mean some other record
 
             //            page_to_nullptr();
 
@@ -275,7 +275,7 @@ TreeItem::~TreeItem()
             if(view && tabmanager && is_holder
                // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
               ) {
-                assert(_page == _page->_tree_item->unique_page());   // _page->rebind_record() make sure of this statement
+                assert(_page == _page->_item->unique_page());   // _page->rebind_record() make sure of this statement
                 tabmanager->closeTab(tabmanager->webViewIndex(view));
             }
 
@@ -537,6 +537,10 @@ QStringList TreeItem::field_name_for_crypt_list(void) const
     //    return names;
 }
 
+void TreeItem::parent(boost::intrusive_ptr<TreeItem> it)
+{
+    _parent_item = it;
+}
 
 boost::intrusive_ptr<TreeItem> TreeItem::parent()
 {
@@ -658,16 +662,27 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<TreeItem> item)
 {
 
-    //    // Определяется, является ли родительская ветка зашифрованной
-    //    if(this->field("crypt") == "1") {
-    //        // Новая ветка превращается в зашифрованную
-    //        item->to_encrypt();
-    //    }
+    boost::intrusive_ptr<TreeItem> result;
+    int found = 0;
 
-    _child_items << item; // Добавление item в конец массива childItems
+    for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
+        if(it->get()->id() == item->field("id")) {
+            found++;
+
+            if(found == 1)
+                result = *it;
+            else
+                _child_items.erase(it);
+        }
+    }
+
+    //    item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch
+
+    if(0 == found) _child_items << item; // Добавление item в конец массива childItems
 
     return item;
 }
+
 
 
 // Добавление нового подчиненного элемента
@@ -688,6 +703,18 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(void)
     return item;
 }
 
+
+boost::intrusive_ptr<TreeItem> TreeItem::remove_child(boost::intrusive_ptr<TreeItem> item)
+{
+
+    for(int row = 0; row < _child_items.size(); ++row) {
+        if(_child_items.at(row) == item) { //_child_items.removeAt(position);    // _child_items.takeAt(position).reset(); // delete _child_items.takeAt(position);
+            _child_items.removeOne(item);
+        }
+    }
+
+    return item;
+}
 
 bool TreeItem::remove_children(int position, int count)
 {
@@ -1111,7 +1138,7 @@ bool TreeItem::is_holder()
     bool is_holder_ = false;
 
     if(page_valid()    // _page
-      ) is_holder_ = _page->_tree_item.get() == this;
+      ) is_holder_ = _page->_item.get() == this;
 
     return is_holder_;
 }
@@ -1167,7 +1194,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page)
     if(page_valid()    // _page
       ) {
 
-        if(!_page->_tree_item || _page->_tree_item.get() != this) {
+        if(!_page->_item || _page->_item.get() != this) {
             _page->bind(
                 boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
             );

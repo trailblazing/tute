@@ -225,11 +225,11 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(RecordController *_record_controller
-                  //                  , TableController *_page_controller
-                  //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                  , Browser *parent
-                 );
+        TabWidget(RecordController *_record_controller, Browser *parent);
+        //                  , TableController *_page_controller
+        //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+
+
         ~TabWidget();
         void clear();
         void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
@@ -264,14 +264,15 @@ namespace browser {
             //            TableController *_record_controller;
             //            TableController *_page_controller;
             // WebView *view;
-            ActiveRecordBinder(TabWidget *the
-                               , bool make_current
-                               = true
-                                 //                                 , TableController *_record_controller
-                                 //                               = globalparameters.table_screen()->table_controller()
-                                 //                                 , TableController *_page_controller
-                                 //                               = globalparameters.page_screen()->table_controller()
-                              ): _the(the) , _make_current(make_current)
+            ActiveRecordBinder(
+                TabWidget *the
+                , bool make_current = true
+
+                                      //                                 , TableController *_record_controller
+                                      //                               = globalparameters.table_screen()->table_controller()
+                                      //                                 , TableController *_page_controller
+                                      //                               = globalparameters.page_screen()->table_controller()
+            ): _the(the) , _make_current(make_current)
                 //                , _record_controller(_record_controller)
                 //                , _page_controller(_page_controller)
                 //  , view(nullptr)

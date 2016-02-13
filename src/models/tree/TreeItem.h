@@ -93,7 +93,9 @@ public:
 
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> remove_child(boost::intrusive_ptr<TreeItem> item);
 
+    void parent(boost::intrusive_ptr<TreeItem> it);
     // Возвращение ссылки на родительский элемент
     boost::intrusive_ptr<TreeItem> parent();
 

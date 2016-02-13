@@ -56,7 +56,7 @@ public:
     boost::intrusive_ptr<TreeItem> item(int pos) const;
     boost::intrusive_ptr<TreeItem> find(const QUrl &url) const;
     boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item) const;
-
+    int index(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
 
     // Удаление всех элементов таблицы конечных записей

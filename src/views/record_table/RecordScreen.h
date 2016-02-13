@@ -29,7 +29,9 @@ class RecordScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordScreen(QString object_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QWidget *parent = 0);
+    RecordScreen(QString object_name
+                 // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                 , QWidget *parent = 0);
     virtual ~RecordScreen();
 
     int     first_selection_pos(void);

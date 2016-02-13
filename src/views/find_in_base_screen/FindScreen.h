@@ -7,7 +7,7 @@
 #include <QToolBar>
 #include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
-
+#include "utility/delegate.h"
 
 
 class QLineEdit;
@@ -60,7 +60,7 @@ public:
     void remove_id(const QString &id);
     void remove_row(const int row);
     void adjust_size();
-
+    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const *>>   shadow_branch;    // for entrance
 public slots:
 
     void widget_show(void);

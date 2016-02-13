@@ -37,9 +37,11 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordController::RecordController(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, RecordScreen *table_screen)
+RecordController::RecordController(QString screen_name, RecordScreen *table_screen)
     : QObject(table_screen)
-    , _source_model(new RecordModel(screen_name, _shadow_branch_root, this))
+    , _source_model(new RecordModel(screen_name
+                                    // , _shadow_branch_root
+                                    , this))
     , _proxy_model(new RecordProxyModel(screen_name, this))
     , _view(new RecordView(screen_name, table_screen, this))   // , qobject_cast<QWidget * >(RecordTableScreen)
 {
@@ -906,7 +908,7 @@ void RecordController::addnew_blank(int mode)
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
-    boost::intrusive_ptr<TreeItem> record = boost::intrusive_ptr<TreeItem>(new TreeItem(boost::intrusive_ptr<Record>(new Record()), _source_model->_shadow_branch_root));
+    boost::intrusive_ptr<TreeItem> record = boost::intrusive_ptr<TreeItem>(new TreeItem(boost::intrusive_ptr<Record>(new Record()), _source_model->tree_item()));
     record->to_fat();
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -1008,14 +1010,22 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     // Получение Source-индекса первой выделенной строки
     QModelIndex position_index = _view->first_selection_source_index();
 
-    if(!position_index.isValid()) {
-        position_index = _view->currentIndex();
+    //    if(!position_index.isValid()) {
+    //        position_index = _view->currentIndex();   // very wrong!
+    //    }
+
+    if(!position_index.isValid() && _source_model->tree_item()->size() > 0) {
+        //        if(0 == _source_model->tree_item()->size()) {
+        //            _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
+        //        }
+
+        position_index = _source_model->createIndex(_source_model->tree_item()->size() - 1
+                                                    , 0
+                                                    , static_cast<void *>(_source_model->tree_item()->child(_source_model->tree_item()->size() - 1).get())
+                                                   );
     }
 
-    if(!position_index.isValid()) {
-        position_index = _source_model->createIndex(_source_model->tree_item()->size() - 1, 0, static_cast<void *>(_source_model->tree_item()->child(_source_model->tree_item()->size() - 1).get()));
-    }
-
+    assert(position_index.row() < _source_model->tree_item()->size());
     //    assert(position_index.isValid());
 
     //    if(!position_index.isValid()) {
@@ -1615,7 +1625,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_p
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
     auto _treemodelknow = globalparameters.tree_screen()->_root;
-    _source_item = _treemodelknow->_root_item->find(item);
+    _source_item = _treemodelknow->root()->find(item);
     //    if(_record_controller) {
     auto _shadow_branch_root = this->source_model()->tree_item();
     assert(_shadow_branch_root);
@@ -1715,7 +1725,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
     //    assert(_record_controller);
 
     auto _treemodelknow = globalparameters.tree_screen()->_root;
-    _source_item = _treemodelknow->_root_item->find(_url);
+    _source_item = _treemodelknow->root()->find(_url);
 
     //    if(_record_controller) {
     auto _shadow_branch_root = this->source_model()->tree_item();
@@ -1771,7 +1781,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
                 // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
                 QString directory = DiskHelper::createTempDirectory();  //
 
-                boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(boost::intrusive_ptr<Record>(new Record()), _source_model->_shadow_branch_root));
+                boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(boost::intrusive_ptr<Record>(new Record()), _source_model->tree_item()));
 
                 //                if(record.isLite())
                 item->to_fat();

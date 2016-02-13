@@ -21,9 +21,9 @@ extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 // Конструктор модели
-RecordModel::RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QObject *pobj)
+RecordModel::RecordModel(QString screen_name, QObject *pobj)
     : QAbstractTableModel(pobj)
-    , _shadow_branch_root(_shadow_branch_root)      //    , _table(new RecordTable(_tree_item, QDomElement()))
+      //    , _shadow_branch_root(_shadow_branch_root)      //    , _table(new RecordTable(_tree_item, QDomElement()))
 {
     setObjectName(screen_name + "_source_model");
     // При создании модели она должна брать данные как минимум из

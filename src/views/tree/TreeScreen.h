@@ -14,6 +14,7 @@
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
+#include "utility/delegate.h"
 #include "models/tree/TreeModelKnow.h"
 
 
@@ -43,9 +44,9 @@ public:
 
     QMap<QString, QAction *> _actionlist;
 
-    TreeModelKnow   *_root;             // for tree screen
-    TreeModelKnow   *_selected_branch;  // for tree screen
-    TreeModelKnow   *_shadow_branch;    // for record screen
+    TreeModelKnow   *_root;                 // for tree screen
+    TreeModelKnow   *_selected_branch;      // for tree screen
+    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const *>>   shadow_branch;    // for entrance
 
     void save_knowtree(void);
     void reload_knowtree(void);
@@ -66,12 +67,14 @@ public:
 
     QMenu *buttonmenu() {return _menus_in_button;}
 
+    //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
+    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch);
     boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
-    boost::intrusive_ptr<TreeItem> insert_branch_process(QModelIndex _current_index, QString name, bool insert_sibling_branch);
 
     //    TreeController *treecontroller() {return _tree_controller;}
     void to_candidate_screen(const QModelIndex &index);
-
+    void enable_up_action(bool enable);
+    //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
 public slots:
     void candidate_from_search_result(boost::intrusive_ptr<TreeItem> resultset_item); // , std::shared_ptr<RecordTable> resultset_data
 
@@ -123,6 +126,8 @@ private:
     QVBoxLayout     *_treescreenlayout;
 
     const AppConfig &_appconfig;
+
+
 
     void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
     void setup_model(TreeModelKnow *treemodel);

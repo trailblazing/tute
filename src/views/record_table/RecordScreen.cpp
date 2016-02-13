@@ -29,9 +29,11 @@ extern AppConfig appconfig;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
-RecordScreen::RecordScreen(QString object_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QWidget *parent)
+RecordScreen::RecordScreen(QString object_name, QWidget *parent)
     : QWidget(parent)
-    , _table_controller(new RecordController(object_name, _shadow_branch_root, this))
+    , _table_controller(new RecordController(object_name
+                                             // , _shadow_branch_root
+                                             , this))
       //    , _recordtree_search(new browser::ToolbarSearch(this))
 {
     // Инициализируется контроллер списка записей
@@ -70,23 +72,26 @@ void RecordScreen::setup_actions(void)
     , [](bool checked = false) {
         Q_UNUSED(checked)
         TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
+        assert(tree_screen);
+        auto entrance = globalparameters.entrance();
+        assert(entrance);
 
-        if(tree_screen) {
-            boost::intrusive_ptr<TreeItem> tree_item = tree_screen->_root->item_by_name(tree_screen->_shadow_branch->_root_item->field("name"));
+        if(tree_screen && entrance) {
+            boost::intrusive_ptr<TreeItem> tree_item = tree_screen->_root->item_by_name(entrance->shadow_branch()->root()->field("name"));
 
             if(!tree_item) {
 
                 tree_item = tree_screen->add_branch(tree_screen->last_index()
-                                                    , tree_screen->_shadow_branch->_root_item->field("name") // ""
+                                                    , entrance->shadow_branch()->root()   // ->field("name") // ""
                                                     , true);
                 //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
             }
 
             auto target = tree_item;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
-            auto source = tree_screen->_shadow_branch->_root_item;  // ->record_table();
+            auto source = entrance->shadow_branch()->root();  // ->record_table();
 
             for(int i = 0; i < source->size(); i++) {
-                if(!globalparameters.tree_screen()->_root->is_record_id_exists(source->item(i)->natural_field_source("id"))) {
+                if(!globalparameters.tree_screen()->_root->is_record_id_exists(source->item(i)->field("id"))) {
                     if(source->item(i)->is_lite())source->item(i)->to_fat();
 
                     target->insert_new_item(target->work_pos(), source->item(i));
@@ -96,7 +101,7 @@ void RecordScreen::setup_actions(void)
             tree_item = target;
 
             tree_screen->save_knowtree();
-            tree_screen->to_candidate_screen(tree_screen->_shadow_branch->index(tree_item));
+            tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
         }
     }
            );

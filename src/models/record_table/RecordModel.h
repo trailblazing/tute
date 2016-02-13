@@ -27,7 +27,9 @@ class RecordModel : public QAbstractTableModel {
     friend class RecordController;
 
 public:
-    RecordModel(QString screen_name, boost::intrusive_ptr<TreeItem> _shadow_branch_root, QObject *pobj = 0);
+    RecordModel(QString screen_name
+                // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                , QObject *pobj = 0);
     ~RecordModel();
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
@@ -71,7 +73,7 @@ private:
 
     void on_table_config_changed(void);
 
-protected:
+    //protected:
 
     // Указатель на таблицу конечных записей
     //    std::shared_ptr<RecordTable>  _table; // flat one

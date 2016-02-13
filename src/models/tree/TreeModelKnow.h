@@ -30,14 +30,16 @@ public:
     void save(void);
 
     // Добавление новой подветки к указанной ветке
-    void add_new_child_branch(const QModelIndex &_index, QString id, QString name);
-
+    void add_child_branch(const QModelIndex &_index, QString id, QString name);
+    void add_child_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
     // Добавление новой ветки после указанной ветки
-    void add_new_sibling_branch(const QModelIndex &_index, QString id, QString name);
+    void add_sibling_branch(const QModelIndex &_index, QString id, QString name);
+    void add_sibling_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к Item элементу
+    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent);
     boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);   //        , QString id, QString name
+    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent);
 
     // Перемещение ветки вверх и вниз
@@ -59,8 +61,8 @@ public:
     // Возвращает количество записей в ветке и всех подветках
     int size_of(boost::intrusive_ptr<TreeItem> item);
 
-    QString paste_new_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
-    QString paste_new_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString paste_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString paste_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
 
     void re_encrypt(QString previousPassword, QString currentPassword);
 

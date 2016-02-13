@@ -156,6 +156,25 @@ int ItemsFlat::locate(boost::intrusive_ptr<TreeItem> item)const
     return pos;
 }
 
+int ItemsFlat::index(boost::intrusive_ptr<TreeItem> item)const
+{
+    int in = 0;
+    int result = 0;
+
+    for(auto &i : _child_items) {
+
+        if(i == item) {
+            assert(i->is_registered());
+            result = in;
+            break;
+        }
+
+        in++;
+    }
+
+    return result;
+}
+
 boost::intrusive_ptr<TreeItem> ItemsFlat::find(boost::intrusive_ptr<TreeItem> item)const
 {
     boost::intrusive_ptr<TreeItem> result;
@@ -609,15 +628,16 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
             _child_items << item;
-            insert_position = _child_items.size() - 1;
+            //            insert_position = _child_items.size() - 1;
         } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
             _child_items.insert(pos, item);
-            insert_position = pos;
+            //            insert_position = pos;
         } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
             _child_items.insert(pos + 1, item);
-            insert_position = pos + 1;
+            //            insert_position = pos + 1;
         }
 
+        insert_position = index(item);
         qDebug() << "RecordTableData::insert_new_record() : New record pos" << QString::number(insert_position);
 
         // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода

@@ -582,8 +582,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
     //    auto _candidate_root = find_object<TreeScreen>(tree_screen_singleton_name)->_shadow_candidate_model->_root_item;
     _selected_branch_root->field("name", _toolbarsearch->text());
-    TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
-    tree_screen->_shadow_branch->_root_item->field("name", _toolbarsearch->text());
+    //    TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
+    (*shadow_branch)()->root()->field("name", _toolbarsearch->text());
 
     // globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true);
     //    std::shared_ptr<RecordTable> _resultset_data = _candidate_root->tabledata();    // std::make_shared<RecordTable>(_resultset_item);
@@ -599,7 +599,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                      // , std::shared_ptr<RecordTable>     &resultset_data
     ) {
         // Корневой элемент дерева
-        search_start_item = _search_model->_root_item;    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+        search_start_item = _search_model->root();    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
         candidate_records = _search_model->get_all_record_count();
         resultset_item = resultset_item->active_subset(
@@ -649,9 +649,9 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                                                // , std::make_shared<RecordTable>(dommodel)    // std::shared_ptr<RecordTable> _table_data
                                                            ));   // resultset_item;     // std::make_shared<TreeItem>(data, search_model->_root_item);
 
-        resultset_item = resultset_item->active_subset(
-                             // resultset_item
-                         );  // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
+        resultset_item = resultset_item->active_subset();
+        // resultset_item
+        // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
         //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
         candidate_records = search_start_item->size();
 
@@ -735,6 +735,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_root = final_search(_search_start_item, _selected_branch_root);
+            globalparameters.tree_screen()->enable_up_action(_selected_branch_root != globalparameters.tree_screen()->_root->root());
         }
     }
 
@@ -761,6 +762,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_root = final_search(_search_start_item, _selected_branch_root);
+            globalparameters.tree_screen()->enable_up_action(_selected_branch_root != globalparameters.tree_screen()->_root->root());
         }
 
         //    }

@@ -138,7 +138,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent) con
 }
 
 
-QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)
+QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 {
     QModelIndex result;
 
@@ -283,24 +283,30 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)
 boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
 {
     boost::intrusive_ptr<TreeItem> curritem = _root_item;
+    // int found = 0;
 
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
-        int found = 0;
+        //        int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
         for(int j = 0; j < curritem->size(); j++)
             if((curritem->child(j))->field("id") == path.at(i)) {
                 // Узел найден, он становится текущим
                 curritem = curritem->child(j);
-                found = 1;
+                // found = 1;
                 break;
             }
 
-        // Если очередной идентификатор пути не был найден
-        if(found == 0)
-            critical_error("Detect bad path in getItem() method " + path.join(","));
+        //        // Если очередной идентификатор пути не был найден
+        //        if(found == 0)
+        //            critical_error("Detect bad path in getItem() method " + path.join(","));
     }
+
+    //    // Если очередной идентификатор пути не был найден
+    //    if(found == 0) {
+    //        critical_error("Detect bad path in getItem() method " + path.join(","));
+    //    }
 
     return curritem;
 }
@@ -313,9 +319,11 @@ bool TreeModel::is_item_valid(QStringList path) const
 
     boost::intrusive_ptr<TreeItem> curritem = _root_item;
 
+    int found = 0;
+
     // Перебор идентификаторов пути
     for(int i = 1; i < path.size(); i++) {
-        int found = 0;
+        //        int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
         for(int j = 0; j < curritem->size(); j++)
@@ -326,10 +334,13 @@ bool TreeModel::is_item_valid(QStringList path) const
                 break;
             }
 
-        // Если очередной идентификатор пути не был найден
-        if(found == 0)
-            return false;
+        //        // Если очередной идентификатор пути не был найден
+        //        if(found == 0)
+        //            return false;
     }
+
+    // Если очередной идентификатор пути не был найден
+    if(found == 0)return false;
 
     return true;
 }

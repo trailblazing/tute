@@ -84,7 +84,7 @@
 #include "libraries/WindowSwitcher.h"
 #include "libraries/WalkHistory.h"
 #include "libraries/wyedit/EditorTextArea.h"
-
+#include "models/tree/TreeModelKnow.h"
 
 
 extern GlobalParameters globalparameters;
@@ -485,7 +485,7 @@ namespace browser {
                     //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
                     webView->setFocus();
                     //                    globalparameters.mainwindow()
-                    _record_controller->select_id(record->natural_field_source("id"));
+                    _record_controller->select_id(record->field("id"));
                     //                    webView->setFocus();
                     MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
                     assert(metaeditor);
@@ -701,8 +701,8 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
         connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
-        int index = addTab(view, record->natural_field_source("name"));  //, tr("(Untitled)")
-        setTabToolTip(index, record->natural_field_source("name"));
+        int index = addTab(view, record->field("name"));  //, tr("(Untitled)")
+        setTabToolTip(index, record->field("name"));
         //record->page()->load(record);
         //globalparameters.entrance()->invoke_view(record);
 
@@ -731,6 +731,7 @@ namespace browser {
 
         assert(view);
         assert(record->page_valid() && record->unique_page());
+        _window->entrance()->shadow_branch()->root()->add_child(record);
         return view; // TabWidget::newTabFull::WebView *
     }
 
@@ -828,7 +829,8 @@ namespace browser {
 
             bool hasFocus = false;
 
-            if(WebView *view_ = webView(index)) {
+            if(WebView *to_be_closed_view = webView(index)) {
+                assert(widget(index) == to_be_closed_view); // debug
 #if defined(QWEBENGINEPAGE_ISMODIFIED)
 
                 if(tab->isModified()) {
@@ -847,29 +849,21 @@ namespace browser {
                 }
 
 #endif
-                hasFocus = view_->hasFocus();
+                hasFocus = to_be_closed_view->hasFocus();
 
                 if(_profile == QWebEngineProfile::defaultProfile()) {
                     _recentlyclosedtabsaction->setEnabled(true);
-                    _recentlyclosedtabs.prepend(view_->page()->url());
+                    _recentlyclosedtabs.prepend(to_be_closed_view->page()->url());
 
                     if(_recentlyclosedtabs.size() >= TabWidget::_recentlyclosedtabssize)
                         _recentlyclosedtabs.removeLast();
                 }
-            }
 
-            QWidget *lineEdit = _lineedits->widget(index);
+                // WebView *to_be_closed_view = static_cast<WebView *>(widget(index));
 
-            if(lineEdit) {
-                _lineedits->removeWidget(lineEdit);
-                //delete lineEdit;    //
-                lineEdit->deleteLater();
-            }
-
-            WebView *previous_webview = static_cast<WebView *>(widget(index));
-
-            if(previous_webview) {
-                previous_webview->page()->break_records();
+                // if(to_be_closed_view) {
+                to_be_closed_view->page()->break_records();
+                _window->entrance()->shadow_branch()->root()->remove_child(to_be_closed_view->page()->current_item());
                 removeTab(index);
 
                 //        PageView *v = static_cast<PageView *>(previous_webview);
@@ -883,8 +877,19 @@ namespace browser {
 
                 //        }
 
-                previous_webview->deleteLater();
+                to_be_closed_view->deleteLater();
+                //}
             }
+
+            QWidget *lineEdit = _lineedits->widget(index);
+
+            if(lineEdit) {
+                _lineedits->removeWidget(lineEdit);
+                //delete lineEdit;    //
+                lineEdit->deleteLater();
+            }
+
+
 
             emit tabsChanged();
 
@@ -905,7 +910,7 @@ namespace browser {
                         //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
                         view->setFocus();
                         //                        globalparameters.mainwindow()
-                        _record_controller->select_id(record->natural_field_source("id"));
+                        _record_controller->select_id(record->field("id"));
                     }
                 }
             }

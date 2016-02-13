@@ -62,24 +62,25 @@ MainWindow::MainWindow(
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
     , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, this))
-    , _table_screen(new RecordScreen(table_screen_singleton_name, _tree_screen->_shadow_branch->_root_item, this))
-      //    , _page_screen(new TableScreen("page_screen", _tree_screen->_shadowmodel->_root_item, this))
-    , _download(new browser::DownloadManager(download_manager_singleton_name, this))
-    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_selected_branch->_root_item, this))
-    , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
-    , _statusbar(new QStatusBar(this))
-    , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
-    , _record_controller(_table_screen->table_controller())
-      //    , _page_controller(_page_screen->table_controller())
+    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_selected_branch->root(), this))
+    , _table_screen(new RecordScreen(table_screen_singleton_name            // , _tree_screen->shadow_branch()->_root_item
+                                     , this))
     , _entrance(new browser::Entrance(entrance_singleton_name
-                                      , _record_controller
-                                      , _tree_screen->_shadow_branch->_root_item
-                                      // , _page_controller
-                                      , _find_screen->toolbarsearch()
+                                      , _tree_screen
+                                      , _find_screen    // ->toolbarsearch()
+                                      , _table_screen->table_controller()   // , _tree_screen->shadow_branch()->_root_item   // , _page_controller
+                                      , appconfig
                                       , globalparameters.style_source()
                                       , this
                                       , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
                                      ))
+      //    , _record_controller(_table_screen->table_controller())
+      //    , _page_screen(new TableScreen("page_screen", _tree_screen->_shadowmodel->_root_item, this))
+      //    , _page_controller(_page_screen->table_controller())
+    , _download(new browser::DownloadManager(download_manager_singleton_name, this))
+    , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
+    , _statusbar(new QStatusBar(this))
+    , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
     , _enable_real_close(false)
 {
     //    _page_screen->setVisible(false);

@@ -50,12 +50,14 @@ public:
 
     bool is_item_valid(QStringList path) const;
 
-    QModelIndex index(boost::intrusive_ptr<TreeItem> _item);
+    QModelIndex index(boost::intrusive_ptr<TreeItem> _item) const;
 
     void emit_datachanged_signal(const QModelIndex &_index);
 
+    void root(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
+    boost::intrusive_ptr<TreeItem> root()const {return _root_item;}
+protected:
     boost::intrusive_ptr<TreeItem>  _root_item; // Ссылка на первый (корневой) item-объект
-
 private:
 
     //    QModelIndex index_recursive(QModelIndex _index, boost::intrusive_ptr<TreeItem> item, int mode);

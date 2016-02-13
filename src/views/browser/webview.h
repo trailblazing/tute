@@ -140,7 +140,7 @@ namespace browser {
 
             //            std::list<boost::intrusive_ptr<Record> > records = binded_records();
 
-            for(auto &j : _records) {
+            for(auto &j : _items) {
                 //                if(auto i = j.second) {
                 if(j.second && j.second->unique_page() == this) {
                     break_records();  //
@@ -175,7 +175,7 @@ namespace browser {
         //            //if(_record)_record->setNaturalFieldSource("name", webPage()->title());
         //        }
 
-        boost::intrusive_ptr<TreeItem> current_item()const {return _tree_item;}
+        boost::intrusive_ptr<TreeItem> current_item()const {return _item;}
 
         struct ActiveRecordBinder {
             WebPage *_the;
@@ -247,8 +247,8 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
-        std::map<QString, boost::intrusive_ptr<TreeItem> > _records;
-        boost::intrusive_ptr<TreeItem> _tree_item;
+        std::map<QString, boost::intrusive_ptr<TreeItem> > _items;
+        boost::intrusive_ptr<TreeItem> _item;
 
         WebView                 *_pageview;
         // set the webview mousepressedevent
@@ -260,7 +260,7 @@ namespace browser {
         RecordController        *_record_controller;
         //        TableController         *_page_controller;
 
-        void record(boost::intrusive_ptr<TreeItem> item) {_tree_item = item;}
+        void record(boost::intrusive_ptr<TreeItem> item) {_item = item;}
         friend class Record;
         friend class TreeItem;
         //        friend void TreeItem::page_to_nullptr();

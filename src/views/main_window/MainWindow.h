@@ -184,16 +184,18 @@ private:
     QMenu *_helpmenu;
 
     TreeScreen          *_tree_screen;
-    RecordScreen         *_table_screen;
-    //    TableScreen         *_page_screen;
-    browser::DownloadManager *_download;
     FindScreen          *_find_screen;
+    RecordScreen        *_table_screen;
+    //    TableScreen         *_page_screen;
+    browser::Entrance   *_entrance;
+
+    browser::DownloadManager *_download;
     MetaEditor          *_editor_screen;
     QStatusBar          *_statusbar;
     WindowSwitcher      *_switcher;
-    RecordController     *_record_controller;
+    //    RecordController     *_record_controller;
     //    TableController     *_page_controller;
-    browser::Entrance   *_entrance;
+
 
     //    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
     //    bool _recordtable_hidden;     // = globalparameters.getRecordTableScreen()->isHidden();

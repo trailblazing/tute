@@ -48,6 +48,8 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include <utility>
+#include "models/tree/TreeModelKnow.h"
+#include "views/tree/TreeScreen.h"
 
 namespace browser {
     //struct BrowserViewPrivate {
@@ -524,17 +526,18 @@ namespace browser {
     //    }
 
     Entrance::Entrance(QString object_name
-                       , RecordController *record_controller
-                       , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                       , browser::ToolbarSearch *toolbarsearch
+                       , TreeScreen *_tree_screen
+                       , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
+                       , RecordController *_record_controller
+                       , AppConfig &_appconfig
                        , const QString &style_source
                        , QWidget *parent
                        , Qt::WindowFlags flags
                       )
         : QDockWidget(parent, flags)  //, _application(application)
         , _main_windows(QList<QPointer<Browser> >())
-        , _record_controller(record_controller)
-        , _shadow_branch_root(_shadow_branch_root)
+        , _shadow_branch(new TreeModelKnow(this))
+        , _record_controller(_record_controller)
         , _style_source(style_source)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)) //| Qt::SplashScreen
 
@@ -550,6 +553,17 @@ namespace browser {
           //                                    , this, style_source, flags    //Qt::Widget   //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
           //                                   ))
     {
+        _shadow_branch->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
+        _shadow_branch->root()->field("id"
+                                          , "0"  // get_unical_id()
+                                         );   // ?
+        _shadow_branch->root()->field("name", "Current Session");
+
+        _tree_screen->shadow_branch = std::make_shared<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const*>>("", &Entrance::shadow_branch, this);
+        _find_screen->shadow_branch = std::make_shared<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const*>>("", &Entrance::shadow_branch, this);
+        _record_controller->source_model()->tree_item(_shadow_branch->root());
+
+
         setObjectName(object_name);
         //        invoke_ptr = &Entrance::active_url;
 
@@ -637,7 +651,7 @@ namespace browser {
 
         init_setting();
 
-        setup_signals(toolbarsearch);
+        setup_signals(_find_screen->toolbarsearch());
 
         //        new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));  // main_window() will never fail
 
@@ -652,7 +666,7 @@ namespace browser {
 
     Entrance::~Entrance()
     {
-        if(_hidetitlebar)delete _hidetitlebar;
+
 
         for(int i = 0; i < _main_windows.size(); ++i) {
             Browser *window = _main_windows.at(i);
@@ -666,6 +680,9 @@ namespace browser {
         //        if(_dockwidget)delete _dockwidget;
 
         //    if(browser)delete browser;  // I can't destroy?
+        delete _shadow_branch;
+
+        if(_hidetitlebar) {delete _hidetitlebar; _hidetitlebar = nullptr;}
     }
 
 
