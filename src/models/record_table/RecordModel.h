@@ -74,8 +74,8 @@ public:
     QString field(int pos, QString name);
     void fields(int pos, QMap<QString, QString> data);
     boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item);
-    bool is_item_exists(QString find_id);
-    bool delete_item_by_id(QString find_id);
+    int is_item_exists(QString find_id);
+    bool remove_child(QString find_id);
     //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
     boost::intrusive_ptr<TreeItem> child(int pos);
     boost::intrusive_ptr<TreeItem> item(int pos) {return child(pos);}
@@ -84,6 +84,12 @@ public:
     void work_pos(int pos);
 
     void init_source_model(boost::intrusive_ptr<TreeItem> item, RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
+    void init_source_model(ItemsFlat *_browser_pages
+                           , RecordController *_record_controller
+                           , RecordScreen *_record_screen
+                           , MainWindow *main_window
+                           , MetaEditor *_editor_screen
+                          );
     void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
     ItemsFlat *get_shadow_branch()const {return _browser_pages;}
     RecordController *reocrd_controller()const {return _reocrd_controller;}

@@ -99,7 +99,7 @@ void TreeViewKnow::dragMoveEvent(QDragMoveEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // В модели данных отмечается элемент дерева, над которым находится курсор
-        parentPointer->_root->setData(index, QVariant(true), Qt::UserRole);
+        parentPointer->_root_model->setData(index, QVariant(true), Qt::UserRole);
     } else
         event->ignore();
 }
@@ -150,7 +150,7 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto treeItemDrop = parentPointer->_root->item(index);
+        auto treeItemDrop = parentPointer->_root_model->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
         auto recordTableData = treeItemDrop;    // ->record_table();
@@ -159,7 +159,7 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
         QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->current_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = parentPointer->_root->item(indexFrom);
+        auto treeItemDrag = parentPointer->_root_model->item(indexFrom);
 
         // Если перенос происходит в ту же самую ветку
         if(indexFrom == index)
@@ -215,7 +215,7 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
         parentPointer->update_branch_on_screen(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
-        parentPointer->_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+        parentPointer->_root_model->setData(QModelIndex(), QVariant(false), Qt::UserRole);
     }
 }
 

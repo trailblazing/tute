@@ -94,7 +94,7 @@ void RecordModel::init_source_model(RecordController *_record_controller
 }
 
 
-void RecordModel::init_source_model(boost::intrusive_ptr<TreeItem> tree_item
+void RecordModel::init_source_model(ItemsFlat *_browser_pages
                                     , RecordController *_record_controller
                                     , RecordScreen *_record_screen
                                     , MainWindow *main_window
@@ -111,7 +111,7 @@ void RecordModel::init_source_model(boost::intrusive_ptr<TreeItem> tree_item
     main_window->setCursor(Qt::BusyCursor);
 
     // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
-    _browser_pages = tree_item.get();  // reset_tabledata(table_data);
+    this->_browser_pages = _browser_pages;  // reset_tabledata(table_data);
 
     RecordView *_view = nullptr; // _record_controller->view();
 
@@ -126,7 +126,7 @@ void RecordModel::init_source_model(boost::intrusive_ptr<TreeItem> tree_item
 
     if(size() > 0) {
         // Нужно выяснить, на какой записи ранее стояло выделение
-        int workPos = tree_item->work_pos();
+        int workPos = this->_browser_pages->work_pos();
 
         // Если номер записи допустимый
         if(!_record_controller->no_view() && workPos > 0 && workPos < rowCount()) {
@@ -160,6 +160,16 @@ void RecordModel::init_source_model(boost::intrusive_ptr<TreeItem> tree_item
     //    globalparameters.entrance()->activiated_registered().first->tabWidget()->tree_item(tree_item);
 
     qDebug() << "In RecordTableView set new model stop";
+}
+
+void RecordModel::init_source_model(boost::intrusive_ptr<TreeItem> tree_item
+                                    , RecordController *_record_controller
+                                    , RecordScreen *_record_screen
+                                    , MainWindow *main_window
+                                    , MetaEditor *_editor_screen
+                                   )
+{
+    init_source_model(tree_item.get(), _record_controller, _record_screen, main_window, _editor_screen);
 }
 
 // Конструктор модели
@@ -211,7 +221,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     // Если таблица пустая
-    if(0 == _browser_pages->size()) // if(_table->size() == 0)
+    if(0 == _browser_pages->direct_children_count()) // if(_table->size() == 0)
         return QVariant();
 
     // Если индекс недопустимый, возвращается пустой объект
@@ -285,7 +295,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
         return false;
 
     // Если таблица пустая
-    if(0 == _browser_pages->size())    //if(_table->size() == 0)
+    if(0 == _browser_pages->direct_children_count())    //if(_table->size() == 0)
         return false;
 
     // Если индекс недопустимый
@@ -377,7 +387,7 @@ int RecordModel::rowCount(const QModelIndex &parent) const
     if(!_browser_pages)    // if(!_table)
         return 0;
 
-    return _browser_pages->size();
+    return _browser_pages->direct_children_count();
 }
 
 
@@ -435,7 +445,7 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     // Удаляются строки непосредственно в таблице
     for(int i = row; i < row + count; ++i) {
         //        _table
-        _browser_pages->delete_item_by_position(i);
+        _browser_pages->remove_child(i);
         //        globalparameters.find_screen()->remove_row(i);  // ?
     }
 
@@ -518,7 +528,7 @@ QString RecordModel::field(int pos, QString name)
 {
     QString result = "";
 
-    if(pos >= 0 && pos < _browser_pages->size()) {
+    if(pos >= 0 && pos < _browser_pages->direct_children_count()) {
         result = _browser_pages->child(pos)->field(name);
     }
 
@@ -527,7 +537,7 @@ QString RecordModel::field(int pos, QString name)
 
 void RecordModel::fields(int pos, QMap<QString, QString> data)
 {
-    if(pos >= 0 && pos < _browser_pages->size()) {
+    if(pos >= 0 && pos < _browser_pages->direct_children_count()) {
         for(QMap<QString, QString>::iterator i = data.begin(); i != data.end(); i++) {
             _browser_pages->child(pos)->field(i.key(), i.value());
         }
@@ -538,7 +548,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::find(boost::intrusive_ptr<TreeItem> 
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
-    for(int i = 0; i < _browser_pages->size(); i++) {
+    for(int i = 0; i < _browser_pages->direct_children_count(); i++) {
         if(_browser_pages->child(i) == item) {
             result = item; break;
         }
@@ -547,23 +557,30 @@ boost::intrusive_ptr<TreeItem> RecordModel::find(boost::intrusive_ptr<TreeItem> 
     return result;
 }
 
-bool RecordModel::is_item_exists(QString find_id)
+int RecordModel::is_item_exists(QString find_id)
 {
-    bool exist = false;
+    int pos = -1;
 
-    for(int i = 0; i < _browser_pages->size(); i++) {
-        if(_browser_pages->child(i)->id() == find_id) {exist = true; break;}
+    for(int i = 0; i < _browser_pages->direct_children_count(); i++) {
+        if(_browser_pages->child(i)->id() == find_id) {
+            pos = i;
+            break;
+        }
     }
 
-    return exist;
+    return pos;
 }
 
-bool RecordModel::delete_item_by_id(QString find_id)
+bool RecordModel::remove_child(QString find_id)
 {
     bool r = false;
+    int pos = is_item_exists(find_id);
 
-    if(is_item_exists(find_id)) {
-        _browser_pages->delete_item_by_id(find_id);
+    if(pos != -1) {
+        _browser_pages->remove_child(find_id);
+        _reocrd_controller->view()->reset();
+        _reocrd_controller->view()->setModel(this);
+        r = true;
     }
 
     return r;

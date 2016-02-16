@@ -206,7 +206,7 @@ Record::~Record()
 
 
 // На вход этой функции подается элемент <record>
-void Record::import_from_dom(const QDomElement &iDomElement)
+void Record::import(const QDomElement &iDomElement)
 {
     // Получение списка всех атрибутов текущего элемента
     QDomNamedNodeMap attList;

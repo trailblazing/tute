@@ -575,7 +575,7 @@ void RecordView::startDrag()
             // delete drag;
 
             // В модели данных обнуляется оформление элемента, который (возможно) подсвечивался при Drag And Drop
-            find_object<TreeScreen>(tree_screen_singleton_name)->_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+            find_object<TreeScreen>(tree_screen_singleton_name)->_root_model->setData(QModelIndex(), QVariant(false), Qt::UserRole);
         }
     }
 }

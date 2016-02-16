@@ -81,8 +81,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
 
 
     // Создание таблицы
-    if(!i_dom_element.isNull()) {
-        //        QDomElement *dom_element = &i_dom_element;
+    if(!i_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
         import_from_dom(
             i_dom_element  // dom_element
         );
@@ -199,8 +198,7 @@ TreeItem::TreeItem(QMap<QString, QString>           field_data
 
 
     // Создание таблицы
-    if(!i_dom_element.isNull()) {
-        //        QDomElement *dom_element = &i_dom_element;
+    if(!i_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
         import_from_dom(
             i_dom_element  // dom_element
         );
@@ -401,10 +399,10 @@ boost::intrusive_ptr<TreeItem> TreeItem::child(int number)
     return _child_items.value(number);
 }
 
-int TreeItem::size()const
-{
-    return _child_items.count();
-}
+//int TreeItem::direct_children_count()const
+//{
+//    return _child_items.count();
+//}
 
 //// Возвращение количества потомков (т.е. количество записей в списке childItems)
 //int TreeItem::size() const
@@ -487,7 +485,7 @@ QString TreeItem::field(QString _name)
         }
 
         // Выясняется, есть ли у текущего элемента конечные записи
-        int recordCount = this->size();
+        int recordCount = this->direct_children_count();
 
         // Если конечных элементов нет, возвращатся просто имя
         if(recordCount == 0) {
@@ -919,7 +917,7 @@ bool TreeItem::move_dn(void)
     int num = sibling_order();
 
     // Если двигать вниз некуда, ничего делать ненужно
-    if(num >= (_parent_item->size() - 1))return false;
+    if(num >= (_parent_item->direct_children_count() - 1))return false;
 
     // Элемент перемещается вниз по списку
     (_parent_item->_child_items).swap(num, num + 1);
@@ -1075,7 +1073,7 @@ QList<QStringList> TreeItem::all_children_path_as_field(boost::intrusive_ptr<Tre
         return QList<QStringList>();
     }
 
-    for(int i = 0; i < (item->size()); i++) {
+    for(int i = 0; i < (item->direct_children_count()); i++) {
         QStringList path = (item->child(i))->path_as_field(fieldName);
         pathList << path;
         all_children_path_as_field(item->child(i), fieldName, 2);
@@ -1112,7 +1110,7 @@ void TreeItem::to_encrypt(void)
 
 
     // Шифрация подветок
-    for(int i = 0; i < size(); i++)
+    for(int i = 0; i < direct_children_count(); i++)
         child(i)->to_encrypt();
 
     if(is_lite())
@@ -1149,7 +1147,7 @@ void TreeItem::to_decrypt(void)
 
 
     // Дешифрация подветок
-    for(int i = 0; i < size(); i++)
+    for(int i = 0; i < direct_children_count(); i++)
         child(i)->to_decrypt();
 
 
@@ -1164,6 +1162,7 @@ void TreeItem::to_decrypt(void)
 //{
 //    return _child_items.size(); // _record_table->size();
 //}
+
 
 void TreeItem::import_from_dom(const QDomElement &dom_model)
 {
@@ -1189,7 +1188,7 @@ void TreeItem::import_from_dom(const QDomElement &dom_model)
         boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
                                                           new TreeItem(
                                                               data
-                                                              , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // _parent_item
+                                                              , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
                                                           )
                                                       );
         current_item->is_registered_to_shadow_list(true);
@@ -1216,12 +1215,18 @@ void TreeItem::import_from_dom(const QDomElement &dom_model)
 // bypass record::export_to_dom
 QDomElement TreeItem::export_to_dom()
 {
-    return ItemsFlat::export_to_dom();  // _record_table->
+    QDomElement record = Record::export_to_dom();
+    QDomElement children = ItemsFlat::export_to_dom();
+    record.appendChild(children);
+    return record;
 }
 
 QDomElement TreeItem::export_to_dom(std::shared_ptr<QDomDocument> doc)
 {
-    return ItemsFlat::export_to_dom(doc);
+    QDomElement record = Record::export_to_dom(doc);
+    QDomElement children = ItemsFlat::export_to_dom(doc);
+    record.appendChild(children);
+    return record;
 }
 
 
@@ -1413,29 +1418,3 @@ void TreeItem::active_request(int pos, int openLinkIn)
 }
 
 
-boost::intrusive_ptr<TreeItem> TreeItem::active_subset(
-    //    boost::intrusive_ptr<TreeItem> start_item
-)
-{
-    //    std::shared_ptr<TableData> result = std::make_shared<TableData>();
-
-    //    for(auto &i : _tabledata) {
-    //        if(i->unique_page())result->insert_new_record(work_pos(), i);
-    //    }
-
-    // bypass slite fat switch:
-
-    //    auto start_item = _treeitem;   // std::make_shared<TreeItem>(data, search_model->_root_item);
-    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    auto dommodel = this->export_activated_dom(doc);    // source->init(startItem, QDomElement());
-    QMap<QString, QString> data;
-    boost::intrusive_ptr<TreeItem> tree = new TreeItem(
-        data
-        , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))  // _parent_item
-    );
-    tree->import_from_dom(dommodel);
-
-    return  tree;   // new TreeItem(data, _parent_item);
-
-    //    return result;
-}

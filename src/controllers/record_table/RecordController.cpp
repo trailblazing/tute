@@ -119,7 +119,7 @@ void RecordController::click_item(const QModelIndex &index)
     int source_pos = sourceIndex.row();
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
-    qobject_cast<RecordScreen *>(parent())->tools_update();
+    _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
     if(sourceIndex.isValid()) {
@@ -270,17 +270,18 @@ void RecordController::update_browser(const int source_pos)
         if(entrance && !item->page_valid()    // unique_page()
           ) {    // !record->binder() || !record->activator())) {
             entrance->equip_registered(item);
+
+
+            //        assert(record->unique_page());    // not sure
+            assert(item->binder());
+            assert(item->activator());
+
+            //        if(record->binder() && !record->unique_page())record->bind();
+            //        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
+            if(item->binder() && item->activator())item->active();
+
+            //        else if(entrance)
         }
-
-        //        assert(record->unique_page());    // not sure
-        assert(item->binder());
-        assert(item->activator());
-
-        //        if(record->binder() && !record->unique_page())record->bind();
-        //        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
-        if(item->binder() && item->activator())item->active();
-
-        //        else if(entrance)
     }
 
     //    } else {
@@ -710,7 +711,7 @@ void RecordController::select_id(QString id)
     // (Не задана таблица может быть по причине если ветка зашифрована и введен неверный пароль, или при вводе пароля была нажата отмена)
     //    if(table) {
     // Номер записи в Source данных
-    int pos = _source_model->_browser_pages->get_pos_by_id(id);
+    int pos = _source_model->_browser_pages->position(id);
 
     _view->setSelectionToPos(sourcepos_to_proxypos(pos));
     //    }
@@ -723,7 +724,7 @@ QModelIndex RecordController::id_to_sourceindex(QString id) const
     //    auto table = _source_model->tree_item();
 
     // Номер записи в Source данных
-    int sourcePos = _source_model->_browser_pages->get_pos_by_id(id);
+    int sourcePos = _source_model->_browser_pages->position(id);
 
     return pos_to_sourceindex(sourcePos);
 }
@@ -735,7 +736,7 @@ QModelIndex RecordController::id_to_proxyindex(QString id) const
     //    auto table = _source_model->tree_item();
 
     // Номер записи в Source данных
-    int sourcePos = _source_model->_browser_pages->get_pos_by_id(id);
+    int sourcePos = _source_model->_browser_pages->position(id);
     int proxyPos = sourcepos_to_proxypos(sourcePos);
 
     return pos_to_proxyindex(proxyPos);
@@ -1482,18 +1483,20 @@ void RecordController::removerows_by_idlist(QVector<QString> delIds)
     qDebug() << "Remove rows by ID list: " << delIds;
 
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->_browser_pages;
+    auto _browser_pages = _source_model->_browser_pages;
 
-    if(!table)
+    if(!_browser_pages)
         return;
 
     for(int i = 0; i < delIds.count(); i++) {
         QString id = delIds[i];
         //        QModelIndex idx = id_to_proxyindex(id);
-
-        for(int j = 0; j < table->size(); j++) {
-            if(table->item(j)->id() == id) {table->remove_child(table->item(j));}
-        }
+        _browser_pages->remove_child(id);
+        //        for(int j = 0; j < _browser_pages->size(); j++) {
+        //            if(_browser_pages->item(j)->id() == id) {
+        //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
+        //            }
+        //        }
 
         // Удаляется строка в Proxy модели
         // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
@@ -1731,7 +1734,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     boost::intrusive_ptr<TreeItem> _item = nullptr;
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
-    auto _treemodelknow = globalparameters.tree_screen()->_root;
+    auto _treemodelknow = globalparameters.tree_screen()->_root_model;
     _source_item = _treemodelknow->root_item()->find(item);
     //    if(_record_controller) {
     auto _shadow_branch_root = this->_source_model->_browser_pages;
@@ -1771,7 +1774,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             if(_item->is_lite())_item->to_fat();
 
             if(it != _item && !it->find(_item))
-                it->insert_new_item(it->size() - 1, _item);
+                it->insert_new_item(it->direct_children_count() - 1, _item);
 
             _treemodelknow->save();
         }
@@ -1832,7 +1835,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
 
-    auto _treemodelknow = globalparameters.tree_screen()->_root;
+    auto _treemodelknow = globalparameters.tree_screen()->_root_model;
     _source_item = _treemodelknow->root_item()->find(_url);
 
     //    if(_record_controller) {
@@ -1950,7 +1953,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             if(_item->is_lite())_item->to_fat();
 
             if(it != _item && !it->find(_item))
-                it->insert_new_item(it->size() - 1, _item);
+                it->insert_new_item(it->direct_children_count() - 1, _item);
 
             _treemodelknow->save();
         }

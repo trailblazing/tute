@@ -441,7 +441,7 @@ namespace browser {
         if(source_model->is_item_exists(item->field("id"))
            //                && record->unique_page() == this
           ) {
-            source_model->delete_item_by_id(item->field("id"));    // this will delete record for ever from database
+            source_model->remove_child(item->field("id"));    // this will delete record for ever from database
             //            tab_manager->reset_tabledata(table_data);  // _page_controller->removerow_by_id(record->getNaturalFieldSource("id"));
         }
 

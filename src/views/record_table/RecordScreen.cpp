@@ -121,7 +121,7 @@ void RecordScreen::setup_actions(void)
         if(tree_screen && entrance) {
             boost::intrusive_ptr<TreeItem> tree_item   // = tree_screen->_root->item_by_name(this->objectName());
                 = tree_screen->add_branch(tree_screen->last_index()
-                                          , tree_screen->_root->root_item()   // ->field("name") // ""
+                                          , tree_screen->_root_model->root_item()   // ->field("name") // ""
                                           , true);
             //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
 
@@ -131,7 +131,7 @@ void RecordScreen::setup_actions(void)
             auto source = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source->size(); i++) {
-                if(!globalparameters.tree_screen()->_root->is_record_id_exists(source->item(i)->field("id"))) {
+                if(!globalparameters.tree_screen()->_root_model->is_record_id_exists(source->item(i)->field("id"))) {
                     if(source->item(i)->is_lite())source->item(i)->to_fat();
 
                     target->insert_new_item(target->work_pos(), source->item(i));

@@ -58,7 +58,7 @@ public:
     // под указанным номером
     boost::intrusive_ptr<TreeItem> child(int number);
 
-    int size()const;
+    //    int direct_children_count()const;
     //    // Возвращение количества потомков (т.е. количество записей в списке childItems)
     //    int size() const;
 
@@ -157,7 +157,7 @@ public:
     QDomElement export_to_dom();
     void import_from_dom(const QDomElement &dom_model);
 
-    boost::intrusive_ptr<TreeItem> active_subset();
+
 
     //    // Взятие ссылки на данные конечных записей
     //    std::shared_ptr<RecordTable> record_table(void);
@@ -184,6 +184,7 @@ public:
 
     void active_request(int pos, int openLinkIn);
     bool page_valid()const {return _page_valid;}
+    //    operator ItemsFlat() {return *this;}
 protected:
 
     bind_helper _binder;

@@ -47,7 +47,7 @@ public:
 
     QMap<QString, QAction *> _actionlist;
 
-    TreeModelKnow   *_root;                 // for tree screen
+    TreeModelKnow   *_root_model;                 // for tree screen
     TreeModelKnow   *_selected_branch;      // for tree screen
     std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, RecordController *>>   reocrd_controller;    // for entrance
 
@@ -79,7 +79,7 @@ public:
     void enable_up_action(bool enable);
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
 public slots:
-    void candidate_from_search_result(boost::intrusive_ptr<TreeItem> resultset_item); // , std::shared_ptr<RecordTable> resultset_data
+    void candidate_from_search_result(ItemsFlat *resultset_item); // , std::shared_ptr<RecordTable> resultset_data
 
 private slots:
 
@@ -93,7 +93,7 @@ private slots:
     void delete_branchs(QString mode = "delete");
     void delete_one_branch(QModelIndex index);
 
-    void move_up_one_level(void);
+    void view_up_one_level(void);
     void return_to_root(void);
     void move_item_up_branch(void);
     void move_item_dn_branch(void);

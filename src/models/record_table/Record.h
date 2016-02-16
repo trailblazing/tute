@@ -55,7 +55,7 @@ public:
 
     //    browser::WebPage *unique_page();   // const; // {return _page;}
 
-    void import_from_dom(const QDomElement &iDomElement);
+    void import(const QDomElement &iDomElement);
     //    QDomElement export_to_dom(QDomDocument *doc) const;
     QDomElement export_to_dom() const;
     QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;

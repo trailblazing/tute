@@ -40,13 +40,15 @@ namespace browser {
 }
 
 // Виджет поиска по базе
+struct back_ground {boost::intrusive_ptr<TreeItem>  _selected_branch_root;};
 
-class FindScreen : public QWidget {
+class FindScreen : public QWidget
+    , public back_ground {
     Q_OBJECT
 
 public:
     static const constexpr char *_find_in_base_expand = "findInBaseExpand"; // "find_in_base_expand";
-    FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _selected_branch_root, QWidget *parent = 0);
+    FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _selected_branch_as_pages, QWidget *parent = 0);
     virtual ~FindScreen(void);
     //QToolBar *navigater() {return _navigater;}
 
@@ -60,15 +62,15 @@ public:
     QAction *historyhome() {return _historyhome;}
     QAction *stopreload() {return _stopreload;}
     browser::ChaseWidget *chasewidget() {return _chasewidget;}
-    void remove_id(const QString &id);
-    void remove_row(const int row);
+    void remove_child(const QString &id);
+    void remove_child(const int row);
     void adjust_size();
     std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, RecordController *>>   reocrd_controller;    // for entrance
 public slots:
 
     void widget_show(void);
     void widget_hide(void);
-    boost::intrusive_ptr<TreeItem> find_clicked(void);
+    ItemsFlat *find_clicked(void);
     void find_text(QString text);
 
 protected:
@@ -142,7 +144,8 @@ private:
 
     QProgressDialog *_progress;
 
-    boost::intrusive_ptr<TreeItem>  _selected_branch_root;         // std::shared_ptr<RecordTable>  _resultset_data;        // = std::make_shared<TableData>();      //    FindTableWidget     *_findtable;
+    //    FindTableWidget     *_findtable;
+    ItemsFlat                       *_selected_branch_as_pages;
     browser::ToolbarSearch          *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
     void setup_navigate(void);
@@ -167,8 +170,8 @@ private:
 
     void if_find_in_field(QString fieldname, int state);
 
-    boost::intrusive_ptr<TreeItem> find_start(void);
-    boost::intrusive_ptr<TreeItem> find_recursive(boost::intrusive_ptr<TreeItem> curritem, boost::intrusive_ptr<TreeItem> _selected_branch_root);
+    ItemsFlat *find_start(void);
+    ItemsFlat *find_recursive(boost::intrusive_ptr<TreeItem> curritem, ItemsFlat *_candidate_pages);
     bool find_in_text_process(const QString &text);
 
     void switch_tools_expand(bool flag);

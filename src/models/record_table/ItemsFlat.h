@@ -60,12 +60,12 @@ public:
     boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item) const;
     int index(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
-    bool remove_child(boost::intrusive_ptr<TreeItem> item);
+
     // Удаление всех элементов таблицы конечных записей
     void delete_all_items(void);
 
     // Количество записей в таблице данных
-    int size(void) const;
+    int direct_children_count(void) const;
 
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
@@ -81,13 +81,14 @@ public:
 
     void fields(int pos, QMap<QString, QString> edit_fields);
 
-    void delete_item_by_position(int i);
-    void delete_item_by_id(QString id);
+    bool remove_child(int i);
+    bool remove_child(QString id);
+    bool remove_child(boost::intrusive_ptr<TreeItem> item);
 
     bool is_item_exists(const QString &id) const;
     bool is_item_exists(const QUrl &url) const;
 
-    int get_pos_by_id(QString id) const;
+    int position(QString id) const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -113,6 +114,8 @@ public:
     //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
     //    void import_from_dom(const QDomElement &dom_model);
     int locate(boost::intrusive_ptr<TreeItem> item)const;
+    ItemsFlat *active_subset();
+
 protected:
 
     // Initialize the data table based on the transmitted item DOM- // Первичное заполнение таблицы конечных записей

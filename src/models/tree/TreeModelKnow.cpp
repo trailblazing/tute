@@ -161,7 +161,7 @@ void TreeModelKnow::node_from_dom(QDomElement domElement, boost::intrusive_ptr<T
     while(!domElement.isNull()) {
         if(domElement.tagName() == "node") {
             // Обнаруженый подузел прикрепляется к текущему элементу
-            parent->insert_children(parent->size(), 1, 1);
+            parent->insert_children(parent->direct_children_count(), 1, 1);
 
             /*
             QString line1,line_name,line_id;
@@ -182,13 +182,13 @@ void TreeModelKnow::node_from_dom(QDomElement domElement, boost::intrusive_ptr<T
                 QString value = attribute.nodeValue();
 
                 // В дерево разделов устанавливаются считанные атрибуты
-                parent->child(parent->size() - 1)->field(name , value);
+                parent->child(parent->direct_children_count() - 1)->field(name , value);
                 //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
             }
 
             // Вызов перебора оставшегося DOM дерева с прикреплением обнаруженных объектов
             // к только что созданному элементу
-            node_from_dom(domElement.firstChildElement(), parent->child(parent->size() - 1));
+            node_from_dom(domElement.firstChildElement(), parent->child(parent->direct_children_count() - 1));
 
         }
 
@@ -220,7 +220,7 @@ void TreeModelKnow::export_to_dom(std::shared_ptr<QDomDocument> doc, QDomElement
 
     // Если в ветке присутсвует таблица конечных записей
     // В первую очередь добавляется она
-    if(curr_item->size() > 0) {
+    if(curr_item->direct_children_count() > 0) {
         // Обработка таблицы конечных записей
 
         // Получение Dom дерева таблицы конечных записей
@@ -237,10 +237,10 @@ void TreeModelKnow::export_to_dom(std::shared_ptr<QDomDocument> doc, QDomElement
     // Обработка каждой подчиненной ветки
     int i;
 
-    for(i = 0; i < curr_item->size(); i++) {
+    for(i = 0; i < curr_item->direct_children_count(); i++) {
         //        assert(curr_item->child(i).get() != curr_item);
 
-        if(curr_item->child(i).get() != curr_item) {
+        if(curr_item->child(i) != curr_item) {
             // Временный элемент, куда будет внесена текущая перебираемая ветка
             QDomElement  tempElement = doc->createElement("node");
 
@@ -333,7 +333,7 @@ void TreeModelKnow::add_child_branch(const QModelIndex &_index, QString id, QStr
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
 
-    beginInsertRows(_index, parent->size(), parent->size());
+    beginInsertRows(_index, parent->direct_children_count(), parent->direct_children_count());
     add_new_branch(parent, id, name);
     endInsertRows();
 }
@@ -344,7 +344,7 @@ void TreeModelKnow::add_child_branch(const QModelIndex &_index, boost::intrusive
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
 
-    beginInsertRows(_index, parent->size(), parent->size());
+    beginInsertRows(_index, parent->direct_children_count(), parent->direct_children_count());
     add_new_branch(parent, it);
     endInsertRows();
 }
@@ -359,7 +359,7 @@ void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, QString id, QS
     assert(parent);
 
     if(parent) {
-        beginInsertRows(_index.parent(), parent->size(), parent->size());
+        beginInsertRows(_index.parent(), parent->direct_children_count(), parent->direct_children_count());
         add_new_branch(parent, id, name);
         endInsertRows();
     }
@@ -374,7 +374,7 @@ void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, boost::intrusi
     assert(parent);
 
     if(parent) {
-        beginInsertRows(_index.parent(), parent->size(), parent->size());
+        beginInsertRows(_index.parent(), parent->direct_children_count(), parent->direct_children_count());
         add_new_branch(it, parent);
         endInsertRows();
     }
@@ -437,7 +437,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_pt
 boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent) //    , QString id, QString name
 {
 
-    beginInsertRows(index(parent), parent->size(), parent->size());
+    beginInsertRows(index(parent), parent->direct_children_count(), parent->direct_children_count());
     boost::intrusive_ptr<TreeItem> result = parent->add_child(record); //add_new_branch(parent, id, name);
     endInsertRows();
 
@@ -472,7 +472,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<Rec
 boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent) //    , QString id, QString name
 {
 
-    beginInsertRows(index(parent), parent->size(), parent->size());
+    beginInsertRows(index(parent), parent->direct_children_count(), parent->direct_children_count());
     boost::intrusive_ptr<TreeItem> result = parent->add_child(item); //add_new_branch(parent, id, name);
     endInsertRows();
 
@@ -511,7 +511,7 @@ QString TreeModelKnow::paste_child_branch(const QModelIndex &_index, ClipboardBr
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
 
-    beginInsertRows(_index, parent->size(), parent->size());
+    beginInsertRows(_index, parent->direct_children_count(), parent->direct_children_count());
     pasted_branch_id = paste_sub_branch(parent, (ClipboardBranch *)subbranch);
     endInsertRows();
 
@@ -527,7 +527,7 @@ QString TreeModelKnow::paste_sibling_branch(const QModelIndex &_index, Clipboard
     boost::intrusive_ptr<TreeItem> current = item(_index);
     boost::intrusive_ptr<TreeItem> parent = current->parent();
 
-    beginInsertRows(_index.parent(), parent->size(), parent->size());
+    beginInsertRows(_index.parent(), parent->direct_children_count(), parent->direct_children_count());
     pasted_branch_id = paste_sub_branch(parent, (ClipboardBranch *)subbranch);
     endInsertRows();
 
@@ -608,7 +608,7 @@ QModelIndex TreeModelKnow::index_child(const QModelIndex &parent, int n) const
 
     // Если у основного Item элемента запрашивается индекс
     // несуществующего подэлемента, возвращается пустой индекс
-    if(n < 0 || n > (it->size() - 1)) {
+    if(n < 0 || n > (it->direct_children_count() - 1)) {
         qDebug() << "In indexChildren() unavailable children number";
         return QModelIndex();
     }
@@ -663,9 +663,9 @@ int TreeModelKnow::size_of(boost::intrusive_ptr<TreeItem> item)
             return 0;
         }
 
-        n = n + item->size();
+        n = n + item->direct_children_count();
 
-        for(int i = 0; i < item->size(); i++)
+        for(int i = 0; i < item->direct_children_count(); i++)
             get_all_record_count_recurse(item->child(i), 1);
 
         return n;
@@ -723,7 +723,7 @@ bool TreeModelKnow::is_item_id_exists(QString findId)
         }
 
         // Перебираются подветки
-        for(int i = 0; i < item->size(); i++)
+        for(int i = 0; i < item->direct_children_count(); i++)
             is_item_id_exists_recurse(item->child(i), id_to_find, 1);
 
         return is_exists;
@@ -828,7 +828,7 @@ bool TreeModelKnow::is_record_id_exists(QString findId)
         }
 
         // Перебираются подветки
-        for(int i = 0; i < item->size(); i++)
+        for(int i = 0; i < item->direct_children_count(); i++)
             is_record_id_exists_recurse(item->child(i), find_id, 1);
 
         return isExists;
@@ -1065,7 +1065,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::item_by_name(QString name)
             find_item = item;
             return find_item;
         } else {
-            for(int i = 0; i < item->size(); i++)
+            for(int i = 0; i < item->direct_children_count(); i++)
                 item_by_name_recurse(item->child(i), name, 1);
 
             return find_item;
@@ -1098,7 +1098,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::item_by_id(QString id)
             find_item = item;
             return find_item;
         } else {
-            for(int i = 0; i < item->size(); i++)
+            for(int i = 0; i < item->direct_children_count(); i++)
                 item_by_id_recurse(item->child(i), id, 1);
 
             return find_item;
@@ -1171,7 +1171,7 @@ QStringList TreeModelKnow::record_path(QString recordId)
             findPath = currentPath;
         } else {
             // Иначе перебираются подветки
-            for(int i = 0; i < item->size(); i++)
+            for(int i = 0; i < item->direct_children_count(); i++)
                 record_path_recurse(item->child(i), currentPath, recordId, 1);
         }
 
@@ -1239,7 +1239,7 @@ bool TreeModelKnow::is_contains_crypt_branches(void)
             return isCrypt;
         }
 
-        for(int i = 0; i < item->size(); i++)
+        for(int i = 0; i < item->direct_children_count(); i++)
             is_contains_crypt_branches_recurse(item->child(i), 1);
 
         return isCrypt;

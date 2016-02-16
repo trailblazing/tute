@@ -129,7 +129,7 @@ namespace browser {
 
         auto record_data = globalparameters.find_screen()->find_clicked();
 
-        if(!record_data || 0 == record_data->size()) {
+        if(!record_data || 0 == record_data->direct_children_count()) {
 
             QUrl url = QUrl(searchText);
 
