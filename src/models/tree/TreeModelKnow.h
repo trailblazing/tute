@@ -25,7 +25,7 @@ public:
     void init_from_xml(QString fileName);
     void reload(void);
 
-    QDomElement export_to_dom(boost::intrusive_ptr<TreeItem> root);
+    QDomElement export_to_dom(boost::intrusive_ptr<TreeItem> root_item);
 
     void save(void);
 

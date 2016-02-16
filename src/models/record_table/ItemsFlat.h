@@ -30,8 +30,9 @@ class ItemsFlat {
 public:
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
     ItemsFlat(
-        boost::intrusive_ptr<TreeItem> parent_item
-        , const bool _is_crypt
+        //        boost::intrusive_ptr<TreeItem> parent_item
+        //        ,
+        const bool _is_crypt
         = false);
 
     virtual ~ItemsFlat();
@@ -53,12 +54,13 @@ public:
     // Получение образа записи
     boost::intrusive_ptr<TreeItem> item_lite(int pos) const;
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
+    boost::intrusive_ptr<TreeItem> child(int pos) const;
     boost::intrusive_ptr<TreeItem> item(int pos) const;
     boost::intrusive_ptr<TreeItem> find(const QUrl &url) const;
     boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item) const;
     int index(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
-
+    bool remove_child(boost::intrusive_ptr<TreeItem> item);
     // Удаление всех элементов таблицы конечных записей
     void delete_all_items(void);
 
@@ -127,7 +129,7 @@ private:
     //    QList<boost::intrusive_ptr<Record>>      _child_items;
 
     QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
-    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
+    //    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
     //    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
     //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
 

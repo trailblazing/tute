@@ -28,6 +28,9 @@ class QWidgetAction;
 class ItemsFlat;
 class TreeItem;
 class TreeController;
+class RecordController;
+
+
 
 namespace  browser {
     class ToolbarSearch;
@@ -46,7 +49,7 @@ public:
 
     TreeModelKnow   *_root;                 // for tree screen
     TreeModelKnow   *_selected_branch;      // for tree screen
-    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const *>>   shadow_branch;    // for entrance
+    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, RecordController *>>   reocrd_controller;    // for entrance
 
     void save_knowtree(void);
     void reload_knowtree(void);

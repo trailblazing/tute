@@ -62,7 +62,7 @@ TreeScreen::TreeScreen(QString      object_name
 {
     // Загрузка данных
     _root->init_from_xml(_appconfig.get_tetradir() + "/mytetra.xml");
-    _selected_branch->root(_root->root());
+    _selected_branch->root_item(_root->root_item());
 
     //    _selected_branch->init_from_xml(_appconfig.get_tetradir() + "/candidate.xml");
     //    _selected_branch->_root_item->field("id", get_unical_id());   // come from _root
@@ -79,7 +79,7 @@ TreeScreen::TreeScreen(QString      object_name
     setObjectName(object_name);
     setup_actions();
     setup_ui(_filemenu, _toolsmenu);
-    setup_model(_root);
+    setup_model(_selected_branch);
     setup_signals();
     assembly();
 }
@@ -412,7 +412,7 @@ void TreeScreen::enable_up_action(bool enable)
         _actionlist["pasteSubbranch"]->setEnabled(true);
         _actionlist["move_up_one_level"]->setEnabled(true);
         _actionlist["return_to_root"]->setEnabled(true);
-    } else if(_root->root() == _selected_branch->root() || !enable) {
+    } else if(_root->root_item() == _selected_branch->root_item() || !enable) {
         _actionlist["pasteBranch"]->setEnabled(false);
         _actionlist["pasteSubbranch"]->setEnabled(false);
         _actionlist["move_up_one_level"]->setEnabled(false);
@@ -474,7 +474,7 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
             if(mimeData->hasFormat("mytetra/branch"))
                 is_branch = true;
 
-        enable_up_action(is_branch || _root->root() != _selected_branch->root());
+        enable_up_action(is_branch || _root->root_item() != _selected_branch->root_item());
 
 
         // ----------------------------
@@ -594,22 +594,6 @@ void TreeScreen::expand_or_collapse_recurse(QModelIndex index, bool mode)
 
 }
 
-void TreeScreen::move_up_one_level(void)
-{
-    TreeModelKnow *current_treemodelknow = static_cast<TreeModelKnow *>(this->_treeviewknow->model());
-    current_treemodelknow->root(current_treemodelknow->root()->parent());
-    setup_model(current_treemodelknow);
-
-    enable_up_action(current_treemodelknow->root() != _root->root());
-
-}
-
-void TreeScreen::return_to_root(void)
-{
-    setup_model(_root);
-    enable_up_action(false);
-
-}
 
 void TreeScreen::move_item_up_branch(void)
 {
@@ -1011,7 +995,7 @@ void TreeScreen::delete_branchs(QString mode)
         // Сохраняется текст в окне редактирования
         // Нужно, чтобы нормально удалилась текущая редактируемая запись,
         // если она находится в удаляемой ветке
-        find_object<MainWindow>("mainwindow")->saveTextarea();
+        find_object<MainWindow>("mainwindow")->save_text_area();
 
         // Сортировка списка индексов по вложенности методом пузырька
         // Индексы с длинным путем перемещаются в начало списка
@@ -1118,7 +1102,7 @@ void TreeScreen::delete_one_branch(QModelIndex index)
        delete current_item;
       }
     */
-    (*shadow_branch)()->root()->remove_child(item);
+    (*reocrd_controller)()->source_model()->remove_child(item);
     qDebug() << "Label 8";
 }
 
@@ -1139,7 +1123,7 @@ bool TreeScreen::copy_branch(void)
     qDebug() << "In copy_branch()";
 
     // Сохраняется текст в окне редактирования
-    find_object<MainWindow>("mainwindow")->saveTextarea();
+    find_object<MainWindow>("mainwindow")->save_text_area();
 
     // Получение списка индексов QModelIndex выделенных элементов
     QModelIndexList selectitems = _treeviewknow->selectionModel()->selectedIndexes();
@@ -1456,11 +1440,174 @@ void TreeScreen::to_candidate_screen(const QModelIndex &index)
 }
 
 
+void TreeScreen::move_up_one_level(void)
+{
+    // Сохраняется текст в окне редактирования в соответсвующий файл
+    find_object<MainWindow>("mainwindow")->save_text_area();
+
+    TreeModelKnow *current_treemodelknow = static_cast<TreeModelKnow *>(this->_treeviewknow->model());
+    boost::intrusive_ptr<TreeItem> result_item = current_treemodelknow->root_item();    // ->parent();
+
+    if(result_item) {
+        //        current_treemodelknow->root(parent);   // QModelIndex index = _root->index(current_treemodelknow->root()->parent());
+        //        //        candidate_from_knowtree_item(index);
+        //        setup_model(current_treemodelknow);
+
+        //        if(current_treemodelknow->root() != _root->root()) {
+        //            enable_up_action(true);
+        //        } else {
+        //            enable_up_action(false);
+        //        }
+
+        // Вначале все инструменты работы с веткой включаются
+        QMapIterator<QString, QAction *> i(_actionlist);
+
+        while(i.hasNext()) {
+            i.next();
+            i.value()->setEnabled(true);
+        }
+
+        // Проверяется, происходит ли клик по зашифрованной ветке
+        if(result_item->field("crypt") == "1") {
+            // Если пароль доступа к зашифрованным данным не вводился в этой сессии
+            if(globalparameters.crypt_key().length() == 0) {
+                // Запрашивается пароль
+                Password password;
+
+                if(password.retrievePassword() == false) {
+                    // Устанавливаем пустые данные для отображения таблицы конечных записей
+
+                    //                    find_object<RecordController>("table_screen_controller")
+                    result_item->unique_page()->view()->record_controller()->source_model()->init_source_model(
+                        nullptr
+                        , result_item->unique_page()->view()->record_controller()
+                        , result_item->unique_page()->view()->record_controller()->record_screen()
+                        , globalparameters.mainwindow()
+                        , globalparameters.meta_editor()
+                        // , result_item->unique_page()->view()->record_controller()->record_screen()
+                    );
+                    //                        reset_tabledata(nullptr);
+
+                    // Все инструменты работы с веткой отключаются
+                    QMapIterator<QString, QAction *> i(_actionlist);
+
+                    while(i.hasNext()) {
+                        i.next();
+                        i.value()->setEnabled(false);
+                    }
+
+                    return; // Программа дальше не идет, доделать...
+                }
+            }
+        }
+
+        if(result_item->parent()) {
+            _selected_branch->root_item(result_item->parent());     //? dangerous to do this!!!
+        } else {
+            if(_root->root_item()->parent())
+                _selected_branch->root_item(_root->root_item()->parent());
+            else
+                _selected_branch->root_item(_root->root_item());
+        }
+
+        //        _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
+        //        _shadow_candidate_model->_root_item->field("name", result_item->field("name"));
+
+        // Получаем указатель на данные таблицы конечных записей
+        //    std::shared_ptr<TableData> record_tabledata = item->tabledata();
+        //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+
+
+
+        setup_model(_selected_branch);
+
+        enable_up_action(
+            true    // _selected_branch->root() != _root->root()
+        ) ;
+
+        //    for(int i = 0; i < item->tabledata()->size(); i++) {
+
+        //        _shadow_candidate_model->_root_item->tabledata()->shadow_record_lite(
+        //            _shadow_candidate_model->_root_item->tabledata()->size()
+        //            , item->tabledata()->record(i)
+        //        );
+        //    }
+
+        //    std::shared_ptr<TableData> record_tabledata = item->tabledata();
+        //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+
+
+        //    _shadow_candidate_model->_root_item = result_item; // ->record_table(item->record_table()->export_to_dom());
+
+
+
+
+
+
+
+        //        // Устанавливаем данные таблицы конечных записей
+        //        find_object<RecordController>(table_controller_singleton_name)->source_model()->tree_item(_shadow_candidate_model->_root_item);
+        //        // need lock?
+
+
+        //            reset_tabledata(std::make_shared<RecordTable>(_shadow_candidate_model->_root_item, item->tabledata()->export_to_dom(doc)));
+
+
+        // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
+        if(appconfig.getInterfaceMode() == "mobile") {
+
+            QStringList path = result_item->path_as_name();
+
+            // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+            int emptyStringIndex = path.indexOf("");
+            path.removeAt(emptyStringIndex);
+
+            find_object<RecordScreen>(table_screen_singleton_name)->tree_path(path.join(" > "));
+
+        }
+
+
+
+        // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
+        _treeviewknow->resizeColumnToContents(0);
+
+    } else {
+        return_to_root();
+    }
+
+    //    if(current_treemodelknow->root()->parent() != _root->root()->parent()) {
+    //        assert(current_treemodelknow->root() != _root->root());
+
+    //        if(current_treemodelknow->root()->parent())current_treemodelknow->root(current_treemodelknow->root()->parent());
+
+    //        setup_model(current_treemodelknow);
+
+    //        //        if(current_treemodelknow->root() != _root->root()) {
+    //        enable_up_action(true);
+    //        //        } else {
+    //        //            enable_up_action(false);
+    //        //        }
+    //    } else {
+    //        setup_model(_root);
+    //        enable_up_action(false);
+    //    }
+
+    //    enable_up_action(current_treemodelknow->root() != _root->root());
+
+}
+
+void TreeScreen::return_to_root(void)
+{
+    setup_model(_root);
+    enable_up_action(false);
+
+}
+
 void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> resultset_item)
 {
 
-    RecordController *controller = globalparameters.table_screen()->table_controller();
-    RecordModel *controller_source_model = controller->source_model();
+    RecordController *_record_controller = resultset_item->unique_page()->view()->record_controller();   // globalparameters.record_screens()->record_controller();
+    RecordModel *controller_source_model = _record_controller->source_model();
 
     setup_model(_selected_branch);
     _actionlist["return_to_root"]->setEnabled(true);
@@ -1482,8 +1629,14 @@ void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> res
     //    //    resultset_data->init(resultset_item, dommodel);     // just for init the item bind for reault set record table
 
     //    //    _knowtreemodel->save();
-
-    controller_source_model->tree_item(resultset_item); // ->record_table(result_data);
+    controller_source_model->init_source_model(resultset_item
+                                               , _record_controller
+                                               , _record_controller->record_screen()
+                                               , globalparameters.mainwindow()
+                                               , globalparameters.meta_editor()
+                                               // , globalparameters.record_screens()
+                                              );
+    //    controller_source_model->root(resultset_item); // ->record_table(result_data);
 
     //    for(int i = 0; i < resultset_item->tabledata()->size(); i++) {
 
@@ -1532,7 +1685,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
     // QModelIndex index = nodetreeview->selectionModel()->currentIndex();
 
     // Сохраняется текст в окне редактирования в соответсвующий файл
-    find_object<MainWindow>("mainwindow")->saveTextarea();
+    find_object<MainWindow>("mainwindow")->save_text_area();
 
     // Получаем указатель на текущую выбранную ветку дерева
     auto result_item = _root->item(index);
@@ -1555,7 +1708,15 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
                 if(password.retrievePassword() == false) {
                     // Устанавливаем пустые данные для отображения таблицы конечных записей
-                    find_object<RecordController>("table_screen_controller")->tree_item(boost::intrusive_ptr<TreeItem>(nullptr));
+                    // find_object<RecordController>("table_screen_controller")
+                    result_item->unique_page()->view()->record_controller()->source_model()->init_source_model(
+                        nullptr
+                        , result_item->unique_page()->view()->record_controller()
+                        , result_item->unique_page()->view()->record_controller()->record_screen()
+                        , globalparameters.mainwindow()
+                        , globalparameters.meta_editor()
+                        // , globalparameters.record_screens()
+                    );
                     //                        reset_tabledata(nullptr);
 
                     // Все инструменты работы с веткой отключаются
@@ -1571,7 +1732,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
             }
         }
 
-        _selected_branch->root(result_item);     //? never do this!!!
+        _selected_branch->root_item(result_item);     //? never do this!!!
         //        _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
         //        _shadow_candidate_model->_root_item->field("name", result_item->field("name"));
 
@@ -1583,7 +1744,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
         setup_model(_selected_branch);
 
-        enable_up_action(_selected_branch->root() != _root->root()) ;
+        enable_up_action(_selected_branch->root_item() != _root->root_item()) ;
 
         //    for(int i = 0; i < item->tabledata()->size(); i++) {
 
@@ -1701,10 +1862,10 @@ QModelIndex TreeScreen::current_index(void)
 {
     boost::intrusive_ptr<TreeItem> item = nullptr;
 
-    if(0 == _root->root()->size()) {
-        item = _root->root()->add_child();
+    if(0 == _root->root_item()->size()) {
+        item = _root->root_item()->add_child();
     } else {
-        item = _root->root()->child(_root->root()->size() - 1);
+        item = _root->root_item()->child(_root->root_item()->size() - 1);
     }
 
     assert(item);
@@ -1767,10 +1928,10 @@ QModelIndex TreeScreen::last_index(void)
 {
     boost::intrusive_ptr<TreeItem> item = nullptr;
 
-    if(0 == _root->root()->size()) {
-        item = _root->root()->add_child();
+    if(0 == _root->root_item()->size()) {
+        item = _root->root_item()->add_child();
     } else {
-        item = _root->root()->child(_root->root()->size() - 1);
+        item = _root->root_item()->child(_root->root_item()->size() - 1);
     }
 
     assert(item);

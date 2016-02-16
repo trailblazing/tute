@@ -49,6 +49,7 @@ class Record :
 
 public:
     Record();
+    Record(QMap<QString, QString> field_data);
     Record(boost::intrusive_ptr<Record> obj);
     virtual ~Record();
 
@@ -102,8 +103,8 @@ public:
     //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
     //    bool active_immediately() {return _active_immediately;}
 
-    bool is_registered() {return _is_registered;}
-    void is_registered(bool reg) {_is_registered = reg;}
+    bool is_registered_to_shadow_list() {return _is_registered_to_shadow_list;}
+    void is_registered_to_shadow_list(bool reg) {_is_registered_to_shadow_list = reg;}
 
     //    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
     //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
@@ -125,7 +126,7 @@ protected:
     // ---------------------------------------------------------------------
 
     bool                        _lite_flag;
-    bool                        _is_registered = false;
+    bool                        _is_registered_to_shadow_list = false;
     //    bool                        _active_request = false;
     //    int                         _position = -1;
     //    int                         _open_link_in_new_window = 0;

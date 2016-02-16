@@ -23,6 +23,10 @@
 #include "libraries/FlatControl.h"
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/FindScreen.h"
+#include "views/browser/entrance.h"
+
+
+
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
@@ -348,63 +352,66 @@ void MetaEditor::tree_path(QString path)
 
 void MetaEditor::switch_pin()
 {
-    RecordController *recordtablecontroller = globalparameters.table_screen()->table_controller();
+    if(globalparameters.entrance()->activiated_registered().first) {
+        RecordController *recordtablecontroller = globalparameters.entrance()->activiated_registered().first->record_screen()->record_controller();
+        // record_screens()->record_controller();
 
-    if(recordtablecontroller) {
-        RecordModel *source_model = recordtablecontroller->source_model();
-        RecordView *recordtableview = recordtablecontroller->view();
-        int pos = recordtablecontroller->first_selectionpos();
+        if(recordtablecontroller) {
+            RecordModel *source_model = recordtablecontroller->source_model();
+            RecordView *recordtableview = recordtablecontroller->view();
+            int pos = recordtablecontroller->first_selectionpos();
 
-        if(source_model && -1 != pos) {
-            // Выясняется ссылка на таблицу конечных данных
-            auto item = source_model->tree_item();  //->record_table();    //getTableData();
+            if(source_model && -1 != pos) {
+                // Выясняется ссылка на таблицу конечных данных
+                //            auto item = source_model->tree_item();  //->record_table();    //getTableData();
 
-            QString p = item->child(pos)->field("pin");
-            _record_pin->setCheckState(_state_check[p]);
+                QString p = source_model->field(pos, "pin");
+                _record_pin->setCheckState(_state_check[p]);
 
-            QString h = item->child(pos)->field("url");
+                QString h = source_model->field(pos, "url");
 
-            // Переданные отредактированные поля преобразуются в вид имя-значение
-            QMap<QString, QString> edit_data;
+                // Переданные отредактированные поля преобразуются в вид имя-значение
+                QMap<QString, QString> edit_data;
 
-            if(_record_pin->checkState() == Qt::CheckState::Checked) {
-                _record_pin->setCheckState(Qt::CheckState::Unchecked);
+                if(_record_pin->checkState() == Qt::CheckState::Checked) {
+                    _record_pin->setCheckState(Qt::CheckState::Unchecked);
 
-                pin(p = _check_state[Qt::CheckState::Unchecked]);
+                    pin(p = _check_state[Qt::CheckState::Unchecked]);
 
-                edit_data["pin"] = p;
+                    edit_data["pin"] = p;
 
-            } else {
-                _record_pin->setCheckState(Qt::CheckState::Checked);
+                } else {
+                    _record_pin->setCheckState(Qt::CheckState::Checked);
 
-                pin(p = _check_state[Qt::CheckState::Checked]);
-                home(h);
+                    pin(p = _check_state[Qt::CheckState::Checked]);
+                    home(h);
 
-                edit_data["pin"] = p;
-                edit_data["home"] = h;
+                    edit_data["pin"] = p;
+                    edit_data["home"] = h;
 
+                }
+
+                //            // Переданные отредактированные поля преобразуются в вид имя-значение
+                //            QMap<QString, QString> editData;
+                //            editData["pin"] = pin;
+                //    editData["name"] = name;
+                //    editData["author"] = author;
+                //            editData["home"] = home;
+                //    editData["url"] = url;
+                //    editData["tags"] = tags;
+
+                // Обновление новых данных в таблице конечных записей
+                source_model->fields(pos, edit_data);
+
+
+                // Сохранение дерева веток
+                //find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
+                TreeScreen *treescreen = globalparameters.tree_screen();
+
+                if(treescreen)treescreen->save_knowtree();
+
+                if(recordtableview)recordtableview->setSelectionToPos(pos);
             }
-
-            //            // Переданные отредактированные поля преобразуются в вид имя-значение
-            //            QMap<QString, QString> editData;
-            //            editData["pin"] = pin;
-            //    editData["name"] = name;
-            //    editData["author"] = author;
-            //            editData["home"] = home;
-            //    editData["url"] = url;
-            //    editData["tags"] = tags;
-
-            // Обновление новых данных в таблице конечных записей
-            item->fields(pos, edit_data);
-
-
-            // Сохранение дерева веток
-            //find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
-            TreeScreen *treescreen = globalparameters.tree_screen();
-
-            if(treescreen)treescreen->save_knowtree();
-
-            if(recordtableview)recordtableview->setSelectionToPos(pos);
         }
     }
 }

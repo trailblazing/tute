@@ -48,8 +48,8 @@ void GlobalParameters::init(void)
 {
     _tree_screen = nullptr;
     _browsermanager = nullptr;
-    _table_screen = nullptr;
-    _page_screen = nullptr;
+    //    _table_screens = nullptr;
+    //    _page_screen = nullptr;
     _find_screen = nullptr;
     _meta_editor = nullptr;
     _statusbar = nullptr;
@@ -463,26 +463,26 @@ void GlobalParameters::entrance(browser::Entrance *&b)
 }
 
 
-void GlobalParameters::table_screen(RecordScreen *point)
+void GlobalParameters::push_record_screen(RecordScreen *point)
 {
-    _table_screen = point;
+    _table_screens.push_back(point);
 }
 
-RecordScreen *GlobalParameters::table_screen()
+std::vector<RecordScreen *> GlobalParameters::record_screens()
 {
-    return _table_screen;
+    return _table_screens;
 }
 
-RecordScreen *GlobalParameters::page_screen()
-{
-    return _page_screen;
-}
+//RecordScreen *GlobalParameters::page_screen()
+//{
+//    return _page_screen;
+//}
 
 
-void GlobalParameters::page_screen(RecordScreen *page)
-{
-    _page_screen = page;
-}
+//void GlobalParameters::page_screen(RecordScreen *page)
+//{
+//    _page_screen = page;
+//}
 
 
 

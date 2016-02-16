@@ -20,6 +20,14 @@ class RecordController;
 class VerticalScrollArea;
 class FlatToolButton;
 class TreeItem;
+class TreeScreen;
+class FindScreen;
+class MetaEditor;
+class MainWindow;
+class AppConfig;
+
+
+
 
 namespace browser {
     class ToolbarSearch;
@@ -30,8 +38,7 @@ class RecordScreen : public QWidget {
 
 public:
     RecordScreen(QString object_name
-                 // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                 , QWidget *parent = 0);
+                 , TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, MainWindow *_main_window);
     virtual ~RecordScreen();
 
     int     first_selection_pos(void);
@@ -42,28 +49,12 @@ public:
     void tree_path(QString path);
     QString tree_path(void);
 
-    inline RecordController *
-    table_controller()
+    inline RecordController *record_controller()
     {
-        return _table_controller;
+        return _record_controller;
     }
+    bool inited() {return _inited;}
 
-    // The steps used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
-    QAction *_save_in_new_branch;
-    QAction *_pin;
-    QAction *_addnew_to_end;
-    QAction *_addnew_before;
-    QAction *_addnew_after;
-    QAction *_edit_field;
-    QAction *_delete;
-    QAction *_cut;
-    QAction *_copy;
-    QAction *_paste;
-    QAction *_settings;
-    QAction *_back;
-    QAction *_find_in_base;
-    QAction *_sort;
-    QAction *_print;
 
 public slots:
 
@@ -81,6 +72,30 @@ private slots:
     void on_back_click(void);
 
 private:
+    bool                _inited = false;
+
+    // The steps used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
+    QAction             *_save_in_new_branch;
+    QAction             *_pin;
+    QAction             *_addnew_to_end;
+    QAction             *_addnew_before;
+    QAction             *_addnew_after;
+    QAction             *_edit_field;
+    QAction             *_delete;
+    QAction             *_cut;
+    QAction             *_copy;
+    QAction             *_paste;
+    QAction             *_settings;
+    QAction             *_action_move_up;
+    QAction             *_action_move_dn;
+    QAction             *_find_in_base;
+    QAction             *_action_syncro;
+    QAction             *_action_walk_history_previous;
+    QAction             *_action_walk_history_next;
+    QAction             *_back;
+    QAction             *_sort;
+    QAction             *_print;
+
     QToolBar            *_toolsline;
     QToolBar            *_extra_toolsline;
 
@@ -88,19 +103,17 @@ private:
     //    FlatToolButton  *_treepath_button;
     QString             _treepath;
 
+    RecordController    *_record_controller;
     VerticalScrollArea  *_vertical_scrollarea;
-    RecordController     *_table_controller;
+
 
     QHBoxLayout         *_recordtable_toolslayout;
     //    browser::ToolbarSearch  *_recordtree_search;
     //    QHBoxLayout             *_recordtree_searchlayout;
     QVBoxLayout         *_recordtable_screenlayout;
 
-    QAction *_action_move_up;
-    QAction *_action_move_dn;
-    QAction *_action_syncro;
-    QAction *_action_walk_history_previous;
-    QAction *_action_walk_history_next;
+
+    MainWindow          *_main_window;
 
     void setup_ui(void);
     void setup_signals(void);
@@ -108,7 +121,8 @@ private:
     void assembly(void);
 
     void disable_all_actions(void);
-
+    friend class RecordView;
+    friend class RecordController;
 };
 
 #endif /* RECORDTABLESCREEN_H_ */

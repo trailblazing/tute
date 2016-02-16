@@ -50,6 +50,8 @@
 #include <utility>
 #include "models/tree/TreeModelKnow.h"
 #include "views/tree/TreeScreen.h"
+#include "views/main_window/MainWindow.h"
+
 
 namespace browser {
     //struct BrowserViewPrivate {
@@ -300,7 +302,7 @@ namespace browser {
         //        setAutoFillBackground(true);
         //        setFeatures(QDockWidget::NoDockWidgetFeatures);
         //        _browser = browser;
-        _main_windows.prepend(browser);
+        _browsers.prepend(browser);
 
         return this;
     }
@@ -335,7 +337,9 @@ namespace browser {
                                , this
         , [this](bool checked = true) {
             Q_UNUSED(checked)
+            assert(activiated_registered().first);
             auto view = activiated_registered().second;
+            assert(view);
 
             if(view) {
                 WebPage *page = view->page();
@@ -362,9 +366,16 @@ namespace browser {
     Browser *Entrance::new_browser(const QByteArray &state)
     {
 
-        Browser *browser = new Browser(state, _record_controller
-                                       // , _shadow_branch_root
-                                       , this, _style_source, Qt::MaximizeUsingFullscreenGeometryHint); //, dock_widget
+        Browser *browser = new Browser(state
+                                       , _tree_screen
+                                       , _find_screen
+                                       , _editor_screen
+                                       , _main_window
+                                       , this
+                                       // , _appconfig
+                                       , _style_source
+                                       , Qt::MaximizeUsingFullscreenGeometryHint
+                                      ); //, dock_widget
 
         //        _dockwidget->setWidget(browser);
         //        browser->setParent(_dockwidget);
@@ -385,9 +396,12 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(url
-                    , _record_controller
-                    // , _shadow_branch_root
+                    , _tree_screen
+                    , _find_screen
+                    , _editor_screen
+                    , _main_window
                     , this
+                    // , _appconfig
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
                    ); //, dock_widget
@@ -397,22 +411,24 @@ namespace browser {
     }
 
 
-    std::pair<Browser *, WebView *> Entrance::new_browser(boost::intrusive_ptr<TreeItem> record)
+    std::pair<Browser *, WebView *> Entrance::new_browser(boost::intrusive_ptr<TreeItem> item)
     {
 
         //        DockedWindow *browser =
-        new Browser(record
-                    , _record_controller
-                    // , _shadow_branch_root
+        new Browser(item
+                    , _tree_screen
+                    , _find_screen
+                    , _editor_screen
+                    , _main_window
                     , this
+                    // , _appconfig
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
                    ); //, dock_widget
 
 
-        return find(record);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+        return find(item);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
-
 
     WebView *Entrance::new_view(QUrl const &url)
     {
@@ -426,9 +442,12 @@ namespace browser {
 
         //        DockedWindow *browser =
         new Browser(url
-                    , _record_controller
-                    // , _shadow_branch_root
+                    , _tree_screen
+                    , _find_screen
+                    , _editor_screen
+                    , _main_window
                     , this
+                    // , _appconfig
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
                    ); //, dock_widget
@@ -528,16 +547,19 @@ namespace browser {
     Entrance::Entrance(QString object_name
                        , TreeScreen *_tree_screen
                        , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
-                       , RecordController *_record_controller
-                       , AppConfig &_appconfig
+                       , MetaEditor *_editor_screen
+                       , MainWindow *_main_window
+                       , AppConfig  &_appconfig
                        , const QString &style_source
-                       , QWidget *parent
                        , Qt::WindowFlags flags
                       )
-        : QDockWidget(parent, flags)  //, _application(application)
-        , _main_windows(QList<QPointer<Browser> >())
-        , _shadow_branch(new TreeModelKnow(this))
-        , _record_controller(_record_controller)
+        : QDockWidget(_main_window, flags)  //, _application(application)
+        , _browsers(QList<QPointer<Browser> >())    // , _shadow_branch(_record_controller->source_model()->_browser_pages)
+        , _tree_screen(_tree_screen)
+        , _find_screen(_find_screen)
+        , _editor_screen(_editor_screen) //, _record_controller(_record_controller)
+        , _main_window(_main_window)
+        , _appconfig(_appconfig)
         , _style_source(style_source)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)) //| Qt::SplashScreen
 
@@ -553,16 +575,6 @@ namespace browser {
           //                                    , this, style_source, flags    //Qt::Widget   //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
           //                                   ))
     {
-        _shadow_branch->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
-        _shadow_branch->root()->field("id"
-                                          , "0"  // get_unical_id()
-                                         );   // ?
-        _shadow_branch->root()->field("name", "Current Session");
-
-        _tree_screen->shadow_branch = std::make_shared<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const*>>("", &Entrance::shadow_branch, this);
-        _find_screen->shadow_branch = std::make_shared<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const*>>("", &Entrance::shadow_branch, this);
-        _record_controller->source_model()->tree_item(_shadow_branch->root());
-
 
         setObjectName(object_name);
         //        invoke_ptr = &Entrance::active_url;
@@ -668,8 +680,8 @@ namespace browser {
     {
 
 
-        for(int i = 0; i < _main_windows.size(); ++i) {
-            Browser *window = _main_windows.at(i);
+        for(int i = 0; i < _browsers.size(); ++i) {
+            Browser *window = _browsers.at(i);
 
             if(window) {delete window; window = nullptr;}
         }
@@ -680,7 +692,8 @@ namespace browser {
         //        if(_dockwidget)delete _dockwidget;
 
         //    if(browser)delete browser;  // I can't destroy?
-        delete _shadow_branch;
+
+        //        delete _shadow_branch;
 
         if(_hidetitlebar) {delete _hidetitlebar; _hidetitlebar = nullptr;}
     }
@@ -761,46 +774,60 @@ namespace browser {
 
     void Entrance::active_url(const QUrl &url)
     {
-        //        Record *r =
-        auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
-        auto r = _record_controller->request_item(
-                     url
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                         ""
-                         , &Entrance::ActiveRecordBinder::binder
-                         , ara
-                     )
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                         ""
-                         , &Entrance::ActiveRecordBinder::activator
-                         , ara
-                     )
-                 );
-        r->self_bind();
-        r->active();
+        if(activiated_registered().first) {
+            Browser *browser = activiated_registered().first;
+            auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
+
+            auto r = browser->record_screen()->record_controller()->request_item(
+                         url
+                         , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
+                             ""
+                             , &TabWidget::ActiveRecordBinder::binder
+                             , ara
+                         )
+                         , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+                             ""
+                             , &TabWidget::ActiveRecordBinder::activator
+                             , ara
+                         )
+                     );
+            r->self_bind();
+            r->active();
+        } else {
+            new_browser(url);
+        }
+
         //        r->active_immediately(true);
         //        return active_record(r);
     }
 
     void Entrance::active(boost::intrusive_ptr<TreeItem> item)
     {
-        //        Record *r =
-        auto ara = boost::make_shared<Entrance::ActiveRecordBinder>(this);
-        auto r = _record_controller->request_item(
-                     item
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                         ""
-                         , &Entrance::ActiveRecordBinder::binder
-                         , ara
-                     )
-                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                         ""
-                         , &Entrance::ActiveRecordBinder::activator
-                         , ara
-                     )
-                 );
-        r->self_bind();
-        r->active();
+
+        if(activiated_registered().first) {
+            Browser *browser = activiated_registered().first;
+            auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
+
+            auto r = browser->record_screen()->record_controller()->request_item(
+                         item
+                         , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
+                             ""
+                             , &TabWidget::ActiveRecordBinder::binder
+                             , ara
+                         )
+                         , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+                             ""
+                             , &TabWidget::ActiveRecordBinder::activator
+                             , ara
+                         )
+                     );
+            r->self_bind();
+            r->active();
+        } else {
+            new_browser(item);
+        }
+
+
         //        r->active_immediately(true);
         //        return active_record(r);
     }
@@ -990,16 +1017,17 @@ namespace browser {
 
     void Entrance::clean()
     {
-        if(_main_windows.count() > 0) {
+        if(_browsers.count() > 0) {
             // cleanup any deleted main windows first
-            for(int i = _main_windows.count() - 1; i >= 0; --i) {
-                if(_main_windows.at(i).isNull()) {
-                    _main_windows.removeAt(i);
+            for(int i = _browsers.count() - 1; i >= 0; --i) {
+                if(_browsers.at(i).isNull()) {
+                    _browsers.removeAt(i);
                 }
             }
         }
     }
 
+    // not sure to succeeded
     std::pair<Browser *, WebView *> Entrance::activiated_registered()
     {
         clean();
@@ -1012,8 +1040,8 @@ namespace browser {
         //                 );
         //        } else { //
 
-        if(!_main_windows.isEmpty()) {
-            for(auto &i : _main_windows) {
+        if(!_browsers.isEmpty()) {
+            for(auto &i : _browsers) {
                 if(i->isVisible() || i->isActiveWindow()) {
                     assert(i.data());
                     dp.first = i.data();
@@ -1034,7 +1062,7 @@ namespace browser {
     std::pair<Browser *, WebView *> Entrance::equip_registered(boost::intrusive_ptr<TreeItem> record)
     {
         assert(record);
-        assert(record->is_registered());
+        assert(record->is_registered_to_shadow_list());
         clean();
         //DockedWindow *w = nullptr;
         std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
@@ -1049,7 +1077,7 @@ namespace browser {
 
 
 
-                if(_main_windows.isEmpty()) {
+                if(_browsers.isEmpty()) {
 
                     //            Record *r = record ? record : request_record(QUrl(DockedWindow::_defaulthome));
                     //            r->active_immediately(true);
@@ -1076,7 +1104,7 @@ namespace browser {
                     //                    if(record && QUrl(record->getNaturalFieldSource("url")).isValid()) {
                     //            if(record)record->active_immediately(true);
 
-                    for(auto &i : _main_windows) {
+                    for(auto &i : _browsers) {
 
                         dp.second = i->tabWidget()->find(record->natural_field_source("url"));
 
@@ -1101,7 +1129,7 @@ namespace browser {
 
                     if(dp.second == nullptr && dp.first) {
                         //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                        dp.second = dp.first->invoke_page(record);
+                        dp.second = dp.first->invoke_registered_page(record);
                     }
 
                     //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
@@ -1245,7 +1273,7 @@ namespace browser {
         //        for(int i = 0; i < _mainWindows.count(); ++i)
         //            list.append(_mainWindows.at(i));
 
-        return _main_windows;    // list;
+        return _browsers;    // list;
     }
 
 #if defined(Q_OS_OSX)
@@ -1273,7 +1301,7 @@ namespace browser {
 
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
-        for(auto &i : _main_windows) {
+        for(auto &i : _browsers) {
             dp.second = i->tabWidget()->find(record->natural_field_source("url"));
 
             if(dp.second != nullptr) {
@@ -1305,7 +1333,7 @@ namespace browser {
 
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
-        for(auto &i : _main_windows) {
+        for(auto &i : _browsers) {
             dp.second = i->tabWidget()->find(url);
 
             if(dp.second != nullptr) {
@@ -1399,8 +1427,8 @@ namespace browser {
 
     void Entrance::resizeEvent(QResizeEvent *e)
     {
-        for(auto &i : _main_windows) {
-            i->resizeEvent(e);
+        for(auto &i : _browsers) {
+            if(i) i->resizeEvent(e);
         }
 
         QDockWidget::resizeEvent(e);

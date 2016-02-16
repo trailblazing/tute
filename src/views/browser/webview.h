@@ -333,8 +333,8 @@ namespace browser {
         WebView(boost::intrusive_ptr<TreeItem> record
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *parent
-                , RecordController *table_controller
-                = globalparameters.table_screen()->table_controller()
+                , RecordController *record_controller
+                // = globalparameters.record_screens()->record_controller()
                   //                  , TableController *_page_controller
                   //                = globalparameters.page_screen()->table_controller()
                );
@@ -343,8 +343,8 @@ namespace browser {
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , TabWidget *tabmanager
                 , QWidget *parent
-                , RecordController *table_controller
-                = globalparameters.table_screen()->table_controller()
+                , RecordController *record_controller
+                // = globalparameters.record_screens()->record_controller()
                   //                  , TableController *_page_controller
                   //                = globalparameters.page_screen()->table_controller()
                );
@@ -361,8 +361,8 @@ namespace browser {
         QString lastStatusBarText() const;
         inline int progress() const { return _progress; }
 
-        RecordController *table_controller() {return _record_controller;}
-        void bind_recordtabcontroller(RecordController *recordtablecontroller) {_record_controller  = recordtablecontroller ;}
+        RecordController *record_controller() {return _record_controller;}
+        void record_controller(RecordController *_record_controller) {this->_record_controller  = _record_controller ;}
         //        Record *const &record()const {return _record;}
         //        void record(Record *record) {if(record) {_record = record; _record->view(this);}}
 

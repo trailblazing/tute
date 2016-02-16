@@ -556,7 +556,7 @@ void RecordView::startDrag()
     // Если действительно выбрана строка
     if(currentIndex().isValid()) {
         // Перед переносом нужно запомнить текст последней редактируемой записи, чтобы не перенесся неотредактированный вариант
-        find_object<MainWindow>("mainwindow")->saveTextarea();
+        find_object<MainWindow>("mainwindow")->save_text_area();
 
         // Копирование выделенных строк в объект переноса
         QDrag *drag = new QDrag(this);

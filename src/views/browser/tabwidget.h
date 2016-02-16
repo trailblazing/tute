@@ -267,11 +267,6 @@ namespace browser {
             ActiveRecordBinder(
                 TabWidget *the
                 , bool make_current = true
-
-                                      //                                 , TableController *_record_controller
-                                      //                               = globalparameters.table_screen()->table_controller()
-                                      //                                 , TableController *_page_controller
-                                      //                               = globalparameters.page_screen()->table_controller()
             ): _the(the) , _make_current(make_current)
                 //                , _record_controller(_record_controller)
                 //                , _page_controller(_page_controller)
@@ -280,7 +275,7 @@ namespace browser {
 
             WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
             {
-                WebView *view = _the->newTab(item, _make_current, _the->_record_controller);
+                WebView *view = _the->newTab(item, _the->_record_controller, _make_current);
                 (item.get()->*_bind)(view->page());
                 return view;
             }
@@ -294,7 +289,7 @@ namespace browser {
         };
 
         //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
-        boost::intrusive_ptr<TreeItem> tree_item() {return _record_controller->tree_item();}
+        RecordModel *source_model() {return _record_controller->source_model();}
         //        void tree_item(boost::intrusive_ptr<TreeItem> item) {_shadow_branch_root = item;}
 
         //        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
@@ -312,15 +307,10 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(boost::intrusive_ptr<TreeItem> record
-                        // = request_record(QUrl(DockedWindow::_defaulthome))
-                        //  , bool openinnewtab = false
+        WebView *newTab(boost::intrusive_ptr<TreeItem> item
+                        , RecordController *_record_controller  // = globalparameters.record_screens()->record_controller()
                         , bool make_current
                         = true
-                          , RecordController *_record_controller
-                        = globalparameters.table_screen()->table_controller()
-                          //                          , TableController *_page_controller
-                          //                        = globalparameters.page_screen()->table_controller()
                        );
 
         //        void new_view(bool make_current = false);    //true

@@ -10,6 +10,7 @@
 #include "libraries/GlobalParameters.h"
 #include "browser.h"
 #include "webview.h"
+#include "views/record/MetaEditor.h"
 
 
 class TreeModelKnow;
@@ -17,7 +18,9 @@ class QNetworkReply;
 class QSslError;
 class QtSingleApplication;
 class RecordController;
+
 extern GlobalParameters globalparameters;
+
 namespace browser {
     class WebView;
 }
@@ -59,12 +62,10 @@ namespace browser {
         Entrance(QString object_name
                  , TreeScreen *_tree_screen
                  , FindScreen *_find_screen
-                 , RecordController *_record_controller
-                 // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+                 , MetaEditor *_editor_screen // , RecordController *_record_controller
+                 , MainWindow *_main_window
                  , AppConfig &_appconfig, const QString &style_source
-                 , QWidget *parent
-                 = 0
-                   , Qt::WindowFlags flags
+                 , Qt::WindowFlags flags
                  = 0
                 );
         ~Entrance();
@@ -73,8 +74,8 @@ namespace browser {
 
         std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
 
-        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<TreeItem> record    // = boost::intrusive_ptr<Record>(nullptr)
-                                                        );
+        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<TreeItem> record);    // = boost::intrusive_ptr<Record>(nullptr)
+
         //        WebView *active_record_alternative(Record *const record) ;
 
         struct ActiveRecordBinder {
@@ -107,7 +108,7 @@ namespace browser {
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
         void settingstylesource(const QString &style_source) {_style_source = style_source;}
-        TreeModelKnow const *shadow_branch()const {return _shadow_branch;}
+        //        ItemsFlat const *shadow_branch()const {return _shadow_branch;}
     public slots:
 
         void init_setting(void);
@@ -126,7 +127,10 @@ namespace browser {
         WebView *new_view(QUrl const &url);
         std::pair<Browser *, WebView *> new_browser(QUrl const &url);
         std::pair<Browser *, WebView *> new_browser(boost::intrusive_ptr<TreeItem> record);
+
         Browser *new_browser(const QByteArray &state);
+        //        Browser *activate_browser(boost::intrusive_ptr<TreeItem> item);
+
         Entrance *prepend(Browser *);
         void on_activate_window();
         //        void on_splitter_moved(int pos, int index);
@@ -149,10 +153,15 @@ namespace browser {
         void setup_ui(void);
         void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
-
-        QList<QPointer<Browser> >       _main_windows;
-        TreeModelKnow                   *_shadow_branch;
-        RecordController                *_record_controller;
+        //        void setupMenu();
+        QList<QPointer<Browser> >       _browsers;
+        //        ItemsFlat                       *_shadow_branch;
+        TreeScreen                      *_tree_screen;
+        FindScreen                      *_find_screen;
+        MetaEditor                      *_editor_screen;
+        MainWindow                      *_main_window;
+        AppConfig                       &_appconfig;
+        // RecordController                *_record_controller;
         QString                         _style_source;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
         QAction                         *_actionFreeze;

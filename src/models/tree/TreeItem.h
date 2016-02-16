@@ -36,16 +36,16 @@ public:
     typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
     TreeItem(
-        QMap<QString, QString>             field_data
-        , boost::intrusive_ptr<TreeItem>   parent_item
-        , const QDomElement &i_dom_element
+        QMap<QString, QString>              field_data
+        , boost::intrusive_ptr<TreeItem>    parent_item
+        , const QDomElement                 &i_dom_element
         = QDomElement()
     );
 
     TreeItem(
         boost::intrusive_ptr<Record>        record
         , boost::intrusive_ptr<TreeItem>    parent_item
-        , const QDomElement &i_dom_element
+        , const QDomElement                 &i_dom_element
         = QDomElement()
     );
 
@@ -93,6 +93,8 @@ public:
 
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
+
+    void unload_page();
     boost::intrusive_ptr<TreeItem> remove_child(boost::intrusive_ptr<TreeItem> item);
 
     void parent(boost::intrusive_ptr<TreeItem> it);
@@ -200,7 +202,7 @@ private:
     QStringList field_name_for_crypt_list(void) const;
 
     //    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
-    //    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
+    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
 
     //    // Таблица инфополей данной ветки
     //    QMap<QString, QString>                  _field_data;

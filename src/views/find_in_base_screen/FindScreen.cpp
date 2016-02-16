@@ -19,7 +19,7 @@
 #include "main.h"
 #include "views/main_window/MainWindow.h"
 #include "FindScreen.h"
-#include "FindTableWidget.h"
+//#include "FindTableWidget.h"
 #include "models/tree/TreeModelKnow.h"
 #include "models/app_config/AppConfig.h"
 #include "models/tree/TreeItem.h"
@@ -567,7 +567,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
     // Сохраняется текущая редактируемая запись, чтобы и в ней
     // были найдены введенные перед нажатием Find данные, если они есть
-    find_object<MainWindow>("mainwindow")->saveTextarea();
+    find_object<MainWindow>("mainwindow")->save_text_area();
 
     //    // Очищается таблица результата поиска
     //    _findtable->re_initialize();
@@ -583,7 +583,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    auto _candidate_root = find_object<TreeScreen>(tree_screen_singleton_name)->_shadow_candidate_model->_root_item;
     _selected_branch_root->field("name", _toolbarsearch->text());
     //    TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
-    (*shadow_branch)()->root()->field("name", _toolbarsearch->text());
+    (*reocrd_controller)()->record_screen()->setObjectName(_toolbarsearch->text());
 
     // globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true);
     //    std::shared_ptr<RecordTable> _resultset_data = _candidate_root->tabledata();    // std::make_shared<RecordTable>(_resultset_item);
@@ -599,7 +599,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                      // , std::shared_ptr<RecordTable>     &resultset_data
     ) {
         // Корневой элемент дерева
-        search_start_item = _search_model->root();    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+        search_start_item = _search_model->root_item();    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
         candidate_records = _search_model->get_all_record_count();
         resultset_item = resultset_item->active_subset(
@@ -735,7 +735,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_root = final_search(_search_start_item, _selected_branch_root);
-            globalparameters.tree_screen()->enable_up_action(_selected_branch_root != globalparameters.tree_screen()->_root->root());
+            globalparameters.tree_screen()->enable_up_action(_selected_branch_root != globalparameters.tree_screen()->_root->root_item());
         }
     }
 
@@ -762,7 +762,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_root = final_search(_search_start_item, _selected_branch_root);
-            globalparameters.tree_screen()->enable_up_action(_selected_branch_root != globalparameters.tree_screen()->_root->root());
+            globalparameters.tree_screen()->enable_up_action(_selected_branch_root != globalparameters.tree_screen()->_root->root_item());
         }
 
         //    }
@@ -792,36 +792,37 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 }
 
 
-boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> curritem
-                                                          , boost::intrusive_ptr<TreeItem> _candidate_root   // std::shared_ptr<RecordTable> result
-                                                         )
+boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(
+    boost::intrusive_ptr<TreeItem> curritem
+    , boost::intrusive_ptr<TreeItem> _candidate_root   // std::shared_ptr<RecordTable> result
+)
 {
-    auto result = _candidate_root;  // ->record_table();
+    auto result_root = _candidate_root;  // ->record_table();
 
     // Если была нажата отмена поиска
-    if(_cancel_flag == 1)return result;
+    if(_cancel_flag == 1)return result_root;
 
     // Если ветка зашифрована, и пароль не был введен
     if(curritem->field("crypt") == "1" &&
        globalparameters.crypt_key().length() == 0)
-        return result;
+        return result_root;
 
     // Если в ветке присутсвует таблица конечных записей
     if(curritem->size() > 0) {
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
-        auto _recordtable = curritem;   // ->record_table();
+        auto child_items_root = curritem;   // ->record_table();
 
         // Перебираются записи таблицы
-        for(int i = 0; i < _recordtable->size(); i++) {
+        for(int i = 0; i < child_items_root->size(); i++) {
             // Обновляется линейка наполняемости
             _progress->setValue(++ _total_progress_counter);
             qApp->processEvents();
 
             if(_progress->wasCanceled()) {
                 _cancel_flag = 1;
-                return result;
+                return result_root;
             }
 
             // Результаты поиска в полях
@@ -849,11 +850,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
                 if(_search_area[key] == true) {
                     if(key != "text") {
                         // Поиск в обычном поле
-                        inspect_text = _recordtable->child(i)->field(key);
+                        inspect_text = child_items_root->child(i)->field(key);
                         iteration_search_result[key] = find_in_text_process(inspect_text);
                     } else {
                         // Поиск в тексте записи
-                        if(_recordtable->item(i)->file_exists()) inspect_text = _recordtable->text(i);
+                        if(child_items_root->item(i)->file_exists()) inspect_text = child_items_root->text(i);
                         else inspect_text = QString();
 
                         QTextDocument textdoc;
@@ -872,7 +873,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
 
             // Если запись найдена
             if(found_flag == 1) {
-                qDebug() << "Find succesfull in " << _recordtable->child(i)->field("name");
+                qDebug() << "Find succesfull in " << child_items_root->child(i)->field("name");
 
                 // QString pin0 = curritem->getField("pin");
                 // QString pin1 = searchRecordTable->getField("pin", i);   // work
@@ -891,9 +892,9 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
                 //                                   , searchRecordTable->field("id", i)
                 //                                  );
 
-                if(_recordtable->item(i)->is_lite())_recordtable->item(i)->to_fat();
+                if(child_items_root->item(i)->is_lite())child_items_root->item(i)->to_fat();
 
-                result->insert_new_item(result->size(), _recordtable->item(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+                result_root->insert_new_item(result_root->size(), child_items_root->item(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
 
                 //                assert(_recordtable->record(i)->is_lite());
                 //                result->shadow_record_lite(result->size(), _recordtable->record(i));
@@ -912,7 +913,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
     // Рекурсивная обработка каждой подчиненной ветки
     for(int i = 0; i < curritem->size(); i++) find_recursive(curritem->child(i), _candidate_root);
 
-    return result;
+    return result_root;
 }
 
 

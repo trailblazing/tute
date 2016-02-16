@@ -19,6 +19,13 @@ class RecordProxyModel;
 class ClipboardRecords;
 class RecordScreen;
 class TreeItem;
+class TreeModelKnow;
+class MainWindow;
+class TreeScreen;
+class FindScreen;
+class MetaEditor;
+class AppConfig;
+
 
 namespace browser {
     class Entrance;
@@ -38,20 +45,24 @@ public:
     typedef TreeItem::bind_helper bind_helper;
     typedef TreeItem::active_helper active_helper;
     RecordController(QString screen_name
-                     // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                     , RecordScreen *table_screen);
+                     , TreeScreen   *_tree_screen
+                     , FindScreen   *_find_screen
+                     , MetaEditor   *_editor_screen
+                     , MainWindow   *_main_window
+                     , RecordScreen *_record_screen
+                    );
     virtual ~RecordController();
 
     void init(void);
 
     RecordView *view(void);
     RecordModel *source_model();    // {return _source_model;}
-
+    RecordScreen *record_screen() {return _record_screen;}
     void click_item(const QModelIndex &index);
 
-    bool is_tree_item_exists(void);
+    //    bool is_tree_item_exists(void);
     //    void reset_tabledata_test(TableData *rtData);
-    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
+    //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
     //    void reset_tabledata(std::shared_ptr<RecordTable> table_data);
 
     int row_count(void)const;
@@ -82,7 +93,7 @@ public:
     void removerow_by_id(QString delId);
     void removerows_by_idlist(QVector<QString> delIds);
 
-    boost::intrusive_ptr<TreeItem> register_item_to_shadow_branch(boost::intrusive_ptr<TreeItem> item);
+
 
     boost::intrusive_ptr<TreeItem> check_item(const QUrl &_url);
 
@@ -100,10 +111,21 @@ public:
 
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
-    boost::intrusive_ptr<TreeItem> tree_item();
+    //    boost::intrusive_ptr<TreeItem> tree_item();
     void sychronize_metaeditor_to_item(const int pos);
     void sychronize_attachtable_to_item(const int pos);
+    void addnew_blank(int mode);
 
+    //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
+
+    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item
+                        , const int mode
+                        = ADD_NEW_RECORD_AFTER // add_new_record_after
+                       );
+
+    //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
+    //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
+    bool no_view() {return _no_view;}
 signals:
 
 public slots:
@@ -150,22 +172,14 @@ protected:
 
     void update_browser(const int source_pos);
 
-
-    RecordModel        *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
-    RecordProxyModel   *_proxy_model;
-    RecordView         *_view;
-
-    void addnew_blank(int mode);
-
-    //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
-
-    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item
-                        , const int mode
-                        = ADD_NEW_RECORD_AFTER // add_new_record_after
-                       );
+    bool                _no_view = true;
+    RecordModel         *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
+    RecordProxyModel    *_proxy_model;
+    RecordView          *_view;
+    RecordScreen        *_record_screen;
 
     int addnew_item(boost::intrusive_ptr<TreeItem> item, const int mode = ADD_NEW_RECORD_AFTER);
-
+    boost::intrusive_ptr<TreeItem> register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item);
     void edit_field(int pos
                     , QString pin
                     , QString name

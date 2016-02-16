@@ -52,11 +52,11 @@ public:
     browser::Entrance *entrance();
     void entrance(browser::Entrance *&b);
 
-    void table_screen(RecordScreen *point);
-    RecordScreen *table_screen();
+    void push_record_screen(RecordScreen *point);
+    std::vector<RecordScreen *> record_screens();
 
-    void page_screen(RecordScreen *page);
-    RecordScreen *page_screen();
+    //    void page_screen(RecordScreen *page);
+    //    RecordScreen *page_screen();
 
     void find_screen(FindScreen *point);
     FindScreen *find_screen();
@@ -96,8 +96,8 @@ private:
 
     TreeScreen          *_tree_screen;
     browser::Entrance   *_browsermanager;
-    RecordScreen         *_table_screen;
-    RecordScreen         *_page_screen;
+    std::vector<RecordScreen *> _table_screens;
+    //    RecordScreen         *_page_screen;
     FindScreen          *_find_screen;
     MetaEditor          *_meta_editor;
     QStatusBar          *_statusbar;

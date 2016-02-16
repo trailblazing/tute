@@ -15,7 +15,7 @@ public:
     void enableSwitch(void);
     void disableSwitch(void);
 
-    void switchFromTreeToRecordtable(void);
+    void switch_from_tree_to_record_screen(void);
     void switchFromTreeToFindInBase(void);
     bool getSwitchStatus(void);
 

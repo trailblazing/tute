@@ -30,6 +30,9 @@ class FlatComboBox;
 class QStackedWidget;
 class ItemsFlat;
 class TreeItem;
+class RecordController;
+
+
 
 namespace browser {
     class ChaseWidget;
@@ -60,7 +63,7 @@ public:
     void remove_id(const QString &id);
     void remove_row(const int row);
     void adjust_size();
-    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, TreeModelKnow const *>>   shadow_branch;    // for entrance
+    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, RecordController *>>   reocrd_controller;    // for entrance
 public slots:
 
     void widget_show(void);
@@ -99,13 +102,13 @@ private:
     //    QIcon _reloadicon;
     //    QIcon _stopicon;
 
-    QToolBar *_navigater;
+    QToolBar        *_navigater;
     //    //    QHBoxLayout *_navigater;
 
-    QAction *_historyback;      //    FlatToolButton *_history_back;
-    QAction *_historyforward;   //    FlatToolButton *_history_forward;
-    QAction *_historyhome;      //    FlatToolButton *_history_home;
-    QAction *_stopreload;       //    FlatToolButton *_stop_reload;
+    QAction         *_historyback;      //    FlatToolButton *_history_back;
+    QAction         *_historyforward;   //    FlatToolButton *_history_forward;
+    QAction         *_historyhome;      //    FlatToolButton *_history_home;
+    QAction         *_stopreload;       //    FlatToolButton *_stop_reload;
 
     browser::ChaseWidget *_chasewidget;
 

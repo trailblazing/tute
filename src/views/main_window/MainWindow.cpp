@@ -28,6 +28,8 @@
 #include "views/browser/browser.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/browser/downloadmanager.h"
+#include "views/browser/history.h"
+#include "views/browser/bookmarks.h"
 
 
 extern AppConfig appconfig;
@@ -59,26 +61,30 @@ MainWindow::MainWindow(
     , _v_left_splitter(new QSplitter(Qt::Horizontal))      // Qt::Vertical
     , _h_splitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
+    , _editmenu(new QMenu(tr("&Edit"), this))
+    , _viewmenu(new QMenu(tr("&View"), this))
+    , _histrymenu(new browser::HistoryMenu(this))
+    , _bookmarkmenu(new browser::BookmarksMenu(this))
+    , _windowmenu(new QMenu(tr("&Window"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
     , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, this))
-    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_selected_branch->root(), this))
-    , _table_screen(new RecordScreen(table_screen_singleton_name            // , _tree_screen->shadow_branch()->_root_item
-                                     , this))
-    , _entrance(new browser::Entrance(entrance_singleton_name
+    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_selected_branch->root_item(), this))
+    , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
+    , _entrance(new browser::Entrance(entrance_singleton_name   //
                                       , _tree_screen
-                                      , _find_screen    // ->toolbarsearch()
-                                      , _table_screen->table_controller()   // , _tree_screen->shadow_branch()->_root_item   // , _page_controller
-                                      , appconfig
-                                      , globalparameters.style_source()
+                                      , _find_screen    // ->toolbarsearch()    //
+                                      , _editor_screen
+                                      // , _table_screen->record_controller()   // , _tree_screen->shadow_branch()->_root_item   // , _page_controller  //, appconfig
                                       , this
+                                      , _appconfig
+                                      , globalparameters.style_source()
                                       , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
                                      ))
       //    , _record_controller(_table_screen->table_controller())
       //    , _page_screen(new TableScreen("page_screen", _tree_screen->_shadowmodel->_root_item, this))
       //    , _page_controller(_page_screen->table_controller())
     , _download(new browser::DownloadManager(download_manager_singleton_name, this))
-    , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
     , _statusbar(new QStatusBar(this))
     , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
     , _enable_real_close(false)
@@ -95,8 +101,11 @@ MainWindow::MainWindow(
 
     installEventFilter(this);
 
-    initFileMenu();
-    initToolsMenu();
+    init_file_menu();
+
+    append_quit_menu();
+
+    init_tools_menu();
     //    initHelpMenu();
     QMainWindow::menuBar()->hide();
 
@@ -108,12 +117,12 @@ MainWindow::MainWindow(
     //    initToolsMenu();
     //    initHelpMenu();
 
-    setupIconActions();
-    createTrayIcon();
-    setIcon();
+    setup_icon_actions();
+    create_tray_icon();
+    set_icon();
 
     if(QSystemTrayIcon::isSystemTrayAvailable())
-        trayIcon->show();
+        _tray_icon->show();
 
     // Инициализируется объект слежения за корзиной
     trashmonitoring.init(_appconfig.get_trashdir());
@@ -128,10 +137,17 @@ MainWindow::MainWindow(
 
 }
 
+void MainWindow::append_quit_menu()
+{
+    QAction *quit = new QAction(tr("&Quit"), this);
+    quit->setShortcut(Qt::CTRL + Qt::Key_Q);
+    connect(quit, &QAction::triggered, this, &MainWindow::application_exit);
+    _filemenu->addAction(quit);
+}
 
 MainWindow::~MainWindow()
 {
-    saveAllState();
+    save_all_state();
 
     delete  _entrance;
     delete  _switcher;
@@ -142,7 +158,7 @@ MainWindow::~MainWindow()
 
     //    if(_page_screen)delete  _page_screen;
 
-    delete  _table_screen;
+    //    delete  _table_screen;
     delete  _tree_screen;
     delete  _vtabwidget;
 
@@ -153,6 +169,11 @@ MainWindow::~MainWindow()
     delete  _h_splitter;
 
     delete  _filemenu;
+    delete  _editmenu;
+    delete  _viewmenu;
+    delete  _histrymenu;
+    delete  _bookmarkmenu;
+    delete  _windowmenu;
     delete  _toolsmenu;
     delete  _helpmenu;
 
@@ -172,7 +193,11 @@ void MainWindow::setup_ui(void)
 
     //    _table_screen = new TableScreen(this);
     //    _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
-    _globalparameters.table_screen(_table_screen);
+
+
+    //    _globalparameters.push_record_screen(_table_screen);
+
+
     //    _recordtable_hidden = recordTableScreen->isHidden();
     //    connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
     //    connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
@@ -233,17 +258,17 @@ void MainWindow::setup_ui(void)
 
 void MainWindow::setup_signals(void)
 {
-    connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &MainWindow::onExpandEditArea);
+    connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &MainWindow::on_expand_edit_area);
 
     // Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
-    connect(qApp, &QApplication::commitDataRequest, this, &MainWindow::commitData);
+    connect(qApp, &QApplication::commitDataRequest, this, &MainWindow::commit_data);
 
-    connect(qApp, &QApplication::focusChanged, this, &MainWindow::onFocusChanged);
+    connect(qApp, &QApplication::focusChanged, this, &MainWindow::on_focus_changed);
 
     // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
     connect(_tree_screen->_actionlist["find_in_base"], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
     //    connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
-    connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    //    connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
     // if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
@@ -274,7 +299,7 @@ void MainWindow::assembly(void)
     _vtabwidget->setTabPosition(QTabWidget::West);  // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
     _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
 
-    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
+    //    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
 
     // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
@@ -350,17 +375,17 @@ void MainWindow::assembly(void)
 }
 
 
-void MainWindow::saveAllState(void)
+void MainWindow::save_all_state(void)
 {
     // Сохранение данных в поле редактирования
-    saveTextarea();
+    save_text_area();
 
     // Сохраняются данные сеанса работы
-    saveGeometry();
+    save_geometry();
     tree_position();
-    save_recordtable_position();
-    saveEditorCursorPosition();
-    saveEditorScrollBarPosition();
+    //    save_recordtable_position();
+    save_editor_cursor_position();
+    save_editor_scrollbar_position();
 
     // Синхронизируется с диском конфиг программы
     appconfig.sync();
@@ -368,17 +393,17 @@ void MainWindow::saveAllState(void)
 
 
 // Слот, срабатывающий когда происходит выход из оконной системы
-void MainWindow::commitData(QSessionManager &manager)
+void MainWindow::commit_data(QSessionManager &manager)
 {
     Q_UNUSED(manager);
     qDebug() << "Session manager send commit data signal.";
 
-    applicationFastExit();
+    application_fast_exit();
 }
 
 
 // Восстанавливается геометрия окна и позиции основных разделителей
-void MainWindow::restoreGeometry(void)
+void MainWindow::restore_geometry(void)
 {
     if(globalparameters.target_os() == "android")
         setWindowState(Qt::WindowMaximized); // Для Андроида окно просто разворачивается на весь экран
@@ -399,7 +424,7 @@ void MainWindow::restoreGeometry(void)
 
 
 // Запоминается геометрия окна и позиции основных разделителей
-void MainWindow::saveGeometry(void)
+void MainWindow::save_geometry(void)
 {
     qDebug() << "Save window geometry and splitter sizes";
 
@@ -471,7 +496,7 @@ void MainWindow::tree_position(QStringList path)
 }
 
 
-bool MainWindow::isTreePositionCrypt()
+bool MainWindow::is_tree_position_crypt()
 {
     QStringList path = appconfig.get_tree_position();
 
@@ -486,31 +511,31 @@ bool MainWindow::isTreePositionCrypt()
         return false;
 }
 
+// too many _record_screen objects, deprecated
+//void MainWindow::restore_recordtable_position(void)
+//{
+//    QString id = appconfig.get_recordtable_selected_record_id();
 
-void MainWindow::restore_recordtable_position(void)
-{
-    QString id = appconfig.get_recordtable_selected_record_id();
+//    if(id.length() > 0)
+//        select_id(id);
+//}
 
-    if(id.length() > 0)
-        select_id(id);
-}
+// too many _record_screen objects, deprecated
+//void MainWindow::save_recordtable_position(void)
+//{
+//    QString id = _table_screen->first_selection_id();
 
-
-void MainWindow::save_recordtable_position(void)
-{
-    QString id = _table_screen->first_selection_id();
-
-    appconfig.set_recordtable_selected_record_id(id);
-}
-
-
-void MainWindow::select_id(QString id)
-{
-    _table_screen->select_id(id);
-}
+//    appconfig.set_recordtable_selected_record_id(id);
+//}
 
 
-void MainWindow::saveEditorCursorPosition(void)
+//void MainWindow::select_id(QString id)
+//{
+//    _table_screen->select_id(id);
+//}
+
+
+void MainWindow::save_editor_cursor_position(void)
 {
     int n = _editor_screen->cursor_position();
 
@@ -518,7 +543,7 @@ void MainWindow::saveEditorCursorPosition(void)
 }
 
 
-void MainWindow::restoreEditorCursorPosition(void)
+void MainWindow::restore_editor_cursor_position(void)
 {
     int n = appconfig.getEditorCursorPosition();
 
@@ -526,7 +551,7 @@ void MainWindow::restoreEditorCursorPosition(void)
 }
 
 
-void MainWindow::saveEditorScrollBarPosition(void)
+void MainWindow::save_editor_scrollbar_position(void)
 {
     int n = _editor_screen->scrollbar_position();
 
@@ -534,7 +559,7 @@ void MainWindow::saveEditorScrollBarPosition(void)
 }
 
 
-void MainWindow::restoreEditorScrollBarPosition(void)
+void MainWindow::restore_editor_scrollbar_position(void)
 {
     int n = appconfig.getEditorScrollBarPosition();
 
@@ -542,7 +567,7 @@ void MainWindow::restoreEditorScrollBarPosition(void)
 }
 
 
-void MainWindow::restoreFindOnBaseVisible(void)
+void MainWindow::restore_find_on_base_visible(void)
 {
     bool n = appconfig.get_findscreen_show();
 
@@ -557,10 +582,11 @@ void MainWindow::restoreFindOnBaseVisible(void)
 
 
 // Создание раздела меню File
-void MainWindow::initFileMenu(void)
+void MainWindow::init_file_menu(void)
 {
     // Создание меню
     //    _filemenu = new QMenu(tr("&File"), this);
+    _filemenu->clear();
     menuBar()->addMenu(_filemenu);
 
     // Создание тулбара
@@ -602,17 +628,17 @@ void MainWindow::initFileMenu(void)
 
     a = new QAction(tr("&Print..."), this);
     a->setShortcut(QKeySequence::Print);
-    connect(a, &QAction::triggered, this, &MainWindow::filePrint);
+    connect(a, &QAction::triggered, this, &MainWindow::file_print);
     // tb->addAction(a);
     _filemenu->addAction(a);
 
     a = new QAction(tr("Print Preview..."), this);
-    connect(a, &QAction::triggered, this, &MainWindow::filePrintPreview);
+    connect(a, &QAction::triggered, this, &MainWindow::file_print_preview);
     _filemenu->addAction(a);
 
     a = new QAction(tr("&Export PDF..."), this);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
-    connect(a, &QAction::triggered, this, &MainWindow::filePrintPdf);
+    connect(a, &QAction::triggered, this, &MainWindow::file_print_pdf);
     // tb->addAction(a);
     _filemenu->addAction(a);
 
@@ -627,8 +653,9 @@ void MainWindow::initFileMenu(void)
 
 
 // Создание раздела меню Tools
-void MainWindow::initToolsMenu(void)
+void MainWindow::init_tools_menu(void)
 {
+    _toolsmenu->clear();
     // Создание меню
     //_toolsmenu = new QMenu(tr("&Tools"), this);
     menuBar()->addMenu(_toolsmenu);
@@ -636,7 +663,7 @@ void MainWindow::initToolsMenu(void)
     QAction *a;
 
     a = new QAction(tr("Find in ba&se"), this);
-    connect(a, &QAction::triggered, this, &MainWindow::toolsFind);
+    connect(a, &QAction::triggered, this, &MainWindow::tools_find);
     _toolsmenu->addAction(a);
 
     auto b = new QAction(tr("Editor"), this);
@@ -648,18 +675,18 @@ void MainWindow::initToolsMenu(void)
 
     if(appconfig.getInterfaceMode() == "desktop") {
         a = new QAction(tr("Main &preferences"), this);
-        connect(a, &QAction::triggered, this, &MainWindow::toolsPreferences);
+        connect(a, &QAction::triggered, this, &MainWindow::tools_preferences);
         _toolsmenu->addAction(a);
     } else {
         // Создание подменю
         QMenu *menu = new QMenu(tr("Main &preferences"), this);
-        initPreferencesMenu(menu);
+        init_preferences_menu(menu);
     }
 }
 
 
 // Заполнение подраздела меню Preferences
-void MainWindow::initPreferencesMenu(QMenu *menu)
+void MainWindow::init_preferences_menu(QMenu *menu)
 {
     QAction *a;
 
@@ -686,8 +713,9 @@ void MainWindow::initPreferencesMenu(QMenu *menu)
 
 
 // Создание раздела меню Help
-void MainWindow::initHelpMenu(void)
+void MainWindow::init_help_menu(void)
 {
+    _helpmenu->clear();
     // Создание меню
     //_helpmenu = new QMenu(tr("&Help"), this);
     menuBar()->addMenu(_helpmenu);
@@ -695,41 +723,41 @@ void MainWindow::initHelpMenu(void)
     QAction *a;
 
     a = new QAction(tr("About MyTetra"), this);
-    connect(a, &QAction::triggered, this, &MainWindow::onClickHelpAboutMyTetra);
+    connect(a, &QAction::triggered, this, &MainWindow::on_click_help_about_mytetra);
     _helpmenu->addAction(a);
 
     a = new QAction(tr("About Qt"), this);
-    connect(a, &QAction::triggered, this, &MainWindow::onClickHelpAboutQt);
+    connect(a, &QAction::triggered, this, &MainWindow::on_click_help_about_qt);
     _helpmenu->addAction(a);
 }
 
 
 // Новая коллекция
-void MainWindow::fileNew(void)
+void MainWindow::file_new(void)
 {
 
 }
 
 // Открыть коллекцию
-void MainWindow::fileOpen(void)
+void MainWindow::file_open(void)
 {
 
 }
 
 // Сохранить текущую статью
-bool MainWindow::fileSave(void)
+bool MainWindow::file_save(void)
 {
     return true;
 }
 
 // Сохранить текущую статью как файл
-bool MainWindow::fileSaveAs(void)
+bool MainWindow::file_save_as(void)
 {
     return true;
 }
 
 // Напечатать текущую статью
-void MainWindow::filePrint(void)
+void MainWindow::file_print(void)
 {
 #ifndef QT_NO_PRINTER
     QPrinter printer(QPrinter::HighResolution);
@@ -747,7 +775,7 @@ void MainWindow::filePrint(void)
 
 
 // Предпросмотр печати текущей статьи
-void MainWindow::filePrintPreview(void)
+void MainWindow::file_print_preview(void)
 {
     PrintPreview *preview = new PrintPreview(_editor_screen->textarea_document(), this);
 
@@ -758,7 +786,7 @@ void MainWindow::filePrintPreview(void)
 
 
 // Вывод текущей статьи в PDF файл
-void MainWindow::filePrintPdf(void)
+void MainWindow::file_print_pdf(void)
 {
 #ifndef QT_NO_PRINTER
     QString fileName = QFileDialog::getSaveFileName(this, "Export PDF",
@@ -779,9 +807,9 @@ void MainWindow::filePrintPdf(void)
 
 
 // Слот - Нормальный выход из программы
-void MainWindow::applicationExit(void)
+void MainWindow::application_exit(void)
 {
-    saveAllState();
+    save_all_state();
 
     // Если в конфиге настроено, что нужно синхронизироваться при выходе
     // И задана команда синхронизации
@@ -796,9 +824,9 @@ void MainWindow::applicationExit(void)
 
 
 // Быстрый выход из программы, без возможности синхронизации
-void MainWindow::applicationFastExit(void)
+void MainWindow::application_fast_exit(void)
 {
-    saveAllState();
+    save_all_state();
 
     // Запуск выхода из программы
     _enable_real_close = true;
@@ -806,7 +834,7 @@ void MainWindow::applicationFastExit(void)
 }
 
 
-void MainWindow::toolsFind(void)
+void MainWindow::tools_find(void)
 {
     // Определяется ссылка на виджет поиска
     FindScreen *findScreenRel = find_object<FindScreen>(find_screen_singleton_name);
@@ -831,7 +859,7 @@ void MainWindow::editor_switch(void)
     }
 }
 
-void MainWindow::toolsPreferences(void)
+void MainWindow::tools_preferences(void)
 {
     // Создается окно настроек, после выхода из этой функции окно удалится
     AppConfigDialog dialog("");
@@ -843,7 +871,7 @@ void MainWindow::toolsPreferences(void)
 // Флаг показывает, что нужно сделать
 // true - распахнуть область отводимую редактору
 // false - сделать область, отводимую редактору, обычной
-void MainWindow::onExpandEditArea(bool flag)
+void MainWindow::on_expand_edit_area(bool flag)
 {
     //    static QSize entrance_size = globalparameters.entrance()->size();
     //    static QSize tree_size = globalparameters.entrance()->size();
@@ -903,7 +931,7 @@ void MainWindow::onExpandEditArea(bool flag)
 }
 
 
-void MainWindow::onClickHelpAboutMyTetra(void)
+void MainWindow::on_click_help_about_mytetra(void)
 {
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
 
@@ -957,7 +985,7 @@ void MainWindow::onClickHelpAboutMyTetra(void)
 }
 
 
-void MainWindow::onClickHelpAboutQt(void)
+void MainWindow::on_click_help_about_qt(void)
 {
     QMessageBox *msgBox = new QMessageBox(this);
     msgBox->aboutQt(this);
@@ -967,13 +995,13 @@ void MainWindow::onClickHelpAboutQt(void)
 void MainWindow::synchronization(void)
 {
     // Сохраняются данные в поле редактирования
-    saveTextarea();
+    save_text_area();
 
     // Сохраняются данные о курсорах в дереве и таблице конечных записей
     tree_position();
-    save_recordtable_position();
-    saveEditorCursorPosition();
-    saveEditorScrollBarPosition();
+    //    save_recordtable_position();
+    save_editor_cursor_position();
+    save_editor_scrollbar_position();
 
     // Считывается команда синхронизации
     QString command = appconfig.get_synchrocommand();
@@ -1009,59 +1037,59 @@ void MainWindow::synchronization(void)
     // Заново считываются данные в дерево
     _tree_screen->reload_knowtree();
     restore_tree_position();
-    restore_recordtable_position();
-    restoreEditorCursorPosition();
-    restoreEditorScrollBarPosition();
+    //    restore_recordtable_position();
+    restore_editor_cursor_position();
+    restore_editor_scrollbar_position();
 
     // Разблокируется история посещений элементов
     walkhistory.setDrop(false);
 }
 
 
-void MainWindow::setupIconActions(void)
+void MainWindow::setup_icon_actions(void)
 {
-    actionTrayRestore = new QAction(tr("&Restore window"), this);
-    connect(actionTrayRestore, SIGNAL(triggered()), this, SLOT(showNormal()));
+    _action_tray_restore = new QAction(tr("&Restore window"), this);
+    connect(_action_tray_restore, SIGNAL(triggered()), this, SLOT(showNormal()));
 
-    actionTrayMaximize = new QAction(tr("Ma&ximize window"), this);
-    connect(actionTrayMaximize, SIGNAL(triggered()), this, SLOT(showMaximized()));
+    _action_tray_maximize = new QAction(tr("Ma&ximize window"), this);
+    connect(_action_tray_maximize, SIGNAL(triggered()), this, SLOT(showMaximized()));
 
-    actionTrayMinimize = new QAction(tr("Mi&nimize window"), this);
-    connect(actionTrayMinimize, SIGNAL(triggered()), this, SLOT(hide()));
+    _action_tray_minimize = new QAction(tr("Mi&nimize window"), this);
+    connect(_action_tray_minimize, SIGNAL(triggered()), this, SLOT(hide()));
 
-    actionTrayQuit = new QAction(tr("&Quit"), this);
-    connect(actionTrayQuit, SIGNAL(triggered()), this, SLOT(applicationExit()));
+    _action_tray_quit = new QAction(tr("&Quit"), this);
+    connect(_action_tray_quit, SIGNAL(triggered()), this, SLOT(application_exit()));
 }
 
 
-void MainWindow::createTrayIcon(void)
+void MainWindow::create_tray_icon(void)
 {
-    trayIconMenu = new QMenu(this);
-    trayIconMenu->addAction(actionTrayRestore);
-    trayIconMenu->addAction(actionTrayMaximize);
-    trayIconMenu->addAction(actionTrayMinimize);
-    trayIconMenu->addSeparator();
-    trayIconMenu->addAction(actionTrayQuit);
+    _tray_icon_menu = new QMenu(this);
+    _tray_icon_menu->addAction(_action_tray_restore);
+    _tray_icon_menu->addAction(_action_tray_maximize);
+    _tray_icon_menu->addAction(_action_tray_minimize);
+    _tray_icon_menu->addSeparator();
+    _tray_icon_menu->addAction(_action_tray_quit);
 
-    trayIcon = new QSystemTrayIcon(this);
-    trayIcon->setContextMenu(trayIconMenu);
+    _tray_icon = new QSystemTrayIcon(this);
+    _tray_icon->setContextMenu(_tray_icon_menu);
 }
 
 
-void MainWindow::setIcon(void)
+void MainWindow::set_icon(void)
 {
-    connect(trayIcon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-            this, SLOT(iconActivated(QSystemTrayIcon::ActivationReason)));
+    connect(_tray_icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
+            this, SLOT(icon_activated(QSystemTrayIcon::ActivationReason)));
 
     QIcon icon = QIcon(":/resource/pic/logo.svg");
-    trayIcon->setIcon(icon);
+    _tray_icon->setIcon(icon);
     setWindowIcon(icon);
 
     // tray_icon->setToolTip(iconComboBox->itemText(index));
 }
 
 
-void MainWindow::iconActivated(QSystemTrayIcon::ActivationReason reason)
+void MainWindow::icon_activated(QSystemTrayIcon::ActivationReason reason)
 {
     if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
 
@@ -1091,7 +1119,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
         // При приходе события закрыть окно, событие игнорируется
         // и окно просто делается невидимым. Это нужно чтобы при закрытии окна
         // программа не завершала работу
-        if(trayIcon->isVisible()) {
+        if(_tray_icon->isVisible()) {
             hide();
             event->ignore();
         }
@@ -1109,14 +1137,14 @@ bool MainWindow::eventFilter(QObject *o, QEvent *e)
     // QEvent::ActivationChange
     if(e->type() == QEvent::WindowDeactivate) {
         qDebug() << "Main window focus deactivate, save all state.";
-        saveAllState();
+        save_all_state();
     }
 
     return false; // Продолжать оработку событий дальше
 }
 
 
-void MainWindow::goWalkHistoryPrevious(void)
+void MainWindow::go_walk_history_previous(void)
 {
     _editor_screen->save_textarea();
 
@@ -1127,11 +1155,11 @@ void MainWindow::goWalkHistoryPrevious(void)
                     WALK_HISTORY_GO_PREVIOUS);
     walkhistory.setDrop(true);
 
-    goWalkHistory();
+    go_walk_history();
 }
 
 
-void MainWindow::goWalkHistoryNext(void)
+void MainWindow::go_walk_history_next(void)
 {
     _editor_screen->save_textarea();
 
@@ -1142,11 +1170,11 @@ void MainWindow::goWalkHistoryNext(void)
                     WALK_HISTORY_GO_NEXT);
     walkhistory.setDrop(true);
 
-    goWalkHistory();
+    go_walk_history();
 }
 
 
-void MainWindow::goWalkHistory(void)
+void MainWindow::go_walk_history(void)
 {
     // Выясняется идентификатор записи, на которую надо переключиться
     QString id = walkhistory.getId();
@@ -1176,7 +1204,7 @@ void MainWindow::goWalkHistory(void)
     }
 
     tree_position(path);
-    select_id(id);
+    //    select_id(id);
 
     if(appconfig.getRememberCursorAtHistoryNavigation()) {
         _editor_screen->cursor_position(walkhistory.getCursorPosition(id));
@@ -1190,7 +1218,7 @@ void MainWindow::goWalkHistory(void)
 // Метод, вызываемый из всех точек интерфейса, в которых происходит
 // переход к другой записи. Метод вызывается до перехода, чтобы сохранить
 // текст редактируемой записи
-void MainWindow::saveTextarea(void)
+void MainWindow::save_text_area(void)
 {
     QString id = _editor_screen->misc_field("id");
 
@@ -1205,7 +1233,7 @@ void MainWindow::saveTextarea(void)
 
 
 // Слот, обрабатывающий смену фокуса на виджетах
-void MainWindow::onFocusChanged(QWidget *widgetFrom, QWidget *widgetTo)
+void MainWindow::on_focus_changed(QWidget *widgetFrom, QWidget *widgetTo)
 {
     Q_UNUSED(widgetFrom);
 

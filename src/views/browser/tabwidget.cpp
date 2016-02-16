@@ -322,6 +322,7 @@ namespace browser {
         });
 
         connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::requestCloseTab);
+        connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::closeTab);  // added by hughvonyoung@gmail.com
         connect(this, &TabWidget::tabsChanged, this, &TabWidget::onTabsChanged);
         connect(_tabbar, &TabBar::cloneTabSignal, this, &TabWidget::cloneTab);
         connect(_tabbar, &TabBar::closeOtherTabsSignal, this, &TabWidget::closeOtherTabs);
@@ -329,6 +330,8 @@ namespace browser {
         connect(_tabbar, &TabBar::reloadAllTabs, this, &TabWidget::reloadAllTabs);
         connect(_tabbar, &TabBar::tabMoved, this, &TabWidget::moveTab);
         setTabBar(_tabbar);
+
+
         setDocumentMode(true);
 
         //        _tabbar->setMaximumSize(0, 0);
@@ -622,11 +625,13 @@ namespace browser {
     //    }
 
 
-    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> record   // , bool openinnewtab
-                               , bool make_current
+    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> item   // , bool openinnewtab
                                , RecordController *_record_controller
+                               , bool make_current
                               )
     {
+        if(item->is_lite())item->to_fat();
+
         //        if(record == nullptr) {
         //            record = register_record(QUrl(DockedWindow::_defaulthome));
         //        } else {
@@ -664,7 +669,7 @@ namespace browser {
         //        if(!record->page_valid()
         //           //           && !record->unique_page()
         //          ) {
-        view = new WebView(record, _profile // use record for return
+        view = new WebView(item, _profile // use record for return
                            // , openinnewtab
                            , this
                            , _record_controller
@@ -676,7 +681,7 @@ namespace browser {
 
         //        record->view(webView);  // inside PageView initialization
         //webView->setPage(new WebPage(_profile, webView));
-        assert(record->page_valid() && record->unique_page());
+        assert(item->page_valid() && item->unique_page());
         assert(view);
         urlLineEdit->setWebView(view);
         connect(view, &WebView::loadStarted, this, &TabWidget::webViewLoadStarted);
@@ -701,12 +706,12 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
         connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
-        int index = addTab(view, record->field("name"));  //, tr("(Untitled)")
-        setTabToolTip(index, record->field("name"));
+        int index = addTab(view, item->field("name"));  //, tr("(Untitled)")
+        setTabToolTip(index, item->field("name"));
         //record->page()->load(record);
         //globalparameters.entrance()->invoke_view(record);
 
-        assert(record->page_valid() && record->unique_page());
+        assert(item->page_valid() && item->unique_page());
 
         //        int lc = _lineedits->count();
         //        int c = count();
@@ -730,8 +735,9 @@ namespace browser {
         //        }
 
         assert(view);
-        assert(record->page_valid() && record->unique_page());
-        _window->entrance()->shadow_branch()->root()->add_child(record);
+        assert(item->page_valid() && item->unique_page());
+        assert(!item->is_lite());
+        _record_controller->addnew_item_fat(item);  // _window->entrance()->shadow_branch()->root()->add_child(record);    // wrong!
         return view; // TabWidget::newTabFull::WebView *
     }
 
@@ -793,9 +799,7 @@ namespace browser {
 
         assert(webView(index)->page()->current_item()->page_valid() && webView(index)->page()->current_item()->unique_page());
         //WebView *tab =
-        newTab(webView(index)->page()->current_item()
-               // , false
-               , true //, view(index)->recordtablecontroller()
+        newTab(webView(index)->page()->current_item(), _record_controller, true //, view(index)->recordtablecontroller()
               );
         //tab->setUrl(webView(index)->url());
     }
@@ -859,11 +863,22 @@ namespace browser {
                         _recentlyclosedtabs.removeLast();
                 }
 
+
+                QWidget *lineEdit = _lineedits->widget(index);
+
+                if(lineEdit) {
+                    _lineedits->removeWidget(lineEdit);
+                    //delete lineEdit;    //
+                    lineEdit->deleteLater();
+                }
+
                 // WebView *to_be_closed_view = static_cast<WebView *>(widget(index));
 
                 // if(to_be_closed_view) {
                 to_be_closed_view->page()->break_records();
-                _window->entrance()->shadow_branch()->root()->remove_child(to_be_closed_view->page()->current_item());
+
+                _record_controller->removerow_by_id(to_be_closed_view->page()->current_item()->id());  // _window->entrance()->shadow_branch()->root()->remove_child(to_be_closed_view->page()->current_item());  // wrong!
+
                 removeTab(index);
 
                 //        PageView *v = static_cast<PageView *>(previous_webview);
@@ -881,13 +896,14 @@ namespace browser {
                 //}
             }
 
-            QWidget *lineEdit = _lineedits->widget(index);
+            // move forward before removeTab(index);
+            //            QWidget *lineEdit = _lineedits->widget(index);
 
-            if(lineEdit) {
-                _lineedits->removeWidget(lineEdit);
-                //delete lineEdit;    //
-                lineEdit->deleteLater();
-            }
+            //            if(lineEdit) {
+            //                _lineedits->removeWidget(lineEdit);
+            //                //delete lineEdit;    //
+            //                lineEdit->deleteLater();
+            //            }
 
 
 
@@ -915,7 +931,14 @@ namespace browser {
                 }
             }
 
-            if(count() == 0)
+            int tab_widget_count = count();
+            int tab_bar_count = _tabbar->count();
+            int source_model_size = _record_controller->source_model()->size();
+            assert(count() == _tabbar->count());
+            assert(_record_controller->source_model()->size() == _tabbar->count());
+
+            //            if(count() == 0)
+            if(_tabbar->count() == 0)
                 emit lastTabClosed();
         }
     }

@@ -45,47 +45,49 @@ extern WalkHistory walkhistory;
 //}
 
 // Конструктор
-ItemsFlat::ItemsFlat(boost::intrusive_ptr<TreeItem> parent_item
-                     , const bool _is_crypt
+ItemsFlat::ItemsFlat(const bool _is_crypt
                     )
     :
     //    : _tree_item(_tree_item)
     //    , _workpos(-1)
-    _parent_item([ & ]()
-{
-    if(parent_item) {
-        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
-        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
-        //        QString crypt_value = "1";
-        QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
-        QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
-                                                           && parent_item->_field_data.contains(crypt_key)
-                                                           && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
+    //    _parent_item([ & ]()
+    //{
+    //    if(parent_item) {
+    //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+    //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+    //        //        QString crypt_value = "1";
+    //        QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
+    //        QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
+    //                                                           && parent_item->_field_data.contains(crypt_key)
+    //                                                           && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
 
-        //        field(crypt_key, crypt_value);
+    //        //        field(crypt_key, crypt_value);
 
-        if(crypt_1 == crypt_value
-           //           && !table_data->crypt()
-          ) {
-            this->to_encrypt(); // table_data->to_encrypt();
-        } else if(crypt_0 == crypt_value
-                  //                  && table_data->crypt()
-                 ) {
-            this->to_decrypt(); // table_data->to_decrypt();
-        }
-    }
+    //        if(crypt_1 == crypt_value
+    //           //           && !table_data->crypt()
+    //          ) {
+    //            this->to_encrypt(); // table_data->to_encrypt();
+    //        } else if(crypt_0 == crypt_value
+    //                  //                  && table_data->crypt()
+    //                 ) {
+    //            this->to_decrypt(); // table_data->to_decrypt();
+    //        }
+    //    }
 
-    return parent_item;
-}())
-//    , _field_data([ & ]()
-//{
-//    if(_parent_item)
-//        _field_data["crypt"] = (_parent_item->_field_data.contains("crypt") && _parent_item->_field_data["crypt"] == "1") ? "1" : "0";
+    //    return parent_item;
+    //}())
 
-//    return _field_data;
-//}())
-//    , _record_table()
-, _is_crypt(_is_crypt)
+    //    , _field_data([ & ]()
+    //{
+    //    if(_parent_item)
+    //        _field_data["crypt"] = (_parent_item->_field_data.contains("crypt") && _parent_item->_field_data["crypt"] == "1") ? "1" : "0";
+
+    //    return _field_data;
+    //}())
+    //    , _record_table()
+
+    //,
+    _is_crypt(_is_crypt)
 {
     //    treeItem = nullptr;
     //    workPos = -1;
@@ -99,6 +101,11 @@ ItemsFlat::ItemsFlat(boost::intrusive_ptr<TreeItem> parent_item
     //            i_dom_element  // dom_element
     //        );
     //    }
+    if(_is_crypt) {
+        this->to_encrypt(); // table_data->to_encrypt();
+    } else {
+        this->to_decrypt(); // table_data->to_decrypt();
+    }
 
     //    return;
 }
@@ -130,7 +137,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find(const QUrl &url)const
 
     for(auto &i : _child_items) {
         if(i->field("url") == url.toString()) {
-            assert(i->is_registered());
+            assert(i->is_registered_to_shadow_list());
             record = i;
             break;
         }
@@ -147,7 +154,7 @@ int ItemsFlat::locate(boost::intrusive_ptr<TreeItem> item)const
         auto it = _child_items.value(i);
 
         if(it->field("id") == item->field("id")) {
-            assert(it->is_registered());
+            assert(it->is_registered_to_shadow_list());
             pos = i;
             break;
         }
@@ -164,7 +171,7 @@ int ItemsFlat::index(boost::intrusive_ptr<TreeItem> item)const
     for(auto &i : _child_items) {
 
         if(i == item) {
-            assert(i->is_registered());
+            assert(i->is_registered_to_shadow_list());
             result = in;
             break;
         }
@@ -181,7 +188,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find(boost::intrusive_ptr<TreeItem> it
 
     for(auto &i : _child_items) {
         if(i->field("id") == item->field("id")) {
-            assert(i->is_registered());
+            // assert(i->is_registered());
             result = i;
             break;
         }
@@ -379,6 +386,10 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
     return result;
 }
 
+boost::intrusive_ptr<TreeItem> ItemsFlat::child(int pos)const
+{
+    return item(pos);
+}
 
 boost::intrusive_ptr<TreeItem> ItemsFlat::item(int pos)const
 {
@@ -624,7 +635,7 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
         //        // Запись добавляется в таблицу конечных записей
         //        int insertPos = -1;
 
-        item->is_registered(true);
+        item->is_registered_to_shadow_list(true);
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
             _child_items << item;
@@ -642,6 +653,8 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
 
         // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
 
+    } else {
+        insert_position = index(item);
     }
 
     assert(_child_items[insert_position] == item);
@@ -738,7 +751,7 @@ int ItemsFlat::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> record, 
         //        int insertPos = -1;
 
         //        record->is_registered(true);
-        assert(record->is_registered());
+        assert(record->is_registered_to_shadow_list());
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
             _child_items << record;
@@ -833,6 +846,20 @@ void ItemsFlat::delete_item_by_id(QString id)
     }
 }
 
+bool ItemsFlat::remove_child(boost::intrusive_ptr<TreeItem> item)
+{
+    bool result = false;
+
+    for(int i = 0; i < size(); i++) {
+        if(child(i) == item) {
+            delete_item_by_position(i); // Так как id уникальный, удаляться будет только одна запись
+            result = true;
+            break;
+        }
+    }
+
+    return result;
+}
 
 // Удаление всех элементов таблицы конечных записей
 void ItemsFlat::delete_all_items(void)
@@ -967,6 +994,8 @@ void ItemsFlat::to_encrypt(void)
         // Шифрация записи
         _child_items[i]->to_encrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
     }
+
+    this->_is_crypt = true;
 }
 
 
@@ -983,6 +1012,8 @@ void ItemsFlat::to_decrypt(void)
         // Расшифровка записи
         _child_items[i]->to_decrypt_and_save_lite(); // В таблице конечных записей хранятся легкие записи
     }
+
+    this->_is_crypt = false;
 }
 
 

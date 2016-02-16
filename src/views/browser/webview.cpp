@@ -333,7 +333,7 @@ namespace browser {
     {
         boost::intrusive_ptr<TreeItem> item_result;
 
-        if(!record->is_registered()) {
+        if(!record->is_registered_to_shadow_list()) {
             auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(this);
             item_result = _record_controller->request_item(
                               record
@@ -410,14 +410,15 @@ namespace browser {
     void WebPage::add_record_to_table_data(boost::intrusive_ptr<TreeItem> item)
     {
         auto tab_manager = view()->tabmanager();
-        auto tree_item = tab_manager->tree_item();
+        auto source_model = tab_manager->source_model();
 
-        if(!tree_item->is_item_exists(item->field("id"))) {
+        if(!source_model->is_item_exists(item->field("id"))) {
             //        auto records = table_data->records();
             //        records.append(_record);    //
             if(item->is_lite())item->to_fat();
 
-            tree_item->insert_new_item(tree_item->size(), item);
+            QModelIndex index = _record_controller->pos_to_sourceindex(source_model->size());
+            source_model->insert_new_item(index, item);
             //            tab_manager->reset_tabledata(table_data);
         }
     }
@@ -431,16 +432,16 @@ namespace browser {
         //            tab_manager->tree_item(globalparameters.table_screen()->table_controller()->tree_item());
         //        }
 
-        auto itemsflat = tab_manager->tree_item();
+        auto source_model = tab_manager->source_model();
 
         //        for(int i = 0; i < table_data->size(); i++) {
         //            auto r = table_data->record(i);
         assert(item->page_valid() && item->unique_page() == this);
 
-        if(itemsflat->is_item_exists(item->field("id"))
+        if(source_model->is_item_exists(item->field("id"))
            //                && record->unique_page() == this
           ) {
-            itemsflat->delete_item_by_id(item->field("id"));    // this will delete record for ever from database
+            source_model->delete_item_by_id(item->field("id"));    // this will delete record for ever from database
             //            tab_manager->reset_tabledata(table_data);  // _page_controller->removerow_by_id(record->getNaturalFieldSource("id"));
         }
 
@@ -1748,7 +1749,7 @@ namespace browser {
             meta_editor->editor_save_callback);
 
         // Сохраняется текст и картинки в окне редактирования
-        find_object<MainWindow>("mainwindow")->saveTextarea();
+        find_object<MainWindow>("mainwindow")->save_text_area();
 
 
         // Для новой выбраной записи выясняется директория и основной файл

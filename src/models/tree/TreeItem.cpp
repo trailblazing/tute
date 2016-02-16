@@ -19,10 +19,39 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
                    //                   , std::shared_ptr<RecordTable>   table_data
                   )
     : Record(record)
-    , ItemsFlat(
-          //          boost::intrusive_ptr<TreeItem>(this)  //
-          parent_item
-      )
+    , ItemsFlat()
+    , _parent_item([ & ]()
+{
+    if(parent_item) {
+        //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+        //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+        //        //        QString crypt_value = "1";
+        //        QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
+        //        QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
+        //                                                           && parent_item->_field_data.contains(crypt_key)
+        //                                                           && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
+
+        //        //        field(crypt_key, crypt_value);
+
+        //        if(crypt_1 == crypt_value
+        //           //           && !table_data->crypt()
+        //          ) {
+        //            this->to_encrypt(); // table_data->to_encrypt();
+        //        } else if(crypt_0 == crypt_value
+        //                  //                  && table_data->crypt()
+        //                 ) {
+        //            this->to_decrypt(); // table_data->to_decrypt();
+        //        }
+
+        if(parent_item->_field_data["crypt"] == "1") {
+            this->to_encrypt();
+        } else {
+            this->to_decrypt();
+        }
+    }
+
+    return parent_item;
+}())
 {
     //    if(_parent_item) {
     //        QString crypt_1 = "1";
@@ -66,15 +95,34 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
 TreeItem::TreeItem(QMap<QString, QString>           field_data
                    , boost::intrusive_ptr<TreeItem> parent_item
                    , const QDomElement &i_dom_element)
-    : Record()
-    , ItemsFlat([ & ]()
+    : Record(field_data)
+    , ItemsFlat()
+    , _parent_item([ & ]()
 {
-    foreach(auto &i, field_data.keys()) {
-        _field_data[i] = field_data[i];
+    if(parent_item) {
+        //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+        //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+
+        //        QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
+        //        QString crypt_value(QString::null);
+        //        crypt_value = (parent_item->_field_data.size() > 0
+        //                       && parent_item->_field_data.contains("crypt")
+        //                       && (parent_item->_field_data["crypt"] == "1")) ? "1" : "0";
+
+        //        if(crypt_1 == crypt_value) {
+        //            this->to_encrypt(); // table_data->to_encrypt();
+        //        } else if(crypt_0 == crypt_value) {
+        //            this->to_decrypt(); // table_data->to_decrypt();
+        //        }
+
+        if(parent_item->_field_data["crypt"] == "1") {
+            this->to_encrypt();
+        } else {
+            this->to_decrypt();
+        }
     }
 
-    return // boost::intrusive_ptr<TreeItem>(this);    //
-        parent_item;
+    return parent_item;
 }())
 , _page(nullptr)
 //    //    boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>()  //      std::enable_shared_from_this<TreeItem>()
@@ -164,7 +212,35 @@ TreeItem::TreeItem(QMap<QString, QString>           field_data
 
 TreeItem::TreeItem(const TreeItem &item)
     : Record(static_cast<const Record &>(item))
-    , ItemsFlat(const_cast<TreeItem &>(item).parent())
+    , ItemsFlat()
+    , _parent_item([ & ]()
+{
+    auto parent_item = const_cast<TreeItem &>(item).parent();
+
+    if(parent_item) {
+        //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+        //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+        //        //        QString crypt_value = "1";
+        //        QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
+        //        QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
+        //                                                           && parent_item->_field_data.contains(crypt_key)
+        //                                                           && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
+
+        //        if(crypt_1 == crypt_value) {
+        //            this->to_encrypt(); // table_data->to_encrypt();
+        //        } else if(crypt_0 == crypt_value) {
+        //            this->to_decrypt(); // table_data->to_decrypt();
+        //        }
+
+        if(parent_item->_field_data["crypt"] == "1") {
+            this->to_encrypt();
+        } else {
+            this->to_decrypt();
+        }
+    }
+
+    return parent_item;
+}())
 {
     if(item.page_valid()    // item._page != nullptr
       ) {
@@ -181,6 +257,7 @@ TreeItem::TreeItem(const TreeItem &item)
 
     }
 
+    //    _parent_item = item._parent_item;
     _position = item._position;
     _open_link_in_new_window = item._open_link_in_new_window;
     _binder = item._binder;
@@ -190,6 +267,33 @@ TreeItem::TreeItem(const TreeItem &item)
 TreeItem &TreeItem::operator =(const TreeItem &item)
 {
     if(this != &item) {
+
+        auto parent_item = const_cast<TreeItem &>(item).parent();
+
+        if(parent_item) {
+            //            QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
+            //            QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
+            //            //        QString crypt_value = "1";
+            //            QString crypt_key(QString::null); crypt_key = QLatin1String("crypt");
+            //            QString crypt_value(QString::null); crypt_value = (parent_item->_field_data.size() > 0
+            //                                                               && parent_item->_field_data.contains(crypt_key)
+            //                                                               && (parent_item->_field_data[crypt_key] == crypt_value)) ? crypt_1 : crypt_0;
+
+            //            if(crypt_1 == crypt_value) {
+            //                this->to_encrypt(); // table_data->to_encrypt();
+            //            } else if(crypt_0 == crypt_value) {
+            //                this->to_decrypt(); // table_data->to_decrypt();
+            //            }
+
+            if(parent_item->_field_data["crypt"] == "1") {
+                this->to_encrypt();
+            } else {
+                this->to_decrypt();
+            }
+        }
+
+        this->_parent_item = item._parent_item;
+
         if(item.page_valid()    // item._page != nullptr
           ) {
             _page = item._page;
@@ -237,6 +341,7 @@ void TreeItem::records_to_children()
 //}
 
 
+
 TreeItem::~TreeItem()
 {
     // В родительском объекте ссылка на данный объект удаляется
@@ -247,43 +352,45 @@ TreeItem::~TreeItem()
     // Вызывается процедура очищения ветки без физического удаления данных на диске
     clear();
 
-    if(page_valid()    // _page != nullptr
-      ) {
-        //
-        browser::WebView *view = _page->view();
-        browser::TabWidget *tabmanager = nullptr;
+    //    if(page_valid()    // _page != nullptr
+    //      ) {
+    //        //
+    //        browser::WebView *view = _page->view();
+    //        browser::TabWidget *tabmanager = nullptr;
 
-        if(view) {
-            tabmanager = view->tabmanager();
-        }
+    //        if(view) {
+    //            tabmanager = view->tabmanager();
+    //        }
 
-        if(_page->_item) {
+    //        if(_page->_item) {
 
 
-            // multi record to one page:
-            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
-            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
-            // assert(_page->record().get() == this);
+    //            // multi record to one page:
+    //            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
+    //            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
+    //            // assert(_page->record().get() == this);
 
-            bool is_holder = (_page->_item.get() == this);     // _page->record() may mean some other record
+    //            bool is_holder = (_page->_item.get() == this);     // _page->record() may mean some other record
 
-            //            page_to_nullptr();
+    //            //            page_to_nullptr();
 
-            //        _page->record(nullptr);
-            //        _page = nullptr;
+    //            //        _page->record(nullptr);
+    //            //        _page = nullptr;
 
-            if(view && tabmanager && is_holder
-               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
-              ) {
-                assert(_page == _page->_item->unique_page());   // _page->rebind_record() make sure of this statement
-                tabmanager->closeTab(tabmanager->webViewIndex(view));
-            }
+    //            if(view && tabmanager && is_holder
+    //               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+    //              ) {
+    //                assert(_page == _page->_item->unique_page());   // _page->rebind_record() make sure of this statement
+    //                tabmanager->closeTab(tabmanager->webViewIndex(view));
+    //            }
 
-            page_to_nullptr();
-        }
+    //            page_to_nullptr();
+    //        }
 
-        //
-    }
+    //        //
+    //    }
+
+    unload_page();
 }
 
 
@@ -666,7 +773,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<TreeItem
     int found = 0;
 
     for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
-        if(it->get()->id() == item->field("id")) {
+        if(it->get() == item.get()) {
             found++;
 
             if(found == 1)
@@ -676,7 +783,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<TreeItem
         }
     }
 
-    //    item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch
+    item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch, but does not remove orignal one
 
     if(0 == found) _child_items << item; // Добавление item в конец массива childItems
 
@@ -703,6 +810,46 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(void)
     return item;
 }
 
+void TreeItem::unload_page()
+{
+    if(page_valid()    // _page != nullptr
+      ) {
+        //
+        browser::WebView *view = _page->view();
+        browser::TabWidget *tabmanager = nullptr;
+
+        if(view) {
+            tabmanager = view->tabmanager();
+        }
+
+        if(_page->current_item()) {
+
+
+            // multi record to one page:
+            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
+            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
+            // assert(_page->record().get() == this);
+
+            bool is_holder = (_page->current_item().get() == this);     // _page->record() may mean some other record
+
+            //            page_to_nullptr();
+
+            //        _page->record(nullptr);
+            //        _page = nullptr;
+
+            if(view && tabmanager && is_holder
+               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+              ) {
+                assert(_page == _page->current_item()->unique_page());   // _page->rebind_record() make sure of this statement
+                tabmanager->closeTab(tabmanager->webViewIndex(view));
+            }
+
+            page_to_nullptr();
+        }
+
+        //
+    }
+}
 
 boost::intrusive_ptr<TreeItem> TreeItem::remove_child(boost::intrusive_ptr<TreeItem> item)
 {
@@ -710,6 +857,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::remove_child(boost::intrusive_ptr<TreeI
     for(int row = 0; row < _child_items.size(); ++row) {
         if(_child_items.at(row) == item) { //_child_items.removeAt(position);    // _child_items.takeAt(position).reset(); // delete _child_items.takeAt(position);
             _child_items.removeOne(item);
+            item->unload_page();
         }
     }
 
@@ -1044,7 +1192,7 @@ void TreeItem::import_from_dom(const QDomElement &dom_model)
                                                               , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // _parent_item
                                                           )
                                                       );
-        current_item->is_registered(true);
+        current_item->is_registered_to_shadow_list(true);
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)

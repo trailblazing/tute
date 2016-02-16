@@ -214,7 +214,6 @@ HEADERS     =   \
     src/views/console_emulator/ExecuteCommand.h \
     src/views/enter_password/EnterPassword.h \
     src/views/find_in_base_screen/FindScreen.h \
-    src/views/find_in_base_screen/FindTableWidget.h \
     src/views/main_window/hidabletabwidget.h \
     src/views/main_window/MainWindow.h \
     src/views/print_preview/PreviewView.h \
@@ -339,7 +338,6 @@ SOURCES     =   src/main.cpp \
     src/views/console_emulator/ExecuteCommand.cpp \
     src/views/enter_password/EnterPassword.cpp \
     src/views/find_in_base_screen/FindScreen.cpp \
-    src/views/find_in_base_screen/FindTableWidget.cpp \
     src/views/main_window/hidabletabwidget.cpp \
     src/views/main_window/MainWindow.cpp \
     src/views/print_preview/PreviewView.cpp \

@@ -122,8 +122,7 @@ template <class X> inline X *find_object(QString objectName)
     if(objectName == "mainwindow") {
         QObject *mvp = qobject_cast<X *>(mainwindow);
 
-        if(mvp->metaObject()->className() !=
-           mainwindow->metaObject()->className()) {
+        if(mvp->metaObject()->className() != mainwindow->metaObject()->className()) {
             // Если запрошенный класс объекта не является классом главного окна
             printf("find_object(): Can't find mainwindow object. Check <type> in "
                    "function call\n");

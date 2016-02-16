@@ -303,9 +303,9 @@ QNetworkAccessManager       *QtSingleApplication::_networkaccessmanager = nullpt
 browser::BookmarksManager   *QtSingleApplication::_bookmarksmanager = nullptr;
 
 static void set_user_style_sheet(QWebEngineProfile *profile
-                              , const QString &styleSheet
-                              , browser::Entrance *browsemanager  //, browser::BrowserWindow *mainWindow = 0
-                             )
+                                 , const QString &styleSheet
+                                 , browser::Entrance *browsemanager  //, browser::BrowserWindow *mainWindow = 0
+                                )
 {
     Q_ASSERT(profile);
     QString scriptName(QStringLiteral("userStyleSheet"));
@@ -521,12 +521,12 @@ void QtSingleApplication::main_window()
     // Эти действия нельзя делать в конструкторе главного окна,
     // т.к. окно еще не создано
     _globalparameters.window_switcher()->disableSwitch();
-    _window->restoreFindOnBaseVisible();
-    _window->restoreGeometry();
+    _window->restore_find_on_base_visible();
+    _window->restore_geometry();
     _window->restore_tree_position();
-    _window->restore_recordtable_position();
-    _window->restoreEditorCursorPosition();
-    _window->restoreEditorScrollBarPosition();
+    //    _window->restore_recordtable_position();
+    _window->restore_editor_cursor_position();
+    _window->restore_editor_scrollbar_position();
     _globalparameters.window_switcher()->enableSwitch();
 
     if(_appconfig.getInterfaceMode() == "mobile")
@@ -556,7 +556,7 @@ void QtSingleApplication::main_window()
                 // Запрашивается пароль только в том случае, если ветка,
                 // на которую установливается курсор при старте, незашифрована
                 // Если ветка зашифрована, пароль и так будет запрошен автоматически
-                if(_window->isTreePositionCrypt() == false) {
+                if(_window->is_tree_position_crypt() == false) {
                     Password password;
                     password.retrievePassword();
                 }
@@ -919,25 +919,33 @@ void QtSingleApplication::newLocalSocketConnection()
         } else {
             //Record *record = register_record(url);
             //            dp = browser_entrance->active_record(record);
-            auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
-            auto record = globalparameters.table_screen()->table_controller()->request_item(
-                              url
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
-                                  ""
-                                  , &browser::Entrance::ActiveRecordBinder::binder
-                                  , arb
-                              )
-                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                                  ""
-                                  , &browser::Entrance::ActiveRecordBinder::activator
-                                  , arb
-                              )
-                              //            , [browser_entrance](Record * const record)->browser::WebView * {   // &Entrance::new_dockedwindow
-                              //                return browser_entrance->active_record(record);
-                              //            }
-                          );
-            //            record->generate();
-            record->active();
+            // auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
+            if(globalparameters.entrance()->activiated_registered().first) {
+                browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
+                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
+                auto record
+                    = browser->record_screen()->record_controller()->request_item(
+                          url
+                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
+                              ""
+                              , &browser::TabWidget::ActiveRecordBinder::binder
+                              , arb
+                          )
+                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+                              ""
+                              , &browser::TabWidget::ActiveRecordBinder::activator
+                              , arb
+                          )
+                          //            , [browser_entrance](Record * const record)->browser::WebView * {   // &Entrance::new_dockedwindow
+                          //                return browser_entrance->active_record(record);
+                          //            }
+                      );
+                //            record->generate();
+                record->active();
+            } else {
+                globalparameters.entrance()->new_browser(url);
+            }
+
             //            dp.second = browser_entrance->active_record()->invoke_page(record); //->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
         }
 
@@ -1030,6 +1038,11 @@ void QtSingleApplication::postLaunch()
     if(_globalparameters.entrance()->window_list().size() > 0) { // _mainWindows.count()
         QStringList args = QCoreApplication::arguments();
         browser::Browser *browser = _globalparameters.entrance()->activiated_registered().first;
+
+        if(!browser) {
+            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+            browser = dp.first;
+        }
 
         if(args.count() > 1)
             browser->loadPage(args.last());  // mainWindow()->loadPage(args.last());
@@ -1196,13 +1209,18 @@ void QtSingleApplication::restoreLastSession()
         //        browser::BrowserWindow *newWindow = 0;
         //        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
 
-        browser::Browser *current_window = globalparameters.entrance()->activiated_registered().first;
+        browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
 
-        assert(current_window->currentTab()->page()->url() == QUrl());
+        if(!browser) {
+            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+            browser = dp.first;
+        }
+
+        assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
 
         if(opened_windows.count() == 1
-           && current_window->tabWidget()->count() == 1
-           && current_window->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
+           && browser->tabWidget()->count() == 1
+           && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
           ) {
             // newWindow = globalParameters.browsermanager()->main_window();
             globalparameters.entrance()->restore_state(historywindows.at(i));

@@ -1,3 +1,4 @@
+#include <cassert>
 #include <QObject>
 #include <QHeaderView>
 
@@ -26,24 +27,45 @@
 #include "libraries/WalkHistory.h"
 #include "libraries/ClipboardRecords.h"
 #include "libraries/DiskHelper.h"
-#include <cassert>
 #include "views/browser/webview.h"
-#include "views/find_in_base_screen/FindScreen.h"
 #include "libraries/FlatControl.h"
 #include "views/tree/TreeViewKnow.h"
+#include "models/tree/TreeItem.h"
+#include "models/tree/TreeModel.h"
+#include "libraries/FixedParameters.h"
+#include "views/record_table/RecordView.h"
+#include "views/find_in_base_screen/FindScreen.h"
+#include "views/record_table/RecordScreen.h"
+#include "models/tree/TreeModelKnow.h"
+
+
+
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordController::RecordController(QString screen_name, RecordScreen *table_screen)
-    : QObject(table_screen)
-    , _source_model(new RecordModel(screen_name
-                                    // , _shadow_branch_root
-                                    , this))
+RecordController::RecordController(QString screen_name
+                                   , TreeScreen *_tree_screen
+                                   , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
+                                   , MetaEditor *_editor_screen
+                                   , MainWindow *_main_window
+                                   , RecordScreen *_record_screen
+                                  )
+    : QObject(_record_screen)
+    , _source_model(new RecordModel(
+                        screen_name
+                        , _tree_screen
+                        , _find_screen   // browser::ToolbarSearch *toolbarsearch
+                        , _editor_screen
+                        , _main_window
+                        , this
+                        , _record_screen
+                    ))         // , _shadow_branch_root
     , _proxy_model(new RecordProxyModel(screen_name, this))
-    , _view(new RecordView(screen_name, table_screen, this))   // , qobject_cast<QWidget * >(RecordTableScreen)
+    , _view(new RecordView(screen_name, _record_screen, this))    // , qobject_cast<QWidget * >(RecordTableScreen)
+    , _record_screen(_record_screen)
 {
     setObjectName(screen_name + "_controller");
     // Инициализируется область со списком записей
@@ -61,6 +83,8 @@ RecordController::RecordController(QString screen_name, RecordScreen *table_scre
 
     // Модель данных задается для вида
     _view->setModel(_proxy_model);
+    init();
+    _no_view = false;
 }
 
 
@@ -96,11 +120,12 @@ void RecordController::click_item(const QModelIndex &index)
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
     qobject_cast<RecordScreen *>(parent())->tools_update();
+
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
-    sychronize_attachtable_to_item(source_pos);
-    update_browser(source_pos); // if new one, create it? no, you can't click a record which does not exist.
-
-
+    if(sourceIndex.isValid()) {
+        sychronize_attachtable_to_item(source_pos);
+        update_browser(source_pos); // if new one, create it? no, you can't click a record which does not exist.
+    }
 }
 
 void RecordController::open_website(QModelIndex proxyIndex)
@@ -202,9 +227,9 @@ void RecordController::update_browser(const int source_pos)
 
 
 
-    boost::intrusive_ptr<TreeItem> record = this->source_model()->tree_item()->item(source_pos);
+    boost::intrusive_ptr<TreeItem> item = this->source_model()->child(source_pos);
     //    assert(record->is_registered());
-    record->active_request(source_pos, 0);
+    item->active_request(source_pos, 0);
 
     //    if(record->generator())record->generate();
     //    else if(entrance) entrance->active_record(record);
@@ -216,7 +241,7 @@ void RecordController::update_browser(const int source_pos)
     //    entrance->activebrowser()->tabWidget()->view_index();
     //    if(record->page() == nullptr || record->page()->view() == nullptr)
 
-    QString url = record->natural_field_source("url");
+    QString url = item->natural_field_source("url");
 
     //    browser::WebPage *page = record->binded_only_page();
     //    Record *old_record = nullptr;
@@ -242,18 +267,18 @@ void RecordController::update_browser(const int source_pos)
         //            page->load(record);
         //        } else
 
-        if(entrance && !record->page_valid()    // unique_page()
+        if(entrance && !item->page_valid()    // unique_page()
           ) {    // !record->binder() || !record->activator())) {
-            entrance->equip_registered(record);
+            entrance->equip_registered(item);
         }
 
         //        assert(record->unique_page());    // not sure
-        assert(record->binder());
-        assert(record->activator());
+        assert(item->binder());
+        assert(item->activator());
 
         //        if(record->binder() && !record->unique_page())record->bind();
         //        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
-        if(record->binder() && record->activator())record->active();
+        if(item->binder() && item->activator())item->active();
 
         //        else if(entrance)
     }
@@ -293,29 +318,29 @@ void RecordController::update_browser(const int source_pos)
 void RecordController::sychronize_metaeditor_to_item(const int pos)
 {
 
-    boost::intrusive_ptr<TreeItem> record = this->source_model()->tree_item()->item(pos);
-    assert(record);
+    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(pos);
+    assert(item);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
     // Выясняется указатель на объект редактирования текста записи
     MetaEditor *meta_editor = find_object<MetaEditor>(meta_editor_singleton_name);
     assert(meta_editor);
-    meta_editor->bind(record);
+    meta_editor->bind(item);
 
-    // Выясняется ссылка на таблицу конечных данных
-    auto item = _source_model->tree_item();
+    //    // Выясняется ссылка на таблицу конечных данных
+    //    auto item = _source_model->tree_item();
 
     // В таблице конечных данных запоминается какая запись была выбрана
     // чтобы затем при выборе этой же подветки засветка автоматически
     // установилась на последнюю рабочую запись
-    item->work_pos(pos);
+    this->source_model()->work_pos(pos);   // item->work_pos(pos);
 
 
     // Устанавливается функция обратного вызова для записи данных
     meta_editor->save_callback(item->editor_save_callback);
 
     // Сохраняется текст и картинки в окне редактирования
-    find_object<MainWindow>("mainwindow")->saveTextarea();
+    find_object<MainWindow>("mainwindow")->save_text_area();
 
 
     // Для новой выбраной записи выясняется директория и основной файл
@@ -402,22 +427,22 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
 void RecordController::sychronize_attachtable_to_item(const int pos)
 {
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    //    auto table = _source_model->tree_item();
 
     // Устанавливается таблица приаттаченных файлов
     AttachTableController *attachTableController = find_object<AttachTableController>("attachTableController");
-    attachTableController->attach_table_data(table->item(pos)->attach_table());
+    attachTableController->attach_table_data(_source_model->item(pos)->attach_table());
 }
 
 
-bool RecordController::is_tree_item_exists(void)
-{
-    //    if(_source_model->table_data() == nullptr)
-    //        return true;
-    //    else
-    //        return false;
-    return _source_model->tree_item() ? true : false;
-}
+//bool RecordController::is_tree_item_exists(void)
+//{
+//    //    if(_source_model->table_data() == nullptr)
+//    //        return true;
+//    //    else
+//    //        return false;
+//    return _source_model->tree_item() ? true : false;
+//}
 
 //// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
 //void TableController::reset_tabledata_test(TableData *rtData)
@@ -442,67 +467,137 @@ bool RecordController::is_tree_item_exists(void)
 //    reset_tabledata(rtData);
 //}
 
-RecordModel *RecordController::source_model() {return _source_model;}
-
-boost::intrusive_ptr<TreeItem> RecordController::tree_item()
+RecordModel *RecordController::source_model()
 {
-    return _source_model->tree_item();
+    return _source_model;
 }
 
+//void RecordController::init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen)
+//{
+//    qDebug() << "In RecordController init_source_model() start";
+//    _source_model->shadow_branch(_shadow_branch);
 
-void RecordController::tree_item(boost::intrusive_ptr<TreeItem> tree_item)
-{
-    qDebug() << "In RecordController reset_tree_item() start";
 
-    // Обновление набора данных с последующим выбором первой строки
-    // может быть очень длительным, поэтому показывается что процесс выполняется
-    // QCursor cursor_wait=QCursor(Qt::BusyCursor);
-    // qApp->setOverrideCursor(cursor_wait);
-    find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
 
-    // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
-    _source_model->tree_item(tree_item);    // reset_tabledata(table_data);
+//    // Обновление набора данных с последующим выбором первой строки
+//    // может быть очень длительным, поэтому показывается что процесс выполняется
+//    // QCursor cursor_wait=QCursor(Qt::BusyCursor);
+//    // qApp->setOverrideCursor(cursor_wait);
+//    //    find_object<MainWindow>("mainwindow")
+//    main_window->setCursor(Qt::BusyCursor);
 
-    // Надо обязательно сбросить selection model
-    _view->selectionModel()->clear();
+//    // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
+//    //    _source_model->root(tree_item);    // reset_tabledata(table_data);
 
-    // Если список конечных записей не пуст
-    bool removeSelection = true;
+//    // Надо обязательно сбросить selection model
+//    _view->selectionModel()->clear();
 
-    if(_source_model->rowCount() > 0) {
-        // Нужно выяснить, на какой записи ранее стояло выделение
-        int workPos = tree_item->work_pos();
+//    // Если список конечных записей не пуст
+//    bool removeSelection = true;
 
-        // Если номер записи допустимый
-        if(workPos > 0 && workPos < _source_model->rowCount()) {
-            // Выделение устанавливается на нужную запись
-            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
-            _view->selectRow(workPos);
-            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
+//    if(_source_model->size() > 0) {
+//        // Нужно выяснить, на какой записи ранее стояло выделение
+//        int workPos = _shadow_branch->root()->work_pos();
 
-            removeSelection = false;
-        }
-    }
+//        // Если номер записи допустимый
+//        if(workPos > 0 && workPos < _source_model->rowCount()) {
+//            // Выделение устанавливается на нужную запись
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            _view->selectRow(workPos);
+//            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 
-    // If the selection does not need to install    // Если выделение устанавливать ненужно
-    if(removeSelection) {
-        // Надо очистить поля области редактировния
-        find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
+//            removeSelection = false;
+//        }
+//    }
 
-        // При выборе записи обновление инструментов было бы вызвано автоматически
-        // в альтернативной ветке (там "эмулируется" клик по записи)
-        // А так как записей нет, то обновление инструментов надо
-        // вызвать принудительно
-        qobject_cast<RecordScreen *>(parent())->tools_update();
-    }
+//    // If the selection does not need to install    // Если выделение устанавливать ненужно
+//    if(removeSelection) {
+//        // Надо очистить поля области редактировния
+//        //        find_object<MetaEditor>(meta_editor_singleton_name)
+//        _editor_screen->clear_all();
 
-    // qApp->restoreOverrideCursor();
-    find_object<MainWindow>("mainwindow")->unsetCursor();
+//        // При выборе записи обновление инструментов было бы вызвано автоматически
+//        // в альтернативной ветке (там "эмулируется" клик по записи)
+//        // А так как записей нет, то обновление инструментов надо
+//        // вызвать принудительно
+//        qobject_cast<RecordScreen *>(parent())->tools_update();
+//    }
 
-    //    globalparameters.entrance()->activiated_registered().first->tabWidget()->tree_item(tree_item);
+//    // qApp->restoreOverrideCursor();
+//    //    find_object<MainWindow>("mainwindow")
+//    main_window->unsetCursor();
 
-    qDebug() << "In RecordTableView set new model stop";
-}
+//    //    globalparameters.entrance()->activiated_registered().first->tabWidget()->tree_item(tree_item);
+
+//    qDebug() << "In RecordTableView set new model stop";
+
+//}
+
+////boost::intrusive_ptr<TreeItem> RecordController::tree_item()
+////{
+////    return _source_model->tree_item();
+////}
+
+
+////void RecordController::init_source_model(boost::intrusive_ptr<TreeItem> item)
+////{
+////    _source_model->root(item);
+////}
+
+
+//void RecordController::init_source_model(boost::intrusive_ptr<TreeItem> tree_item)
+//{
+//    qDebug() << "In RecordController init_source_model() start";
+
+//    // Обновление набора данных с последующим выбором первой строки
+//    // может быть очень длительным, поэтому показывается что процесс выполняется
+//    // QCursor cursor_wait=QCursor(Qt::BusyCursor);
+//    // qApp->setOverrideCursor(cursor_wait);
+//    find_object<MainWindow>("mainwindow")->setCursor(Qt::BusyCursor);
+
+//    // Pointer to the data reported to the data source    // Указатель на данные сообщается источнику данных
+//    _source_model->root(tree_item);    // reset_tabledata(table_data);
+
+//    // Надо обязательно сбросить selection model
+//    _view->selectionModel()->clear();
+
+//    // Если список конечных записей не пуст
+//    bool removeSelection = true;
+
+//    if(_source_model->size() > 0) {
+//        // Нужно выяснить, на какой записи ранее стояло выделение
+//        int workPos = tree_item->work_pos();
+
+//        // Если номер записи допустимый
+//        if(workPos > 0 && workPos < _source_model->rowCount()) {
+//            // Выделение устанавливается на нужную запись
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            _view->selectRow(workPos);
+//            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
+
+//            removeSelection = false;
+//        }
+//    }
+
+//    // If the selection does not need to install    // Если выделение устанавливать ненужно
+//    if(removeSelection) {
+//        // Надо очистить поля области редактировния
+//        find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
+
+//        // При выборе записи обновление инструментов было бы вызвано автоматически
+//        // в альтернативной ветке (там "эмулируется" клик по записи)
+//        // А так как записей нет, то обновление инструментов надо
+//        // вызвать принудительно
+//        qobject_cast<RecordScreen *>(parent())->tools_update();
+//    }
+
+//    // qApp->restoreOverrideCursor();
+//    find_object<MainWindow>("mainwindow")->unsetCursor();
+
+//    //    globalparameters.entrance()->activiated_registered().first->tabWidget()->tree_item(tree_item);
+
+//    qDebug() << "In RecordTableView set new model stop";
+//}
 
 
 //// Set a new set of data to the list of recordings  // Установка нового набора данных для списка записей
@@ -566,14 +661,14 @@ void RecordController::tree_item(boost::intrusive_ptr<TreeItem> tree_item)
 void RecordController::add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList items_copy)
 {
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    //    auto table = _source_model->tree_item();
 
     // Перебираются записи и вносятся в буфер обмена
     for(int i = 0; i < items_copy.size(); ++i) {
         QModelIndex index = proxyindex_to_sourceindex(items_copy.at(i));
 
         // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-        boost::intrusive_ptr<TreeItem> record = table->item_fat(index.row());
+        boost::intrusive_ptr<TreeItem> record = _source_model->_browser_pages->item_fat(index.row());
 
         clipboardRecords->add_record(record);
     }
@@ -609,26 +704,26 @@ void RecordController::select_pos(int pos)
 void RecordController::select_id(QString id)
 {
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    //    auto table = _source_model->tree_item();
 
     // Если таблица конечных данных задана
     // (Не задана таблица может быть по причине если ветка зашифрована и введен неверный пароль, или при вводе пароля была нажата отмена)
-    if(table) {
-        // Номер записи в Source данных
-        int pos = table->get_pos_by_id(id);
+    //    if(table) {
+    // Номер записи в Source данных
+    int pos = _source_model->_browser_pages->get_pos_by_id(id);
 
-        _view->setSelectionToPos(sourcepos_to_proxypos(pos));
-    }
+    _view->setSelectionToPos(sourcepos_to_proxypos(pos));
+    //    }
 }
 
 
 QModelIndex RecordController::id_to_sourceindex(QString id) const
 {
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    //    auto table = _source_model->tree_item();
 
     // Номер записи в Source данных
-    int sourcePos = table->get_pos_by_id(id);
+    int sourcePos = _source_model->_browser_pages->get_pos_by_id(id);
 
     return pos_to_sourceindex(sourcePos);
 }
@@ -637,10 +732,10 @@ QModelIndex RecordController::id_to_sourceindex(QString id) const
 QModelIndex RecordController::id_to_proxyindex(QString id) const
 {
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    //    auto table = _source_model->tree_item();
 
     // Номер записи в Source данных
-    int sourcePos = table->get_pos_by_id(id);
+    int sourcePos = _source_model->_browser_pages->get_pos_by_id(id);
     int proxyPos = sourcepos_to_proxypos(sourcePos);
 
     return pos_to_proxyindex(proxyPos);
@@ -908,7 +1003,12 @@ void RecordController::addnew_blank(int mode)
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
-    boost::intrusive_ptr<TreeItem> record = boost::intrusive_ptr<TreeItem>(new TreeItem(boost::intrusive_ptr<Record>(new Record()), _source_model->tree_item()));
+    boost::intrusive_ptr<TreeItem> record
+        = boost::intrusive_ptr<TreeItem>(new TreeItem(
+                                             boost::intrusive_ptr<Record>(new Record())
+                                             , nullptr  // _source_model->_browser_pages->root_item()
+                                         )
+                                        );
     record->to_fat();
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -1014,18 +1114,18 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     //        position_index = _view->currentIndex();   // very wrong!
     //    }
 
-    if(!position_index.isValid() && _source_model->tree_item()->size() > 0) {
+    if(!position_index.isValid() && _source_model->size() > 0) {
         //        if(0 == _source_model->tree_item()->size()) {
         //            _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
         //        }
 
-        position_index = _source_model->createIndex(_source_model->tree_item()->size() - 1
+        position_index = _source_model->createIndex(_source_model->size() - 1
                                                     , 0
-                                                    , static_cast<void *>(_source_model->tree_item()->child(_source_model->tree_item()->size() - 1).get())
+                                                    , static_cast<void *>(_source_model->child(_source_model->size() - 1).get())
                                                    );
     }
 
-    assert(position_index.row() < _source_model->tree_item()->size());
+    assert(position_index.row() < _source_model->size());
     //    assert(position_index.isValid());
 
     //    if(!position_index.isValid()) {
@@ -1037,9 +1137,9 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     //      ) {
 
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    int selected_position = _source_model->insert_new_item(mode, position_index, item);
+    int selected_position = _source_model->insert_new_item(position_index, item, mode);
 
-    assert(_source_model->tree_item()->item(selected_position) == item);
+    assert(_source_model->item(selected_position) == item);
 
     _view->moveCursorToNewRecord(mode, sourcepos_to_proxypos(selected_position));   // modify _source_model? yeah
 
@@ -1062,8 +1162,8 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     //        find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
     //    }
 
-    selected_position = _source_model->tree_item()->locate(item);
-    assert(_source_model->tree_item()->item(selected_position) == item);
+    selected_position = _source_model->_browser_pages->locate(item);
+    assert(_source_model->item(selected_position) == item);
 
     return selected_position;
 }
@@ -1200,15 +1300,15 @@ void RecordController::edit_field_context(QModelIndex proxyIndex)
     InfoFieldsEditor editRecordWin;
 
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    auto item = _source_model->item(pos);
 
     // Поля окна заполняются начальными значениями
-    editRecordWin.setField("pin",       table->child(pos)->field("pin"));
-    editRecordWin.setField("name",      table->child(pos)->field("name"));
-    editRecordWin.setField("author",    table->child(pos)->field("author"));
-    editRecordWin.setField("home",      table->child(pos)->field("home"));
-    editRecordWin.setField("url",       table->child(pos)->field("url"));
-    editRecordWin.setField("tags",      table->child(pos)->field("tags"));
+    editRecordWin.setField("pin",       item->child(pos)->field("pin"));
+    editRecordWin.setField("name",      item->child(pos)->field("name"));
+    editRecordWin.setField("author",    item->child(pos)->field("author"));
+    editRecordWin.setField("home",      item->child(pos)->field("home"));
+    editRecordWin.setField("url",       item->child(pos)->field("url"));
+    editRecordWin.setField("tags",      item->child(pos)->field("tags"));
 
 
     int i = editRecordWin.exec();
@@ -1240,7 +1340,7 @@ void RecordController::edit_field(int pos
     qDebug() << "In edit_field()";
 
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    auto table = _source_model->_browser_pages;
 
     // Переданные отредактированные поля преобразуются в вид имя-значение
     QMap<QString, QString> edit_data;
@@ -1382,18 +1482,22 @@ void RecordController::removerows_by_idlist(QVector<QString> delIds)
     qDebug() << "Remove rows by ID list: " << delIds;
 
     // Выясняется ссылка на таблицу конечных данных
-    auto table = _source_model->tree_item();
+    auto table = _source_model->_browser_pages;
 
     if(!table)
         return;
 
     for(int i = 0; i < delIds.count(); i++) {
         QString id = delIds[i];
-        QModelIndex idx = id_to_proxyindex(id);
+        //        QModelIndex idx = id_to_proxyindex(id);
+
+        for(int j = 0; j < table->size(); j++) {
+            if(table->item(j)->id() == id) {table->remove_child(table->item(j));}
+        }
 
         // Удаляется строка в Proxy модели
         // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
-        _proxy_model->removeRow(idx.row());
+        //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
         _view->reset();
         _view->setModel(_proxy_model);
         //        globalparameters.find_screen()->remove_id(id);  // ?
@@ -1410,7 +1514,7 @@ void RecordController::move_up(void)
     int pos = _view->getFirstSelectionPos();
 
     // Выясняется ссылка на таблицу конечных данных
-    auto item = _source_model->tree_item();
+    auto item = _source_model->_browser_pages;
 
     // Перемещение текущей записи вверх
     item->move_up(pos);
@@ -1432,7 +1536,7 @@ void RecordController::move_dn(void)
     int pos = _view->getFirstSelectionPos();
 
     // Выясняется ссылка на таблицу конечных данных
-    auto item = _source_model->tree_item();
+    auto item = _source_model->_browser_pages;
 
     // Перемещение текущей записи вниз
     item->move_dn(pos);
@@ -1510,17 +1614,19 @@ void RecordController::on_print_click(void)
     RecordPrint printDialog(parentPointer);
     printDialog.setModel(_proxy_model);
     printDialog.generateHtmlTableFromModel();
-    printDialog.setTitleToHtml(_source_model->tree_item()->path_as_name_with_delimiter(" / "));
+    printDialog.setTitleToHtml(
+        record_screen()->objectName()   // _source_model->_browser_pages->path_as_name_with_delimiter(" / ")
+    );
     printDialog.exec();
 }
 
 
-boost::intrusive_ptr<TreeItem> RecordController::register_item_to_shadow_branch(boost::intrusive_ptr<TreeItem> item)
+boost::intrusive_ptr<TreeItem> RecordController::register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item)
 {
     //    assert(record_controller);
-    auto _shadow_branch_root = this->source_model()->tree_item();
+    auto _shadow_branch_root = this->_source_model->_browser_pages;
     assert(_shadow_branch_root);
-
+    assert(!_shadow_branch_root->find(item));
     //    Record record;
 
     //    if(record.isLite())record.switchToFat();
@@ -1543,7 +1649,7 @@ boost::intrusive_ptr<TreeItem> RecordController::register_item_to_shadow_branch(
     assert(_item.get() == item.get());
     //    assert(_item_.get() == item.get());
     //assert(record == _record);
-    assert(_item->natural_field_source("url") == item->natural_field_source("url"));
+    assert(_item->field("url") == item->field("url"));
     //            }
     //assert(_record);
     return _item; //_record;
@@ -1596,7 +1702,7 @@ boost::intrusive_ptr<TreeItem> RecordController::check_item(const QUrl &_url)
     //    assert(_record_controller);
 
     //    if(_record_controller) {
-    auto recordtabledata = this->source_model()->tree_item();
+    auto recordtabledata = this->_source_model->_browser_pages;
     assert(recordtabledata);
 
     if(recordtabledata) {
@@ -1613,10 +1719,11 @@ boost::intrusive_ptr<TreeItem> RecordController::check_item(const QUrl &_url)
 //    class WebView;
 //}
 
-boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_ptr<TreeItem> item
-        , bind_helper generator
-        , active_helper activator
-                                                             )
+boost::intrusive_ptr<TreeItem> RecordController::request_item(
+    boost::intrusive_ptr<TreeItem> item
+    , bind_helper generator
+    , active_helper activator
+)
 {
     item->binder(generator);
     item->activator(activator);
@@ -1625,9 +1732,9 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_p
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
     auto _treemodelknow = globalparameters.tree_screen()->_root;
-    _source_item = _treemodelknow->root()->find(item);
+    _source_item = _treemodelknow->root_item()->find(item);
     //    if(_record_controller) {
-    auto _shadow_branch_root = this->source_model()->tree_item();
+    auto _shadow_branch_root = this->_source_model->_browser_pages;
     assert(_shadow_branch_root);
 
     if(_shadow_branch_root) {
@@ -1641,7 +1748,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_p
                 _source_item->binder(generator);
                 _source_item->activator(activator);
 
-                _item = register_item_to_shadow_branch(_source_item);
+                _item = register_item_to_browser_source_model(_source_item);
                 //                assert(_record);
 
                 //                _record->active_immediately(active_immediately);
@@ -1653,7 +1760,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_p
                 item->binder(generator);
                 item->activator(activator);
 
-                _item = register_item_to_shadow_branch(item);
+                _item = register_item_to_browser_source_model(item);
 
                 assert(_item.get() == item.get());
             }
@@ -1677,7 +1784,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_p
 
         assert(_item);
 
-        assert(_item->is_registered());
+        assert(_item->is_registered_to_shadow_list());
 
     }
 
@@ -1691,10 +1798,11 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(boost::intrusive_p
 
 }
 
-boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
-        , bind_helper generator
-        , active_helper activator
-                                                             )
+boost::intrusive_ptr<TreeItem> RecordController::request_item(
+    const QUrl &_url
+    , bind_helper generator
+    , active_helper activator
+)
 {
     boost::intrusive_ptr<TreeItem> _source_item = nullptr;
     boost::intrusive_ptr<TreeItem> _item = nullptr;
@@ -1725,10 +1833,10 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
     //    assert(_record_controller);
 
     auto _treemodelknow = globalparameters.tree_screen()->_root;
-    _source_item = _treemodelknow->root()->find(_url);
+    _source_item = _treemodelknow->root_item()->find(_url);
 
     //    if(_record_controller) {
-    auto _shadow_branch_root = this->source_model()->tree_item();
+    auto _shadow_branch_root = this->_source_model->_browser_pages;
     assert(_shadow_branch_root);
 
     if(_shadow_branch_root) {
@@ -1740,7 +1848,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
                 _source_item->binder(generator);
                 _source_item->activator(activator);
 
-                _item = register_item_to_shadow_branch(_source_item);
+                _item = register_item_to_browser_source_model(_source_item);
 
             } else {
                 _item->binder(generator);
@@ -1781,7 +1889,11 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
                 // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
                 QString directory = DiskHelper::createTempDirectory();  //
 
-                boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(boost::intrusive_ptr<Record>(new Record()), _source_model->tree_item()));
+                boost::intrusive_ptr<TreeItem> item
+                    = boost::intrusive_ptr<TreeItem>(new TreeItem(
+                                                         boost::intrusive_ptr<Record>(new Record())
+                                                         , nullptr  // _source_model->_browser_pages->root_item()
+                                                     ));
 
                 //                if(record.isLite())
                 item->to_fat();
@@ -1819,7 +1931,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
                 item->binder(generator);
                 item->activator(activator);
 
-                _item = register_item_to_shadow_branch(item);
+                _item = register_item_to_browser_source_model(item);
 
                 //                assert(_record);
                 //                assert(_record->is_registered());
@@ -1854,7 +1966,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
         //        _item->activator(activator);
 
         assert(_item);
-        assert(_item->is_registered());
+        assert(_item->is_registered_to_shadow_list());
     }
 
     //    }
@@ -1865,3 +1977,4 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(const QUrl &_url
 
     return _item;
 }
+

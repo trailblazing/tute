@@ -57,6 +57,8 @@ namespace browser {
     class Entrance;
     class Browser;
     class DownloadManager;
+    class HistoryMenu;
+    class BookmarksMenu;
 }
 
 class TreeScreen;
@@ -71,6 +73,7 @@ class AppConfig;
 class DataBaseConfig;
 
 
+
 class MainWindow : public QMainWindow {
     Q_OBJECT
 
@@ -81,59 +84,64 @@ public:
 
     ~MainWindow();
 
-    void restoreGeometry(void);
+    void restore_geometry(void);
     void restore_tree_position(void);
-    void restore_recordtable_position(void);
-    void restoreEditorCursorPosition(void);
-    void restoreEditorScrollBarPosition(void);
-    void restoreFindOnBaseVisible(void);
+    //    void restore_recordtable_position(void);// too many _record_screen objects, deprecated
+    void restore_editor_cursor_position(void);
+    void restore_editor_scrollbar_position(void);
+    void restore_find_on_base_visible(void);
 
     void tree_position(QStringList path);
-    bool isTreePositionCrypt();
+    bool is_tree_position_crypt();
 
-    void select_id(QString id);
+    //    void select_id(QString id);// too many _record_screen objects, deprecated
 
     void synchronization(void);
 
-    void goWalkHistoryPrevious(void);
-    void goWalkHistoryNext(void);
+    void go_walk_history_previous(void);
+    void go_walk_history_next(void);
 
-    void saveTextarea(void);
+    void save_text_area(void);
 
-    void saveAllState(void);
+    void save_all_state(void);
     HidableTabWidget *vtab() {return _vtabwidget;}
 
-    QMenu *filemenu() {return _filemenu;}
-    QMenu *toolsmenu() {return _toolsmenu;}
-    QMenu *helpmenu() {return _helpmenu;}
+    QMenu *file_menu() {return _filemenu;}
+    QMenu *edit_menu() {return _editmenu;}
+    QMenu *view_menu() {return _viewmenu;}
+    browser::HistoryMenu *histry_menu() {return _histrymenu;}
+    browser::BookmarksMenu *bookmark_menu() {return _bookmarkmenu;}
+    QMenu *window_menu() {return _windowmenu;}
+    QMenu *tools_menu() {return _toolsmenu;}
+    QMenu *help_menu() {return _helpmenu;}
 
 public slots:
-    void applicationExit(void);
-    void applicationFastExit(void);
-    void commitData(QSessionManager &manager);
+    void application_exit(void);
+    void application_fast_exit(void);
+    void commit_data(QSessionManager &manager);
     void editor_switch(void);
 
 private slots:
-    void fileNew(void);
-    void fileOpen(void);
-    bool fileSave(void);
-    bool fileSaveAs(void);
-    void filePrint(void);
-    void filePrintPreview(void);
-    void filePrintPdf(void);
+    void file_new(void);
+    void file_open(void);
+    bool file_save(void);
+    bool file_save_as(void);
+    void file_print(void);
+    void file_print_preview(void);
+    void file_print_pdf(void);
 
-    void toolsFind(void);
+    void tools_find(void);
     //    void editor_switch(void);
-    void toolsPreferences(void);
+    void tools_preferences(void);
 
-    void onExpandEditArea(bool flag);
+    void on_expand_edit_area(bool flag);
 
-    void onClickHelpAboutMyTetra(void);
-    void onClickHelpAboutQt(void);
+    void on_click_help_about_mytetra(void);
+    void on_click_help_about_qt(void);
 
-    void iconActivated(QSystemTrayIcon::ActivationReason reason);
+    void icon_activated(QSystemTrayIcon::ActivationReason reason);
 
-    void onFocusChanged(QWidget *, QWidget *);
+    void on_focus_changed(QWidget *, QWidget *);
 
 private:
 
@@ -141,22 +149,23 @@ private:
     void setup_signals(void);
     void assembly(void);
 
-    void initFileMenu(void);
-    void initToolsMenu(void);
-    void initPreferencesMenu(QMenu *menu);
-    void initHelpMenu(void);
+    void init_file_menu(void);
+    void append_quit_menu();
+    void init_tools_menu(void);
+    void init_preferences_menu(QMenu *menu);
+    void init_help_menu(void);
 
-    void initRecordTableActions(void);
+    void init_itemsflat_actions(void);
 
-    void setupIconActions(void);
-    void createTrayIcon(void);
-    void setIcon(void);
+    void setup_icon_actions(void);
+    void create_tray_icon(void);
+    void set_icon(void);
 
-    void saveGeometry(void);
+    void save_geometry(void);
     void tree_position(void);
-    void save_recordtable_position(void);
-    void saveEditorCursorPosition(void);
-    void saveEditorScrollBarPosition(void);
+    //    void save_recordtable_position(void);// too many _record_screen objects, deprecated
+    void save_editor_cursor_position(void);
+    void save_editor_scrollbar_position(void);
 
     GlobalParameters    &_globalparameters;
     AppConfig           &_appconfig;
@@ -164,13 +173,13 @@ private:
 
 
 
-    QAction *actionTrayRestore;
-    QAction *actionTrayMaximize;
-    QAction *actionTrayMinimize;
-    QAction *actionTrayQuit;
+    QAction             *_action_tray_restore;
+    QAction             *_action_tray_maximize;
+    QAction             *_action_tray_minimize;
+    QAction             *_action_tray_quit;
 
-    QSystemTrayIcon *trayIcon;
-    QMenu           *trayIconMenu;
+    QSystemTrayIcon     *_tray_icon;
+    QMenu               *_tray_icon_menu;
 
     QSplitter           *_v_right_splitter;
     QSplitter           *_find_splitter;
@@ -179,22 +188,26 @@ private:
     QSplitter           *_h_splitter;
 
 
-    QMenu *_filemenu;
-    QMenu *_toolsmenu;
-    QMenu *_helpmenu;
+    QMenu               *_filemenu;
+    QMenu               *_editmenu;
+    QMenu               *_viewmenu;
+    browser::HistoryMenu         *_histrymenu;
+    browser::BookmarksMenu       *_bookmarkmenu;
+    QMenu               *_windowmenu;
+    QMenu               *_toolsmenu;
+    QMenu               *_helpmenu;
 
     TreeScreen          *_tree_screen;
     FindScreen          *_find_screen;
-    RecordScreen        *_table_screen;
-    //    TableScreen         *_page_screen;
+    MetaEditor          *_editor_screen;
+
     browser::Entrance   *_entrance;
 
     browser::DownloadManager *_download;
-    MetaEditor          *_editor_screen;
+
     QStatusBar          *_statusbar;
     WindowSwitcher      *_switcher;
-    //    RecordController     *_record_controller;
-    //    TableController     *_page_controller;
+
 
 
     //    bool _treetable_hidden;       // = globalparameters.getTreeScreen()->isHidden();
@@ -208,9 +221,9 @@ protected:
 
     bool eventFilter(QObject *o, QEvent *e);     // Отслеживание прочих событий
 
-    void goWalkHistory(void);
+    void go_walk_history(void);
 
-    bool _enable_real_close;
+    bool                _enable_real_close;
 
     friend class browser::Browser;
 

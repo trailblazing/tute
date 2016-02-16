@@ -82,28 +82,32 @@ namespace browser {
 
     public:
         Browser(QUrl const &url         // Record *const record
-                , RecordController *record_controller
-                //                , TableController *_page_controller
-                // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                , Entrance *_entrance   //, QDockWidget *parent
+                , TreeScreen    *_tree_screen
+                , FindScreen    *_find_screen
+                , MetaEditor    *_editor_screen
+                , MainWindow    *_main_window
+                , Entrance      *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
                );
 
 
         Browser(const QByteArray &state
-                , RecordController *record_controller
-                //                , TableController *_page_controller
-                , Entrance *_entrance   //, QDockWidget *parent
+                , TreeScreen    *_tree_screen
+                , FindScreen    *_find_screen
+                , MetaEditor    *_editor_screen
+                , MainWindow    *_main_window
+                , Entrance      *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
                );
 
         Browser(boost::intrusive_ptr<TreeItem> record
-                , RecordController *record_controller
-                //            , TableController *_page_controller
-                // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                , Entrance *entrance   //, QDockWidget *parent
+                , TreeScreen    *_tree_screen
+                , FindScreen    *_find_screen
+                , MetaEditor    *_editor_screen  //, RecordController *record_controller
+                , MainWindow    *_main_window
+                , Entrance      *entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
                );
@@ -123,20 +127,21 @@ namespace browser {
         void        setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled) {_webattribute = attribute; _webattributeenabled = enabled;}
         QString     &lastsearch() {return _lastsearch;}
         const QString &lastsearch() const {return _lastsearch;}
-        //BrowserView *find_view(const Record *record) {return tabWidget()->find_view(record);}
+
         void        activateWindow();
         QAction     *historyback() {return _historyback;}
         QStatusBar  *statusBar() = delete;
-        QStatusBar  *status_bar();       // {return globalparameters.getStatusBar();};
-        QStatusBar  *status_bar() const; // {return globalparameters.getStatusBar();};
-        WebView     *invoke_page(boost::intrusive_ptr<TreeItem> record);
+        QStatusBar  *status_bar();
+        QStatusBar  *status_bar() const;
+        WebView     *invoke_registered_page(boost::intrusive_ptr<TreeItem> item);
         boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
+        RecordScreen *record_screen() {return _record_screen;}
         Entrance    *entrance() {return _entrance;}
     public slots:
         void loadPage(const QString &url);
         void slotHome();
-        void updateToolbarActionText(bool visible);
-        //    QAction *getactionFreeze() { return actionFreeze; }
+        void updateToolbarActionText(bool visible); // void updateToolbarActionText(bool visible);
+
     protected:
         void closeEvent(QCloseEvent *event);
         void resizeEvent(QResizeEvent *);
@@ -186,28 +191,36 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_PRINT)
         void printRequested(QWebEngineFrame *frame);
 #endif
-        void geometryChangeRequested(const QRect &geometry);
-        //        void updateToolbarActionText(bool visible);
-        void updateBookmarksToolbarActionText(bool visible);
+        void geometry_change_requested(const QRect &geometry);
+
+        void update_bookmarks_toolbar_action_text(bool visible);
 
     private:
         void init();
         boost::intrusive_ptr<TreeItem> register_url(QUrl const &url);
 
         void run_script(const QString &style_source);
-        void loadDefaultState();
-        void setupMenu();
-        void setupToolBar();
-        void updateStatusbarActionText(bool visible);
-        void handleFindTextResult(bool found);
+        void load_default_state();
+        void append_to_file_menu();
+        void append_edit_menu();
+        void append_view_menu();
+        void append_history_menu();
+        void append_bookmark_menu();
+        void append_window_menu();
+        void append_to_tools_menu();
+        void append_to_help_menu();
+        void append_to_main_menu();
+        void setup_tool_bar();
+        void update_statusbar_action_text(bool visible);
+        void handle_find_text_result(bool found);
         //    void initUrl();
     private:
-
+        RecordScreen        *_record_screen;
         RecordController    *_record_controller;
-        //        TableController     *_page_controller;
+
         TabWidget           *_tabmanager;
-        //    QDockWidget *dock_widget;
-        //        QToolBar *navigater;
+        //        QDockWidget   *dock_widget;
+        //        QToolBar      *navigater;
         ToolbarSearch       *_toolbarsearch;
         BookmarksToolBar    *_bookmarkstoolbar;
         ChaseWidget         *_chasewidget;
@@ -235,7 +248,7 @@ namespace browser {
         QIcon               _stopicon;
 
         QString                             _lastsearch;
-        //    QAction *actionFreeze;
+
         QWebEngineSettings::WebAttribute    _webattribute;
         bool                                _webattributeenabled;
         QWidget                             *_centralwidget;

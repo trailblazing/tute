@@ -19,17 +19,34 @@
 class Record;
 class ItemsFlat;
 class TreeItem;
+class TreeModelKnow;
+class RecordController;
+class MainWindow;
+class TreeScreen;
+class FindScreen;
+class MetaEditor;
+class AppConfig;
+class RecordScreen;
+
+namespace browser {
+    class Entrance;
+}
 
 class RecordModel : public QAbstractTableModel {
     Q_OBJECT
 
     // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
     friend class RecordController;
-
+    friend class browser::Entrance;
 public:
     RecordModel(QString screen_name
-                // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
-                , QObject *pobj = 0);
+                , TreeScreen *_tree_screen
+                , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
+                , MetaEditor *_editor_screen
+                , MainWindow *_main_window
+                , RecordController *_record_controller, RecordScreen *_record_screen
+               );
+
     ~RecordModel();
 
     QVariant headerData(int section, Qt::Orientation orientation, int role) const;
@@ -46,18 +63,30 @@ public:
 
     // Интерфейс модели, сколько записей в таблице
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
-
+    int size() const {return rowCount();}
     // Интерфейс модели, сколько столбцов в таблице
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    void tree_item(boost::intrusive_ptr<TreeItem> item);
+    void remove_child(boost::intrusive_ptr<TreeItem> it);
 
-    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
+    QString field(int pos, QString name);
+    void fields(int pos, QMap<QString, QString> data);
+    boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item);
+    bool is_item_exists(QString find_id);
+    bool delete_item_by_id(QString find_id);
+    //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
+    boost::intrusive_ptr<TreeItem> child(int pos);
+    boost::intrusive_ptr<TreeItem> item(int pos) {return child(pos);}
+    // Добавление записей
+    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> item, int mode = ADD_NEW_RECORD_AFTER);
+    void work_pos(int pos);
 
-
-
+    void init_source_model(boost::intrusive_ptr<TreeItem> item, RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
+    void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
+    ItemsFlat *get_shadow_branch()const {return _browser_pages;}
+    RecordController *reocrd_controller()const {return _reocrd_controller;}
 public slots:
     void reset_internal_data();
 
@@ -68,17 +97,19 @@ private:
     //    // Ссылка на данные, с которыми работает модель
     //    boost::intrusive_ptr<TreeItem> tree_item(void);
 
-    // Добавление записей
-    int insert_new_item(int mode, QModelIndex pos_index, boost::intrusive_ptr<TreeItem> item);
 
+    //    void tree_item(boost::intrusive_ptr<TreeItem> item);
+    void shadow_branch(ItemsFlat *_browser_pages);
+    //    void root(boost::intrusive_ptr<TreeItem> item);
     void on_table_config_changed(void);
 
     //protected:
 
     // Указатель на таблицу конечных записей
     //    std::shared_ptr<RecordTable>  _table; // flat one
-    boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
-
+    //    TreeModelKnow *_browser_pages;  // boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
+    ItemsFlat           *_browser_pages;
+    RecordController    *_reocrd_controller;
 };
 
 #endif // __RECORDTABLEMODEL_H__
