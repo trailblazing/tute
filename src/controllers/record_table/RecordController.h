@@ -45,11 +45,12 @@ public:
     typedef TreeItem::bind_helper bind_helper;
     typedef TreeItem::active_helper active_helper;
     RecordController(QString screen_name
-                     , TreeScreen   *_tree_screen
-                     , FindScreen   *_find_screen
-                     , MetaEditor   *_editor_screen
-                     , MainWindow   *_main_window
-                     , RecordScreen *_record_screen
+                     , browser::Browser *_browser
+                     , TreeScreen       *_tree_screen
+                     , FindScreen       *_find_screen
+                     , MetaEditor       *_editor_screen
+                     , MainWindow       *_main_window
+                     , RecordScreen     *_record_screen
                     );
     virtual ~RecordController();
 
@@ -90,12 +91,12 @@ public:
     void    select_id(QString id);
 
     // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
-    void removerow_by_id(QString delId);
-    void removerows_by_idlist(QVector<QString> delIds);
+    void remove_child(QString delId);
+    void remove_children(QVector<QString> delIds);
 
 
 
-    boost::intrusive_ptr<TreeItem> check_item(const QUrl &_url);
+    boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
     boost::intrusive_ptr<TreeItem> request_item(
         boost::intrusive_ptr<TreeItem> item
@@ -126,6 +127,8 @@ public:
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
     //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
     bool no_view() {return _no_view;}
+    boost::intrusive_ptr<TreeItem> register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item);
+
 signals:
 
 public slots:
@@ -177,9 +180,11 @@ protected:
     RecordProxyModel    *_proxy_model;
     RecordView          *_view;
     RecordScreen        *_record_screen;
+    MetaEditor          *_editor_screen;
+    MainWindow          *_main_window;
 
     int addnew_item(boost::intrusive_ptr<TreeItem> item, const int mode = ADD_NEW_RECORD_AFTER);
-    boost::intrusive_ptr<TreeItem> register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item);
+
     void edit_field(int pos
                     , QString pin
                     , QString name

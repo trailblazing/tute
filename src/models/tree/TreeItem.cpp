@@ -91,6 +91,32 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
     //    record_to_item();
 }
 
+TreeItem::TreeItem(
+    QMap<QString, QString>              field_data
+    , boost::intrusive_ptr<TreeItem>    parent_item
+    , ItemsFlat                         *_child_items
+)
+    : Record(field_data)
+    , ItemsFlat(*_child_items)
+    , _parent_item([ & ]()
+{
+    if(parent_item) {
+        if(parent_item->_field_data["crypt"] == "1") {
+            this->to_encrypt();
+        } else {
+            this->to_decrypt();
+        }
+
+        ItemsFlat::parent(parent_item);
+    }
+
+    return parent_item;
+}())
+, _page(nullptr)
+{
+
+}
+
 TreeItem::TreeItem(QMap<QString, QString>           field_data
                    , boost::intrusive_ptr<TreeItem> parent_item
                    , const QDomElement &i_dom_element)
@@ -459,7 +485,7 @@ int TreeItem::field_count() const
 }
 
 
-QString TreeItem::field(QString _name)
+QString TreeItem::field(QString _name)const
 {
     QString item_name; item_name = "";  // QString item_name(QString::null)
     bool field_found = false;
@@ -485,7 +511,7 @@ QString TreeItem::field(QString _name)
         }
 
         // Выясняется, есть ли у текущего элемента конечные записи
-        int recordCount = this->direct_children_count();
+        int recordCount = this->current_count();
 
         // Если конечных элементов нет, возвращатся просто имя
         if(recordCount == 0) {
@@ -917,7 +943,7 @@ bool TreeItem::move_dn(void)
     int num = sibling_order();
 
     // Если двигать вниз некуда, ничего делать ненужно
-    if(num >= (_parent_item->direct_children_count() - 1))return false;
+    if(num >= (_parent_item->current_count() - 1))return false;
 
     // Элемент перемещается вниз по списку
     (_parent_item->_child_items).swap(num, num + 1);
@@ -1073,7 +1099,7 @@ QList<QStringList> TreeItem::all_children_path_as_field(boost::intrusive_ptr<Tre
         return QList<QStringList>();
     }
 
-    for(int i = 0; i < (item->direct_children_count()); i++) {
+    for(int i = 0; i < (item->current_count()); i++) {
         QStringList path = (item->child(i))->path_as_field(fieldName);
         pathList << path;
         all_children_path_as_field(item->child(i), fieldName, 2);
@@ -1110,7 +1136,7 @@ void TreeItem::to_encrypt(void)
 
 
     // Шифрация подветок
-    for(int i = 0; i < direct_children_count(); i++)
+    for(int i = 0; i < current_count(); i++)
         child(i)->to_encrypt();
 
     if(is_lite())
@@ -1147,7 +1173,7 @@ void TreeItem::to_decrypt(void)
 
 
     // Дешифрация подветок
-    for(int i = 0; i < direct_children_count(); i++)
+    for(int i = 0; i < current_count(); i++)
         child(i)->to_decrypt();
 
 
@@ -1191,7 +1217,7 @@ void TreeItem::import_from_dom(const QDomElement &dom_model)
                                                               , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
                                                           )
                                                       );
-        current_item->is_registered_to_shadow_list(true);
+        current_item->is_registered_to_record_controller(true);
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)
@@ -1306,28 +1332,39 @@ TreeItem::active_helper TreeItem::activator() const {return _activator;}
 
 boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page)
 {
+    assert(page);
+
     if(_page != page) {
 
-        if(page_valid()    // _page
-          ) {
-            std::map<QString, boost::intrusive_ptr<TreeItem> > records = _page->binded_records() ;
+        if(page_valid()) {   // _page
 
-            for(auto &j : records) {
-                if(j.second) {
-                    if(j.second.get() == this) {
-                        if(j.second->_page) {
-                            j.second->_page->break_record(
-                                boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
-                            );
-                            //                        i->_page->_record = nullptr;    // _page->break_record();
-                            //                        i = nullptr;    // ?
-                            j.second->page_to_nullptr();
-                        }
+            //            std::map<QString, boost::intrusive_ptr<TreeItem> > items = _page->binded_items() ;
+
+            //            for(auto &j : items) {
+            //                if(j.second) {
+            //                    if(j.second.get() == this) {
+            //                        if(j.second->_page) {
+            //                            j.second->_page->break_page_linked_item(
+            //                                boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
+            //                            );
+            //                            //                        i->_page->_record = nullptr;    // _page->break_record();
+            //                            //                        i = nullptr;    // ?
+            //                            j.second->page_to_nullptr();
+            //                        }
 
 
-                    }
-                }
+            //                    }
+            //                }
+            //            }
+
+            auto _item = _page->current_item();
+
+            if(_item) {
+                _page->break_page_linked_item(_item);
+                _item->page_to_nullptr();
             }
+
+            _page_valid = false;
         }
 
         //        if(page) {
@@ -1344,19 +1381,18 @@ boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page)
         _page = page;
     }
 
-    if(page_valid()    // _page
-      ) {
+    //    if(page_valid()) {  // _page
 
-        if(!_page->_item || _page->_item.get() != this) {
-            _page->bind(
-                boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
-            );
-        }
-
-        //        if((!_page->binded_records()) || (_page->binded_records() != this)) {
-        //            _page->bind_record(this);
-        //        }
+    if(!_page->_item || _page->_item.get() != this) {
+        _page->bind(
+            boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
+        );
     }
+
+    //        if((!_page->binded_records()) || (_page->binded_records() != this)) {
+    //            _page->bind_record(this);
+    //        }
+    //    }
 
     _page_valid = true;
     return this;
@@ -1372,7 +1408,7 @@ browser::WebView *TreeItem::self_bind()
                    boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
                    , &TreeItem::bind
                );
-    } else if(_page->current_item() != boost::intrusive_ptr<TreeItem>(this)) {
+    } else if(_page->current_item().get() != this) {
         view = (*binder())(
                    boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
                    , &TreeItem::bind
@@ -1386,22 +1422,11 @@ browser::WebView *TreeItem::self_bind()
 
 browser::WebView *TreeItem::active()
 {
-    if(!page_valid()    // _page
-      ) {
-        (*binder())(
-            boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
-            , &TreeItem::bind
-        );
-    } else if(_page->current_item() != boost::intrusive_ptr<TreeItem>(this)) {
-        (*binder())(
-            boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()
-            , &TreeItem::bind
-        );
-    }
+    self_bind();
 
     assert(page_valid());
     assert(_page);
-    assert(_page->current_item() == boost::intrusive_ptr<TreeItem>(this));
+    assert(_page->current_item() && _page->current_item().get() == this);
     //    if(_page->url().toString() != getNaturalFieldSource("url"))   // wrong! just activate the wiew
     return (*activator())(
                boost::intrusive_ptr<TreeItem>(this)  // shared_from_this()

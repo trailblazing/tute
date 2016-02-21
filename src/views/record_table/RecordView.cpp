@@ -145,8 +145,8 @@ void RecordView::setupSignals(void)
 
     // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
     // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
-    if(appconfig.getInterfaceMode() == "mobile")
-        connect(this, &RecordView::clicked, this, &RecordView::onClickToRecord);
+    //    if(appconfig.getInterfaceMode() == "mobile")
+    connect(this, &RecordView::clicked, this, &RecordView::onClickToRecord);
 
     RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
 

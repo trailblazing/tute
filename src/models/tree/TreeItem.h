@@ -38,6 +38,12 @@ public:
     TreeItem(
         QMap<QString, QString>              field_data
         , boost::intrusive_ptr<TreeItem>    parent_item
+        , ItemsFlat                         *_child_items
+    );
+
+    TreeItem(
+        QMap<QString, QString>              field_data
+        , boost::intrusive_ptr<TreeItem>    parent_item
         , const QDomElement                 &i_dom_element
         = QDomElement()
     );
@@ -66,7 +72,7 @@ public:
     int field_count() const;
 
     // Получение значения поля по имени
-    QString field(QString _name);
+    QString field(QString _name) const;
     void field(QString _name, QString value) {Record::field(_name, value);}
 
     // Получение всех полей данных
@@ -203,7 +209,7 @@ private:
     QStringList field_name_for_crypt_list(void) const;
 
     //    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
-    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
+    boost::intrusive_ptr<TreeItem>  _parent_item;   // Ссылка на родителя
 
     //    // Таблица инфополей данной ветки
     //    QMap<QString, QString>                  _field_data;

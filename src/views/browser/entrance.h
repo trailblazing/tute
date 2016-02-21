@@ -78,22 +78,22 @@ namespace browser {
 
         //        WebView *active_record_alternative(Record *const record) ;
 
-        struct ActiveRecordBinder {
-            Entrance    *_the;
-            //            WebPage     *_page;
-            ActiveRecordBinder(Entrance *the): _the(the)    //              , _page(nullptr)
-            {}
+        //        struct ActiveRecordBinder {
+        //            Entrance    *_the;
+        //            //            WebPage     *_page;
+        //            ActiveRecordBinder(Entrance *the): _the(the)    //              , _page(nullptr)
+        //            {}
 
-            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
-            {
-                //                _page = _the->equip_registered(record).second->page();
-                WebView *view = _the->equip_registered(item).second;
-                (item.get()->*_bind)(view->page());
-                return view;
-            }
+        //            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
+        //            {
+        //                //                _page = _the->equip_registered(record).second->page();
+        //                WebView *view = _the->equip_registered(item).second;
+        //                (item.get()->*_bind)(view->page());
+        //                return view;
+        //            }
 
-            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item->page_valid()); return item->unique_page()->active();}
-        };
+        //            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item);assert(item->page_valid()); return item->unique_page()->active();}
+        //        };
 
         std::pair<Browser *, WebView *> activiated_registered();
         QList<QPointer<Browser> > &window_list();  //        QList<DockedWindow*> window_raw_list();

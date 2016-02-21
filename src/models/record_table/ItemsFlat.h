@@ -29,12 +29,9 @@ class ItemsFlat {
 
 public:
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
-    ItemsFlat(
-        //        boost::intrusive_ptr<TreeItem> parent_item
-        //        ,
-        const bool _is_crypt
-        = false);
-
+    ItemsFlat(const bool _is_crypt = false);
+    ItemsFlat(const ItemsFlat &obj);
+    ItemsFlat &operator =(const ItemsFlat &obj);
     virtual ~ItemsFlat();
 
     // Получение текста указанной записи
@@ -65,7 +62,7 @@ public:
     void delete_all_items(void);
 
     // Количество записей в таблице данных
-    int direct_children_count(void) const;
+    int current_count(void) const;
 
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
@@ -89,6 +86,7 @@ public:
     bool is_item_exists(const QUrl &url) const;
 
     int position(QString id) const;
+    int position(boost::intrusive_ptr<TreeItem> it)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -106,7 +104,7 @@ public:
     void work_pos(int pos);
 
     void check_and_create_textfile(int pos, QString fullFileName);
-    QList< boost::intrusive_ptr<TreeItem> > &records() {return _child_items;}
+    QList< boost::intrusive_ptr<TreeItem> > &items() {return _child_items;}
 
     bool crypt() {return _is_crypt;}
     void crypt(const bool _is_crypt);   // {this->_is_crypt = _is_crypt;}
@@ -115,7 +113,8 @@ public:
     //    void import_from_dom(const QDomElement &dom_model);
     int locate(boost::intrusive_ptr<TreeItem> item)const;
     ItemsFlat *active_subset();
-
+    int count()const {return _child_items.size();}
+    void parent(boost::intrusive_ptr<TreeItem> parent_item);
 protected:
 
     // Initialize the data table based on the transmitted item DOM- // Первичное заполнение таблицы конечных записей

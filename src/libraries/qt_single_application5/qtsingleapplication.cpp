@@ -1020,7 +1020,7 @@ void QtSingleApplication::quitBrowser()
  */
 void QtSingleApplication::postLaunch()
 {
-    QString directory = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    QString directory = _globalparameters.work_directory();    // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 
     if(directory.isEmpty())
         directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();

@@ -261,9 +261,13 @@ namespace browser {
 
     }
 
-    TabWidget::TabWidget(RecordController *_record_controller
-                         , Browser *parent)
-        : QTabWidget(parent)
+    TabWidget::TabWidget(
+        Browser *_browser
+        , RecordController *_record_controller
+    )
+        : QTabWidget(_browser)
+        , _browser(_browser)
+        , _record_controller(_record_controller)
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
         , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -277,14 +281,12 @@ namespace browser {
         , _profile(QWebEngineProfile::defaultProfile())
         , _fullscreenview(nullptr)
         , _fullscreennotification(nullptr)
-        , _record_controller(_record_controller)
-          //        , _page_controller(_page_controller)
           //        , _active_record(this)
           //        , _active("", &active_record::operator(), &_active_record)
           //        , _shadow_branch_root(_shadow_branch_root)
           //        , _shadow_source_model(new TableModel(QString(table_screen_singleton_name) + QString("_shadow"), _tree_item, this))
           //        , _table_data(std::make_shared<TableData>(_tree_item))
-        , _window(parent)
+
     {
         //        _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
         //        connect(parent, []() {}, globalparameters.find_screen()->toolbarsearch(), [this]() {globalparameters.find_screen()->toolbarsearch()->lineedits(_lineedits);});
@@ -493,9 +495,9 @@ namespace browser {
                     MetaEditor *metaeditor = find_object<MetaEditor>(meta_editor_singleton_name);
                     assert(metaeditor);
 
-                    if(metaeditor->record() != record) {
+                    if(metaeditor->item() != record) {
 
-                        webView->page()->sychronize_metaeditor_to_record(record);  // metaeditor->bind(record);
+                        webView->page()->sychronize_metaeditor_to_item(record);  // metaeditor->bind(record);
                     }
                 }
             }
@@ -626,10 +628,12 @@ namespace browser {
 
 
     WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> item   // , bool openinnewtab
-                               , RecordController *_record_controller
                                , bool make_current
                               )
     {
+        assert(item);
+        assert(!item->is_lite());
+
         if(item->is_lite())item->to_fat();
 
         //        if(record == nullptr) {
@@ -669,12 +673,13 @@ namespace browser {
         //        if(!record->page_valid()
         //           //           && !record->unique_page()
         //          ) {
-        view = new WebView(item, _profile // use record for return
-                           // , openinnewtab
+
+        view = new WebView(item
+                           , _profile // use record for return
+                           , _browser
                            , this
                            , _record_controller
-                           //                               , _page_controller
-                          ); //globalParameters.getRecordTableScreen()->getRecordTableController()    //
+                          );
         //        } else {
         //            view = record->unique_page()->view();
         //        }
@@ -737,7 +742,8 @@ namespace browser {
         assert(view);
         assert(item->page_valid() && item->unique_page());
         assert(!item->is_lite());
-        _record_controller->addnew_item_fat(item);  // _window->entrance()->shadow_branch()->root()->add_child(record);    // wrong!
+        //        _record_controller->addnew_item_fat(item);
+        _record_controller->register_item_to_browser_source_model(item);
         return view; // TabWidget::newTabFull::WebView *
     }
 
@@ -798,8 +804,9 @@ namespace browser {
             return;
 
         assert(webView(index)->page()->current_item()->page_valid() && webView(index)->page()->current_item()->unique_page());
+        assert(webView(index)->page()->current_item()->is_registered_to_record_controller() == true);
         //WebView *tab =
-        newTab(webView(index)->page()->current_item(), _record_controller, true //, view(index)->recordtablecontroller()
+        newTab(webView(index)->page()->current_item(), true //, view(index)->recordtablecontroller()
               );
         //tab->setUrl(webView(index)->url());
     }
@@ -868,32 +875,45 @@ namespace browser {
 
                 if(lineEdit) {
                     _lineedits->removeWidget(lineEdit);
-                    //delete lineEdit;    //
-                    lineEdit->deleteLater();
+
+                    lineEdit->deleteLater();    //delete lineEdit;
                 }
 
-                // WebView *to_be_closed_view = static_cast<WebView *>(widget(index));
 
-                // if(to_be_closed_view) {
-                to_be_closed_view->page()->break_records();
+                assert(to_be_closed_view->page()->current_item()->unique_page() == to_be_closed_view->page());
 
-                _record_controller->removerow_by_id(to_be_closed_view->page()->current_item()->id());  // _window->entrance()->shadow_branch()->root()->remove_child(to_be_closed_view->page()->current_item());  // wrong!
+                //                if(!_record_controller->source_model()->is_item_exists(to_be_closed_view->page()->current_item()->id())) {
+                //                    assert(_record_controller->source_model()->size() == _tabbar->count());
+                //                } else {
+                //                    _record_controller->source_model()->remove_child(to_be_closed_view->page()->current_item());
+                //                    to_be_closed_view->page()->break_records(); // same as _record_controller->source_model()->remove_child()
+                //                }
 
                 removeTab(index);
 
-                //        PageView *v = static_cast<PageView *>(previous_webview);
-
-                //        if(v) {
-                //            //            Record *rc = v->record();
-
-                //            //            if(rc)rc->view(nullptr);
-
-                //            //delete v;           //
-
-                //        }
-
+                emit to_be_closed_view->close_requested(); //
+                // delete to_be_closed_view;
                 to_be_closed_view->deleteLater();
-                //}
+
+                // move to WebView::on_close_requested
+                //                int tab_widget_count = count();
+                //                int tab_bar_count = _tabbar->count();
+                //                int source_model_size = _record_controller->source_model()->size();
+
+                //                if(source_model_size > tab_widget_count) {
+                //                    bool found = false;
+
+                //                    for(int i = 0; i < source_model_size; i++) {
+                //                        if(_record_controller->source_model()->child(i)->unique_page() == to_be_closed_view->page()) {
+                //                            _record_controller->source_model()->remove_child(_record_controller->source_model()->child(i)->id());
+                //                            found = true;
+                //                            break;
+                //                        }
+                //                    }
+
+                //                    assert(found == true);
+                //                }
+
             }
 
             // move forward before removeTab(index);
@@ -934,6 +954,7 @@ namespace browser {
             int tab_widget_count = count();
             int tab_bar_count = _tabbar->count();
             int source_model_size = _record_controller->source_model()->size();
+
             assert(count() == _tabbar->count());
             assert(_record_controller->source_model()->size() == _tabbar->count());
 
@@ -1110,9 +1131,9 @@ namespace browser {
 
         if(webView) {
             //            Record *record;
-            boost::intrusive_ptr<TreeItem> record_ = webView->page()->current_item();
+            boost::intrusive_ptr<TreeItem> _item = webView->page()->current_item();
 
-            if(record_->page_valid() && record_->unique_page()->url() != url) {
+            if(_item->page_valid() && _item->unique_page()->url() != url) {
                 //                //                record = record_;
                 //                //            } else {
                 //                record = request_record(url);
@@ -1228,14 +1249,14 @@ namespace browser {
                 //                       // , false
                 //                      );                    //, globalParameters.getRecordTableScreen()->getRecordTableController()
                 //                //v->load_record(_record);
-                auto arint = boost::make_shared<ActiveRecordBinder>(this, true);
+                auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(this, true);
                 auto r
                     = _record_controller->request_item(
                           url
                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                              "", &ActiveRecordBinder::binder, arint)
+                              "", &TabWidget::ActiveRecordBinder::binder, arint)
                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                              "", &ActiveRecordBinder::activator, arint)
+                              "", &TabWidget::ActiveRecordBinder::activator, arint)
                       );
                 r->active();
             } else {

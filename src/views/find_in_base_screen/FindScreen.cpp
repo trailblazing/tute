@@ -647,7 +647,7 @@ ItemsFlat *FindScreen::find_start(void)
         // resultset_item
         // resultset_record_source->active_subset(globalparameters.tree_screen()->insert_branch_process(globalparameters.tree_screen()->last_index(), "buffer", true));  //
         //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
-        candidate_records = search_start_item->direct_children_count();
+        candidate_records = search_start_item->current_count();
 
     };
 
@@ -721,7 +721,7 @@ ItemsFlat *FindScreen::find_start(void)
     if( // appconfig.getFindScreenTreeSearchArea() == 2
         //        globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
         //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
-        _selected_branch_as_pages->direct_children_count() > 0
+        _selected_branch_as_pages->current_count() > 0
     ) { // search in last search result
         resultset_search_prepare(_search_start_item, _candidate_records, _selected_branch_as_pages);  // , _resultset_data, _resultset_data
 
@@ -734,7 +734,7 @@ ItemsFlat *FindScreen::find_start(void)
     }
 
     // stage 2
-    if(0 == _selected_branch_as_pages->direct_children_count()) {
+    if(0 == _selected_branch_as_pages->current_count()) {
         //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
         //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -802,14 +802,14 @@ ItemsFlat *FindScreen::find_recursive(
         return result_pages;
 
     // Если в ветке присутсвует таблица конечных записей
-    if(curritem->direct_children_count() > 0) {
+    if(curritem->current_count() > 0) {
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
         auto child_items_root = curritem;   // ->record_table();
 
         // Перебираются записи таблицы
-        for(int i = 0; i < child_items_root->direct_children_count(); i++) {
+        for(int i = 0; i < child_items_root->current_count(); i++) {
             // Обновляется линейка наполняемости
             _progress->setValue(++ _total_progress_counter);
             qApp->processEvents();
@@ -888,7 +888,7 @@ ItemsFlat *FindScreen::find_recursive(
 
                 if(child_items_root->item(i)->is_lite())child_items_root->item(i)->to_fat();
 
-                result_pages->insert_new_item(result_pages->direct_children_count(), child_items_root->item(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+                result_pages->insert_new_item(result_pages->current_count(), child_items_root->item(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
 
                 //                assert(_recordtable->record(i)->is_lite());
                 //                result->shadow_record_lite(result->size(), _recordtable->record(i));
@@ -905,7 +905,7 @@ ItemsFlat *FindScreen::find_recursive(
 
 
     // Рекурсивная обработка каждой подчиненной ветки
-    for(int i = 0; i < curritem->direct_children_count(); i++) find_recursive(curritem->child(i), _candidate_pages);
+    for(int i = 0; i < curritem->current_count(); i++) find_recursive(curritem->child(i), _candidate_pages);
 
     return result_pages;
 }

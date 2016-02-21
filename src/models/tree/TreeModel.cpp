@@ -41,7 +41,7 @@ QVariant TreeModel::data(const QModelIndex &_index, int role) const
     if(role == Qt::ForegroundRole) {
         boost::intrusive_ptr<TreeItem> it = item(_index);
 
-        if(it->direct_children_count() > 0)
+        if(it->current_count() > 0)
             return QColor(Qt::black);// Если узел содержит таблицу конечных записей
         else
             return QColor(Qt::darkGray); // Ветка без таблицы конечных записей
@@ -89,29 +89,6 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &_index) const
 }
 
 
-// Get a pointer to the Item-element associated with the specified QModelIndex  // Получение указателя на Item-злемент связанный с заданным QModelIndex
-boost::intrusive_ptr<TreeItem> TreeModel::item(const QModelIndex &_index) const
-{
-    if(_index.isValid()) {
-        boost::intrusive_ptr<TreeItem> item
-            = boost::const_pointer_cast<TreeItem>(
-                  boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
-                  //->shared_from_this()
-              );
-
-        if(item) {
-            // qDebug() << "Get tree item " << item->data("name").toString();
-            return item;
-        } else {
-            qDebug() << "Detect bad castind to TreeItem in getItem() method ";
-            return nullptr;
-        }
-
-    }
-
-    // qDebug() << "Detect bad QModelIndex in getItem() method ";
-    return _root_item;
-}
 
 
 // Получение индекса элемента, который задан через parent и
@@ -195,7 +172,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
                 //                    int rows = _index.row();
                 auto it = this->item(_index);
 
-                for(int i = 0; i < it->direct_children_count(); i++) {
+                for(int i = 0; i < it->current_count(); i++) {
                     auto _idx = index(i, 0, _index);  // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
                     //        index_recursive(_idx, item, 1);
 
@@ -232,7 +209,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 
     //    _index_root = index(0, 0, QModelIndex());
 
-    for(int j = 0; j < _root_item->direct_children_count(); j++) {
+    for(int j = 0; j < _root_item->current_count(); j++) {
         auto _idx = index(j, 0, _index_root);  // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
         //        index_recursive(_idx, item, 1);
 
@@ -279,6 +256,29 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 //}
 
 
+// Get a pointer to the Item-element associated with the specified QModelIndex  // Получение указателя на Item-злемент связанный с заданным QModelIndex
+boost::intrusive_ptr<TreeItem> TreeModel::item(const QModelIndex &_index) const //???
+{
+    if(_index.isValid()) {
+        boost::intrusive_ptr<TreeItem> item
+            = boost::const_pointer_cast<TreeItem>(
+                  boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
+              );
+
+        if(item) {
+            // qDebug() << "Get tree item " << item->data("name").toString();
+            return item;
+        } else {
+            qDebug() << "Detect bad castind to TreeItem in getItem() method ";
+            return nullptr;
+        }
+
+    }
+
+    // qDebug() << "Detect bad QModelIndex in getItem() method ";
+    return _root_item;
+}
+
 // Получение указателя на Item-злемент с указанным путем
 boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
 {
@@ -290,7 +290,7 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
         //        int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->direct_children_count(); j++)
+        for(int j = 0; j < curritem->current_count(); j++)
             if((curritem->child(j))->field("id") == path.at(i)) {
                 // Узел найден, он становится текущим
                 curritem = curritem->child(j);
@@ -326,7 +326,7 @@ bool TreeModel::is_item_valid(QStringList path) const
         //        int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->direct_children_count(); j++)
+        for(int j = 0; j < curritem->current_count(); j++)
             if((curritem->child(j))->field("id") == path.at(i)) {
                 // Узел найден, он становится текущим
                 curritem = curritem->child(j);
@@ -434,7 +434,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 int TreeModel::rowCount(const QModelIndex &itemIndex) const
 {
     boost::intrusive_ptr<TreeItem> it = item(itemIndex);
-    return it->direct_children_count();
+    return it->current_count();
 }
 
 

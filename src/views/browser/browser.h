@@ -102,12 +102,12 @@ namespace browser {
                 , Qt::WindowFlags flags = 0
                );
 
-        Browser(boost::intrusive_ptr<TreeItem> record
+        Browser(boost::intrusive_ptr<TreeItem> item
                 , TreeScreen    *_tree_screen
                 , FindScreen    *_find_screen
                 , MetaEditor    *_editor_screen  //, RecordController *record_controller
                 , MainWindow    *_main_window
-                , Entrance      *entrance   //, QDockWidget *parent
+                , Entrance      *_entrance   //, QDockWidget *parent
                 , const QString &style_source
                 , Qt::WindowFlags flags = 0
                );
@@ -215,10 +215,12 @@ namespace browser {
         void handle_find_text_result(bool found);
         //    void initUrl();
     private:
+
+
         RecordScreen        *_record_screen;
         RecordController    *_record_controller;
-
         TabWidget           *_tabmanager;
+
         //        QDockWidget   *dock_widget;
         //        QToolBar      *navigater;
         ToolbarSearch       *_toolbarsearch;

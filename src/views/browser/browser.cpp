@@ -314,7 +314,7 @@ namespace browser {
         //assert(new_view->page());
         //record->page(new_view->page());
         //assert(_backup->page());
-        assert(record->page_valid() && record->unique_page());
+        assert(record && record->page_valid() && record->unique_page());
         return record;
     }
 
@@ -323,21 +323,20 @@ namespace browser {
                      , FindScreen   *_find_screen
                      , MetaEditor   *_editor_screen
                      , MainWindow   *_main_window
-                     , Entrance     *entrance   //, QDockWidget *parent
-                     // , AppConfig    &_appconfig
+                     , Entrance     *_entrance
                      , const QString &style_source
                      , Qt::WindowFlags flags
-                    ) : QMainWindow(0, flags)
+                    )
+        : QMainWindow(0, flags)
         , _record_screen(new RecordScreen(table_screen_singleton_name
+                                          , this
                                           , _tree_screen
                                           , _find_screen   // browser::ToolbarSearch *toolbarsearch
                                           , _editor_screen
                                           , _main_window
-                                          // , _appconfig
                                          ))            // , _tree_screen->shadow_branch()->_root_item
         , _record_controller(_record_screen->record_controller())
-        , _tabmanager(new TabWidget(_record_controller
-                                    , this))
+        , _tabmanager(_record_screen->record_controller()->source_model()->tabmanager())    // new TabWidget(_record_controller, this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -349,7 +348,7 @@ namespace browser {
         , _stopreload(globalparameters.find_screen()->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         auto r = register_url(QUrl(Browser::_defaulthome));
@@ -369,22 +368,20 @@ namespace browser {
                      , FindScreen   *_find_screen
                      , MetaEditor   *_editor_screen
                      , MainWindow   *_main_window
-                     , Entrance     *entrance   //, QDockWidget *parent
-                     // , AppConfig    &_appconfig
+                     , Entrance     *_entrance
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
         , _record_screen(new RecordScreen(table_screen_singleton_name
+                                          , this
                                           , _tree_screen
                                           , _find_screen   // browser::ToolbarSearch *toolbarsearch
                                           , _editor_screen
                                           , _main_window
-                                          // , _appconfig
                                          ))            // , _tree_screen->shadow_branch()->_root_item
         , _record_controller(_record_screen->record_controller())
-        , _tabmanager(new TabWidget(_record_controller
-                                    , this))
+        , _tabmanager(_record_screen->record_controller()->source_model()->tabmanager())    // new TabWidget(_record_controller, this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -396,7 +393,7 @@ namespace browser {
         , _stopreload(globalparameters.find_screen()->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         auto r = register_url(url);
@@ -416,22 +413,20 @@ namespace browser {
                      , FindScreen   *_find_screen
                      , MetaEditor   *_editor_screen
                      , MainWindow   *_main_window
-                     , Entrance     *entrance   //, QDockWidget *parent
-                     // , AppConfig    &_appconfig
+                     , Entrance     *_entrance
                      , const QString &style_source
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
         , _record_screen(new RecordScreen(table_screen_singleton_name
+                                          , this
                                           , _tree_screen
                                           , _find_screen   // browser::ToolbarSearch *toolbarsearch
                                           , _editor_screen
                                           , _main_window
-                                          // , _appconfig
                                          ))            // , _tree_screen->shadow_branch()->_root_item
         , _record_controller(_record_screen->record_controller())
-        , _tabmanager(new TabWidget(_record_controller
-                                    , this))
+        , _tabmanager(_record_screen->record_controller()->source_model()->tabmanager())    // new TabWidget(_record_controller, this))
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -443,12 +438,14 @@ namespace browser {
         , _stopreload(globalparameters.find_screen()->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
+        assert(item);
+
         init();
 
-        if(!item->is_registered_to_shadow_list() || !_record_controller->source_model()->find(item)) {
-            auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(this->tabWidget());
+        if(!item->is_registered_to_record_controller() || !_record_controller->source_model()->find(item)) {
+            auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager);    // this->tabWidget() does not work, because initialization has not accomplished
             _record_controller->request_item(
                 item
                 , std::make_shared <
@@ -469,7 +466,7 @@ namespace browser {
         if(!item->binder() || !item->activator())equip_registered(item);
 
         if(item->binder() && !item->page_valid()) {
-            item->self_bind();
+            //            item->self_bind();
             item->active();
         }
 
@@ -1334,7 +1331,7 @@ namespace browser {
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         //loadPage(home);
         auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(
-                       tabWidget()// _entrance
+        _tabmanager, []() {} // _entrance
                    );
         auto r = _record_controller->request_item(
                      QUrl(home)
@@ -1349,7 +1346,8 @@ namespace browser {
                          , ara
                      )
                  );
-        r->self_bind();
+        assert(!r->is_lite());
+        //        r->self_bind();
         r->active();
     }
 
@@ -1549,6 +1547,7 @@ namespace browser {
     WebView *Browser::invoke_registered_page(boost::intrusive_ptr<TreeItem> item)
     {
         // clean();
+        assert(item->is_registered_to_record_controller() == true);
 
         WebView *view = nullptr;
 
@@ -1614,7 +1613,7 @@ namespace browser {
                     view->page()->equip_registered(item)->active(); // view->page()->load(record);
                 }
             } else {
-                view = tab->newTab(item, _record_screen->record_controller());  // , false
+                view = tab->newTab(item);  // , false
                 // auto load
             }
 

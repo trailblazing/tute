@@ -30,6 +30,7 @@ class AppConfig;
 
 
 namespace browser {
+    class Browser;
     class ToolbarSearch;
 }
 
@@ -38,7 +39,7 @@ class RecordScreen : public QWidget {
 
 public:
     RecordScreen(QString object_name
-                 , TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, MainWindow *_main_window);
+                 , browser::Browser *_browser, TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, MainWindow *_main_window);
     virtual ~RecordScreen();
 
     int     first_selection_pos(void);

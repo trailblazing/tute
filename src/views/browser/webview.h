@@ -74,6 +74,8 @@ extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
 class Record;
 class TreeItem;
+class RecordController;
+
 
 QT_BEGIN_NAMESPACE
 
@@ -130,42 +132,27 @@ namespace browser {
     signals:
         void loadingUrl(const QUrl &url);
         //        void linkHovered(const QString &url, int time_out = 0);
+        void close_requested();
     public:
-        ~WebPage()
-        {
-            //            if(_record) {
-            //                _record->page(nullptr); // globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
-            //                _record = nullptr;
-            //            }
 
-            //            std::list<boost::intrusive_ptr<Record> > records = binded_records();
 
-            for(auto &j : _items) {
-                //                if(auto i = j.second) {
-                if(j.second && j.second->unique_page() == this) {
-                    break_records();  //
-                    j.second->page_to_nullptr();
-                }
-
-                //                }
-            }
-        }
 
         WebPage(QWebEngineProfile *profile
-                , const boost::intrusive_ptr<TreeItem> record
-                // , bool openinnewtab
+                , const boost::intrusive_ptr<TreeItem> requested_item
+                , Browser *_browser, TabWidget *_tabmanager
                 , RecordController *_record_controller
-                //                , TableController *_page_controller
                 , WebView *parent = 0
                );
+
+        ~WebPage();
         //        WebView *(*_load_record)(Record *const record);
         Browser *browser();
-        WebView *view() {return _pageview;}
-        std::map<QString, boost::intrusive_ptr<TreeItem>> binded_records()const;
-
+        WebView *view() {assert(_view); return _view;}
+        //        std::map<QString, boost::intrusive_ptr<TreeItem>> binded_items()const;
+        RecordController *record_controller() {return _record_controller;}
         WebView *active();
-        WebView *load(const boost::intrusive_ptr<TreeItem> record, bool checked = true);
-        WebView *bind(boost::intrusive_ptr<TreeItem> item);
+        WebView *load(const boost::intrusive_ptr<TreeItem> item, bool checked = true);
+        WebView *bind(boost::intrusive_ptr<TreeItem> requested_item);
 
         void load(const QUrl &url) = delete;
 
@@ -208,12 +195,12 @@ namespace browser {
             }
         };
 
-        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
-        void add_record_to_table_data(boost::intrusive_ptr<TreeItem> item);
-        void remove_item_from_itemsflat(boost::intrusive_ptr<TreeItem> item);
-        void break_record(boost::intrusive_ptr<TreeItem> item);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
-        void break_records();
-        void sychronize_metaeditor_to_record(boost::intrusive_ptr<TreeItem> record);
+        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> item);
+        void add_item_to_source_model(boost::intrusive_ptr<TreeItem> item);
+        void remove_item_from_source_model(boost::intrusive_ptr<TreeItem> item);
+        void break_page_linked_item(boost::intrusive_ptr<TreeItem> item);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        void break_page_shared_items();
+        void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> current_item);
 
 
     protected:
@@ -243,24 +230,27 @@ namespace browser {
         void onUrlChanged(const QUrl &url);
         void onTitleChanged(const QString &title);
 
-
+        void on_close_requested();
     private:
         friend class WebView;
         friend class Record;
-        std::map<QString, boost::intrusive_ptr<TreeItem> > _items;
-        boost::intrusive_ptr<TreeItem> _item;
+        Browser                 *_browser;
+        TabWidget               *_tabmanager;
+        RecordController        *_record_controller;
+        //        std::map<QString, boost::intrusive_ptr<TreeItem> > _items;
 
-        WebView                 *_pageview;
+
+        WebView                 *_view;
         // set the webview mousepressedevent
         Qt::KeyboardModifiers   _keyboardmodifiers;
         Qt::MouseButtons        _pressedbuttons;
         // bool _openinnewtab;
         QUrl                    _loadingurl;
         //bool _create_window_generated;
-        RecordController        *_record_controller;
-        //        TableController         *_page_controller;
 
-        void record(boost::intrusive_ptr<TreeItem> item) {_item = item;}
+        boost::intrusive_ptr<TreeItem> _item;
+
+        void item(boost::intrusive_ptr<TreeItem> it) {_item = it;}
         friend class Record;
         friend class TreeItem;
         //        friend void TreeItem::page_to_nullptr();
@@ -330,24 +320,19 @@ namespace browser {
         Q_OBJECT
 
     public:
-        WebView(boost::intrusive_ptr<TreeItem> record
+        WebView(boost::intrusive_ptr<TreeItem> requested_item
                 , QWebEngineProfile *profile    // , bool openinnewtab
-                , TabWidget *parent
-                , RecordController *record_controller
-                // = globalparameters.record_screens()->record_controller()
-                  //                  , TableController *_page_controller
-                  //                = globalparameters.page_screen()->table_controller()
+                , Browser           *_browser
+                , TabWidget         *_tabmanager
+                , RecordController  *record_controller
                );
 
-        WebView(const boost::intrusive_ptr<TreeItem> record
-                , QWebEngineProfile *profile    // , bool openinnewtab
-                , TabWidget *tabmanager
-                , QWidget *parent
-                , RecordController *record_controller
-                // = globalparameters.record_screens()->record_controller()
-                  //                  , TableController *_page_controller
-                  //                = globalparameters.page_screen()->table_controller()
-               );
+        //        WebView(const boost::intrusive_ptr<TreeItem> requested_item
+        //                , QWebEngineProfile *profile    // , bool openinnewtab
+        //                , TabWidget *tabmanager
+        //                , QWidget *parent
+        //                , RecordController *record_controller
+        //               );
 
         ~WebView();
         WebPage *page() const { return _page; }
@@ -379,11 +364,11 @@ namespace browser {
 
     signals:
         void iconChanged();
-
+        void close_requested();
     public slots:
         //    void loadFinished(bool success);
         //    void openLinkInNewTab();
-
+        void on_close_requested();
     private slots:
         void setProgress(int progress);
 
@@ -397,10 +382,10 @@ namespace browser {
 
         //    void onCloseTab(int index);
     private:
+        Browser                 *_browser;
         TabWidget               *_tabmanager;
-        //        Record *_record;
         RecordController         *_record_controller;
-        //        TableController         *_page_controller;
+
         WebPage                 *_page;
         QString                 _statusbartext;
         //        QUrl _initialurl;

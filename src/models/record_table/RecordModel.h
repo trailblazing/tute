@@ -30,9 +30,27 @@ class RecordScreen;
 
 namespace browser {
     class Entrance;
+    class Brower;
+    class TabWidget;
 }
 
-class RecordModel : public QAbstractTableModel {
+
+struct pages_container {
+public:
+    explicit pages_container(browser::Browser *_browser, RecordController *_record_controller);
+    ~pages_container();
+    browser::TabWidget *tabmanager() {return _tabmanager;}
+    //    void browser_pages(ItemsFlat *_browser_pages);
+    //    ItemsFlat *browser_pages();
+    //    ItemsFlat *browser_pages()const;
+
+protected:
+    browser::TabWidget  *_tabmanager;
+    //    ItemsFlat           *_browser_pages;
+};
+
+class RecordModel : public QAbstractTableModel
+    , public pages_container {
     Q_OBJECT
 
     // By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
@@ -40,11 +58,13 @@ class RecordModel : public QAbstractTableModel {
     friend class browser::Entrance;
 public:
     RecordModel(QString screen_name
+                , browser::Browser *_browser
                 , TreeScreen *_tree_screen
                 , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
-                , MetaEditor *_editor_screen
-                , MainWindow *_main_window
-                , RecordController *_record_controller, RecordScreen *_record_screen
+                // , MetaEditor *_editor_screen
+                // , MainWindow *_main_window
+                , RecordController *_record_controller
+                , RecordScreen *_record_screen
                );
 
     ~RecordModel();
@@ -63,7 +83,7 @@ public:
 
     // Интерфейс модели, сколько записей в таблице
     int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int size() const {return rowCount();}
+    int size() const;   // {return rowCount();}
     // Интерфейс модели, сколько столбцов в таблице
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
@@ -73,26 +93,44 @@ public:
 
     QString field(int pos, QString name);
     void fields(int pos, QMap<QString, QString> data);
-    boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item)const;
+    boost::intrusive_ptr<TreeItem> find(QUrl _url)const;
     int is_item_exists(QString find_id);
     bool remove_child(QString find_id);
+    bool remove_child(int index);
     //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
     boost::intrusive_ptr<TreeItem> child(int pos);
+    boost::intrusive_ptr<TreeItem> child(int pos)const;
     boost::intrusive_ptr<TreeItem> item(int pos) {return child(pos);}
+    boost::intrusive_ptr<TreeItem> item(int pos)const {return child(pos);}
     // Добавление записей
-    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> item, int mode = ADD_NEW_RECORD_AFTER);
-    void work_pos(int pos);
+    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);
 
-    void init_source_model(boost::intrusive_ptr<TreeItem> item, RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
-    void init_source_model(ItemsFlat *_browser_pages
-                           , RecordController *_record_controller
-                           , RecordScreen *_record_screen
-                           , MainWindow *main_window
-                           , MetaEditor *_editor_screen
-                          );
-    void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
-    ItemsFlat *get_shadow_branch()const {return _browser_pages;}
+
+    //    void init_source_model(boost::intrusive_ptr<TreeItem> item, RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
+
+    //    void init_source_model(ItemsFlat *_browser_pages
+    //                           , RecordController *_record_controller
+    //                           , RecordScreen *_record_screen
+    //                           , MainWindow *main_window
+    //                           , MetaEditor *_editor_screen
+    //                          );
+
+    //    void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
+
+    //    ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
     RecordController *reocrd_controller()const {return _reocrd_controller;}
+    boost::intrusive_ptr<TreeItem> item_fat(int index);
+    int position(QString id);
+    int locate(boost::intrusive_ptr<TreeItem> item);
+    int count()const; // {return _tabmanager->count();}
+    void work_pos(int pos);
+    int work_pos()const;
+    int move_up(const int pos);
+    int move_dn(const int pos);
+
+
+
 public slots:
     void reset_internal_data();
 
@@ -105,7 +143,7 @@ private:
 
 
     //    void tree_item(boost::intrusive_ptr<TreeItem> item);
-    void shadow_branch(ItemsFlat *_browser_pages);
+    //    void browser_pages(ItemsFlat *_browser_pages);
     //    void root(boost::intrusive_ptr<TreeItem> item);
     void on_table_config_changed(void);
 
@@ -114,7 +152,7 @@ private:
     // Указатель на таблицу конечных записей
     //    std::shared_ptr<RecordTable>  _table; // flat one
     //    TreeModelKnow *_browser_pages;  // boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
-    ItemsFlat           *_browser_pages;
+
     RecordController    *_reocrd_controller;
 };
 

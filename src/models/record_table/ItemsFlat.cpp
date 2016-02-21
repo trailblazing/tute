@@ -45,9 +45,8 @@ extern WalkHistory walkhistory;
 //}
 
 // Конструктор
-ItemsFlat::ItemsFlat(const bool _is_crypt
-                    )
-    :
+ItemsFlat::ItemsFlat(const bool _is_crypt):
+
     //    : _tree_item(_tree_item)
     //    , _workpos(-1)
     //    _parent_item([ & ]()
@@ -109,6 +108,30 @@ ItemsFlat::ItemsFlat(const bool _is_crypt
 
     //    return;
 }
+
+
+ItemsFlat::ItemsFlat(const ItemsFlat &obj): _is_crypt(obj._is_crypt), _workpos(obj._workpos)
+{
+    _child_items = obj._child_items;
+}
+
+ItemsFlat &ItemsFlat::operator =(const ItemsFlat &obj)
+{
+    if(&obj != this) {
+        _child_items = obj._child_items;
+        _is_crypt = obj._is_crypt;
+        _workpos = obj._workpos;
+    }
+    return *this;
+}
+
+void ItemsFlat::parent(boost::intrusive_ptr<TreeItem> parent_item)
+{
+    for(auto &i : _child_items) {
+        i->parent(parent_item);
+    }
+}
+
 // Деструктор
 ItemsFlat::~ItemsFlat()
 {
@@ -137,7 +160,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find(const QUrl &url)const
 
     for(auto &i : _child_items) {
         if(i->field("url") == url.toString()) {
-            assert(i->is_registered_to_shadow_list());
+            assert(i->is_registered_to_record_controller());
             record = i;
             break;
         }
@@ -154,7 +177,7 @@ int ItemsFlat::locate(boost::intrusive_ptr<TreeItem> item)const
         auto it = _child_items.value(i);
 
         if(it->field("id") == item->field("id")) {
-            assert(it->is_registered_to_shadow_list());
+            assert(it->is_registered_to_record_controller());
             pos = i;
             break;
         }
@@ -171,7 +194,7 @@ int ItemsFlat::index(boost::intrusive_ptr<TreeItem> item)const
     for(auto &i : _child_items) {
 
         if(i == item) {
-            assert(i->is_registered_to_shadow_list());
+            assert(i->is_registered_to_record_controller());
             result = in;
             break;
         }
@@ -220,7 +243,7 @@ void ItemsFlat::field(int pos, QString name, QString value)
 QString ItemsFlat::text(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая строка
-    if(pos < 0 || pos >= direct_children_count())
+    if(pos < 0 || pos >= current_count())
         return QString();
 
     if(_child_items[pos]->is_lite())
@@ -352,7 +375,7 @@ void ItemsFlat::editor_save_callback(QObject *editor, QString saveText)
 boost::intrusive_ptr<TreeItem> ItemsFlat::item_lite(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая запись
-    if(pos < 0 || pos >= direct_children_count())
+    if(pos < 0 || pos >= current_count())
         return boost::intrusive_ptr<TreeItem>(nullptr);
 
     // Хранимая в дереве запись не может быть "тяжелой"
@@ -394,7 +417,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::child(int pos)const
 boost::intrusive_ptr<TreeItem> ItemsFlat::item(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая запись
-    if(pos < 0 || pos >= direct_children_count())
+    if(pos < 0 || pos >= current_count())
         return nullptr;
 
     return _child_items.at(pos);    // _child_items[pos];
@@ -541,7 +564,7 @@ ItemsFlat *ItemsFlat::active_subset()
     //    import_from_dom(dommodel);
     QList<boost::intrusive_ptr<TreeItem>> result;
 
-    for(int i = 0; i < direct_children_count(); i++) {
+    for(int i = 0; i < current_count(); i++) {
         if(_child_items.at(i)->page_valid())result.push_back(_child_items.at(i));
     }
 
@@ -670,7 +693,7 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
         //        // Запись добавляется в таблицу конечных записей
         //        int insertPos = -1;
 
-        item->is_registered_to_shadow_list(true);
+        item->is_registered_to_record_controller(true);
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
             _child_items << item;
@@ -786,7 +809,7 @@ int ItemsFlat::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> record, 
         //        int insertPos = -1;
 
         //        record->is_registered(true);
-        assert(record->is_registered_to_shadow_list());
+        assert(record->is_registered_to_record_controller());
 
         if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
             _child_items << record;
@@ -878,7 +901,7 @@ bool ItemsFlat::remove_child(QString id)
 {
     bool result = false;
 
-    for(int i = 0; i < direct_children_count(); i++) {
+    for(int i = 0; i < current_count(); i++) {
         if(field(i, "id") == id) {
             result = remove_child(i); // Так как id уникальный, удаляться будет только одна запись
             break;
@@ -907,7 +930,7 @@ bool ItemsFlat::remove_child(boost::intrusive_ptr<TreeItem> item)
 // Удаление всех элементов таблицы конечных записей
 void ItemsFlat::delete_all_items(void)
 {
-    int tableSize = direct_children_count(); // Запоминается размер таблицы, так как он при удалении меняется
+    int tableSize = current_count(); // Запоминается размер таблицы, так как он при удалении меняется
 
     for(int i = 0; i < tableSize; i++)
         remove_child(0);   // Deleted very first record many times   // Удаляется самая первая запись много раз
@@ -953,7 +976,7 @@ void ItemsFlat::clear(void)
 
 bool ItemsFlat::is_item_exists(const QString &id)const
 {
-    for(int i = 0; i < direct_children_count(); i++)
+    for(int i = 0; i < current_count(); i++)
         if(field(i, "id") == id)
             return true;
 
@@ -964,7 +987,7 @@ bool ItemsFlat::is_item_exists(const QUrl &url)const
 {
     bool found = false;
 
-    for(int i = 0; i < direct_children_count(); i++) {
+    for(int i = 0; i < current_count(); i++) {
         std::string compare = difference(field(i, "url").toStdString(), url.toString().toStdString());
 
         if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
@@ -978,16 +1001,24 @@ bool ItemsFlat::is_item_exists(const QUrl &url)const
 
 int ItemsFlat::position(QString id)const
 {
-    for(int i = 0; i < direct_children_count(); i++)
+    for(int i = 0; i < current_count(); i++)
         if(field(i, "id") == id)
             return i;
 
     return -1;
 }
 
+int ItemsFlat::position(boost::intrusive_ptr<TreeItem> it)const
+{
+    for(int i = 0; i < current_count(); i++)
+        if(child(i) == it)
+            return i;
+
+    return -1;
+}
 
 // Количество записей в таблице данных
-int ItemsFlat::direct_children_count(void) const
+int ItemsFlat::current_count(void) const
 {
     return _child_items.size();
 }
@@ -1029,7 +1060,7 @@ void ItemsFlat::move_dn(int pos)
 void ItemsFlat::to_encrypt(void)
 {
     // Перебор записей
-    for(int i = 0; i < direct_children_count(); i++) {
+    for(int i = 0; i < current_count(); i++) {
         // Если запись уже зашифрована, ее шифровать ненужно
         if(field(i, "crypt") == "1")
             continue;
@@ -1047,7 +1078,7 @@ void ItemsFlat::to_encrypt(void)
 void ItemsFlat::to_decrypt(void)
 {
     // Перебор записей
-    for(int i = 0; i < direct_children_count(); i++) {
+    for(int i = 0; i < current_count(); i++) {
         // Если запись не зашифрована, ее не нужно расшифровывать
         if(field(i, "crypt") == "" || field(i, "crypt") == "0")
             continue;
@@ -1081,13 +1112,13 @@ void ItemsFlat::work_pos(int pos)
 void ItemsFlat::crypt(const bool _is_crypt)
 {
     if(_is_crypt && !this->_is_crypt) {
-        for(int i = 0; i < direct_children_count(); i++) {
+        for(int i = 0; i < current_count(); i++) {
             item(i)->to_encrypt_fields();
         }
     }
 
     if(!_is_crypt && this->_is_crypt) {
-        for(int i = 0; i < direct_children_count(); i++) {
+        for(int i = 0; i < current_count(); i++) {
             item(i)->to_decrypt_fields();
         }
     }

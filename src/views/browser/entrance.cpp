@@ -372,7 +372,6 @@ namespace browser {
                                        , _editor_screen
                                        , _main_window
                                        , this
-                                       // , _appconfig
                                        , _style_source
                                        , Qt::MaximizeUsingFullscreenGeometryHint
                                       ); //, dock_widget
@@ -401,7 +400,6 @@ namespace browser {
                     , _editor_screen
                     , _main_window
                     , this
-                    // , _appconfig
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
                    ); //, dock_widget
@@ -421,7 +419,6 @@ namespace browser {
                     , _editor_screen
                     , _main_window
                     , this
-                    // , _appconfig
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
                    ); //, dock_widget
@@ -447,7 +444,6 @@ namespace browser {
                     , _editor_screen
                     , _main_window
                     , this
-                    // , _appconfig
                     , _style_source
                     , Qt::MaximizeUsingFullscreenGeometryHint
                    ); //, dock_widget
@@ -791,7 +787,7 @@ namespace browser {
                              , ara
                          )
                      );
-            r->self_bind();
+            //            r->self_bind();
             r->active();
         } else {
             new_browser(url);
@@ -821,7 +817,7 @@ namespace browser {
                              , ara
                          )
                      );
-            r->self_bind();
+            //            r->self_bind();
             r->active();
         } else {
             new_browser(item);
@@ -1059,20 +1055,21 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    std::pair<Browser *, WebView *> Entrance::equip_registered(boost::intrusive_ptr<TreeItem> record)
+    std::pair<Browser *, WebView *> Entrance::equip_registered(boost::intrusive_ptr<TreeItem> requested_item)
     {
-        assert(record);
-        assert(record->is_registered_to_shadow_list());
+        assert(requested_item);
+        assert(!requested_item->is_lite());
+        assert(requested_item->is_registered_to_record_controller());
         clean();
         //DockedWindow *w = nullptr;
         std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
 
-        if(record) {
+        if(requested_item) {
             //            assert(!record->generator()); // maybe Entrance::ActiveRecordBinder registered
-            assert(QUrl(record->natural_field_source("url")).isValid());
+            assert(QUrl(requested_item->natural_field_source("url")).isValid());
 
             if(// !record->generator() && // maybe Entrance::ActiveRecordBinder registered
-                QUrl(record->natural_field_source("url")).isValid()) {
+                QUrl(requested_item->natural_field_source("url")).isValid()) {
                 //        QUrl url = QUrl(record->getNaturalFieldSource("url"));
 
 
@@ -1083,7 +1080,7 @@ namespace browser {
                     //            r->active_immediately(true);
 
                     dp = new_browser(
-                             record // record ? QUrl(record->getNaturalFieldSource("url")).isValid() ? QUrl(record->getNaturalFieldSource("url")) : QUrl(DockedWindow::_defaulthome) : QUrl(DockedWindow::_defaulthome)
+                             requested_item // record ? QUrl(record->getNaturalFieldSource("url")).isValid() ? QUrl(record->getNaturalFieldSource("url")) : QUrl(DockedWindow::_defaulthome) : QUrl(DockedWindow::_defaulthome)
                          );
                 } else {
                     auto generator = [](boost::shared_ptr<WebPage::ActiveRecordBinder> ar) {
@@ -1106,7 +1103,7 @@ namespace browser {
 
                     for(auto &i : _browsers) {
 
-                        dp.second = i->tabWidget()->find(record->natural_field_source("url"));
+                        dp.second = i->tabWidget()->find(requested_item->natural_field_source("url"));
 
                         if(dp.second != nullptr) {
                             //setWidget(i.data());
@@ -1129,7 +1126,7 @@ namespace browser {
 
                     if(dp.second == nullptr && dp.first) {
                         //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                        dp.second = dp.first->invoke_registered_page(record);
+                        dp.second = dp.first->invoke_registered_page(requested_item);
                     }
 
                     //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
@@ -1142,11 +1139,11 @@ namespace browser {
 
                     // registered record, but have no generator:
                     boost::shared_ptr<WebPage::ActiveRecordBinder> ar = boost::make_shared<WebPage::ActiveRecordBinder>(dp.second->page());
-                    record->binder(
+                    requested_item->binder(
                         generator(ar)
                     );
 
-                    record->activator(
+                    requested_item->activator(
                         activator(ar)
                     );
 

@@ -16,6 +16,8 @@
 #include "views/record_table/RecordScreen.h"
 #include "views/record/MetaEditor.h"
 #include "controllers/record_table/RecordController.h"
+#include "views/browser/webview.h"
+
 
 
 extern GlobalParameters globalparameters;
@@ -150,10 +152,10 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto treeItemDrop = parentPointer->_root_model->item(index);
+        auto tree_item_drop = parentPointer->_root_model->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
-        auto recordTableData = treeItemDrop;    // ->record_table();
+        auto items_flat = tree_item_drop;    // ->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
         QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->current_index();
@@ -167,7 +169,7 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
 
         // Если перенос происходит из не зашифрованной ветки в зашифрованную, а пароль не установлен
         if(treeItemDrag->field("crypt") != "1" &&
-           treeItemDrop->field("crypt") == "1" &&
+           tree_item_drop->field("crypt") == "1" &&
            globalparameters.crypt_key().length() == 0) {
             // Выводится уведомление что невозможен перенос без пароля
             QMessageBox msgBox;
@@ -184,7 +186,7 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
         // В настоящий момент в MimeData попадает только одна запись,
         // но в дальнейшем планируется переносить несколько записей
         // и здесь код подготовлен для переноса нескольких записей
-        RecordController *recordTableController = find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
+        RecordController *_record_controller = treeItemDrag->unique_page()->record_controller(); // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
 
         for(int i = 0; i < clipboardRecords->size(); i++) {
             // Полные данные записи
@@ -193,16 +195,17 @@ void TreeViewKnow::dropEvent(QDropEvent *event)
             // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
             // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-            recordTableController->removerow_by_id(record->field("id"));
+            _record_controller->remove_child(record->field("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
-            if(recordTableController->row_count() == 0)
+            if(_record_controller->row_count() == 0)
                 find_object<MetaEditor>(meta_editor_singleton_name)->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
 
-            find_object<RecordScreen>(table_screen_singleton_name)->tools_update();
+            //            find_object<RecordScreen>(table_screen_singleton_name)
+            _record_controller->record_screen()->tools_update();
 
             // Добавление записи в базу
-            recordTableData->insert_new_item(0, record, ADD_NEW_RECORD_TO_END);
+            items_flat->insert_new_item(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
             find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();

@@ -225,7 +225,7 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(RecordController *_record_controller, Browser *parent);
+        TabWidget(Browser *_browser, RecordController *_record_controller);
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -256,7 +256,7 @@ namespace browser {
 
         WebView *find(const QUrl &url) const;
         WebView *find_nopin()const;
-        Browser *browser() {return _window;}
+        Browser *browser() {return _browser;}
 
         struct ActiveRecordBinder {
             TabWidget       *_the;
@@ -275,13 +275,16 @@ namespace browser {
 
             WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
             {
-                WebView *view = _the->newTab(item, _the->_record_controller, _make_current);
+                assert(item);
+                assert(item->is_registered_to_record_controller() == true);
+                WebView *view = _the->newTab(item, _make_current);
                 (item.get()->*_bind)(view->page());
                 return view;
             }
 
             WebView *activator(boost::intrusive_ptr<TreeItem> item)
             {
+                assert(item);
                 assert(item->page_valid());
                 return item->unique_page()->active();
             }
@@ -289,12 +292,13 @@ namespace browser {
         };
 
         //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
-        RecordModel *source_model() {return _record_controller->source_model();}
+        //        RecordModel *source_model() {return _record_controller->source_model();}
         //        void tree_item(boost::intrusive_ptr<TreeItem> item) {_shadow_branch_root = item;}
 
         //        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
         //        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
+        TabBar *tabbar() {return _tabbar;}
     protected:
         void mouseDoubleClickEvent(QMouseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
@@ -308,7 +312,6 @@ namespace browser {
         //BrowserView *new_dummy();
 
         WebView *newTab(boost::intrusive_ptr<TreeItem> item
-                        , RecordController *_record_controller  // = globalparameters.record_screens()->record_controller()
                         , bool make_current
                         = true
                        );
@@ -323,6 +326,7 @@ namespace browser {
         void reloadAllTabs();
         void nextTab();
         void previousTab();
+        void moveTab(int fromIndex, int toIndex);
 
     private slots:
         void currentChanged(int index);
@@ -335,15 +339,18 @@ namespace browser {
         void webViewUrlChanged(const QUrl &url);
         void lineEditReturnPressed();
         void windowCloseRequested();
-        void moveTab(int fromIndex, int toIndex);
+        // void moveTab(int fromIndex, int toIndex);
         void onTabsChanged();
         void fullScreenRequested(QWebEngineFullScreenRequest request);
     private:
-        QAction *_recentlyclosedtabsaction;
-        QAction *_newtabaction;
-        QAction *_closetabaction;
-        QAction *_nexttabaction;
-        QAction *_previoustabaction;
+        Browser             *_browser;
+        RecordController    *_record_controller;
+
+        QAction             *_recentlyclosedtabsaction;
+        QAction             *_newtabaction;
+        QAction             *_closetabaction;
+        QAction             *_nexttabaction;
+        QAction             *_previoustabaction;
 
         QMenu               *_recentlyclosedtabsmenu;
         static const int    _recentlyclosedtabssize = 10;
@@ -359,8 +366,6 @@ namespace browser {
         QWebEngineView          *_fullscreenview;
         FullScreenNotification  *_fullscreennotification;
     protected:
-        RecordController         *_record_controller;
-        //        TableController         *_page_controller;
 
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
@@ -368,7 +373,7 @@ namespace browser {
         //        boost::intrusive_ptr<TreeItem> _shadow_branch_root;
         //        TableModel              *_shadow_source_model;
         //        std::shared_ptr<TableData>  _table_data;
-        Browser                 *_window;
+
 
         friend class Browser;
         friend class ToolbarSearch;

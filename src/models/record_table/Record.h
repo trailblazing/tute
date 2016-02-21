@@ -103,8 +103,8 @@ public:
     //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
     //    bool active_immediately() {return _active_immediately;}
 
-    bool is_registered_to_shadow_list() {return _is_registered_to_shadow_list;}
-    void is_registered_to_shadow_list(bool reg) {_is_registered_to_shadow_list = reg;}
+    bool is_registered_to_record_controller() {return _is_registered_to_shadow_list;}
+    void is_registered_to_record_controller(bool reg) {_is_registered_to_shadow_list = reg;}
 
     //    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
     //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}

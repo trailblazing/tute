@@ -68,8 +68,8 @@ public:
 
     void to_editor_layout(void);
     void to_attach_layout(void);
-    void bind(boost::intrusive_ptr<TreeItem> record);   // {_record = r;}
-    boost::intrusive_ptr<TreeItem> record();    // {return _record;}
+    void bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);   // {_record = r;}
+    boost::intrusive_ptr<TreeItem> item();    // {return _record;}
 
 private:
     void setupLabels(void);
@@ -78,24 +78,24 @@ private:
     void setupSignals(FindScreen *_find_screen);
 
     QLabel          *_tree_path;       // Надпись Path (только для мобильного интерфейса)
-    QCheckBox       *_record_pin;
+    QCheckBox       *_item_pin;
 
-    QLabel          *_record_name;     // Надпись Title
-    QLabel          *_record_author;   // Надпись Author(s)
+    QLabel          *_item_name;     // Надпись Title
+    QLabel          *_item_author;   // Надпись Author(s)
 
     QLabel          *_label_home;       // Inscription    // Надпись "Url"
-    ClickableLabel  *_record_home;
+    ClickableLabel  *_item_home;
 
     QLabel          *_label_url;       // Inscription    // Надпись "Url"
-    ClickableLabel  *_record_url;
+    ClickableLabel  *_item_url;
 
     QLabel          *_label_tags;      // Надпись "Tags"
-    QWidget         *_record_tags_container;
-    QHBoxLayout     *_record_tags_layout;
-    QScrollArea     *_record_tags_scrollarea;
-    QString         _record_tags_text;
-    QStringList     _record_tags_text_list;
-    QList<QLabel *> _record_tags_labels;
+    QWidget         *_item_tags_container;
+    QHBoxLayout     *_item_tags_layout;
+    QScrollArea     *_item_tags_scrollarea;
+    QString         _item_tags_text;
+    QStringList     _item_tags_text_list;
+    QList<QLabel *> _item_tags_labels;
 
     QSplitter       *_editor_and_filetable_splitter;
 
@@ -110,7 +110,7 @@ private:
     QVBoxLayout     *_meta_editor_join_layer;
     QMetaObject::Connection _home_connection;   // for disconnect
     QMetaObject::Connection _url_connection;    // for disconnect
-    boost::intrusive_ptr<TreeItem> _record;
+    boost::intrusive_ptr<TreeItem> _item;
 };
 
 #endif /* _METAEDITOR_H_ */

@@ -22,7 +22,7 @@
 #include "views/tree/TreeScreen.h"
 #include "views/browser/entrance.h"
 #include "models/record_table/RecordModel.h"
-
+#include "views/browser/browser.h"
 
 
 
@@ -34,11 +34,11 @@ extern AppConfig appconfig;
 // c кнопками управления
 
 RecordScreen::RecordScreen(QString object_name
+                           , browser::Browser *_browser
                            , TreeScreen *_tree_screen
                            , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
                            , MetaEditor *_editor_screen
                            , MainWindow *_main_window
-                           // , AppConfig &_appconfig
                           )
     : QWidget(_main_window)
     , _save_in_new_branch(new QAction(tr("Save in new branch"), this))
@@ -65,6 +65,7 @@ RecordScreen::RecordScreen(QString object_name
     , _extra_toolsline(new QToolBar(this))
     , _treepathlabel(new QLabel(this))
     , _record_controller(new RecordController(object_name
+                                              , _browser
                                               , _tree_screen
                                               , _find_screen   // browser::ToolbarSearch *toolbarsearch
                                               , _editor_screen
