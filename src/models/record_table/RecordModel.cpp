@@ -18,14 +18,16 @@
 #include "views/record/MetaEditor.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/browser.h"
+#include "models/record_table/RecordProxyModel.h"
 
 
 extern FixedParameters fixedparameters;
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
-pages_container::pages_container(browser::Browser *_browser, RecordController *_record_controller)
-    : _tabmanager(new browser::TabWidget(_browser, _record_controller))
+pages_container::pages_container(browser::TabWidget *_tabmanager)
+    : _tabmanager(// new browser::TabWidget(_browser, _record_controller)
+          _tabmanager)
       //    , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
 {}
 
@@ -58,7 +60,7 @@ pages_container::~pages_container()
 //                    , _tabmanager
 //                )
 //            );
-//            _browser_pages->child(j)->active();
+//            _browser_pages->child(j)->activate();
 //            // _tabmanager->newTab(_browser_pages->child(j), false);
 //        }
 //    }
@@ -242,17 +244,14 @@ pages_container::~pages_container()
 //}
 
 // Конструктор модели
-RecordModel::RecordModel(QString screen_name
-                         , browser::Browser *_browser
-                         , TreeScreen       *_tree_screen
-                         , FindScreen       *_find_screen
-                         // , MetaEditor       *_editor_screen
-                         // , MainWindow       *_main_window
-                         , RecordController *_record_controller
-                         , RecordScreen     *_record_screen
+RecordModel::RecordModel(TreeScreen             *_tree_screen
+                         , FindScreen           *_find_screen
+                         , RecordController     *_record_controller
+                         , RecordScreen         *_record_screen
+                         , browser::TabWidget   *_tabmanager
                         )
     : QAbstractTableModel(_record_screen)
-    , pages_container(_browser, _record_controller)
+    , pages_container(_tabmanager)
     , _reocrd_controller(_record_controller)
 {
     //    _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
@@ -264,7 +263,8 @@ RecordModel::RecordModel(QString screen_name
 
     //    init_source_model(_record_controller, _record_screen, _main_window, _editor_screen);
 
-    setObjectName(screen_name + "_source_model");
+    //setObjectName(screen_name + "_source_model");
+
     // При создании модели она должна брать данные как минимум из
     // пустой таблицы данных
     // When you create a model, it has to take the data from at least
@@ -552,7 +552,7 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
 //                    , _tabmanager_ptr
 //                )
 //            );
-//            _browser_pages->child(j)->active();
+//            _browser_pages->child(j)->activate();
 //            // _tabmanager->newTab(_browser_pages->child(j), false);
 //        }
 //    }
@@ -596,7 +596,7 @@ int RecordModel::insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<Tre
     Q_UNUSED(mode)      // to be used
 
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
-    browser::WebView *view = _item->active();
+    browser::WebView *view = _item->activate();
     // Вставка новых данных в таблицу конечных записей
 
     // accomplished by TabWidget::addTab in TabWidget::newTab?
@@ -689,17 +689,21 @@ int RecordModel::is_item_exists(QString find_id)
 bool RecordModel::remove_child(int index)
 {
     bool r = false;
-    beginRemoveRows(QModelIndex(), index, index);
 
     if(index > 0 && index < count()) {
-        _tabmanager->closeTab(index) ;
-        //            _reocrd_controller->view()->reset();
-        //            _reocrd_controller->view()->setModel(this); // very wrong. this is soure model, not proxy model
-        r = true;
+        beginRemoveRows(QModelIndex(), index, index);
 
+        //    if(index > 0 && index < count()) {
+        //        _tabmanager->closeTab(index) ;
+        //        //        _reocrd_controller->view()->reset();
+        //        //        _reocrd_controller->view()->setModel(_reocrd_controller->proxy_model());
+        //        r = true;
+
+        //    }
+        r = true;
+        endRemoveRows();
     }
 
-    endRemoveRows();
     return r;
 }
 
@@ -707,17 +711,21 @@ bool RecordModel::remove_child(QString find_id)
 {
     bool r = false;
     int index = is_item_exists(find_id);
-    beginRemoveRows(QModelIndex(), index, index);
 
     if(index != -1) {
-        _tabmanager->closeTab(position(find_id)) ;
-        //            _reocrd_controller->view()->reset();
-        //            _reocrd_controller->view()->setModel(this); // very wrong. this is soure model, not proxy model
-        r = true;
+        beginRemoveRows(QModelIndex(), index, index);
 
+        //    if(index != -1) {
+        //        _tabmanager->closeTab(position(find_id)) ;
+        //        //        _reocrd_controller->view()->reset();
+        //        //        _reocrd_controller->view()->setModel(_reocrd_controller->proxy_model());
+        //        r = true;
+
+        //    }
+
+        endRemoveRows();
     }
 
-    endRemoveRows();
     return r;
 }
 

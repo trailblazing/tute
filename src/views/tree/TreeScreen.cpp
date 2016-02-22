@@ -1833,7 +1833,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
     } else
         //        if(result_item->field("url") != browser::Browser::_defaulthome)
     {
-        globalparameters.entrance()->active(result_item);
+        globalparameters.entrance()->activate(result_item);
         // Переключаются окна (используется для мобильного интерфейса)
         //        globalparameters.window_switcher()->switchFromTreeToRecordtable();
     }

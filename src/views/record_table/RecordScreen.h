@@ -32,14 +32,15 @@ class AppConfig;
 namespace browser {
     class Browser;
     class ToolbarSearch;
+    class TabWidget;
 }
 
 class RecordScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordScreen(QString object_name
-                 , browser::Browser *_browser, TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, MainWindow *_main_window);
+    RecordScreen(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Browser *_browser, MainWindow *_main_window);
+
     virtual ~RecordScreen();
 
     int     first_selection_pos(void);
@@ -50,12 +51,9 @@ public:
     void tree_path(QString path);
     QString tree_path(void);
 
-    inline RecordController *record_controller()
-    {
-        return _record_controller;
-    }
+    inline RecordController *record_controller() {return _record_controller;}
     bool inited() {return _inited;}
-
+    browser::TabWidget *tabmanager() {return _tabmanager;}
 
 public slots:
 
@@ -104,14 +102,16 @@ private:
     //    FlatToolButton  *_treepath_button;
     QString             _treepath;
 
+    browser::TabWidget  *_tabmanager;
     RecordController    *_record_controller;
+
     VerticalScrollArea  *_vertical_scrollarea;
 
 
-    QHBoxLayout         *_recordtable_toolslayout;
+    QHBoxLayout         *_records_toolslayout;
     //    browser::ToolbarSearch  *_recordtree_search;
     //    QHBoxLayout             *_recordtree_searchlayout;
-    QVBoxLayout         *_recordtable_screenlayout;
+    QVBoxLayout         *_records_screenlayout;
 
 
     MainWindow          *_main_window;

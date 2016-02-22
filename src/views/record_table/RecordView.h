@@ -21,7 +21,10 @@ class RecordView : public QTableView {
     Q_OBJECT
 
 public:
-    RecordView(QString screen_name, RecordScreen *recordtablescreen, RecordController *controller);
+    RecordView(// QString screen_name,
+        RecordScreen        *_record_screen
+        , RecordController  *_record_controller);
+
     virtual ~RecordView();
 
     void setController(RecordController *pController);
@@ -81,12 +84,12 @@ protected slots:
 
 protected:
 
-    QMenu           *_context_menu;
-    RecordScreen     *_table_screen;
-    RecordController *_table_controller;
-    QVBoxLayout     *_layout;
-    QPoint          _mouse_start_position;
-    bool            _enable_move_section;
+    QMenu               *_context_menu;
+    RecordScreen        *_table_screen;
+    RecordController    *_record_controller;
+    QVBoxLayout         *_layout;
+    QPoint              _mouse_start_position;
+    bool                _enable_move_section;
 
     void setupSignals(void);
     void assemblyContextMenu(void);

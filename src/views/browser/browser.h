@@ -118,8 +118,13 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
-        TabWidget   *tabWidget() const {return _tabmanager;}
+
         TabWidget   *tabWidget() {return _tabmanager;}
+        TabWidget   *tabWidget() const {return _tabmanager;}
+
+        TabWidget   *tabmanager() {return _tabmanager;}
+        TabWidget   *tabmanager() const {return _tabmanager;}
+
         WebView     *currentTab() const;
         QByteArray  save_state(bool withTabs = true) const;
         bool        restore_state(const QByteArray &state);
@@ -218,8 +223,9 @@ namespace browser {
 
 
         RecordScreen        *_record_screen;
-        RecordController    *_record_controller;
         TabWidget           *_tabmanager;
+        // RecordController    *_record_controller;
+
 
         //        QDockWidget   *dock_widget;
         //        QToolBar      *navigater;

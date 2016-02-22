@@ -406,7 +406,8 @@ namespace browser {
 
         //        if(url != nullptr) {
 
-        _item->active();
+        //        _item->active();
+
         //            load(url);
         //        }
 
@@ -448,17 +449,21 @@ namespace browser {
     {
 
         if(_tabmanager && _tabmanager->count() > 0) {
-            auto source_model = _record_controller->source_model(); // tab_manager->source_model();
+            // auto source_model = _record_controller->source_model(); // tab_manager->source_model();
             assert(item);
             assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
 
-            if(source_model->is_item_exists(item->field("id"))  //                && record->unique_page() == this
-              ) {
-                source_model->remove_child(item->field("id"));    // this will delete record for ever from database
-            }
+            //            if(source_model->is_item_exists(item->field("id"))  //                && record->unique_page() == this
+            //              ) {
+            //                source_model->remove_child(item->field("id"));    // this will delete record for ever from database
+            //            }
 
-            for(int i = 0; i < source_model->count(); i++) {
-                if(source_model->child(i)->unique_page() == item->unique_page())source_model->remove_child(i);
+            _tabmanager->closeTab(_tabmanager->indexOf(item->unique_page()->view()));
+
+            for(int i = 0; i < _tabmanager->count(); i++) {
+                if(_tabmanager->webView(i)->page() == item->unique_page()) {
+                    _tabmanager->closeTab(i);   // source_model->remove_child(i);
+                }
             }
         }
     }
@@ -734,7 +739,7 @@ namespace browser {
                                       )
                                   );
                     //                record->generate();
-                    record->active();
+                    record->activate();
                     page = view->page();
                 } else {
 
@@ -765,7 +770,7 @@ namespace browser {
                     //                if(!r->generator())browser()->equip_registered(r);
                     assert(r->binder());
                     //                r->generate();
-                    r->active();
+                    r->activate();
 
                     page = r->unique_page();
 
@@ -1233,10 +1238,11 @@ namespace browser {
         // page, item, source_model, sychronization, need to be done?
         {
 
-            if(_record_controller->source_model()->is_item_exists(this->_item->id())) {
-                _record_controller->source_model()->remove_child(this->_item);
-                //            break_records(); // same as _record_controller->source_model()->remove_child()
-            }
+            //            if(_record_controller->source_model()->is_item_exists(this->_item->id())) {
+            //                _record_controller->source_model()->remove_child(this->_item);
+            //                //            break_records(); // same as _record_controller->source_model()->remove_child()
+            //            }
+            if(_tabmanager->indexOf(_item->unique_page()->view()) != -1)_tabmanager->closeTab(_tabmanager->indexOf(_item->unique_page()->view()));
 
             int tab_widget_count = _tabmanager->count();
             int tab_bar_count = _tabmanager->tabbar()->count();
@@ -1250,7 +1256,8 @@ namespace browser {
                     auto item_maybe_to_removed = _record_controller->source_model()->child(i);
 
                     if(item_maybe_to_removed->unique_page() == this || !item_maybe_to_removed->page_valid()) { // others refrer to this
-                        _record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+                        if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)_tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  // _record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+
                         break_page_linked_item(item_maybe_to_removed);
                         found = true;
                         break;
@@ -2371,7 +2378,8 @@ namespace browser {
                 auto item_maybe_to_removed = _record_controller->source_model()->child(i);
 
                 if(item_maybe_to_removed->unique_page() == page() || !item_maybe_to_removed->page_valid()) {
-                    _record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+                    if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)_tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  //_record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+
                     page()->break_page_linked_item(item_maybe_to_removed);
                     found = true;
                     break;
@@ -2435,7 +2443,7 @@ namespace browser {
     WebView *WebView::load(boost::intrusive_ptr<TreeItem> record)
     {
         //        _page->record(record);
-        return _page->equip_registered(record)->active();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
+        return _page->equip_registered(record)->activate();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
 
     }
 

@@ -37,7 +37,7 @@ namespace browser {
 
 struct pages_container {
 public:
-    explicit pages_container(browser::Browser *_browser, RecordController *_record_controller);
+    explicit pages_container(browser::TabWidget *_tabmanager);
     ~pages_container();
     browser::TabWidget *tabmanager() {return _tabmanager;}
     //    void browser_pages(ItemsFlat *_browser_pages);
@@ -57,14 +57,11 @@ class RecordModel : public QAbstractTableModel
     friend class RecordController;
     friend class browser::Entrance;
 public:
-    RecordModel(QString screen_name
-                , browser::Browser *_browser
-                , TreeScreen *_tree_screen
-                , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
-                // , MetaEditor *_editor_screen
-                // , MainWindow *_main_window
-                , RecordController *_record_controller
-                , RecordScreen *_record_screen
+    RecordModel(TreeScreen              *_tree_screen
+                , FindScreen            *_find_screen
+                , RecordController      *_record_controller
+                , RecordScreen          *_record_screen
+                , browser::TabWidget    *_tabmanager
                );
 
     ~RecordModel();

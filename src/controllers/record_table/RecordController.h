@@ -44,13 +44,12 @@ public:
 
     typedef TreeItem::bind_helper bind_helper;
     typedef TreeItem::active_helper active_helper;
-    RecordController(QString screen_name
-                     , browser::Browser *_browser
-                     , TreeScreen       *_tree_screen
-                     , FindScreen       *_find_screen
-                     , MetaEditor       *_editor_screen
-                     , MainWindow       *_main_window
-                     , RecordScreen     *_record_screen
+    RecordController(TreeScreen             *_tree_screen
+                     , FindScreen           *_find_screen
+                     , MetaEditor           *_editor_screen
+                     , browser::TabWidget   *_tabmanager
+                     , RecordScreen         *_record_screen
+                     , MainWindow           *_main_window
                     );
     virtual ~RecordController();
 
@@ -58,7 +57,8 @@ public:
 
     RecordView *view(void);
     RecordModel *source_model();    // {return _source_model;}
-    RecordScreen *record_screen() {return _record_screen;}
+    RecordProxyModel *proxy_model();
+    browser::TabWidget *tabmanager() {return _tabmanager;}
     void click_item(const QModelIndex &index);
 
     //    bool is_tree_item_exists(void);
@@ -91,43 +91,34 @@ public:
     void    select_id(QString id);
 
     // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
-    void remove_child(QString delId);
-    void remove_children(QVector<QString> delIds);
-
+    void remove_child(QString del_id);
+    void remove_children(QVector<QString> del_ids);
+    void remove_child(int index);
 
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
-    boost::intrusive_ptr<TreeItem> request_item(
-        boost::intrusive_ptr<TreeItem> item
-        , bind_helper generator
-        , active_helper activator
-    );
+    boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item, bind_helper generator, active_helper activator);
 
-    boost::intrusive_ptr<TreeItem> request_item(
-        const QUrl &_url
-        , bind_helper generator
-        , active_helper activator
-    );
+    boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url, bind_helper generator, active_helper activator);
 
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
     //    boost::intrusive_ptr<TreeItem> tree_item();
     void sychronize_metaeditor_to_item(const int pos);
     void sychronize_attachtable_to_item(const int pos);
+
     void addnew_blank(int mode);
 
     //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
-    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item
-                        , const int mode
-                        = ADD_NEW_RECORD_AFTER // add_new_record_after
-                       );
+    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = ADD_NEW_RECORD_AFTER); // add_new_record_after
 
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
     //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
     bool no_view() {return _no_view;}
     boost::intrusive_ptr<TreeItem> register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item);
+    RecordScreen *record_screen() {return _record_screen;}
 
 signals:
 
@@ -179,6 +170,7 @@ protected:
     RecordModel         *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
     RecordProxyModel    *_proxy_model;
     RecordView          *_view;
+    browser::TabWidget  *_tabmanager;   //
     RecordScreen        *_record_screen;
     MetaEditor          *_editor_screen;
     MainWindow          *_main_window;

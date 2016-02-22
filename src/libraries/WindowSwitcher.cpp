@@ -10,6 +10,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/browser/entrance.h"
 #include "views/record/MetaEditor.h"
+#include "views/browser/tabwidget.h"
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -61,7 +62,8 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    RecordScreen *record_screen = globalparameters.tree_screen()->_selected_branch->root_item()->unique_page()->view()->record_controller()->record_screen();
+    auto item = globalparameters.tree_screen()->_selected_branch->item(globalparameters.tree_screen()->current_index());
+    RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
     QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                             ); // temporary setting
     object->show();
@@ -97,7 +99,8 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    RecordScreen *record_screen = globalparameters.tree_screen()->_selected_branch->root_item()->unique_page()->view()->record_controller()->record_screen();
+    auto item = globalparameters.tree_screen()->_selected_branch->item(globalparameters.tree_screen()->current_index());
+    RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
     QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                             ); // temporary setting
     object->show();
@@ -218,8 +221,8 @@ void WindowSwitcher::restoreFocusWidget()
     }
 
     if(widgetName == table_screen_singleton_name) {
-
-        RecordScreen *record_screen = globalparameters.tree_screen()->_selected_branch->root_item()->unique_page()->view()->record_controller()->record_screen();
+        auto item = globalparameters.tree_screen()->_selected_branch->item(globalparameters.tree_screen()->current_index());
+        RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 
         QWidget *object = static_cast<QWidget *>(record_screen                               // globalparameters.record_screens()[0]

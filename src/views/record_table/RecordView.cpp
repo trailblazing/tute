@@ -28,13 +28,14 @@ extern AppConfig appconfig;
 // Виджет, отображащий список записей в ветке
 
 
-RecordView::RecordView(QString screen_name, RecordScreen *recordtablescreen, RecordController *controller)
-    : QTableView(recordtablescreen)
-    , _table_screen(recordtablescreen)
-    , _table_controller(controller)
+RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_controller)
+    : QTableView(_record_screen)
+    , _table_screen(_record_screen)
+    , _record_controller(_record_controller)
     , _layout(new QVBoxLayout(this))
 {
-    setObjectName(screen_name + "_view");
+    // setObjectName(screen_name + "_view");
+
     // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
     this->setSortingEnabled(false);
 
@@ -221,7 +222,7 @@ void RecordView::onClickToRecord(const QModelIndex &index)
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
 void RecordView::click_record(const QModelIndex &index)
 {
-    _table_controller->click_item(index);
+    _record_controller->click_item(index);
 
     globalparameters.window_switcher()->switchFromRecordtableToRecord();
 }
@@ -322,7 +323,7 @@ void RecordView::editFieldContext(void)
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     QModelIndex index = selectItems.at(0);
 
-    _table_controller->edit_field_context(index);
+    _record_controller->edit_field_context(index);
 
     // Нужно перерисовать окно редактирования чтобы обновились инфополя
     // делается это путем "повторного" выбора текущего пункта
@@ -364,7 +365,7 @@ QModelIndex RecordView::first_selection_proxy_index(void)
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->index( pos, 0 );
-    QModelIndex index = _table_controller->pos_to_proxyindex(pos);
+    QModelIndex index = _record_controller->pos_to_proxyindex(pos);
 
     return index;
 }
@@ -379,7 +380,7 @@ QModelIndex RecordView::first_selection_source_index(void)
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
-    QModelIndex index = _table_controller->proxyindex_to_sourceindex(proxy_index);
+    QModelIndex index = _record_controller->proxyindex_to_sourceindex(proxy_index);
 
     return index;
 }
@@ -404,7 +405,7 @@ bool RecordView::isSelectedSetToBottom(void)
 // Установка засветки в нужную строку на экране
 void RecordView::setSelectionToPos(int iPos)
 {
-    QModelIndex index = _table_controller->pos_to_proxyindex(iPos); // Модельный индекс в Proxy модели
+    QModelIndex index = _record_controller->pos_to_proxyindex(iPos); // Модельный индекс в Proxy модели
     int pos = index.row();
 
     // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
@@ -414,7 +415,7 @@ void RecordView::setSelectionToPos(int iPos)
         msgBox.exec();
     }
 
-    int rowCount = _table_controller->row_count();
+    int rowCount = _record_controller->row_count();
 
     if(pos > (rowCount - 1))
         return;
@@ -468,7 +469,7 @@ void RecordView::moveCursorToNewRecord(int mode, int pos)
         scrollToBottom();
     }
 
-    int proxy_pos = _table_controller->pos_to_proxyindex(pos).row();
+    int proxy_pos = _record_controller->pos_to_proxyindex(pos).row();
 
     selectRow(proxy_pos);
 }
@@ -621,7 +622,7 @@ ClipboardRecords *RecordView::getSelectedRecords(void)
     clipboardRecords->clear();
 
     // Объект заполняется выбранными записями
-    _table_controller->add_items_to_clipboard(clipboardRecords, itemsForCopy);
+    _record_controller->add_items_to_clipboard(clipboardRecords, itemsForCopy);
 
     return clipboardRecords;
 }

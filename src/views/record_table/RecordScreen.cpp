@@ -23,7 +23,7 @@
 #include "views/browser/entrance.h"
 #include "models/record_table/RecordModel.h"
 #include "views/browser/browser.h"
-
+#include "views/browser/tabwidget.h"
 
 
 extern GlobalParameters globalparameters;
@@ -33,12 +33,11 @@ extern AppConfig appconfig;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
-RecordScreen::RecordScreen(QString object_name
-                           , browser::Browser *_browser
-                           , TreeScreen *_tree_screen
-                           , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
-                           , MetaEditor *_editor_screen
-                           , MainWindow *_main_window
+RecordScreen::RecordScreen(TreeScreen           *_tree_screen
+                           , FindScreen         *_find_screen
+                           , MetaEditor         *_editor_screen
+                           , browser::Browser   *_browser
+                           , MainWindow         *_main_window
                           )
     : QWidget(_main_window)
     , _save_in_new_branch(new QAction(tr("Save in new branch"), this))
@@ -64,25 +63,37 @@ RecordScreen::RecordScreen(QString object_name
     , _toolsline(new QToolBar(this))
     , _extra_toolsline(new QToolBar(this))
     , _treepathlabel(new QLabel(this))
-    , _record_controller(new RecordController(object_name
-                                              , _browser
-                                              , _tree_screen
-                                              , _find_screen   // browser::ToolbarSearch *toolbarsearch
-                                              , _editor_screen
-                                              , _main_window
-                                              , this))
+    , _tabmanager(
+          new browser::TabWidget(_tree_screen
+                                 , _find_screen
+                                 , _editor_screen
+                                 , this
+                                 , _browser
+                                 , _main_window
+                                ))
+    , _record_controller(_tabmanager->record_controller())
+      //    , _record_controller(new RecordController(object_name
+      //                                              , _tree_screen
+      //                                              , _find_screen
+      //                                              , _editor_screen
+      //                                              , _tabmanager
+      //                                              , _main_window
+      //                                              , this))
+
     , _vertical_scrollarea(new VerticalScrollArea(
-                               std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent * >>("", &RecordView::resizeEvent, _record_controller->view())
+                               std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent * >>("", &RecordView::resizeEvent, _tabmanager->record_controller()->view())
                                , this
                            ))
-    , _recordtable_toolslayout(new QHBoxLayout())
-    , _recordtable_screenlayout(new QVBoxLayout())
+    , _records_toolslayout(new QHBoxLayout())
+    , _records_screenlayout(new QVBoxLayout())
     , _main_window(_main_window)
       //    , _recordtree_search(new browser::ToolbarSearch(this))
 {
     // Инициализируется контроллер списка записей
     //    recordTableController = new RecordTableController(this);
-    setObjectName(object_name);
+
+    // setObjectName(object_name);
+
     //    _table_controller->setObjectName(object_name + "_controller");
 
     setup_actions();
@@ -99,7 +110,8 @@ RecordScreen::RecordScreen(QString object_name
 RecordScreen::~RecordScreen()
 {
     //    delete _recordtree_search;
-    delete _record_controller;
+    //    delete _record_controller;
+    delete _tabmanager;
     delete _vertical_scrollarea;
 }
 
@@ -374,14 +386,14 @@ void RecordScreen::setup_signals(void)
 void RecordScreen::assembly(void)
 {
     //    _recordtable_toolslayout = new QHBoxLayout();
-    _recordtable_toolslayout->addWidget(_toolsline);
-    _recordtable_toolslayout->addStretch();
-    _recordtable_toolslayout->addWidget(_extra_toolsline);
+    _records_toolslayout->addWidget(_toolsline);
+    _records_toolslayout->addStretch();
+    _records_toolslayout->addWidget(_extra_toolsline);
 
     //    _recordtree_searchlayout = new QHBoxLayout();
     //    _recordtree_searchlayout->addWidget(_recordtree_search);
     //    _recordtable_screenlayout = new QVBoxLayout();
-    _recordtable_screenlayout->setObjectName(objectName() + "_qvboxlayout");
+    _records_screenlayout->setObjectName(objectName() + "_qvboxlayout");
 
 
 
@@ -400,7 +412,7 @@ void RecordScreen::assembly(void)
     //    //    }
 
     //    _recordtable_screenlayout->addLayout(_recordtree_searchlayout);
-    _recordtable_screenlayout->addLayout(_recordtable_toolslayout);
+    _records_screenlayout->addLayout(_records_toolslayout);
 
 
 
@@ -419,7 +431,7 @@ void RecordScreen::assembly(void)
     //    _verticalscrollarea->viewport()->installEventFilter(rtview);
 
 
-    _recordtable_screenlayout->addLayout(baseLayout); //
+    _records_screenlayout->addLayout(baseLayout); //
 
     //    _recordtable_screenlayout->addWidget(_table_controller->view());
 
@@ -435,7 +447,7 @@ void RecordScreen::assembly(void)
 
     //    _recordtable_screenlayout->setSizeConstraint(QLayout::SetNoConstraint);
 
-    setLayout(_recordtable_screenlayout);
+    setLayout(_records_screenlayout);
 
     // Границы убираются, так как данный объект будет использоваться как виджет
     QLayout *lt;

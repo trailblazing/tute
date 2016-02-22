@@ -1420,7 +1420,7 @@ browser::WebView *TreeItem::self_bind()
     return view;
 }
 
-browser::WebView *TreeItem::active()
+browser::WebView *TreeItem::activate()
 {
     self_bind();
 

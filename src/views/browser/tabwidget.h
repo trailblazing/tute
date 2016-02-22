@@ -58,7 +58,7 @@
 #include "views/browser/browser.h"
 #include "views/browser/webview.h"
 #include "utility/delegate.h"
-
+#include "models/tree/TreeItem.h"
 
 class GlobalParameters;
 extern GlobalParameters globalparameters;
@@ -85,6 +85,12 @@ class QLineEdit;
 class QMenu;
 class QStackedWidget;
 class TreeItem;
+class RecordModel;
+class RecordView;
+
+
+
+
 
 QT_END_NAMESPACE
 
@@ -225,11 +231,12 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(Browser *_browser, RecordController *_record_controller);
+        TabWidget(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, RecordScreen *_record_screen, Browser *_browser, MainWindow *_main_window);
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-
+        typedef TreeItem::bind_helper bind_helper;
+        typedef TreeItem::active_helper active_helper;
         ~TabWidget();
         void clear();
         void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
@@ -299,6 +306,11 @@ namespace browser {
         //        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
         TabBar *tabbar() {return _tabbar;}
+        RecordController *record_controller() {return _record_controller;}
+        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item, bind_helper generator, active_helper activator) {return _record_controller->request_item(item, generator, activator);}
+        boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url, bind_helper generator, active_helper activator) {return _record_controller->request_item(_url, generator, activator);}
+        RecordModel *source_model() {return _record_controller->source_model();}
+        RecordView *view() {return _record_controller->view();}
     protected:
         void mouseDoubleClickEvent(QMouseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
@@ -344,6 +356,7 @@ namespace browser {
         void fullScreenRequested(QWebEngineFullScreenRequest request);
     private:
         Browser             *_browser;
+        // RecordScreen        *_record_screen;
         RecordController    *_record_controller;
 
         QAction             *_recentlyclosedtabsaction;

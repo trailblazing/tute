@@ -924,7 +924,7 @@ void QtSingleApplication::newLocalSocketConnection()
                 browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
                 auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
                 auto record
-                    = browser->record_screen()->record_controller()->request_item(
+                    = browser->tabmanager()->request_item(
                           url
                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
                               ""
@@ -941,7 +941,7 @@ void QtSingleApplication::newLocalSocketConnection()
                           //            }
                       );
                 //            record->generate();
-                record->active();
+                record->activate();
             } else {
                 globalparameters.entrance()->new_browser(url);
             }

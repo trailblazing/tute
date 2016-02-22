@@ -6,7 +6,7 @@
 
 class RecordProxyModel : public QSortFilterProxyModel {
 public:
-    RecordProxyModel(QString screen_name, QObject *pobj = 0);
+    RecordProxyModel(QObject *pobj = 0);
     ~RecordProxyModel();
 
 };

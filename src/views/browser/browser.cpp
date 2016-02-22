@@ -124,8 +124,12 @@ namespace browser {
         _autosaver->saveIfNeccessary();
         delete _autosaver;
         delete _bookmarkstoolbar;
-        delete _tabmanager;
-        //    delete dock_widget;
+        //        delete _tabmanager;
+
+        if(globalparameters.vtab()->indexOf(_record_screen) != -1)
+            globalparameters.vtab()->removeTab(globalparameters.vtab()->indexOf(_record_screen));
+
+        delete _record_screen;
         delete _layout;
         delete _centralwidget;
 
@@ -219,11 +223,13 @@ namespace browser {
             //                    , arint
             //                )
             //            );
-            //            record->active();
+            //            record->activate();
 
             this->close();
-            int index = globalparameters.vtab()->indexOf(this->record_screen());
-            globalparameters.vtab()->removeTab(index);
+            int index = globalparameters.vtab()->indexOf(_record_screen);
+
+            if(index != -1)
+                globalparameters.vtab()->removeTab(index);
             //            static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
         }
         );
@@ -233,7 +239,8 @@ namespace browser {
         load_default_state();
 
 
-
+        if(globalparameters.vtab()->indexOf(_record_screen) == -1)
+            globalparameters.vtab()->addTab(_record_screen, "Browser " + globalparameters.vtab()->count());
 
         //        int size = _tabmanager->lineEditStack()->sizeHint().height();
 
@@ -295,7 +302,7 @@ namespace browser {
         //        _tabmanager->newTab(url);  // , false
         auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager, true);
         boost::intrusive_ptr<TreeItem> record
-            = _record_controller->request_item(    // why do this?
+            = _tabmanager->request_item(    // why do this?
                   url
                   , std::make_shared <
                   sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *) >> (
@@ -310,11 +317,11 @@ namespace browser {
                       , arint
                   )
               );
-        //        record->active();
+        //        record->activate();
         //assert(new_view->page());
         //record->page(new_view->page());
         //assert(_backup->page());
-        assert(record && record->page_valid() && record->unique_page());
+        assert(record); // && record->page_valid() && record->unique_page());
         return record;
     }
 
@@ -328,15 +335,12 @@ namespace browser {
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
-        , _record_screen(new RecordScreen(table_screen_singleton_name
-                                          , this
-                                          , _tree_screen
-                                          , _find_screen   // browser::ToolbarSearch *toolbarsearch
+        , _record_screen(new RecordScreen(_tree_screen
+                                          , _find_screen
                                           , _editor_screen
-                                          , _main_window
-                                         ))            // , _tree_screen->shadow_branch()->_root_item
-        , _record_controller(_record_screen->record_controller())
-        , _tabmanager(_record_screen->record_controller()->source_model()->tabmanager())    // new TabWidget(_record_controller, this))
+                                          , this
+                                          , _main_window))
+        , _tabmanager(_record_screen->tabmanager())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -352,7 +356,7 @@ namespace browser {
     {
         init();
         auto r = register_url(QUrl(Browser::_defaulthome));
-        r->active();
+        r->activate();
         run_script(style_source);
         this->restore_state(state);
 
@@ -373,15 +377,12 @@ namespace browser {
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
-        , _record_screen(new RecordScreen(table_screen_singleton_name
-                                          , this
-                                          , _tree_screen
-                                          , _find_screen   // browser::ToolbarSearch *toolbarsearch
+        , _record_screen(new RecordScreen(_tree_screen
+                                          , _find_screen
                                           , _editor_screen
-                                          , _main_window
-                                         ))            // , _tree_screen->shadow_branch()->_root_item
-        , _record_controller(_record_screen->record_controller())
-        , _tabmanager(_record_screen->record_controller()->source_model()->tabmanager())    // new TabWidget(_record_controller, this))
+                                          , this
+                                          , _main_window))
+        , _tabmanager(_record_screen->tabmanager())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -397,7 +398,7 @@ namespace browser {
     {
         init();
         auto r = register_url(url);
-        r->active();
+        r->activate();
         run_script(style_source);       //        assert(record->linkpage());
 
         QMainWindow::setWindowFlags(Qt::FramelessWindowHint);    //Qt::Window |
@@ -418,15 +419,12 @@ namespace browser {
                      , Qt::WindowFlags flags
                     )
         : QMainWindow(0, flags)
-        , _record_screen(new RecordScreen(table_screen_singleton_name
-                                          , this
-                                          , _tree_screen
-                                          , _find_screen   // browser::ToolbarSearch *toolbarsearch
+        , _record_screen(new RecordScreen(_tree_screen
+                                          , _find_screen
                                           , _editor_screen
-                                          , _main_window
-                                         ))            // , _tree_screen->shadow_branch()->_root_item
-        , _record_controller(_record_screen->record_controller())
-        , _tabmanager(_record_screen->record_controller()->source_model()->tabmanager())    // new TabWidget(_record_controller, this))
+                                          , this
+                                          , _main_window))
+        , _tabmanager(_record_screen->tabmanager())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(globalparameters.find_screen()->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -444,9 +442,9 @@ namespace browser {
 
         init();
 
-        if(!item->is_registered_to_record_controller() || !_record_controller->source_model()->find(item)) {
+        if(!item->is_registered_to_record_controller() || !_tabmanager->source_model()->find(item)) {
             auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager);    // this->tabWidget() does not work, because initialization has not accomplished
-            _record_controller->request_item(
+            _tabmanager->request_item(
                 item
                 , std::make_shared <
                 sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *) >> (
@@ -467,7 +465,7 @@ namespace browser {
 
         if(item->binder() && !item->page_valid()) {
             //            item->self_bind();
-            item->active();
+            item->activate();
         }
 
         assert(item->page_valid() && item->unique_page());
@@ -1331,9 +1329,9 @@ namespace browser {
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         //loadPage(home);
         auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(
-        _tabmanager, []() {} // _entrance
+                       _tabmanager // _entrance
                    );
-        auto r = _record_controller->request_item(
+        auto r = _tabmanager->request_item(
                      QUrl(home)
                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                          ""
@@ -1348,7 +1346,7 @@ namespace browser {
                  );
         assert(!r->is_lite());
         //        r->self_bind();
-        r->active();
+        r->activate();
     }
 
     void Browser::slotWebSearch()
@@ -1603,14 +1601,14 @@ namespace browser {
             if(blankview != nullptr) {
                 view = blankview;
                 //                view->page()->load(record);
-                view->page()->equip_registered(item)->active();
+                view->page()->equip_registered(item)->activate();
 
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
                 if(view->page()->url().toString() != item->field("url")) {
 
-                    view->page()->equip_registered(item)->active(); // view->page()->load(record);
+                    view->page()->equip_registered(item)->activate(); // view->page()->load(record);
                 }
             } else {
                 view = tab->newTab(item);  // , false

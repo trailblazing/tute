@@ -259,15 +259,28 @@ namespace browser {
 
         if(_fullscreenview)delete _fullscreenview;
 
+        delete _record_controller;
+
     }
 
     TabWidget::TabWidget(
-        Browser *_browser
-        , RecordController *_record_controller
+        TreeScreen      *_tree_screen
+        , FindScreen    *_find_screen
+        , MetaEditor    *_editor_screen
+        , RecordScreen  *_record_screen
+        , Browser       *_browser
+        , MainWindow    *_main_window
     )
         : QTabWidget(_browser)
         , _browser(_browser)
-        , _record_controller(_record_controller)
+        , _record_controller(new RecordController(_tree_screen
+                                                  , _find_screen
+                                                  , _editor_screen
+                                                  , this
+                                                  , _record_screen
+                                                  , _main_window
+                                                 )
+                            )
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
         , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -303,11 +316,6 @@ namespace browser {
             //            auto r =
             this->_record_controller->request_item(
                 QUrl(Browser::_defaulthome)
-
-                //            [this](Record * const record)-> WebView * {
-                //                return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);
-                //            }   // nested    //
-                //                [this](Record * const record)-> WebView * {return this->newTab(record);}
                 , std::make_shared <
                 sd::_interface <
                 sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
@@ -348,13 +356,13 @@ namespace browser {
             _newtabaction
             , &QAction::triggered   //                , this
         , [this](bool make_current) {
-            auto arint = boost::make_shared<ActiveRecordBinder>(this, make_current);
+            auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(this, make_current);
             this->_record_controller->request_item(
                 QUrl(Browser::_defaulthome)
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                    "", &ActiveRecordBinder::binder, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
+                    "", &TabWidget::ActiveRecordBinder::binder, arint)   // [&](Record * const record)->WebView* {return newTab(record, make_current);}
                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                    "", &ActiveRecordBinder::activator, arint)
+                    "", &TabWidget::ActiveRecordBinder::activator, arint)
             );
         });
 
@@ -686,7 +694,8 @@ namespace browser {
 
         //        record->view(webView);  // inside PageView initialization
         //webView->setPage(new WebPage(_profile, webView));
-        assert(item->page_valid() && item->unique_page());
+
+        //        assert(item->page_valid() && item->unique_page());
         assert(view);
         urlLineEdit->setWebView(view);
         connect(view, &WebView::loadStarted, this, &TabWidget::webViewLoadStarted);
@@ -716,7 +725,7 @@ namespace browser {
         //record->page()->load(record);
         //globalparameters.entrance()->invoke_view(record);
 
-        assert(item->page_valid() && item->unique_page());
+        //        assert(item->page_valid() && item->unique_page());
 
         //        int lc = _lineedits->count();
         //        int c = count();
@@ -740,10 +749,11 @@ namespace browser {
         //        }
 
         assert(view);
-        assert(item->page_valid() && item->unique_page());
+        //        assert(item->page_valid() && item->unique_page());
         assert(!item->is_lite());
         //        _record_controller->addnew_item_fat(item);
         _record_controller->register_item_to_browser_source_model(item);
+        item->activate(); // activate after initialization of browser
         return view; // TabWidget::newTabFull::WebView *
     }
 
@@ -913,7 +923,7 @@ namespace browser {
 
                 //                    assert(found == true);
                 //                }
-
+                _record_controller->remove_child(index);
             }
 
             // move forward before removeTab(index);
@@ -1120,7 +1130,7 @@ namespace browser {
                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                                  "", &ActiveRecordBinder::activator, arint)
                          );
-                r->active();
+                r->activate();
             }
         }
     }
@@ -1157,7 +1167,7 @@ namespace browser {
                                  , ar
                              )
                          );
-                r->active();
+                r->activate();
             }
         }
     }
@@ -1258,7 +1268,7 @@ namespace browser {
                           , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
                               "", &TabWidget::ActiveRecordBinder::activator, arint)
                       );
-                r->active();
+                r->activate();
             } else {
                 if(webView(0)->page()->url() != url) {
                     //                    webView(0)->load(_record);    //loadUrl(_url);
@@ -1276,7 +1286,7 @@ namespace browser {
                                      , ar
                                  )
                              );
-                    r->active();
+                    r->activate();
                 }
             }
         }

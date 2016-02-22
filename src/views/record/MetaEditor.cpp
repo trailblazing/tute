@@ -24,7 +24,7 @@
 #include "views/browser/webview.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/browser/entrance.h"
-
+#include "views/browser/tabwidget.h"
 
 
 
@@ -184,7 +184,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         Q_UNUSED(ev)
         assert(_item);
         assert(_item->page_valid() && _item->unique_page());
-        _item->active();
+        _item->activate();
     });
 
     QObject::disconnect(_home_connection);
@@ -202,7 +202,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         if(_item->natural_field_source("url") != home)
             _item->natural_field_source("url", home);
 
-        page->equip_registered(_item)->active(); // page->load(_record, true);
+        page->equip_registered(_item)->activate(); // page->load(_record, true);
         //        _record->active();
     });
 
@@ -355,13 +355,13 @@ void MetaEditor::tree_path(QString path)
 void MetaEditor::switch_pin()
 {
     if(globalparameters.entrance()->activiated_registered().first) {
-        RecordController *recordtablecontroller = globalparameters.entrance()->activiated_registered().first->record_screen()->record_controller();
+        browser::TabWidget *_tabmanager = globalparameters.entrance()->activiated_registered().first->tabmanager();
         // record_screens()->record_controller();
 
-        if(recordtablecontroller) {
-            RecordModel *source_model = recordtablecontroller->source_model();
-            RecordView *recordtableview = recordtablecontroller->view();
-            int pos = recordtablecontroller->first_selectionpos();
+        if(_tabmanager) {
+            RecordModel *source_model = _tabmanager->source_model();
+            RecordView *recordtableview = _tabmanager->view();
+            int pos = _tabmanager->currentIndex();  // first_selectionpos();
 
             if(source_model && -1 != pos) {
                 // Выясняется ссылка на таблицу конечных данных

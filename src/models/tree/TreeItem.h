@@ -180,7 +180,7 @@ public:
     browser::WebPage *unique_page();   // const; // {return _page;}
     browser::WebView *self_bind();
     boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
-    browser::WebView *active();
+    browser::WebView *activate();
 
     void binder(bind_helper g); // {_binder = g;}
     bind_helper binder() const; // {return _binder;}

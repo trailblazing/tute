@@ -46,30 +46,29 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordController::RecordController(QString screen_name
-                                   , browser::Browser *_browser
-                                   , TreeScreen *_tree_screen
-                                   , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
-                                   , MetaEditor *_editor_screen
-                                   , MainWindow *_main_window
-                                   , RecordScreen *_record_screen
+RecordController::RecordController(TreeScreen           *_tree_screen
+                                   , FindScreen         *_find_screen
+                                   , MetaEditor         *_editor_screen
+                                   , browser::TabWidget *_tabmanager
+                                   , RecordScreen       *_record_screen
+                                   , MainWindow         *_main_window
                                   )
     : QObject(_record_screen)
-    , _source_model(new RecordModel(
-                        screen_name
-                        , _browser
-                        , _tree_screen
-                        , _find_screen  // , _editor_screen // , _main_window
-                        , this
-                        , _record_screen
-                    ))         // , _shadow_branch_root
-    , _proxy_model(new RecordProxyModel(screen_name, this))
-    , _view(new RecordView(screen_name, _record_screen, this))    // , qobject_cast<QWidget * >(RecordTableScreen)
+    , _source_model(new RecordModel(_tree_screen
+                                    , _find_screen
+                                    , this
+                                    , _record_screen
+                                    , _tabmanager
+                                   ))
+    , _proxy_model(new RecordProxyModel(this))
+    , _view(new RecordView(_record_screen, this))   // , qobject_cast<QWidget * >(RecordTableScreen)
+    , _tabmanager(_tabmanager)
     , _record_screen(_record_screen)
     , _editor_screen(_editor_screen)
     , _main_window(_main_window)
 {
-    setObjectName(screen_name + "_controller");
+    // setObjectName(screen_name + "_controller");
+
     // Инициализируется область со списком записей
     //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
     //    _view->setObjectName("recordTableView");
@@ -159,7 +158,7 @@ void RecordController::open_website(QModelIndex proxyIndex)
     //    //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
     //    if(entrance && (!record->binder() || record->activator())) entrance->equip_registered(record);
 
-    //    if(record->binder() && record->activator())record->active();
+    //    if(record->binder() && record->activator())record->activate();
 
 
     //    //    int i = editRecordWin.exec();
@@ -282,12 +281,12 @@ void RecordController::update_browser(const int source_pos)
             assert(item->activator());
 
             //        if(record->binder() && !record->unique_page())record->bind();
-            //        else if(record->activator() && record->unique_page())record->active();  // if(entrance) entrance->active_record(record);
-            if(item->binder() && item->activator())item->active();
+            //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
+            if(item->binder() && item->activator())item->activate();
 
             //        else if(entrance)
         } else {
-            item->active();
+            item->activate();
         }
     }
 
@@ -478,6 +477,11 @@ void RecordController::sychronize_attachtable_to_item(const int pos)
 RecordModel *RecordController::source_model()
 {
     return _source_model;
+}
+
+RecordProxyModel *RecordController::proxy_model()
+{
+    return _proxy_model;
 }
 
 //void RecordController::init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen)
@@ -1479,18 +1483,18 @@ void RecordController::delete_items_selected(void)
 
 
 // Удаление одной записи по идентификатору
-void RecordController::remove_child(QString delId)
+void RecordController::remove_child(QString del_id)
 {
-    QVector<QString> delIds;
-    delIds.append(delId);
-    remove_children(delIds);
+    QVector<QString> del_ids;
+    del_ids.append(del_id);
+    remove_children(del_ids);
 }
 
 
 // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
-void RecordController::remove_children(QVector<QString> delIds)
+void RecordController::remove_children(QVector<QString> del_ids)
 {
-    qDebug() << "Remove rows by ID list: " << delIds;
+    qDebug() << "Remove rows by ID list: " << del_ids;
 
     // Выясняется ссылка на таблицу конечных данных
     //    auto _browser_pages = _source_model->browser_pages();
@@ -1498,8 +1502,8 @@ void RecordController::remove_children(QVector<QString> delIds)
     if(_source_model->count() == 0) // if(!_browser_pages)
         return;
 
-    for(int i = 0; i < delIds.count(); i++) {
-        QString id = delIds[i];
+    for(int i = 0; i < del_ids.count(); i++) {
+        QString id = del_ids[i];
         //        QModelIndex idx = id_to_proxyindex(id);
         _source_model->remove_child(id);
         //        for(int j = 0; j < _browser_pages->size(); j++) {
@@ -1512,11 +1516,37 @@ void RecordController::remove_children(QVector<QString> delIds)
         // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
         //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
         _view->reset();
+        _proxy_model->setSourceModel(_source_model);
         _view->setModel(_proxy_model);
         //        globalparameters.find_screen()->remove_id(id);  // ?
     }
 }
 
+// Удаление одной записи по идентификатору
+void RecordController::remove_child(int index)
+{
+
+    if(_source_model->count() == 0) // if(!_browser_pages)
+        return;
+
+
+    //        QModelIndex idx = id_to_proxyindex(id);
+    _source_model->remove_child(index);
+    //        for(int j = 0; j < _browser_pages->size(); j++) {
+    //            if(_browser_pages->item(j)->id() == id) {
+    //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
+    //            }
+    //        }
+
+    // Удаляется строка в Proxy модели
+    // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
+    //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
+    _view->reset();
+    _proxy_model->setSourceModel(_source_model);
+    _view->setModel(_proxy_model);
+    //        globalparameters.find_screen()->remove_id(id);  // ?
+
+}
 
 // Перемещение записи вверх
 void RecordController::move_up(void)
@@ -1778,7 +1808,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             //            _item = register_item_to_browser_source_model(_source_item);
             _source_item->is_registered_to_record_controller(true);
-            _source_item->self_bind();
+            // _source_item->self_bind();
             //                assert(_record);
 
             //                _record->active_immediately(active_immediately);
@@ -1795,7 +1825,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             //            _item = register_item_to_browser_source_model(item);
             item->is_registered_to_record_controller(true);
-            item->self_bind();
+            // item->self_bind();
             _item = item; // assert(_item.get() == item.get());
         }
 
@@ -1889,7 +1919,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             //            _item = register_item_to_browser_source_model(_source_item);
 
             _source_item->is_registered_to_record_controller(true);
-            _source_item->self_bind();
+            // _source_item->self_bind();
             _item = _source_item;
         } else {
             if(_item->is_lite())_item->to_fat();
@@ -1897,7 +1927,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             _item->binder(generator);
             _item->activator(activator);
             _item->is_registered_to_record_controller(true);
-            _item->self_bind();
+            // _item->self_bind();
         }
     } else {
         if(!_item) {
@@ -1980,7 +2010,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             //            _item = register_item_to_browser_source_model(item);
             item->is_registered_to_record_controller(true);
-            item->self_bind();
+            // item->self_bind();
             //                assert(_record);
             //                assert(_record->is_registered());
             //                _record->active_immediately(active_immediately);
@@ -1994,7 +2024,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             _item->binder(generator);
             _item->activator(activator);
             _item->is_registered_to_record_controller(true);
-            _item->self_bind();
+            // _item->self_bind();
         }
 
         auto it = _treemodelknow->item(globalparameters.tree_screen()->current_index());

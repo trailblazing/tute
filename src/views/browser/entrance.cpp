@@ -354,7 +354,7 @@ namespace browser {
                        && homeurl != page->url()
                       ) {
                         record->natural_field_source("url", home);
-                        page->equip_registered(record)->active(); // page->load(record, true);
+                        page->equip_registered(record)->activate(); // page->load(record, true);
                     }
                 }
             }
@@ -774,7 +774,7 @@ namespace browser {
             Browser *browser = activiated_registered().first;
             auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
 
-            auto r = browser->record_screen()->record_controller()->request_item(
+            auto r = browser->tabmanager()->request_item(
                          url
                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                              ""
@@ -788,7 +788,7 @@ namespace browser {
                          )
                      );
             //            r->self_bind();
-            r->active();
+            r->activate();
         } else {
             new_browser(url);
         }
@@ -797,14 +797,14 @@ namespace browser {
         //        return active_record(r);
     }
 
-    void Entrance::active(boost::intrusive_ptr<TreeItem> item)
+    void Entrance::activate(boost::intrusive_ptr<TreeItem> item)
     {
 
         if(activiated_registered().first) {
             Browser *browser = activiated_registered().first;
             auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
 
-            auto r = browser->record_screen()->record_controller()->request_item(
+            auto r = browser->tabmanager()->request_item(
                          item
                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                              ""
@@ -818,7 +818,7 @@ namespace browser {
                          )
                      );
             //            r->self_bind();
-            r->active();
+            r->activate();
         } else {
             new_browser(item);
         }

@@ -100,7 +100,7 @@ namespace browser {
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
         void active_url(const QUrl &url);
-        void active(boost::intrusive_ptr<TreeItem> item);
+        void activate(boost::intrusive_ptr<TreeItem> item);
         bool restore_state(const QByteArray &state);
         std::pair<Browser *, WebView *> find(boost::intrusive_ptr<TreeItem> record);
         std::pair<Browser *, WebView *> find(QUrl url);
