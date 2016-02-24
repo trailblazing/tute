@@ -13,16 +13,16 @@
 extern GlobalParameters globalparameters;
 
 
-TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
-                   , boost::intrusive_ptr<TreeItem> parent_item
-                   , const QDomElement &i_dom_element
+TreeItem::TreeItem(boost::intrusive_ptr<Record>     _record
+                   , boost::intrusive_ptr<TreeItem> _parent_item
+                   , const QDomElement              &_dom_element
                    //                   , std::shared_ptr<RecordTable>   table_data
                   )
-    : Record(record)
-    , ItemsFlat()
+    : Record(_record)
+    , ItemsFlat(_dom_element, _parent_item)
     , _parent_item([ & ]()
 {
-    if(parent_item) {
+    if(_parent_item) {
         //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
         //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
         //        //        QString crypt_value = "1";
@@ -43,14 +43,14 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
         //            this->to_decrypt(); // table_data->to_decrypt();
         //        }
 
-        if(parent_item->_field_data["crypt"] == "1") {
+        if(_parent_item->_field_data["crypt"] == "1") {
             this->to_encrypt();
         } else {
             this->to_decrypt();
         }
     }
 
-    return parent_item;
+    return _parent_item;
 }())
 {
     //    if(_parent_item) {
@@ -80,51 +80,50 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     record
     //    }
 
 
-    // Создание таблицы
-    if(!i_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
-        import_from_dom(
-            i_dom_element  // dom_element
-        );
-    }
+    //    // Создание таблицы
+    //    if(!i_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
+    //        import_local_from_dom(i_dom_element);            // dom_element
+    //    }
 
 
     //    record_to_item();
 }
 
 TreeItem::TreeItem(
-    QMap<QString, QString>              field_data
-    , boost::intrusive_ptr<TreeItem>    parent_item
+    QMap<QString, QString>              _field_data
+    , boost::intrusive_ptr<TreeItem>    _parent_item
     , ItemsFlat                         *_child_items
 )
-    : Record(field_data)
+    : Record(_field_data)
     , ItemsFlat(*_child_items)
     , _parent_item([ & ]()
 {
-    if(parent_item) {
-        if(parent_item->_field_data["crypt"] == "1") {
+    if(_parent_item) {
+        if(_parent_item->_field_data["crypt"] == "1") {
             this->to_encrypt();
         } else {
             this->to_decrypt();
         }
 
-        ItemsFlat::parent(parent_item);
+        ItemsFlat::parent(_parent_item);
     }
 
-    return parent_item;
+    return _parent_item;
 }())
 , _page(nullptr)
 {
 
 }
 
-TreeItem::TreeItem(QMap<QString, QString>           field_data
-                   , boost::intrusive_ptr<TreeItem> parent_item
-                   , const QDomElement &i_dom_element)
-    : Record(field_data)
-    , ItemsFlat()
+TreeItem::TreeItem(QMap<QString, QString>           _field_data
+                   , boost::intrusive_ptr<TreeItem> _parent_item
+                   , const QDomElement              &_dom_element
+                  )
+    : Record(_field_data)
+    , ItemsFlat(_dom_element, _parent_item)
     , _parent_item([ & ]()
 {
-    if(parent_item) {
+    if(_parent_item) {
         //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
         //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
 
@@ -140,14 +139,14 @@ TreeItem::TreeItem(QMap<QString, QString>           field_data
         //            this->to_decrypt(); // table_data->to_decrypt();
         //        }
 
-        if(parent_item->_field_data["crypt"] == "1") {
+        if(_parent_item->_field_data["crypt"] == "1") {
             this->to_encrypt();
         } else {
             this->to_decrypt();
         }
     }
 
-    return parent_item;
+    return _parent_item;
 }())
 , _page(nullptr)
 //    //    boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>()  //      std::enable_shared_from_this<TreeItem>()
@@ -223,12 +222,11 @@ TreeItem::TreeItem(QMap<QString, QString>           field_data
     //    fieldsTable = data;
 
 
-    // Создание таблицы
-    if(!i_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
-        import_from_dom(
-            i_dom_element  // dom_element
-        );
-    }
+    //    // Создание таблицы
+    //    if(!i_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
+    //        import_local_from_dom(i_dom_element);              // dom_element
+
+    //    }
 
 
     //    record_to_item();
@@ -236,7 +234,7 @@ TreeItem::TreeItem(QMap<QString, QString>           field_data
 
 TreeItem::TreeItem(const TreeItem &item)
     : Record(static_cast<const Record &>(item))
-    , ItemsFlat()
+    , ItemsFlat(static_cast<const ItemsFlat &>(item))
     , _parent_item([ & ]()
 {
     auto parent_item = const_cast<TreeItem &>(item).parent();
@@ -286,6 +284,7 @@ TreeItem::TreeItem(const TreeItem &item)
     _open_link_in_new_window = item._open_link_in_new_window;
     _binder = item._binder;
     _activator = item._activator;
+    // *static_cast<ItemsFlat *>(const_cast<TreeItem *>(this)) = *static_cast<const ItemsFlat *>(&item);
 }
 
 TreeItem &TreeItem::operator =(const TreeItem &item)
@@ -332,10 +331,12 @@ TreeItem &TreeItem::operator =(const TreeItem &item)
 
         }
 
+        *static_cast<Record *>(const_cast<TreeItem *>(this)) = *static_cast<const Record *>(&item);
         this->_position = item._position;
         this->_open_link_in_new_window = item._open_link_in_new_window;
         this->_binder = item._binder;
         this->_activator = item._activator;
+        *static_cast<ItemsFlat *>(const_cast<TreeItem *>(this)) = *static_cast<const ItemsFlat *>(&item);
     }
 
     return *this;
@@ -424,6 +425,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child(int number)
 {
     return _child_items.value(number);
 }
+
 
 //int TreeItem::direct_children_count()const
 //{
@@ -726,11 +728,10 @@ bool TreeItem::insert_children(int position, int count, int columns)
         boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(
                                                   new TreeItem   //
                                                   (data
-                                                   , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))  // shared_from_this()
-                                                   // , std::make_shared<RecordTable>(QDomElement())
+                                                   , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))
                                                   )
-                                              ); // Создается объект item
-        _child_items.insert(position, item); // Вставка item в нужную позицию массива childItems
+                                              );    // Создается объект item
+        _child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
     }
 
     return true;
@@ -822,11 +823,11 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(void)
 {
     QMap<QString, QString> data;
 
-    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(   // std::make_shared<TreeItem>
-                                              new TreeItem(data
-                                                           , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-                                                           // , std::make_shared<RecordTable>(QDomElement())
-                                                          )
+    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(
+                                              new TreeItem(
+                                                  data
+                                                  , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))
+                                              )
                                           ); // Создается объект item
 
     _child_items << item; // Добавление item в конец массива childItems
@@ -1190,69 +1191,102 @@ void TreeItem::to_decrypt(void)
 //}
 
 
-void TreeItem::import_from_dom(const QDomElement &dom_model)
+void TreeItem::dom_to_direct(const QDomElement &_dom_element)
 {
-    //    RecordTable::import_from_dom(dom_model);
+    QDomElement record;
 
-    // QDomElement n = dommodel.documentElement();
-    // QDomElement n = dommodel;
+    QDomElement records;
 
-    // qDebug() << "In recordtabledata setup_data_from_dom() start";
+    //    QString content = _dom_element.text();
 
-    // Если принятый элемент не является таблицей
-    if(dom_model.tagName() != "recordtable")
-        return;
+    //    if(_dom_element.tagName() == "node") {
+    //        record = _dom_element.firstChildElement("record");
+    //        records = _dom_element.firstChildElement("record").firstChildElement("recordtable");
+    //    } else
 
-    // Определяется указатель на первый элемент с записью
-    // Define a pointer to the first element of the recording
-    QDomElement current_record_dom = dom_model.firstChildElement("record");
+    if(_dom_element.tagName() == "record") {
+        record = _dom_element;
+        records = _dom_element.firstChildElement("recordtable");
+    } else {    // _dom_element.tagName() == "recordtable"
+        assert(_dom_element.tagName() == "recordtable");
+        records = _dom_element;
+    }
 
-    while(!current_record_dom.isNull()) {
-        QMap<QString, QString> data;
-        // Структура, куда будет помещена текущая запись
-        // The structure, which will put the current record
-        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
-                                                          new TreeItem(
-                                                              data
-                                                              , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
-                                                          )
-                                                      );
-        current_item->is_registered_to_record_controller(true);
+    if(!record.isNull() && record.tagName() == "record") {
+        Record::dom_to_record(_dom_element);
+    }
 
-        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
-        // The current record is added to the final table of records (and located at a certain address in memory)
-        _child_items << current_item;
+    if(!records.isNull() && records.tagName() == "recordtable") {   // assert(records.tagName() == "recordtable");
+        ItemsFlat::dom_to_items(records  // dom_model.firstChildElement("recordtable")
+                                  , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
+                                 );
+    }
 
-        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
-        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
-        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
-        // Order in subordinate objects have registered a valid pointer to this entry
-        (_child_items.last())->import_from_dom(current_record_dom);
+    //    // QDomElement n = dommodel.documentElement();
+    //    // QDomElement n = dommodel;
 
-        current_record_dom = current_record_dom.nextSiblingElement("record");
-    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
+    //    // qDebug() << "In recordtabledata setup_data_from_dom() start";
+
+    //    // Если принятый элемент не является таблицей
+    //    if(dom_model.tagName() != "recordtable")
+    //        return;
+
+    //    // Определяется указатель на первый элемент с записью
+    //    // Define a pointer to the first element of the recording
+    //    QDomElement current_record_dom = dom_model.firstChildElement("record");
+
+    //    while(!current_record_dom.isNull()) {
+    //        QMap<QString, QString> data;
+    //        // Структура, куда будет помещена текущая запись
+    //        // The structure, which will put the current record
+    //        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
+    //                                                          new TreeItem(data
+    //                                                                  , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
+    //                                                                      )
+    //                                                      );
+
+    //        current_item->is_registered_to_record_controller(true);
+
+    //        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
+    //        // The current record is added to the final table of records (and located at a certain address in memory)
+    //        _child_items << current_item;
+
+    //        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
+    //        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
+    //        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
+    //        // Order in subordinate objects have registered a valid pointer to this entry
+    //        (_child_items.last())->import_local_from_dom(current_record_dom);
+
+    //        current_record_dom = current_record_dom.nextSiblingElement("record");
+    //    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
 
 
 
-    return;
+    //    return;
 
 }
 
 // bypass record::export_to_dom
-QDomElement TreeItem::export_to_dom()
+QDomElement TreeItem::dom_from_treeitem()
 {
-    QDomElement record = Record::export_to_dom();
-    QDomElement children = ItemsFlat::export_to_dom();
+    //    QDomElement node = QDomDocument().createElement("node");
+    QDomElement record = Record::dom_from_record();
+    QDomElement children = ItemsFlat::dom_from_itemsflat();
     record.appendChild(children);
-    return record;
+    //    node.appendChild(record);
+    return // node;    //
+        record;
 }
 
-QDomElement TreeItem::export_to_dom(std::shared_ptr<QDomDocument> doc)
+QDomElement TreeItem::dom_from_treeitem(std::shared_ptr<QDomDocument> doc)
 {
-    QDomElement record = Record::export_to_dom(doc);
-    QDomElement children = ItemsFlat::export_to_dom(doc);
+    //    QDomElement node = doc->createElement("node");
+    QDomElement record = Record::dom_from_record(doc);
+    QDomElement children = ItemsFlat::dom_from_itemsflat(doc);
     record.appendChild(children);
-    return record;
+    //    node.appendChild(record);
+    return // node;    //
+        record;
 }
 
 

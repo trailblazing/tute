@@ -84,8 +84,8 @@
 #include "libraries/WindowSwitcher.h"
 #include "libraries/WalkHistory.h"
 #include "libraries/wyedit/EditorTextArea.h"
-#include "models/tree/TreeModelKnow.h"
-
+#include "models/tree/TreeKnowModel.h"
+#include "views/tree/TreeScreen.h"
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
@@ -305,6 +305,8 @@ namespace browser {
         //        connect(parent, []() {}, globalparameters.find_screen()->toolbarsearch(), [this]() {globalparameters.find_screen()->toolbarsearch()->lineedits(_lineedits);});
         //        move to     void Browser::activateWindow();
 
+        _tree_screen->tabmanager = std::make_shared<sd::_interface<sd::meta_info<void *>, TabWidget *>>("", &TabWidget::tabmanager, this);
+        _find_screen->tabmanager = std::make_shared<sd::_interface<sd::meta_info<void *>, TabWidget *>>("", &TabWidget::tabmanager, this);
 
         setElideMode(Qt::ElideRight);
         //        _active_record = [this](Record * const record)-> WebView * {return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);};
@@ -1627,6 +1629,87 @@ namespace browser {
     //    }
 
 
+
+
+
+    // Слот для добавления новой записи в конец таблицы
+    void TabWidget::addnew_to_end(void)
+    {
+        _record_controller->addnew_to_end();    // addnew_blank(ADD_NEW_RECORD_TO_END);
+    }
+    // Слот для добавления новой записи перед выделенной строкой
+    void TabWidget::addnew_before(void)
+    {
+        _record_controller->addnew_before();
+    }
+
+    // Слот для добавления новой записи после выделенной строки
+    // Slot to add a new record after the highlighted row
+    void TabWidget::addnew_after(void)
+    {
+        _record_controller->addnew_after();
+    }
+    void TabWidget::on_edit_fieldcontext(void)
+    {
+        _record_controller->on_edit_fieldcontext();
+    }
+
+    // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
+    void TabWidget::delete_context(void)
+    {
+        _record_controller->delete_context();
+
+    }
+
+    // Копирование отмеченных записей в буфер обмена с удалением
+    // из таблицы конечных записей
+    void TabWidget::cut(void)
+    {
+        _record_controller->cut();
+    }
+
+    // Копирование отмеченных записей в буфер обмена
+    void TabWidget::copy(void)
+    {
+        _record_controller->copy();
+    }
+
+
+    // Insert records from the clipboard    // Вставка записей из буфера обмена
+    void TabWidget::paste(void)
+    {
+        _record_controller->paste();
+    }
+    // Слот, срабатывающий при вызове настроек
+    void TabWidget::settings(void)
+    {
+        _record_controller->settings();
+    }
+
+    // Перемещение записи вверх
+    void TabWidget::move_up(void)
+    {
+        _record_controller->move_up();
+    }
+
+
+    // Перемещение записи вниз
+    void TabWidget::move_dn(void)
+    {
+        _record_controller->move_dn();
+    }
+
+    // Клик по пункту "Сортировка" в контекстном меню
+    void TabWidget::on_sort_click(void)
+    {
+        _record_controller->on_sort_click();
+    }
+
+    void TabWidget::on_print_click(void)
+    {
+        _record_controller->on_print_click();
+    }
+
+
+
 }
-
-

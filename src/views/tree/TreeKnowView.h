@@ -1,5 +1,5 @@
-#ifndef __KNOWTREEVIEW_H__
-#define __KNOWTREEVIEW_H__
+#ifndef __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__
+#define __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__
 
 #include <QWidget>
 #include <QTreeView>
@@ -10,12 +10,12 @@
 #include <QGestureEvent>
 
 
-class TreeViewKnow : public QTreeView {
+class TreeKnowView : public QTreeView {
     Q_OBJECT
 
 public:
-    explicit TreeViewKnow(QWidget *parent = 0);
-    virtual ~TreeViewKnow();
+    explicit TreeKnowView(QWidget *parent = 0);
+    virtual ~TreeKnowView();
 
 signals:
     void tapAndHoldGestureFinished(const QPoint &);
@@ -36,5 +36,5 @@ protected:
 
 };
 
-#endif // __KNOWTREEVIEW_H__
+#endif // __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__
 

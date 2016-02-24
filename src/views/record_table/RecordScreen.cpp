@@ -18,7 +18,7 @@
 #include "controllers/record_table/RecordController.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/toolbarsearch.h"
-#include "views/tree/TreeViewKnow.h"
+#include "views/tree/TreeKnowView.h"
 #include "views/tree/TreeScreen.h"
 #include "views/browser/entrance.h"
 #include "models/record_table/RecordModel.h"
@@ -37,9 +37,10 @@ RecordScreen::RecordScreen(TreeScreen           *_tree_screen
                            , FindScreen         *_find_screen
                            , MetaEditor         *_editor_screen
                            , browser::Browser   *_browser
+                           , HidableTabWidget   *_vtabwidget
                            , MainWindow         *_main_window
                           )
-    : QWidget(_main_window)
+    : QWidget(_vtabwidget)
     , _save_in_new_branch(new QAction(tr("Save in new branch"), this))
     , _pin(new QAction(tr("Pin note"), this))
     , _addnew_to_end(new QAction(tr("Add note"), this))
@@ -126,32 +127,32 @@ void RecordScreen::setup_actions(void)
     connect(_save_in_new_branch, &QAction::triggered
     , [&](bool checked = false) {
         Q_UNUSED(checked)
-        TreeScreen *tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
+        TreeScreen *tree_screen = globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
         assert(tree_screen);
         auto entrance = globalparameters.entrance();
         assert(entrance);
 
         if(tree_screen && entrance) {
-            boost::intrusive_ptr<TreeItem> tree_item   // = tree_screen->_root->item_by_name(this->objectName());
+            boost::intrusive_ptr<TreeItem> new_tree_item_in_treeknow_root   // = tree_screen->_root->item_by_name(this->objectName());
                 = tree_screen->add_branch(tree_screen->last_index()
-                                          , tree_screen->_root_model->root_item()   // ->field("name") // ""
+                                          , tree_screen->treeknow_root()->root_item()   // ->field("name") // ""
                                           , true);
             //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
 
+            assert(objectName() != "");
+            new_tree_item_in_treeknow_root->field("name", objectName());
+            //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
+            auto source_model = this->record_controller()->source_model();  // ->record_table();
 
-            tree_item->field("name", objectName());
-            auto target = tree_item;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
-            auto source = this->record_controller()->source_model();  // ->record_table();
+            for(int i = 0; i < source_model->size(); i++) {
+                if(!tree_screen->treeknow_root()->is_item_id_exists(source_model->item(i)->field("id"))) {
+                    if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
-            for(int i = 0; i < source->size(); i++) {
-                if(!globalparameters.tree_screen()->_root_model->is_record_id_exists(source->item(i)->field("id"))) {
-                    if(source->item(i)->is_lite())source->item(i)->to_fat();
-
-                    target->insert_new_item(target->work_pos(), source->item(i));
+                    new_tree_item_in_treeknow_root->insert_new_item(new_tree_item_in_treeknow_root->work_pos(), source_model->item(i));
                 }
             }
 
-            tree_item = target;
+            //            new_tree_item_in_treeknow_root = target;
 
             tree_screen->save_knowtree();
             // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
@@ -178,65 +179,65 @@ void RecordScreen::setup_actions(void)
     _addnew_to_end->setStatusTip(tr("Add a new note"));
     _addnew_to_end->setIcon(QIcon(":/resource/pic/note_add.svg"));
     //    setIcon(style()->standardIcon(QStyle::SP_FileIcon, 0, this));
-    connect(_addnew_to_end, &QAction::triggered, _record_controller, &RecordController::addnew_to_end);
+    connect(_addnew_to_end, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_to_end);
 
     // Добавление записи до
     //    _addnew_before = new QAction(tr("Add note before"), this);
     _addnew_before->setStatusTip(tr("Add a note before selected"));
-    connect(_addnew_before, &QAction::triggered, _record_controller, &RecordController::addnew_before);
+    connect(_addnew_before, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_before);
 
     // Добавление записи после
     //    _addnew_after = new QAction(tr("Add note after"), this);
     _addnew_after->setStatusTip(tr("Add a note after selected"));
-    connect(_addnew_after, &QAction::triggered, _record_controller, &RecordController::addnew_after);
+    connect(_addnew_after, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_after);
 
     // Редактирование записи
     //    _edit_field = new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this);
     _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(_edit_field, &QAction::triggered, _record_controller, &RecordController::on_edit_fieldcontext);
+    connect(_edit_field, &QAction::triggered, _tabmanager, &browser::TabWidget::on_edit_fieldcontext);
 
     // Удаление записи
     //    _delete = new QAction(tr("Delete note(s)"), this);
     _delete->setStatusTip(tr("Delete note(s)"));
     _delete->setIcon(QIcon(":/resource/pic/note_delete.svg"));
-    connect(_delete, &QAction::triggered, _record_controller, &RecordController::delete_context);
+    connect(_delete, &QAction::triggered, _tabmanager, &browser::TabWidget::delete_context);
 
     // Удаление записи с копированием в буфер обмена
     //    _cut = new QAction(tr("&Cut note(s)"), this);
     _cut->setStatusTip(tr("Cut notes(s) to clipboard"));
     _cut->setIcon(QIcon(":/resource/pic/cb_cut.svg"));
-    connect(_cut, &QAction::triggered, _record_controller, &RecordController::cut);
+    connect(_cut, &QAction::triggered, _tabmanager, &browser::TabWidget::cut);
 
     // Копирование записи (записей) в буфер обмена
     //    _copy = new QAction(tr("&Copy note(s)"), this);
     _copy->setStatusTip(tr("Copy note(s) to clipboard"));
     _copy->setIcon(QIcon(":/resource/pic/cb_copy.svg"));
-    connect(_copy, &QAction::triggered, _record_controller, &RecordController::copy);
+    connect(_copy, &QAction::triggered, _tabmanager, &browser::TabWidget::copy);
 
     // Вставка записи из буфера обмена
     //    _paste = new QAction(tr("&Paste note(s)"), this);
     _paste->setStatusTip(tr("Paste note(s) from clipboard"));
     _paste->setIcon(QIcon(":/resource/pic/cb_paste.svg"));
-    connect(_paste, &QAction::triggered, _record_controller, &RecordController::paste);
+    connect(_paste, &QAction::triggered, _tabmanager, &browser::TabWidget::paste);
 
     // Настройка внешнего вида таблицы конечных записей
     //    _settings = new QAction(tr("&View settings"), this);
     _settings->setStatusTip(tr("Setup table view settins"));
     _settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
-    connect(_settings, &QAction::triggered, _record_controller, &RecordController::settings);
+    connect(_settings, &QAction::triggered, _tabmanager, &browser::TabWidget::settings);
 
     // Перемещение записи вверх
     //    _action_move_up = new QAction(tr("&Move Up"), this);
     _action_move_up->setStatusTip(tr("Move note up"));
     _action_move_up->setIcon(QIcon(":/resource/pic/move_up.svg"));
-    connect(_action_move_up, &QAction::triggered, _record_controller, &RecordController::move_up);
+    connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
 
     // Перемещение записи вниз
     //    _action_move_dn = new QAction(tr("&Move Down"), this);
     _action_move_dn->setStatusTip(tr("Move note down"));
     _action_move_dn->setIcon(QIcon(":/resource/pic/move_dn.svg"));
-    connect(_action_move_dn, &QAction::triggered, _record_controller, &RecordController::move_dn);
+    connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
 
     // Поиск по базе (клик связывается с действием в MainWindow)
     //    _find_in_base = new QAction(tr("Find in base"), this);
@@ -273,13 +274,13 @@ void RecordScreen::setup_actions(void)
     //    _sort = new QAction(tr("Toggle sorting"), this);
     _sort->setStatusTip(tr("Enable/disable sorting by column"));
     _sort->setIcon(QIcon(":/resource/pic/sort.svg"));
-    connect(_sort, &QAction::triggered, _record_controller,  &RecordController::on_sort_click);
+    connect(_sort, &QAction::triggered, _tabmanager,  &browser::TabWidget::on_sort_click);
 
     // Кнопка вызова печати таблицы конечных записей
     //    _print = new QAction(tr("Print table"), this);
     _print->setStatusTip(tr("Print current notes table"));
     _print->setIcon(QIcon(":/resource/pic/drops.svg"));   //actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
-    connect(_print, &QAction::triggered, _record_controller,  &RecordController::on_print_click);
+    connect(_print, &QAction::triggered, _tabmanager,  &browser::TabWidget::on_print_click);
 
     // Сразу после создания все действия запрещены
     disable_all_actions();
@@ -652,6 +653,7 @@ QString RecordScreen::first_selection_id(void)
 // Установка засветки в нужную строку в таблице записи на экране
 void RecordScreen::select_pos(int pos)
 {
+    _tabmanager->setCurrentIndex(pos);
     _record_controller->select_pos(pos);
 }
 
@@ -659,6 +661,7 @@ void RecordScreen::select_pos(int pos)
 // Установка засветки в нужную запись в таблице записей на экране
 void RecordScreen::select_id(QString id)
 {
+    _tabmanager->setCurrentIndex(_record_controller->source_model()->position(id));
     _record_controller->select_id(id);
 }
 

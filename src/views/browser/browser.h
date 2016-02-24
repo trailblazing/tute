@@ -54,8 +54,10 @@
 
 QT_BEGIN_NAMESPACE
 class QWebEngineFrame;
+
 QT_END_NAMESPACE
 
+class HidableTabWidget;
 //extern Record *default_record;
 
 QT_BEGIN_NAMESPACE
@@ -85,6 +87,7 @@ namespace browser {
                 , TreeScreen    *_tree_screen
                 , FindScreen    *_find_screen
                 , MetaEditor    *_editor_screen
+                , HidableTabWidget *_vtabwidget
                 , MainWindow    *_main_window
                 , Entrance      *_entrance   //, QDockWidget *parent
                 , const QString &style_source
@@ -96,6 +99,7 @@ namespace browser {
                 , TreeScreen    *_tree_screen
                 , FindScreen    *_find_screen
                 , MetaEditor    *_editor_screen
+                , HidableTabWidget *_vtabwidget
                 , MainWindow    *_main_window
                 , Entrance      *_entrance   //, QDockWidget *parent
                 , const QString &style_source
@@ -106,6 +110,7 @@ namespace browser {
                 , TreeScreen    *_tree_screen
                 , FindScreen    *_find_screen
                 , MetaEditor    *_editor_screen  //, RecordController *record_controller
+                , HidableTabWidget *_vtabwidget
                 , MainWindow    *_main_window
                 , Entrance      *_entrance   //, QDockWidget *parent
                 , const QString &style_source

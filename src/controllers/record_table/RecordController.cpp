@@ -29,14 +29,14 @@
 #include "libraries/DiskHelper.h"
 #include "views/browser/webview.h"
 #include "libraries/FlatControl.h"
-#include "views/tree/TreeViewKnow.h"
+#include "views/tree/TreeKnowView.h"
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "libraries/FixedParameters.h"
 #include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/record_table/RecordScreen.h"
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 #include "views/browser/browser.h"
 
 
@@ -54,12 +54,7 @@ RecordController::RecordController(TreeScreen           *_tree_screen
                                    , MainWindow         *_main_window
                                   )
     : QObject(_record_screen)
-    , _source_model(new RecordModel(_tree_screen
-                                    , _find_screen
-                                    , this
-                                    , _record_screen
-                                    , _tabmanager
-                                   ))
+    , _source_model(new RecordModel(this, _record_screen, _tabmanager))
     , _proxy_model(new RecordProxyModel(this))
     , _view(new RecordView(_record_screen, this))   // , qobject_cast<QWidget * >(RecordTableScreen)
     , _tabmanager(_tabmanager)
@@ -68,6 +63,10 @@ RecordController::RecordController(TreeScreen           *_tree_screen
     , _main_window(_main_window)
 {
     // setObjectName(screen_name + "_controller");
+
+
+    _tree_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
+    _find_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
 
     // Инициализируется область со списком записей
     //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
@@ -1505,7 +1504,13 @@ void RecordController::remove_children(QVector<QString> del_ids)
     for(int i = 0; i < del_ids.count(); i++) {
         QString id = del_ids[i];
         //        QModelIndex idx = id_to_proxyindex(id);
-        _source_model->remove_child(id);
+        auto item = _source_model->child(id);
+        int index = _tabmanager->indexOf(item->unique_page()->view());
+
+        if(index != -1)_tabmanager->closeTab(index);
+
+        //_source_model->remove_child(id);
+
         //        for(int j = 0; j < _browser_pages->size(); j++) {
         //            if(_browser_pages->item(j)->id() == id) {
         //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
@@ -1788,7 +1793,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     boost::intrusive_ptr<TreeItem> _item = nullptr;
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
-    auto _treemodelknow = globalparameters.tree_screen()->_root_model;
+    auto _treemodelknow = globalparameters.tree_screen()->treeknow_root_modify();
     _source_item = _treemodelknow->root_item()->find(item);
     //    if(_record_controller) {
     //    auto browser_pages = this->_source_model->browser_pages();
@@ -1819,6 +1824,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         if(!_item) {
 
             if(item->is_lite())item->to_fat();
+
+            if(item->field("id") == "")item->field("id", get_unical_id());
 
             item->binder(generator);
             item->activator(activator);
@@ -1898,7 +1905,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
     //    assert(_record_controller);
 
-    auto _treemodelknow = globalparameters.tree_screen()->_root_model;
+    auto _treemodelknow = globalparameters.tree_screen()->treeknow_root_modify();
     _source_item = _treemodelknow->root_item()->find(_url);
 
     //    //    if(_record_controller) {
@@ -1923,6 +1930,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             _item = _source_item;
         } else {
             if(_item->is_lite())_item->to_fat();
+
+            if(_item->field("id") == "")_item->field("id", get_unical_id());
 
             _item->binder(generator);
             _item->activator(activator);
@@ -1974,13 +1983,13 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             item->to_fat();
 
             //                QString title = _url.toString(); // not ready yet
-
-            item->natural_field_source("pin",     _check_state[Qt::Unchecked]);
-            item->natural_field_source("name",    "");
-            item->natural_field_source("author",  "");
-            item->natural_field_source("home",    _url.toString());    // only changed
-            item->natural_field_source("url",     _url.toString());    // only changed
-            item->natural_field_source("tags",    "");
+            item->field("id",       get_unical_id());
+            item->field("pin",      _check_state[Qt::Unchecked]);
+            item->field("name",     "");
+            item->field("author",   "");
+            item->field("home",     _url.toString());    // only changed
+            item->field("url",      _url.toString());    // only changed
+            item->field("tags",     "");
 
             //                _record_ontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
             //                _record = recordtabledata->getRecordByUrl(_url);
@@ -2020,6 +2029,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             _item = item; // assert(_item.get() == item.get());
         } else {
             if(_item->is_lite())_item->to_fat();
+
+            if(_item->field("id") == "")_item->field("id", get_unical_id());
 
             _item->binder(generator);
             _item->activator(activator);

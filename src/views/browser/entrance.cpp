@@ -48,7 +48,7 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include <utility>
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/main_window/MainWindow.h"
 
@@ -370,6 +370,7 @@ namespace browser {
                                        , _tree_screen
                                        , _find_screen
                                        , _editor_screen
+                                       , _vtabwidget
                                        , _main_window
                                        , this
                                        , _style_source
@@ -398,6 +399,7 @@ namespace browser {
                     , _tree_screen
                     , _find_screen
                     , _editor_screen
+                    , _vtabwidget
                     , _main_window
                     , this
                     , _style_source
@@ -417,6 +419,7 @@ namespace browser {
                     , _tree_screen
                     , _find_screen
                     , _editor_screen
+                    , _vtabwidget
                     , _main_window
                     , this
                     , _style_source
@@ -442,6 +445,7 @@ namespace browser {
                     , _tree_screen
                     , _find_screen
                     , _editor_screen
+                    , _vtabwidget
                     , _main_window
                     , this
                     , _style_source
@@ -544,6 +548,7 @@ namespace browser {
                        , TreeScreen *_tree_screen
                        , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
                        , MetaEditor *_editor_screen
+                       , HidableTabWidget *_vtabwidget
                        , MainWindow *_main_window
                        , AppConfig  &_appconfig
                        , const QString &style_source
@@ -554,6 +559,7 @@ namespace browser {
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _editor_screen(_editor_screen) //, _record_controller(_record_controller)
+        , _vtabwidget(_vtabwidget)
         , _main_window(_main_window)
         , _appconfig(_appconfig)
         , _style_source(style_source)

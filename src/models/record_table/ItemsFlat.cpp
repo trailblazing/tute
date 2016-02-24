@@ -13,8 +13,8 @@
 #include "libraries/GlobalParameters.h"
 #include "models/tree/TreeItem.h"
 #include "libraries/WalkHistory.h"
-#include "models/tree/TreeModelKnow.h"
-#include "views/tree/TreeViewKnow.h"
+#include "models/tree/TreeKnowModel.h"
+#include "views/tree/TreeKnowView.h"
 #include "libraries/crypt/CryptService.h"
 #include "libraries/DiskHelper.h"
 #include "views/browser/webview.h"
@@ -43,6 +43,14 @@ extern WalkHistory walkhistory;
 
 //    //    return;
 //}
+
+
+ItemsFlat::ItemsFlat(const QDomElement &_dom_element, boost::intrusive_ptr<TreeItem> _parent_item, const bool _is_crypt): _is_crypt(_is_crypt)
+{
+    if(!_dom_element.isNull()) {   //        QDomElement *dom_element = &i_dom_element;
+        dom_to_items(_dom_element, _parent_item);           // dom_element
+    }
+}
 
 // Конструктор
 ItemsFlat::ItemsFlat(const bool _is_crypt):
@@ -122,6 +130,7 @@ ItemsFlat &ItemsFlat::operator =(const ItemsFlat &obj)
         _is_crypt = obj._is_crypt;
         _workpos = obj._workpos;
     }
+
     return *this;
 }
 
@@ -210,7 +219,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find(boost::intrusive_ptr<TreeItem> it
     boost::intrusive_ptr<TreeItem> result;
 
     for(auto &i : _child_items) {
-        if(i->field("id") == item->field("id")) {
+        if(i == item) {   // if(i->field("id") == item->field("id")) {
             // assert(i->is_registered());
             result = i;
             break;
@@ -446,62 +455,66 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item(int pos)const
 //}
 
 
-//// Разбор DOM модели и преобразование ее в таблицу
-//void RecordTable::import_from_dom(const QDomElement &dom_model)
-//{
-//    // QDomElement n = dommodel.documentElement();
-//    // QDomElement n = dommodel;
+// Разбор DOM модели и преобразование ее в таблицу
+void ItemsFlat::dom_to_items(const QDomElement &dom_model, boost::intrusive_ptr<TreeItem> _parent_item)
+{
+    // QDomElement n = dommodel.documentElement();
+    // QDomElement n = dommodel;
 
-//    // qDebug() << "In recordtabledata setup_data_from_dom() start";
+    // qDebug() << "In recordtabledata setup_data_from_dom() start";
 
-//    // Если принятый элемент не является таблицей
-//    if(dom_model.tagName() != "recordtable")
-//        return;
+    // Если принятый элемент не является таблицей
+    if(dom_model.tagName() != "recordtable") {
+        return;
+    }
 
-//    // Определяется указатель на первый элемент с записью
-//    // Define a pointer to the first element of the recording
-//    QDomElement current_record_dom = dom_model.firstChildElement("record");
+    // Определяется указатель на первый элемент с записью
+    // Define a pointer to the first element of the recording
+    QDomElement current_record_dom = dom_model.firstChildElement("record");
 
-//    while(!current_record_dom.isNull()) {
-//        QMap<QString, QString> data;
-//        // Структура, куда будет помещена текущая запись
-//        // The structure, which will put the current record
-//        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
-//                                                          new TreeItem(
-//                                                              data
-//                                                              , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem>(this))    // _parent_item
-//                                                          )
-//                                                      );
-//        current_item->is_registered(true);
+    while(!current_record_dom.isNull()) {
+        //        QMap<QString, QString> data;
 
-//        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
-//        // The current record is added to the final table of records (and located at a certain address in memory)
-//        _child_items << current_item;
-
-//        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
-//        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
-//        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
-//        // Order in subordinate objects have registered a valid pointer to this entry
-//        (_child_items.last())->import_from_dom(current_record_dom);
-
-//        current_record_dom = current_record_dom.nextSiblingElement("record");
-//    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
+        // Структура, куда будет помещена текущая запись
+        // The structure, which will put the current record
+        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), _parent_item));
+        //                                                                  , boost::intrusive_ptr<TreeItem>(
+        //                                                                          new TreeItem(QMap<QString, QString>(), _parent_item, this)
+        //                                                                  )
 
 
+        current_item->dom_to_record(current_record_dom);
+        current_item->is_registered_to_record_controller(true);
 
-//    return;
-//}
+        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
+        // The current record is added to the final table of records (and located at a certain address in memory)
+        _child_items << current_item;
+
+        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
+        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
+        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
+        // Order in subordinate objects have registered a valid pointer to this entry
+
+        //        static_cast<Record *>(_child_items.last().get())->record_from_dom(current_record_dom);
+
+        current_record_dom = current_record_dom.nextSiblingElement("record");
+    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
 
 
 
-QDomElement ItemsFlat::export_to_dom() const
+    return;
+}
+
+
+
+QDomElement ItemsFlat::dom_from_itemsflat() const
 {
     std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    return export_to_dom(doc);
+    return dom_from_itemsflat(doc);
 }
 
 // Преобразование таблицы конечных записей в Dom документ
-QDomElement ItemsFlat::export_to_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement ItemsFlat::dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
     if(_child_items.size() == 0)
@@ -513,9 +526,11 @@ QDomElement ItemsFlat::export_to_dom(std::shared_ptr<QDomDocument> doc) const
     for(int i = 0; i < _child_items.size(); i++) {
         //        assert(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this);
 
-        if(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this)
+        if(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this) {
             item_flat_dom.appendChild(
-                boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get())->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+                _child_items.at(i)->dom_from_treeitem(doc) // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
+            );     // К элементу recordtabledata прикрепляются конечные записи
+        }
     }
 
     // qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
@@ -576,7 +591,7 @@ ItemsFlat *ItemsFlat::active_subset()
 }
 
 // Преобразование таблицы конечных записей в Dom документ
-QDomElement ItemsFlat::export_activated_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement ItemsFlat::dom_from_activated_itemsflat(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у ветки нет таблицы конечных записей, возвращается пустой документ
     if(_child_items.size() == 0)
@@ -588,7 +603,7 @@ QDomElement ItemsFlat::export_activated_dom(std::shared_ptr<QDomDocument> doc) c
     for(int i = 0; i < _child_items.size(); i++) {
         if(_child_items.at(i)->page_valid() //unique_page()
           ) {
-            record_dom_data.appendChild(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get())->export_to_dom(doc));     // К элементу recordtabledata прикрепляются конечные записи
+            record_dom_data.appendChild(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get())->dom_from_itemsflat(doc));     // К элементу recordtabledata прикрепляются конечные записи
         }
     }
 
@@ -646,15 +661,21 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
             // Record with ID in a tree there, so stand the new ID and a new storage directory (not to overwrite existing)
 
             QString id = get_unical_id();
-            // Store directory entries and files    // Директория хранения записи и файл
-            item->field("dir", id);   // get_unical_id()
 
-            item->field("file", "text.html");
+            // Store directory entries and files    // Директория хранения записи и файл
+            if(item->field("dir") == "")item->field("dir", id); // get_unical_id()
+
+            if(item->field("file") == "")item->field("file", "text.html");
 
             // Unique ID of XML records             // Уникальный идентификатор XML записи
             //            QString id = get_unical_id();
             item->field("id", id);
+        } else {
+            if(item->field("dir") == "")item->field("dir", item->field("id")); // get_unical_id()
+
+            if(item->field("file") == "")item->field("file", "text.html");
         }
+
 
 
         // В список переданных полей добавляются вычислимые в данном месте поля
@@ -974,24 +995,24 @@ void ItemsFlat::clear(void)
 //}
 
 
-bool ItemsFlat::is_item_exists(const QString &id)const
+int ItemsFlat::is_item_exists(const QString &id)const
 {
     for(int i = 0; i < current_count(); i++)
         if(field(i, "id") == id)
-            return true;
+            return i;
 
-    return false;
+    return -1;
 }
 
-bool ItemsFlat::is_item_exists(const QUrl &url)const
+int ItemsFlat::is_item_exists(const QUrl &url)const
 {
-    bool found = false;
+    int found = -1;
 
     for(int i = 0; i < current_count(); i++) {
         std::string compare = difference(field(i, "url").toStdString(), url.toString().toStdString());
 
         if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
-            found = true;
+            found = i;
             break;
         }
     }

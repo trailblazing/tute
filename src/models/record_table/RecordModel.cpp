@@ -13,7 +13,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/record_table/RecordScreen.h"
 #include "controllers/record_table/RecordController.h"
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
 #include "views/browser/tabwidget.h"
@@ -244,12 +244,13 @@ pages_container::~pages_container()
 //}
 
 // Конструктор модели
-RecordModel::RecordModel(TreeScreen             *_tree_screen
-                         , FindScreen           *_find_screen
-                         , RecordController     *_record_controller
-                         , RecordScreen         *_record_screen
-                         , browser::TabWidget   *_tabmanager
-                        )
+RecordModel::RecordModel(//TreeScreen             *_tree_screen
+    //, FindScreen           *_find_screen
+    //,
+    RecordController     *_record_controller
+    , RecordScreen         *_record_screen
+    , browser::TabWidget   *_tabmanager
+)
     : QAbstractTableModel(_record_screen)
     , pages_container(_tabmanager)
     , _reocrd_controller(_record_controller)
@@ -257,9 +258,6 @@ RecordModel::RecordModel(TreeScreen             *_tree_screen
     //    _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
     //    _browser_pages->root_item()->field("id", "0");  // get_unical_id()
     //    _browser_pages->root_item()->field("name", "_shadow_branch");
-
-    _tree_screen->reocrd_controller = std::make_shared<sd::_interface_const<sd::meta_info<void *>, RecordController *>>("", &RecordModel::reocrd_controller, this);
-    _find_screen->reocrd_controller = std::make_shared<sd::_interface_const<sd::meta_info<void *>, RecordController *>>("", &RecordModel::reocrd_controller, this);
 
     //    init_source_model(_record_controller, _record_screen, _main_window, _editor_screen);
 
@@ -728,6 +726,40 @@ bool RecordModel::remove_child(QString find_id)
 
     return r;
 }
+
+boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)
+{
+    boost::intrusive_ptr<TreeItem> r = nullptr;
+
+    for(int pos = 0; pos < _tabmanager->count(); pos++) {
+        auto it = _tabmanager->webView(pos)->page()->current_item();
+
+        if(it->id() == id) {
+            r = it;
+            break;
+        }
+    }
+
+    return r;
+
+}
+
+boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)const
+{
+    boost::intrusive_ptr<TreeItem> r = nullptr;
+
+    for(int pos = 0; pos < _tabmanager->count(); pos++) {
+        auto it = _tabmanager->webView(pos)->page()->current_item();
+
+        if(it->id() == id) {
+            r = it;
+            break;
+        }
+    }
+
+    return r;
+}
+
 
 boost::intrusive_ptr<TreeItem> RecordModel::child(int pos)const
 {

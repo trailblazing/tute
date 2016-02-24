@@ -19,7 +19,7 @@ class RecordProxyModel;
 class ClipboardRecords;
 class RecordScreen;
 class TreeItem;
-class TreeModelKnow;
+class TreeKnowModel;
 class MainWindow;
 class TreeScreen;
 class FindScreen;
@@ -119,6 +119,9 @@ public:
     bool no_view() {return _no_view;}
     boost::intrusive_ptr<TreeItem> register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item);
     RecordScreen *record_screen() {return _record_screen;}
+    RecordController *reocrd_controller() {return this;}
+    // RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
+
 
 signals:
 

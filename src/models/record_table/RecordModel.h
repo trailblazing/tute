@@ -19,7 +19,7 @@
 class Record;
 class ItemsFlat;
 class TreeItem;
-class TreeModelKnow;
+class TreeKnowModel;
 class RecordController;
 class MainWindow;
 class TreeScreen;
@@ -57,9 +57,7 @@ class RecordModel : public QAbstractTableModel
     friend class RecordController;
     friend class browser::Entrance;
 public:
-    RecordModel(TreeScreen              *_tree_screen
-                , FindScreen            *_find_screen
-                , RecordController      *_record_controller
+    RecordModel(RecordController      *_record_controller
                 , RecordScreen          *_record_screen
                 , browser::TabWidget    *_tabmanager
                );
@@ -98,6 +96,8 @@ public:
     //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
     boost::intrusive_ptr<TreeItem> child(int pos);
     boost::intrusive_ptr<TreeItem> child(int pos)const;
+    boost::intrusive_ptr<TreeItem> child(QString id);
+    boost::intrusive_ptr<TreeItem> child(QString id)const;
     boost::intrusive_ptr<TreeItem> item(int pos) {return child(pos);}
     boost::intrusive_ptr<TreeItem> item(int pos)const {return child(pos);}
     // Добавление записей

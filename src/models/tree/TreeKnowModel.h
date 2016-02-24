@@ -1,5 +1,5 @@
-#ifndef __TREENODE_H__
-#define __TREENODE_H__
+#ifndef __TREEKNOWMODEL_H__ // __TREENODE_H__
+#define __TREEKNOWMODEL_H__ // __TREENODE_H__
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -12,20 +12,21 @@
 // KnowTreeModel - класс с удобными методами для управления данными дерева
 // Внимание! Данный класс наследуется от класса TreeModel
 
-
+class XmlTree;
 class ClipboardBranch;
 
-class TreeModelKnow : public TreeModel {
+class TreeKnowModel : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeModelKnow(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
-    ~TreeModelKnow();
+    TreeKnowModel(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+    ~TreeKnowModel();
 
-    void init_from_xml(QString fileName);
+    std::shared_ptr<XmlTree> init_from_xml(QString file_name);
+    std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
     void reload(void);
 
-    QDomElement export_to_dom(boost::intrusive_ptr<TreeItem> root_item);
+    QDomElement dom_from_record(boost::intrusive_ptr<TreeItem> root_item);
 
     void save(void);
 
@@ -66,19 +67,22 @@ public:
 
     void re_encrypt(QString previousPassword, QString currentPassword);
 
-    bool is_contains_crypt_branches(void);
+    bool is_contains_crypt_branches(void) const;
 
-    QStringList record_path(QString recordId);
+    QStringList record_path(QString recordId) const;
 
     // Проверка наличия идентификатора ветки во всем дереве
     bool is_item_id_exists(QString findId);
 
     // Проверка наличия идентификатора записи во всем дереве
-    bool is_record_id_exists(QString findId);
+    bool is_item_id_exists(QString findId) const;
 
 #ifdef _with_record_table
     void record_to_item();
 #endif
+
+    void clear();
+    void intercept(boost::intrusive_ptr<TreeItem> item);
 
 private:
 
@@ -86,13 +90,13 @@ private:
     void init(QDomDocument *dom_model);
 
     // Функция заполнения дерева из DOM-документа
-    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> parent);
+    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self);
 
     // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
-    void node_from_dom(QDomElement n, boost::intrusive_ptr<TreeItem> parent);
+    void dom_to_record(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> self);
 
     // Преобразование Item в DOM модель
-    void export_to_dom(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
+    void dom_from_record(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
 
     // Перемещение ветки вверх или вниз
     QModelIndex move_up_dn_branch(const QModelIndex &_index, int direction);
@@ -121,6 +125,35 @@ private:
     // QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
     QString _xml_file_name = "";
 
+    std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
+    is_item_id_exists_recurse =
+        [&](boost::intrusive_ptr<TreeItem> item, QString id_to_find, int mode)
+    {
+        static bool is_exists = false;
+
+        // Инициализация
+        if(mode == 0) {
+            return is_exists = false;
+            //            return false;
+        }
+
+        // Если ветка найдена, дальше проверять не имеет смысла. Это условие ускоряет возврат из рекурсии.
+        if(is_exists)
+            return true;
+
+        // Если текущая ветка содержит искомый идетнификатор
+        if(item->field("id") == id_to_find) {
+            return is_exists = true;
+            //            return true;
+        }
+
+        // Перебираются подветки
+        for(int i = 0; i < item->current_count(); i++)
+            is_item_id_exists_recurse(item->child(i), id_to_find, 1);
+
+        return is_exists;
+    };
+
 };
 
-#endif // __TREENODE_H__
+#endif // __TREEKNOWMODEL_H__   // __TREENODE_H__

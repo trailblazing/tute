@@ -54,7 +54,7 @@ public:
 
     void emit_datachanged_signal(const QModelIndex &_index);
 
-    void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
+    // void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
     boost::intrusive_ptr<TreeItem> root_item()const {return _root_item;}
 
 protected:

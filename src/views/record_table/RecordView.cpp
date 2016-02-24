@@ -14,7 +14,7 @@
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/RecordProxyModel.h"
 #include "models/app_config/AppConfig.h"
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 #include "libraries/GlobalParameters.h"
 #include "views/main_window/MainWindow.h"
 #include "libraries/WindowSwitcher.h"
@@ -576,7 +576,7 @@ void RecordView::startDrag()
             // delete drag;
 
             // В модели данных обнуляется оформление элемента, который (возможно) подсвечивался при Drag And Drop
-            find_object<TreeScreen>(tree_screen_singleton_name)->_root_model->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+            find_object<TreeScreen>(tree_screen_singleton_name)->treeknow_root_modify()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
         }
     }
 }

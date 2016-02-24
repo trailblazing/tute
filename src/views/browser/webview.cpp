@@ -550,7 +550,7 @@ namespace browser {
            // && _loadingurl.isValid()
            //            _record && (_record->getNaturalFieldSource("url") != record->getNaturalFieldSource("url"))
            // && url().isValid()
-           && url().toString() != _url_str
+           // && url().toString() != _url_str
            && _url_str != Browser::_defaulthome  // url() may be nothing
            && _url != _loadingurl
           ) {
@@ -1819,7 +1819,8 @@ namespace browser {
 
 
         // Для новой выбраной записи выясняется директория и основной файл
-        if(current_item->field("id") == "" || current_item->field("url") == Browser::_defaulthome) {current_item->field("id", "00000000000000000000");}
+        if(current_item->field("id") == "" // || current_item->field("url") == Browser::_defaulthome
+          ) {current_item->field("id", get_unical_id());}
 
         if(current_item->field("dir") == "")current_item->field("dir", current_item->id());
 

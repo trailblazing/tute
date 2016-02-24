@@ -18,7 +18,7 @@
 #include "views/record_table/RecordScreen.h"
 #include "models/tree/TreeItem.h"
 #include "views/find_in_base_screen/FindScreen.h"
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 #include "libraries/GlobalParameters.h"
 #include "views/console_emulator/ExecuteCommand.h"
 #include "libraries/WalkHistory.h"
@@ -68,13 +68,14 @@ MainWindow::MainWindow(
     , _windowmenu(new QMenu(tr("&Window"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
-    , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, this))
-    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->_selected_branch->root_item(), this))
+    , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, _vtabwidget))
+    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->treeknow_branch()->root_item(), this))
     , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
     , _entrance(new browser::Entrance(entrance_singleton_name
                                       , _tree_screen
                                       , _find_screen
                                       , _editor_screen
+                                      , _vtabwidget
                                       , this
                                       , _appconfig
                                       , globalparameters.style_source()
@@ -83,7 +84,7 @@ MainWindow::MainWindow(
       //    , _record_controller(_table_screen->table_controller())
       //    , _page_screen(new TableScreen("page_screen", _tree_screen->_shadowmodel->_root_item, this))
       //    , _page_controller(_page_screen->table_controller())
-    , _download(new browser::DownloadManager(download_manager_singleton_name, this))
+    , _download(new browser::DownloadManager(download_manager_singleton_name, _vtabwidget))
     , _statusbar(new QStatusBar(this))
     , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
     , _enable_real_close(false)
@@ -469,7 +470,7 @@ void MainWindow::tree_position(void)
 
     if(index.isValid()) {   // this line is to be remove
         // Получаем указатель вида TreeItem
-        auto item = _tree_screen->_root_model->item(index);
+        auto item = _tree_screen->treeknow_root()->item(index);
 
         // Сохраняем путь к элементу item
         appconfig.set_tree_position(item->path());
@@ -479,16 +480,16 @@ void MainWindow::tree_position(void)
 // set
 void MainWindow::tree_position(QStringList path)
 {
-    if(_tree_screen->_root_model->is_item_valid(path) == false)
+    if(_tree_screen->treeknow_root()->is_item_valid(path) == false)
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->_root_model->item(path);
+    auto item = _tree_screen->treeknow_root()->item(path);
 
     qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
     // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = _tree_screen->_root_model->index(item);
+    QModelIndex setto = _tree_screen->treeknow_root()->index(item);
 
     // Курсор устанавливается в нужную позицию
     _tree_screen->cursor_to_index(setto);
@@ -499,10 +500,10 @@ bool MainWindow::is_tree_position_crypt()
 {
     QStringList path = appconfig.get_tree_position();
 
-    if(_tree_screen->_root_model->is_item_valid(path) == false) return false;
+    if(_tree_screen->treeknow_root()->is_item_valid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->_root_model->item(path);
+    auto item = _tree_screen->treeknow_root()->item(path);
 
     if(item->field("crypt") == "1")
         return true;
@@ -1184,17 +1185,17 @@ void MainWindow::go_walk_history(void)
     }
 
     // Выясняется путь к ветке, где находится данная запись
-    QStringList path = _tree_screen->_root_model->record_path(id);
+    QStringList path = _tree_screen->treeknow_root()->record_path(id);
 
     // Проверяем, есть ли такая ветка
-    if(_tree_screen->_root_model->is_item_valid(path) == false) {
+    if(_tree_screen->treeknow_root()->is_item_valid(path) == false) {
         walkhistory.setDrop(false);
         return;
     }
 
 
     // Выясняется позицию записи в таблице конечных записей
-    auto item = _tree_screen->_root_model->item(path);
+    auto item = _tree_screen->treeknow_root()->item(path);
 
     // Проверяем, есть ли такая позиция
     if(item->is_item_exists(id) == false) {

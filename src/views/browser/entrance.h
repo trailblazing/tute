@@ -13,11 +13,14 @@
 #include "views/record/MetaEditor.h"
 
 
-class TreeModelKnow;
+class TreeKnowModel;
 class QNetworkReply;
 class QSslError;
 class QtSingleApplication;
 class RecordController;
+class HidableTabWidget;
+
+
 
 extern GlobalParameters globalparameters;
 
@@ -63,6 +66,7 @@ namespace browser {
                  , TreeScreen *_tree_screen
                  , FindScreen *_find_screen
                  , MetaEditor *_editor_screen // , RecordController *_record_controller
+                 , HidableTabWidget *_vtabwidget
                  , MainWindow *_main_window
                  , AppConfig &_appconfig, const QString &style_source
                  , Qt::WindowFlags flags
@@ -159,6 +163,7 @@ namespace browser {
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;
         MetaEditor                      *_editor_screen;
+        HidableTabWidget                *_vtabwidget;
         MainWindow                      *_main_window;
         AppConfig                       &_appconfig;
         // RecordController                *_record_controller;

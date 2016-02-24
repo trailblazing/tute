@@ -25,7 +25,7 @@ class FindScreen;
 class MetaEditor;
 class MainWindow;
 class AppConfig;
-
+class HidableTabWidget;
 
 
 
@@ -39,7 +39,7 @@ class RecordScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordScreen(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Browser *_browser, MainWindow *_main_window);
+    RecordScreen(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Browser *_browser, HidableTabWidget *_vtabwidget, MainWindow *_main_window);
 
     virtual ~RecordScreen();
 

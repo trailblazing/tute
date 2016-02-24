@@ -3,7 +3,7 @@
 #include <QDomNamedNodeMap>
 
 #include "main.h"
-#include "TreeModelKnow.h"
+#include "TreeKnowModel.h"
 #include "TreeItem.h"
 #include "TreeModel.h"
 #include "XmlTree.h"
@@ -21,7 +21,7 @@ extern AppConfig appconfig;
 
 
 // Конструктор модели дерева, состоящего из Item элементов
-TreeModelKnow::TreeModelKnow(QObject *parent)
+TreeKnowModel::TreeKnowModel(QObject *parent)
     : TreeModel(parent)
       //    , _root_item(nullptr)
 {
@@ -33,27 +33,33 @@ TreeModelKnow::TreeModelKnow(QObject *parent)
 // Деструктор Item модели.
 // По-хорошему деструктор перед удалением корневого элемента должен пробежать по
 // дереву элементов и удалить их
-TreeModelKnow::~TreeModelKnow()
+TreeKnowModel::~TreeKnowModel()
 {
     //    delete rootItem;
 }
 
 
-void TreeModelKnow::init_from_xml(QString fileName)
+std::shared_ptr<XmlTree> TreeKnowModel::init_from_xml(QString file_name)
 {
-    _xml_file_name = fileName;
+    _xml_file_name = file_name;
 
     // Загрузка файла и преобразование его в DOM модель
-    XmlTree xmlt;
+    std::shared_ptr<XmlTree> xmlt = std::make_shared<XmlTree>();
 
-    if(!xmlt.load(_xml_file_name))
-        return;
+    if(!xmlt->load(_xml_file_name))
+        return xmlt;
 
-    init(xmlt.getDomModel());
+    init(xmlt->getDomModel());
+    return xmlt;
 }
 
+std::shared_ptr<XmlTree> TreeKnowModel::init_from_xml(std::shared_ptr<XmlTree> xmlt)
+{
+    init(xmlt->getDomModel());
+    return xmlt;
+}
 
-void TreeModelKnow::init(QDomDocument *dom_model)
+void TreeKnowModel::init(QDomDocument *dom_model)
 {
     // Проверка формата XML-файла
     if(!check_format(dom_model->documentElement().firstChildElement("format"))) {
@@ -85,7 +91,252 @@ void TreeModelKnow::init(QDomDocument *dom_model)
 }
 
 
-bool TreeModelKnow::check_format(QDomElement elementFormat)
+// Разбор DOM модели и преобразование ее в Item модель
+void TreeKnowModel::setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self)
+{
+    assert(dommodel);
+    QDomElement content_root_record = dommodel->documentElement().firstChildElement("content").firstChildElement("record");   // "node"
+
+
+    if(content_root_record.isNull()) {
+        qDebug() << "Unable load xml tree, first content node not found.";
+        return;
+    }
+
+    dom_to_record(content_root_record, self);
+
+    return;
+}
+
+
+// Рекурсивный обход DOM дерева и извлечение из него узлов
+void TreeKnowModel::dom_to_record(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> self)
+{
+
+    std::function<void(const QDomElement &, boost::intrusive_ptr<TreeItem>)>
+    assembly_record_and_table_to_parent = [&](const QDomElement & record, boost::intrusive_ptr<TreeItem> current_parent) {
+
+
+        // Определяются атрибуты узла дерева разделов
+        QDomNamedNodeMap attribute_map = record.attributes();
+
+        //        // Перебираются атрибуты узла дерева разделов
+        //        for(int i = 0; i < attribute_map.count(); ++i) {
+        //            QDomNode attribute = attribute_map.item(i);
+
+        //            QString name = attribute.nodeName();
+        //            QString value = attribute.nodeValue();
+
+        //            if(name == "id") {
+        //                id = value;
+        //                break;
+        //            }
+
+        //            //                        // В дерево разделов устанавливаются считанные атрибуты
+        //            //                        // parent->child(parent->current_count() - 1)
+        //            //                        parent->field(name , value);
+        //            //                        //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
+        //        }
+
+        QString id = attribute_map.namedItem("id").nodeValue();
+
+        assert(id != "");
+
+        int index = current_parent->is_item_exists(id);
+
+        boost::intrusive_ptr<TreeItem> item = nullptr;
+
+        if(index != -1) {
+            item = current_parent->child(index);
+        } else {
+            item = current_parent->add_child();
+        }
+
+        dom_to_record(record, item);   // item->self_equipment_from_dom(record);
+
+        //        QDomElement recordtable = record.firstChildElement();
+        //        assert(recordtable.tagName() == "recordtable" || recordtable.isNull());
+
+
+        //        if(recordtable.tagName() == "recordtable") {
+        //            //                    auto record = recordtable.firstChildElement();
+        //            //                    assert(record.tagName() == "record" || record.isNull());
+        //            //                    if(record.tagName() == "record")model_from_dom(record, parent);    // get recordtable == ItemsFlat
+        //            model_from_dom(recordtable, item);
+        //        }
+    };
+    //    boost::intrusive_ptr<TreeItem> parent = iParent;
+
+    if(!_record_dom_element.isNull()) {
+        assert(_record_dom_element.tagName() != "recordtable");
+        assert(_record_dom_element.tagName() == "record");
+        // У данного Dom-элемента ищется таблица конечных записей
+        // и данные заполняются в Item-таблицу конечных записей
+        // At this Dom-end table element is searched for records and the data filled in the Item-end table entries
+        self->dom_to_direct(_record_dom_element);    // take ground from the nearest level children
+
+        QDomElement _child = _record_dom_element.firstChildElement();
+
+        assert(_child.tagName() == "recordtable" || _child.isNull());
+
+        if(_child.tagName() == "recordtable") {
+
+            QDomElement _record_child = _child.firstChildElement();
+            assert(_record_child.tagName() == "record");
+
+            // Пробегаются все DOM элементы текущего уровня
+            // и рекурсивно вызывается обработка подуровней
+            while(!_record_child.isNull()) { // traverse brothers
+
+
+
+                //            if(_dom_element.tagName() == "node") { // "node"
+                //                assert(_dom_element.firstChildElement().tagName() == "record");
+                //                QDomElement record = _dom_element.firstChildElement("record");
+
+                //                if(!record.isNull()) {
+
+                //                    //                    //                // Обнаруженый подузел прикрепляется к текущему элементу
+                //                    //                    //                auto item = parent->add_child();  // insert_children(parent->current_count(), 1, 1);
+
+                //                    //                    //                if(!_dom_element.firstChildElement("record").isNull())
+                //                    //                    //                    boost::static_pointer_cast<Record>(item)->record_from_dom(_dom_element.firstChildElement("record"));
+
+                //                    //                    //                //            QString line1, line_name, line_id;
+                //                    //                    //                //            line1 = n.tagName();
+                //                    //                    //                //            line_name = n.attribute("name");
+                //                    //                    //                //            line_id = n.attribute("id");
+                //                    //                    //                //            qDebug() << "Read node " << line1 << " " << line_id << " " << line_name;
+
+                //                    //                    QString id = "";
+
+                //                    //                    // Определяются атрибуты узла дерева разделов
+                //                    //                    QDomNamedNodeMap attributeMap = record.attributes();
+
+                //                    //                    // Перебираются атрибуты узла дерева разделов
+                //                    //                    for(int i = 0; i < attributeMap.count(); ++i) {
+                //                    //                        QDomNode attribute = attributeMap.item(i);
+
+                //                    //                        QString name = attribute.nodeName();
+                //                    //                        QString value = attribute.nodeValue();
+
+                //                    //                        if(name == "id") {
+                //                    //                            id = value;
+                //                    //                            break;
+                //                    //                        }
+
+                //                    //                        //                    // В дерево разделов устанавливаются считанные атрибуты
+                //                    //                        //                    // parent->child(parent->current_count() - 1)
+                //                    //                        //                    item->field(name , value);
+                //                    //                        //                    //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
+                //                    //                    }
+
+                //                    //                    assert(id != "");
+                //                    //                    int index = parent->is_item_exists(id);
+
+                //                    //                    boost::intrusive_ptr<TreeItem> item = nullptr;
+
+                //                    //                    if(index != -1) {
+                //                    //                        item = parent->child(index);
+
+                //                    //                        item->record_from_dom(record);
+                //                    //                    } else {
+                //                    //                        item = parent->add_child();
+                //                    //                        item->record_from_dom(record);
+                //                    //                    }
+
+                //                    //                    // Вызов перебора оставшегося DOM дерева с прикреплением обнаруженных объектов
+                //                    //                    // к только что созданному элементу
+                //                    //                    model_from_dom(record.firstChildElement(), item);    //
+                //                    record_and_recordtable(record);
+                //                }
+
+                //            } else
+
+                if(_record_child.tagName() == "record") {
+
+                    //                if(!_dom_element.isNull()) {
+                    //                    // boost::static_pointer_cast<Record>(parent)->record_from_dom(_dom_element);
+                    //                    //                    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), parent));
+                    //                    //                    item->record_from_dom(_dom_element);
+                    //                    //                    parent->find(item->id())->record_from_dom(_dom_element);
+
+                    //                    QString id = "";
+                    //                    // Определяются атрибуты узла дерева разделов
+                    //                    QDomNamedNodeMap attributeMap = _dom_element.attributes();
+
+                    //                    // Перебираются атрибуты узла дерева разделов
+                    //                    for(int i = 0; i < attributeMap.count(); ++i) {
+                    //                        QDomNode attribute = attributeMap.item(i);
+
+                    //                        QString name = attribute.nodeName();
+                    //                        QString value = attribute.nodeValue();
+
+                    //                        if(name == "id") {
+                    //                            id = value;
+                    //                            break;
+                    //                        }
+
+                    //                        //                        // В дерево разделов устанавливаются считанные атрибуты
+                    //                        //                        // parent->child(parent->current_count() - 1)
+                    //                        //                        parent->field(name , value);
+                    //                        //                        //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
+                    //                    }
+
+                    //                    assert(id != "");
+                    //                    int index = parent->is_item_exists(id);
+                    //                    boost::intrusive_ptr<TreeItem> item = nullptr;
+
+                    //                    if(index != -1) {
+                    //                        item = parent->child(index);
+                    //                        item->record_from_dom(_dom_element);
+                    //                    } else {
+                    //                        item = parent->add_child();
+                    //                        item->record_from_dom(_dom_element);
+                    //                    }
+
+                    //                    QDomElement recordtable = _dom_element.firstChildElement();
+                    //                    assert(recordtable.tagName() == "recordtable" || recordtable.isNull());
+
+
+                    //                    if(recordtable.tagName() == "recordtable") {
+                    //                        //                    auto record = recordtable.firstChildElement();
+                    //                        //                    assert(record.tagName() == "record" || record.isNull());
+
+                    //                        //                    if(record.tagName() == "record")model_from_dom(record, parent);    // get recordtable == ItemsFlat
+                    //                        model_from_dom(recordtable, item);
+                    //                    }
+
+                    // model_from_dom(_child, self); //
+                    assembly_record_and_table_to_parent(_record_child, self);
+                    //            }
+
+                }
+
+                //                else {
+
+                //                    assert(_child.tagName() == "recordtable");
+
+                //                    //                if(!_dom_element.isNull())static_cast<ItemsFlat *>(parent.get())->items_from_dom(_dom_element, parent->parent());
+
+                //                    QDomElement record = _child.firstChildElement();
+                //                    assert(record.tagName() == "record" || record.isNull());
+
+                //                    if(record.tagName() == "record") {
+                //                        assembly_record_and_table_to_parent(record, self);  // model_from_dom(record, parent);    // get recordtable == ItemsFlat
+                //                    }
+                //                }
+
+                _record_child = _record_child.nextSiblingElement();   // brother record
+                assert(_record_child.tagName() == "record" || _record_child.isNull());
+            }
+        }
+    }
+
+}
+
+
+bool TreeKnowModel::check_format(QDomElement elementFormat)
 {
     int baseVersion = 0;
     int baseSubVersion = 0;
@@ -116,7 +367,7 @@ bool TreeModelKnow::check_format(QDomElement elementFormat)
 }
 
 
-bool TreeModelKnow::update_sub_version_from_1_to_2(void)
+bool TreeKnowModel::update_sub_version_from_1_to_2(void)
 {
 
 
@@ -124,156 +375,16 @@ bool TreeModelKnow::update_sub_version_from_1_to_2(void)
 }
 
 
-void TreeModelKnow::reload(void)
+void TreeKnowModel::reload(void)
 {
     init_from_xml(_xml_file_name);
 }
 
 
-// Разбор DOM модели и преобразование ее в Item модель
-void TreeModelKnow::setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> parent)
-{
-    QDomElement contentRootNode = dommodel->documentElement().firstChildElement("content").firstChildElement("node");
-
-    if(contentRootNode.isNull()) {
-        qDebug() << "Unable load xml tree, first content node not found.";
-        return;
-    }
-
-    node_from_dom(contentRootNode, parent);
-
-    return;
-}
-
-
-// Рекурсивный обход DOM дерева и извлечение из него узлов
-void TreeModelKnow::node_from_dom(QDomElement domElement, boost::intrusive_ptr<TreeItem> parent)
-{
-    //    boost::intrusive_ptr<TreeItem> parent = iParent;
-
-    // У данного Dom-элемента ищется таблица конечных записей
-    // и данные заполняются в Item-таблицу конечных записей
-    // At this Dom-end table element is searched for records and the data filled in the Item-end table entries
-    parent->import_from_dom(domElement);    // ?
-
-    // Пробегаются все DOM элементы текущего уровня
-    // и рекурсивно вызывается обработка подуровней
-    while(!domElement.isNull()) {
-        if(domElement.tagName() == "node") {
-            // Обнаруженый подузел прикрепляется к текущему элементу
-            parent->insert_children(parent->current_count(), 1, 1);
-
-            /*
-            QString line1,line_name,line_id;
-            line1=n.tagName();
-            line_name=n.attribute("name");
-            line_id=n.attribute("id");
-            qDebug() << "Read node " << line1 << " " << line_id<< " " << line_name;
-            */
-
-            // Определяются атрибуты узла дерева разделов
-            QDomNamedNodeMap attributeMap = domElement.attributes();
-
-            // Перебираются атрибуты узла дерева разделов
-            for(int i = 0; i < attributeMap.count(); ++i) {
-                QDomNode attribute = attributeMap.item(i);
-
-                QString name = attribute.nodeName();
-                QString value = attribute.nodeValue();
-
-                // В дерево разделов устанавливаются считанные атрибуты
-                parent->child(parent->current_count() - 1)->field(name , value);
-                //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
-            }
-
-            // Вызов перебора оставшегося DOM дерева с прикреплением обнаруженных объектов
-            // к только что созданному элементу
-            node_from_dom(domElement.firstChildElement(), parent->child(parent->current_count() - 1));
-
-        }
-
-        domElement = domElement.nextSiblingElement();
-    }
-
-}
-
-
-// Генерирование полного DOM дерева хранимых данных
-QDomElement TreeModelKnow::export_to_dom(boost::intrusive_ptr<TreeItem> root)   // full modeldata to dom
-{
-    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    QDomElement elm = doc->createElement("content");
-
-    // qDebug() << "New element for export" << xmlNodeToString(elm);
-
-    export_to_dom(doc, elm, root);
-
-    // qDebug() << "In export_fullmodeldata_to_dom stop element " << xmlNodeToString(elm);
-
-    return elm;
-}
-
-
-// Рекурсивное преобразование Item-элементов в Dom дерево
-void TreeModelKnow::export_to_dom(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item)
-{
-
-    // Если в ветке присутсвует таблица конечных записей
-    // В первую очередь добавляется она
-    if(curr_item->current_count() > 0) {
-        // Обработка таблицы конечных записей
-
-        // Получение Dom дерева таблицы конечных записей
-        // В метод передается QDomDocument, на основе кторого будут создаваться элементы
-        QDomElement item_flat_dom = curr_item->export_to_dom(doc);
-
-        // Dom дерево таблицы конечных записей добавляется
-        // как подчиненный элемент к текущему элементу
-        if(!item_flat_dom.isNull()) {
-            xml_data.appendChild(item_flat_dom.cloneNode());
-        }
-    }
-
-    // Обработка каждой подчиненной ветки
-    int i;
-
-    for(i = 0; i < curr_item->current_count(); i++) {
-        //        assert(curr_item->child(i).get() != curr_item);
-
-        if(curr_item->child(i) != curr_item) {
-            // Временный элемент, куда будет внесена текущая перебираемая ветка
-            QDomElement  tempElement = doc->createElement("node");
-
-            // Получение всех полей для данной ветки
-            QMap<QString, QString> fields = curr_item->child(i)->all_fields_direct();
-
-            // Перебираются поля элемента ветки
-            QMapIterator<QString, QString> fields_iterator(fields);
-
-            while(fields_iterator.hasNext()) {
-                fields_iterator.next();
-
-                // Установка для временного элемента значения перебираемого поля как атрибута
-                tempElement.setAttribute(fields_iterator.key(), fields_iterator.value());
-            }
-
-
-            // Добавление временного элемента к основному документу
-            xml_data.appendChild(tempElement);
-
-            // qDebug() << "In parsetreetodom() current construct doc " << xmlNodeToString(*xmldata);
-
-            // Рекурсивная обработка
-            QDomElement workElement = xml_data.lastChildElement();
-            export_to_dom(doc, workElement, curr_item->child(i));
-        }
-    }
-
-}
 
 
 // Запись всех данных в XML файл
-void TreeModelKnow::save()
+void TreeKnowModel::save()
 {
 #ifdef _with_record_table
     record_to_item();
@@ -298,11 +409,17 @@ void TreeModelKnow::save()
     formvers.setAttribute("subversion", CURRENT_FORMAT_SUBVERSION);
     rootelement.appendChild(formvers);
 
+    //    QDomElement content = doc.createElement("content");
+
     // Получение полного DOM дерева хранимых данных
-    QDomElement elmdomtree = export_to_dom(_root_item);
+    QDomElement elmdomtree = dom_from_record(_root_item);
+
+    //    content.appendChild(elmdomtree);
 
     // Добавление полного дерева DOM хранимых данных к корневому элементу
-    rootelement.appendChild(elmdomtree);
+    rootelement.appendChild(    // content //
+        elmdomtree
+    );
 
     // Добавление корневого элемента в DOM документ
     doc.appendChild(rootelement);
@@ -327,8 +444,86 @@ void TreeModelKnow::save()
 }
 
 
+// Генерирование полного DOM дерева хранимых данных
+QDomElement TreeKnowModel::dom_from_record(boost::intrusive_ptr<TreeItem> root)   // full modeldata to dom
+{
+    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+    QDomElement elm = doc->createElement("content");
+
+    // qDebug() << "New element for export" << xmlNodeToString(elm);
+    QDomElement record = root->dom_from_treeitem(doc);
+    //    dom_from_record(doc, elm, root);
+
+    // qDebug() << "In export_fullmodeldata_to_dom stop element " << xmlNodeToString(elm);
+    elm.appendChild(record);
+
+    return elm;
+}
+
+
+// Рекурсивное преобразование Item-элементов в Dom дерево
+void TreeKnowModel::dom_from_record(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item)
+{
+
+
+    // Если в ветке присутсвует таблица конечных записей
+    // В первую очередь добавляется она
+    if(curr_item->current_count() > 0) {
+        // Обработка таблицы конечных записей
+
+        // Получение Dom дерева таблицы конечных записей
+        // В метод передается QDomDocument, на основе кторого будут создаваться элементы
+        QDomElement item_flat_dom = curr_item->dom_from_treeitem(doc);
+
+        // Dom дерево таблицы конечных записей добавляется
+        // как подчиненный элемент к текущему элементу
+        if(!item_flat_dom.isNull()) {
+            xml_data.appendChild(item_flat_dom);  // .cloneNode()
+        }
+    }
+
+    //    // Обработка каждой подчиненной ветки
+    //    int i;
+
+    for(int i = 0; i < curr_item->current_count(); i++) {
+        //        assert(curr_item->child(i).get() != curr_item);
+
+        if(curr_item->child(i) != curr_item) {
+            //            // Временный элемент, куда будет внесена текущая перебираемая ветка
+            //            QDomElement  tempElement = doc->createElement("node");
+
+            //            // Получение всех полей для данной ветки
+            //            QMap<QString, QString> fields = curr_item->child(i)->all_fields_direct();
+
+            //            // Перебираются поля элемента ветки
+            //            QMapIterator<QString, QString> fields_iterator(fields);
+
+            //            while(fields_iterator.hasNext()) {
+            //                fields_iterator.next();
+
+            //                // Установка для временного элемента значения перебираемого поля как атрибута
+            //                tempElement.setAttribute(fields_iterator.key(), fields_iterator.value());
+            //            }
+
+            //            // tempElement.appendChild(curr_item->export_local_to_dom(doc));
+
+            //            // Добавление временного элемента к основному документу
+            //            xml_data.appendChild(tempElement);
+
+            //            // qDebug() << "In parsetreetodom() current construct doc " << xmlNodeToString(*xmldata);
+
+            // Рекурсивная обработка
+            QDomElement workElement = xml_data.lastChildElement();
+            dom_from_record(doc, workElement, curr_item->child(i));
+        }
+    }
+
+}
+
+
+
 // Добавление новой подветки к указанной ветке
-void TreeModelKnow::add_child_branch(const QModelIndex &_index, QString id, QString name)
+void TreeKnowModel::add_child_branch(const QModelIndex &_index, QString id, QString name)
 {
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
@@ -339,7 +534,7 @@ void TreeModelKnow::add_child_branch(const QModelIndex &_index, QString id, QStr
 }
 
 // Добавление новой подветки к указанной ветке
-void TreeModelKnow::add_child_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
+void TreeKnowModel::add_child_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
 {
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
@@ -351,7 +546,7 @@ void TreeModelKnow::add_child_branch(const QModelIndex &_index, boost::intrusive
 
 
 // Добавление новой ветки после указанной ветки
-void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, QString id, QString name)
+void TreeKnowModel::add_sibling_branch(const QModelIndex &_index, QString id, QString name)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(_index);
@@ -366,7 +561,7 @@ void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, QString id, QS
 }
 
 // Добавление новой ветки после указанной ветки
-void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
+void TreeKnowModel::add_sibling_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(_index);
@@ -380,7 +575,7 @@ void TreeModelKnow::add_sibling_branch(const QModelIndex &_index, boost::intrusi
     }
 }
 
-boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent)
+boost::intrusive_ptr<TreeItem> TreeKnowModel::add_new_branch(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent)
 {
     boost::intrusive_ptr<TreeItem> current;
 
@@ -406,7 +601,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_pt
 }
 
 // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name)
+boost::intrusive_ptr<TreeItem> TreeKnowModel::add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name)
 {
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
@@ -434,7 +629,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_new_branch(boost::intrusive_pt
 }
 
 // Add a new highlight to the Item element  // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent) //    , QString id, QString name
+boost::intrusive_ptr<TreeItem> TreeKnowModel::add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent) //    , QString id, QString name
 {
 
     beginInsertRows(index(parent), parent->current_count(), parent->current_count());
@@ -469,7 +664,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<Rec
 
 
 // Add a new highlight to the Item element  // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent) //    , QString id, QString name
+boost::intrusive_ptr<TreeItem> TreeKnowModel::add_child(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent) //    , QString id, QString name
 {
 
     beginInsertRows(index(parent), parent->current_count(), parent->current_count());
@@ -504,7 +699,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::add_child(boost::intrusive_ptr<Tre
 
 
 // Добавление новой подветки к указанной ветке из буфера обмена
-QString TreeModelKnow::paste_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
+QString TreeKnowModel::paste_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
 {
     QString pasted_branch_id;
 
@@ -519,7 +714,7 @@ QString TreeModelKnow::paste_child_branch(const QModelIndex &_index, ClipboardBr
 }
 
 
-QString TreeModelKnow::paste_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
+QString TreeKnowModel::paste_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch)
 {
     QString pasted_branch_id;
 
@@ -536,21 +731,21 @@ QString TreeModelKnow::paste_sibling_branch(const QModelIndex &_index, Clipboard
 
 
 // Перемещение ветки вверх
-QModelIndex TreeModelKnow::move_up_branch(const QModelIndex &_index)
+QModelIndex TreeKnowModel::move_up_branch(const QModelIndex &_index)
 {
     return move_up_dn_branch(_index, 1);
 }
 
 
 // Перемещение ветки вниз
-QModelIndex TreeModelKnow::move_dn_branch(const QModelIndex &_index)
+QModelIndex TreeKnowModel::move_dn_branch(const QModelIndex &_index)
 {
     return move_up_dn_branch(_index, -1);
 }
 
 
 // Перемещение ветки вверх или вниз
-QModelIndex TreeModelKnow::move_up_dn_branch(const QModelIndex &_index, int direction)
+QModelIndex TreeKnowModel::move_up_dn_branch(const QModelIndex &_index, int direction)
 {
     // Получение QModelIndex расположенного над или под элементом index
     QModelIndex swap_index = _index.sibling(_index.row() - direction, 0);
@@ -594,7 +789,7 @@ QModelIndex TreeModelKnow::move_up_dn_branch(const QModelIndex &_index, int dire
 
 // Получение индекса подчиненного элемента с указанным номером
 // Нумерация элементов считается что идет с нуля
-QModelIndex TreeModelKnow::index_child(const QModelIndex &parent, int n) const
+QModelIndex TreeKnowModel::index_child(const QModelIndex &parent, int n) const
 {
     // Проверяется, передан ли правильный QModelIndex
     // Если он неправильный, возвращается пустой индекс
@@ -639,7 +834,7 @@ QModelIndex TreeModelKnow::index_child(const QModelIndex &parent, int n) const
 
 
 // Возвращает общее количество записей, хранимых в дереве
-int TreeModelKnow::get_all_record_count(void)
+int TreeKnowModel::get_all_record_count(void)
 {
     //    // Обнуление счетчика
     //    get_all_record_count_recurse(_root_item, 0);
@@ -651,7 +846,7 @@ int TreeModelKnow::get_all_record_count(void)
 
 
 // Возвращает количество записей в ветке и всех подветках
-int TreeModelKnow::size_of(boost::intrusive_ptr<TreeItem> item)
+int TreeKnowModel::size_of(boost::intrusive_ptr<TreeItem> item)
 {
     std::function<int (boost::intrusive_ptr<TreeItem>, int)>
     get_all_record_count_recurse
@@ -698,36 +893,37 @@ int TreeModelKnow::size_of(boost::intrusive_ptr<TreeItem> item)
 
 
 // Проверка наличия идентификатора ветки во всем дереве
-bool TreeModelKnow::is_item_id_exists(QString findId)
+bool TreeKnowModel::is_item_id_exists(QString findId)
 {
 
-    std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
-    is_item_id_exists_recurse =
-    [&](boost::intrusive_ptr<TreeItem> item, QString id_to_find, int mode) {
-        static bool is_exists = false;
+    //    std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
+    //    is_item_id_exists_recurse =
+    //        [&](boost::intrusive_ptr<TreeItem> item, QString id_to_find, int mode
+    //    ) {
+    //        static bool is_exists = false;
 
-        // Инициализация
-        if(mode == 0) {
-            return is_exists = false;
-            //            return false;
-        }
+    //        // Инициализация
+    //        if(mode == 0) {
+    //            return is_exists = false;
+    //            //            return false;
+    //        }
 
-        // Если ветка найдена, дальше проверять не имеет смысла. Это условие ускоряет возврат из рекурсии.
-        if(is_exists)
-            return true;
+    //        // Если ветка найдена, дальше проверять не имеет смысла. Это условие ускоряет возврат из рекурсии.
+    //        if(is_exists)
+    //            return true;
 
-        // Если текущая ветка содержит искомый идетнификатор
-        if(item->field("id") == id_to_find) {
-            return is_exists = true;
-            //            return true;
-        }
+    //        // Если текущая ветка содержит искомый идетнификатор
+    //        if(item->field("id") == id_to_find) {
+    //            return is_exists = true;
+    //            //            return true;
+    //        }
 
-        // Перебираются подветки
-        for(int i = 0; i < item->current_count(); i++)
-            is_item_id_exists_recurse(item->child(i), id_to_find, 1);
+    //        // Перебираются подветки
+    //        for(int i = 0; i < item->current_count(); i++)
+    //            is_item_id_exists_recurse(item->child(i), id_to_find, 1);
 
-        return is_exists;
-    };
+    //        return is_exists;
+    //    };
 
     // Обнуление счетчика
     is_item_id_exists_recurse(_root_item, findId, 0);
@@ -735,6 +931,45 @@ bool TreeModelKnow::is_item_id_exists(QString findId)
     return is_item_id_exists_recurse(_root_item, findId, 1);
 }
 
+// Проверка наличия идентификатора записи во всем дереве
+bool TreeKnowModel::is_item_id_exists(QString findId)const
+{
+
+    //    std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
+    //    is_record_id_exists_recurse
+    //        = [&](
+    //              boost::intrusive_ptr<TreeItem> item, QString find_id, int mode
+    //    ) {
+
+    //        static bool isExists = false;
+
+    //        // Инициализация
+    //        if(mode == 0) {
+    //            return isExists = false;
+    //            // return false;
+    //        }
+
+    //        // Если запись найдена, дальше проверять не имеет смысла. Это условие ускоряет возврат из рекурсии.
+    //        if(isExists)
+    //            return true;
+
+    //        // Если таблица записей текущей ветки содержит искомый идентификатор
+    //        if(item->is_item_exists(find_id)) {
+    //            return isExists = true;
+    //            // return true;
+    //        }
+
+    //        // Перебираются подветки
+    //        for(int i = 0; i < item->current_count(); i++)
+    //            is_record_id_exists_recurse(item->child(i), find_id, 1);
+
+    //        return isExists;
+    //    };
+    // Обнуление счетчика
+    is_item_id_exists_recurse(_root_item, findId, 0);
+
+    return is_item_id_exists_recurse(_root_item, findId, 1);
+}
 
 //bool KnowTreeModel::is_item_id_exists_recurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode)
 //{
@@ -799,45 +1034,7 @@ void TreeModelKnow::record_to_item()
 }
 #endif
 
-// Проверка наличия идентификатора записи во всем дереве
-bool TreeModelKnow::is_record_id_exists(QString findId)
-{
 
-    std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
-    is_record_id_exists_recurse
-        = [&](
-              boost::intrusive_ptr<TreeItem> item, QString find_id, int mode
-    ) {
-
-        static bool isExists = false;
-
-        // Инициализация
-        if(mode == 0) {
-            isExists = false;
-            return false;
-        }
-
-        // Если запись найдена, дальше проверять не имеет смысла. Это условие ускоряет возврат из рекурсии.
-        if(isExists)
-            return true;
-
-        // Если таблица записей текущей ветки содержит искомый идентификатор
-        if(item->is_item_exists(find_id)) {
-            isExists = true;
-            return true;
-        }
-
-        // Перебираются подветки
-        for(int i = 0; i < item->current_count(); i++)
-            is_record_id_exists_recurse(item->child(i), find_id, 1);
-
-        return isExists;
-    };
-    // Обнуление счетчика
-    is_record_id_exists_recurse(_root_item, findId, 0);
-
-    return is_record_id_exists_recurse(_root_item, findId, 1);
-}
 
 
 //bool KnowTreeModel::is_record_id_exists_recurse(boost::intrusive_ptr<TreeItem> item, QString findId, int mode)
@@ -871,7 +1068,7 @@ bool TreeModelKnow::is_record_id_exists(QString findId)
 
 // Добавление подветки из буфера обмена относительно указанного элемента
 // Функция возвращает новый идентификатор стартовой добавленной подветки
-QString TreeModelKnow::paste_sub_branch(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch)
+QString TreeKnowModel::paste_sub_branch(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch)
 {
     qDebug() << "In paste_subbranch()";
 
@@ -1015,7 +1212,7 @@ QString TreeModelKnow::paste_sub_branch(boost::intrusive_ptr<TreeItem> item, Cli
 
 
 // Перешифрование базы с новым паролем
-void TreeModelKnow::re_encrypt(QString previousPassword, QString currentPassword)
+void TreeKnowModel::re_encrypt(QString previousPassword, QString currentPassword)
 {
     // Получение путей ко всем подветкам дерева
     QList<QStringList> subbranchespath = _root_item->all_children_path();
@@ -1047,7 +1244,7 @@ void TreeModelKnow::re_encrypt(QString previousPassword, QString currentPassword
 
 // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
 // Если ветка с указанным ID не будет найдена, возвращается NULL
-boost::intrusive_ptr<TreeItem> TreeModelKnow::item_by_name(QString name)
+boost::intrusive_ptr<TreeItem> TreeKnowModel::item_by_name(QString name)
 {
     std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, QString, int)>
     item_by_name_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
@@ -1081,7 +1278,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::item_by_name(QString name)
 
 // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
 // Если ветка с указанным ID не будет найдена, возвращается NULL
-boost::intrusive_ptr<TreeItem> TreeModelKnow::item_by_id(QString id)
+boost::intrusive_ptr<TreeItem> TreeKnowModel::item_by_id(QString id)
 {
     std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeItem>, QString, int)> item_by_id_recurse
     = [&](boost::intrusive_ptr<TreeItem> item, QString id, int mode) {
@@ -1136,7 +1333,7 @@ boost::intrusive_ptr<TreeItem> TreeModelKnow::item_by_id(QString id)
 
 
 // Получение пути к ветке, где находится запись
-QStringList TreeModelKnow::record_path(QString recordId)
+QStringList TreeKnowModel::record_path(QString recordId)const
 {
     std::function<QStringList(boost::intrusive_ptr<TreeItem>
                               , QStringList
@@ -1219,7 +1416,7 @@ QStringList TreeModelKnow::record_path(QString recordId)
 
 
 // Метод определяющий есть ли в дереве зашифрованные ветки
-bool TreeModelKnow::is_contains_crypt_branches(void)
+bool TreeKnowModel::is_contains_crypt_branches(void)const
 {
 
     std::function<bool (boost::intrusive_ptr<TreeItem>, int)> is_contains_crypt_branches_recurse =
@@ -1347,3 +1544,12 @@ bool TreeModelKnow::is_contains_crypt_branches(void)
 //    return QModelIndex();
 //}
 
+void TreeKnowModel::clear()
+{
+    this->_root_item = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
+}
+
+void TreeKnowModel::intercept(boost::intrusive_ptr<TreeItem> item)
+{
+    this->_root_item = item;
+}

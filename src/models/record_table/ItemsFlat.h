@@ -29,6 +29,7 @@ class ItemsFlat {
 
 public:
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
+    ItemsFlat(const QDomElement &_dom_element, boost::intrusive_ptr<TreeItem> _parent_item, const bool _is_crypt = false);
     ItemsFlat(const bool _is_crypt = false);
     ItemsFlat(const ItemsFlat &obj);
     ItemsFlat &operator =(const ItemsFlat &obj);
@@ -64,11 +65,15 @@ public:
     // Количество записей в таблице данных
     int current_count(void) const;
 
+    //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
+    void dom_to_items(const QDomElement &dom_model, boost::intrusive_ptr<TreeItem> _parent_item);
+
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
-    QDomElement export_activated_dom(std::shared_ptr<QDomDocument> doc) const;
-    QDomElement export_to_dom() const;
-    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
+    QDomElement dom_from_activated_itemsflat(std::shared_ptr<QDomDocument> doc) const;
+    ItemsFlat   *active_subset();
+    QDomElement dom_from_itemsflat() const;
+    QDomElement dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const;
 
     //    // Получение ссылки на объект ветки, которой принадлежит таблица
     //    boost::intrusive_ptr<TreeItem> tree_item(void);
@@ -82,8 +87,8 @@ public:
     bool remove_child(QString id);
     bool remove_child(boost::intrusive_ptr<TreeItem> item);
 
-    bool is_item_exists(const QString &id) const;
-    bool is_item_exists(const QUrl &url) const;
+    int is_item_exists(const QString &id) const;
+    int is_item_exists(const QUrl &url) const;
 
     int position(QString id) const;
     int position(boost::intrusive_ptr<TreeItem> it)const;
@@ -109,12 +114,13 @@ public:
     bool crypt() {return _is_crypt;}
     void crypt(const bool _is_crypt);   // {this->_is_crypt = _is_crypt;}
 
-    //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
-    //    void import_from_dom(const QDomElement &dom_model);
+
     int locate(boost::intrusive_ptr<TreeItem> item)const;
-    ItemsFlat *active_subset();
+
     int count()const {return _child_items.size();}
     void parent(boost::intrusive_ptr<TreeItem> parent_item);
+
+
 protected:
 
     // Initialize the data table based on the transmitted item DOM- // Первичное заполнение таблицы конечных записей

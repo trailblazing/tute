@@ -20,14 +20,14 @@
 #include "views/main_window/MainWindow.h"
 #include "FindScreen.h"
 //#include "FindTableWidget.h"
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 #include "models/app_config/AppConfig.h"
 #include "models/tree/TreeItem.h"
 #include "views/record/MetaEditor.h"
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 #include "libraries/FlatControl.h"
-#include "views/tree/TreeViewKnow.h"
+#include "views/tree/TreeKnowView.h"
 #include "views/browser/entrance.h"
 #include "views/browser/toolbarsearch.h"
 #include "views/browser/chasewidget.h"
@@ -44,9 +44,22 @@ FindScreen::FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _sele
     , _navigater(new QToolBar(this))
     , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
     , _progress(new QProgressDialog(this))
-      //    , _findtable(new FindTableWidget(this))
-    , _selected_branch_as_pages(static_cast<ItemsFlat *>(_selected_branch_root.get()))   // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
-    , _toolbarsearch(new browser::ToolbarSearch(this))
+      //    , _findtable(new FindTableWidget(this)) // deprecated
+    , _selected_branch_as_pages([ & ]
+{
+    ItemsFlat *result = new ItemsFlat();
+
+    for(int i = 0; i < _selected_branch_root->current_count(); i++) {
+        auto it = _selected_branch_root->child(i);
+
+        if(it->is_lite())it->to_fat();
+
+        result->insert_new_item(result->current_count() - 1, it);
+    }
+
+    return result;
+}())    // static_cast<ItemsFlat *>(_selected_branch_root.get()) // never transfer this data directly, it is come from _treeknowmodel!   // _resultset_data(std::make_shared<RecordTable>(QDomElement()))
+, _toolbarsearch(new browser::ToolbarSearch(this))
 {
     setObjectName(object_name);
     _navigater->setMaximumWidth(130);
@@ -85,7 +98,7 @@ FindScreen::FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _sele
 
 FindScreen::~FindScreen(void)
 {
-
+    delete _selected_branch_as_pages;
 }
 
 void FindScreen::setup_navigate(void)
@@ -574,7 +587,7 @@ ItemsFlat *FindScreen::find_start(void)
     //    _findtable->re_initialize();
 
     // Выясняется ссылка на модель дерева данных
-    TreeModelKnow *_search_model = static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
+    TreeKnowModel *_search_model = static_cast<TreeKnowModel *>(find_object<TreeKnowView>(knowtreeview_singleton_name)->model());
 
 
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
@@ -729,7 +742,7 @@ ItemsFlat *FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_as_pages = final_search(_search_start_item, _selected_branch_as_pages);
-            globalparameters.tree_screen()->enable_up_action(_selected_branch_as_pages != globalparameters.tree_screen()->_root_model->root_item());
+            globalparameters.tree_screen()->enable_up_action(_selected_branch_as_pages != globalparameters.tree_screen()->treeknow_root()->root_item());
         }
     }
 
@@ -756,7 +769,7 @@ ItemsFlat *FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_as_pages = final_search(_search_start_item, _selected_branch_as_pages);
-            globalparameters.tree_screen()->enable_up_action(_selected_branch_as_pages != globalparameters.tree_screen()->_root_model->root_item());
+            globalparameters.tree_screen()->enable_up_action(_selected_branch_as_pages != globalparameters.tree_screen()->treeknow_root()->root_item());
         }
 
         //    }

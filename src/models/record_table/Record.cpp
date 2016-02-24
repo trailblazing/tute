@@ -206,11 +206,13 @@ Record::~Record()
 
 
 // На вход этой функции подается элемент <record>
-void Record::import(const QDomElement &iDomElement)
+void Record::dom_to_record(const QDomElement &_dom_element)
 {
+    // QDomElement _dom_element;
+
     // Получение списка всех атрибутов текущего элемента
     QDomNamedNodeMap attList;
-    attList = iDomElement.attributes();
+    attList = _dom_element.attributes();
 
     // Перебор атрибутов в списке и добавление их в запись
     int i;
@@ -232,26 +234,26 @@ void Record::import(const QDomElement &iDomElement)
     _attach_table_data->record(boost::intrusive_ptr<Record>(this));
 
     // Проверка, есть ли у переданного DOM-элемента таблица файлов для заполнения
-    if(!iDomElement.firstChildElement("files").isNull())
-        _attach_table_data->setupDataFromDom(iDomElement.firstChildElement("files"));   // Заполнение таблицы приаттаченных файлов
+    if(!_dom_element.firstChildElement("files").isNull())
+        _attach_table_data->setupDataFromDom(_dom_element.firstChildElement("files"));   // Заполнение таблицы приаттаченных файлов
 }
 
-QDomElement Record::export_to_dom() const
+QDomElement Record::dom_from_record() const
 {
     std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    return export_to_dom(doc);
+    return dom_from_record(doc);
 }
 
 
-QDomElement Record::export_to_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement Record::dom_from_record(std::shared_ptr<QDomDocument> doc) const
 {
     QDomElement elem = doc->createElement("record");
 
     // Перебираются допустимые имена полей, доступных для сохранения
     QStringList available_field_list = fixedparameters._record_natural_field;
-    int available_field_list_size = available_field_list.size();
+    // int available_field_list_size = available_field_list.size();
 
-    for(int j = 0; j < available_field_list_size; ++j) {
+    for(int j = 0; j <  available_field_list.size(); ++j) {
         QString field_name = available_field_list.at(j);
 
         // Устанавливается значение поля как атрибут DOM-узла
@@ -721,7 +723,7 @@ void Record::save_text_direct(QString iText)
         QFile wfile(fileName);
 
         if(!wfile.open(QIODevice::WriteOnly | QIODevice::Text))
-            critical_error("Cant open text file " + fileName + " for write.");
+            critical_error("Can\'t open text file " + fileName + " for write.");
 
         QTextStream out(&wfile);
         out.setCodec("UTF-8");
@@ -746,12 +748,12 @@ void Record::save_text_direct(QString iText)
 void Record::create_file_and_save_text()
 {
     QString fileName = full_text_file_name();
-
+    assert(fileName != "");
     // В файл сохраняются зашифрованные данные
     QFile wfile(fileName);
 
     if(!wfile.open(QIODevice::WriteOnly))
-        critical_error("Record::saveText() : Cant open binary file " + fileName + " for write.");
+        critical_error("Record::saveText() : Can\'t open binary file " + fileName + " for write.");
 
     // Сохраняется QByteArray с текстом записи (в QByteArray могут быть как зашифрованные, так и не зашифрованные данные)
     wfile.write(_text);

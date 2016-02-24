@@ -329,7 +329,7 @@ namespace browser {
                      , TreeScreen   *_tree_screen
                      , FindScreen   *_find_screen
                      , MetaEditor   *_editor_screen
-                     , MainWindow   *_main_window
+                     , HidableTabWidget *_vtabwidget, MainWindow   *_main_window
                      , Entrance     *_entrance
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -339,6 +339,7 @@ namespace browser {
                                           , _find_screen
                                           , _editor_screen
                                           , this
+                                          , _vtabwidget
                                           , _main_window))
         , _tabmanager(_record_screen->tabmanager())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -371,7 +372,7 @@ namespace browser {
                      , TreeScreen   *_tree_screen
                      , FindScreen   *_find_screen
                      , MetaEditor   *_editor_screen
-                     , MainWindow   *_main_window
+                     , HidableTabWidget *_vtabwidget, MainWindow   *_main_window
                      , Entrance     *_entrance
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -381,6 +382,7 @@ namespace browser {
                                           , _find_screen
                                           , _editor_screen
                                           , this
+                                          , _vtabwidget
                                           , _main_window))
         , _tabmanager(_record_screen->tabmanager())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
@@ -413,7 +415,7 @@ namespace browser {
                      , TreeScreen   *_tree_screen
                      , FindScreen   *_find_screen
                      , MetaEditor   *_editor_screen
-                     , MainWindow   *_main_window
+                     , HidableTabWidget *_vtabwidget, MainWindow   *_main_window
                      , Entrance     *_entrance
                      , const QString &style_source
                      , Qt::WindowFlags flags
@@ -423,6 +425,7 @@ namespace browser {
                                           , _find_screen
                                           , _editor_screen
                                           , this
+                                          , _vtabwidget
                                           , _main_window))
         , _tabmanager(_record_screen->tabmanager())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))

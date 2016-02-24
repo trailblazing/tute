@@ -2,8 +2,8 @@
 
 #include "main.h"
 #include "WalkHistory.h"
-#include "models/tree/TreeModelKnow.h"
-#include "views/tree/TreeViewKnow.h"
+#include "models/tree/TreeKnowModel.h"
+#include "views/tree/TreeKnowView.h"
 
 
 WalkHistory::WalkHistory(void)
@@ -279,7 +279,7 @@ void WalkHistory::setDrop(bool flag)
 void WalkHistory::checkId(QString id)
 {
     // Выясняется ссылка на модель дерева данных
-    TreeModelKnow *dataModel = static_cast<TreeModelKnow *>(find_object<TreeViewKnow>("knowTreeView")->model());
+    TreeKnowModel *dataModel = static_cast<TreeKnowModel *>(find_object<TreeKnowView>("knowTreeView")->model());
 
     // Если запись с указанным идентификатором существует
     if(dataModel->record_path(id).length() > 0)

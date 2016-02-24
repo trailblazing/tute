@@ -20,7 +20,7 @@ class QLabel;
 class QCheckBox;
 class QProgressDialog;
 
-class TreeModelKnow;
+class TreeKnowModel;
 class TreeItem;
 
 class FindTableWidget;
@@ -37,6 +37,7 @@ class RecordController;
 namespace browser {
     class ChaseWidget;
     class ToolbarSearch;
+    class TabWidget;
 }
 
 // Виджет поиска по базе
@@ -65,7 +66,10 @@ public:
     void remove_child(const QString &id);
     void remove_child(const int row);
     void adjust_size();
-    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, RecordController *>>   reocrd_controller;    // for entrance
+
+    std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
+    std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
+
 public slots:
 
     void widget_show(void);

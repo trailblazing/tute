@@ -15,12 +15,12 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include "utility/delegate.h"
-#include "models/tree/TreeModelKnow.h"
+#include "models/tree/TreeKnowModel.h"
 
 
 
-class TreeModelKnow;
-class TreeViewKnow;
+class TreeKnowModel;
+class TreeKnowView;
 class ClipboardBranch;
 class AppConfig;
 class QMenuBar;
@@ -35,6 +35,7 @@ class RecordController;
 namespace  browser {
     class ToolbarSearch;
     class WebPage;
+    class TabWidget;
 }
 
 
@@ -47,9 +48,11 @@ public:
 
     QMap<QString, QAction *> _actionlist;
 
-    TreeModelKnow   *_root_model;                 // for tree screen
-    TreeModelKnow   *_selected_branch;      // for tree screen
-    std::shared_ptr<sd::_interface_const<sd::meta_info<void *>, RecordController *>>   reocrd_controller;    // for entrance
+    TreeKnowModel const *treeknow_root()const {return _treeknow_root;}
+    TreeKnowModel *treeknow_root_modify() {return _treeknow_root;}
+    TreeKnowModel *treeknow_branch() {return _treeknow_branch;}
+    std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
+    std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
 
     void save_knowtree(void);
     void reload_knowtree(void);
@@ -113,17 +116,18 @@ private slots:
 
 private:
 
-
+    TreeKnowModel   *_treeknow_root;                 // for tree screen
+    TreeKnowModel   *_treeknow_branch;      // for tree screen
     //    TreeController  *_tree_controller;
 
-    QToolBar        *_toolsline;
+    QToolBar        *_tools_line;
     QToolBar        *_menubar; // QMenuBar *_menubar;
     QPushButton     *_menubutton;
     QWidgetAction   *_menuaction;
     QMenu           *_menus_in_button;
 
-    TreeViewKnow    *_treeviewknow;
-    QHBoxLayout     *_toolslayout;
+    TreeKnowView    *_treeknowview;
+    QHBoxLayout     *_tools_layout;
     //    browser::ToolbarSearch  *_recordtree_search;
     //    QHBoxLayout             *_recordtree_searchlayout;
     QVBoxLayout     *_treescreenlayout;
@@ -133,7 +137,7 @@ private:
 
 
     void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
-    void setup_model(TreeModelKnow *treemodel);
+    void setup_model(TreeKnowModel *treemodel);
     void setup_signals(void);
     void setup_actions(void);
     void assembly(void);

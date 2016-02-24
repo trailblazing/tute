@@ -22,6 +22,10 @@ namespace browser {
     class TabWidget;
 }
 
+
+// TreeItem = {item |record + items }
+// Record = {record | { id, name, url, dir,file, home, pin ...} }
+// ItemsFlat = { item[i] | i = 0,1,2,3 ... }
 class TreeItem  //        : public std::enable_shared_from_this<TreeItem>
     : public Record
     , public ItemsFlat {
@@ -35,23 +39,20 @@ public:
 
     typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
-    TreeItem(
-        QMap<QString, QString>              field_data
-        , boost::intrusive_ptr<TreeItem>    parent_item
+    TreeItem(QMap<QString, QString>              _field_data
+        , boost::intrusive_ptr<TreeItem>    _parent_item
         , ItemsFlat                         *_child_items
     );
 
-    TreeItem(
-        QMap<QString, QString>              field_data
-        , boost::intrusive_ptr<TreeItem>    parent_item
-        , const QDomElement                 &i_dom_element
+    TreeItem(QMap<QString, QString>              _field_data
+        , boost::intrusive_ptr<TreeItem>    _parent_item
+        , const QDomElement                 &_dom_element
         = QDomElement()
     );
 
-    TreeItem(
-        boost::intrusive_ptr<Record>        record
-        , boost::intrusive_ptr<TreeItem>    parent_item
-        , const QDomElement                 &i_dom_element
+    TreeItem(boost::intrusive_ptr<Record>        _record
+        , boost::intrusive_ptr<TreeItem>    _parent_item
+        , const QDomElement                 &_dom_element
         = QDomElement()
     );
 
@@ -159,9 +160,9 @@ public:
 
     //    // Преобразование таблицы конечных записей в DOM представление, "промежуточный" метод
     //    // Convert the table of final entries in the DOM representation "intermediate" method
-    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc);
-    QDomElement export_to_dom();
-    void import_from_dom(const QDomElement &dom_model);
+    QDomElement dom_from_treeitem(std::shared_ptr<QDomDocument> doc);
+    QDomElement dom_from_treeitem();
+    void dom_to_direct(const QDomElement &_dom_element);
 
 
 
