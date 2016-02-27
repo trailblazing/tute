@@ -51,6 +51,7 @@ public:
     Record();
     Record(QMap<QString, QString> field_data);
     Record(boost::intrusive_ptr<Record> obj);
+    Record &operator =(const Record &obj);
     virtual ~Record();
 
     //    browser::WebPage *unique_page();   // const; // {return _page;}
@@ -81,7 +82,7 @@ public:
 
     std::shared_ptr<AttachTableData> attach_table() const;
     std::shared_ptr<AttachTableData> attach_table();
-    void attach_table(std::shared_ptr<AttachTableData> iAttachTable);
+    void attach_table(std::shared_ptr<AttachTableData> _attach_table_data);
 
     bool is_empty() const;
     bool is_lite() const;

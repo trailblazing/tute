@@ -19,8 +19,9 @@ class AttachTableData {
     friend class Attach;
 
 public:
-    AttachTableData(boost::intrusive_ptr<Record> record = nullptr);
-    // AttachTableData(const AttachTableData &obj);
+    AttachTableData(boost::intrusive_ptr<Record> _record = nullptr);
+    AttachTableData(const AttachTableData &obj);
+    AttachTableData &operator =(const AttachTableData &obj);
     //    AttachTableData();
     virtual ~AttachTableData();
 

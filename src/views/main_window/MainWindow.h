@@ -78,9 +78,9 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    MainWindow(GlobalParameters &globalparameters
-               , AppConfig &appconfig
-               , DataBaseConfig &databaseconfig);
+    MainWindow(GlobalParameters &_globalparameters
+               , AppConfig &_appconfig
+               , DataBaseConfig &_databaseconfig);
 
     ~MainWindow();
 
@@ -91,7 +91,7 @@ public:
     void restore_editor_scrollbar_position(void);
     void restore_find_on_base_visible(void);
 
-    void tree_position(QStringList path);
+    void set_tree_position(QString id, QStringList path);
     bool is_tree_position_crypt();
 
     //    void select_id(QString id);// too many _record_screen objects, deprecated
@@ -114,6 +114,7 @@ public:
     QMenu *window_menu() {return _windowmenu;}
     QMenu *tools_menu() {return _toolsmenu;}
     QMenu *help_menu() {return _helpmenu;}
+    QSplitter *find_splitter() {return _find_splitter;}
 
 public slots:
     void application_exit(void);
@@ -162,7 +163,7 @@ private:
     void set_icon(void);
 
     void save_geometry(void);
-    void tree_position(void);
+    void save_tree_position(void);
     //    void save_recordtable_position(void);// too many _record_screen objects, deprecated
     void save_editor_cursor_position(void);
     void save_editor_scrollbar_position(void);

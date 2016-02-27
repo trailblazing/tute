@@ -54,13 +54,15 @@ public:
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
     boost::intrusive_ptr<TreeItem> child(int pos) const;
     boost::intrusive_ptr<TreeItem> item(int pos) const;
-    boost::intrusive_ptr<TreeItem> find(const QUrl &url) const;
-    boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item) const;
-    int index(boost::intrusive_ptr<TreeItem> item)const;
+    boost::intrusive_ptr<TreeItem> find_list(const QUrl &url) const;
+    boost::intrusive_ptr<TreeItem> find_list(boost::intrusive_ptr<TreeItem> item) const;
+    //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
+    boost::intrusive_ptr<TreeItem> find_list(QString id)const;
+    int list_index(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
 
     // Удаление всех элементов таблицы конечных записей
-    void delete_all_items(void);
+    void delete_list_items(void);
 
     // Количество записей в таблице данных
     int current_count(void) const;
@@ -71,7 +73,7 @@ public:
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
     QDomElement dom_from_activated_itemsflat(std::shared_ptr<QDomDocument> doc) const;
-    ItemsFlat   *active_subset();
+    std::shared_ptr<ItemsFlat> active_subset() const;
     QDomElement dom_from_itemsflat() const;
     QDomElement dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const;
 
@@ -90,8 +92,8 @@ public:
     int is_item_exists(const QString &id) const;
     int is_item_exists(const QUrl &url) const;
 
-    int position(QString id) const;
-    int position(boost::intrusive_ptr<TreeItem> it)const;
+    int list_position(QString id) const;
+    int list_position(boost::intrusive_ptr<TreeItem> it)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -115,7 +117,7 @@ public:
     void crypt(const bool _is_crypt);   // {this->_is_crypt = _is_crypt;}
 
 
-    int locate(boost::intrusive_ptr<TreeItem> item)const;
+
 
     int count()const {return _child_items.size();}
     void parent(boost::intrusive_ptr<TreeItem> parent_item);

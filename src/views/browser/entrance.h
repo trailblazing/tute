@@ -78,7 +78,7 @@ namespace browser {
 
         std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
 
-        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<TreeItem> record);    // = boost::intrusive_ptr<Record>(nullptr)
+
 
         //        WebView *active_record_alternative(Record *const record) ;
 
@@ -103,8 +103,11 @@ namespace browser {
         QList<QPointer<Browser> > &window_list();  //        QList<DockedWindow*> window_raw_list();
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
-        void active_url(const QUrl &url);
+
+        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<TreeItem> record);    // = boost::intrusive_ptr<Record>(nullptr)
+        void activate(const QUrl &url);
         void activate(boost::intrusive_ptr<TreeItem> item);
+
         bool restore_state(const QByteArray &state);
         std::pair<Browser *, WebView *> find(boost::intrusive_ptr<TreeItem> record);
         std::pair<Browser *, WebView *> find(QUrl url);

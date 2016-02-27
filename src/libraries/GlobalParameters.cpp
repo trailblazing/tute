@@ -414,6 +414,8 @@ QString GlobalParameters::application_name(void)
     return appName;
 }
 
+QSplitter *GlobalParameters::find_splitter() {return _find_splitter;}
+void GlobalParameters::find_splitter(QSplitter *_find_splitter) {this->_find_splitter = _find_splitter;}
 
 void GlobalParameters::v_left_splitter(QSplitter *vleftsplitter)
 {
@@ -423,6 +425,17 @@ void GlobalParameters::v_left_splitter(QSplitter *vleftsplitter)
 QSplitter *GlobalParameters::v_left_splitter()
 {
     return _v_left_splitter;
+}
+
+
+void GlobalParameters::v_right_splitter(QSplitter *vrightsplitter)
+{
+    _v_right_splitter = vrightsplitter;
+}
+
+QSplitter *GlobalParameters::v_right_splitter()
+{
+    return _v_right_splitter;
 }
 
 void GlobalParameters::vtab(QTabWidget *point)

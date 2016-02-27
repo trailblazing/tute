@@ -175,19 +175,19 @@ namespace browser {
                 //            globalparameters.entrance()->active_record(request_record(url));
                 if(globalparameters.entrance()->activiated_registered().first) {
                     browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
-                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
+                    //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
                     auto r = browser->tabmanager()->request_item(
                                  url
-                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                                     ""
-                                     , &browser::TabWidget::ActiveRecordBinder::binder
-                                     , ara
-                                 )
-                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                                     ""
-                                     , &browser::TabWidget::ActiveRecordBinder::activator
-                                     , ara
-                                 )
+                                 //                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
+                                 //                                     ""
+                                 //                                     , &browser::TabWidget::ActiveRecordBinder::binder
+                                 //                                     , ara
+                                 //                                 )
+                                 //                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
+                                 //                                     ""
+                                 //                                     , &browser::TabWidget::ActiveRecordBinder::activator
+                                 //                                     , ara
+                                 //                                 )
                              );
 
                     r->activate();

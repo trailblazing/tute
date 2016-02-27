@@ -20,13 +20,28 @@ class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
+    struct  delegater {
+        boost::intrusive_ptr<TreeItem> _item;
+        QUrl _find_url;
+        QString _id = "";
+        delegater(boost::intrusive_ptr<TreeItem> _item): _item(_item) {_equal = [&](TreeItem * it) {return _item.get() == it;};}
+        delegater(const QUrl &_find_url):  _find_url(_find_url) {_equal = [&](TreeItem * it) {return _find_url.toString() == it->field("url");};}
+        delegater(const QString &_id): _id(_id) {_equal = [&](TreeItem * it) {return _id == it->field("id");};}
+
+        //        bool (*equal)(TreeItem * it);
+        std::function<bool(TreeItem *)> _equal;
+
+    };
+
+
     TreeModel(QObject *parent = 0);
+    TreeModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent = 0);
     ~TreeModel(void);
 
     QVariant data(const QModelIndex &_index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &child_parent_index = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &_index) const;
 
     int rowCount(const QModelIndex &itemIndex = QModelIndex()) const;
@@ -40,17 +55,24 @@ public:
     bool insertRows(int position, int rows, const QModelIndex &parent = QModelIndex());
     bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 
+
+    bool is_item_valid(QStringList path) const;
+
+    QModelIndex index(delegater _del) const;
+    QModelIndex index(boost::intrusive_ptr<TreeItem> _item) const;
+    //    QModelIndex index(const QUrl &find_url)const;
+    //    QModelIndex index(const QString &id)const;
+
     // Возвращение указателя на Item-элемент с указанным index
     // Где index - это индекс объекта в терминах структуры модель-вид
     boost::intrusive_ptr<TreeItem> item(const QModelIndex &_index) const;
-
     // Возвращение указателя на Item-элемент с указанным путем
     // в виде последовательности идентификаторов
     boost::intrusive_ptr<TreeItem> item(QStringList path) const;
 
-    bool is_item_valid(QStringList path) const;
-
-    QModelIndex index(boost::intrusive_ptr<TreeItem> _item) const;
+    boost::intrusive_ptr<TreeItem> item(const delegater &_del)const;
+    //    boost::intrusive_ptr<TreeItem> find_recursive(const QUrl &find_url) const;
+    //    boost::intrusive_ptr<TreeItem> find_recursive(const QString &id)const;
 
     void emit_datachanged_signal(const QModelIndex &_index);
 

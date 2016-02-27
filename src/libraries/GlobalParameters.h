@@ -21,6 +21,9 @@ class WindowSwitcher;
 class MainWindow;
 class QTabWidget;
 class QSplitter;
+class EditorConfigDialog;
+class EditorConfig;
+class AttachTableController;
 
 
 class GlobalParameters : public QObject {
@@ -40,8 +43,14 @@ public:
     QString target_os(void);
     QString application_name(void);
 
+    QSplitter *find_splitter();
+    void find_splitter(QSplitter *_find_splitter);
+
     void v_left_splitter(QSplitter *vleftsplitter);
     QSplitter *v_left_splitter();
+
+    void v_right_splitter(QSplitter *vrightsplitter);
+    QSplitter *v_right_splitter();
 
     void vtab(QTabWidget *point);
     QTabWidget *vtab();
@@ -85,6 +94,12 @@ public:
 
     void download_manager(browser::DownloadManager *dm) {_download_manager = dm;}
     browser::DownloadManager *download_manager();
+
+    void editor_config(EditorConfig *dialog) {_editor_config = dialog;}
+    EditorConfig *editor_config() {return _editor_config;}
+
+    AttachTableController *attachtable_controller() {return _attachtable_controller;}
+    void attachtable_controller(AttachTableController *_attachtable_controller) {this->_attachtable_controller = _attachtable_controller;}
 private:
 
     void init_workdirectory(void);
@@ -97,17 +112,20 @@ private:
     TreeScreen          *_tree_screen;
     browser::Entrance   *_browsermanager;
     std::vector<RecordScreen *> _table_screens;
-    //    RecordScreen         *_page_screen;
+    EditorConfig        *_editor_config;
     FindScreen          *_find_screen;
     MetaEditor          *_meta_editor;
     QStatusBar          *_statusbar;
     WindowSwitcher      *_window_switcher;
+    QSplitter           *_find_splitter;
     QSplitter           *_v_left_splitter;
+    QSplitter           *_v_right_splitter;
     QTabWidget          *_vtab;
     MainWindow          *_mainwindow;
     browser::DownloadManager *_download_manager;
     QString             _main_program_file;
     QString             _work_directory;
+    AttachTableController *_attachtable_controller;
 
     QByteArray          _password_hash;
     QString             _style_source;

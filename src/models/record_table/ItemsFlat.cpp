@@ -120,13 +120,20 @@ ItemsFlat::ItemsFlat(const bool _is_crypt):
 
 ItemsFlat::ItemsFlat(const ItemsFlat &obj): _is_crypt(obj._is_crypt), _workpos(obj._workpos)
 {
-    _child_items = obj._child_items;
+    //    _child_items = obj._child_items;
+
+    foreach(auto i, obj._child_items) {
+        _child_items.push_back(boost::intrusive_ptr<TreeItem>(new TreeItem(*i)));
+    }
 }
 
 ItemsFlat &ItemsFlat::operator =(const ItemsFlat &obj)
 {
     if(&obj != this) {
-        _child_items = obj._child_items;
+        foreach(auto i, obj._child_items) {
+            _child_items.push_back(boost::intrusive_ptr<TreeItem>(new TreeItem(*i)));
+        }
+
         _is_crypt = obj._is_crypt;
         _workpos = obj._workpos;
     }
@@ -163,7 +170,7 @@ QString ItemsFlat::field(int pos, QString name) const
     return _child_items.at(pos)->field(name);
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find(const QUrl &url)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(const QUrl &url)const
 {
     boost::intrusive_ptr<TreeItem> record;
 
@@ -178,27 +185,77 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find(const QUrl &url)const
     return record;
 }
 
-int ItemsFlat::locate(boost::intrusive_ptr<TreeItem> item)const
+//int ItemsFlat::find_list(boost::intrusive_ptr<TreeItem> item)const
+//{
+//    int pos = -1;
+
+//    for(int i = 0 ; i < _child_items.size(); i++) {
+//        auto it = _child_items.value(i);
+
+//        if(it->field("id") == item->field("id")) {
+//            assert(it->is_registered_to_record_controller());
+//            pos = i;
+//            break;
+//        }
+//    }
+
+//    return pos;
+//}
+
+
+
+boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(boost::intrusive_ptr<TreeItem> item)const
 {
-    int pos = -1;
+    boost::intrusive_ptr<TreeItem> result;
 
-    for(int i = 0 ; i < _child_items.size(); i++) {
-        auto it = _child_items.value(i);
-
-        if(it->field("id") == item->field("id")) {
-            assert(it->is_registered_to_record_controller());
-            pos = i;
+    for(auto &i : _child_items) {
+        if(i == item) {   // if(i->field("id") == item->field("id")) {
+            // assert(i->is_registered());
+            result = i;
             break;
         }
     }
 
-    return pos;
+    return result;
 }
 
-int ItemsFlat::index(boost::intrusive_ptr<TreeItem> item)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(QString id)const
+{
+    boost::intrusive_ptr<TreeItem> result;
+
+    for(auto &i : _child_items) {
+        if(i->id() == id) {   // if(i->field("id") == item->field("id")) {
+            // assert(i->is_registered());
+            result = i;
+            break;
+        }
+    }
+
+    return result;
+}
+
+int ItemsFlat::list_position(QString id)const
+{
+    for(int i = 0; i < current_count(); i++)
+        if(field(i, "id") == id)
+            return i;
+
+    return -1;
+}
+
+int ItemsFlat::list_position(boost::intrusive_ptr<TreeItem> it)const
+{
+    for(int i = 0; i < current_count(); i++)
+        if(child(i) == it)
+            return i;
+
+    return -1;
+}
+
+int ItemsFlat::list_index(boost::intrusive_ptr<TreeItem> item)const
 {
     int in = 0;
-    int result = 0;
+    int result = -1;
 
     for(auto &i : _child_items) {
 
@@ -209,21 +266,6 @@ int ItemsFlat::index(boost::intrusive_ptr<TreeItem> item)const
         }
 
         in++;
-    }
-
-    return result;
-}
-
-boost::intrusive_ptr<TreeItem> ItemsFlat::find(boost::intrusive_ptr<TreeItem> item)const
-{
-    boost::intrusive_ptr<TreeItem> result;
-
-    for(auto &i : _child_items) {
-        if(i == item) {   // if(i->field("id") == item->field("id")) {
-            // assert(i->is_registered());
-            result = i;
-            break;
-        }
     }
 
     return result;
@@ -364,7 +406,7 @@ void ItemsFlat::editor_save_callback(QObject *editor, QString saveText)
         QFile wfile(fileName);
 
         if(!wfile.open(QIODevice::WriteOnly))
-            critical_error("RecordTableData::editor_save_callback() : Cant open binary file " + fileName + " for write.");
+            critical_error("ItemsFlat::editor_save_callback() : Cant open binary file " + fileName + " for write.");
 
         wfile.write(encryptData);
     }
@@ -389,7 +431,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_lite(int pos)const
 
     // Хранимая в дереве запись не может быть "тяжелой"
     if(!_child_items.at(pos)->is_lite())
-        critical_error("In RecordTableData::getRecordLite() try get fat record");
+        critical_error("In ItemsFlat::item_lite() try get fat record");
 
     return _child_items.at(pos);
 }
@@ -524,12 +566,11 @@ QDomElement ItemsFlat::dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) con
 
     // Пробегаются все записи в таблице
     for(int i = 0; i < _child_items.size(); i++) {
-        //        assert(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this);
 
-        if(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get()) != this) {
-            item_flat_dom.appendChild(
-                _child_items.at(i)->dom_from_treeitem(doc) // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
-            );     // К элементу recordtabledata прикрепляются конечные записи
+        if(static_cast<ItemsFlat *>(_child_items.at(i).get()) != this) {
+
+            item_flat_dom.appendChild(_child_items.at(i)->dom_from_treeitem(doc)                 // boost::static_pointer_cast<Record>(_child_items.at(i))->dom_from_record(doc)
+                                     );     // К элементу recordtabledata прикрепляются конечные записи
         }
     }
 
@@ -557,7 +598,7 @@ QDomElement ItemsFlat::dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) con
 //}
 
 
-ItemsFlat *ItemsFlat::active_subset()
+std::shared_ptr<ItemsFlat> ItemsFlat::active_subset()const
 {
     //    std::shared_ptr<TableData> result = std::make_shared<TableData>();
 
@@ -577,15 +618,18 @@ ItemsFlat *ItemsFlat::active_subset()
     //    //    );
     //    //    tree->
     //    import_from_dom(dommodel);
-    QList<boost::intrusive_ptr<TreeItem>> result;
+
+    std::shared_ptr<ItemsFlat> result = std::make_shared<ItemsFlat>();
+
+    //    QList<boost::intrusive_ptr<TreeItem>> result;
 
     for(int i = 0; i < current_count(); i++) {
-        if(_child_items.at(i)->page_valid())result.push_back(_child_items.at(i));
+        if(_child_items.at(i)->page_valid())result->insert_new_item(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
     }
 
-    _child_items.clear();
-    _child_items = result;
-    return  this;   // new TreeItem(data, _parent_item);
+    //    _child_items.clear();
+    //    _child_items = result;
+    return  result;   // new TreeItem(data, _parent_item);
 
     //    return result;
 }
@@ -602,8 +646,9 @@ QDomElement ItemsFlat::dom_from_activated_itemsflat(std::shared_ptr<QDomDocument
     // Пробегаются все записи в таблице
     for(int i = 0; i < _child_items.size(); i++) {
         if(_child_items.at(i)->page_valid() //unique_page()
+           && (static_cast<ItemsFlat *>(_child_items.at(i).get()) != this)
           ) {
-            record_dom_data.appendChild(boost::static_pointer_cast<ItemsFlat>(_child_items.at(i).get())->dom_from_itemsflat(doc));     // К элементу recordtabledata прикрепляются конечные записи
+            record_dom_data.appendChild(_child_items.at(i)->dom_from_treeitem(doc));    // К элементу recordtabledata прикрепляются конечные записи
         }
     }
 
@@ -633,15 +678,14 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
     // get shadow_branch
     //    TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
 
-    if(!find(item)
-       //       && !shadow_branch->is_record_id_exists(item->field("id"))
+    if(!find_list(item)  //       && !shadow_branch->is_record_id_exists(item->field("id"))
       ) {
 
         //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
 
         // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
         if(item->is_lite() == true)
-            critical_error("RecordTable::insert_new_record() can't insert lite record");
+            critical_error("ItemsFlat::insert_new_item() can't insert lite record");
 
         // Выясняется, есть ли в дереве запись с указанным ID
         // Если есть, то генерируются новые ID для записи и новая директория хранения
@@ -694,7 +738,7 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
             if(globalparameters.crypt_key().length() > 0)
                 is_crypt = true;
             else
-                critical_error("RecordTable::insert_new_record() : Can not insert data to crypt branch. Password not setted.");
+                critical_error("ItemsFlat::insert_new_item() : Can not insert data to crypt branch. Password not setted.");
         }
 
         //        }
@@ -727,13 +771,13 @@ int ItemsFlat::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int
             //            insert_position = pos + 1;
         }
 
-        insert_position = index(item);
-        qDebug() << "RecordTableData::insert_new_record() : New record pos" << QString::number(insert_position);
+        insert_position = list_position(item);
+        qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
 
         // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
 
     } else {
-        insert_position = index(item);
+        insert_position = list_position(item);
     }
 
     assert(_child_items[insert_position] == item);
@@ -749,8 +793,7 @@ int ItemsFlat::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> record, 
     //    KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
     assert(record->is_lite());
 
-    if(!find(record)
-       //            && !dataModel->isRecordIdExists(record->getField("id"))
+    if(!find_list(record)    //            && !dataModel->isRecordIdExists(record->getField("id"))
       ) {
 
         //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
@@ -809,7 +852,7 @@ int ItemsFlat::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> record, 
             if(globalparameters.crypt_key().length() > 0)
                 is_crypt = true;
             else
-                critical_error("RecordTable::insert_new_record() : Can not insert data to crypt branch. Password not setted.");
+                critical_error("ItemsFlat::shadow_item_lite() : Can not insert data to crypt branch. Password not setted.");
         }
 
         //        }
@@ -843,7 +886,7 @@ int ItemsFlat::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> record, 
             insert_position = pos + 1;
         }
 
-        qDebug() << "RecordTableData::insert_new_record() : New record pos" << QString::number(insert_position);
+        qDebug() << "ItemsFlat::shadow_item_lite() : New record pos" << QString::number(insert_position);
 
         // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
 
@@ -890,7 +933,7 @@ bool ItemsFlat::remove_child(int i)
     QString id = field(i, "id");
 
     if(id.length() > 0)
-        walkhistory.removeHistoryData(id);
+        walkhistory.remove_history_data(id);
 
 
     //    //
@@ -949,7 +992,7 @@ bool ItemsFlat::remove_child(boost::intrusive_ptr<TreeItem> item)
 }
 
 // Удаление всех элементов таблицы конечных записей
-void ItemsFlat::delete_all_items(void)
+void ItemsFlat::delete_list_items(void)
 {
     int tableSize = current_count(); // Запоминается размер таблицы, так как он при удалении меняется
 
@@ -1020,23 +1063,7 @@ int ItemsFlat::is_item_exists(const QUrl &url)const
     return found;
 }
 
-int ItemsFlat::position(QString id)const
-{
-    for(int i = 0; i < current_count(); i++)
-        if(field(i, "id") == id)
-            return i;
 
-    return -1;
-}
-
-int ItemsFlat::position(boost::intrusive_ptr<TreeItem> it)const
-{
-    for(int i = 0; i < current_count(); i++)
-        if(child(i) == it)
-            return i;
-
-    return -1;
-}
 
 // Количество записей в таблице данных
 int ItemsFlat::current_count(void) const

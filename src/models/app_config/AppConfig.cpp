@@ -1,3 +1,4 @@
+#include <utility>
 #include <QRect>
 
 #include "main.h"
@@ -8,7 +9,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 
 extern GlobalParameters globalparameters;
-
+extern const char *global_root_id;
 
 // Конструктор объекта настройки программы
 AppConfig::AppConfig(QObject *pobj)
@@ -339,15 +340,19 @@ void AppConfig::splitter_sizelist(QString name, QList<int> list)
 }
 
 
-QStringList AppConfig::get_tree_position(void) const
+std::pair<QString, QStringList> AppConfig::tree_position(void) const
 {
-    return (conf->value("tree_position", "1")).toString().split(",");
+    return std::make_pair(
+               conf->value("tree_intercept", global_root_id).toString()
+               , conf->value("tree_position", "1").toString().split(",")
+           );
 }
 
 
-void AppConfig::set_tree_position(QStringList list)
+void AppConfig::tree_position(QString id, QStringList list)
 {
-    qDebug() << "AppConfig::set_tree_position() : " << list;
+    qDebug() << "AppConfig::set_tree_position() : id\t= " << id << "\t= " << list;
+    conf->setValue("tree_intercept", id);
     conf->setValue("tree_position", list.join(","));
 }
 

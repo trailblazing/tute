@@ -53,12 +53,11 @@
 #include "models/record_table/Record.h"
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordScreen.h"
-#include "models/record_table/Record.h"
 #include "libraries/GlobalParameters.h"
 #include "views/browser/featurepermissionbar.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/record_table/RecordView.h"
-#include "models/record_table/Record.h"
+
 
 
 QT_BEGIN_NAMESPACE
@@ -135,7 +134,8 @@ namespace browser {
         void close_requested();
     public:
 
-
+        typedef TreeItem::bind_helper bind_helper;
+        typedef TreeItem::active_helper active_helper;
 
         WebPage(QWebEngineProfile *profile
                 , const boost::intrusive_ptr<TreeItem> requested_item
@@ -202,6 +202,8 @@ namespace browser {
         void break_page_shared_items();
         void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> current_item);
 
+        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url);
 
     protected:
 

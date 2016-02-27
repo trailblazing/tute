@@ -39,18 +39,18 @@ public:
 
     typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
-    TreeItem(QMap<QString, QString>              _field_data
+    TreeItem(QMap<QString, QString>         _field_data
         , boost::intrusive_ptr<TreeItem>    _parent_item
-        , ItemsFlat                         *_child_items
+        , std::shared_ptr<ItemsFlat>        _child_items
     );
 
-    TreeItem(QMap<QString, QString>              _field_data
+    TreeItem(QMap<QString, QString>         _field_data
         , boost::intrusive_ptr<TreeItem>    _parent_item
         , const QDomElement                 &_dom_element
         = QDomElement()
     );
 
-    TreeItem(boost::intrusive_ptr<Record>        _record
+    TreeItem(boost::intrusive_ptr<Record>   _record
         , boost::intrusive_ptr<TreeItem>    _parent_item
         , const QDomElement                 &_dom_element
         = QDomElement()
@@ -200,7 +200,7 @@ protected:
 private:
     bool remove_children_link(int position, int count);
 
-    void clear(void);
+    void isolate(void);
 
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
     QList<QStringList> all_children_path_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode);

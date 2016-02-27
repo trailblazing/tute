@@ -62,7 +62,7 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto item = globalparameters.tree_screen()->treeknow_branch()->item(globalparameters.tree_screen()->current_index());
+    auto item = globalparameters.tree_screen()->know_branch()->item(globalparameters.tree_screen()->current_index());
     RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
     QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                             ); // temporary setting
@@ -99,7 +99,7 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto item = globalparameters.tree_screen()->treeknow_branch()->item(globalparameters.tree_screen()->current_index());
+    auto item = globalparameters.tree_screen()->know_branch()->item(globalparameters.tree_screen()->current_index());
     RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
     QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                             ); // temporary setting
@@ -177,8 +177,8 @@ void WindowSwitcher::closeFindInBase(void)
 void WindowSwitcher::findInBaseClick(void)
 {
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen = find_object<FindScreen>(find_screen_singleton_name);
-    QSplitter *vrs = find_object<QSplitter>("v_right_splitter");
+    FindScreen *findScreen = globalparameters.find_screen();    // find_object<FindScreen>(find_screen_singleton_name);
+    QSplitter *vrs = globalparameters.v_right_splitter();        // find_object<QSplitter>("v_right_splitter");
     //    browser::Entrance *entrance = globalparameters.entrance();
 
     if(findScreen && vrs) {
@@ -221,7 +221,7 @@ void WindowSwitcher::restoreFocusWidget()
     }
 
     if(widgetName == table_screen_singleton_name) {
-        auto item = globalparameters.tree_screen()->treeknow_branch()->item(globalparameters.tree_screen()->current_index());
+        auto item = globalparameters.tree_screen()->know_branch()->item(globalparameters.tree_screen()->current_index());
         RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 

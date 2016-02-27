@@ -92,7 +92,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<Record>     _record
 TreeItem::TreeItem(
     QMap<QString, QString>              _field_data
     , boost::intrusive_ptr<TreeItem>    _parent_item
-    , ItemsFlat                         *_child_items
+    , std::shared_ptr<ItemsFlat>        _child_items
 )
     : Record(_field_data)
     , ItemsFlat(*_child_items)
@@ -237,9 +237,9 @@ TreeItem::TreeItem(const TreeItem &item)
     , ItemsFlat(static_cast<const ItemsFlat &>(item))
     , _parent_item([ & ]()
 {
-    auto parent_item = const_cast<TreeItem &>(item).parent();
+    //    auto parent_item = const_cast<TreeItem &>(item).parent();
 
-    if(parent_item) {
+    if(item._parent_item) {
         //        QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
         //        QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
         //        //        QString crypt_value = "1";
@@ -254,14 +254,14 @@ TreeItem::TreeItem(const TreeItem &item)
         //            this->to_decrypt(); // table_data->to_decrypt();
         //        }
 
-        if(parent_item->_field_data["crypt"] == "1") {
+        if(item._parent_item->_field_data["crypt"] == "1") {
             this->to_encrypt();
         } else {
             this->to_decrypt();
         }
     }
 
-    return parent_item;
+    return boost::intrusive_ptr<TreeItem>(new TreeItem(*item._parent_item));
 }())
 {
     if(item.page_valid()    // item._page != nullptr
@@ -291,9 +291,9 @@ TreeItem &TreeItem::operator =(const TreeItem &item)
 {
     if(this != &item) {
 
-        auto parent_item = const_cast<TreeItem &>(item).parent();
+        //        auto parent_item = const_cast<TreeItem &>(item).parent();
 
-        if(parent_item) {
+        if(item._parent_item) {
             //            QString crypt_1(QString::null); crypt_1 = QLatin1String("1");
             //            QString crypt_0(QString::null); crypt_0 = QLatin1String("0");
             //            //        QString crypt_value = "1";
@@ -308,14 +308,14 @@ TreeItem &TreeItem::operator =(const TreeItem &item)
             //                this->to_decrypt(); // table_data->to_decrypt();
             //            }
 
-            if(parent_item->_field_data["crypt"] == "1") {
+            if(item._parent_item->_field_data["crypt"] == "1") {
                 this->to_encrypt();
             } else {
                 this->to_decrypt();
             }
         }
 
-        this->_parent_item = item._parent_item;
+        this->_parent_item = boost::intrusive_ptr<TreeItem>(new TreeItem(*item._parent_item));
 
         if(item.page_valid()    // item._page != nullptr
           ) {
@@ -375,7 +375,7 @@ TreeItem::~TreeItem()
     // if(parentItem)parentItem->removeChildrenLink(childNumber(),1);
 
     // Вызывается процедура очищения ветки без физического удаления данных на диске
-    clear();
+    isolate();
 
     //    if(page_valid()    // _page != nullptr
     //      ) {
@@ -467,7 +467,7 @@ void TreeItem::clear_children(void)
 // Метод мягкого удаления всех данных из узла
 // При таком удалении полностью очищается сам узел,
 // а физические данные на диске не затрагиваются
-void TreeItem::clear(void)
+void TreeItem::isolate(void)
 {
     _field_data.clear();
 
@@ -1218,8 +1218,8 @@ void TreeItem::dom_to_direct(const QDomElement &_dom_element)
 
     if(!records.isNull() && records.tagName() == "recordtable") {   // assert(records.tagName() == "recordtable");
         ItemsFlat::dom_to_items(records  // dom_model.firstChildElement("recordtable")
-                                  , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
-                                 );
+                                , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
+                               );
     }
 
     //    // QDomElement n = dommodel.documentElement();
@@ -1271,8 +1271,12 @@ QDomElement TreeItem::dom_from_treeitem()
 {
     //    QDomElement node = QDomDocument().createElement("node");
     QDomElement record = Record::dom_from_record();
-    QDomElement children = ItemsFlat::dom_from_itemsflat();
-    record.appendChild(children);
+
+    if(ItemsFlat::count() > 0) {
+        QDomElement children = ItemsFlat::dom_from_itemsflat();
+        record.appendChild(children);
+    }
+
     //    node.appendChild(record);
     return // node;    //
         record;
@@ -1282,8 +1286,12 @@ QDomElement TreeItem::dom_from_treeitem(std::shared_ptr<QDomDocument> doc)
 {
     //    QDomElement node = doc->createElement("node");
     QDomElement record = Record::dom_from_record(doc);
-    QDomElement children = ItemsFlat::dom_from_itemsflat(doc);
-    record.appendChild(children);
+
+    if(ItemsFlat::count() > 0) {
+        QDomElement children = ItemsFlat::dom_from_itemsflat(doc);
+        record.appendChild(children);
+    }
+
     //    node.appendChild(record);
     return // node;    //
         record;

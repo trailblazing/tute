@@ -7,7 +7,11 @@
 #include "EditorConfigDialog.h"
 #include "EditorConfigFont.h"
 #include "EditorConfigMisc.h"
+#include "libraries/GlobalParameters.h"
 
+
+
+extern GlobalParameters globalparameters;
 
 EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent)
 {

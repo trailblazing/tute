@@ -9,10 +9,9 @@
 #include "models/record_table/Record.h"
 
 
-AttachTableData::AttachTableData(boost::intrusive_ptr<Record> record)
-    :
-    _lite_flag(true)
-    , _record(record)
+AttachTableData::AttachTableData(boost::intrusive_ptr<Record> _record)
+    : _lite_flag(true)
+    , _record(_record)
     , _related_attach_table_model(nullptr)
 {
 
@@ -22,14 +21,35 @@ AttachTableData::AttachTableData(boost::intrusive_ptr<Record> record)
 
 
 // Конструктор копирования
-/*
-AttachTableData::AttachTableData(const AttachTableData &obj)
-{
-  attachTable=new QList< Attach >(obj.attachTable); // "Глубокое" копирование таблицы прикрепляемых файлов
-  record=obj.record; // А ссылка на запись просто копируется
-}
-*/
 
+AttachTableData::AttachTableData(const AttachTableData &obj)
+    : _lite_flag(obj._lite_flag)
+    , _record(nullptr)
+    , _related_attach_table_model(nullptr)
+
+{
+    _attach_table = obj._attach_table; // "Глубокое" копирование таблицы прикрепляемых файлов
+    //    _record = obj._record; // А ссылка на запись просто копируется
+
+    //    if(obj._related_attach_table_model)_related_attach_table_model = obj._related_attach_table_model;
+}
+
+AttachTableData &AttachTableData::operator =(const AttachTableData &obj)
+{
+    if(this != &obj) {
+        if(_lite_flag != obj._lite_flag) {
+            _lite_flag = obj._lite_flag;
+        }
+
+        _attach_table = obj._attach_table; // "Глубокое" копирование таблицы прикрепляемых файлов
+
+        //        if(obj._record)_record = obj._record; // А ссылка на запись просто копируется
+
+        //        if(obj._related_attach_table_model)_related_attach_table_model = obj._related_attach_table_model;
+    }
+
+    return *this;
+}
 
 //// Пустой конструктор, он требуется для Q_DECLARE_METATYPE в QMimeData
 //AttachTableData::AttachTableData()
@@ -38,10 +58,7 @@ AttachTableData::AttachTableData(const AttachTableData &obj)
 //    , _record(nullptr)
 //    , _related_attach_table_model(nullptr)
 //{
-//    //    _lite_flag = true;
 //    _attach_table.clear();
-//    //    _record = nullptr;
-//    //    _related_attach_table_model = nullptr;
 //}
 
 

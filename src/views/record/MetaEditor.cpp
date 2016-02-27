@@ -302,7 +302,7 @@ void MetaEditor::to_attach_layout(void)
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
 void MetaEditor::to_attach_callback(void)
 {
-    MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *edView = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
     edView->to_attach_layout();
 }
 
@@ -583,7 +583,7 @@ void MetaEditor::onClickToTag(const QString &link_text)
     // -----------------------------
 
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreen = find_object<FindScreen>(find_screen_singleton_name);
+    FindScreen *findScreen = globalparameters.find_screen();    // find_object<FindScreen>(find_screen_singleton_name);
 
     // Если виджет не показан, он выводится на экран
     if(findScreen->isVisible() == false)

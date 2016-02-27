@@ -80,8 +80,8 @@ public:
     void splitter_sizelist(QString name, QList<int> list);
 
 
-    QStringList get_tree_position(void)const;
-    void set_tree_position(QStringList list);
+    std::pair<QString, QStringList> tree_position(void)const;
+    void tree_position(QString id, QStringList list);
 
 
     // ID записи в таблице конечных записей, которая выделена на экране

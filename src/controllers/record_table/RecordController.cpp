@@ -329,7 +329,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
     // Выясняется указатель на объект редактирования текста записи
-    MetaEditor *meta_editor = find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *meta_editor = globalparameters.meta_editor();   // find_object<MetaEditor>(meta_editor_singleton_name);
     assert(meta_editor);
     meta_editor->bind(item);
 
@@ -346,7 +346,8 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     meta_editor->save_callback(item->editor_save_callback);
 
     // Сохраняется текст и картинки в окне редактирования
-    find_object<MainWindow>("mainwindow")->save_text_area();
+    //    find_object<MainWindow>("mainwindow")
+    globalparameters.mainwindow()->save_text_area();
 
 
     // Для новой выбраной записи выясняется директория и основной файл
@@ -418,8 +419,8 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
 
     // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
     if(appconfig.getRememberCursorAtOrdinarySelection()) {
-        meta_editor->cursor_position(walkhistory.getCursorPosition(id));
-        meta_editor->scrollbar_position(walkhistory.getScrollBarPosition(id));
+        meta_editor->cursor_position(walkhistory.cursor_position(id));
+        meta_editor->scrollbar_position(walkhistory.scrollbar_position(id));
     }
 
     // Обновление иконки аттачей
@@ -436,7 +437,7 @@ void RecordController::sychronize_attachtable_to_item(const int pos)
     //    auto table = _source_model->tree_item();
 
     // Устанавливается таблица приаттаченных файлов
-    AttachTableController *attachTableController = find_object<AttachTableController>("attachTableController");
+    AttachTableController *attachTableController = globalparameters.attachtable_controller();   //find_object<AttachTableController>("attachTableController");
     attachTableController->attach_table_data(_source_model->item(pos)->attach_table());
 }
 
@@ -839,7 +840,8 @@ void RecordController::cut(void)
     // Надо сохранить запись, так как перед копированием в буфер обмена запись
     // обязательно должна быть сохранена, иначе редактирование,
     // которое было после открытия записи и до нажатия Cut, потеряется
-    find_object<MetaEditor>(meta_editor_singleton_name)->save_textarea();
+    //    find_object<MetaEditor>(meta_editor_singleton_name)
+    globalparameters.meta_editor()->save_textarea();
 
     copy();
     delete_items_selected();
@@ -884,7 +886,8 @@ void RecordController::paste(void)
 
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
-    find_object<TreeScreen>(tree_screen_singleton_name)->update_selected_branchs();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->update_selected_branchs();
 }
 
 
@@ -1157,7 +1160,8 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     _view->moveCursorToNewRecord(mode, sourcepos_to_proxypos(selected_position));   // modify _source_model? yeah
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
     //    }
 
     //    else {
@@ -1369,7 +1373,7 @@ void RecordController::edit_field(int pos
     _source_model->fields(pos, edit_data);
 
     // Обновление инфополей в области редактирования записи
-    MetaEditor *meta_editor = find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *meta_editor = globalparameters.meta_editor();   //find_object<MetaEditor>(meta_editor_singleton_name);
     meta_editor->pin(pin);
     meta_editor->name(name);
     meta_editor->author(author);
@@ -1377,7 +1381,8 @@ void RecordController::edit_field(int pos
     meta_editor->tags(tags);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
 }
 
 
@@ -1454,17 +1459,20 @@ void RecordController::delete_items_selected(void)
     qDebug() << "After delete cursor set to" << selectionRowNum << "row";
 
     // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
-    find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
+    //    find_object<MetaEditor>(meta_editor_singleton_name)
+    globalparameters.meta_editor()->clear_all();
 
     // Вызывается удаление отмеченных записей
     remove_children(delIds);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
 
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
-    find_object<TreeScreen>(tree_screen_singleton_name)->update_selected_branchs();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->update_selected_branchs();
 
     // Установка курсора на нужную позицию
     if(selectionRowNum >= 0 && selectionRowNum < _proxy_model->rowCount())
@@ -1474,7 +1482,8 @@ void RecordController::delete_items_selected(void)
     if(_proxy_model->rowCount() == 0) {
         // Нужно очистить поле редактирования чтобы невидно было текста
         // последней удаленной записи
-        find_object<MetaEditor>(meta_editor_singleton_name)->clear_all();
+        //        find_object<MetaEditor>(meta_editor_singleton_name)
+        globalparameters.meta_editor()->clear_all();
     }
 
     qobject_cast<RecordScreen *>(parent())->tools_update();
@@ -1571,7 +1580,8 @@ void RecordController::move_up(void)
     _view->setSelectionToPos(pos - 1);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
 }
 
 
@@ -1593,7 +1603,8 @@ void RecordController::move_dn(void)
     _view->setSelectionToPos(pos + 1);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
 }
 
 
@@ -1637,7 +1648,7 @@ void RecordController::on_sort_click(void)
 // Слот, срабатывающий при вызове настроек
 void RecordController::settings(void)
 {
-    AppConfigDialog dialog("pageRecordTable");
+    AppConfigDialog dialog(this, "pageRecordTable");
     dialog.show();
 
     // Todo: Возвращение фокуса почему-то не работает, надо разбираться
@@ -1785,89 +1796,152 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     , active_helper activator
 )
 {
+    boost::intrusive_ptr<TreeItem> _result = nullptr;
+
     if(item->is_lite())item->to_fat();
 
     item->binder(generator);
     item->activator(activator);
-    boost::intrusive_ptr<TreeItem> _source_item = nullptr;
-    boost::intrusive_ptr<TreeItem> _item = nullptr;
-    //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
-    //    assert(_record_controller);
-    auto _treemodelknow = globalparameters.tree_screen()->treeknow_root_modify();
-    _source_item = _treemodelknow->root_item()->find(item);
-    //    if(_record_controller) {
-    //    auto browser_pages = this->_source_model->browser_pages();
-    //    assert(browser_pages);
+    item->is_registered_to_record_controller(true);
 
-    //    if(_source_model->count() > 0) {
-    _item = _source_model->find(item);
+    if(!item->binder() || !item->activator()) {
 
-    if(_source_item) {
-        if(!_item) {
-            //                record->binder(generator);
-            //                record->activator(activator);
-            if(_source_item->is_lite())_source_item->to_fat();
+        //        if(item->is_lite())item->to_fat();
 
-            _source_item->binder(generator);
-            _source_item->activator(activator);
+        //        item->binder(generator);
+        //        item->activator(activator);
+        //        item->is_registered_to_record_controller(true);
 
-            //            _item = register_item_to_browser_source_model(_source_item);
-            _source_item->is_registered_to_record_controller(true);
-            // _source_item->self_bind();
-            //                assert(_record);
 
-            //                _record->active_immediately(active_immediately);
-            //                _record->generator(generator);
-            _item = _source_item; // assert(_item.get() == _source_item.get());
+
+        //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
+        //    assert(_record_controller);
+
+        TreeScreen *_tree_screen = globalparameters.tree_screen();
+        //    auto _know_model_root = tree_screen->know_root();
+        auto _know_model_branch = _tree_screen->know_branch();
+
+        QUrl find_url = QUrl(item->field("url"));
+
+        //    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(find_url));        // on know_root semantic    // item won't work, for it is not inside _know_model_root if it is come from _know_model_branch
+        boost::intrusive_ptr<TreeItem> _source_item = _know_model_branch->item(TreeModel::delegater(find_url));
+
+        //    if(_source_root_item && !_source_item) {
+        //        auto result = tree_screen->cut_from_root(_source_root_item);
+
+        //        if(result)_source_item = tree_screen->paste_to_branch(result, _know_model_branch);
+
+        //        assert(result);
+        //        assert(_source_item);
+        //        assert((_source_item == result) && (result == _source_root_item));
+        //    }
+
+        bool item_is_brand_new = false;
+        //    if(_record_controller) {
+        //    auto browser_pages = this->_source_model->browser_pages();
+        //    assert(browser_pages);
+
+        //    if(_source_model->count() > 0) {
+        _result = _source_model->find(item);
+
+        if(_source_item) {
+            if(!_result) {
+
+                assert(item == _source_item);
+
+                //                //                record->binder(generator);
+                //                //                record->activator(activator);
+                if(_source_item->is_lite())_source_item->to_fat();
+
+                //                _source_item->binder(generator);
+                //                _source_item->activator(activator);
+
+                //                //            _item = register_item_to_browser_source_model(_source_item);
+                //                _source_item->is_registered_to_record_controller(true);
+                //                // _source_item->self_bind();
+                //                //                assert(_record);
+
+                //                //                _record->active_immediately(active_immediately);
+                //                //                _record->generator(generator);
+
+                _result = _source_item; // assert(_item.get() == _source_item.get());
+
+            } else {
+                assert(_result == _source_item);
+            }
+
+            assert(!_result->is_lite());
+            assert(_result->is_registered_to_record_controller());
+
+        } else {
+
+            item_is_brand_new = true;
+
+            if(!_result) {
+
+
+                //                if(item->is_lite())item->to_fat();
+
+                if(item->field("id") == "")item->field("id", get_unical_id());
+
+                //                item->binder(generator);
+                //                item->activator(activator);
+
+                //                //            _item = register_item_to_browser_source_model(item);
+                //                item->is_registered_to_record_controller(true);
+                //                // item->self_bind();
+                _result = item; // assert(_item.get() == item.get());
+            } else {
+                assert(_result == item);
+
+                if(_result->is_lite())_result->to_fat();
+
+                if(_result->field("id") == "")_result->field("id", get_unical_id());
+
+                //                _item->binder(generator);
+                //                _item->activator(activator);
+                //                _item->is_registered_to_record_controller(true);
+                //                // _item->self_bind();
+            }
+
+            auto it = _know_model_branch->item(_tree_screen->current_index());
+            assert(it);
+
+            //        if(_item->is_lite())_item->to_fat();
+
+            if(it != _result && item_is_brand_new) {
+                int pos = it->insert_new_item(it->current_count() - 1, _result);
+                _tree_screen->know_branch()->synchronized(false);
+                assert(_result == it->child(pos));
+            }
+
+            _tree_screen->save_knowtree();
         }
+
+        if(_result->is_lite())_result->to_fat();
+
+        //        //            else {
+        //        _item->binder(generator);
+        //        _item->activator(activator);
+        //        //                _record->generate();
+        //        //            }
+
+        assert(_result);
+
+        assert(_result->is_registered_to_record_controller());
+        assert(_result->field("url") == item->field("url"));
+        //    }
+
+        //    }
+
+        //    }
+
+        //    assert(_record);
     } else {
-        if(!_item) {
-
-            if(item->is_lite())item->to_fat();
-
-            if(item->field("id") == "")item->field("id", get_unical_id());
-
-            item->binder(generator);
-            item->activator(activator);
-
-            //            _item = register_item_to_browser_source_model(item);
-            item->is_registered_to_record_controller(true);
-            // item->self_bind();
-            _item = item; // assert(_item.get() == item.get());
-        }
-
-        auto it = _treemodelknow->item(globalparameters.tree_screen()->current_index());
-        assert(it);
-
-        //        if(_item->is_lite())_item->to_fat();
-
-        if(it != _item && !it->find(_item))
-            it->insert_new_item(it->current_count() - 1, _item);
-
-        _treemodelknow->save();
+        _result = item;
     }
 
-    if(_item->is_lite())_item->to_fat();
-
-    //        //            else {
-    //        _item->binder(generator);
-    //        _item->activator(activator);
-    //        //                _record->generate();
-    //        //            }
-
-    assert(_item);
-
-    assert(_item->is_registered_to_record_controller());
-
-    //    }
-
-    //    }
-
-    //    }
-
-    //    assert(_record);
-
-    return _item;
+    return _result;
 
 }
 
@@ -1877,69 +1951,68 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     , active_helper activator
 )
 {
-    boost::intrusive_ptr<TreeItem> _source_item = nullptr;
-    boost::intrusive_ptr<TreeItem> _item = nullptr;
 
-    //    QString l = _url.toString();
+    boost::intrusive_ptr<TreeItem> _result = nullptr;
 
-    //    if(_url.toString() == browser::DockedWindow::_defaulthome) {
-    //        if(default_record == nullptr) {
-    //            default_record = new Record();
+    TreeScreen *_tree_screen = globalparameters.tree_screen();
+    //    auto _know_model_root = tree_screen->know_root();
+    auto _know_model_branch = _tree_screen->know_branch();
 
-    //            if(default_record && default_record->isLite())default_record->switchToFat();
+    //    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
+    boost::intrusive_ptr<TreeItem> _source_item = _know_model_branch->item(TreeModel::delegater(_url));
 
-    //            //                QString title = _url.toString(); // not ready yet
-    //            if(default_record) {
-    //                default_record->setNaturalFieldSource("pin",   "");
-    //                default_record->setNaturalFieldSource("name",   "");
-    //                default_record->setNaturalFieldSource("author", "");
-    //                default_record->setNaturalFieldSource("url",    _url.toString());    // only changed
-    //                default_record->setNaturalFieldSource("tags",   "");
-    //            }
-    //        }
+    //    if(_source_root_item && !_source_item) {
+    //        auto result = tree_screen->cut_from_root(_source_root_item);
 
-    //        _record = default_record;
+    //        if(result)_source_item = tree_screen->paste_to_branch(result, _know_model_branch);
 
-    //    } else {
+    //        assert(result);
+    //        assert(_source_item);
+    //        assert((_source_item == result) && (result == _source_root_item));
+    //    }
 
-    //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
-    //    assert(_record_controller);
-
-    auto _treemodelknow = globalparameters.tree_screen()->treeknow_root_modify();
-    _source_item = _treemodelknow->root_item()->find(_url);
-
+    bool item_is_brand_new = false;
     //    //    if(_record_controller) {
     //    auto browser_pages = this->_source_model->browser_pages();
     //    assert(browser_pages);
 
     //    if(browser_pages) {
-    _item = _source_model->find(_url);
+    _result = _source_model->find(_url);
 
     if(_source_item) {
-        if(!_item) {
+        if(!_result) {
 
             if(_source_item->is_lite())_source_item->to_fat();
 
-            _source_item->binder(generator);
-            _source_item->activator(activator);
+            //            _source_item->binder(generator);
+            //            _source_item->activator(activator);
 
             //            _item = register_item_to_browser_source_model(_source_item);
 
             _source_item->is_registered_to_record_controller(true);
             // _source_item->self_bind();
-            _item = _source_item;
+            _result = _source_item;
         } else {
-            if(_item->is_lite())_item->to_fat();
+            assert(_result == _source_item);
 
-            if(_item->field("id") == "")_item->field("id", get_unical_id());
+            if(_result->is_lite())_result->to_fat();
 
-            _item->binder(generator);
-            _item->activator(activator);
-            _item->is_registered_to_record_controller(true);
+            if(_result->field("id") == "")_result->field("id", get_unical_id());
+
+            //            _result->binder(generator);
+            //            _result->activator(activator);
+
+            _result->is_registered_to_record_controller(true);
             // _item->self_bind();
         }
+
+        assert(!_result->is_lite());
+        assert(_result->is_registered_to_record_controller());
+
     } else {
-        if(!_item) {
+        item_is_brand_new = true;
+
+        if(!_result) {
 
             //                int pos = _record_ontroller->getFirstSelectionPos();
             //                Record *previous_record = _record_ontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
@@ -2014,8 +2087,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             if(item->is_lite())item->to_fat();
 
-            item->binder(generator);
-            item->activator(activator);
+            //            item->binder(generator);
+            //            item->activator(activator);
 
             //            _item = register_item_to_browser_source_model(item);
             item->is_registered_to_record_controller(true);
@@ -2026,30 +2099,34 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             //                _record->generator(generator);
 
 
-            _item = item; // assert(_item.get() == item.get());
+            _result = item; // assert(_item.get() == item.get());
         } else {
-            if(_item->is_lite())_item->to_fat();
+            if(_result->is_lite())_result->to_fat();
 
-            if(_item->field("id") == "")_item->field("id", get_unical_id());
+            if(_result->field("id") == "")_result->field("id", get_unical_id());
 
-            _item->binder(generator);
-            _item->activator(activator);
-            _item->is_registered_to_record_controller(true);
+            //            _result->binder(generator);
+            //            _result->activator(activator);
+
+            _result->is_registered_to_record_controller(true);
             // _item->self_bind();
         }
 
-        auto it = _treemodelknow->item(globalparameters.tree_screen()->current_index());
+        auto it = _know_model_branch->item(_tree_screen->current_index());
         assert(it);
 
         //        if(_item->is_lite())_item->to_fat();
 
-        if(it != _item && !it->find(_item))
-            it->insert_new_item(it->current_count() - 1, _item);
+        if(it != _result && item_is_brand_new) {
+            int pos = it->insert_new_item(it->current_count() - 1, _result);
+            _tree_screen->know_branch()->synchronized(false);
+            assert(_result == it->child(pos));
+        }
 
-        _treemodelknow->save();
+        _tree_screen->save_knowtree();
     }
 
-    if(_item->is_lite())_item->to_fat();
+    if(_result->is_lite())_result->to_fat();
 
     //        //            else {
     //        //                //                assert(_record->is_registered());
@@ -2058,11 +2135,12 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //        //                //                _record->generate();    // why?
     //        //            }
 
-    //        _item->binder(generator);
-    //        _item->activator(activator);
+    _result->binder(generator);
+    _result->activator(activator);
 
-    assert(_item);
-    assert(_item->is_registered_to_record_controller());
+    assert(_result);
+    assert(_result->is_registered_to_record_controller());
+    assert(_result->field("url") == _url.toString());
     //    } // browser_pages
 
     //    }
@@ -2071,6 +2149,6 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
     //    assert(_record);
 
-    return _item;
+    return _result;
 }
 

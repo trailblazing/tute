@@ -15,7 +15,7 @@
 extern AppConfig appconfig;
 
 
-AppConfigDialog::AppConfigDialog(QString firstPageName = "") : QWidget()
+AppConfigDialog::AppConfigDialog(RecordController *_record_controller, QString firstPageName = "") : QWidget(), _record_controller(_record_controller)
 {
     if(appconfig.getInterfaceMode() == "mobile") { // if(true)
         qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();
@@ -26,11 +26,11 @@ AppConfigDialog::AppConfigDialog(QString firstPageName = "") : QWidget()
     configDialog = new ConfigDialog();
     configDialog->set_window_title(tr("MyTetra settings"));
 
-    pageMain        = configDialog->add_widget(new AppConfigPageMain(this),        tr("Main"));
-    pageCrypt       = configDialog->add_widget(new AppConfigPageCrypt(this),       tr("Crypt"));
-    pageSynchro     = configDialog->add_widget(new AppConfigPageSynchro(this),     tr("Synchro"));
-    pageRecordTable = configDialog->add_widget(new AppConfigPageTable(this), tr("Note area"));
-    pageMisc        = configDialog->add_widget(new AppConfigPageMisc(this),        tr("Misc"));
+    pageMain        = configDialog->add_widget(new AppConfigPageMain(this),     tr("Main"));
+    pageCrypt       = configDialog->add_widget(new AppConfigPageCrypt(this),    tr("Crypt"));
+    pageSynchro     = configDialog->add_widget(new AppConfigPageSynchro(this),  tr("Synchro"));
+    pageRecordTable = configDialog->add_widget(new AppConfigPageTable(_record_controller, this),    tr("Note area"));
+    pageMisc        = configDialog->add_widget(new AppConfigPageMisc(this),     tr("Misc"));
 
     configDialog->updateListWidth();
 

@@ -27,20 +27,22 @@
 typedef QPair<int, int> type_int_pair;
 Q_DECLARE_METATYPE(type_int_pair);
 
+class AttachTableController;
+
 // class AttachTableData;
 
 class AttachTableModel : public QAbstractTableModel {
     Q_OBJECT
 
 public:
-    AttachTableModel(QObject *parent);
+    AttachTableModel(AttachTableController *parent);  // AttachTableController *parent
     virtual ~AttachTableModel();
 
-    int columnCount(const QModelIndex & parent = QModelIndex()) const;
-    int rowCount(const QModelIndex & parent = QModelIndex()) const;
-    QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
     bool setData(const QModelIndex &index, const QVariant &value, int role);
-    QVariant headerData ( int section, Qt::Orientation orientation, int role = Qt::DisplayRole ) const;
+    QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
     /*
     void addAttach(Attach& newAttach);
@@ -49,7 +51,7 @@ public:
     */
 
 private:
-    AttachTableData *table; // С какими данными работает модель
+    AttachTableData     *_table; // С какими данными работает модель
     QVariant getCell(int row, int column) const;
 
 };

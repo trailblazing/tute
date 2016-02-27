@@ -23,7 +23,7 @@
 extern GlobalParameters globalparameters;
 const char *knowtreeview_singleton_name = "knowtreeview";
 
-TreeKnowView::TreeKnowView(QWidget *parent) : QTreeView(parent)
+TreeKnowView::TreeKnowView(QWidget *parent) : QTreeView(parent), _know_root(nullptr)
 {
     // Разрешение принимать Drop-события
     setAcceptDrops(true);
@@ -42,6 +42,11 @@ TreeKnowView::~TreeKnowView()
 
 }
 
+void TreeKnowView::setup_model(boost::intrusive_ptr<TreeItem> _item)
+{
+    _know_root = std::make_shared<TreeKnowModel>(_item, this->parent());
+    setModel(_know_root.get());
+}
 
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
 bool TreeKnowView::event(QEvent *event)
@@ -101,9 +106,15 @@ void TreeKnowView::dragMoveEvent(QDragMoveEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // В модели данных отмечается элемент дерева, над которым находится курсор
-        parentPointer->treeknow_root_modify()->setData(index, QVariant(true), Qt::UserRole);
+        parentPointer->know_branch()->setData(index, QVariant(true), Qt::UserRole);
+
+        parentPointer->know_branch()->synchronized(false);
+
     } else
         event->ignore();
+
+
+
 }
 
 
@@ -152,16 +163,17 @@ void TreeKnowView::dropEvent(QDropEvent *event)
         TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto tree_item_drop = parentPointer->treeknow_root()->item(index);
+        auto tree_item_drop = parentPointer->know_branch()->item(index);
 
         // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
         auto items_flat = tree_item_drop;    // ->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = find_object<TreeScreen>(tree_screen_singleton_name)->current_index();
+        QModelIndex indexFrom =     // find_object<TreeScreen>(tree_screen_singleton_name)
+            globalparameters.tree_screen()->current_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = parentPointer->treeknow_root()->item(indexFrom);
+        auto treeItemDrag = parentPointer->know_branch()->item(indexFrom);
 
         // Если перенос происходит в ту же самую ветку
         if(indexFrom == index)
@@ -201,7 +213,8 @@ void TreeKnowView::dropEvent(QDropEvent *event)
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(_record_controller->row_count() == 0)
-                find_object<MetaEditor>(meta_editor_singleton_name)->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+                //                find_object<MetaEditor>(meta_editor_singleton_name)
+                globalparameters.meta_editor()->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
 
             //            find_object<RecordScreen>(table_screen_singleton_name)
             _record_controller->record_screen()->tools_update();
@@ -210,7 +223,8 @@ void TreeKnowView::dropEvent(QDropEvent *event)
             items_flat->insert_new_item(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
-            find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+            //            find_object<TreeScreen>(tree_screen_singleton_name)
+            globalparameters.tree_screen()->save_knowtree();
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось
@@ -220,7 +234,9 @@ void TreeKnowView::dropEvent(QDropEvent *event)
         parentPointer->update_branch_on_screen(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
-        parentPointer->treeknow_root_modify()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+        parentPointer->know_branch()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+
+        parentPointer->know_branch()->synchronized(false);
     }
 }
 

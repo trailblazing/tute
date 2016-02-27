@@ -3,7 +3,9 @@
 #include "AttachTableScreen.h"
 #include "AttachTableView.h"
 #include "controllers/attach_table/AttachTableController.h"
+#include "libraries/GlobalParameters.h"
 
+extern GlobalParameters globalparameters;
 
 AttachTableScreen::AttachTableScreen(QWidget *parent) : QWidget(parent)
 {
@@ -16,6 +18,8 @@ AttachTableScreen::AttachTableScreen(QWidget *parent) : QWidget(parent)
     // Инициализируется контроллер списка файлов
     attachTableController = new AttachTableController(this);
     attachTableController->setObjectName("attachTableController");
+
+    globalparameters.attachtable_controller(attachTableController);
 
     setupUI();
     setupSignals();

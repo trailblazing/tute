@@ -43,8 +43,8 @@ Record::Record(QMap<QString, QString> field_data)
 
 Record::Record(const Record &obj)
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()
-    , _lite_flag(true)
-      //    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
+    , _lite_flag(obj._lite_flag)
+    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
 
     //        if(obj->_page != nullptr) {
@@ -60,16 +60,19 @@ Record::Record(const Record &obj)
     //        }
 
     // Скопировать нужно каждый кусочек класса, сами они не копируются
-    _lite_flag = obj._lite_flag;
+    //    _lite_flag = obj._lite_flag;
+
     _field_data = obj._field_data;
     _text = obj._text;
     _picture_files = obj._picture_files;
     //        _attach_table_data = std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)));
     assert(obj._attach_table_data);
-    _attach_table_data = obj._attach_table_data; // *_attach_table_data = *obj->_attach_table_data;
+    //    _attach_table_data = obj._attach_table_data; //
+    *_attach_table_data = *obj._attach_table_data;
 
     // Обратный указатель во включенном объекте должен указывать на новый экземпляр
-    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
+    //    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
+
     _attach_table_data->update_attach_table_back_link();
     _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
     //        _position = obj->_position;
@@ -81,12 +84,61 @@ Record::Record(const Record &obj)
 
 }
 
+
+Record &Record::operator =(const Record &obj)
+//    : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()
+//    , _lite_flag(true)
+//    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
+{
+
+    if(this != &obj) {
+        //        if(obj->_page != nullptr) {
+
+        //            _page = obj->_page;
+        //            _page->bind(boost::intrusive_ptr<Record>(this)); // does not work?
+        //            obj->page_to_nullptr();
+
+        //            //        obj.breakpage();
+
+        //            //        obj._page->record(nullptr);   // dangerous
+        //            //        obj._page = nullptr;          // readonly
+        //        }
+
+        // Скопировать нужно каждый кусочек класса, сами они не копируются
+        _lite_flag = obj._lite_flag;
+
+        _field_data = obj._field_data;
+        _text = obj._text;
+        _picture_files = obj._picture_files;
+        //        _attach_table_data = std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)));
+        assert(obj._attach_table_data);
+
+        //    _attach_table_data = obj._attach_table_data; //
+        if(!_attach_table_data) _attach_table_data = std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)));
+
+        *_attach_table_data = *obj._attach_table_data;
+
+        // Обратный указатель во включенном объекте должен указывать на новый экземпляр
+        //    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
+
+        _attach_table_data->update_attach_table_back_link();
+        _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
+        //        _position = obj->_position;
+        //        _open_link_in_new_window = obj->_open_link_in_new_window;
+        //    bool    _active_immediately = false;
+        //        _binder = obj->_binder;
+        //        _activator = obj->_activator;
+
+    }
+
+    return *this;
+}
+
 // Конструктор копирования
 Record::Record(boost::intrusive_ptr<Record> obj)
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()
-      //    , _page(nullptr)
     , _lite_flag(true)
-      //    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
+    , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     if(obj
        //       && obj.get() != this
@@ -110,10 +162,11 @@ Record::Record(boost::intrusive_ptr<Record> obj)
         _picture_files = obj->_picture_files;
         //        _attach_table_data = std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this)));
         assert(obj->_attach_table_data);
-        _attach_table_data = obj->_attach_table_data; // *_attach_table_data = *obj->_attach_table_data;
+        //        _attach_table_data = obj->_attach_table_data; //
+        *_attach_table_data = *obj->_attach_table_data;
 
         // Обратный указатель во включенном объекте должен указывать на новый экземпляр
-        _attach_table_data->record(boost::intrusive_ptr<Record>(this));
+        //        _attach_table_data->record(boost::intrusive_ptr<Record>(this));
         _attach_table_data->update_attach_table_back_link();
         _is_registered_to_shadow_list = obj->_is_registered_to_shadow_list;
         //        _position = obj->_position;
@@ -233,6 +286,14 @@ void Record::dom_to_record(const QDomElement &_dom_element)
     _attach_table_data->clear(); // Подумать, возможно эта команда не нужна
     _attach_table_data->record(boost::intrusive_ptr<Record>(this));
 
+    if(_lite_flag != _attach_table_data->is_lite()) {
+        if(_lite_flag && !_attach_table_data->is_lite()) {
+            _attach_table_data->switch_to_lite();
+        } else if(!_lite_flag && _attach_table_data->is_lite()) {
+            _attach_table_data->switch_to_fat();
+        }
+    }
+
     // Проверка, есть ли у переданного DOM-элемента таблица файлов для заполнения
     if(!_dom_element.firstChildElement("files").isNull())
         _attach_table_data->setupDataFromDom(_dom_element.firstChildElement("files"));   // Заполнение таблицы приаттаченных файлов
@@ -313,7 +374,7 @@ void Record::to_lite()
 {
     // Переключение возможно только из полновесного состояния
     if(_lite_flag == true)
-        critical_error("Record::switchToLite() : Record " + id_and_name() + " already lite");
+        critical_error("Record::to_lite() : Record " + id_and_name() + " already lite");
 
     _text.clear();
     _picture_files.clear();
@@ -548,11 +609,12 @@ QMap<QString, QString> Record::natural_field_list() const
                 // Присутствует шифрование
 
                 // Если поле не подлежит шифрованию (не все поля в зашифрованной ветке шифруются. Например, не шифруется ID записи)
-                if(fixedparameters._record_field_crypted.contains(currName) == false)
+                if(fixedparameters._record_field_crypted.contains(currName) == false) {
                     result = _field_data[currName]; // Напрямую значение поля
-                else if(globalparameters.crypt_key().length() > 0 &&
-                        fixedparameters._record_field_crypted.contains(currName))
+                } else if(globalparameters.crypt_key().length() > 0 &&
+                          fixedparameters._record_field_crypted.contains(currName)) {
                     result = CryptService::decryptString(globalparameters.crypt_key(), _field_data[currName]); // Расшифровывается значение поля
+                }
             }
 
             resultFieldList[currName] = result;
@@ -568,7 +630,7 @@ QMap<QString, QString> Record::natural_field_list() const
 std::shared_ptr<AttachTableData> Record::attach_table() const
 {
     if(this->is_lite() != _attach_table_data->is_lite())
-        critical_error("getAttachTable(): Unsyncro lite state for record: " + id_and_name());
+        critical_error("attach_table()const: Unsyncro lite state for record: " + id_and_name());
 
     return _attach_table_data;
 }
@@ -577,7 +639,7 @@ std::shared_ptr<AttachTableData> Record::attach_table() const
 std::shared_ptr<AttachTableData> Record::attach_table()
 {
     if(this->is_lite() != _attach_table_data->is_lite())
-        critical_error("getAttachTable(): Unsyncro lite state for record: " + id_and_name());
+        critical_error("attach_table(): Unsyncro lite state for record: " + id_and_name());
 
     return _attach_table_data;
 }
@@ -602,12 +664,12 @@ AttachTableData *Record::getAttachTable() const
 */
 
 
-void Record::attach_table(std::shared_ptr<AttachTableData> iAttachTable)
+void Record::attach_table(std::shared_ptr<AttachTableData> _attach_table_data)
 {
     if(this->is_lite() != _attach_table_data->is_lite())
         critical_error("setAttachTable(): Unsyncro lite state for record: " + id_and_name());
 
-    _attach_table_data = iAttachTable;
+    this->_attach_table_data = _attach_table_data;
 }
 
 

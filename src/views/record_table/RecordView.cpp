@@ -429,8 +429,7 @@ void RecordView::setSelectionToPos(int iPos)
     // Установка засветки на нужный индекс
     // Set the backlight to the desired index
     selectionModel()->setCurrentIndex(index   // selIdx
-                                      , QItemSelectionModel::
-                                      Select    // ClearAndSelect
+                                      , QItemSelectionModel::Select    // ClearAndSelect
                                      );
 
     // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
@@ -557,7 +556,8 @@ void RecordView::startDrag()
     // Если действительно выбрана строка
     if(currentIndex().isValid()) {
         // Перед переносом нужно запомнить текст последней редактируемой записи, чтобы не перенесся неотредактированный вариант
-        find_object<MainWindow>("mainwindow")->save_text_area();
+        //        find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->save_text_area();
 
         // Копирование выделенных строк в объект переноса
         QDrag *drag = new QDrag(this);
@@ -576,7 +576,8 @@ void RecordView::startDrag()
             // delete drag;
 
             // В модели данных обнуляется оформление элемента, который (возможно) подсвечивался при Drag And Drop
-            find_object<TreeScreen>(tree_screen_singleton_name)->treeknow_root_modify()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+            //            find_object<TreeScreen>(tree_screen_singleton_name)
+            globalparameters.tree_screen()->know_branch()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
         }
     }
 }

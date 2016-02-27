@@ -133,27 +133,29 @@ void RecordScreen::setup_actions(void)
         assert(entrance);
 
         if(tree_screen && entrance) {
-            boost::intrusive_ptr<TreeItem> new_tree_item_in_treeknow_root   // = tree_screen->_root->item_by_name(this->objectName());
+            assert(objectName() != "");
+            boost::intrusive_ptr<TreeItem> into_know_branch   // = tree_screen->_root->item_by_name(this->objectName());
                 = tree_screen->add_branch(tree_screen->last_index()
-                                          , tree_screen->treeknow_root()->root_item()   // ->field("name") // ""
-                                          , true);
+                                          , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
+                                          , true, tree_screen->know_branch());
             //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
 
-            assert(objectName() != "");
-            new_tree_item_in_treeknow_root->field("name", objectName());
+            //            assert(objectName() != "");
+            //            into_know_branch->field("name", objectName());
+
             //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
             auto source_model = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source_model->size(); i++) {
-                if(!tree_screen->treeknow_root()->is_item_id_exists(source_model->item(i)->field("id"))) {
+                if(!tree_screen->know_branch()->is_item_id_exists(source_model->item(i)->field("id"))) {
                     if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
-                    new_tree_item_in_treeknow_root->insert_new_item(new_tree_item_in_treeknow_root->work_pos(), source_model->item(i));
+                    into_know_branch->insert_new_item(into_know_branch->work_pos(), source_model->item(i));
                 }
             }
 
             //            new_tree_item_in_treeknow_root = target;
-
+            tree_screen->know_branch()->synchronized(false);
             tree_screen->save_knowtree();
             // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
         }
@@ -628,10 +630,12 @@ void RecordScreen::tools_update(void)
       ) {
         qDebug() << "In table select present";
         qDebug() << "In table row count is" << _record_controller->row_count();
-        find_object<MetaEditor>(meta_editor_singleton_name)->textarea_editable(true);
+        //        find_object<MetaEditor>(meta_editor_singleton_name)
+        globalparameters.meta_editor()->textarea_editable(true);
     } else {
         qDebug() << "In table select non present";
-        find_object<MetaEditor>(meta_editor_singleton_name)->textarea_editable(false);
+        //        find_object<MetaEditor>(meta_editor_singleton_name)
+        globalparameters.meta_editor()->textarea_editable(false);
     }
 }
 
@@ -670,19 +674,22 @@ void RecordScreen::select_id(QString id)
 // Действия при нажатии кнопки синхронизации
 void RecordScreen::on_syncro_click(void)
 {
-    find_object<MainWindow>("mainwindow")->synchronization();
+    //    find_object<MainWindow>("mainwindow")
+    globalparameters.mainwindow()->synchronization();
 }
 
 
 void RecordScreen::on_walkhistory_previous_click(void)
 {
-    find_object<MainWindow>("mainwindow")->go_walk_history_previous();
+    //    find_object<MainWindow>("mainwindow")
+    globalparameters.mainwindow()->go_walk_history_previous();
 }
 
 
 void RecordScreen::on_walkhistory_next_click(void)
 {
-    find_object<MainWindow>("mainwindow")->go_walk_history_next();
+    //    find_object<MainWindow>("mainwindow")
+    globalparameters.mainwindow()->go_walk_history_next();
 }
 
 

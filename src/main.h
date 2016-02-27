@@ -108,6 +108,7 @@ extern const char *windowswitcher_singleton_name;
 extern const char *entrance_singleton_name;
 extern const char *table_controller_singleton_name;
 extern const char *knowtreeview_singleton_name;
+extern const char *global_root_id;
 
 // template <class X> inline X *find_object(QString n);
 

@@ -47,14 +47,14 @@ const char *table_controller_singleton_name = "table_screen_controller"; // std:
 
 
 MainWindow::MainWindow(
-    GlobalParameters &globalparameters
-    , AppConfig &appconfig
-    , DataBaseConfig &databaseconfig
+    GlobalParameters    &_globalparameters
+    , AppConfig         &_appconfig
+    , DataBaseConfig    &_databaseconfig
 )
     : QMainWindow()
-    , _globalparameters(globalparameters)
-    , _appconfig(appconfig)
-    , _databaseconfig(databaseconfig)
+    , _globalparameters(_globalparameters)
+    , _appconfig(_appconfig)
+    , _databaseconfig(_databaseconfig)
     , _v_right_splitter(new QSplitter(Qt::Vertical))
     , _find_splitter(new QSplitter(Qt::Vertical))
     , _vtabwidget(new HidableTabWidget(this))
@@ -68,8 +68,8 @@ MainWindow::MainWindow(
     , _windowmenu(new QMenu(tr("&Window"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
-    , _tree_screen(new TreeScreen(tree_screen_singleton_name, appconfig, _filemenu, _toolsmenu, _vtabwidget))
-    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->treeknow_branch()->root_item(), this))
+    , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, _vtabwidget))
+    , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen->know_branch()->root_item(), this))
     , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))
     , _entrance(new browser::Entrance(entrance_singleton_name
                                       , _tree_screen
@@ -78,7 +78,7 @@ MainWindow::MainWindow(
                                       , _vtabwidget
                                       , this
                                       , _appconfig
-                                      , globalparameters.style_source()
+                                      , _globalparameters.style_source()
                                       , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
                                      ))
       //    , _record_controller(_table_screen->table_controller())
@@ -347,7 +347,9 @@ void MainWindow::assembly(void)
     //    v_left_splitter->setCollapsible(1, false);
     _v_left_splitter->setObjectName("v_left_splitter");
 
+    globalparameters.find_splitter(_find_splitter);
     globalparameters.v_left_splitter(_v_left_splitter);
+    globalparameters.v_right_splitter(_v_right_splitter);
 
     //    hSplitter = new QSplitter(Qt::Horizontal);
     _h_splitter->addWidget(
@@ -382,7 +384,7 @@ void MainWindow::save_all_state(void)
 
     // Сохраняются данные сеанса работы
     save_geometry();
-    tree_position();
+    save_tree_position();
     //    save_recordtable_position();
     save_editor_cursor_position();
     save_editor_scrollbar_position();
@@ -455,41 +457,55 @@ void MainWindow::save_geometry(void)
 void MainWindow::restore_tree_position(void)
 {
     // Путь к последнему выбранному в дереве элементу
-    QStringList path = appconfig.get_tree_position();
+    auto pair = appconfig.tree_position();
+    QString id = pair.first;
+    QStringList path = pair.second;//appconfig.get_tree_position();
 
     qDebug() << "MainWindow::restoreTreePosition() : " << path;
 
-    tree_position(path);
+    set_tree_position(id, path);
 }
 
 // save
-void MainWindow::tree_position(void)
+void MainWindow::save_tree_position(void)
 {
+    //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
+
     // Получение QModelIndex выделенного в дереве элемента
     QModelIndex index = _tree_screen->current_index();
 
     if(index.isValid()) {   // this line is to be remove
         // Получаем указатель вида TreeItem
-        auto item = _tree_screen->treeknow_root()->item(index);
+        auto item = _tree_screen->know_branch()->item(index);
 
         // Сохраняем путь к элементу item
-        appconfig.set_tree_position(item->path());
+        appconfig.tree_position(_tree_screen->know_branch()->root_item()->id(), item->path());
     }
 }
 
 // set
-void MainWindow::tree_position(QStringList path)
+void MainWindow::set_tree_position(QString id, QStringList path)
 {
-    if(_tree_screen->treeknow_root()->is_item_valid(path) == false)
+    if(_tree_screen->know_branch()->root_item()->id() != id) {
+        _tree_screen->intercept(id);
+    }
+
+    if(_tree_screen->know_branch()->is_item_valid(path) == false)    // on know_root semantic
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->treeknow_root()->item(path);
+    auto item = _tree_screen->know_branch()->item(path);    // on know_root semantic
 
     qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
     // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = _tree_screen->treeknow_root()->index(item);
+    QModelIndex setto = _tree_screen->know_branch()->index(item);
+
+    //    if(!setto.isValid()) {
+    //        _tree_screen->know_branch()->intercept(item);
+    //        setto = _tree_screen->know_branch()->index(item);
+    //        assert(setto.isValid());
+    //    }
 
     // Курсор устанавливается в нужную позицию
     _tree_screen->cursor_to_index(setto);
@@ -498,12 +514,18 @@ void MainWindow::tree_position(QStringList path)
 
 bool MainWindow::is_tree_position_crypt()
 {
-    QStringList path = appconfig.get_tree_position();
+    auto pair = appconfig.tree_position();
+    QString id = pair.first;
+    QStringList path = pair.second;
 
-    if(_tree_screen->treeknow_root()->is_item_valid(path) == false) return false;
+    if(_tree_screen->know_branch()->root_item()->id() != id) {
+        _tree_screen->intercept(id);
+    }
+
+    if(_tree_screen->know_branch()->is_item_valid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->treeknow_root()->item(path);
+    auto item = _tree_screen->know_branch()->item(path);
 
     if(item->field("crypt") == "1")
         return true;
@@ -572,7 +594,7 @@ void MainWindow::restore_find_on_base_visible(void)
     bool n = appconfig.get_findscreen_show();
 
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel = find_object<FindScreen>(find_screen_singleton_name);
+    FindScreen *findScreenRel = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 
     if(n)
         findScreenRel->show();
@@ -837,7 +859,7 @@ void MainWindow::application_fast_exit(void)
 void MainWindow::tools_find(void)
 {
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel = find_object<FindScreen>(find_screen_singleton_name);
+    FindScreen *findScreenRel = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 
     if(!(findScreenRel->isVisible()))
         findScreenRel->show();
@@ -848,7 +870,7 @@ void MainWindow::tools_find(void)
 void MainWindow::editor_switch(void)
 {
 
-    MetaEditor *editorScreen = find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *editorScreen = globalparameters.meta_editor();  // find_object<MetaEditor>(meta_editor_singleton_name);
 
     if(!(editorScreen->isVisible())) {
         editorScreen->show();
@@ -862,7 +884,7 @@ void MainWindow::editor_switch(void)
 void MainWindow::tools_preferences(void)
 {
     // Создается окно настроек, после выхода из этой функции окно удалится
-    AppConfigDialog dialog("");
+    AppConfigDialog dialog(_entrance->activiated_registered().first->record_screen()->record_controller(), "");
     dialog.show();
 }
 
@@ -998,7 +1020,7 @@ void MainWindow::synchronization(void)
     save_text_area();
 
     // Сохраняются данные о курсорах в дереве и таблице конечных записей
-    tree_position();
+    save_tree_position();
     //    save_recordtable_position();
     save_editor_cursor_position();
     save_editor_scrollbar_position();
@@ -1032,7 +1054,7 @@ void MainWindow::synchronization(void)
     cons.run();
 
     // Блокируется история
-    walkhistory.setDrop(true);
+    walkhistory.set_drop(true);
 
     // Заново считываются данные в дерево
     _tree_screen->reload_knowtree();
@@ -1042,7 +1064,7 @@ void MainWindow::synchronization(void)
     restore_editor_scrollbar_position();
 
     // Разблокируется история посещений элементов
-    walkhistory.setDrop(false);
+    walkhistory.set_drop(false);
 }
 
 
@@ -1153,7 +1175,7 @@ void MainWindow::go_walk_history_previous(void)
                     _editor_screen->cursor_position(),
                     _editor_screen->scrollbar_position(),
                     WALK_HISTORY_GO_PREVIOUS);
-    walkhistory.setDrop(true);
+    walkhistory.set_drop(true);
 
     go_walk_history();
 }
@@ -1168,7 +1190,7 @@ void MainWindow::go_walk_history_next(void)
                     _editor_screen->cursor_position(),
                     _editor_screen->scrollbar_position(),
                     WALK_HISTORY_GO_NEXT);
-    walkhistory.setDrop(true);
+    walkhistory.set_drop(true);
 
     go_walk_history();
 }
@@ -1176,42 +1198,48 @@ void MainWindow::go_walk_history_next(void)
 
 void MainWindow::go_walk_history(void)
 {
-    // Выясняется идентификатор записи, на которую надо переключиться
-    QString id = walkhistory.getId();
+    //    QString tree_root_id = walkhistory.tree_root_id();
 
-    if(id.length() == 0) {
-        walkhistory.setDrop(false);
+    //    if(_tree_screen->know_root()->root_item()->id() != tree_root_id) {
+    //        _tree_screen->intercept(tree_root_id);
+    //    }
+
+    // Выясняется идентификатор записи, на которую надо переключиться
+    QString record_id = walkhistory.record_id();
+
+    if(record_id.length() == 0) {
+        walkhistory.set_drop(false);
         return;
     }
 
     // Выясняется путь к ветке, где находится данная запись
-    QStringList path = _tree_screen->treeknow_root()->record_path(id);
+    QStringList absolute_path = _tree_screen->know_branch()->record_path(record_id);    // on know_root semantic
 
     // Проверяем, есть ли такая ветка
-    if(_tree_screen->treeknow_root()->is_item_valid(path) == false) {
-        walkhistory.setDrop(false);
+    if(_tree_screen->know_branch()->is_item_valid(absolute_path) == false) {    // on know_root semantic
+        walkhistory.set_drop(false);
         return;
     }
 
 
     // Выясняется позицию записи в таблице конечных записей
-    auto item = _tree_screen->treeknow_root()->item(path);
+    auto item = _tree_screen->know_branch()->item(absolute_path);    // on know_root semantic
 
     // Проверяем, есть ли такая позиция
-    if(item->is_item_exists(id) == false) {
-        walkhistory.setDrop(false);
+    if(item->is_item_exists(record_id) == false) {
+        walkhistory.set_drop(false);
         return;
     }
 
-    tree_position(path);
+    set_tree_position(global_root_id, absolute_path);
     //    select_id(id);
 
     if(appconfig.getRememberCursorAtHistoryNavigation()) {
-        _editor_screen->cursor_position(walkhistory.getCursorPosition(id));
-        _editor_screen->scrollbar_position(walkhistory.getScrollBarPosition(id));
+        _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
+        _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
     }
 
-    walkhistory.setDrop(false);
+    walkhistory.set_drop(false);
 }
 
 

@@ -4,11 +4,13 @@
 #include "AttachTableModel.h"
 #include "Attach.h"
 #include "AttachTableData.h"
+#include "controllers/attach_table/AttachTableController.h"
 
-
-AttachTableModel::AttachTableModel(QObject *parent) : QAbstractTableModel(parent)
+AttachTableModel::AttachTableModel(AttachTableController *parent)
+    : QAbstractTableModel(parent)
+    , _table(nullptr)
 {
-    table = NULL;
+    //    table = NULL;
 }
 
 
@@ -32,10 +34,10 @@ int AttachTableModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
 
-    if(table == nullptr)
+    if(_table  == nullptr)
         return 0;
 
-    return table->size();
+    return _table->size();
 }
 
 
@@ -47,16 +49,16 @@ QVariant AttachTableModel::data(const QModelIndex &index, int role) const
 
     // Указатель на связанные с моделью данные
     if(role == ATTACHTABLE_ROLE_TABLE_DATA) {
-        if(table == nullptr)
+        if(_table == nullptr)
             return QVariant(0);
         else
-            return QVariant::fromValue(table);
+            return QVariant::fromValue(_table);
     }
 
     // Идентификатор аттача
     if(role == ATTACHTABLE_ROLE_ID) {
         int row = index.row();
-        QString id = table->id_by_row(row);
+        QString id = _table->id_by_row(row);
 
         return QVariant::fromValue(id);
     }
@@ -64,8 +66,8 @@ QVariant AttachTableModel::data(const QModelIndex &index, int role) const
     // В колонке с именем файла отображается иконка файла или линка
     if(role == Qt::DecorationRole && index.column() == ATTACHTABLE_COLUMN_FILENAME) {
         int row = index.row();
-        QString id = table->id_by_row(row);
-        QString attachType = table->attach(id).getField("type");
+        QString id = _table->id_by_row(row);
+        QString attachType = _table->attach(id).getField("type");
 
         if(attachType == "file")
             return QIcon(":/resource/pic/attach_is_file.svg");
@@ -83,10 +85,10 @@ QVariant AttachTableModel::getCell(int row, int column) const
 {
     switch(column) {
         case ATTACHTABLE_COLUMN_FILENAME:
-            return QVariant(table->file_name(row));
+            return QVariant(_table->file_name(row));
 
         case ATTACHTABLE_COLUMN_FILESIZE:
-            return QVariant(table->file_size(row));
+            return QVariant(_table->file_size(row));
 
         default:
             return QVariant();
@@ -138,28 +140,29 @@ bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, 
         beginResetModel();
 
         // Устанавливается данные переданной по указателю таблицы
-        table = value.value<AttachTableDataPointer>();
+        _table = value.value<AttachTableDataPointer>();
 
-        if(table != nullptr)
-            qDebug() << "Set new data to AttachTableModel with rows: " << table->size();
+        if(_table != nullptr)
+            qDebug() << "Set new data to AttachTableModel with rows: " << _table->size();
         else
             qDebug() << "Set new AttachTableModel to NULL data";
 
         endResetModel();
 
         // Устанавливается перекрестная ссылка в связанных данных
-        if(role == ATTACHTABLE_ROLE_TABLE_DATA && table != nullptr)
-            table->related_attach_table_model_only(this);
+        if(role == ATTACHTABLE_ROLE_TABLE_DATA && _table // != nullptr
+          )
+            _table->related_attach_table_model_only(this);
 
         return true;
     }
 
     // Если таблица данных не создана
-    if(table == nullptr)
+    if(_table == nullptr)
         return false;
 
     // Если таблица пустая
-    if(table->size() == 0)
+    if(_table->size() == 0)
         return false;
 
     // Если происходит редактирование

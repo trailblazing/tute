@@ -141,6 +141,7 @@ void Editor::init(int mode)
     // Создается объект поддержки конфигурирования редактора
     _editor_config = new EditorConfig(_init_data_config_file_name, this);
     _editor_config->setObjectName("editorconfig");
+    globalparameters.editor_config(_editor_config);
 
     // Выясняется перечень кнопок на панели инструментов
     _tools_list_in_line_0 = (_editor_config->get_tools_line_1()).split(",");

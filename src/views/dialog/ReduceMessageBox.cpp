@@ -3,7 +3,9 @@
 #include "main.h"
 #include "ReduceMessageBox.h"
 #include "views/main_window/MainWindow.h"
+#include "libraries/GlobalParameters.h"
 
+extern GlobalParameters globalparameters;
 
 
 ReduceMessageBox::ReduceMessageBox(QWidget *parent) : QDialog(parent)
@@ -16,10 +18,12 @@ ReduceMessageBox::ReduceMessageBox(QWidget *parent) : QDialog(parent)
 
 void ReduceMessageBox::setupUI(void)
 {
-    int w=find_object<MainWindow>("mainwindow")->width();
-    int h=find_object<MainWindow>("mainwindow")->height();
+    int w = // find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->width();
+    int h = // find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->height();
 
-    this->resize(w*2/3, h/3);
+    this->resize(w * 2 / 3, h / 3);
 }
 
 
@@ -33,7 +37,7 @@ void ReduceMessageBox::setupSignals(void)
 void ReduceMessageBox::assembly(void)
 {
     // Размещалка элементов
-    QVBoxLayout *layout=new QVBoxLayout(this);
+    QVBoxLayout *layout = new QVBoxLayout(this);
 
     layout->addWidget(&text);
     layout->addWidget(&detailedText);

@@ -74,7 +74,7 @@ public slots:
 
     void widget_show(void);
     void widget_hide(void);
-    ItemsFlat *find_clicked(void);
+    std::shared_ptr<ItemsFlat> find_clicked(void);
     void find_text(QString text);
 
 protected:
@@ -147,9 +147,9 @@ private:
     QVBoxLayout     *_central_desktop_layout;
 
     QProgressDialog *_progress;
-
+    bool            _is_search_global = true;
     //    FindTableWidget     *_findtable;
-    ItemsFlat                       *_selected_branch_as_pages;
+    std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
     browser::ToolbarSearch          *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
     void setup_navigate(void);
@@ -174,8 +174,8 @@ private:
 
     void if_find_in_field(QString fieldname, int state);
 
-    ItemsFlat *find_start(void);
-    ItemsFlat *find_recursive(boost::intrusive_ptr<TreeItem> curritem, ItemsFlat *_candidate_pages);
+    std::shared_ptr<ItemsFlat> find_start(void);
+    std::shared_ptr<ItemsFlat> find_recursive(boost::intrusive_ptr<TreeItem> curritem, std::shared_ptr<ItemsFlat> _candidate_pages);
     bool find_in_text_process(const QString &text);
 
     void switch_tools_expand(bool flag);

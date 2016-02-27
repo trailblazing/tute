@@ -20,13 +20,14 @@ class TreeKnowModel : public TreeModel {
 
 public:
     TreeKnowModel(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+    TreeKnowModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent = 0);
     ~TreeKnowModel();
 
     std::shared_ptr<XmlTree> init_from_xml(QString file_name);
     std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
     void reload(void);
 
-    QDomElement dom_from_record(boost::intrusive_ptr<TreeItem> root_item);
+    QDomElement dom_from_treeitem(boost::intrusive_ptr<TreeItem> root_item);
 
     void save(void);
 
@@ -48,7 +49,7 @@ public:
     QModelIndex move_dn_branch(const QModelIndex &_index);
 
     // Получение индекса подчиненного элемента с указанным номером
-    QModelIndex index_child(const QModelIndex &parent, int n) const;
+    QModelIndex index_child(const QModelIndex &children_parent_index, int n) const;
 
     //    QModelIndex index(boost::intrusive_ptr<TreeItem> item);
 
@@ -57,7 +58,7 @@ public:
     boost::intrusive_ptr<TreeItem> item_by_name(QString name);
 
     // Возвращает общее количество записей, хранимых в дереве
-    int get_all_record_count(void);
+    int all_records_count(void);
 
     // Возвращает количество записей в ветке и всех подветках
     int size_of(boost::intrusive_ptr<TreeItem> item);
@@ -82,21 +83,25 @@ public:
 #endif
 
     void clear();
-    void intercept(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> intercept(boost::intrusive_ptr<TreeItem> _item);
+    boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
+    //    bool is_global_root() {return _is_global_root;}
+    void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
+    bool synchronized() {return _synchronized;}
 
 private:
 
 
     void init(QDomDocument *dom_model);
 
-    // Функция заполнения дерева из DOM-документа
-    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self);
+    //    // Функция заполнения дерева из DOM-документа
+    //    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self);
 
     // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
-    void dom_to_record(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> self);
+    void dom_to_records(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> self);
 
     // Преобразование Item в DOM модель
-    void dom_from_record(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
+    void dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
 
     // Перемещение ветки вверх или вниз
     QModelIndex move_up_dn_branch(const QModelIndex &_index, int direction);
@@ -124,6 +129,8 @@ private:
 
     // QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
     QString _xml_file_name = "";
+
+    bool _synchronized = false;
 
     std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
     is_item_id_exists_recurse =
@@ -153,6 +160,8 @@ private:
 
         return is_exists;
     };
+
+    //    bool _is_global_root = false;
 
 };
 

@@ -148,11 +148,12 @@ void AttachTableController::add_smart(QString attach_type)
     } // Закончился цикл перебора файлов
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() > 0) {
-        MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
+        MetaEditor *edView = globalparameters.meta_editor();    //find_object<MetaEditor>(meta_editor_singleton_name);
         edView->_to_attach->setIcon(edView->_icon_attach_exists);
     }
 }
@@ -371,7 +372,9 @@ void AttachTableController::on_edit_file_name(void)
     attachTableData->attach(id, tempAttach);
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
+
 }
 
 
@@ -404,11 +407,12 @@ void AttachTableController::on_delete_attach(void)
 
 
     // Сохранение дерева веток
-    find_object<TreeScreen>(tree_screen_singleton_name)->save_knowtree();
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->save_knowtree();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() == 0) {
-        MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
+        MetaEditor *edView = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
         edView->_to_attach->setIcon(edView->_icon_attach_not_exists);
     }
 }
@@ -485,7 +489,7 @@ void AttachTableController::on_show_attach_info(void)
 
 void AttachTableController::on_switch_to_editor(void)
 {
-    MetaEditor *edView = find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *edView = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
     edView->to_editor_layout();
 }
 

@@ -15,8 +15,8 @@
 #define WALK_HISTORY_GO_NEXT     2
 
 struct WALK_HISTORY_DATA {
-    int cursorPosition;
-    int scrollBarPosition;
+    int _cursor_position;
+    int _scrollbar_position;
 };
 
 
@@ -29,36 +29,39 @@ public:
 
     void clear(void);
 
-    void add(QString id, int cursorPosition, int scrollBarPosition, int mode = WALK_HISTORY_GO_NONE);
+    void add(QString _record_id, int _cursor_position, int _scrollbar_position, int mode = WALK_HISTORY_GO_NONE);
 
-    QString getId();
-    int getCursorPosition(QString id);
-    int getScrollBarPosition(QString id);
-    void removeHistoryData(QString id);
+    //    QString tree_root_id();
+    QString record_id();
+    int cursor_position(QString id);
+    int scrollbar_position(QString id);
+    void remove_history_data(QString id);
 
-    void setDrop(bool flag);
+    void set_drop(bool flag);
 
 protected:
 
-    bool dropFlag;
+    bool _drop_flag;
 
     void print(void);
 
     // Эти методы видимо ненужны, подумать
-    void switchToPrevious(void);
-    void switchToNext(void);
+    void switch_to_previous(void);
+    void switch_to_next(void);
 
-    void checkId(QString id);
+    void check_id(QString id);
 
     // Указатель в списке истории посещения записей
     // Обычно указывает на последнюю в списке запись
-    int historyPoint;
+    int _history_point;
 
     // Список идентификаторов посещаемых записей
-    QStringList historyId;
+    QStringList history_id;
 
     // Для каждого идентификатора запоминается позиция курсора и прокрутки
-    QMap<QString, WALK_HISTORY_DATA> data;
+    QMap<QString, WALK_HISTORY_DATA> _data;
+
+    //    QString _tree_root_id = "";
 };
 
 #endif // _WALKHISTORY_H_

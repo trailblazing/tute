@@ -11,9 +11,12 @@
 #include "EditorConfigFont.h"
 #include "EditorConfig.h"
 #include "libraries/FlatControl.h"
+#include "libraries/GlobalParameters.h"
+
+
 
 #include "main.h"
-
+extern GlobalParameters globalparameters;
 
 EditorConfigFont::EditorConfigFont(QWidget *parent) : ConfigPage(parent)
 {
@@ -21,7 +24,7 @@ EditorConfigFont::EditorConfigFont(QWidget *parent) : ConfigPage(parent)
 
     // Устанавливается указатель на объект работы с конфигфайлом
     // conf=this->parent()->parent()->parent()->editorconfig;
-    conf = find_object<EditorConfig>("editorconfig");
+    conf = globalparameters.editor_config();    // find_object<EditorConfig>("editorconfig");
 
     setup_ui();
     setup_signals();

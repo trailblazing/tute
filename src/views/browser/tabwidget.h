@@ -307,8 +307,11 @@ namespace browser {
 
         TabBar *tabbar() {return _tabbar;}
         RecordController *record_controller() {return _record_controller;}
-        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item, bind_helper generator, active_helper activator) {return _record_controller->request_item(item, generator, activator);}
-        boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url, bind_helper generator, active_helper activator) {return _record_controller->request_item(_url, generator, activator);}
+
+        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url);
+        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
+
         RecordModel *source_model() {return _record_controller->source_model();}
         RecordView *view() {return _record_controller->view();}
 
