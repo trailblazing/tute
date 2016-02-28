@@ -98,7 +98,7 @@ public:
 
     //    TreeController *treecontroller() {return _tree_controller;}
     void to_candidate_screen(const QModelIndex &index);
-    void enable_up_action(bool enable);
+    void enable_up_action();
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
     boost::intrusive_ptr<TreeItem> cut_branch(boost::intrusive_ptr<TreeItem> item);
     boost::intrusive_ptr<TreeItem> paste_branch(boost::intrusive_ptr<TreeItem> item, TreeKnowModel *_current_know_branch);
@@ -128,7 +128,7 @@ private slots:
 
 
     void view_up_one_level(void);
-    void return_to_root(void);
+    void view_return_to_root(void);
     void move_item_up_branch(void);
     void move_item_dn_branch(void);
     void cut_branch(void);

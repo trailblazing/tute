@@ -1151,9 +1151,11 @@ void TreeItem::to_encrypt(void)
 void TreeItem::to_decrypt(void)
 {
     qDebug() << "TreeItem::switchToDecrypt() : Decrypt branch"
-             << field("name")   // _field_data["name"]
+             << // field("name")   //
+                _field_data["name"]
              << QString("id : ")
-             << field("id")     // _field_data["id"]
+             << // field("id")     //
+                _field_data["id"]
              ;
 
     // Если ветка оказалось незашифрованной, нечего расшифровывать

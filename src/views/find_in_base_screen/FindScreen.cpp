@@ -573,10 +573,11 @@ std::shared_ptr<ItemsFlat> FindScreen::find_clicked(void)
 
 std::shared_ptr<ItemsFlat> FindScreen::find_start(void)
 {
+    auto _tree_screen = globalparameters.tree_screen();
 
     if(globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
        && ! // find_object<TreeScreen>(tree_screen_singleton_name)
-       globalparameters.tree_screen()->current_index().isValid()
+       _tree_screen->current_index().isValid()
       ) {
         appconfig.setFindScreenTreeSearchArea(2);
     }
@@ -747,8 +748,9 @@ std::shared_ptr<ItemsFlat> FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_as_pages = final_search(_search_start_item, _selected_branch_as_pages);
-            globalparameters.tree_screen()->enable_up_action(!_is_search_global  // _selected_branch_as_pages != globalparameters.tree_screen()->know_root()->root_item()
-                                                            );
+            globalparameters.tree_screen()->enable_up_action(
+                // !_is_search_global
+            );  // _selected_branch_as_pages != globalparameters.tree_screen()->know_root()->root_item()
         }
     }
 
@@ -775,8 +777,9 @@ std::shared_ptr<ItemsFlat> FindScreen::find_start(void)
 
         if(0 != _candidate_records) {
             _selected_branch_as_pages = final_search(_search_start_item, _selected_branch_as_pages);
-            globalparameters.tree_screen()->enable_up_action(!_is_search_global  // _selected_branch_as_pages != globalparameters.tree_screen()->know_root()->root_item()
-                                                            );
+            globalparameters.tree_screen()->enable_up_action(
+                // _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
+            );  // _selected_branch_as_pages != globalparameters.tree_screen()->know_root()->root_item()
         }
 
         //    }

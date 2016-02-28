@@ -144,7 +144,7 @@ void TreeScreen::setup_actions(void)
     ac = new QAction(tr("Return to root"), this);
     ac->setStatusTip(tr("Return to root"));
     ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-    connect(ac, &QAction::triggered, this, &TreeScreen::return_to_root);
+    connect(ac, &QAction::triggered, this, &TreeScreen::view_return_to_root);
     _actionlist["return_to_root"] = ac;
 
     // Разворачивание всех подветок
@@ -438,16 +438,22 @@ void TreeScreen::update_model(TreeKnowModel *_current_know_branch)  // too heavy
 }
 
 
-void TreeScreen::enable_up_action(bool enable)
+void TreeScreen::enable_up_action(
+    //        bool enable
+)
 {
+    auto enable = static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() != _know_branch->root_item()->id();
+
     if(enable) {
         _actionlist["pasteBranch"]->setEnabled(true);
         _actionlist["pasteSubbranch"]->setEnabled(true);
         _actionlist["view_up_one_level"]->setEnabled(true);
         _actionlist["return_to_root"]->setEnabled(true);
-    } else if(
-        static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() != _know_branch->root_item()->id() // know_root()->root_item() == _know_branch->root_item()
-        || !enable) {
+    } else
+        //        if(
+        //        static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() == _know_branch->root_item()->id() // know_root()->root_item() == _know_branch->root_item()
+        //        || !enable)
+    {
         _actionlist["pasteBranch"]->setEnabled(false);
         _actionlist["pasteSubbranch"]->setEnabled(false);
         _actionlist["view_up_one_level"]->setEnabled(false);
@@ -510,7 +516,9 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
                 if(mimeData->hasFormat("mytetra/branch"))
                     is_branch = true;
 
-            enable_up_action(is_branch || _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id());
+            enable_up_action(
+                // is_branch || _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id()
+            );
 
 
             // ----------------------------
@@ -1680,15 +1688,16 @@ void TreeScreen::view_up_one_level(void)
         if(current_root->parent()) {
             setup_model(current_root->parent());  //_know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
             _tree_view->selectionModel()->setCurrentIndex(static_cast<TreeKnowModel *>(_tree_view->model())->index(current_root->parent()), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
-            enable_up_action(true                    // _selected_branch->root() != _root->root()
-                            ) ;
+            enable_up_action(   // true                    // _selected_branch->root() != _root->root()
+            ) ;
         } else {
             //            if(_root->root_item()->parent())
             //                _selected_branch->root_item(_root->root_item()->parent());
             //            else
             setup_model(_know_branch->root_item());  // _know_branch->intercept(know_root()->root_item());
             _tree_view->selectionModel()->setCurrentIndex(static_cast<TreeKnowModel *>(_tree_view->model())->index(current_root), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
-            enable_up_action(false) ;
+            enable_up_action(   // false
+            ) ;
         }
 
         //        _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
@@ -1703,7 +1712,7 @@ void TreeScreen::view_up_one_level(void)
         //        setup_model(_know_branch);
 
         enable_up_action(
-            true    // _selected_branch->root() != _root->root()
+            // true    // _selected_branch->root() != _root->root()
         ) ;
 
         //    for(int i = 0; i < item->tabledata()->size(); i++) {
@@ -1754,8 +1763,9 @@ void TreeScreen::view_up_one_level(void)
         _tree_view->resizeColumnToContents(0);
 
     } else {
-        return_to_root();
-        enable_up_action(false) ;
+        view_return_to_root();
+        enable_up_action(   // false
+        );
     }
 
     //    if(current_treemodelknow->root()->parent() != _root->root()->parent()) {
@@ -1779,11 +1789,12 @@ void TreeScreen::view_up_one_level(void)
 
 }
 
-void TreeScreen::return_to_root(void)
+void TreeScreen::view_return_to_root(void)
 {
     // _know_branch->intercept(know_root()->root_item());
     setup_model(_know_branch->root_item());  // setup_model(_know_branch);
-    enable_up_action(false);
+    enable_up_action(// false
+    );
 
 }
 
@@ -1951,8 +1962,8 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
         // setup_model(_know_branch);
 
-        enable_up_action(_know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id()   // _know_branch->root_item()->id() != know_root()->root_item()->id()
-                        ) ;
+        enable_up_action(// _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id()   // _know_branch->root_item()->id() != know_root()->root_item()->id()
+        ) ;
 
         //    for(int i = 0; i < item->tabledata()->size(); i++) {
 
@@ -2151,7 +2162,7 @@ QModelIndex TreeScreen::last_index(void)
     TreeKnowModel *current_model = static_cast<TreeKnowModel *>(_tree_view->model());
 
     if(0 == current_model->root_item()->current_count()) {
-        return_to_root();   //
+        view_return_to_root();   //
         current_model = static_cast<TreeKnowModel *>(_tree_view->model());
         _item = current_model->root_item()->add_child();
     } else {
