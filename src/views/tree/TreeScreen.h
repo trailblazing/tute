@@ -75,6 +75,7 @@ public:
     void save_knowtree(void);
     void reload_knowtree(void);
 
+    void update_selected(void);
     void update_selected_branchs(void);
 
     int first_selecteditem_row(void);
@@ -99,8 +100,8 @@ public:
     void to_candidate_screen(const QModelIndex &index);
     void enable_up_action(bool enable);
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
-    boost::intrusive_ptr<TreeItem> cut_from_root(boost::intrusive_ptr<TreeItem> item);
-    boost::intrusive_ptr<TreeItem> paste_to_branch(boost::intrusive_ptr<TreeItem> item, TreeKnowModel *_current_know_branch);
+    boost::intrusive_ptr<TreeItem> cut_branch(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> paste_branch(boost::intrusive_ptr<TreeItem> item, TreeKnowModel *_current_know_branch);
     bool sysynchronized() {return _know_branch->synchronized();}
 
     //    QStringList record_path(QString _record_id) {return know_root_holder::know_root()->record_path(_record_id);}
@@ -121,8 +122,8 @@ private slots:
     boost::intrusive_ptr<TreeItem> insert_branch(void);
     void edit_branch(void);
 
-    QList<boost::intrusive_ptr<TreeItem>> delete_branchs(QModelIndexList selectitems , TreeKnowModel *_current_know_branch, QString mode);
-    QList<boost::intrusive_ptr<TreeItem>> delete_branchs(TreeKnowModel *_current_know_branch, QString mode = "delete");
+    QList<boost::intrusive_ptr<TreeItem>> delete_branchs(QModelIndexList selectitems, QString mode);
+    QList<boost::intrusive_ptr<TreeItem>> delete_branchs(QString mode = "delete");
     boost::intrusive_ptr<TreeItem> delete_one_branch(QModelIndex index, TreeKnowModel *_current_know_branch);
 
 
@@ -167,6 +168,8 @@ private:
     void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
     void setup_model(boost::intrusive_ptr<TreeItem> _item);
     void setup_model(TreeKnowModel *treemodel);
+    void update_model(TreeKnowModel *_current_know_branch);
+
     void setup_signals(void);
     void setup_actions(void);
     void assembly(void);

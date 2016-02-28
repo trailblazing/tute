@@ -1,3 +1,4 @@
+#include <set>
 #include <QAbstractItemView>
 #include <QAction>
 #include <QMenu>
@@ -201,15 +202,16 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Delete selected item and all sub items"));
     ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
     connect(ac, &QAction::triggered, this
-    , [this](bool checked = false) {Q_UNUSED(checked); delete_branchs(this->_know_branch, "cut");} //, &TreeScreen::del_branch
+    , [this](bool checked = false) {Q_UNUSED(checked); delete_branchs("cut");} //, &TreeScreen::del_branch
            );
     _actionlist["delBranch"] = ac;
 
+    void(TreeScreen::*cut)() = &TreeScreen::cut_branch;
     // Удаление ветки с сохранением копии в буфер обмена
     ac = new QAction(tr("Cut item"), this);
     ac->setStatusTip(tr("Cut item including sub items"));
     ac->setIcon(QIcon(":/resource/pic/branch_cut.svg"));
-    connect(ac, &QAction::triggered, this, &TreeScreen::cut_branch);
+    connect(ac, &QAction::triggered, this, cut);
     _actionlist["cutBranch"] = ac;
 
     // Копирование ветки в буфер обмена
@@ -219,11 +221,12 @@ void TreeScreen::setup_actions(void)
     connect(ac, &QAction::triggered, this, &TreeScreen::copy_branch);
     _actionlist["copyBranch"] = ac;
 
+    void(TreeScreen::*paste)() = &TreeScreen::paste_branch;
     // Вставка ветки из буфера обмена
     ac = new QAction(tr("Paste item"), this);
     ac->setStatusTip(tr("Paste sibling item after selected"));
     ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
-    connect(ac, &QAction::triggered, this, &TreeScreen::paste_branch);
+    connect(ac, &QAction::triggered, this, paste);
     _actionlist["pasteBranch"] = ac;
 
     // Вставка ветки из буфера обмена в виде подветки
@@ -423,6 +426,18 @@ void TreeScreen::setup_model(TreeKnowModel *treemodel)
     _tree_view->setModel(treemodel);
 }
 
+
+void TreeScreen::update_model(TreeKnowModel *_current_know_branch)  // too heavy
+{
+    _know_branch->synchronized(false);
+    auto source_model = static_cast<TreeKnowModel *>(_tree_view->model());
+    assert(_current_know_branch == source_model);
+    _tree_view->reset();
+    //    _tree_view->
+    setup_model(_current_know_branch);
+}
+
+
 void TreeScreen::enable_up_action(bool enable)
 {
     if(enable) {
@@ -475,52 +490,53 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
     // Получение индекса выделенной ветки
     QModelIndex index = current_index();
 
-    // Выясняется, зашифрована ли ветка или нет
-    QString cryptFlag = _know_branch->item(index)->field("crypt");
+    if(index.isValid()) {
+        // Выясняется, зашифрована ли ветка или нет
+        QString cryptFlag = _know_branch->item(index)->field("crypt");
 
-    // Выясняется, зашифрована ли родительская ветка
-    QString parentCryptFlag = _know_branch->item(index)->parent()->field("crypt");
+        // Выясняется, зашифрована ли родительская ветка
+        QString parentCryptFlag = _know_branch->item(index)->parent()->field("crypt");
 
-    // Если ветка не зашифрована
-    // Или ветка зашифрована, но пароль успешно введен
-    if(cryptFlag != "1" ||
-       (cryptFlag == "1" && globalparameters.crypt_key().length() > 0)) {
+        // Если ветка не зашифрована
+        // Или ветка зашифрована, но пароль успешно введен
+        if(cryptFlag != "1" ||
+           (cryptFlag == "1" && globalparameters.crypt_key().length() > 0)) {
 
-        // Если в буфере есть ветки, соответсвующие пункты становятся активными
-        bool is_branch = false;
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData();
+            // Если в буфере есть ветки, соответсвующие пункты становятся активными
+            bool is_branch = false;
+            const QMimeData *mimeData = QApplication::clipboard()->mimeData();
 
-        if(mimeData != nullptr)
-            if(mimeData->hasFormat("mytetra/branch"))
-                is_branch = true;
+            if(mimeData != nullptr)
+                if(mimeData->hasFormat("mytetra/branch"))
+                    is_branch = true;
 
-        enable_up_action(is_branch || _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id());
+            enable_up_action(is_branch || _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id());
 
 
-        // ----------------------------
-        // Подсветка пунктов шифрования
-        // ----------------------------
+            // ----------------------------
+            // Подсветка пунктов шифрования
+            // ----------------------------
 
-        // Если ветка незашифрована
-        if(cryptFlag != "1") {
-            // Шифровать можно
-            // Дешифровать нельзя
-            _actionlist["encryptBranch"]->setEnabled(true);
-            _actionlist["decryptBranch"]->setEnabled(false);
-        } else {
-            // Ветка зашифрована
-
-            // Шифровать нельзя
-            _actionlist["encryptBranch"]->setEnabled(false);
-
-            // Дешифровать можно только если верхнележащая ветка незашифрована
-            if(parentCryptFlag != "1")
-                _actionlist["decryptBranch"]->setEnabled(true);
-            else
+            // Если ветка незашифрована
+            if(cryptFlag != "1") {
+                // Шифровать можно
+                // Дешифровать нельзя
+                _actionlist["encryptBranch"]->setEnabled(true);
                 _actionlist["decryptBranch"]->setEnabled(false);
+            } else {
+                // Ветка зашифрована
+
+                // Шифровать нельзя
+                _actionlist["encryptBranch"]->setEnabled(false);
+
+                // Дешифровать можно только если верхнележащая ветка незашифрована
+                if(parentCryptFlag != "1")
+                    _actionlist["decryptBranch"]->setEnabled(true);
+                else
+                    _actionlist["decryptBranch"]->setEnabled(false);
+            }
         }
     }
-
 
     // Включение отображения меню на экране
     // menu.exec(event->globalPos());
@@ -751,6 +767,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
 
 boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, TreeKnowModel *_current_model)
 {
+
     // Получение ссылки на узел, который соответствует выделенной строке
     auto current_item = _current_model->item(_current_index);
 
@@ -917,7 +934,7 @@ void TreeScreen::edit_branch(void)
 }
 
 
-QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList selectitems , TreeKnowModel *_current_know_branch, QString mode)
+QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList selectitems , QString mode)
 {
     QList<boost::intrusive_ptr<TreeItem>> result;
     // На время удаления блокируется главное окно
@@ -1044,15 +1061,18 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList
         for(int i = 0; i < selectitems.size(); ++i)
             qDebug() << (_know_branch->item(selectitems.at(i)))->path();
 
+        auto _current_know_branch = static_cast<TreeKnowModel *>(_tree_view->model());
+
         // Вызов удаления веток
         for(int i = 0; i < selectitems.size(); ++i) {
             result.append(delete_one_branch(selectitems.at(i), _current_know_branch));
-            // update_selected_branchs();
+            update_branch_on_screen(selectitems.at(i));
         }
 
         qDebug() << "Delete finish";
 
-        _know_branch->synchronized(false);
+        //        update_model(_current_know_branch);
+
         // Сохранение дерева веток
         //        find_object<TreeScreen>(tree_screen_singleton_name)->
         save_knowtree();
@@ -1072,11 +1092,13 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList
     return result;
 }
 
+
+
 // Удаление выбранных веток, вызывается при выборе соотвествущей
 // кнопки или пункта меню
 // Delete the selected branches, called when the corresponding
 // button or menu item
-QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(TreeKnowModel *_current_know_branch, QString mode)
+QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QString mode)
 {
     qDebug() << "In del_branch()";
 
@@ -1090,31 +1112,16 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(TreeKnowModel *
     // Получение списка индексов QModelIndex выделенных элементов
     QModelIndexList selectitems = _tree_view->selectionModel()->selectedIndexes();
 
-    if(selectitems.size() > 0)_current_know_branch->synchronized(false);
+    if(selectitems.size() > 0) {
+        auto _current_know_branch = static_cast<TreeKnowModel *>(_tree_view->model());
+        _current_know_branch->synchronized(false);
+    }
 
-    return delete_branchs(selectitems, _current_know_branch, mode);
+    return delete_branchs(selectitems, mode);
 
 }
 
-boost::intrusive_ptr<TreeItem> TreeScreen::cut_from_root(boost::intrusive_ptr<TreeItem> item)
-{
-    QModelIndex index = _know_branch    // know_root()
-                        ->index(item);
-    assert(index.isValid());
-    QModelIndexList list;
-    list.append(index);
-    auto result = delete_branchs(list
-                                 , _know_branch // know_root_holder::know_root()
-                                 , "cut");
-    assert(result.size() > 0);
-    return result.at(0);
-}
 
-
-boost::intrusive_ptr<TreeItem> TreeScreen::paste_to_branch(boost::intrusive_ptr<TreeItem> item, TreeKnowModel *_current_know_branch)
-{
-    return add_branch(current_index(), item, false, _current_know_branch);
-}
 
 // Удаление одной ветки и её подветок
 // Delete one branch and its podvetok / garter
@@ -1187,10 +1194,10 @@ boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, 
     //        }
 
 
-    (*reocrd_controller)()->source_model()->remove_child(item_to_be_deleted);
+    (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
     qDebug() << "Label 8";
-    update_selected_branchs();
+    update_selected();
     QModelIndex setto;
     int count = item_to_be_deleted->parent()->current_count();
 
@@ -1208,6 +1215,25 @@ boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, 
     return item_to_be_deleted;
 }
 
+boost::intrusive_ptr<TreeItem> TreeScreen::cut_branch(boost::intrusive_ptr<TreeItem> item)
+{
+    QModelIndex index = _know_branch    // know_root()
+                        ->index(item);
+    assert(index.isValid());
+    QModelIndexList list;
+    list.append(index);
+    auto result = delete_branchs(list
+                                 // , _know_branch // know_root_holder::know_root()
+                                 , "cut");
+    assert(result.size() > 0);
+    return result.at(0);
+}
+
+
+boost::intrusive_ptr<TreeItem> TreeScreen::paste_branch(boost::intrusive_ptr<TreeItem> item, TreeKnowModel *_current_know_branch)
+{
+    return add_branch(current_index(), item, false, _current_know_branch);
+}
 
 void TreeScreen::cut_branch(void)
 {
@@ -1216,7 +1242,8 @@ void TreeScreen::cut_branch(void)
     copy_result = copy_branch();
 
     if(copy_result)
-        delete_branchs(this->_know_branch, "cut");
+        delete_branchs( //this->_know_branch,
+            "cut");
 }
 
 bool TreeScreen::copy_branch(void)
@@ -1520,27 +1547,45 @@ void TreeScreen::decrypt_branch_item(void)
 // Обновление на экране ветки и подветок
 void TreeScreen::update_branch_on_screen(const QModelIndex &index)
 {
+    auto source_model = static_cast<TreeKnowModel *>(_tree_view->model());
     // Для корневой ветки дается команда чтобы модель сообщила о своем изменении
-    _know_branch->emit_datachanged_signal(index);
+    source_model->emit_datachanged_signal(index);
 
     // По модельному индексу выясняется указатель на ветку
-    auto item = _know_branch->item(index);
+    auto item = source_model->item(index);
 
     // Перебираются подветки
     QList<QStringList> updatePathts = item->all_children_path();
 
     foreach(QStringList currentPath, updatePathts) {
-        auto currentItem = _know_branch->item(currentPath);
+        auto currentItem = source_model->item(currentPath);
 
-        QModelIndex currentIndex = _know_branch->index(currentItem);
+        QModelIndex currentIndex = source_model->index(currentItem);
 
         // Для подветки дается команда чтобы модель сообщила о своем изменении
-        _know_branch->emit_datachanged_signal(currentIndex);
+        source_model->emit_datachanged_signal(currentIndex);
     }
 }
 
-
 void TreeScreen::update_selected_branchs(void)
+{
+    // Получение списка выделенных Item-элементов
+    QModelIndexList selectitems = _tree_view->selectionModel()->selectedIndexes();
+    std::set<QModelIndex> idxs;
+
+    // Обновление на экране
+    for(int i = 0; i < selectitems.size(); ++i) {
+        if(idxs.find(selectitems.at(i)) == idxs.end())idxs.insert(selectitems.at(i));
+
+        //        _tree_view->update(selectitems.at(i));
+    }
+
+    for(auto &i : idxs) {
+        _tree_view->update(i);
+    }
+}
+
+void TreeScreen::update_selected(void)
 {
     // Получение списка выделенных Item-элементов
     QModelIndexList selectitems = _tree_view->selectionModel()->selectedIndexes();
@@ -1634,6 +1679,7 @@ void TreeScreen::view_up_one_level(void)
 
         if(current_root->parent()) {
             setup_model(current_root->parent());  //_know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
+            _tree_view->selectionModel()->setCurrentIndex(static_cast<TreeKnowModel *>(_tree_view->model())->index(current_root->parent()), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
             enable_up_action(true                    // _selected_branch->root() != _root->root()
                             ) ;
         } else {
@@ -1641,6 +1687,7 @@ void TreeScreen::view_up_one_level(void)
             //                _selected_branch->root_item(_root->root_item()->parent());
             //            else
             setup_model(_know_branch->root_item());  // _know_branch->intercept(know_root()->root_item());
+            _tree_view->selectionModel()->setCurrentIndex(static_cast<TreeKnowModel *>(_tree_view->model())->index(current_root), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
             enable_up_action(false) ;
         }
 

@@ -726,8 +726,8 @@ namespace browser {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
 
-                    auto record = // _record_controller->
-                        request_item(
+                    auto record = // _record_controller
+                        view->page()->request_item(
                             QUrl(Browser::_defaulthome)
                             //                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                             //                                          ""

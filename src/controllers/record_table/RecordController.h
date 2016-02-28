@@ -93,7 +93,7 @@ public:
     // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
     void remove_child(QString del_id);
     void remove_children(QVector<QString> del_ids);
-    void remove_child(int index);
+    //    void remove_child(int index);
 
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);

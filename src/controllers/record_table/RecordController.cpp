@@ -887,7 +887,7 @@ void RecordController::paste(void)
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->update_selected_branchs();
+    globalparameters.tree_screen()->update_selected();
 }
 
 
@@ -1472,7 +1472,7 @@ void RecordController::delete_items_selected(void)
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->update_selected_branchs();
+    globalparameters.tree_screen()->update_selected();
 
     // Установка курсора на нужную позицию
     if(selectionRowNum >= 0 && selectionRowNum < _proxy_model->rowCount())
@@ -1510,13 +1510,20 @@ void RecordController::remove_children(QVector<QString> del_ids)
     if(_source_model->count() == 0) // if(!_browser_pages)
         return;
 
+    bool changed = false;
+
     for(int i = 0; i < del_ids.count(); i++) {
         QString id = del_ids[i];
         //        QModelIndex idx = id_to_proxyindex(id);
         auto item = _source_model->child(id);
-        int index = _tabmanager->indexOf(item->unique_page()->view());
 
-        if(index != -1)_tabmanager->closeTab(index);
+        if(item) {
+            int index = _tabmanager->indexOf(item->unique_page()->view());
+
+            if(index != -1)_tabmanager->closeTab(index);
+
+            changed = true;
+        }
 
         //_source_model->remove_child(id);
 
@@ -1526,41 +1533,45 @@ void RecordController::remove_children(QVector<QString> del_ids)
         //            }
         //        }
 
+
+        //        globalparameters.find_screen()->remove_id(id);  // ?
+    }
+
+    if(changed) {
         // Удаляется строка в Proxy модели
         // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
         //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
         _view->reset();
         _proxy_model->setSourceModel(_source_model);
         _view->setModel(_proxy_model);
-        //        globalparameters.find_screen()->remove_id(id);  // ?
     }
 }
 
-// Удаление одной записи по идентификатору
-void RecordController::remove_child(int index)
-{
+//// Удаление одной записи по идентификатору
+//void RecordController::remove_child(int index)
+//{
 
-    if(_source_model->count() == 0) // if(!_browser_pages)
-        return;
+//    if(_source_model->count() == 0) // if(!_browser_pages)
+//        return;
 
 
-    //        QModelIndex idx = id_to_proxyindex(id);
-    _source_model->remove_child(index);
-    //        for(int j = 0; j < _browser_pages->size(); j++) {
-    //            if(_browser_pages->item(j)->id() == id) {
-    //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
-    //            }
-    //        }
+//    //        QModelIndex idx = id_to_proxyindex(id);
+//    remove_child(_source_model->child(index)->id());
+//    //        for(int j = 0; j < _browser_pages->size(); j++) {
+//    //            if(_browser_pages->item(j)->id() == id) {
+//    //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
+//    //            }
+//    //        }
 
-    // Удаляется строка в Proxy модели
-    // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
-    //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
-    _view->reset();
-    _proxy_model->setSourceModel(_source_model);
-    _view->setModel(_proxy_model);
-    //        globalparameters.find_screen()->remove_id(id);  // ?
+//    // Удаляется строка в Proxy модели
+//    // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
+//    //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
+//    _view->reset();
+//    _proxy_model->setSourceModel(_source_model);
+//    _view->setModel(_proxy_model);
+//    //        globalparameters.find_screen()->remove_id(id);  // ?
 
-}
+//}
 
 // Перемещение записи вверх
 void RecordController::move_up(void)
@@ -1796,7 +1807,11 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     , active_helper activator
 )
 {
-    boost::intrusive_ptr<TreeItem> _result = nullptr;
+    TreeScreen *_tree_screen = globalparameters.tree_screen();
+    //    auto _know_model_root = tree_screen->know_root();
+    auto _know_model_branch = _tree_screen->know_branch();
+
+    boost::intrusive_ptr<TreeItem> _result =  _know_model_branch->root_item();
 
     if(item->is_lite())item->to_fat();
 
@@ -1817,9 +1832,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
         //    assert(_record_controller);
 
-        TreeScreen *_tree_screen = globalparameters.tree_screen();
-        //    auto _know_model_root = tree_screen->know_root();
-        auto _know_model_branch = _tree_screen->know_branch();
+
 
         QUrl find_url = QUrl(item->field("url"));
 
@@ -1844,7 +1857,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //    if(_source_model->count() > 0) {
         _result = _source_model->find(item);
 
-        if(_source_item) {
+        if(_source_item != _know_model_branch->root_item()) {
             if(!_result) {
 
                 assert(item == _source_item);
@@ -1926,7 +1939,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //        //                _record->generate();
         //        //            }
 
-        assert(_result);
+        assert(_result != _know_model_branch->root_item());
 
         assert(_result->is_registered_to_record_controller());
         assert(_result->field("url") == item->field("url"));
@@ -1951,13 +1964,11 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     , active_helper activator
 )
 {
-
-    boost::intrusive_ptr<TreeItem> _result = nullptr;
-
     TreeScreen *_tree_screen = globalparameters.tree_screen();
     //    auto _know_model_root = tree_screen->know_root();
     auto _know_model_branch = _tree_screen->know_branch();
 
+    boost::intrusive_ptr<TreeItem> _result =  _know_model_branch->root_item();
     //    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
     boost::intrusive_ptr<TreeItem> _source_item = _know_model_branch->item(TreeModel::delegater(_url));
 
@@ -1979,7 +1990,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    if(browser_pages) {
     _result = _source_model->find(_url);
 
-    if(_source_item) {
+    if(_source_item != _know_model_branch->root_item()) {
         if(!_result) {
 
             if(_source_item->is_lite())_source_item->to_fat();
@@ -2138,7 +2149,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     _result->binder(generator);
     _result->activator(activator);
 
-    assert(_result);
+    assert(_result != _know_model_branch->root_item());
     assert(_result->is_registered_to_record_controller());
     assert(_result->field("url") == _url.toString());
     //    } // browser_pages

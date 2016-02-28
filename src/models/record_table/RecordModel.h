@@ -91,8 +91,8 @@ public:
     boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item)const;
     boost::intrusive_ptr<TreeItem> find(QUrl _url)const;
     int is_item_exists(QString find_id);
-    bool remove_child(QString find_id);
-    bool remove_child(int index);
+    //    bool remove_child(QString find_id);
+    //    bool remove_child(int index);
     //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
     boost::intrusive_ptr<TreeItem> child(int pos);
     boost::intrusive_ptr<TreeItem> child(int pos)const;
@@ -116,7 +116,7 @@ public:
     //    void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
 
     //    ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
-    RecordController *reocrd_controller()const {return _reocrd_controller;}
+    RecordController *reocrd_controller()const {return _record_controller;}
     boost::intrusive_ptr<TreeItem> item_fat(int index);
     int position(QString id);
     int locate(boost::intrusive_ptr<TreeItem> item);
@@ -150,7 +150,7 @@ private:
     //    std::shared_ptr<RecordTable>  _table; // flat one
     //    TreeModelKnow *_browser_pages;  // boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
 
-    RecordController    *_reocrd_controller;
+    RecordController    *_record_controller;
 };
 
 #endif // __RECORDTABLEMODEL_H__

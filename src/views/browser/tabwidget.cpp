@@ -928,7 +928,7 @@ namespace browser {
 
                 //                    assert(found == true);
                 //                }
-                _record_controller->remove_child(index);
+                _record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
             }
 
             // move forward before removeTab(index);

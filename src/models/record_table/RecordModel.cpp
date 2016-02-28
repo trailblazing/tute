@@ -253,7 +253,7 @@ RecordModel::RecordModel(//TreeScreen             *_tree_screen
 )
     : QAbstractTableModel(_record_screen)
     , pages_container(_tabmanager)
-    , _reocrd_controller(_record_controller)
+    , _record_controller(_record_controller)
 {
     //    _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
     //    _browser_pages->root_item()->field("id", "0");  // get_unical_id()
@@ -509,12 +509,15 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     beginRemoveRows(//index   //
         QModelIndex(), row, row + count - 1);
 
+    QVector<QString> ids;
 
     // Удаляются строки непосредственно в таблице
     for(int i = row; i < row + count; ++i) {
-        remove_child(i);
+        ids.append(child(i)->id());
+
     }
 
+    _record_controller->remove_children(ids);
     //    view->reset();
     //    view->setModel(this);   // wrong! this is not the proxy model
     endRemoveRows();
@@ -684,48 +687,48 @@ int RecordModel::is_item_exists(QString find_id)
     return pos;
 }
 
-bool RecordModel::remove_child(int index)
-{
-    bool r = false;
+//bool RecordModel::remove_child(int index)
+//{
+//    bool r = false;
 
-    if(index > 0 && index < count()) {
-        beginRemoveRows(QModelIndex(), index, index);
+//    if(index > 0 && index < count()) {
+//        beginRemoveRows(QModelIndex(), index, index);
 
-        //    if(index > 0 && index < count()) {
-        //        _tabmanager->closeTab(index) ;
-        //        //        _reocrd_controller->view()->reset();
-        //        //        _reocrd_controller->view()->setModel(_reocrd_controller->proxy_model());
-        //        r = true;
+//        //    if(index > 0 && index < count()) {
+//        //        _tabmanager->closeTab(index) ;
+//        //        //        _reocrd_controller->view()->reset();
+//        //        //        _reocrd_controller->view()->setModel(_reocrd_controller->proxy_model());
+//        //        r = true;
 
-        //    }
-        r = true;
-        endRemoveRows();
-    }
+//        //    }
+//        r = true;
+//        endRemoveRows();
+//    }
 
-    return r;
-}
+//    return r;
+//}
 
-bool RecordModel::remove_child(QString find_id)
-{
-    bool r = false;
-    int index = is_item_exists(find_id);
+//bool RecordModel::remove_child(QString find_id)
+//{
+//    bool r = false;
+//    int index = is_item_exists(find_id);
 
-    if(index != -1) {
-        beginRemoveRows(QModelIndex(), index, index);
+//    if(index != -1) {
+//        beginRemoveRows(QModelIndex(), index, index);
 
-        //    if(index != -1) {
-        //        _tabmanager->closeTab(position(find_id)) ;
-        //        //        _reocrd_controller->view()->reset();
-        //        //        _reocrd_controller->view()->setModel(_reocrd_controller->proxy_model());
-        //        r = true;
+//        //    if(index != -1) {
+//        //        _tabmanager->closeTab(position(find_id)) ;
+//        //        //        _reocrd_controller->view()->reset();
+//        //        //        _reocrd_controller->view()->setModel(_reocrd_controller->proxy_model());
+//        //        r = true;
 
-        //    }
+//        //    }
 
-        endRemoveRows();
-    }
+//        endRemoveRows();
+//    }
 
-    return r;
-}
+//    return r;
+//}
 
 boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)
 {

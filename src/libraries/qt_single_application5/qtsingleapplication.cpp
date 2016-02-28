@@ -1046,8 +1046,9 @@ void QtSingleApplication::postLaunch()
 
         if(args.count() > 1)
             browser->loadPage(args.last());  // mainWindow()->loadPage(args.last());
-        else
-            browser->slotHome(); // mainWindow()->slotHome();
+
+        //        else
+        //            browser->slotHome(); // mainWindow()->slotHome();
     }
 
     QtSingleApplication::historyManager();

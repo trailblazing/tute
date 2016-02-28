@@ -1639,7 +1639,7 @@ boost::intrusive_ptr<TreeItem> TreeKnowModel::intercept(boost::intrusive_ptr<Tre
 
 boost::intrusive_ptr<TreeItem> TreeKnowModel::synchronize(boost::intrusive_ptr<TreeItem> source)
 {
-    boost::intrusive_ptr<TreeItem> result(nullptr);
+    boost::intrusive_ptr<TreeItem> result(_root_item);
     result = item(source->id());
     auto parent = result->parent();
 

@@ -474,13 +474,13 @@ void MainWindow::save_tree_position(void)
     // Получение QModelIndex выделенного в дереве элемента
     QModelIndex index = _tree_screen->current_index();
 
-    if(index.isValid()) {   // this line is to be remove
-        // Получаем указатель вида TreeItem
-        auto item = _tree_screen->know_branch()->item(index);
+    //    if(index.isValid()) {   // this line is to be remove
+    // Получаем указатель вида TreeItem
+    auto item = _tree_screen->know_branch()->item(index);
 
-        // Сохраняем путь к элементу item
-        appconfig.tree_position(_tree_screen->know_branch()->root_item()->id(), item->path());
-    }
+    // Сохраняем путь к элементу item
+    appconfig.tree_position(_tree_screen->know_branch()->root_item()->id(), item->path());
+    //    }
 }
 
 // set
@@ -490,11 +490,11 @@ void MainWindow::set_tree_position(QString id, QStringList path)
         _tree_screen->intercept(id);
     }
 
-    if(_tree_screen->know_branch()->is_item_valid(path) == false)    // on know_root semantic
+    if(_tree_screen->know_branch()->is_item_valid(path) == false)   // on know_root semantic
         return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->know_branch()->item(path);    // on know_root semantic
+    auto item = _tree_screen->know_branch()->item(path);            // on know_root semantic
 
     qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
