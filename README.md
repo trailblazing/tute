@@ -57,3 +57,33 @@ Besides these two branches have been established in other branches for the imple
 
 Deciding to connect to the development MyTetra, please use the experimental branch for the current code.
 
+
+How to compile the repo
+_______________________________________________________________________
+
+1 Linux
+
+1.1 Download Qt 5.6
+
+http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x64-5.6.0-rc.run
+
+1.2 Install it to you Linux distribution
+
+Default location:
+/opt/Qt5.6.0
+Do not recommend to mix it up with system installation of Qt
+
+After installation, you'll get a "MaintenanceTool" under the installation root directory.
+
+1.3 clone the repo to your workbench
+
+git clone https://github.com/BeImprovised/mytetra_webengine.wiki.git
+
+1.4 Compile the Qt project file with QtCreator which comes with Qt5.6
+
+open "mytetra.pro" in QtCreator
+
+configure the project
+
+build it.
+
