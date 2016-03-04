@@ -20,8 +20,8 @@
 #include "models/app_config/AppConfig.h"
 #include "views/main_window/MainWindow.h"
 #include "models/tree/TreeItem.h"
-#include "models/tree/TreeKnowModel.h"
-#include "TreeKnowView.h"
+#include "models/tree/KnowModel.h"
+#include "KnowView.h"
 #include "libraries/ClipboardBranch.h"
 #include "views/record/MetaEditor.h"
 #include "libraries/GlobalParameters.h"
@@ -37,7 +37,7 @@ extern GlobalParameters globalparameters;
 
 
 know_root_holder::know_root_holder(const AppConfig &_appconfig, TreeScreen *_this)
-    : _know_root(new TreeKnowModel(_this))
+    : _know_root(new KnowModel(_this))
 {
     // Загрузка данных
     // auto xml =
@@ -59,14 +59,14 @@ TreeScreen::TreeScreen(QString              object_name
       //    , know_root_holder(_appconfig, this)
       //, ui(new Ui::MainWindow)
       //, _menubar(new QMenuBar(this))
-    , _know_branch(new TreeKnowModel(this))
+    , _know_model_board(new KnowModel(this))
       //    , _tree_controller(new TreeController())
     , _tools_line(new QToolBar(this))
     , _menubar(new QToolBar(this))
     , _menubutton(new QPushButton("", _menubar))
     , _menuaction(new QWidgetAction(_menubutton))
     , _menus_in_button(new QMenu("buttonmenu"))
-    , _tree_view(new TreeKnowView(this))
+    , _tree_view(new KnowView(this))
     , _tools_layout(new QHBoxLayout())
       //    , _recordtree_search(new browser::ToolbarSearch(this))
       //    , _recordtree_searchlayout(new QHBoxLayout())
@@ -74,11 +74,11 @@ TreeScreen::TreeScreen(QString              object_name
     , _appconfig(_appconfig)
       //    , _shadow_branch(new TreeModelKnow(this))
 {
-    _know_branch->init_from_xml(_appconfig.get_tetradir() + "/mytetra.xml");    // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
-    int all_count = _know_branch->all_records_count();
+    _know_model_board->init_from_xml(_appconfig.get_tetradir() + "/mytetra.xml");    // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
+    int all_count = _know_model_board->all_records_count();
     assert(all_count > 0);
 
-    _know_branch->synchronized(true);
+    _know_model_board->synchronized(true);
 
     //    _selected_branch->init_from_xml(_appconfig.get_tetradir() + "/candidate.xml");
     //    _selected_branch->_root_item->field("id", get_unical_id());   // come from _root
@@ -95,7 +95,7 @@ TreeScreen::TreeScreen(QString              object_name
     setObjectName(object_name);
     setup_actions();
     setup_ui(_filemenu, _toolsmenu);
-    setup_model(_know_branch);
+    setup_model(_know_model_board->root_item());
     setup_signals();
     assembly();
 }
@@ -126,7 +126,7 @@ TreeScreen::~TreeScreen()
     //    delete _toolslayout;
     delete _tree_view;
     //    delete _shadow_branch;
-    delete _know_branch;
+    delete _know_model_board;
 
 }
 
@@ -409,40 +409,38 @@ void TreeScreen::setup_model(boost::intrusive_ptr<TreeItem> _item)
     _tree_view->setup_model(_item);
 }
 
-void TreeScreen::setup_model(TreeKnowModel *treemodel)
+//void TreeScreen::setup_model(KnowModel *treemodel)
+//{
+//    // Создание и первичная настройка модели
+//    //    _knowtreemodel = new KnowTreeModel(this);
+
+//    // Установка заголовка
+//    // QStringList headers;
+//    // headers << tr("Info groups");
+//    // knowTreeModel->setHeaders(headers);
+
+//    //    // Загрузка данных
+//    //    _treemodelknow->init_from_xml(_appconfig.get_tetradir() + "/mytetra.xml");
+//    _tree_view->reset();
+//    // Модель подключется к виду
+//    _tree_view->setModel(treemodel);
+//}
+
+
+//void TreeScreen::update_model(KnowModel *_current_know_branch)  // too heavy
+//{
+//    _know_branch->synchronized(false);
+//    auto source_model = _tree_view->source_model();
+//    assert(_current_know_branch == source_model);
+//    _tree_view->reset();
+//    //    _tree_view->
+//    setup_model(_current_know_branch);
+//}
+
+
+void TreeScreen::enable_up_action() //        bool enable
 {
-    // Создание и первичная настройка модели
-    //    _knowtreemodel = new KnowTreeModel(this);
-
-    // Установка заголовка
-    // QStringList headers;
-    // headers << tr("Info groups");
-    // knowTreeModel->setHeaders(headers);
-
-    //    // Загрузка данных
-    //    _treemodelknow->init_from_xml(_appconfig.get_tetradir() + "/mytetra.xml");
-    _tree_view->reset();
-    // Модель подключется к виду
-    _tree_view->setModel(treemodel);
-}
-
-
-void TreeScreen::update_model(TreeKnowModel *_current_know_branch)  // too heavy
-{
-    _know_branch->synchronized(false);
-    auto source_model = static_cast<TreeKnowModel *>(_tree_view->model());
-    assert(_current_know_branch == source_model);
-    _tree_view->reset();
-    //    _tree_view->
-    setup_model(_current_know_branch);
-}
-
-
-void TreeScreen::enable_up_action(
-    //        bool enable
-)
-{
-    auto enable = static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() != _know_branch->root_item()->id();
+    auto enable = static_cast<KnowModel *>(_tree_view->model())->root_item()->id() != _know_model_board->root_item()->id();
 
     if(enable) {
         _actionlist["pasteBranch"]->setEnabled(true);
@@ -494,14 +492,14 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
     menu.addAction(_actionlist["decryptBranch"]);
 
     // Получение индекса выделенной ветки
-    QModelIndex index = current_index();
+    QModelIndex index = _tree_view->view_index();
 
     if(index.isValid()) {
         // Выясняется, зашифрована ли ветка или нет
-        QString cryptFlag = _know_branch->item(index)->field("crypt");
+        QString cryptFlag = _tree_view->source_model()->item(index)->field("crypt");
 
         // Выясняется, зашифрована ли родительская ветка
-        QString parentCryptFlag = _know_branch->item(index)->parent()->field("crypt");
+        QString parentCryptFlag = _tree_view->source_model()->item(index)->parent()->field("crypt");
 
         // Если ветка не зашифрована
         // Или ветка зашифрована, но пароль успешно введен
@@ -516,9 +514,7 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
                 if(mimeData->hasFormat("mytetra/branch"))
                     is_branch = true;
 
-            enable_up_action(
-                // is_branch || _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id()
-            );
+            enable_up_action();
 
 
             // ----------------------------
@@ -558,23 +554,23 @@ void TreeScreen::setup_signals(void)
     //    connect(_recordtree_search, &browser::ToolbarSearch::returnPressed, globalparameters.getFindScreen(), &FindScreen::findClicked);
 
     // Соединение сигнал-слот чтобы показать контекстное меню по правому клику на ветке
-    connect(_tree_view, &TreeKnowView::customContextMenuRequested, this, &TreeScreen::on_custom_contextmenu_requested);
+    connect(_tree_view, &KnowView::customContextMenuRequested, this, &TreeScreen::on_custom_contextmenu_requested);
 
     // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
-    connect(_tree_view, &TreeKnowView::tapAndHoldGestureFinished, this, &TreeScreen::on_custom_contextmenu_requested);
+    connect(_tree_view, &KnowView::tapAndHoldGestureFinished, this, &TreeScreen::on_custom_contextmenu_requested);
 
     // Соединение сигнал-слот что ветка выбрана мышкой или стрелками на клавиатуре
     if(appconfig.getInterfaceMode() == "desktop")
         connect(_tree_view->selectionModel(), &QItemSelectionModel::currentRowChanged, this, &TreeScreen::candidate_from_knowtree_item);
 
     if(appconfig.getInterfaceMode() == "mobile")
-        connect(_tree_view, &TreeKnowView::clicked, this, &TreeScreen::candidate_from_knowtree_item);
+        connect(_tree_view, &KnowView::clicked, this, &TreeScreen::candidate_from_knowtree_item);
 
     // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
     // connect(knowTreeView, SIGNAL(doubleClicked(const QModelIndex &)), actionList["editBranch"], SLOT(trigger(void)));
     if(appconfig.getInterfaceMode() == "desktop") {
-        connect(_tree_view, &TreeKnowView::clicked, this, &TreeScreen::candidate_from_knowtree_item);
-        connect(_tree_view, &TreeKnowView::doubleClicked, this, &TreeScreen::to_candidate_screen);
+        connect(_tree_view, &KnowView::clicked, this, &TreeScreen::candidate_from_knowtree_item);
+        connect(_tree_view, &KnowView::doubleClicked, this, &TreeScreen::invoke_index);
     }
 
     // Сигнал что ветка выбрана мышкой
@@ -657,17 +653,17 @@ void TreeScreen::move_item_up_dn_branch(int direction)
     if(!move_checkenable()) return;
 
     // Получение индекса выделенной строки
-    QModelIndex index = current_index();
+    QModelIndex index = _tree_view->view_index();
 
     // Ветка перемещается
     QModelIndex index_after_move;
 
     if(direction == 1)
-        index_after_move = _know_branch->move_up_branch(index);
+        index_after_move = _tree_view->source_model()->move_up_branch(index);
     else
-        index_after_move = _know_branch->move_dn_branch(index);
+        index_after_move = _tree_view->source_model()->move_dn_branch(index);
 
-    _know_branch->synchronized(false);
+    _know_model_board->synchronized(false);
 
     // Установка курсора на позицию, куда была перенесена ветка
     if(index_after_move.isValid()) {
@@ -741,7 +737,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
     //    else if(selectitems.size() == 0) {
     //        current_index = last_index();
     //    } else {
-    _current_index = current_index();
+    _current_index = _tree_view->view_index();
     //    }
 
     // Создается окно ввода данных
@@ -765,7 +761,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
     //    current_index = currentitem_index();
 
     // Введенные данные добавляются
-    return add_branch(_current_index, name, insert_sibling_branch, _know_branch);
+    return add_branch(_current_index, name, insert_sibling_branch, _tree_view->source_model());
 }
 
 //boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch)
@@ -773,18 +769,163 @@ boost::intrusive_ptr<TreeItem> TreeScreen::insert_branch_smart(bool insert_sibli
 //    return add_branch(_current_index, name, insert_sibling_branch);
 //}
 
-boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, TreeKnowModel *_current_model)
-{
+//boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, KnowModel *_current_model)
+//{
 
+//    // Получение ссылки на узел, который соответствует выделенной строке
+//    auto current_item = _current_model->item(_current_index);
+
+//    //    find_object<MainWindow>("mainwindow")
+//    globalparameters.mainwindow()->setDisabled(true);
+
+//    // Получение уникального идентификатора
+//    QString id = get_unical_id();
+//    it->field("id", id);
+//    QModelIndex setto;
+
+//    // Вставка данных и установка курсора
+
+//    // Одноранговая ветка
+//    if(insert_sibling_branch) {
+//        // Вставка новых данных в модель дерева записей
+//        _current_model->add_sibling_branch(_current_index, it);
+
+//        // Установка курсора на только что созданную позицию
+
+//        // Чтобы вычислить позицию, надо синхронно получить parent элемента,
+//        // на уровне которого должен был создасться новый элемент.
+//        // Parent надо получить и в виде объекта QModelIndex, и в виде объекта Item
+//        // Затем у объекта Item выяснить количество элементов, и установить
+//        // засветку через метод index() относительно parent в виде QModelIndex
+//        //        QModelIndex
+//        setto = static_cast<TreeModel *>(_current_model)->index(current_item->parent()->current_count() - 1, 0, _current_index.parent());
+//        _tree_view->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
+//    } else {
+//        // Подветка
+
+//        // Вставка новых данных в модель дерева записей
+//        _current_model->add_child_branch(_current_index, it);
+
+//        // Установка курсора на только что созданную позицию
+//        //        QModelIndex
+//        setto = _current_model->index_child(_current_index, current_item->current_count() - 1);
+//        _tree_view->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
+
+//        // А можно было установить курсор на нужную позицию и так
+//        // knowTreeView->selectionModel()->setCurrentIndex(kntrmodel->index(item->childCount()-1,0,index),
+//        //                                             QItemSelectionModel::ClearAndSelect);
+//    }
+
+//    // Сохранение дерева веток
+//    //    find_object<TreeScreen>(tree_screen_singleton_name)->
+//    save_knowtree();
+
+//    //    find_object<MainWindow>("mainwindow")
+//    globalparameters.mainwindow()->setEnabled(true);
+//    return  _current_model->item(setto);
+//}
+
+//boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch, std::shared_ptr<KnowModel> _current_model)
+//{
+//    assert(_current_model);
+//    return add_branch(_current_index,  name,  insert_sibling_branch, _current_model.get());
+//}
+
+boost::intrusive_ptr<TreeItem> TreeScreen::insert_children(boost::intrusive_ptr<TreeItem> new_branch_root, KnowModel *_current_model)
+{
+    boost::intrusive_ptr<TreeItem>  result(nullptr);
+
+    if(new_branch_root->current_count() > 0) {
+        //    for(int i = 0; i < it->current_count(); i++) {
+
+        //        auto current_item = it->child(i);
+        //    if(_current_model->is_item_id_exists(it->id())) {
+        //    return add_branch(_current_model->index(it), it, insert_sibling_branch, _current_model);
+        auto _current_index = _tree_view->selectionModel()->currentIndex(); //_current_model->index(it);
+        // Получение ссылки на узел, который соответствует выделенной строке
+        auto current_item = _current_model->item(_current_index);
+
+        //    find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->setDisabled(true);
+
+        if(new_branch_root->id() == "") {
+            // Получение уникального идентификатора
+            QString id = get_unical_id();
+            new_branch_root->field("id", id);
+        }
+
+        QModelIndex setto;
+
+        // Вставка данных и установка курсора
+
+        for(int index = 0; index < new_branch_root->current_count(); index++) {
+            // Подветка
+
+            // Вставка новых данных в модель дерева записей
+            _current_model->add_child_item(_current_model->root_item(), new_branch_root->child(index));
+
+            //            // Установка курсора на только что созданную позицию
+            //            //        QModelIndex
+            //            setto = _current_model->index_child(_current_index, current_item->current_count() - 1);
+            //            _tree_view->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
+
+            //            // А можно было установить курсор на нужную позицию и так
+            //            // knowTreeView->selectionModel()->setCurrentIndex(kntrmodel->index(item->childCount()-1,0,index),
+            //            //                                             QItemSelectionModel::ClearAndSelect);
+        }
+
+
+        // Установка курсора на только что созданную позицию
+        //        QModelIndex
+        setto = _current_model->index_child(_current_index,
+                                            _current_index.row() + 1 // current_item->current_count() - 1
+                                           );
+
+        _tree_view->selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
+
+        // Сохранение дерева веток
+        //    find_object<TreeScreen>(tree_screen_singleton_name)->
+        save_knowtree();
+
+        //    find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->setEnabled(true);
+        //        return
+        result = _current_model->item(setto);
+
+        //    } else if(_current_model->root_item()->id() == it->id()) {
+
+
+
+        //    }
+
+        //    }
+    }
+
+    return result;
+}
+
+boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(boost::intrusive_ptr<TreeItem> new_branch_root, bool insert_sibling_branch, KnowModel *_current_model)
+{
+    boost::intrusive_ptr<TreeItem>  result(nullptr);
+
+    //    for(int i = 0; i < it->current_count(); i++) {
+
+    //        auto current_item = it->child(i);
+    //    if(_current_model->is_item_id_exists(it->id())) {
+    //    return add_branch(_current_model->index(it), it, insert_sibling_branch, _current_model);
+    auto _current_index = _tree_view->selectionModel()->currentIndex(); //_current_model->index(it);
     // Получение ссылки на узел, который соответствует выделенной строке
     auto current_item = _current_model->item(_current_index);
 
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->setDisabled(true);
 
-    // Получение уникального идентификатора
-    QString id = get_unical_id();
-    it->field("id", id);
+    if(new_branch_root->id() == "") {
+        // Получение уникального идентификатора
+        QString id = get_unical_id();
+        new_branch_root->field("id", id);
+    }
+
     QModelIndex setto;
 
     // Вставка данных и установка курсора
@@ -792,7 +933,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index
     // Одноранговая ветка
     if(insert_sibling_branch) {
         // Вставка новых данных в модель дерева записей
-        _current_model->add_sibling_branch(_current_index, it);
+        _current_model->add_sibling_item(_current_index, new_branch_root);
 
         // Установка курсора на только что созданную позицию
 
@@ -808,7 +949,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index
         // Подветка
 
         // Вставка новых данных в модель дерева записей
-        _current_model->add_child_branch(_current_index, it);
+        _current_model->add_child_item(_current_index, new_branch_root);
 
         // Установка курсора на только что созданную позицию
         //        QModelIndex
@@ -826,10 +967,21 @@ boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index
 
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->setEnabled(true);
-    return  _current_model->item(setto);
+    //        return
+    result = _current_model->item(setto);
+
+    //    } else if(_current_model->root_item()->id() == it->id()) {
+
+
+
+    //    }
+
+    //    }
+
+    return result;
 }
 
-boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch, TreeKnowModel *_current_model)
+boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch, KnowModel *_current_model)
 {
     // Получение ссылки на узел, который соответствует выделенной строке
     auto item = _current_model->item(_current_index);
@@ -874,7 +1026,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::add_branch(QModelIndex _current_index
         //                                             QItemSelectionModel::ClearAndSelect);
     }
 
-    _know_branch->synchronized(false);
+    _know_model_board->synchronized(false);
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)->
     save_knowtree();
@@ -903,10 +1055,10 @@ void TreeScreen::edit_branch(void)
     }
 
     // Получение индекса выделенной строки
-    QModelIndex index = current_index();
+    QModelIndex index = _tree_view->view_index();
 
     // Получение ссылки на узел, который соответствует выделенной строке
-    auto item = _know_branch->item(index);
+    auto item = _tree_view->source_model()->item(index);
 
     // Если ветка зашифрована и пароль не был введен
     if(item->field("crypt") == "1" &&
@@ -944,7 +1096,7 @@ void TreeScreen::edit_branch(void)
 
 QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList selectitems , QString mode)
 {
-    QList<boost::intrusive_ptr<TreeItem>> result;
+    QList<boost::intrusive_ptr<TreeItem>> _result;
     // На время удаления блокируется главное окно
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->setDisabled(true);
@@ -956,19 +1108,17 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList
 
     for(int i = 0; i < selectitems.size(); ++i) {
         QModelIndex index = selectitems.at(i);
-        auto item = _know_branch->item(index);
+        auto item = _tree_view->source_model()->item(index);
         branches_name << item->field("name");
     }
 
-
-    // Если системный пароль не установлен, зашифрованные ветки удалять нельзя
-    if(globalparameters.crypt_key().size() == 0) {
+    std::function<bool()> has_encrypt = [&]() {
         bool disableFlag = false;
 
         // Перебираются удаляемые ветки
         for(int i = 0; i < selectitems.size(); ++i) {
             QModelIndex index = selectitems.at(i);
-            auto item = _know_branch->item(index);
+            auto item = _tree_view->source_model()->item(index);
 
             // Если у ветки установлен флаг шифрования
             if(item->field("crypt") == "1") {
@@ -1005,99 +1155,153 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QModelIndexList
             //            find_object<MainWindow>("mainwindow")
             globalparameters.mainwindow()->blockSignals(false);
 
-            return result;
+            //            return _result;
         }
+
+        return disableFlag;
+    };
+
+    // Если системный пароль не установлен, зашифрованные ветки удалять нельзя
+    if(!((globalparameters.crypt_key().size() == 0)
+         && has_encrypt())
+      ) {
+        //        bool disableFlag = false;
+
+        //        // Перебираются удаляемые ветки
+        //        for(int i = 0; i < selectitems.size(); ++i) {
+        //            QModelIndex index = selectitems.at(i);
+        //            auto item = _tree_view->source_model()->item(index);
+
+        //            // Если у ветки установлен флаг шифрования
+        //            if(item->field("crypt") == "1") {
+        //                disableFlag = true;
+        //                break;
+        //            }
+
+        //            // Проверяется наличие флага шифрования у всех подветок
+        //            QList<QStringList> cryptFlagsList = item->all_children_path_as_field("crypt");
+
+        //            foreach(QStringList cryptFlags, cryptFlagsList)
+        //                if(cryptFlags.contains("1")) {
+        //                    disableFlag = true;
+        //                    break;
+        //                }
+
+        //            if(disableFlag)
+        //                break;
+
+        //        } // Закрылся цикл перебора всех выделенных для удаления веток
+
+
+        //        // Если в какой-то ветке обнаружено шифрование
+        //        if(disableFlag) {
+        //            QMessageBox messageBox(this);
+        //            messageBox.setWindowTitle(tr("Unavailable action"));
+        //            messageBox.setText(tr("In your selected data found closed item. Action canceled."));
+        //            messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
+        //            messageBox.exec();
+
+        //            // Разблокируется главное окно
+        //            //            find_object<MainWindow>("mainwindow")
+        //            globalparameters.mainwindow()->setEnabled(true);
+        //            //            find_object<MainWindow>("mainwindow")
+        //            globalparameters.mainwindow()->blockSignals(false);
+
+        //            return _result;
+        //        }
+
+
+
+
+        // Создается окно с вопросом, нужно удалять ветки или нет
+        QString title, text, del_button;
+        bool enable_question = true;
+
+        if(mode == "delete") {
+            title = tr("Delete item(s)");
+            text = tr("Are you sure you wish to delete item(s) <b>") + branches_name.join(", ") + tr("</b> and all sub items?");
+            del_button = tr("Delete");
+
+            enable_question = true;
+        } else if(mode == "cut") {
+            title = tr("Cut item");
+            text = tr("Are you sure you wish to cut item <b>") + branches_name.join(", ") + tr("</b> and all sub items?");
+            del_button = tr("Cut");
+
+            if(appconfig.get_cutbranchconfirm()) enable_question = true;
+            else enable_question = false;
+        }
+
+        bool enable_del = true;
+
+        if(enable_question) {
+            QMessageBox messageBox(this);
+            messageBox.setWindowTitle(title);
+            messageBox.setText(text);
+            messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+            QAbstractButton *deleteButton = messageBox.addButton(del_button, QMessageBox::AcceptRole);
+            messageBox.exec();
+
+            if(messageBox.clickedButton() == deleteButton) enable_del = true;
+            else enable_del = false;
+        }
+
+
+        // Если удаление подтверждено
+        if(enable_del) {
+            // Сохраняется текст в окне редактирования
+            // Нужно, чтобы нормально удалилась текущая редактируемая запись,
+            // если она находится в удаляемой ветке
+            //        find_object<MainWindow>("mainwindow")
+            globalparameters.mainwindow()->save_text_area();
+
+            // Сортировка списка индексов по вложенности методом пузырька
+            // Индексы с длинным путем перемещаются в начало списка
+            for(int i = 0; i < selectitems.size(); i++)
+                for(int j = selectitems.size() - 1; j > i; j--) {
+                    QStringList path_1 = (_tree_view->source_model()->item(selectitems.at(j - 1)))->absolute_path();
+                    QStringList path_2 = (_tree_view->source_model()->item(selectitems.at(j)))->absolute_path();
+
+                    if(path_1.size() < path_2.size())
+                        selectitems.swap(j - 1, j);
+                }
+
+            qDebug() << "Path for delete";
+
+            for(int i = 0; i < selectitems.size(); ++i)
+                qDebug() << (_tree_view->source_model()->item(selectitems.at(i)))->absolute_path();
+
+            auto _current_know_branch = _tree_view->source_model(); //static_cast<KnowModel *>(_tree_view->model());
+
+            // Вызов удаления веток
+            for(int i = 0; i < selectitems.size(); ++i) {
+                _result.append(delete_one_branch(selectitems.at(i), _current_know_branch));
+                update_branch_on_screen(selectitems.at(i).parent());
+            }
+
+            qDebug() << "Delete finish";
+
+            //        update_model(_current_know_branch);
+
+            // Сохранение дерева веток
+            //        find_object<TreeScreen>(tree_screen_singleton_name)->
+            save_knowtree();
+            //        reload_knowtree();
+            qDebug() << "Save new tree finish";
+        }
+
+        // Разблокируется главное окно
+        //    find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->setEnabled(true);
+        //    find_object<MainWindow>("mainwindow")
+        globalparameters.mainwindow()->blockSignals(false);
+
+        tree_empty_controll();
+        tree_crypt_control();
 
     } // Закрылось условие что системный пароль не установлен
 
-
-    // Создается окно с вопросом, нужно удалять ветки или нет
-    QString title, text, del_button;
-    bool enable_question = true;
-
-    if(mode == "delete") {
-        title = tr("Delete item(s)");
-        text = tr("Are you sure you wish to delete item(s) <b>") + branches_name.join(", ") + tr("</b> and all sub items?");
-        del_button = tr("Delete");
-
-        enable_question = true;
-    } else if(mode == "cut") {
-        title = tr("Cut item");
-        text = tr("Are you sure you wish to cut item <b>") + branches_name.join(", ") + tr("</b> and all sub items?");
-        del_button = tr("Cut");
-
-        if(appconfig.get_cutbranchconfirm()) enable_question = true;
-        else enable_question = false;
-    }
-
-    bool enable_del = true;
-
-    if(enable_question) {
-        QMessageBox messageBox(this);
-        messageBox.setWindowTitle(title);
-        messageBox.setText(text);
-        messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
-        QAbstractButton *deleteButton = messageBox.addButton(del_button, QMessageBox::AcceptRole);
-        messageBox.exec();
-
-        if(messageBox.clickedButton() == deleteButton) enable_del = true;
-        else enable_del = false;
-    }
-
-
-    // Если удаление подтверждено
-    if(enable_del) {
-        // Сохраняется текст в окне редактирования
-        // Нужно, чтобы нормально удалилась текущая редактируемая запись,
-        // если она находится в удаляемой ветке
-        //        find_object<MainWindow>("mainwindow")
-        globalparameters.mainwindow()->save_text_area();
-
-        // Сортировка списка индексов по вложенности методом пузырька
-        // Индексы с длинным путем перемещаются в начало списка
-        for(int i = 0; i < selectitems.size(); i++)
-            for(int j = selectitems.size() - 1; j > i; j--) {
-                QStringList path_1 = (_know_branch->item(selectitems.at(j - 1)))->path();
-                QStringList path_2 = (_know_branch->item(selectitems.at(j)))->path();
-
-                if(path_1.size() < path_2.size())
-                    selectitems.swap(j - 1, j);
-            }
-
-        qDebug() << "Path for delete";
-
-        for(int i = 0; i < selectitems.size(); ++i)
-            qDebug() << (_know_branch->item(selectitems.at(i)))->path();
-
-        auto _current_know_branch = static_cast<TreeKnowModel *>(_tree_view->model());
-
-        // Вызов удаления веток
-        for(int i = 0; i < selectitems.size(); ++i) {
-            result.append(delete_one_branch(selectitems.at(i), _current_know_branch));
-            update_branch_on_screen(selectitems.at(i));
-        }
-
-        qDebug() << "Delete finish";
-
-        //        update_model(_current_know_branch);
-
-        // Сохранение дерева веток
-        //        find_object<TreeScreen>(tree_screen_singleton_name)->
-        save_knowtree();
-        //        reload_knowtree();
-        qDebug() << "Save new tree finish";
-    }
-
-    // Разблокируется главное окно
-    //    find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->setEnabled(true);
-    //    find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->blockSignals(false);
-
-    tree_empty_controll();
-    tree_crypt_control();
-
-    return result;
+    return _result;
 }
 
 
@@ -1121,7 +1325,7 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QString mode)
     QModelIndexList selectitems = _tree_view->selectionModel()->selectedIndexes();
 
     if(selectitems.size() > 0) {
-        auto _current_know_branch = static_cast<TreeKnowModel *>(_tree_view->model());
+        auto _current_know_branch = static_cast<KnowModel *>(_tree_view->model());
         _current_know_branch->synchronized(false);
     }
 
@@ -1133,7 +1337,7 @@ QList<boost::intrusive_ptr<TreeItem>> TreeScreen::delete_branchs(QString mode)
 
 // Удаление одной ветки и её подветок
 // Delete one branch and its podvetok / garter
-boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, TreeKnowModel *_current_know_branch)
+boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, KnowModel *_current_know_branch)
 {
 
     if(!index.isValid()) return nullptr;
@@ -1148,7 +1352,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, 
     qDebug() << "Label 2, branch id:" << item_to_be_deleted->field("id") << "name:" << item_to_be_deleted->field("name");
 
     // Получение пути к элементу
-    QStringList path = item_to_be_deleted->path();
+    QStringList path = item_to_be_deleted->absolute_path();
 
     qDebug() << "Label 3";
 
@@ -1201,8 +1405,13 @@ boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, 
     //            delete current_item;
     //        }
 
+    //    if(!reocrd_controller) {
+    //        globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+    //    }
 
-    (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+    if(item_to_be_deleted->is_registered_to_browser()   // item_to_be_deleted->unique_page()
+      )
+        item_to_be_deleted->unique_page()->record_controller()->remove_child(item_to_be_deleted->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
     qDebug() << "Label 8";
     update_selected();
@@ -1225,22 +1434,22 @@ boost::intrusive_ptr<TreeItem> TreeScreen::delete_one_branch(QModelIndex index, 
 
 boost::intrusive_ptr<TreeItem> TreeScreen::cut_branch(boost::intrusive_ptr<TreeItem> item)
 {
-    QModelIndex index = _know_branch    // know_root()
-                        ->index(item);
+    QModelIndex index = _tree_view->source_model()->index(item);    // know_root()
+
     assert(index.isValid());
     QModelIndexList list;
     list.append(index);
-    auto result = delete_branchs(list
-                                 // , _know_branch // know_root_holder::know_root()
-                                 , "cut");
+    auto result = delete_branchs(list, "cut");  // , _know_branch // know_root_holder::know_root()
+
+
     assert(result.size() > 0);
     return result.at(0);
 }
 
 
-boost::intrusive_ptr<TreeItem> TreeScreen::paste_branch(boost::intrusive_ptr<TreeItem> item, TreeKnowModel *_current_know_branch)
+boost::intrusive_ptr<TreeItem> TreeScreen::paste_branch(boost::intrusive_ptr<TreeItem> item, KnowModel *_current_know_branch)
 {
-    return add_branch(current_index(), item, false, _current_know_branch);
+    return add_branch(item, false, _current_know_branch);
 }
 
 void TreeScreen::cut_branch(void)
@@ -1250,8 +1459,8 @@ void TreeScreen::cut_branch(void)
     copy_result = copy_branch();
 
     if(copy_result)
-        delete_branchs( //this->_know_branch,
-            "cut");
+        delete_branchs("cut"); //this->_know_branch,
+
 }
 
 bool TreeScreen::copy_branch(void)
@@ -1275,41 +1484,41 @@ bool TreeScreen::copy_branch(void)
         return false;
     }
 
-
+    auto _source_model = _tree_view->source_model();
     // Получение индекса выделенной ветки
-    QModelIndex index = current_index();
+    QModelIndex index = _tree_view->view_index();
 
     // Получение ссылки на узел, который соответствует выделенной ветке
-    auto item = _know_branch->item(index);
+    auto item = _source_model->item(index);
 
     // Получение пути к выделенной ветке
-    QStringList path = item->path();
+    QStringList absolute_path = item->absolute_path();
 
     // Получение путей ко всем подветкам
-    QList<QStringList> subbranchespath = item->all_children_path();
+    QList<QStringList> sub_branches_absolute_path = item->all_children_path();
 
 
     // Проверка, содержит ли данная ветка как шифрованные
     // так и незашифрованные данные
-    bool nocryptPresence = false;
-    bool encryptPresence = false;
+    bool nocrypt_presence = false;
+    bool encrypt_presence = false;
 
     // Флаги на основе состояния текущей ветки
-    if(_know_branch->item(path)->field("crypt") == "1")
-        encryptPresence = true;
+    if(_know_model_board->item(absolute_path)->field("crypt") == "1")
+        encrypt_presence = true;
     else
-        nocryptPresence = true;
+        nocrypt_presence = true;
 
     // Флаги на основе состояния подветок
-    foreach(QStringList currPath, subbranchespath)
-        if(_know_branch->item(currPath)->field("crypt") == "1")
-            encryptPresence = true;
+    foreach(QStringList curr_absolute_path, sub_branches_absolute_path)
+        if(_know_model_board->item(curr_absolute_path)->field("crypt") == "1")
+            encrypt_presence = true;
         else
-            nocryptPresence = true;
+            nocrypt_presence = true;
 
     // Если ветка содержит как шифрованные так и нешифрованные данные
     // то такую ветку копировать в буфер нельзя
-    if(nocryptPresence == true && encryptPresence == true) {
+    if(nocrypt_presence == true && encrypt_presence == true) {
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Unavailable action"));
         messageBox.setText(tr("This item contains both unencrypted and encrypted data. Copy/paste operation is possible only for item that contain similar type data."));
@@ -1345,10 +1554,10 @@ bool TreeScreen::copy_branch(void)
     fillflag = 1;
 
     // Добавление корневой ветки
-    add_branch_to_clipboard(branch_clipboard_data, path, true);
+    add_branch_to_clipboard(branch_clipboard_data, absolute_path, true);
 
     // Добавление прочих веток
-    foreach(QStringList curr_path, subbranchespath)
+    foreach(QStringList curr_path, sub_branches_absolute_path)
         add_branch_to_clipboard(branch_clipboard_data, curr_path, false);
 
     branch_clipboard_data->print();
@@ -1369,7 +1578,7 @@ void TreeScreen::add_branch_to_clipboard(ClipboardBranch *branch_clipboard_data,
     //    std::shared_ptr<RecordTable> curr_item_record_table;
 
     // Добавление ветки
-    curr_item = _know_branch->item(path);
+    curr_item = _know_model_board->item(path);
     curr_item_fields = curr_item->all_fields(); // Раньше было getAllFieldsDirect()
     branch_id = curr_item_fields["id"];
 
@@ -1449,24 +1658,25 @@ void TreeScreen::paste_branch_smart(bool is_branch)
 
 
     // Получение индекса выделенной строки
-    QModelIndex index = current_index();
+    QModelIndex index = _tree_view->view_index();
 
     // Добавление ветки
     QString pasted_branch_id;
 
     if(is_branch)
-        pasted_branch_id = _know_branch->paste_sibling_branch(index, (ClipboardBranch *)branch);
+        pasted_branch_id = _tree_view->source_model()->paste_sibling_branch(index, (ClipboardBranch *)branch);
     else
-        pasted_branch_id = _know_branch->paste_child_branch(index, (ClipboardBranch *)branch);
+        pasted_branch_id = _tree_view->source_model()->paste_child_branch(index, (ClipboardBranch *)branch);
 
+    update_branch_on_screen(index.parent());
 
     // Установка курсора на новую созданную ветку
-    auto pasted_branch_item = _know_branch->item_by_id(pasted_branch_id);
-    QStringList pasted_branch_path = pasted_branch_item->path();
+    auto pasted_branch_item = _tree_view->source_model()->item_by_id(pasted_branch_id);
+    QStringList pasted_branch_path = pasted_branch_item->absolute_path();
     //    find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->set_tree_position(_know_branch->root_item()->id(), pasted_branch_path);
+    globalparameters.mainwindow()->set_tree_position(_tree_view->source_model()->root_item()->id(), pasted_branch_path);
 
-    _know_branch->synchronized(false);
+    _know_model_board->synchronized(false);
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)->
     save_knowtree();
@@ -1517,7 +1727,7 @@ void TreeScreen::decrypt_branch(void)
 void TreeScreen::encrypt_branch_item(void)
 {
     // Получаем указатель на текущую выбранную ветку дерева
-    auto item = _know_branch->item(current_index());
+    auto item = _tree_view->source_model()->item(_tree_view->view_index());
 
     // Шифрация ветки и всех подветок
     item->to_encrypt();
@@ -1527,14 +1737,14 @@ void TreeScreen::encrypt_branch_item(void)
     save_knowtree();
 
     // Обновляеются на экране ветка и ее подветки
-    update_branch_on_screen(current_index());
+    update_branch_on_screen(_tree_view->view_index());
 }
 
 
 void TreeScreen::decrypt_branch_item(void)
 {
     // Получаем указатель на текущую выбранную ветку дерева
-    auto item = _know_branch->item(current_index());
+    auto item = _tree_view->source_model()->item(_tree_view->view_index());
 
     // Расшифровка ветки и всех подветок
     item->to_decrypt();
@@ -1544,7 +1754,7 @@ void TreeScreen::decrypt_branch_item(void)
     save_knowtree();
 
     // Обновляеются на экране ветка и ее подветки
-    update_branch_on_screen(current_index());
+    update_branch_on_screen(_tree_view->view_index());
 
     // Проверяется, остались ли в дереве зашифрованные данные
     // если зашифрованных данных нет, будет предложено сбросить пароль
@@ -1555,7 +1765,7 @@ void TreeScreen::decrypt_branch_item(void)
 // Обновление на экране ветки и подветок
 void TreeScreen::update_branch_on_screen(const QModelIndex &index)
 {
-    auto source_model = static_cast<TreeKnowModel *>(_tree_view->model());
+    auto source_model = static_cast<KnowModel *>(_tree_view->model());
     // Для корневой ветки дается команда чтобы модель сообщила о своем изменении
     source_model->emit_datachanged_signal(index);
 
@@ -1604,7 +1814,7 @@ void TreeScreen::update_selected(void)
     }
 }
 
-void TreeScreen::to_candidate_screen(const QModelIndex &index)
+void TreeScreen::invoke_index(const QModelIndex &index)
 {
     candidate_from_knowtree_item(index);
 #ifdef _with_record_table
@@ -1620,10 +1830,10 @@ void TreeScreen::view_up_one_level(void)
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->save_text_area();
 
-    TreeKnowModel *current_treemodel = static_cast<TreeKnowModel *>(this->_tree_view->model());
+    KnowModel *current_treemodel = static_cast<KnowModel *>(this->_tree_view->model());
     boost::intrusive_ptr<TreeItem> current_root = current_treemodel->root_item();    // ->parent();
     //    assert(current_treemodel == _know_branch);
-    int origin_count = _know_branch->all_records_count();
+    int origin_count = _tree_view->source_model()->all_records_count();
 
     if(current_root) {
         //        current_treemodelknow->root(parent);   // QModelIndex index = _root->index(current_treemodelknow->root()->parent());
@@ -1687,17 +1897,16 @@ void TreeScreen::view_up_one_level(void)
 
         if(current_root->parent()) {
             setup_model(current_root->parent());  //_know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
-            _tree_view->selectionModel()->setCurrentIndex(static_cast<TreeKnowModel *>(_tree_view->model())->index(current_root->parent()), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
-            enable_up_action(   // true                    // _selected_branch->root() != _root->root()
-            ) ;
+            _tree_view->selectionModel()->setCurrentIndex(static_cast<KnowModel *>(_tree_view->model())->index(current_root), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
+            enable_up_action();
         } else {
             //            if(_root->root_item()->parent())
             //                _selected_branch->root_item(_root->root_item()->parent());
             //            else
-            setup_model(_know_branch->root_item());  // _know_branch->intercept(know_root()->root_item());
-            _tree_view->selectionModel()->setCurrentIndex(static_cast<TreeKnowModel *>(_tree_view->model())->index(current_root), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
-            enable_up_action(   // false
-            ) ;
+            QString path = current_root->absolute_path().at(1);
+            setup_model(_know_model_board->root_item());  // _know_branch->intercept(know_root()->root_item());
+            _tree_view->selectionModel()->setCurrentIndex(static_cast<KnowModel *>(_tree_view->model())->index(current_root->absolute_path().at(1)), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
+            enable_up_action();
         }
 
         //        _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
@@ -1707,13 +1916,11 @@ void TreeScreen::view_up_one_level(void)
         //    std::shared_ptr<TableData> record_tabledata = item->tabledata();
         //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
 
-        assert(_know_branch->all_records_count() >= origin_count);
+        assert(_tree_view->source_model()->all_records_count() >= origin_count);
 
         //        setup_model(_know_branch);
 
-        enable_up_action(
-            // true    // _selected_branch->root() != _root->root()
-        ) ;
+        enable_up_action() ;
 
         //    for(int i = 0; i < item->tabledata()->size(); i++) {
 
@@ -1746,14 +1953,14 @@ void TreeScreen::view_up_one_level(void)
         // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
         if(appconfig.getInterfaceMode() == "mobile") {
 
-            QStringList path = current_root->path_as_name();
+            QStringList path = current_root->absolute_path_as_name();
 
             // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
             int emptyStringIndex = path.indexOf("");
             path.removeAt(emptyStringIndex);
 
             //            find_object<RecordScreen>(table_screen_singleton_name)
-            globalparameters.entrance()->activiated_registered().first->record_screen()->tree_path(path.join(" > "));
+            globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
 
         }
 
@@ -1764,8 +1971,8 @@ void TreeScreen::view_up_one_level(void)
 
     } else {
         view_return_to_root();
-        enable_up_action(   // false
-        );
+        enable_up_action();   // false
+
     }
 
     //    if(current_treemodelknow->root()->parent() != _root->root()->parent()) {
@@ -1791,53 +1998,64 @@ void TreeScreen::view_up_one_level(void)
 
 void TreeScreen::view_return_to_root(void)
 {
+    KnowModel *current_treemodel = static_cast<KnowModel *>(this->_tree_view->model());
+    boost::intrusive_ptr<TreeItem> current_root = current_treemodel->root_item();
+    QString path = current_root->absolute_path().at(1);
     // _know_branch->intercept(know_root()->root_item());
-    setup_model(_know_branch->root_item());  // setup_model(_know_branch);
-    enable_up_action(// false
-    );
+    setup_model(_know_model_board->root_item());  // setup_model(_know_branch);
+    _tree_view->selectionModel()->setCurrentIndex(static_cast<KnowModel *>(_tree_view->model())->index(current_root->absolute_path().at(1)), QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
+    enable_up_action(); // false
+
 
 }
 
-void TreeScreen::candidate_from_search_result(std::shared_ptr<ItemsFlat> resultset_item)
+void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> _result_item)
 {
-    if(resultset_item->current_count() > 0) {
+    if(_result_item->current_count() > 0) {
 
-        RecordController *_record_controller = // resultset_item->unique_page()
-            resultset_item->child(0)->unique_page()->view()->record_controller();   // globalparameters.record_screens()->record_controller();
-        RecordModel *controller_source_model = _record_controller->source_model();
+        //        if(!_result_item->child(0)->unique_page()) {
+        //            globalparameters.entrance()->new_browser(_result_item->child(0)->field("url"));
+        //        }
 
-        setup_model(_know_branch);
+        //        RecordController *_record_controller = // resultset_item->unique_page()
+        //            _result_item->child(0)->unique_page()->view()->record_controller();   // globalparameters.record_screens()->record_controller();
+        //        RecordModel *controller_source_model = _record_controller->source_model();
+
+        //        //        setup_model(_know_branch);
+
         _actionlist["return_to_root"]->setEnabled(true);
 
-        //    assert(controller_source_model->tree_item() == _selected_branch->_root_item);
-        controller_source_model->reset_internal_data();  // delete source_model;   // dangerous!!!
-        //    std::shared_ptr<RecordTable> target_data = source_model->tree_item()->tabledata();    // resultset_item->tabledata();
-        //    controller->init();
+        //        //    assert(controller_source_model->tree_item() == _selected_branch->_root_item);
+
+        //        controller_source_model->reset_internal_data();  // delete source_model;   // dangerous!!!
+
+        //        //    std::shared_ptr<RecordTable> target_data = source_model->tree_item()->tabledata();    // resultset_item->tabledata();
+        //        //    controller->init();
 
 
 
 
-        //    //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-        //    auto dommodel = resultset_item->export_to_dom();    // source->init(startItem, QDomElement());
-        //    resultset_item->remove_all_children();              // dommodel has noting to do with children!
+        //        //    //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+        //        //    auto dommodel = resultset_item->export_to_dom();    // source->init(startItem, QDomElement());
+        //        //    resultset_item->remove_all_children();              // dommodel has noting to do with children!
 
-        //    auto result_data = std::make_shared<RecordTable>(dommodel); //    resultset_item->tabledata(dommodel);               //    resultset_item->table_clear();    // already insert into table_init
+        //        //    auto result_data = std::make_shared<RecordTable>(dommodel); //    resultset_item->tabledata(dommodel);               //    resultset_item->table_clear();    // already insert into table_init
 
-        //    //    resultset_data->init(resultset_item, dommodel);     // just for init the item bind for reault set record table
+        //        //    //    resultset_data->init(resultset_item, dommodel);     // just for init the item bind for reault set record table
 
-        //    //    _knowtreemodel->save();
+        //        //    //    _knowtreemodel->save();
 
-        //        controller_source_model->init_source_model(resultset_item   //? should we put it to treemodelknow? not the source of browser_pages
-        //                                                   , _record_controller
-        //                                                   , _record_controller->record_screen()
-        //                                                   , globalparameters.mainwindow()
-        //                                                   , globalparameters.meta_editor()
-        //                                                   // , globalparameters.record_screens()
-        //                                                  );
+        //        //        controller_source_model->init_source_model(resultset_item   //? should we put it to treemodelknow? not the source of browser_pages
+        //        //                                                   , _record_controller
+        //        //                                                   , _record_controller->record_screen()
+        //        //                                                   , globalparameters.mainwindow()
+        //        //                                                   , globalparameters.meta_editor()
+        //        //                                                   // , globalparameters.record_screens()
+        //        //                                                  );
 
 
 
-        setup_model(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr, resultset_item)));   // _know_branch->intercept(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr, resultset_item)));
+        setup_model(_result_item);   // _know_branch->intercept(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr, resultset_item)));
 
 
 
@@ -1894,7 +2112,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
     globalparameters.mainwindow()->save_text_area();
 
     // Получаем указатель на текущую выбранную ветку дерева
-    auto result_item = _know_branch->item(index);
+    auto result_item = _tree_view->source_model()->item(index);
 
     if(result_item->count() > 0) {    // && (result_item->field("url") != "" || result_item->field("url") == "" )
         // Вначале все инструменты работы с веткой включаются
@@ -1920,7 +2138,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
 
 
-                    _tree_view->source_model().reset(); // _know_branch->clear();  // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
+                    _tree_view->setup_model(boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>())));   // _know_branch->clear();  // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
 
 
 
@@ -1949,7 +2167,7 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
             }
         }
 
-        if(static_cast<TreeKnowModel *>(_tree_view->model())->root_item() != result_item)setup_model(result_item); // _know_branch->intercept(result_item);     //? never do this!!!
+        if(_tree_view->source_model()->root_item() != result_item) setup_model(result_item); // _know_branch->intercept(result_item);     //? never do this!!!
 
         //        _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
         //        _shadow_candidate_model->_root_item->field("name", result_item->field("name"));
@@ -1962,8 +2180,8 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
 
         // setup_model(_know_branch);
 
-        enable_up_action(// _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id()   // _know_branch->root_item()->id() != know_root()->root_item()->id()
-        ) ;
+        enable_up_action(); // _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id()   // _know_branch->root_item()->id() != know_root()->root_item()->id()
+
 
         //    for(int i = 0; i < item->tabledata()->size(); i++) {
 
@@ -1996,14 +2214,14 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
         // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
         if(appconfig.getInterfaceMode() == "mobile") {
 
-            QStringList path = result_item->path_as_name();
+            QStringList path = result_item->absolute_path_as_name();
 
             // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
             int emptyStringIndex = path.indexOf("");
             path.removeAt(emptyStringIndex);
 
             //            find_object<RecordScreen>(table_screen_singleton_name)
-            globalparameters.entrance()->activiated_registered().first->record_screen()->tree_path(path.join(" > "));
+            globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
 
         }
 
@@ -2012,13 +2230,15 @@ void TreeScreen::candidate_from_knowtree_item(const QModelIndex &index)
         // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
         _tree_view->resizeColumnToContents(0);
 
-        if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
+        //        if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
 
     } else {      //        if(result_item->field("url") != browser::Browser::_defaulthome)
-        globalparameters.entrance()->activate(result_item);
+        //        if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
         // Переключаются окна (используется для мобильного интерфейса)
         //        globalparameters.window_switcher()->switchFromTreeToRecordtable();
     }
+
+    if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
 }
 
 
@@ -2070,135 +2290,6 @@ int TreeScreen::first_selecteditem_row(void)
 }
 
 
-// Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
-QModelIndex TreeScreen::current_index(void)
-{
-    //    if(!_tree_view->selectionModel()->currentIndex().isValid()) {
-
-    //        boost::intrusive_ptr<TreeItem> _item = nullptr;
-    //        TreeKnowModel *current_model = static_cast<TreeKnowModel *>(_tree_view->model());
-
-    //        if(0 == current_model->root_item()->current_count()) {
-    //            return_to_root();   //
-    //            current_model = static_cast<TreeKnowModel *>(_tree_view->model());
-    //            _item = current_model->root_item()->add_child();
-    //        } else {
-    //            _item = current_model->root_item()->child(0);  // _know_branch->root_item()->current_count() - 1
-
-    //        }
-
-    //        assert(_item);
-
-    //        QModelIndex cur_index;
-
-
-
-    //        //        _tree_view->reset();
-    //        //        _tree_view->setModel(current_model);
-
-    //        if(_item) {
-    //            cur_index = current_model->index(_item);    // item->parent()->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
-
-    //            assert(cur_index.isValid());
-    //            assert(current_model->item(cur_index) == _item);
-    //            //            candidate_from_knowtree_item(cur_index);
-
-    //            assert(_tree_view->model());
-
-    //            _tree_view->selectionModel()->setCurrentIndex(cur_index // , QItemSelectionModel::SelectCurrent    //
-    //                                                          , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-    //                                                         );
-    //            _tree_view->selectionModel()->select(cur_index  //, QItemSelectionModel::SelectCurrent
-    //                                                 , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-    //                                                );
-    //            //            _tree_view->clicked(cur_index);
-    //        }
-
-    //        //        else {
-    //        //            //            cur_index = _knowtreemodel->index_child(
-    //        //            //                            _knowtreemodel->index(_knowtreemodel->_root_item)   // does not work!
-    //        //            //                            , _knowtreemodel->_root_item->child_count() - 1);
-
-    //        //            cur_index = _knowtreemodel->index(
-    //        //                            _knowtreemodel->_root_item->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
-    //        //                        );
-
-    //        //            assert(cur_index.isValid());
-    //        //            _knowtreeview->selectionModel()->setCurrentIndex(
-    //        //                cur_index
-    //        //                //                _knowtreemodel->index_child(
-    //        //                //                    _knowtreemodel->index(_knowtreemodel->_root_item)
-    //        //                //                    , _knowtreemodel->_root_item->child_count() - 1)
-
-
-
-    //        //                //                _knowtreemodel->index(
-    //        //                //                    _knowtreemodel->_root_item->child
-    //        //                //                    (
-    //        //                //                        _knowtreemodel->_root_item->child_count() - 1
-    //        //                //                    )
-    //        //                //                )
-    //        //                //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
-    //        //                //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
-    //        //                , QItemSelectionModel::SelectCurrent
-    //        //            );
-    //        //        }
-    //    }
-
-    //    auto v = _treeknowview->selectionModel()->currentIndex();
-    //    candidate_from_knowtree_item(cur_index);
-    //    assert(_tree_view->selectionModel()->currentIndex().isValid());    // this line is to be recovery
-    //    assert(cur_index.isValid());
-    return // cur_index;   // temporary setting???   //
-        _tree_view->selectionModel()->currentIndex();
-}
-
-// Получение индекса текущего элемента на котором стоит курсор
-QModelIndex TreeScreen::last_index(void)
-{
-    //    if(!_tree_view->selectionModel()->currentIndex().isValid()) {
-    boost::intrusive_ptr<TreeItem> _item = nullptr;
-
-    TreeKnowModel *current_model = static_cast<TreeKnowModel *>(_tree_view->model());
-
-    if(0 == current_model->root_item()->current_count()) {
-        view_return_to_root();   //
-        current_model = static_cast<TreeKnowModel *>(_tree_view->model());
-        _item = current_model->root_item()->add_child();
-    } else {
-        _item = current_model->root_item()->child(current_model->root_item()->current_count() - 1);
-    }
-
-    assert(_item);
-    QModelIndex cur_index = current_model->index(_item);    // item->parent()->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
-
-    assert(cur_index.isValid());
-    assert(current_model->item(cur_index) == _item);
-    //        candidate_from_knowtree_item(cur_index);
-
-    //    if(!_knowtreeview->selectionModel()->currentIndex().isValid()) {
-    _tree_view->selectionModel()->setCurrentIndex(
-        cur_index
-        //        _knowtreemodel->index(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1))
-        //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
-        //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
-        // , QItemSelectionModel::SelectCurrent
-        , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-    );
-    //    }
-    _tree_view->selectionModel()->select(cur_index
-                                         // , QItemSelectionModel::SelectCurrent
-                                         , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-                                        );
-    //        _tree_view->clicked(cur_index);
-    //    candidate_from_knowtree_item(cur_index);
-
-    //    }
-
-    //    assert(_tree_view->selectionModel()->currentIndex().isValid());    // this line is to be recovery
-    return _tree_view->selectionModel()->currentIndex();
-}
-
 
 // Метод, следящий, не обнулилось ли дерево
 // Если дерево стало пустым, данный метод добавит одну ветку
@@ -2206,12 +2297,12 @@ QModelIndex TreeScreen::last_index(void)
 // If the tree was empty, the method will add one branch
 void TreeScreen::tree_empty_controll(void)
 {
-    qDebug() << "treescreen::tree_empty_control() : Tree branch count " << _know_branch->rowCount();
+    qDebug() << "treescreen::tree_empty_control() : Tree branch count " << _know_model_board->rowCount();
 
-    if(_know_branch->rowCount() == 0) {
+    if(_know_model_board->rowCount() == 0) {
         qDebug() << "treescreen::tree_empty_control() : Tree empty, create blank branch";
 
-        add_branch(QModelIndex(), tr("Rename me"), false, _know_branch);
+        add_branch(QModelIndex(), tr("Rename me"), false, _know_model_board);
     }
 }
 
@@ -2221,7 +2312,7 @@ void TreeScreen::tree_empty_controll(void)
 void TreeScreen::tree_crypt_control(void)
 {
     // Если в дереве нет шифрования
-    if(_know_branch->is_contains_crypt_branches() == false) {
+    if(_know_model_board->is_contains_crypt_branches() == false) {
         // Запускается диалог сброса пароля шифрования
         Password pwd;
         pwd.resetPassword();
@@ -2232,7 +2323,7 @@ void TreeScreen::tree_crypt_control(void)
 boost::intrusive_ptr<TreeItem> TreeScreen::intercept(QString id)
 {
     //    auto prepared = know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id)));
-    auto result = _know_branch->item(_know_branch->index(TreeKnowModel::delegater(id))); // _know_branch->intercept(prepared);    //item(_know_branch->index(prepared));
+    auto result = _know_model_board->item(_know_model_board->index(KnowModel::delegater(id))); // _know_branch->intercept(prepared);    //item(_know_branch->index(prepared));
 
     setup_model(result);   //    return _know_branch->intercept(know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id))));
 
@@ -2257,8 +2348,8 @@ void TreeScreen::save_knowtree(void)
     //        know_root_holder::know_root()->synchronize(_know_branch->root_item());
 
     //    know_root_holder::know_root()->save();
-
-    _know_branch->save();
+    _tree_view->sychronize();
+    _know_model_board->save();
 
 }
 
@@ -2266,7 +2357,7 @@ void TreeScreen::save_knowtree(void)
 // Перечитывание дерева веток с диска
 void TreeScreen::reload_knowtree(void)
 {
-    _know_branch->reload(); // do not do this if xml_file_name of this object is null
+    _know_model_board->reload(); // do not do this if xml_file_name of this object is null
     //    know_root_holder::know_root()->reload();
 
 }

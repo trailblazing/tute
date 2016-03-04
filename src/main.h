@@ -100,13 +100,13 @@ class GlobalParameters;
 extern WalkHistory walkhistory;
 extern GlobalParameters globalparameters;
 extern const char *meta_editor_singleton_name;
-extern const char *table_screen_singleton_name;
+extern const char *record_screen_multi_instance_name;
 extern const char *tree_screen_singleton_name;
 extern const char *find_screen_singleton_name;
 extern const char *download_manager_singleton_name;
 extern const char *windowswitcher_singleton_name;
 extern const char *entrance_singleton_name;
-extern const char *table_controller_singleton_name;
+extern const char *record_controller_multi_instance_name;
 extern const char *knowtreeview_singleton_name;
 extern const char *global_root_id;
 

@@ -11,6 +11,9 @@
 #include "views/browser/entrance.h"
 #include "views/record/MetaEditor.h"
 #include "views/browser/tabwidget.h"
+#include "views/tree/KnowView.h"
+
+extern const char *record_screen_multi_instance_name;
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -62,17 +65,17 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto item = globalparameters.tree_screen()->know_branch()->item(globalparameters.tree_screen()->current_index());
+    auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(globalparameters.tree_screen()->tree_view()->view_index());
 
-    if(item != globalparameters.tree_screen()->know_branch()->root_item()) {
+    if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
         RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
-        QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
-                                                ); // temporary setting
+        QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
+        // temporary setting
         object->show();
         appconfig.setFocusWidget(object->objectName());
 
-        globalparameters.vtab()->setCurrentWidget(record_screen         // globalparameters.record_screens()[0]
-                                                 ); // temporary setting
+        globalparameters.vtab()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
+        // temporary setting
     }
 }
 
@@ -102,9 +105,9 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto item = globalparameters.tree_screen()->know_branch()->item(globalparameters.tree_screen()->current_index());
+    auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(globalparameters.tree_screen()->tree_view()->view_index());
 
-    if(item != globalparameters.tree_screen()->know_branch()->root_item()) {
+    if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
         RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
         QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                                 ); // temporary setting
@@ -226,18 +229,18 @@ void WindowSwitcher::restoreFocusWidget()
         return;
     }
 
-    if(widgetName == table_screen_singleton_name) {
-        auto item = globalparameters.tree_screen()->know_branch()->item(globalparameters.tree_screen()->current_index());
+    if(widgetName == record_screen_multi_instance_name) {
+        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(globalparameters.tree_screen()->tree_view()->view_index());
 
-        if(item != globalparameters.tree_screen()->know_branch()->root_item()) {
-            RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+        if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+            RecordScreen *_record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 
-            QWidget *object = static_cast<QWidget *>(record_screen);              // globalparameters.record_screens()[0]
+            QWidget *object = static_cast<QWidget *>(_record_screen);              // globalparameters.record_screens()[0]
             // temporary setting
             object->show();
 
-            globalparameters.vtab()->setCurrentWidget(record_screen);             // globalparameters.record_screens()[0]
+            globalparameters.vtab()->setCurrentWidget(_record_screen);             // globalparameters.record_screens()[0]
             // temporary setting
 
             appconfig.setFocusWidget(object->objectName());

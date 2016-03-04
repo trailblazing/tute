@@ -57,7 +57,7 @@
 #include "views/browser/featurepermissionbar.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/record_table/RecordView.h"
-
+#include "models/record_table/RecordModel.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -138,7 +138,7 @@ namespace browser {
         typedef TreeItem::active_helper active_helper;
 
         WebPage(QWebEngineProfile *profile
-                , const boost::intrusive_ptr<TreeItem> requested_item
+                , const boost::intrusive_ptr<TreeItem> _item
                 , Browser *_browser, TabWidget *_tabmanager
                 , RecordController *_record_controller
                 , WebView *parent = 0
@@ -150,9 +150,9 @@ namespace browser {
         WebView *view() {assert(_view); return _view;}
         //        std::map<QString, boost::intrusive_ptr<TreeItem>> binded_items()const;
         RecordController *record_controller() {return _record_controller;}
-        WebView *active();
+        WebView *activate();
         WebView *load(const boost::intrusive_ptr<TreeItem> item, bool checked = true);
-        WebView *bind(boost::intrusive_ptr<TreeItem> requested_item);
+        WebView *bind(boost::intrusive_ptr<TreeItem> it);
 
         void load(const QUrl &url) = delete;
 
@@ -165,41 +165,22 @@ namespace browser {
         boost::intrusive_ptr<TreeItem> current_item()const {return _item;}
 
         struct ActiveRecordBinder {
-            WebPage *_the;
+            WebPage *_page;
             //            bool _make_current;
-            //            RecordTableController *_record_ontroller;
-            ActiveRecordBinder(WebPage *the
-                               //                               , bool make_current = true
-                              )
-            //                            , RecordTableController *recordtablecontroller
-            //                          = globalparameters.getRecordTableScreen()->getRecordTableController()
-
-                : _the(the)
-                  //                , _make_current(make_current)
-                  //              , _record_ontroller(recordtablecontroller)
+            ActiveRecordBinder(WebPage *_page)  //                               , bool make_current = true
+                : _page(_page)                   //                , _make_current(make_current)
             {}
 
-            WebView *binder(boost::intrusive_ptr<TreeItem> record, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
-            {
-                WebView *view = _the->bind(record);
-                (record.get()->*_bind)(_the);
-                return view;  // _the->load(record, _make_current);
-                //                                    , _record_ontroller
+            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *));
 
-            }
+            WebView *activator(boost::intrusive_ptr<TreeItem> item);
 
-            WebView *activator(boost::intrusive_ptr<TreeItem> record)
-            {
-                assert(record->unique_page() == _the);
-                return _the->active();
-            }
         };
 
         boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> item);
-        void add_item_to_source_model(boost::intrusive_ptr<TreeItem> item);
-        void remove_item_from_source_model(boost::intrusive_ptr<TreeItem> item);
-        void break_page_linked_item(boost::intrusive_ptr<TreeItem> item);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
-        void break_page_shared_items();
+
+        void break_item(boost::intrusive_ptr<TreeItem> item);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
+        void break_items();
         void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> current_item);
 
         boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item);
@@ -214,12 +195,9 @@ namespace browser {
 #endif
         virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-        void update_record(const QUrl &url
-                           // = ([&](WebPage *const the)->QUrl{return the->url();})(this)
-                           , const QString &title
-                           // = title()
-                          );
-
+        void update_record(const QUrl &url, const QString &title);
+        void update_record_view(boost::intrusive_ptr<TreeItem> item);
+        void remove_item_from_record_screen(boost::intrusive_ptr<TreeItem> item);
 
     private slots:
 
@@ -322,7 +300,7 @@ namespace browser {
         Q_OBJECT
 
     public:
-        WebView(boost::intrusive_ptr<TreeItem> requested_item
+        WebView(boost::intrusive_ptr<TreeItem> _item
                 , QWebEngineProfile *profile    // , bool openinnewtab
                 , Browser           *_browser
                 , TabWidget         *_tabmanager

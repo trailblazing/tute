@@ -19,7 +19,7 @@
 class Record;
 class ItemsFlat;
 class TreeItem;
-class TreeKnowModel;
+class KnowModel;
 class RecordController;
 class MainWindow;
 class TreeScreen;
@@ -30,7 +30,7 @@ class RecordScreen;
 
 namespace browser {
     class Entrance;
-    class Brower;
+    class Browser;
     class TabWidget;
 }
 
@@ -82,12 +82,13 @@ public:
     // Интерфейс модели, сколько столбцов в таблице
     int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
-    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 
-    void remove_child(boost::intrusive_ptr<TreeItem> it);
+
+
 
     QString field(int pos, QString name);
     void fields(int pos, QMap<QString, QString> data);
+    boost::intrusive_ptr<TreeItem> find_bind(boost::intrusive_ptr<TreeItem> item)const;
     boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item)const;
     boost::intrusive_ptr<TreeItem> find(QUrl _url)const;
     int is_item_exists(QString find_id);
@@ -100,8 +101,7 @@ public:
     boost::intrusive_ptr<TreeItem> child(QString id)const;
     boost::intrusive_ptr<TreeItem> item(int pos) {return child(pos);}
     boost::intrusive_ptr<TreeItem> item(int pos)const {return child(pos);}
-    // Добавление записей
-    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);
+
 
 
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item, RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
@@ -123,8 +123,7 @@ public:
     int count()const; // {return _tabmanager->count();}
     void work_pos(int pos);
     int work_pos()const;
-    int move_up(const int pos);
-    int move_dn(const int pos);
+
 
 
 
@@ -143,6 +142,14 @@ private:
     //    void browser_pages(ItemsFlat *_browser_pages);
     //    void root(boost::intrusive_ptr<TreeItem> item);
     void on_table_config_changed(void);
+
+    // Добавление записей
+    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+    void remove_child(boost::intrusive_ptr<TreeItem> it);
+
+    int move_up(const int pos);
+    int move_dn(const int pos);
 
     //protected:
 

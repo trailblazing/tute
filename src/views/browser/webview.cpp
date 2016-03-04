@@ -325,7 +325,7 @@ namespace browser {
 
 
     WebPage::WebPage(QWebEngineProfile *profile
-                     , const boost::intrusive_ptr<TreeItem> requested_item
+                     , const boost::intrusive_ptr<TreeItem> _item
                      , Browser              *_browser
                      , TabWidget            *_tabmanager
                      , RecordController     *_record_controller
@@ -347,28 +347,10 @@ namespace browser {
     {
         boost::intrusive_ptr<TreeItem> item_result;
 
-        if(!requested_item->is_registered_to_record_controller()) {
-            //            auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(this);
-            item_result = // _record_controller->
-                request_item( // recursive calling!
-                    requested_item
-                    //                              , std::make_shared <
-                    //                              sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>
-                    //                              > (
-                    //                                  ""
-                    //                                  , &WebPage::ActiveRecordBinder::binder
-                    //                                  , ar  // boost::make_shared<WebPage::active_record>(this, true)
-                    //                              )
-                    //                              , std::make_shared <
-                    //                              sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>
-                    //                              > (
-                    //                                  ""
-                    //                                  , &WebPage::ActiveRecordBinder::activator
-                    //                                  , ar  // boost::make_shared<WebPage::active_record>(this, true)
-                    //                              )
-                );
+        if(!_item->binder() || !_item->activator()) {
+            item_result = request_item(_item);    // _record_controller->   // may be recursive calling!
         } else {
-            item_result = equip_registered(requested_item);
+            item_result = equip_registered(_item);
         }
 
         if(item_result->is_lite())item_result->to_fat();
@@ -418,56 +400,29 @@ namespace browser {
 
     WebPage::~WebPage()
     {
-        //            if(_record) {
-        //                _record->page(nullptr); // globalparameters.getRecordTableScreen()->previousInFocusChain();    //_record;
-        //                _record = nullptr;
-        //            }
-
-        //            std::list<boost::intrusive_ptr<Record> > records = binded_records();
-
-        // break_page_shared_items();   // move to on_close_requested()
+        //        break_page_shared_items();   // move to on_close_requested()
     }
 
 
-    void WebPage::add_item_to_source_model(boost::intrusive_ptr<TreeItem> item)
+    void WebPage::update_record_view(boost::intrusive_ptr<TreeItem> item)
     {
-        //        auto tab_manager = view()->tabmanager();
-        auto source_model = _record_controller->source_model(); // tab_manager->source_model();
+        _record_controller->update_record_view(item);
 
-        if(!source_model->is_item_exists(item->field("id"))) {
-            //        auto records = table_data->records();
-            //        records.append(_record);    //
-            if(item->is_lite())item->to_fat();
+        //        //        auto tab_manager = view()->tabmanager();
+        //        auto source_model = _record_controller->source_model(); // tab_manager->source_model();
 
-            QModelIndex index = _record_controller->pos_to_sourceindex(source_model->size());
-            source_model->insert_new_item(index, item);
-            //            tab_manager->reset_tabledata(table_data);
-        }
+        //        if(!source_model->is_item_exists(item->field("id"))) {
+        //            //        auto records = table_data->records();
+        //            //        records.append(_record);    //
+        //            if(item->is_lite())item->to_fat();
+
+        //            //            QModelIndex index = _record_controller->pos_to_sourceindex(source_model->size());
+        //            _record_controller->addnew_item_fat(item);    //index,
+        //            //            tab_manager->reset_tabledata(table_data);
+        //        }
     }
 
-    // this will delete record for ever from database if you use real tree_item as source model of record_view
-    void WebPage::remove_item_from_source_model(boost::intrusive_ptr<TreeItem> item)
-    {
 
-        if(_tabmanager && _tabmanager->count() > 0) {
-            // auto source_model = _record_controller->source_model(); // tab_manager->source_model();
-            assert(item);
-            assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
-
-            //            if(source_model->is_item_exists(item->field("id"))  //                && record->unique_page() == this
-            //              ) {
-            //                source_model->remove_child(item->field("id"));    // this will delete record for ever from database
-            //            }
-
-            _tabmanager->closeTab(_tabmanager->indexOf(item->unique_page()->view()));
-
-            for(int i = 0; i < _tabmanager->count(); i++) {
-                if(_tabmanager->webView(i)->page() == item->unique_page()) {
-                    _tabmanager->closeTab(i);   // source_model->remove_child(i);
-                }
-            }
-        }
-    }
 
     Browser *WebPage::browser()
     {
@@ -538,11 +493,11 @@ namespace browser {
         //        return active();
 
         //        _record->active_immediately(true);
-        active();
+        activate();
         return _view;
     }
 
-    WebView *WebPage::active()
+    WebView *WebPage::activate()
     {
         QString _url_str = _item->field("url");
         QUrl _url = QUrl(_url_str);
@@ -580,16 +535,16 @@ namespace browser {
                 _browser->activateWindow();
             }
 
-            if(_url_str != Browser::_defaulthome
-               // && _loadingurl.isValid()
-               // && _loadingurl == _url
-              ) {
+            if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
+
                 if(_record_controller->first_selectionid() != _item->field("id") || _view->tabmanager()->currentWebView() != _view) {
                     _tabmanager->setCurrentWidget(_view);
                     _view->show();
                     //        if(checked) // globalparameters.mainwindow()
                     _view->setFocus();   // make upate validate
-                    _record_controller->select_id(_item->field("id"));
+
+                    if(_record_controller->view()->selection_first_id() != _item->field("id"))
+                        _record_controller->select_id(_item->field("id"));
                 }
             }
         }
@@ -687,11 +642,11 @@ namespace browser {
         //        else
         if(type == QWebEnginePage::WebBrowserWindow) {
 
-            std::pair<Browser *, WebView *> dp = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));               // QtSingleApplication::instance()->newMainWindow();
+            Browser *browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
-            page = dp.second->page();  // mainWindow->currentTab()->page();
+            page = browser->tabmanager()->currentWebView()->page();  // mainWindow->currentTab()->page();
 
         } else
 
@@ -726,20 +681,7 @@ namespace browser {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
 
-                    auto record = // _record_controller
-                        view->page()->request_item(
-                            QUrl(Browser::_defaulthome)
-                            //                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                            //                                          ""
-                            //                                          , &WebPage::ActiveRecordBinder::binder
-                            //                                          , ar
-                            //                                      )
-                            //                                      , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                            //                                          ""
-                            //                                          , &WebPage::ActiveRecordBinder::activator
-                            //                                          , ar
-                            //                                      )
-                        );
+                    auto record = view->page()->request_item(QUrl(Browser::_defaulthome));
                     //                record->generate();
                     record->activate();
                     page = view->page();
@@ -751,21 +693,7 @@ namespace browser {
 
                     // already create window, why do this? -- refer to demo browser
                     //                    auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
-                    boost::intrusive_ptr<TreeItem> r
-                        = // _record_controller
-                            browser()->tabWidget()->request_item(
-                                QUrl(Browser::_defaulthome)
-                                //                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                                //                                  ""
-                                //                                  , &TabWidget::ActiveRecordBinder::binder
-                                //                                  , arint
-                                //                              )
-                                //                              , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                                //                                  ""
-                                //                                  , &TabWidget::ActiveRecordBinder::activator
-                                //                                  , arint
-                                //                              )
-                            );
+                    boost::intrusive_ptr<TreeItem> r = _browser->tabWidget()->request_item(QUrl(Browser::_defaulthome));
                     //                return //_record->page();
                     // globalparameters.entrance()->invoke_view(new_record).second->page();
                     //                    this->dockedwindow()->tabWidget()->newTab(blank_record, true)->page();
@@ -818,9 +746,9 @@ namespace browser {
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
             boost::intrusive_ptr<TreeItem> record = page->_item;
-            record->natural_field_source("url", url.toString());
+            record->field("url", url.toString());
             page->load(record); // record->generate();
-            page->active();     // record->active();
+            // page->activate();     // record->active();
         });
 
         return page;
@@ -900,11 +828,11 @@ namespace browser {
     void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
     {
 
-        if(globalparameters.entrance()->window_list().count() == 0) {
-            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
-        }
+        //        if(globalparameters.entrance()->browsers().count() == 0) {
+        //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+        //        }
 
-        Browser *browser = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
@@ -936,20 +864,20 @@ namespace browser {
     {
         Q_UNUSED(requestUrl);
 
-        if(globalparameters.entrance()->window_list().count() == 0) {
-            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
-        }
+        //        if(globalparameters.entrance()->browsers().count() == 0) {
+        //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+        //        }
 
-        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
 
-        QDialog dialog(mainWindow);
+        QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
 
         Ui::ProxyDialog proxyDialog;
         proxyDialog.setupUi(&dialog);
 
         proxyDialog.iconLabel->setText(QString());
-        proxyDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+        proxyDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser).pixmap(32, 32));
 
         QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
         introMessage = introMessage.arg(proxyHost.toHtmlEscaped());
@@ -1247,7 +1175,7 @@ namespace browser {
     //    }
 
     // which_page_point_to_me
-    void WebPage::break_page_shared_items()
+    void WebPage::break_items()
     {
 
         //        for(auto &j : _items) {
@@ -1259,74 +1187,94 @@ namespace browser {
 
         // here, remove_child_from_itemsflat, TabWidget::closeTab?
         // page, item, source_model, sychronization, need to be done?
-        {
 
-            //            if(_record_controller->source_model()->is_item_exists(this->_item->id())) {
-            //                _record_controller->source_model()->remove_child(this->_item);
-            //                //            break_records(); // same as _record_controller->source_model()->remove_child()
-            //            }
-            if(_tabmanager->indexOf(_item->unique_page()->view()) != -1)_tabmanager->closeTab(_tabmanager->indexOf(_item->unique_page()->view()));
 
-            int tab_widget_count = _tabmanager->count();
-            int tab_bar_count = _tabmanager->tabbar()->count();
-            int source_model_size = _record_controller->source_model()->size();
-            assert(tab_bar_count == tab_widget_count);
+        //            if(_record_controller->source_model()->is_item_exists(this->_item->id())) {
+        //                _record_controller->source_model()->remove_child(this->_item);
+        //                //            break_records(); // same as _record_controller->source_model()->remove_child()
+        //            }
 
-            if(source_model_size > tab_widget_count) {
-                bool found = false;
 
-                for(int i = 0; i < source_model_size; i++) {
-                    auto item_maybe_to_removed = _record_controller->source_model()->child(i);
 
-                    if(item_maybe_to_removed->unique_page() == this || !item_maybe_to_removed->page_valid()) { // others refrer to this
-                        if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)_tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  // _record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+        //            if(_tabmanager->indexOf(_item->unique_page()->view()) != -1)
+        //                _tabmanager->closeTab(_tabmanager->indexOf(_item->unique_page()->view()));
 
-                        break_page_linked_item(item_maybe_to_removed);
-                        found = true;
-                        break;
-                    }
+        int tab_widget_count = _tabmanager->count();
+        int tab_bar_count = _tabmanager->tabbar()->count();
+        int source_model_size = _record_controller->source_model()->size();
+        assert(tab_bar_count == tab_widget_count);
+        assert(source_model_size == tab_widget_count);  // it is done from
+
+        if(source_model_size > tab_widget_count) {      // never in
+
+            bool found = false;
+
+            for(int i = 0; i < source_model_size; i++) {
+                auto item_maybe_to_removed = _record_controller->source_model()->child(i);
+
+                if(item_maybe_to_removed->unique_page() == this || !item_maybe_to_removed->page_valid()) { // others refrer to this
+                    //                        if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)
+                    //                            _tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  // _record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+
+                    break_item(item_maybe_to_removed);
+                    found = true;
+                    break;
                 }
-
-                assert(found == true);
             }
 
+            assert(found == true);
+        }
 
-            assert(_tabmanager->count() == _tabmanager->tabbar()->count());
-            assert(_record_controller->source_model()->size() == _tabmanager->count());
-            assert(_record_controller->source_model()->size() == _tabmanager->tabbar()->count());
+
+        assert(_tabmanager->count() == _tabmanager->tabbar()->count());
+        assert(_record_controller->source_model()->size() == _tabmanager->count());
+        assert(_record_controller->source_model()->size() == _tabmanager->tabbar()->count());
+
+    }
+
+    // this will delete record for ever from database if you use real tree_item as source model of record_view
+    void WebPage::remove_item_from_record_screen(boost::intrusive_ptr<TreeItem> item)
+    {
+
+        if(_tabmanager && _tabmanager->count() > 0) {
+            RecordModel *source_model = _record_controller->source_model(); // tab_manager->source_model();
+            assert(item);
+            assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
+
+            if(source_model->is_item_exists(item->field("id"))) { //                && record->unique_page() == this
+                _record_controller->remove_child(item->id());
+            }
         }
     }
 
     // which_page_point_to_me
-    void WebPage::break_page_linked_item(boost::intrusive_ptr<TreeItem> item)
+    void WebPage::break_item(boost::intrusive_ptr<TreeItem> item)
     {
         // what _record point to is a stack variable, it's address may be not correct! especially when it was destoried
         if(item) {
 
+
+            remove_item_from_record_screen(item);
+
             if(item->page_valid() && item->unique_page()) {
                 if(item->unique_page() == this) {
                     // remove_item_from_source_model(item);    // this will delete record for ever from database if you use real tree_item as source model of record_view
-                    item->binder().reset();
-                    item->activator().reset();
-                    item->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
+                    item->unload_page();
+                    //                    item->binder().reset();
+                    //                    item->activator().reset();
+                    //                    item->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
                     //                    assert(!record->binder());
                     //                    assert(!record->activator());
                     assert(!item->page_valid() && !item->unique_page());
                 }
             }
 
-            //            if(_items.size() > 0  && _items.find(item->field("id")) != _items.end()
-            //              ) {
-            //                _items.erase(item->field("id"));
-            //            }
-
-            remove_item_from_source_model(item);    // this will delete record for ever from database if you use real tree_item as source model of record_view
         }
 
         //        _record.reset();  // do not reset, you may need it later
     }
 
-    WebView *WebPage::bind(boost::intrusive_ptr<TreeItem> requested_item)
+    WebView *WebPage::bind(boost::intrusive_ptr<TreeItem> it)
     {
         //        Record *new_record = nullptr;
         //        RecordTableData *data = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
@@ -1362,13 +1310,13 @@ namespace browser {
         //        TabWidget *_tabmanager = view()->tabmanager();
         //        assert(_tabmanager);   // maybe before TabWidget::addTab
 
-        if(requested_item) {
+        if(it) {
 
-            if((_item && _item.get() != requested_item.get())
+            if((_item && _item.get() != it.get())
                // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
               ) {
 
-                break_page_linked_item(_item);
+                break_item(_item);
                 //                //                tabmanager->table_data()->delete_record_by_id(_record->natural_field_source("id"));
                 //                //                tabmanager->table_data()->shadow_record(tabmanager->table_data()->size(), record);
                 //                remove_item_from_itemsflat(_tree_item);    // makes ure this will not delete record for ever from database
@@ -1420,7 +1368,7 @@ namespace browser {
 
             }
 
-            _item = requested_item;
+            _item = it;
             //        else {
             //            if(_record)_record->bind_page(this);
             //        }
@@ -1445,6 +1393,8 @@ namespace browser {
                     //                metaeditor->bind(_record);
                 }
             }
+
+            //            update_record_view(_item);
 
             MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
             assert(metaeditor);
@@ -1646,12 +1596,12 @@ namespace browser {
 
     void WebPage::on_close_requested()
     {
-        break_page_shared_items();
+        _record_controller->on_recordtable_configchange();
+        //        _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
+        break_item(_item);  // break_items();
     }
 
-    void WebPage::update_record(const QUrl &url
-                                , const QString &title
-                               )
+    void WebPage::update_record(const QUrl &url, const QString &title)
     {
         //        Q_UNUSED(make_current)
 
@@ -1737,7 +1687,9 @@ namespace browser {
             _view->setFocus();   // make upate validate
 
             if(is_current) {// globalparameters.mainwindow()
-                _record_controller->select_id(_item->natural_field_source("id"));
+                if(_record_controller->view()->selection_first_id() != _item->field("id"))
+                    _record_controller->select_id(_item->field("id"));
+
                 // _page_controller->select_id(_record->getNaturalFieldSource("id"));
             }
 
@@ -2107,7 +2059,7 @@ namespace browser {
     //        //    _record_controller->addnew_item_fat(requested_item);
     //    }
 
-    WebView::WebView(const boost::intrusive_ptr<TreeItem> requested_item
+    WebView::WebView(const boost::intrusive_ptr<TreeItem> _item
                      , QWebEngineProfile *profile   // , bool openinnewtab
                      , Browser *_browser, TabWidget *_tabmanager
                      , RecordController *table_controller
@@ -2118,7 +2070,7 @@ namespace browser {
         , _record_controller(table_controller)
         , _page(// nullptr
               new WebPage(profile
-                          , requested_item // , openinnewtab
+                          , _item // , openinnewtab
                           , _browser
                           , _tabmanager
                           , table_controller
@@ -2318,8 +2270,10 @@ namespace browser {
         //        //        int position = _record_ontroller->convertProxyIndexToPos(proxyindex);
         //        //        _record_ontroller->getView()->setSelectionToPos(position);
         setFocus();
+
         //        globalparameters.mainwindow()
-        _record_controller->select_id(_page->current_item()->natural_field_source("id"));
+        if(_record_controller->view()->selection_first_id() != _page->current_item()->field("id"))
+            _record_controller->select_id(_page->current_item()->field("id"));
 
         //}
 
@@ -2391,32 +2345,33 @@ namespace browser {
 
         emit _page->close_requested();
 
-        int tab_widget_count = tabmanager()->count();
-        int tab_bar_count = tabmanager()->tabbar()->count();
-        int source_model_size = _record_controller->source_model()->size();
-        assert(tab_bar_count == tab_widget_count);
+        //        int tab_widget_count = tabmanager()->count();
+        //        int tab_bar_count = tabmanager()->tabbar()->count();
+        //        int source_model_size = _record_controller->source_model()->size();
+        //        assert(tab_bar_count == tab_widget_count);
 
-        if(source_model_size > tab_widget_count) {
-            bool found = false;
+        //        if(source_model_size > tab_widget_count) {
+        //            bool found = false;
 
-            for(int i = 0; i < source_model_size; i++) {
-                auto item_maybe_to_removed = _record_controller->source_model()->child(i);
+        //            for(int i = 0; i < source_model_size; i++) {
+        //                auto item_maybe_to_removed = _record_controller->source_model()->child(i);
 
-                if(item_maybe_to_removed->unique_page() == page() || !item_maybe_to_removed->page_valid()) {
-                    if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)_tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  //_record_controller->source_model()->remove_child(item_maybe_to_removed->id());
+        //                if(item_maybe_to_removed->unique_page() == page() || !item_maybe_to_removed->page_valid()) {
+        //                    //                    if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)
+        //                    //                        _tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  //_record_controller->source_model()->remove_child(item_maybe_to_removed->id());
 
-                    page()->break_page_linked_item(item_maybe_to_removed);
-                    found = true;
-                    break;
-                }
-            }
+        //                    page()->break_page_linked_item(item_maybe_to_removed);  // emit _page->close_requested();
+        //                    found = true;
+        //                    break;
+        //                }
+        //            }
 
-            assert(found == true);
-        }
+        //            assert(found == true);
+        //        }
 
-        assert(tabmanager()->count() == tabmanager()->tabbar()->count());
-        assert(_record_controller->source_model()->size() == tabmanager()->tabbar()->count());
-        assert(_record_controller->source_model()->size() == tabmanager()->count());
+        //        assert(tabmanager()->count() == tabmanager()->tabbar()->count());
+        //        assert(_record_controller->source_model()->size() == tabmanager()->tabbar()->count());
+        //        assert(_record_controller->source_model()->size() == tabmanager()->count());
 
     }
 
@@ -2479,6 +2434,39 @@ namespace browser {
     //        _page->load(_page->current_record());
     //        show();
     //    }
+
+    WebView *WebPage::ActiveRecordBinder::binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
+    {
+        //                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
+        //                WebView *view = nullptr;
+
+        //                if(result) {
+        //                    view = item->bind();    //
+        //                    // item->unique_page()->view();
+        //                } else {
+        WebView *view = _page->bind(item);
+        (item.get()->*_bind)(_page);
+        //                }
+
+        return view;  // _the->load(record, _make_current);
+    }
+
+
+    WebView *WebPage::ActiveRecordBinder::activator(boost::intrusive_ptr<TreeItem> item)
+    {
+        assert(item->unique_page() == _page);
+        WebView *view = nullptr;
+
+        //        if(_page->view() != _page->_tabmanager->currentWebView()) {
+        view = _page->activate();
+        //        } else {
+        //            view = _page->view();
+        //            view->show();
+        //        }
+
+        return view;
+    }
+
 
 }
 

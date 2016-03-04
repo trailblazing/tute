@@ -91,7 +91,7 @@ public:
     void restore_editor_scrollbar_position(void);
     void restore_find_on_base_visible(void);
 
-    void set_tree_position(QString id, QStringList path);
+    void set_tree_position(QString view_root_id, QStringList current_item_absolute_path);
     bool is_tree_position_crypt();
 
     //    void select_id(QString id);// too many _record_screen objects, deprecated

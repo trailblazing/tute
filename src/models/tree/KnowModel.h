@@ -14,14 +14,16 @@
 
 class XmlTree;
 class ClipboardBranch;
+class TreeScreen;
 
-class TreeKnowModel : public TreeModel {
+
+class KnowModel : public TreeModel {
     Q_OBJECT
 
 public:
-    TreeKnowModel(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
-    TreeKnowModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent = 0);
-    ~TreeKnowModel();
+    KnowModel(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+    KnowModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent = 0);
+    ~KnowModel();
 
     std::shared_ptr<XmlTree> init_from_xml(QString file_name);
     std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
@@ -31,25 +33,9 @@ public:
 
     void save(void);
 
-    // Добавление новой подветки к указанной ветке
-    void add_child_branch(const QModelIndex &_index, QString id, QString name);
-    void add_child_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
-    // Добавление новой ветки после указанной ветки
-    void add_sibling_branch(const QModelIndex &_index, QString id, QString name);
-    void add_sibling_branch(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
-
-    // Добавление новой подветки к Item элементу
-    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent);
-    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem> parent);
-
-    // Перемещение ветки вверх и вниз
-    QModelIndex move_up_branch(const QModelIndex &_index);
-    QModelIndex move_dn_branch(const QModelIndex &_index);
 
     // Получение индекса подчиненного элемента с указанным номером
-    QModelIndex index_child(const QModelIndex &children_parent_index, int n) const;
+    QModelIndex index_child(const QModelIndex &_parent_index, int n) const;
 
     //    QModelIndex index(boost::intrusive_ptr<TreeItem> item);
 
@@ -63,8 +49,7 @@ public:
     // Возвращает количество записей в ветке и всех подветках
     int size_of(boost::intrusive_ptr<TreeItem> item);
 
-    QString paste_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
-    QString paste_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
+
 
     void re_encrypt(QString previousPassword, QString currentPassword);
 
@@ -83,8 +68,8 @@ public:
 #endif
 
     void clear();
-    boost::intrusive_ptr<TreeItem> intercept(boost::intrusive_ptr<TreeItem> _item);
-    boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
+
+
     //    bool is_global_root() {return _is_global_root;}
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
@@ -127,6 +112,36 @@ private:
 
     bool update_sub_version_from_1_to_2(void);
 
+    // Добавление новой ветки после указанной ветки
+    boost::intrusive_ptr<TreeItem> add_sibling_branch(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> add_sibling_item(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+
+    // Добавление новой подветки к указанной ветке
+    boost::intrusive_ptr<TreeItem> add_child_branch(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> add_child_item(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+
+    // Добавление новой подветки к Item элементу
+    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
+
+#ifdef _with_record_table
+    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
+#endif
+
+    boost::intrusive_ptr<TreeItem> add_child_item(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
+    //    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
+
+    // Перемещение ветки вверх и вниз
+    QModelIndex move_up_branch(const QModelIndex &_index);
+    QModelIndex move_dn_branch(const QModelIndex &_index);
+
+    QString paste_child_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString paste_sibling_branch(const QModelIndex &_index, ClipboardBranch *subbranch);
+
+    boost::intrusive_ptr<TreeItem> intercept_self(boost::intrusive_ptr<TreeItem> _item);
+    boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
+
+private:
+
     // QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
     QString _xml_file_name = "";
 
@@ -162,6 +177,7 @@ private:
     };
 
     //    bool _is_global_root = false;
+    friend class TreeScreen;
 
 };
 

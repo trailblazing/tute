@@ -27,60 +27,60 @@ public:
 
     virtual ~RecordView();
 
-    void setController(RecordController *pController);
+    //    void record_controller(RecordController *_record_controller);
 
     void init(void);
 
-    void restoreHeaderState(void);
-    void restoreColumnWidth(void);
+    void restore_header_state(void);
+    void restore_column_width(void);
 
-    int getFirstSelectionPos(void);
-    QString getFirstSelectionId(void);
+    int selection_first_pos(void);
+    QString selection_first_id(void);
 
-    void setSelectionToPos(int pos);
+    void selection_to_pos(int to_pos);
 
-    QModelIndex first_selection_proxy_index(void);
-    QModelIndex first_selection_source_index(void);
+    QModelIndex selection_first_proxy_index(void);
+    QModelIndex selection_first_source_index(void);
 
-    bool isSelectedSetToTop(void);
-    bool isSelectedSetToBottom(void);
+    bool is_selected_set_to_top(void);
+    bool is_selected_set_to_bottom(void);
 
-    ClipboardRecords *getSelectedRecords(void);
+    ClipboardRecords *get_selected_records(void);
 
-    void moveCursorToNewRecord(int mode, int pos);
+    void move_cursor_to_new_record(int mode, int pos);
     //    void on_parent_resizevent(QResizeEvent *e);
 
 
 signals:
 
-    void listSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-    void tapAndHoldGestureFinished(const QPoint &);
+    void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+    void tap_and_hold_gesture_finished(const QPoint &);
 
 
 public slots:
 
     // Открытие контекстного меню
-    void onCustomContextMenuRequested(const QPoint &pos);
+    void on_custom_context_menu_requested(const QPoint &pos);
 
     // Слот, срабатывающий после перетаскивания колонки
-    void onSectionMoved(int logicalIndex, int oldVisualIndex, int newVisualIndex);
-    void onSectionResized(int logicalIndex, int oldSize, int newSize);
+    void on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex);
+    void on_section_resized(int logicalIndex, int oldSize, int newSize);
 
     // Вызов действий из контекстного меню или из контроллера для редактирования инфополей записи
-    void editFieldContext(void);
+    void edit_field_context(void);
     void on_doubleclick(const QModelIndex &index);
 
 protected slots:
 
     // Реакия на сдвиг засветки клавишами или мышкой
-    void onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+    void on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
 
     // Слот, который автоматически срабатыват при изменении selection в списке
     // Этот слот нигде не надо прописывать через connect(), так как он
     // является переопределенным, так как его тип virtual protected slot
     virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    void onClickToRecord(const QModelIndex &index);
+    void on_click_to_record(const QModelIndex &index);
 
 protected:
 
@@ -91,8 +91,8 @@ protected:
     QPoint              _mouse_start_position;
     bool                _enable_move_section;
 
-    void setupSignals(void);
-    void assemblyContextMenu(void);
+    void setup_signals(void);
+    void assembly_context_menu(void);
 
     //    void editField(int pos, QString name, QString author, QString url, QString tags);
     //    void deleteRecords(void);
@@ -102,20 +102,20 @@ protected:
     void click_record(const QModelIndex &index);
 
     bool event(QEvent *event);
-    bool gestureEvent(QGestureEvent *event);
-    void tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture);
+    bool gesture_event(QGestureEvent *event);
+    void tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture);
 
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event);
     void mouseReleaseEvent(QMouseEvent *event);
 
-    void saveColumnWidth(void);
+    void save_column_width(void);
 
     void resizeEvent(QResizeEvent *e);
 
 private:
 
-    void startDrag();
+    void start_drag();
     friend class RecordScreen;
     friend class VerticalScrollArea;
 };

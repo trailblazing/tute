@@ -30,16 +30,16 @@ Record::Record()
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
 }
 
-Record::Record(QMap<QString, QString> field_data)
+Record::Record(QMap<QString, QString> _field_data)
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
     , _lite_flag(true)
-    , _field_data(field_data)
+    , _field_data(_field_data)
     , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
 }
 
-
+#ifdef _with_record_table
 
 Record::Record(const Record &obj)
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()
@@ -74,7 +74,7 @@ Record::Record(const Record &obj)
     //    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
 
     _attach_table_data->update_attach_table_back_link();
-    _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
+//    _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
     //        _position = obj->_position;
     //        _open_link_in_new_window = obj->_open_link_in_new_window;
     //    bool    _active_immediately = false;
@@ -122,7 +122,7 @@ Record &Record::operator =(const Record &obj)
         //    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
 
         _attach_table_data->update_attach_table_back_link();
-        _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
+//        _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
         //        _position = obj->_position;
         //        _open_link_in_new_window = obj->_open_link_in_new_window;
         //    bool    _active_immediately = false;
@@ -168,7 +168,7 @@ Record::Record(boost::intrusive_ptr<Record> obj)
         // Обратный указатель во включенном объекте должен указывать на новый экземпляр
         //        _attach_table_data->record(boost::intrusive_ptr<Record>(this));
         _attach_table_data->update_attach_table_back_link();
-        _is_registered_to_shadow_list = obj->_is_registered_to_shadow_list;
+//        _is_registered_to_shadow_list = obj->_is_registered_to_shadow_list;
         //        _position = obj->_position;
         //        _open_link_in_new_window = obj->_open_link_in_new_window;
         //    bool    _active_immediately = false;
@@ -177,6 +177,7 @@ Record::Record(boost::intrusive_ptr<Record> obj)
     }
 }
 
+#endif
 
 //browser::WebPage *Record::unique_page()
 //{

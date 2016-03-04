@@ -228,8 +228,8 @@ HEADERS     =   \
     src/views/record_table/RecordPrint.h \
     src/controllers/record_table/RecordController.h \
     src/models/record_table/ItemsFlat.h \
-    src/models/tree/TreeKnowModel.h \
-    src/views/tree/TreeKnowView.h
+    src/models/tree/KnowModel.h \
+    src/views/tree/KnowView.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -351,8 +351,8 @@ SOURCES     =   src/main.cpp \
     src/views/record_table/RecordView.cpp \
     src/controllers/record_table/RecordController.cpp \
     src/models/record_table/ItemsFlat.cpp \
-    src/models/tree/TreeKnowModel.cpp \
-    src/views/tree/TreeKnowView.cpp
+    src/models/tree/KnowModel.cpp \
+    src/views/tree/KnowView.cpp
 #    src/views/browser/cookiejar.cpp \
 
 

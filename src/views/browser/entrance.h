@@ -13,7 +13,7 @@
 #include "views/record/MetaEditor.h"
 
 
-class TreeKnowModel;
+class KnowModel;
 class QNetworkReply;
 class QSslError;
 class QtSingleApplication;
@@ -99,12 +99,12 @@ namespace browser {
         //            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item);assert(item->page_valid()); return item->unique_page()->active();}
         //        };
 
-        std::pair<Browser *, WebView *> activiated_registered();
-        QList<QPointer<Browser> > &window_list();  //        QList<DockedWindow*> window_raw_list();
+        Browser *activated_browser();
+        QList<QPointer<Browser> > &browsers();  //        QList<DockedWindow*> window_raw_list();
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
-        std::pair<Browser *, WebView *> equip_registered(boost::intrusive_ptr<TreeItem> record);    // = boost::intrusive_ptr<Record>(nullptr)
+        WebView *equip_registered(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
         void activate(const QUrl &url);
         void activate(boost::intrusive_ptr<TreeItem> item);
 
@@ -132,9 +132,11 @@ namespace browser {
 
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &url);
-        std::pair<Browser *, WebView *> new_browser(QUrl const &url);
-        std::pair<Browser *, WebView *> new_browser(boost::intrusive_ptr<TreeItem> record);
 
+        Browser *new_browser();
+        Browser *new_browser(QUrl const &url);
+
+        Browser *new_browser(boost::intrusive_ptr<TreeItem> record);
         Browser *new_browser(const QByteArray &state);
         //        Browser *activate_browser(boost::intrusive_ptr<TreeItem> item);
 

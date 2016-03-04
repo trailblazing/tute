@@ -81,7 +81,7 @@ public:
 
 
     std::pair<QString, QStringList> tree_position(void)const;
-    void tree_position(QString id, QStringList list);
+    void tree_position(QString view_root_id, QStringList current_item_absolute_path);
 
 
     // ID записи в таблице конечных записей, которая выделена на экране

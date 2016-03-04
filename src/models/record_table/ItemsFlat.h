@@ -31,8 +31,12 @@ public:
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
     ItemsFlat(const QDomElement &_dom_element, boost::intrusive_ptr<TreeItem> _parent_item, const bool _is_crypt = false);
     ItemsFlat(const bool _is_crypt = false);
+
+#ifdef _with_record_table
     ItemsFlat(const ItemsFlat &obj);
     ItemsFlat &operator =(const ItemsFlat &obj);
+#endif
+
     virtual ~ItemsFlat();
 
     // Получение текста указанной записи
@@ -73,15 +77,15 @@ public:
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
     QDomElement dom_from_activated_itemsflat(std::shared_ptr<QDomDocument> doc) const;
-    std::shared_ptr<ItemsFlat> active_subset() const;
+
     QDomElement dom_from_itemsflat() const;
     QDomElement dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const;
 
     //    // Получение ссылки на объект ветки, которой принадлежит таблица
     //    boost::intrusive_ptr<TreeItem> tree_item(void);
 
-    int insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
-    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> item, int mode = ADD_NEW_RECORD_AFTER);
+
+
 
     void fields(int pos, QMap<QString, QString> edit_fields);
 

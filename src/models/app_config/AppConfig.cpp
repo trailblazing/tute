@@ -349,11 +349,11 @@ std::pair<QString, QStringList> AppConfig::tree_position(void) const
 }
 
 
-void AppConfig::tree_position(QString id, QStringList list)
+void AppConfig::tree_position(QString view_root_id, QStringList current_item_absolute_path)
 {
-    qDebug() << "AppConfig::set_tree_position() : id\t= " << id << "\t= " << list;
-    conf->setValue("tree_intercept", id);
-    conf->setValue("tree_position", list.join(","));
+    qDebug() << "AppConfig::set_tree_position() : id\t= " << view_root_id << "\t= " << current_item_absolute_path;
+    conf->setValue("tree_intercept", view_root_id);
+    conf->setValue("tree_position", current_item_absolute_path.join(","));
 }
 
 

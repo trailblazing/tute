@@ -893,60 +893,18 @@ void QtSingleApplication::newLocalSocketConnection()
 
     if(browser_entrance) {
         if(openLinksIn == 1) {
-            //browser::BrowserWindow *bw =
-            //            dp = browser_entrance->new_dockedwindow(record);
-
-
-
-
-            //            request_record(
-            //                url
-            //                , sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, Record *const>(
-            //                    ""
-            //                    , &browser::Entrance::new_dockedwindow
-            //            , boost::shared_ptr<browser::Entrance>(browser_entrance, [ = ](browser::Entrance *) {})
-            //                )
-            //            //            , [browser_entrance](Record * const record)-> browser::WebView * {   // &Entrance::new_dockedwindow
-            //            //                return browser_entrance->new_dockedwindow(record);
-            //            //            }
-            //            );
-
-
 
             browser_entrance->new_browser(url);
-
             //bw->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
         } else {
-            //Record *record = register_record(url);
-            //            dp = browser_entrance->active_record(record);
-            // auto arb = boost::make_shared<browser::Entrance::ActiveRecordBinder>(browser_entrance);
-            if(globalparameters.entrance()->activiated_registered().first) {
-                browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
-                //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-                auto record
-                    = browser->tabmanager()->request_item(
-                          url
-                          //                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(browser::WebPage *)>>(
-                          //                              ""
-                          //                              , &browser::TabWidget::ActiveRecordBinder::binder
-                          //                              , arb
-                          //                          )
-                          //                          , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                          //                              ""
-                          //                              , &browser::TabWidget::ActiveRecordBinder::activator
-                          //                              , arb
-                          //                          )
-                          //                          //            , [browser_entrance](Record * const record)->browser::WebView * {   // &Entrance::new_dockedwindow
-                          //                          //                return browser_entrance->active_record(record);
-                          //                          //            }
-                      );
-                //            record->generate();
-                record->activate();
-            } else {
-                globalparameters.entrance()->new_browser(url);
-            }
 
-            //            dp.second = browser_entrance->active_record()->invoke_page(record); //->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
+
+            browser::Browser *browser = globalparameters.entrance()->activated_browser();
+            //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
+            auto record = browser->tabmanager()->request_item(url);
+            //            record->generate();
+            record->activate();
+
         }
 
         //browser_view->mainWindow()->load_record(record);
@@ -1035,14 +993,14 @@ void QtSingleApplication::postLaunch()
     loadSettings();
 
     // newMainWindow() needs to be called in main() for this to happen
-    if(_globalparameters.entrance()->window_list().size() > 0) { // _mainWindows.count()
+    if(_globalparameters.entrance()->browsers().size() > 0) { // _mainWindows.count()
         QStringList args = QCoreApplication::arguments();
-        browser::Browser *browser = _globalparameters.entrance()->activiated_registered().first;
-
-        if(!browser) {
-            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
-            browser = dp.first;
-        }
+        browser::Browser *browser = _globalparameters.entrance()->activated_browser();
+        //        assert(browser);
+        //        if(!browser) {
+        //            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+        //            browser = dp.first;
+        //        }
 
         if(args.count() > 1)
             browser->loadPage(args.last());  // mainWindow()->loadPage(args.last());
@@ -1167,7 +1125,7 @@ void QtSingleApplication::saveSession()
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadWrite);
 
-    QList<QPointer<browser::Browser> > mws = globalparameters.entrance()->window_list();
+    QList<QPointer<browser::Browser> > mws = globalparameters.entrance()->browsers();
 
     stream << mws.count();
 
@@ -1198,28 +1156,28 @@ void QtSingleApplication::restoreLastSession()
         historywindows.append(windowState);
     }
 
-    QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->window_list();
+    //    QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->browsers();
 
-    if(opened_windows.count() == 0) {
-        globalparameters.entrance()->new_browser(
-            QUrl(browser::Browser::_defaulthome)
-        );
-    }
+    //    if(opened_windows.count() == 0) {
+    //        globalparameters.entrance()->new_browser(
+    //            QUrl(browser::Browser::_defaulthome)
+    //        );
+    //    }
 
     for(int i = 0; i < historywindows.count(); ++i) {
         //        browser::BrowserWindow *newWindow = 0;
         //        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
 
-        browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
+        browser::Browser *browser = globalparameters.entrance()->activated_browser();
 
-        if(!browser) {
-            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
-            browser = dp.first;
-        }
+        //        if(!browser) {
+        //            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+        //            browser = dp.first;
+        //        }
 
         assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
 
-        if(opened_windows.count() == 1
+        if(globalparameters.entrance()->browsers().count() == 1
            && browser->tabWidget()->count() == 1
            && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
           ) {
@@ -1460,11 +1418,11 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
         if(!_private_profile)
             _private_profile = new QWebEngineProfile(this);
 
-        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->window_list()) {
+        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(_private_profile);
         }
     } else {
-        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->window_list()) {
+        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
             window->lastsearch() = QString::null;
             window->tabWidget()->clear();

@@ -41,10 +41,10 @@ public:
     QVariant data(const QModelIndex &_index, int role) const;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
-    QModelIndex index(int row, int column, const QModelIndex &child_parent_index = QModelIndex()) const;
+    QModelIndex index(int row, int column, const QModelIndex &current_index = QModelIndex()) const;
     QModelIndex parent(const QModelIndex &_index) const;
 
-    int rowCount(const QModelIndex &itemIndex = QModelIndex()) const;
+    int rowCount(const QModelIndex &_index = QModelIndex()) const;
     int columnCount(const QModelIndex &itemIndex = QModelIndex()) const;
 
 

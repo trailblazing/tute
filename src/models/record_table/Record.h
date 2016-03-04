@@ -49,9 +49,13 @@ class Record :
 
 public:
     Record();
-    Record(QMap<QString, QString> field_data);
+    Record(QMap<QString, QString> _field_data);
+
+#ifdef _with_record_table
     Record(boost::intrusive_ptr<Record> obj);
     Record &operator =(const Record &obj);
+#endif
+
     virtual ~Record();
 
     //    browser::WebPage *unique_page();   // const; // {return _page;}
@@ -104,8 +108,8 @@ public:
     //    Record *active_immediately(bool ai) {_active_immediately = ai; return this;}
     //    bool active_immediately() {return _active_immediately;}
 
-    bool is_registered_to_record_controller() {return _is_registered_to_shadow_list;}
-    void is_registered_to_record_controller(bool reg) {_is_registered_to_shadow_list = reg;}
+    //    bool is_registered_to_record_controller_and_tabmanager() {return _is_registered_to_shadow_list;}
+    //    void is_registered_to_record_controller_and_tabmanager(bool reg) {_is_registered_to_shadow_list = reg;}
 
     //    void binder(std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> g) {_binder = g;}
     //    std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> binder() const {return _binder;}
@@ -127,7 +131,7 @@ protected:
     // ---------------------------------------------------------------------
 
     bool                        _lite_flag;
-    bool                        _is_registered_to_shadow_list = false;
+    //    bool                        _is_registered_to_shadow_list = false;
     //    bool                        _active_request = false;
     //    int                         _position = -1;
     //    int                         _open_link_in_new_window = 0;
@@ -172,7 +176,11 @@ protected:
 
     QString natural_field(QString name) const;
     QString calculable_field(QString name) const;
+
+#ifdef _with_record_table
     explicit Record(const Record &obj); // = delete;
+#endif
+
 private:
 
 

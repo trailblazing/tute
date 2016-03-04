@@ -19,7 +19,7 @@ class RecordProxyModel;
 class ClipboardRecords;
 class RecordScreen;
 class TreeItem;
-class TreeKnowModel;
+class KnowModel;
 class MainWindow;
 class TreeScreen;
 class FindScreen;
@@ -44,9 +44,7 @@ public:
 
     typedef TreeItem::bind_helper bind_helper;
     typedef TreeItem::active_helper active_helper;
-    RecordController(TreeScreen             *_tree_screen
-                     , FindScreen           *_find_screen
-                     , MetaEditor           *_editor_screen
+    RecordController(MetaEditor             *_editor_screen
                      , browser::TabWidget   *_tabmanager
                      , RecordScreen         *_record_screen
                      , MainWindow           *_main_window
@@ -90,11 +88,9 @@ public:
     void    select_pos(int pos);
     void    select_id(QString id);
 
-    // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
+
     void remove_child(QString del_id);
     void remove_children(QVector<QString> del_ids);
-    //    void remove_child(int index);
-
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
@@ -117,7 +113,7 @@ public:
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
     //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
     bool no_view() {return _no_view;}
-    boost::intrusive_ptr<TreeItem> register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> update_record_view(boost::intrusive_ptr<TreeItem> item);
     RecordScreen *record_screen() {return _record_screen;}
     RecordController *reocrd_controller() {return this;}
     // RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
@@ -188,7 +184,13 @@ protected:
                     , QString tags
                    );
 
-    friend class browser::Entrance;
+    // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
+
+    void remove_children_from_source_model(QVector<QString> del_ids);
+    //    void remove_child(int index);
+
+    //    friend class browser::Entrance;
+
     //friend class WebView;
 
     //    friend boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record);

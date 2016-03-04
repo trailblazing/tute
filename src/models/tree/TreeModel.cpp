@@ -100,17 +100,16 @@ Qt::ItemFlags TreeModel::flags(const QModelIndex &_index) const
 // номер строки и столбца относительно parent (нумерация с нуля)
 // Загадочный метод, надо еще подумать что он делает на самом деле
 
-// Get the index of the element that is defined with parent and
-// Row and column number relative to parent (numbering from zero)
+// Get the index of the element that is defined with parent and Row and column number relative to parent (numbering from zero)
 // Mysterious method, we must also think that he does in fact
-QModelIndex TreeModel::index(int row, int column, const QModelIndex &child_parent_index) const
+QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_index) const
 {
-    if(child_parent_index.isValid() && child_parent_index.column() != 0) {
+    if(current_index.isValid() && current_index.column() != 0) {
         return QModelIndex();
     }
 
-    boost::intrusive_ptr<TreeItem> parent_item  = this->item(child_parent_index);
-    boost::intrusive_ptr<TreeItem> child_item   = parent_item->child(row);
+    boost::intrusive_ptr<TreeItem> current_item  = this->item(current_index);
+    boost::intrusive_ptr<TreeItem> child_item   = current_item->child(row);
 
     if(child_item) {
         return createIndex(row, column, static_cast<void *>(child_item.get()));
@@ -185,8 +184,8 @@ QModelIndex TreeModel::index(delegater _del) const
                 find_index = _index_child;
                 break;  //return find_index;
             } else {
-                find_index = index_recursive(_index_child, _del // , 1
-                                            );
+                find_index = index_recursive(_index_child, _del);    // , 1
+
                 // is_find = _del._equal(item(find_index).get());    // find_index.isValid();
 
                 if(_del._equal(item(find_index).get())) {
@@ -297,7 +296,8 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
             //        index_recursive(_idx, item, 1);
             assert(static_cast<TreeItem *>(_index_child.internalPointer()) == it->child(i).get());
 
-            if(_item.get() == static_cast<TreeItem *>(_index_child.internalPointer())   || _item->id() == static_cast<TreeItem *>(_index_child.internalPointer())->id() // it->child(i).get()
+            if(_item.get() == static_cast<TreeItem *>(_index_child.internalPointer())
+               // || _item->id() == static_cast<TreeItem *>(_index_child.internalPointer())->id() // it->child(i).get()
               ) { // index_recursive(_idx, _item, 1);
 
                 find_index = _index_child;
@@ -306,11 +306,14 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
                 break;
             } else {
                 // return
-                find_index = index_recursive(_index_child, _item    // , 1
-                                            );
+                find_index = index_recursive(_index_child, _item);    // , 1
+
                 // is_find = find_index.isValid();
 
-                if(find_index.isValid())break;
+                if(_item.get() == static_cast<TreeItem *>(find_index.internalPointer())) {  // same as find_index.isValid()
+                    break;
+                }
+
             }
         }
 
@@ -600,7 +603,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
     boost::intrusive_ptr<TreeItem> parent_item = item(parent);
-    bool success = true;
+    bool success = false;
 
     beginRemoveRows(parent, position, position + rows - 1);
     success = parent_item->remove_children(position, rows);
@@ -610,7 +613,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 }
 
 
-int TreeModel::rowCount(const QModelIndex &itemIndex) const
+int TreeModel::rowCount(const QModelIndex &_index) const
 {
     //    int count = 0;
 
@@ -621,7 +624,7 @@ int TreeModel::rowCount(const QModelIndex &itemIndex) const
     //        count = it->current_count();
     //    }
 
-    return item(itemIndex)->current_count();    //count;
+    return item(_index)->current_count();    //count;
 }
 
 

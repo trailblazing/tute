@@ -59,6 +59,7 @@ QT_END_NAMESPACE
 
 class HidableTabWidget;
 //extern Record *default_record;
+class FingScreen;
 
 QT_BEGIN_NAMESPACE
 
@@ -83,38 +84,48 @@ namespace browser {
         Q_OBJECT
 
     public:
+        Browser(TreeScreen          *_tree_screen
+                , FindScreen        *_find_screen
+                , MetaEditor        *_editor_screen
+                , HidableTabWidget  *_vtabwidget
+                , MainWindow        *_main_window
+                , Entrance          *_entrance
+                , const QString     &style_source
+                , Qt::WindowFlags   flags
+               );
+
         Browser(QUrl const &url         // Record *const record
-                , TreeScreen    *_tree_screen
-                , FindScreen    *_find_screen
-                , MetaEditor    *_editor_screen
-                , HidableTabWidget *_vtabwidget
-                , MainWindow    *_main_window
-                , Entrance      *_entrance   //, QDockWidget *parent
-                , const QString &style_source
-                , Qt::WindowFlags flags = 0
+                , TreeScreen        *_tree_screen
+                , FindScreen        *_find_screen
+                , MetaEditor        *_editor_screen
+                , HidableTabWidget  *_vtabwidget
+                , MainWindow        *_main_window
+                , Entrance          *_entrance   //, QDockWidget *parent
+                , const QString     &style_source
+                , Qt::WindowFlags   flags = 0
                );
 
 
-        Browser(const QByteArray &state
-                , TreeScreen    *_tree_screen
-                , FindScreen    *_find_screen
-                , MetaEditor    *_editor_screen
-                , HidableTabWidget *_vtabwidget
-                , MainWindow    *_main_window
-                , Entrance      *_entrance   //, QDockWidget *parent
-                , const QString &style_source
-                , Qt::WindowFlags flags = 0
+        Browser(const QByteArray    &state
+                , TreeScreen        *_tree_screen
+                , FindScreen        *_find_screen
+                , MetaEditor        *_editor_screen
+                , HidableTabWidget  *_vtabwidget
+                , MainWindow        *_main_window
+                , Entrance          *_entrance   //, QDockWidget *parent
+                , const QString     &style_source
+                , Qt::WindowFlags   flags = 0
                );
 
         Browser(boost::intrusive_ptr<TreeItem> item
-                , TreeScreen    *_tree_screen
-                , FindScreen    *_find_screen
-                , MetaEditor    *_editor_screen  //, RecordController *record_controller
-                , HidableTabWidget *_vtabwidget
-                , MainWindow    *_main_window
-                , Entrance      *_entrance   //, QDockWidget *parent
-                , const QString &style_source
-                , Qt::WindowFlags flags = 0
+                , TreeScreen        *_tree_screen
+                , FindScreen        *_find_screen
+                , MetaEditor        *_editor_screen  //, RecordController *record_controller
+                , HidableTabWidget  *_vtabwidget
+                , MainWindow        *_main_window
+                , Entrance          *_entrance   //, QDockWidget *parent
+                , const QString     &style_source
+                , Qt::WindowFlags   flags = 0
                );
 
         ~Browser();
@@ -207,8 +218,8 @@ namespace browser {
 
     private:
         void init();
-        boost::intrusive_ptr<TreeItem> register_url(QUrl const &url);
-
+        boost::intrusive_ptr<TreeItem> request_item(QUrl const &url);
+        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item);
         void run_script(const QString &style_source);
         void load_default_state();
         void append_to_file_menu();
@@ -226,8 +237,10 @@ namespace browser {
         //    void initUrl();
     private:
 
-
+        TreeScreen          *_tree_screen;
+        FindScreen          *_find_screen;
         RecordScreen        *_record_screen;
+        MainWindow          *_main_window;
         TabWidget           *_tabmanager;
         // RecordController    *_record_controller;
 

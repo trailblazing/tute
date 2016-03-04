@@ -13,7 +13,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/record_table/RecordScreen.h"
 #include "controllers/record_table/RecordController.h"
-#include "models/tree/TreeKnowModel.h"
+#include "models/tree/KnowModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/record/MetaEditor.h"
 #include "views/browser/tabwidget.h"
@@ -506,18 +506,19 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
 
     //    auto view = _reocrd_controller->view();
 
-    beginRemoveRows(//index   //
+    beginRemoveRows(    //index   //
         QModelIndex(), row, row + count - 1);
 
-    QVector<QString> ids;
+    //    QVector<QString> ids;
 
-    // Удаляются строки непосредственно в таблице
-    for(int i = row; i < row + count; ++i) {
-        ids.append(child(i)->id());
+    //    // Удаляются строки непосредственно в таблице
+    //    for(int i = row; i < row + count; ++i) {
+    //        ids.append(child(i)->id());
 
-    }
+    //    }
 
-    _record_controller->remove_children(ids);
+    //    _record_controller->remove_children(ids); // recursive called
+
     //    view->reset();
     //    view->setModel(this);   // wrong! this is not the proxy model
     endRemoveRows();
@@ -604,8 +605,12 @@ int RecordModel::insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<Tre
     int selected_position =
         _tabmanager->indexOf(view); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
 
-    //    if(selected_position == -1)_tabmanager->addTab(view, _item->field("name")); // wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
+    if(selected_position == -1) {
+        view = _tabmanager->newTab(_item); // , _item->field("name")
+        //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
+    }
 
+    selected_position = _tabmanager->indexOf(view);
     assert(item(selected_position) == _item);
 
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
@@ -646,6 +651,18 @@ void RecordModel::fields(int pos, QMap<QString, QString> data)
 }
 
 
+boost::intrusive_ptr<TreeItem> RecordModel::find_bind(boost::intrusive_ptr<TreeItem> item)const
+{
+    boost::intrusive_ptr<TreeItem> result = nullptr;
+
+    for(int i = 0; i < count(); i++) {
+        if( item->page_valid() && child(i)->unique_page() == item->unique_page()) {
+            result = item; break;
+        }
+    }
+
+    return result;
+}
 
 boost::intrusive_ptr<TreeItem> RecordModel::find(boost::intrusive_ptr<TreeItem> item)const
 {

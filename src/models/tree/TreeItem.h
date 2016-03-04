@@ -39,25 +39,25 @@ public:
 
     typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
-    TreeItem(QMap<QString, QString>         _field_data
-        , boost::intrusive_ptr<TreeItem>    _parent_item
-        , std::shared_ptr<ItemsFlat>        _child_items
-    );
+    //    TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item    // = nullptr
+    //             , QMap<QString, QString>           _field_data     // = QMap<QString, QString>()
+    //             , boost::intrusive_ptr<TreeItem>   _child_items_root // copy semantic, not good
+    //            );
 
-    TreeItem(QMap<QString, QString>         _field_data
-        , boost::intrusive_ptr<TreeItem>    _parent_item
-        , const QDomElement                 &_dom_element
-        = QDomElement()
-    );
+    TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item    = nullptr
+             , QMap<QString, QString>           _field_data     = QMap<QString, QString>()
+             , const QDomElement                &_dom_element   = QDomElement()
+            );
 
-    TreeItem(boost::intrusive_ptr<Record>   _record
-        , boost::intrusive_ptr<TreeItem>    _parent_item
-        , const QDomElement                 &_dom_element
-        = QDomElement()
-    );
+#ifdef _with_record_table
+    TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item    // = nullptr
+             , boost::intrusive_ptr<Record>     _record         // = nullptr
+             , const QDomElement                &_dom_element   = QDomElement()
+            );
+#endif
 
-    TreeItem(const TreeItem &item);
-    TreeItem &operator =(const TreeItem &item);
+    //    TreeItem(const TreeItem &item);
+    //    TreeItem &operator =(const TreeItem &item);
 
     ~TreeItem();
 
@@ -88,18 +88,19 @@ public:
     // Заполнение указанного поля данными напрямую, без преобразований
     //    void field_direct(QString name, QString value);
 
+    // Добавление нового подчиненного элемента
+    // в конец списка подчиненных элементов
+    boost::intrusive_ptr<TreeItem> add_child(void);
+
+    //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
+    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
+
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
     // count - сколько потомков вставить (обычно 1, но можно и несколько)
     // columns - сколько столбцов должен содержать потомок
     bool insert_children(int position, int count, int columns);
 
-    // Добавление нового подчиненного элемента
-    // в конец списка подчиненных элементов
-    boost::intrusive_ptr<TreeItem> add_child(void);
-
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
 
     void unload_page();
     boost::intrusive_ptr<TreeItem> remove_child(boost::intrusive_ptr<TreeItem> item);
@@ -123,15 +124,15 @@ public:
     void move_up(int pos) {ItemsFlat::move_up(pos);}
     void move_dn(int pos) {ItemsFlat::move_dn(pos);}
     // Возвращает id путь (список идентификаторов от корня до текущего элемента)
-    QStringList path(void);
+    QStringList absolute_path(void);
 
     // Возвращает путь в виде названий веток дерева
-    QStringList path_as_name(void);
+    QStringList absolute_path_as_name(void);
 
-    QString path_as_name_with_delimiter(QString delimeter);
+    QString absolute_path_as_name_with_delimiter(QString delimeter);
 
     // Возвращает набор значений указанного поля для пути от корня к ветке
-    QStringList path_as_field(QString fieldName);
+    QStringList absolute_path_as_field(QString field_name);
 
     // Возвращает массив путей всех подветок, которые содержит ветка
     QList<QStringList> all_children_path(void);
@@ -164,6 +165,7 @@ public:
     QDomElement dom_from_treeitem();
     void dom_to_direct(const QDomElement &_dom_element);
 
+    boost::intrusive_ptr<TreeItem> is_registered_to_browser();
 
 
     //    // Взятие ссылки на данные конечных записей
@@ -179,7 +181,7 @@ public:
     void clear_children(void);
 
     browser::WebPage *unique_page();   // const; // {return _page;}
-    browser::WebView *self_bind();
+    browser::WebView *bind();
     boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
     browser::WebView *activate();
 
@@ -192,10 +194,16 @@ public:
     void active_request(int pos, int openLinkIn);
     bool page_valid()const {return _page_valid;}
     //    operator ItemsFlat() {return *this;}
+    boost::intrusive_ptr<TreeItem> active_subset() const;
+
+
+    boost::intrusive_ptr<TreeItem> insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
+    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
+
 protected:
 
-    bind_helper _binder;
-    active_helper _activator;
+    bind_helper     _binder;
+    active_helper   _activator;
 
 private:
     bool remove_children_link(int position, int count);

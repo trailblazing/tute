@@ -105,14 +105,14 @@ void MetaEditor::setupLabels(void)
     // Название записи
     _item_name = new QLabel(this);
     _item_name->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                          Qt::TextSelectableByKeyboard);
+                                        Qt::TextSelectableByKeyboard);
     _item_name->setVisible(false);
     _item_name->setWordWrap(true);
 
     // Автор
     _item_author = new QLabel(this);
     _item_author->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                            Qt::TextSelectableByKeyboard);
+                                          Qt::TextSelectableByKeyboard);
     _item_author->setVisible(false);
     _item_author->setWordWrap(true);
 
@@ -131,18 +131,18 @@ void MetaEditor::setupLabels(void)
     _item_home = new ClickableLabel(this);
     //    recordHome->setOpenExternalLinks(true);
     _item_home->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                          Qt::TextSelectableByKeyboard |
-                                          Qt::LinksAccessibleByMouse |
-                                          Qt::LinksAccessibleByKeyboard);
+                                        Qt::TextSelectableByKeyboard |
+                                        Qt::LinksAccessibleByMouse |
+                                        Qt::LinksAccessibleByKeyboard);
     _item_home->setVisible(false);
     _item_home->setWordWrap(true);
 
     _item_url = new ClickableLabel(this);
     //    recordUrl->setOpenExternalLinks(true);
     _item_url->setTextInteractionFlags(Qt::TextSelectableByMouse |
-                                         Qt::TextSelectableByKeyboard |
-                                         Qt::LinksAccessibleByMouse |
-                                         Qt::LinksAccessibleByKeyboard);
+                                       Qt::TextSelectableByKeyboard |
+                                       Qt::LinksAccessibleByMouse |
+                                       Qt::LinksAccessibleByKeyboard);
     _item_url->setVisible(false);
     _item_url->setWordWrap(true);
 
@@ -354,68 +354,69 @@ void MetaEditor::tree_path(QString path)
 
 void MetaEditor::switch_pin()
 {
-    if(globalparameters.entrance()->activiated_registered().first) {
-        browser::TabWidget *_tabmanager = globalparameters.entrance()->activiated_registered().first->tabmanager();
-        // record_screens()->record_controller();
+    //    if(globalparameters.entrance()->activiated_browser()) {
+    browser::TabWidget *_tabmanager = globalparameters.entrance()->activated_browser()->tabmanager();
+    // record_screens()->record_controller();
 
-        if(_tabmanager) {
-            RecordModel *source_model = _tabmanager->source_model();
-            RecordView *recordtableview = _tabmanager->view();
-            int pos = _tabmanager->currentIndex();  // first_selectionpos();
+    if(_tabmanager) {
+        RecordModel *source_model = _tabmanager->source_model();
+        RecordView *recordtableview = _tabmanager->view();
+        int pos = _tabmanager->currentIndex();  // first_selectionpos();
 
-            if(source_model && -1 != pos) {
-                // Выясняется ссылка на таблицу конечных данных
-                //            auto item = source_model->tree_item();  //->record_table();    //getTableData();
+        if(source_model && -1 != pos) {
+            // Выясняется ссылка на таблицу конечных данных
+            //            auto item = source_model->tree_item();  //->record_table();    //getTableData();
 
-                QString p = source_model->field(pos, "pin");
-                _item_pin->setCheckState(_state_check[p]);
+            QString p = source_model->field(pos, "pin");
+            _item_pin->setCheckState(_state_check[p]);
 
-                QString h = source_model->field(pos, "url");
+            QString h = source_model->field(pos, "url");
 
-                // Переданные отредактированные поля преобразуются в вид имя-значение
-                QMap<QString, QString> edit_data;
+            // Переданные отредактированные поля преобразуются в вид имя-значение
+            QMap<QString, QString> edit_data;
 
-                if(_item_pin->checkState() == Qt::CheckState::Checked) {
-                    _item_pin->setCheckState(Qt::CheckState::Unchecked);
+            if(_item_pin->checkState() == Qt::CheckState::Checked) {
+                _item_pin->setCheckState(Qt::CheckState::Unchecked);
 
-                    pin(p = _check_state[Qt::CheckState::Unchecked]);
+                pin(p = _check_state[Qt::CheckState::Unchecked]);
 
-                    edit_data["pin"] = p;
+                edit_data["pin"] = p;
 
-                } else {
-                    _item_pin->setCheckState(Qt::CheckState::Checked);
+            } else {
+                _item_pin->setCheckState(Qt::CheckState::Checked);
 
-                    pin(p = _check_state[Qt::CheckState::Checked]);
-                    home(h);
+                pin(p = _check_state[Qt::CheckState::Checked]);
+                home(h);
 
-                    edit_data["pin"] = p;
-                    edit_data["home"] = h;
+                edit_data["pin"] = p;
+                edit_data["home"] = h;
 
-                }
-
-                //            // Переданные отредактированные поля преобразуются в вид имя-значение
-                //            QMap<QString, QString> editData;
-                //            editData["pin"] = pin;
-                //    editData["name"] = name;
-                //    editData["author"] = author;
-                //            editData["home"] = home;
-                //    editData["url"] = url;
-                //    editData["tags"] = tags;
-
-                // Обновление новых данных в таблице конечных записей
-                source_model->fields(pos, edit_data);
-
-
-                // Сохранение дерева веток
-                //find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
-                TreeScreen *treescreen = globalparameters.tree_screen();
-
-                if(treescreen)treescreen->save_knowtree();
-
-                if(recordtableview)recordtableview->setSelectionToPos(pos);
             }
+
+            //            // Переданные отредактированные поля преобразуются в вид имя-значение
+            //            QMap<QString, QString> editData;
+            //            editData["pin"] = pin;
+            //    editData["name"] = name;
+            //    editData["author"] = author;
+            //            editData["home"] = home;
+            //    editData["url"] = url;
+            //    editData["tags"] = tags;
+
+            // Обновление новых данных в таблице конечных записей
+            source_model->fields(pos, edit_data);
+
+
+            // Сохранение дерева веток
+            //find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
+            TreeScreen *treescreen = globalparameters.tree_screen();
+
+            if(treescreen)treescreen->save_knowtree();
+
+            if(recordtableview)recordtableview->selection_to_pos(pos);
         }
     }
+
+    //    }
 }
 
 void MetaEditor::pin(QString p)

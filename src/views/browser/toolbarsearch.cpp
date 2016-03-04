@@ -59,8 +59,8 @@
 #include "views/browser/entrance.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "main.h"
-
-
+#include "views/tree/TreeScreen.h"
+#include "views/tree/KnowView.h"
 
 namespace browser {
 
@@ -127,9 +127,9 @@ namespace browser {
     {
         QString searchText = lineEdit()->text();
 
-        auto record_data = globalparameters.find_screen()->find_clicked();
+        auto result_item = globalparameters.find_screen()->find_clicked();
 
-        if(!record_data || 0 == record_data->current_count()) {
+        if(!result_item || 0 == result_item->current_count()) {
 
             QUrl url = QUrl(searchText);
 
@@ -173,27 +173,16 @@ namespace browser {
                 //QLineEdit *lineedit =
 
                 //            globalparameters.entrance()->active_record(request_record(url));
-                if(globalparameters.entrance()->activiated_registered().first) {
-                    browser::Browser *browser = globalparameters.entrance()->activiated_registered().first;
-                    //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-                    auto r = browser->tabmanager()->request_item(
-                                 url
-                                 //                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                                 //                                     ""
-                                 //                                     , &browser::TabWidget::ActiveRecordBinder::binder
-                                 //                                     , ara
-                                 //                                 )
-                                 //                                 , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                                 //                                     ""
-                                 //                                     , &browser::TabWidget::ActiveRecordBinder::activator
-                                 //                                     , ara
-                                 //                                 )
-                             );
 
-                    r->activate();
-                } else {
-                    globalparameters.entrance()->new_browser(url);
-                }
+                //                if(globalparameters.entrance()->activiated_browser()) {
+                browser::Browser *browser = globalparameters.entrance()->activated_browser();
+                //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
+                auto r = browser->tabmanager()->request_item(url);
+
+                r->activate();
+                //                } else {
+                //                    globalparameters.entrance()->new_browser(url);
+                //                }
 
                 assert(_lineedits);
 
@@ -240,7 +229,14 @@ namespace browser {
                 emit search(url);
             }
         } else {
-            globalparameters.entrance()->activiated_registered().first->tabmanager()->setCurrentIndex(0);
+            //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
+            TreeScreen *_tree_screen = globalparameters.tree_screen();
+            _tree_screen->tree_view()->reset();
+            _tree_screen->setup_model(result_item);
+            auto index = _tree_screen->tree_view()->source_model()->index(result_item->child(0));
+            _tree_screen->selection_model()->setCurrentIndex(index
+                                                             , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
+            _tree_screen->invoke_index(index);
         }
     }
 

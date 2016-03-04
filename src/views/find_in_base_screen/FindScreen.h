@@ -20,7 +20,7 @@ class QLabel;
 class QCheckBox;
 class QProgressDialog;
 
-class TreeKnowModel;
+class KnowModel;
 class TreeItem;
 
 class FindTableWidget;
@@ -31,7 +31,7 @@ class QStackedWidget;
 class ItemsFlat;
 class TreeItem;
 class RecordController;
-
+class TreeScreen;
 
 
 namespace browser {
@@ -44,12 +44,13 @@ namespace browser {
 struct back_ground {boost::intrusive_ptr<TreeItem>  _selected_branch_root;};
 
 class FindScreen : public QWidget
-    , public back_ground {
+//    , public back_ground
+{
     Q_OBJECT
 
 public:
     static const constexpr char *_find_in_base_expand = "findInBaseExpand"; // "find_in_base_expand";
-    FindScreen(QString object_name, boost::intrusive_ptr<TreeItem> _selected_branch_as_pages, QWidget *parent = 0);
+    FindScreen(QString object_name, TreeScreen *_tree_screen, QWidget *parent = 0);
     virtual ~FindScreen(void);
     //QToolBar *navigater() {return _navigater;}
 
@@ -63,18 +64,18 @@ public:
     QAction *historyhome() {return _historyhome;}
     QAction *stopreload() {return _stopreload;}
     browser::ChaseWidget *chasewidget() {return _chasewidget;}
-    void remove_child(const QString &id);
-    void remove_child(const int row);
+    //    void remove_child(const QString &id);
+    //    void remove_child(const int row);
     void adjust_size();
 
-    std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
-    std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
+    //    std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
+    //    std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
 
 public slots:
 
     void widget_show(void);
     void widget_hide(void);
-    std::shared_ptr<ItemsFlat> find_clicked(void);
+    boost::intrusive_ptr<TreeItem> find_clicked(void);
     void find_text(QString text);
 
 protected:
@@ -107,7 +108,7 @@ private:
 
     //    QIcon _reloadicon;
     //    QIcon _stopicon;
-
+    TreeScreen      *_tree_screen;
     QToolBar        *_navigater;
     //    //    QHBoxLayout *_navigater;
 
@@ -147,9 +148,9 @@ private:
     QVBoxLayout     *_central_desktop_layout;
 
     QProgressDialog *_progress;
-    bool            _is_search_global = true;
+    //    bool            _is_search_global = true;
     //    FindTableWidget     *_findtable;
-    std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
+    //    std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
     browser::ToolbarSearch          *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
     void setup_navigate(void);
@@ -174,8 +175,8 @@ private:
 
     void if_find_in_field(QString fieldname, int state);
 
-    std::shared_ptr<ItemsFlat> find_start(void);
-    std::shared_ptr<ItemsFlat> find_recursive(boost::intrusive_ptr<TreeItem> curritem, std::shared_ptr<ItemsFlat> _candidate_pages);
+    boost::intrusive_ptr<TreeItem> find_start(void);
+    boost::intrusive_ptr<TreeItem> find_recursive(boost::intrusive_ptr<TreeItem> curritem, boost::intrusive_ptr<TreeItem> _candidate_pages);
     bool find_in_text_process(const QString &text);
 
     void switch_tools_expand(bool flag);

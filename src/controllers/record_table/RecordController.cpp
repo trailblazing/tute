@@ -29,16 +29,16 @@
 #include "libraries/DiskHelper.h"
 #include "views/browser/webview.h"
 #include "libraries/FlatControl.h"
-#include "views/tree/TreeKnowView.h"
+#include "views/tree/KnowView.h"
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "libraries/FixedParameters.h"
 #include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/record_table/RecordScreen.h"
-#include "models/tree/TreeKnowModel.h"
+#include "models/tree/KnowModel.h"
 #include "views/browser/browser.h"
-
+#include "views/browser/toolbarsearch.h"
 
 
 extern GlobalParameters globalparameters;
@@ -46,13 +46,14 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordController::RecordController(TreeScreen           *_tree_screen
-                                   , FindScreen         *_find_screen
-                                   , MetaEditor         *_editor_screen
-                                   , browser::TabWidget *_tabmanager
-                                   , RecordScreen       *_record_screen
-                                   , MainWindow         *_main_window
-                                  )
+RecordController::RecordController(//TreeScreen           *_tree_screen
+    //, FindScreen         *_find_screen
+    //,
+    MetaEditor         *_editor_screen
+    , browser::TabWidget *_tabmanager
+    , RecordScreen       *_record_screen
+    , MainWindow         *_main_window
+)
     : QObject(_record_screen)
     , _source_model(new RecordModel(this, _record_screen, _tabmanager))
     , _proxy_model(new RecordProxyModel(this))
@@ -65,8 +66,10 @@ RecordController::RecordController(TreeScreen           *_tree_screen
     // setObjectName(screen_name + "_controller");
 
 
-    _tree_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
-    _find_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
+    //    _tree_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
+    //    _find_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
+
+    //    _find_screen->toolbarsearch()->lineedits(_tabmanager->lineEditStack());
 
     // Инициализируется область со списком записей
     //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
@@ -696,20 +699,20 @@ int RecordController::row_count(void) const
 // Get the number of the first highlighted item on the screen   // Получение номера первого выделенного элемента на экране
 int RecordController::first_selectionpos(void)const
 {
-    return _view->getFirstSelectionPos();
+    return _view->selection_first_pos();
 }
 
 
 // Получение ID первого выделенного элемента на экране
 QString RecordController::first_selectionid(void) const
 {
-    return _view->getFirstSelectionId();
+    return _view->selection_first_id();
 }
 
 
 void RecordController::select_pos(int pos)
 {
-    _view->setSelectionToPos(pos);
+    _view->selection_to_pos(pos);
 }
 
 
@@ -724,7 +727,12 @@ void RecordController::select_id(QString id)
     // Номер записи в Source данных
     int pos = _source_model->position(id);
 
-    _view->setSelectionToPos(sourcepos_to_proxypos(pos));
+    //    if(_view->selection_first_pos()
+    //       != sourcepos_to_proxypos(pos)
+    //      ) {
+    _view->selection_to_pos(sourcepos_to_proxypos(pos));
+    //    }
+
     //    }
 }
 
@@ -852,7 +860,7 @@ void RecordController::cut(void)
 void RecordController::copy(void)
 {
     // Объект с записями помещается в буфер обмена
-    QApplication::clipboard() -> setMimeData(_view->getSelectedRecords());
+    QApplication::clipboard() -> setMimeData(_view->get_selected_records());
 }
 
 
@@ -1017,12 +1025,20 @@ void RecordController::addnew_blank(int mode)
 
     // todo: сделать заполнение таблицы приаттаченных файлов
 
+    QMap<QString, QString> data;
+    data["id"]      = get_unical_id();
+    data["pin"]     = _check_state[Qt::Unchecked];
+    data["name"]    = "";
+    data["author"]  = "";
+    data["home"]    = browser::Browser::_defaulthome;
+    data["url"]     = browser::Browser::_defaulthome;
+    data["tags"]    = "";
+
+
     boost::intrusive_ptr<TreeItem> item
-        = boost::intrusive_ptr<TreeItem>(new TreeItem(
-                                             boost::intrusive_ptr<Record>(new Record())
-                                             , nullptr  // _source_model->_browser_pages->root_item()
-                                         )
-                                        );
+        = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+
+
     item->to_fat();
     //    record.setText(addNewRecordWin.getField("text"));
     //    record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -1031,12 +1047,12 @@ void RecordController::addnew_blank(int mode)
     //    record.setField("url",    addNewRecordWin.getField("url"));
     //    record.setField("tags",   addNewRecordWin.getField("tags"));
     item->text_to_fat("");
-    item->field("pin",   _check_state[Qt::Unchecked]);
-    item->field("name",   "");
-    item->field("author", "");
-    item->field("home",   browser::Browser::_defaulthome);
-    item->field("url",    browser::Browser::_defaulthome);
-    item->field("tags",   "");
+    //    item->field("pin",   _check_state[Qt::Unchecked]);
+    //    item->field("name",   "");
+    //    item->field("author", "");
+    //    item->field("home",   browser::Browser::_defaulthome);
+    //    item->field("url",    browser::Browser::_defaulthome);
+    //    item->field("tags",   "");
 
     item->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
@@ -1122,7 +1138,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     qDebug() << "In add_new()";
 
     // Получение Source-индекса первой выделенной строки
-    QModelIndex position_index = _view->first_selection_source_index();
+    QModelIndex position_index = _view->selection_first_source_index();
 
     //    if(!position_index.isValid()) {
     //        position_index = _view->currentIndex();   // very wrong!
@@ -1150,14 +1166,21 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     //       //       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
     //      ) {
 
+    int selected_position = -1;
+
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    int selected_position = _source_model->insert_new_item(position_index, item, mode);
+    if(!_source_model->find(item)) {
+        selected_position = _source_model->insert_new_item(position_index, item, mode);
+    } else {
+        selected_position = _source_model->locate(item);
+    }
+
     assert(selected_position != -1);
     assert(_source_model->item(selected_position) == item);
     assert(_source_model->locate(item) == selected_position);
     //    assert(_source_model->child(selected_position) == item);
 
-    _view->moveCursorToNewRecord(mode, sourcepos_to_proxypos(selected_position));   // modify _source_model? yeah
+    _view->move_cursor_to_new_record(mode, sourcepos_to_proxypos(selected_position));   // modify _source_model? yeah
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1300,7 +1323,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
 
 void RecordController::on_edit_fieldcontext(void)
 {
-    _view->editFieldContext();
+    _view->edit_field_context();
     //view->loadUrl();
 }
 
@@ -1321,12 +1344,12 @@ void RecordController::edit_field_context(QModelIndex proxyIndex)
     auto item = _source_model->item(pos);
 
     // Поля окна заполняются начальными значениями
-    edit_record_dialog.setField("pin",       item->child(pos)->field("pin"));
-    edit_record_dialog.setField("name",      item->child(pos)->field("name"));
-    edit_record_dialog.setField("author",    item->child(pos)->field("author"));
-    edit_record_dialog.setField("home",      item->child(pos)->field("home"));
-    edit_record_dialog.setField("url",       item->child(pos)->field("url"));
-    edit_record_dialog.setField("tags",      item->child(pos)->field("tags"));
+    edit_record_dialog.setField("pin",       item->field("pin"));
+    edit_record_dialog.setField("name",      item->field("name"));
+    edit_record_dialog.setField("author",    item->field("author"));
+    edit_record_dialog.setField("home",      item->field("home"));
+    edit_record_dialog.setField("url",       item->field("url"));
+    edit_record_dialog.setField("tags",      item->field("tags"));
 
 
     int i = edit_record_dialog.exec();
@@ -1411,13 +1434,13 @@ void RecordController::delete_context(void)
 // Удаление отмеченных записей
 void RecordController::delete_items_selected(void)
 {
-    qDebug() << "RecordTableView::delete_records()";
+    qDebug() << "RecordController::delete_items_selected()";
 
     // Получение списка Item-элементов, подлежащих удалению. Индексы Proxy модели
-    QModelIndexList itemsForDelete = _view->selectionModel()->selectedIndexes();
+    QModelIndexList items_for_delete = _view->selectionModel()->selectedIndexes();
 
     // Проверка, выбраны ли записи
-    if(itemsForDelete.count() == 0) {
+    if(items_for_delete.count() == 0) {
         qDebug() << "Records for delete not selected.";
 
         QMessageBox msgBox;
@@ -1430,53 +1453,53 @@ void RecordController::delete_items_selected(void)
     // Сбор в массив всех идентификаторов, которые нужно удалить
     // Напрямую пробегать массив item-элементов и удалять из него нельзя
     // так как итератор начинает указывать на несуществующие элементы
-    QVector<QString> delIds;
-    QVector<int> delRows;
+    QVector<QString>    del_ids;
+    QVector<int>        del_rows;
     QModelIndexList::iterator it;
 
-    for(it = itemsForDelete.begin(); it != itemsForDelete.end(); it++) {
-        QModelIndex currIdx;
-        currIdx = *it;
+    for(it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
+        QModelIndex curr_idx;
+        curr_idx = *it;
 
-        QString appendId = currIdx.data(RECORD_ID_ROLE).toString();
+        QString append_id = curr_idx.data(RECORD_ID_ROLE).toString();
 
         // Если идентификатор не содержится в перечне удаляемых идентификаторов
         // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
-        if(!delIds.contains(appendId)) {
-            qDebug() << "Mark for delete item id " << appendId;
-            delIds.append(appendId);
-            delRows.append(currIdx.row());
+        if(!del_ids.contains(append_id)) {
+            qDebug() << "Mark for delete item id " << append_id;
+            del_ids.append(append_id);
+            del_rows.append(curr_idx.row());
         }
     }
 
     // Массив удаляемых номеров строк (в Proxy-нумерации) сортируется так чтоб вначале были индексы с наибольшим номером
-    qSort(delRows.begin(), delRows.end(), qGreater<int>());
-    int lastRowNum = delRows[0]; // Максимальный номер удаляемой строки
+    qSort(del_rows.begin(), del_rows.end(), qGreater<int>());
+    int lastRowNum = del_rows[0]; // Максимальный номер удаляемой строки
 
     // Номер строки на который надо установить засветку после удаления
     // Засветка устанавливается на запись, следующую после последней удаляемой
-    int selectionRowNum = lastRowNum + 1 - delRows.count();
-    qDebug() << "After delete cursor set to" << selectionRowNum << "row";
+    int selection_row_num = lastRowNum + 1 - del_rows.count();
+    qDebug() << "After delete cursor set to" << selection_row_num << "row";
 
     // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
     //    find_object<MetaEditor>(meta_editor_singleton_name)
     globalparameters.meta_editor()->clear_all();
 
     // Вызывается удаление отмеченных записей
-    remove_children(delIds);
+    remove_children_from_source_model(del_ids);
 
-    // Сохранение дерева веток
-    //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    //    // Сохранение дерева веток
+    //    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    //    globalparameters.tree_screen()->save_knowtree();
 
-    // Обновление на экране ветки, на которой стоит засветка,
-    // так как количество хранимых в ветке записей поменялось
-    //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->update_selected();
+    //    // Обновление на экране ветки, на которой стоит засветка,
+    //    // так как количество хранимых в ветке записей поменялось
+    //    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    //    globalparameters.tree_screen()->update_selected();
 
     // Установка курсора на нужную позицию
-    if(selectionRowNum >= 0 && selectionRowNum < _proxy_model->rowCount())
-        _view->selectRow(selectionRowNum);
+    if(selection_row_num >= 0 && selection_row_num < _proxy_model->rowCount())
+        _view->selectRow(selection_row_num);
 
     // Если таблица конечных записей пуста
     if(_proxy_model->rowCount() == 0) {
@@ -1489,8 +1512,6 @@ void RecordController::delete_items_selected(void)
     qobject_cast<RecordScreen *>(parent())->tools_update();
 }
 
-
-// Удаление одной записи по идентификатору
 void RecordController::remove_child(QString del_id)
 {
     QVector<QString> del_ids;
@@ -1498,9 +1519,84 @@ void RecordController::remove_child(QString del_id)
     remove_children(del_ids);
 }
 
+// Удаление одной записи по идентификатору
+void RecordController::remove_children(QVector<QString> del_ids)
+{
+    //    QVector<QString> del_ids;
+    //    del_ids.append(del_id);
+    //    remove_children(del_ids);
+
+    // Сбор в массив всех идентификаторов, которые нужно удалить
+    // Напрямую пробегать массив item-элементов и удалять из него нельзя
+    // так как итератор начинает указывать на несуществующие элементы
+    //    QVector<QString>    del_ids;
+    //    del_ids.append(del_id);
+    QVector<int>        del_rows;
+    //    QModelIndexList::iterator it;
+
+
+    for(auto del_id : del_ids) {    //    for(it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
+        QModelIndex curr_idx;
+        curr_idx = id_to_proxyindex(del_id);    //*it;
+
+        //        QString append_id = curr_idx.data(RECORD_ID_ROLE).toString();
+
+        // Если идентификатор не содержится в перечне удаляемых идентификаторов
+        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
+        //        if(!del_ids.contains(append_id)) {
+        qDebug() << "Mark for delete item id " << del_id;
+        //            del_ids.append(append_id);
+        del_rows.append(curr_idx.row());
+        //        }
+
+    }
+
+
+
+    // Массив удаляемых номеров строк (в Proxy-нумерации) сортируется так чтоб вначале были индексы с наибольшим номером
+    qSort(del_rows.begin(), del_rows.end(), qGreater<int>());
+    int lastRowNum = del_rows[0]; // Максимальный номер удаляемой строки
+
+    // Номер строки на который надо установить засветку после удаления
+    // Засветка устанавливается на запись, следующую после последней удаляемой
+    int selection_row_num = lastRowNum + 1 - del_rows.count();
+    qDebug() << "After delete cursor set to" << selection_row_num << "row";
+
+    // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
+    //    find_object<MetaEditor>(meta_editor_singleton_name)
+    globalparameters.meta_editor()->clear_all();
+
+    // Вызывается удаление отмеченных записей
+    remove_children_from_source_model(del_ids);
+
+    //    // Сохранение дерева веток
+    //    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    //    globalparameters.tree_screen()->save_knowtree();
+
+    //    // Обновление на экране ветки, на которой стоит засветка,
+    //    // так как количество хранимых в ветке записей поменялось
+    //    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    //    globalparameters.tree_screen()->update_selected();
+
+    // Установка курсора на нужную позицию
+    if(selection_row_num >= 0 && selection_row_num < _proxy_model->rowCount())
+        _view->selectRow(selection_row_num);
+
+    // Если таблица конечных записей пуста
+    if(_proxy_model->rowCount() == 0) {
+        // Нужно очистить поле редактирования чтобы невидно было текста
+        // последней удаленной записи
+        //        find_object<MetaEditor>(meta_editor_singleton_name)
+        globalparameters.meta_editor()->clear_all();
+    }
+
+    qobject_cast<RecordScreen *>(parent())->tools_update();
+
+}
+
 
 // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
-void RecordController::remove_children(QVector<QString> del_ids)
+void RecordController::remove_children_from_source_model(QVector<QString> del_ids)
 {
     qDebug() << "Remove rows by ID list: " << del_ids;
 
@@ -1518,11 +1614,20 @@ void RecordController::remove_children(QVector<QString> del_ids)
         auto item = _source_model->child(id);
 
         if(item) {
-            int index = _tabmanager->indexOf(item->unique_page()->view());
 
-            if(index != -1)_tabmanager->closeTab(index);
+            if(item->is_registered_to_browser()) {   // item_to_be_deleted->unique_page()
 
-            changed = true;
+                //                item->unique_page()->record_controller()->remove_child(item->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+
+                //                //            int index = _tabmanager->indexOf(item->unique_page()->view());
+
+                //                //            if(index != -1)_tabmanager->closeTab(index);
+
+                //                _source_model->remove_child(item);  // doing nothing
+                _tabmanager->closeTab(_tabmanager->indexOf(item->unique_page()->view()));
+
+                changed = true;
+            }
         }
 
         //_source_model->remove_child(id);
@@ -1579,7 +1684,7 @@ void RecordController::move_up(void)
     qDebug() << "In moveup()";
 
     // Получение номера первой выделенной строки
-    int pos = _view->getFirstSelectionPos();
+    int pos = _view->selection_first_pos();
 
     // Выясняется ссылка на таблицу конечных данных
     //    auto item = _source_model->browser_pages();
@@ -1588,7 +1693,7 @@ void RecordController::move_up(void)
     _source_model->move_up(pos);
 
     // Установка засветки на перемещенную запись
-    _view->setSelectionToPos(pos - 1);
+    _view->selection_to_pos(pos - 1);
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1602,7 +1707,7 @@ void RecordController::move_dn(void)
     qDebug() << "In movedn()";
 
     // Получение номера первой выделенной строки
-    int pos = _view->getFirstSelectionPos();
+    int pos = _view->selection_first_pos();
 
     // Выясняется ссылка на таблицу конечных данных
     //    auto item = _source_model->browser_pages();
@@ -1611,7 +1716,7 @@ void RecordController::move_dn(void)
     _source_model->move_dn(pos);
 
     // Установка засветки на перемещенную запись
-    _view->setSelectionToPos(pos + 1);
+    _view->selection_to_pos(pos + 1);
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1672,8 +1777,8 @@ void RecordController::settings(void)
 void RecordController::on_recordtable_configchange(void)
 {
     _source_model->on_table_config_changed();
-    _view->restoreColumnWidth();
-    _view->restoreHeaderState();
+    _view->restore_column_width();
+    _view->restore_header_state();
 }
 
 
@@ -1691,35 +1796,45 @@ void RecordController::on_print_click(void)
 }
 
 
-boost::intrusive_ptr<TreeItem> RecordController::register_item_to_browser_source_model(boost::intrusive_ptr<TreeItem> item)
+boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intrusive_ptr<TreeItem> item)
 {
     boost::intrusive_ptr<TreeItem> _item = _source_model->find(item);
+    int source_position = -1;
 
-    //    //    assert(record_controller);
-    //    auto browser_pages = this->_source_model->browser_pages();
-    //    assert(browser_pages);
+    if(!_item) {
+        //    //    assert(record_controller);
+        //    auto browser_pages = this->_source_model->browser_pages();
+        //    assert(browser_pages);
 
 
-    //    if(!_item) {
+        //    if(!_item) {
 
 
-    //    Record record;
+        //    Record record;
 
-    //    if(record.isLite())record.switchToFat();
-    //    assert(!item->is_lite());
-    if(item->is_lite())item->to_fat();
+        //    if(record.isLite())record.switchToFat();
+        //    assert(!item->is_lite());
+        if(item->is_lite())item->to_fat();
 
-    item->is_registered_to_record_controller(true);
-    int source_position = this->addnew_item_fat(item, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
-    assert(source_position != -1);
+        //    item->is_registered_to_record_controller_and_tabmanager(true);
+        int source_position = this->addnew_item_fat(item, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
+        assert(source_position != -1);
 
-    //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
+        //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
 
-    //    Record *_record = nullptr;
-    //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
+        //    Record *_record = nullptr;
+        //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
 
-    //                int pos = _record_controller->getFirstSelectionPos();
+        //                int pos = _record_controller->getFirstSelectionPos();
+    } else {
+        source_position = _source_model->locate(item);
+    }
 
+
+
+    int pos = _source_model->locate(item);
+
+    assert(pos == source_position); // maybe duplicated
     _item = _source_model->item(source_position);
     //    int source_position_ = item->sibling_order();   // from treemodelknow->_root_item
     //    auto _item_ = _shadow_branch_root->item(source_position_);
@@ -1733,6 +1848,7 @@ boost::intrusive_ptr<TreeItem> RecordController::register_item_to_browser_source
     if(_item->is_lite())_item->to_fat();
 
     //    }
+    _source_model->on_table_config_changed();
 
     return _item; //_record;
 }
@@ -1809,15 +1925,15 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 {
     TreeScreen *_tree_screen = globalparameters.tree_screen();
     //    auto _know_model_root = tree_screen->know_root();
-    auto _know_model_branch = _tree_screen->know_branch();
-
-    boost::intrusive_ptr<TreeItem> _result =  _know_model_branch->root_item();
+    auto _know_model_board = _tree_screen->know_model_board();
+    auto _current_view_model = _tree_screen->tree_view()->source_model();
+    boost::intrusive_ptr<TreeItem> _result =  _know_model_board->root_item();
 
     if(item->is_lite())item->to_fat();
 
     item->binder(generator);
     item->activator(activator);
-    item->is_registered_to_record_controller(true);
+    //    item->is_registered_to_record_controller_and_tabmanager(false);
 
     if(!item->binder() || !item->activator()) {
 
@@ -1837,7 +1953,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         QUrl find_url = QUrl(item->field("url"));
 
         //    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(find_url));        // on know_root semantic    // item won't work, for it is not inside _know_model_root if it is come from _know_model_branch
-        boost::intrusive_ptr<TreeItem> _source_item = _know_model_branch->item(TreeModel::delegater(find_url));
+        boost::intrusive_ptr<TreeItem> _source_item = _know_model_board->item(TreeModel::delegater(find_url));
 
         //    if(_source_root_item && !_source_item) {
         //        auto result = tree_screen->cut_from_root(_source_root_item);
@@ -1857,7 +1973,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //    if(_source_model->count() > 0) {
         _result = _source_model->find(item);
 
-        if(_source_item != _know_model_branch->root_item()) {
+        if(_source_item != _know_model_board->root_item()) {
             if(!_result) {
 
                 assert(item == _source_item);
@@ -1884,7 +2000,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             }
 
             assert(!_result->is_lite());
-            assert(_result->is_registered_to_record_controller());
+            assert(_result->is_registered_to_browser());
 
         } else {
 
@@ -1917,15 +2033,16 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
                 //                // _item->self_bind();
             }
 
-            auto it = _know_model_branch->item(_tree_screen->current_index());
+            auto it = _current_view_model->item(_tree_screen->tree_view()->view_index());
             assert(it);
 
             //        if(_item->is_lite())_item->to_fat();
 
             if(it != _result && item_is_brand_new) {
-                int pos = it->insert_new_item(it->current_count() - 1, _result);
-                _tree_screen->know_branch()->synchronized(false);
-                assert(_result == it->child(pos));
+                // int pos
+                _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                _tree_screen->synchronized(false);
+                // assert(_result == it->child(pos));
             }
 
             _tree_screen->save_knowtree();
@@ -1939,9 +2056,9 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //        //                _record->generate();
         //        //            }
 
-        assert(_result != _know_model_branch->root_item());
+        assert(_result != _know_model_board->root_item());
 
-        assert(_result->is_registered_to_record_controller());
+        assert(_result->is_registered_to_browser());
         assert(_result->field("url") == item->field("url"));
         //    }
 
@@ -1966,11 +2083,12 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 {
     TreeScreen *_tree_screen = globalparameters.tree_screen();
     //    auto _know_model_root = tree_screen->know_root();
-    auto _know_model_branch = _tree_screen->know_branch();
+    auto _know_model_board = _tree_screen->know_model_board();
+    auto _current_view_model = _tree_screen->tree_view()->source_model();
 
-    boost::intrusive_ptr<TreeItem> _result =  _know_model_branch->root_item();
+    boost::intrusive_ptr<TreeItem> _result =  _know_model_board->root_item();
     //    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
-    boost::intrusive_ptr<TreeItem> _source_item = _know_model_branch->item(TreeModel::delegater(_url));
+    boost::intrusive_ptr<TreeItem> _source_item = _know_model_board->item(TreeModel::delegater(_url));
 
     //    if(_source_root_item && !_source_item) {
     //        auto result = tree_screen->cut_from_root(_source_root_item);
@@ -1990,18 +2108,18 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    if(browser_pages) {
     _result = _source_model->find(_url);
 
-    if(_source_item != _know_model_branch->root_item()) {
+    if(_source_item != _know_model_board->root_item()) {
         if(!_result) {
 
             if(_source_item->is_lite())_source_item->to_fat();
 
-            //            _source_item->binder(generator);
-            //            _source_item->activator(activator);
+            //            //            _source_item->binder(generator);
+            //            //            _source_item->activator(activator);
 
-            //            _item = register_item_to_browser_source_model(_source_item);
+            //            //            _item = register_item_to_browser_source_model(_source_item);
 
-            _source_item->is_registered_to_record_controller(true);
-            // _source_item->self_bind();
+            //            _source_item->is_registered_to_record_controller_and_tabmanager(false);
+            //            // _source_item->self_bind();
             _result = _source_item;
         } else {
             assert(_result == _source_item);
@@ -2010,15 +2128,15 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             if(_result->field("id") == "")_result->field("id", get_unical_id());
 
-            //            _result->binder(generator);
-            //            _result->activator(activator);
+            //            //            _result->binder(generator);
+            //            //            _result->activator(activator);
 
-            _result->is_registered_to_record_controller(true);
-            // _item->self_bind();
+            //            _result->is_registered_to_record_controller_and_tabmanager(false);
+            //            // _item->self_bind();
         }
 
         assert(!_result->is_lite());
-        assert(_result->is_registered_to_record_controller());
+        //        assert(_result->is_registered_to_record_controller_and_tabmanager());
 
     } else {
         item_is_brand_new = true;
@@ -2057,33 +2175,39 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
             QString directory = DiskHelper::createTempDirectory();  //
 
+            QMap<QString, QString> data;
+            data["id"]      = get_unical_id();
+            data["pin"]     = _check_state[Qt::Unchecked];
+            data["name"]    = "";
+            data["author"]  = "";
+            data["home"]    = _url.toString();
+            data["url"]     = _url.toString();
+            data["tags"]    = "";
+
             boost::intrusive_ptr<TreeItem> item
-                = boost::intrusive_ptr<TreeItem>(new TreeItem(
-                                                     boost::intrusive_ptr<Record>(new Record())
-                                                     , nullptr  // _source_model->_browser_pages->root_item()
-                                                 ));
+                = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
 
             //                if(record.isLite())
             item->to_fat();
+            item->text_to_fat("");
+            //            //                QString title = _url.toString(); // not ready yet
+            //            item->field("id",       get_unical_id());
+            //            item->field("pin",      _check_state[Qt::Unchecked]);
+            //            item->field("name",     "");
+            //            item->field("author",   "");
+            //            item->field("home",     _url.toString());    // only changed
+            //            item->field("url",      _url.toString());    // only changed
+            //            item->field("tags",     "");
 
-            //                QString title = _url.toString(); // not ready yet
-            item->field("id",       get_unical_id());
-            item->field("pin",      _check_state[Qt::Unchecked]);
-            item->field("name",     "");
-            item->field("author",   "");
-            item->field("home",     _url.toString());    // only changed
-            item->field("url",      _url.toString());    // only changed
-            item->field("tags",     "");
+            //            //                _record_ontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+            //            //                _record = recordtabledata->getRecordByUrl(_url);
+            //            //                //                int pos = _record_ontroller->getFirstSelectionPos();
+            //            //                //                _record = _record_ontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
 
-            //                _record_ontroller->addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
-            //                _record = recordtabledata->getRecordByUrl(_url);
-            //                //                int pos = _record_ontroller->getFirstSelectionPos();
-            //                //                _record = _record_ontroller->getRecordTableModel()->getRecordTableData()->getRecord(pos);
+            //            //                //            }
 
-            //                //            }
-
-            //                record->binder(generator);
-            //                record->activator(activator);
+            //            //                record->binder(generator);
+            //            //                record->activator(activator);
 
             item->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
 
@@ -2098,16 +2222,16 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             if(item->is_lite())item->to_fat();
 
-            //            item->binder(generator);
-            //            item->activator(activator);
+            //            //            item->binder(generator);
+            //            //            item->activator(activator);
 
-            //            _item = register_item_to_browser_source_model(item);
-            item->is_registered_to_record_controller(true);
-            // item->self_bind();
-            //                assert(_record);
-            //                assert(_record->is_registered());
-            //                _record->active_immediately(active_immediately);
-            //                _record->generator(generator);
+            //            //            _item = register_item_to_browser_source_model(item);
+            //            item->is_registered_to_record_controller_and_tabmanager(true);
+            //            // item->self_bind();
+            //            //                assert(_record);
+            //            //                assert(_record->is_registered());
+            //            //                _record->active_immediately(active_immediately);
+            //            //                _record->generator(generator);
 
 
             _result = item; // assert(_item.get() == item.get());
@@ -2116,22 +2240,23 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             if(_result->field("id") == "")_result->field("id", get_unical_id());
 
-            //            _result->binder(generator);
-            //            _result->activator(activator);
+            //            //            _result->binder(generator);
+            //            //            _result->activator(activator);
 
-            _result->is_registered_to_record_controller(true);
-            // _item->self_bind();
+            //            _result->is_registered_to_record_controller_and_tabmanager(true);
+            //            // _item->self_bind();
         }
 
-        auto it = _know_model_branch->item(_tree_screen->current_index());
+        auto it = _current_view_model->item(_tree_screen->tree_view()->view_index());
         assert(it);
 
         //        if(_item->is_lite())_item->to_fat();
 
         if(it != _result && item_is_brand_new) {
-            int pos = it->insert_new_item(it->current_count() - 1, _result);
-            _tree_screen->know_branch()->synchronized(false);
-            assert(_result == it->child(pos));
+            // int pos
+            _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+            _tree_screen->synchronized(false);
+            // assert(_result == it->child(pos));
         }
 
         _tree_screen->save_knowtree();
@@ -2149,8 +2274,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     _result->binder(generator);
     _result->activator(activator);
 
-    assert(_result != _know_model_branch->root_item());
-    assert(_result->is_registered_to_record_controller());
+    assert(_result != _know_model_board->root_item());
+    //    assert(_result->is_registered_to_record_controller_and_tabmanager());
     assert(_result->field("url") == _url.toString());
     //    } // browser_pages
 

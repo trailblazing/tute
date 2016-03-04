@@ -9,8 +9,8 @@
 #include "Pbkdf2Qt.h"
 #include "CryptService.h"
 
-#include "models/tree/TreeKnowModel.h"
-#include "views/tree/TreeKnowView.h"
+#include "models/tree/KnowModel.h"
+#include "views/tree/KnowView.h"
 #include "models/app_config/AppConfig.h"
 #include "libraries/GlobalParameters.h"
 #include "views/enter_password/EnterPassword.h"
@@ -146,7 +146,7 @@ bool Password::replacePassword(void)
     // ------------------------
 
     // Выясняется ссылка на модель дерева данных
-    TreeKnowModel *dataModel = static_cast<TreeKnowModel *>(//find_object<TreeKnowView>(knowtreeview_singleton_name)
+    KnowModel *dataModel = static_cast<KnowModel *>(//find_object<TreeKnowView>(knowtreeview_singleton_name)
                                    globalparameters.tree_screen()->tree_view()->model());
 
     // Перешифрация

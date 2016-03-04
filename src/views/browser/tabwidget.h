@@ -231,7 +231,7 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, RecordScreen *_record_screen, Browser *_browser, MainWindow *_main_window);
+        TabWidget(FindScreen *_find_screen, MetaEditor *_editor_screen, RecordScreen *_record_screen, Browser *_browser, MainWindow *_main_window);
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -266,35 +266,20 @@ namespace browser {
         Browser *browser() {return _browser;}
 
         struct ActiveRecordBinder {
-            TabWidget       *_the;
+            TabWidget       *_tabmanager;
             bool            _make_current;
-            //            TableController *_record_controller;
-            //            TableController *_page_controller;
-            // WebView *view;
+
             ActiveRecordBinder(
-                TabWidget *the
+                TabWidget *_tabmanager
                 , bool make_current = true
-            ): _the(the) , _make_current(make_current)
-                //                , _record_controller(_record_controller)
-                //                , _page_controller(_page_controller)
-                //  , view(nullptr)
+            ): _tabmanager(_tabmanager) , _make_current(make_current)
             {}
 
-            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *))
-            {
-                assert(item);
-                assert(item->is_registered_to_record_controller() == true);
-                WebView *view = _the->newTab(item, _make_current);
-                (item.get()->*_bind)(view->page());
-                return view;
-            }
+            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *));
 
-            WebView *activator(boost::intrusive_ptr<TreeItem> item)
-            {
-                assert(item);
-                assert(item->page_valid());
-                return item->unique_page()->active();
-            }
+
+            WebView *activator(boost::intrusive_ptr<TreeItem> item);
+
 
         };
 

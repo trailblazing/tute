@@ -2,8 +2,8 @@
 
 #include "main.h"
 #include "WalkHistory.h"
-#include "models/tree/TreeKnowModel.h"
-#include "views/tree/TreeKnowView.h"
+#include "models/tree/KnowModel.h"
+#include "views/tree/KnowView.h"
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 
@@ -283,7 +283,7 @@ void WalkHistory::set_drop(bool flag)
 void WalkHistory::check_id(QString id)
 {
     // Выясняется ссылка на модель дерева данных
-    TreeKnowModel *dataModel = static_cast<TreeKnowModel *>(    // find_object<TreeKnowView>("knowTreeView")
+    KnowModel *dataModel = static_cast<KnowModel *>(    // find_object<TreeKnowView>("knowTreeView")
                                    globalparameters.tree_screen()->tree_view()->model()
                                );
 
