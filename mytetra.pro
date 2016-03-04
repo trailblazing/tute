@@ -436,3 +436,6 @@ INCLUDEPATH     +=  src/views/browser
 
 
 EXAMPLE_FILES   =   Info_mac.plist browser.icns browser.ico browser.rc
+
+
+

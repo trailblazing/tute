@@ -119,15 +119,12 @@
         <file>resource/pic/leaves.svg</file>
         <file>resource/pic/branch_single.svg</file>
         <file>resource/pic/leaf.svg</file>
-        <file>resource/pic/cherry.svg</file>
         <file>resource/pic/leaves_shine.svg</file>
         <file>resource/pic/clover.svg</file>
-        <file>resource/pic/holly.svg</file>
         <file>resource/pic/trace.svg</file>
         <file>resource/standartdata/candidate.xml</file>
         <file>resource/standartdata/default_page.xml</file>
         <file>resource/standartconfig/any/browserview.ini</file>
-        <file>resource/pic/cherries.svg</file>
         <file>resource/pic/tangerine.svg</file>
         <file>resource/pic/apple.svg</file>
     </qresource>
