@@ -654,12 +654,14 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         QModelIndex current_item_index =    // find_object<TreeScreen>(tree_screen_singleton_name)
             _tree_screen->tree_view()->view_index();
 
-        // Текущая ветка
-        search_start_item = _current_tree_model->item(current_item_index);
+        if(current_item_index.isValid()) {
+            // Текущая ветка
+            search_start_item = _current_tree_model->item(current_item_index);
 
-        // Количество элементов (веток) в текущей ветке и всех подветках
-        candidate_records = _current_tree_model->size_of(search_start_item);
-        _result_item = _result_item->active_subset();
+            // Количество элементов (веток) в текущей ветке и всех подветках
+            candidate_records = _current_tree_model->size_of(search_start_item);
+            _result_item = _result_item->active_subset();
+        }
     };
 
     Q_UNUSED(branch_search_prepare)

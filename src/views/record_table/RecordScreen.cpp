@@ -127,33 +127,37 @@ void RecordScreen::save_in_new_branch(bool checked)
     assert(entrance);
     auto tree_source_model = tree_screen->tree_view()->source_model();  // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
 
-    if(tree_screen && entrance) {
-        assert(objectName() != "");
-        boost::intrusive_ptr<TreeItem> into_know_branch   // = tree_screen->_root->item_by_name(this->objectName());
-            = tree_screen->add_branch(tree_screen->tree_view()->view_index()
-                                      , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
-                                      , true, tree_source_model);
-        //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
+    auto _index = tree_screen->tree_view()->view_index();
 
-        //            assert(objectName() != "");
-        //            into_know_branch->field("name", objectName());
+    if(_index.isValid()) {
+        if(tree_screen && entrance) {
+            assert(objectName() != "");
+            boost::intrusive_ptr<TreeItem> into_know_branch   // = tree_screen->_root->item_by_name(this->objectName());
+                = tree_screen->add_branch(_index
+                                          , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
+                                          , true, tree_source_model);
+            //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
 
-        //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
-        auto source_model = this->record_controller()->source_model();  // ->record_table();
+            //            assert(objectName() != "");
+            //            into_know_branch->field("name", objectName());
 
-        for(int i = 0; i < source_model->size(); i++) {
-            if(!tree_screen->know_model_board()->is_item_id_exists(source_model->item(i)->field("id"))) {
-                if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
+            //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
+            auto source_model = this->record_controller()->source_model();  // ->record_table();
 
-                source_model->item(i)->parent(into_know_branch);
-                into_know_branch->insert_new_item(into_know_branch->work_pos(), source_model->item(i));
+            for(int i = 0; i < source_model->size(); i++) {
+                if(!tree_screen->know_model_board()->is_item_id_exists(source_model->item(i)->field("id"))) {
+                    if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
+
+                    source_model->item(i)->parent(into_know_branch);
+                    into_know_branch->insert_new_item(into_know_branch->work_pos(), source_model->item(i));
+                }
             }
-        }
 
-        //            new_tree_item_in_treeknow_root = target;
-        tree_screen->synchronized(false);
-        tree_screen->save_knowtree();
-        // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
+            //            new_tree_item_in_treeknow_root = target;
+            tree_screen->synchronized(false);
+            tree_screen->save_knowtree();
+            // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
+        }
     }
 }
 
@@ -175,57 +179,61 @@ void RecordScreen::setup_actions(void)
         browser::Entrance *_entrance = globalparameters.entrance();
         assert(_entrance);
 
-        if(_tree_screen && _entrance) {
+        auto _index = _tree_screen->tree_view()->view_index();
 
-            QMap<QString, QString> data;
-            auto source_model = _tree_screen->tree_view()->source_model();
-            auto current_root_item = source_model->item(_tree_screen->tree_view()->view_index());
+        if(_index.isValid()) {
+            if(_tree_screen && _entrance) {
 
-            data["id"]      =  get_unical_id(); //current_root_item->id();     // source_model->root_item()->id();     //
-            data["name"]    =  this->tabmanager()->webView(0)->page()->current_item()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
+                QMap<QString, QString> data;
+                auto source_model = _tree_screen->tree_view()->source_model();
+                auto current_root_item = source_model->item(_index);
 
-            boost::intrusive_ptr<TreeItem> new_branch_root = boost::intrusive_ptr<TreeItem>(new TreeItem(current_root_item, data));
+                data["id"]      =  get_unical_id(); //current_root_item->id();     // source_model->root_item()->id();     //
+                data["name"]    =  this->tabmanager()->webView(0)->page()->current_item()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
 
-            bool modified = false;
+                boost::intrusive_ptr<TreeItem> new_branch_root = boost::intrusive_ptr<TreeItem>(new TreeItem(current_root_item, data));
 
-            for(int w = 0; w < _entrance->browsers().size(); w++) {
-                auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+                bool modified = false;
 
-                for(int i = 0; i < tabmanager->count(); i++) {
-                    auto item = tabmanager->webView(i)->page()->current_item();
+                for(int w = 0; w < _entrance->browsers().size(); w++) {
+                    auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
-                    if(!_tree_screen->know_model_board()->is_item_id_exists(item->field("id"))) {
+                    for(int i = 0; i < tabmanager->count(); i++) {
+                        auto item = tabmanager->webView(i)->page()->current_item();
 
-                        if(item->is_lite())item->to_fat();
+                        if(!_tree_screen->know_model_board()->is_item_id_exists(item->field("id"))) {
 
-                        item->parent(new_branch_root);
-                        new_branch_root->insert_new_item(new_branch_root->work_pos(), item);
-                        modified = true;
+                            if(item->is_lite())item->to_fat();
+
+                            item->parent(new_branch_root);
+                            new_branch_root->insert_new_item(new_branch_root->work_pos(), item);
+                            modified = true;
+                        }
                     }
                 }
-            }
 
 
-            if(modified) {
-                //                auto tree_source_model =  _tree_screen->tree_view()->source_model();
-                //                assert(tree_source_model);
+                if(modified) {
+                    //                auto tree_source_model =  _tree_screen->tree_view()->source_model();
+                    //                assert(tree_source_model);
 
-                //                new_branch_item->field("id", tree_source_model->root_item()->id());
-                //                new_branch_item->field("name", tree_source_model->root_item()->name());
-                assert( // source_model->root_item()->id() == new_branch_root->id() ||
-                    source_model->is_item_id_exists(new_branch_root->id()));
-                _tree_screen->add_branch(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
-                    //,
-                    new_branch_root
-                    , true
-                    , source_model             // _tree_screen->know_branch()
-                );
+                    //                new_branch_item->field("id", tree_source_model->root_item()->id());
+                    //                new_branch_item->field("name", tree_source_model->root_item()->name());
+                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
+                        source_model->is_item_id_exists(new_branch_root->id()));
+                    _tree_screen->add_branch(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
+                        //,
+                        new_branch_root
+                        , true
+                        , source_model             // _tree_screen->know_branch()
+                    );
 
 
-                _tree_screen->setup_model(source_model->root_item());
-                //                _tree_screen->know_branch()->synchronized(false);
-                //                _tree_screen->save_knowtree();
-                //                // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
+                    _tree_screen->setup_model(source_model->root_item());
+                    //                _tree_screen->know_branch()->synchronized(false);
+                    //                _tree_screen->save_knowtree();
+                    //                // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
+                }
             }
         }
     }

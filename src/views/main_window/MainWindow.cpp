@@ -475,16 +475,18 @@ void MainWindow::save_tree_position(void)
     // Получение QModelIndex выделенного в дереве элемента
     const QModelIndex index = _tree_screen->tree_view()->view_index();
 
-    //    if(index.isValid()) {   // this line is to be remove
-    // Получаем указатель вида TreeItem
-    auto item = _tree_screen->tree_view()->source_model()->item(index);
+    if(index.isValid()) {
 
-    // Сохраняем путь к элементу item
-    appconfig.tree_position(
-        _tree_screen->tree_view()->source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
-        , item->absolute_path())
-    ;
-    //    }
+        //    if(index.isValid()) {   // this line is to be remove
+        // Получаем указатель вида TreeItem
+        auto item = _tree_screen->tree_view()->source_model()->item(index);
+
+        // Сохраняем путь к элементу item
+        appconfig.tree_position(
+            _tree_screen->tree_view()->source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
+            , item->absolute_path());
+        //    }
+    }
 }
 
 // set

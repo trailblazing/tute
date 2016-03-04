@@ -1927,7 +1927,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    auto _know_model_root = tree_screen->know_root();
     auto _know_model_board = _tree_screen->know_model_board();
     auto _current_view_model = _tree_screen->tree_view()->source_model();
-    boost::intrusive_ptr<TreeItem> _result =  _know_model_board->root_item();
+    boost::intrusive_ptr<TreeItem> _result(nullptr);    // =  _know_model_board->root_item();
 
     if(item->is_lite())item->to_fat();
 
@@ -2033,19 +2033,24 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
                 //                // _item->self_bind();
             }
 
-            auto it = _current_view_model->item(_tree_screen->tree_view()->view_index());
-            assert(it);
+            auto idx = _tree_screen->tree_view()->view_index();
 
-            //        if(_item->is_lite())_item->to_fat();
+            if(idx.isValid()) {
 
-            if(it != _result && item_is_brand_new) {
-                // int pos
-                _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
-                _tree_screen->synchronized(false);
-                // assert(_result == it->child(pos));
+                auto it = _current_view_model->item(idx);
+                assert(it);
+
+                //        if(_item->is_lite())_item->to_fat();
+
+                if(it != _result && item_is_brand_new) {
+                    // int pos
+                    _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                    _tree_screen->synchronized(false);
+                    // assert(_result == it->child(pos));
+                }
+
+                _tree_screen->save_knowtree();
             }
-
-            _tree_screen->save_knowtree();
         }
 
         if(_result->is_lite())_result->to_fat();
@@ -2086,7 +2091,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     auto _know_model_board = _tree_screen->know_model_board();
     auto _current_view_model = _tree_screen->tree_view()->source_model();
 
-    boost::intrusive_ptr<TreeItem> _result =  _know_model_board->root_item();
+    boost::intrusive_ptr<TreeItem> _result(nullptr);    // =  _know_model_board->root_item();
     //    boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
     boost::intrusive_ptr<TreeItem> _source_item = _know_model_board->item(TreeModel::delegater(_url));
 
@@ -2247,19 +2252,23 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             //            // _item->self_bind();
         }
 
-        auto it = _current_view_model->item(_tree_screen->tree_view()->view_index());
-        assert(it);
+        auto idx = _tree_screen->tree_view()->view_index();
 
-        //        if(_item->is_lite())_item->to_fat();
+        if(idx.isValid()) {
+            auto it = _current_view_model->item(idx);
+            assert(it);
 
-        if(it != _result && item_is_brand_new) {
-            // int pos
-            _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
-            _tree_screen->synchronized(false);
-            // assert(_result == it->child(pos));
+            //        if(_item->is_lite())_item->to_fat();
+
+            if(it != _result && item_is_brand_new) {
+                // int pos
+                _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                _tree_screen->synchronized(false);
+                // assert(_result == it->child(pos));
+            }
+
+            _tree_screen->save_knowtree();
         }
-
-        _tree_screen->save_knowtree();
     }
 
     if(_result->is_lite())_result->to_fat();

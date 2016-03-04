@@ -21,6 +21,8 @@
 #include "views/browser/entrance.h"
 
 extern GlobalParameters globalparameters;
+extern AppConfig appconfig;
+
 const char *knowtreeview_singleton_name = "knowtreeview";
 
 KnowView::KnowView(QWidget *parent) : QTreeView(parent), _know_root(nullptr)
@@ -469,7 +471,12 @@ QModelIndex KnowView::view_index(void)const
 
     //    auto v = _treeknowview->selectionModel()->currentIndex();
     //    candidate_from_knowtree_item(cur_index);
-    //    assert(_tree_view->selectionModel()->currentIndex().isValid());    // this line is to be recovery
+
+    //    if(!selectionModel()->currentIndex().isValid()) {
+    //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
+    //        assert(selectionModel()->currentIndex().isValid());    // this line is to be recovery
+    //    }
+
     //    assert(cur_index.isValid());
     return // cur_index;   // temporary setting???   //
         selectionModel()->currentIndex();
@@ -481,11 +488,11 @@ QModelIndex KnowView::view_index(void)const
 //    //    if(!_tree_view->selectionModel()->currentIndex().isValid()) {
 //    boost::intrusive_ptr<TreeItem> _item = nullptr;
 
-//    //    KnowModel *_know_root = _know_root;  //static_cast<KnowModel *>(_tree_view->model());
+//    //    KnowModel *_know_root = _know_root;  //_tree_view->source_model();
 
 //    if(0 == _know_root->root_item()->current_count()) {
 //        static_cast<TreeScreen *>(parent())->view_return_to_root();  //
-//        //        _know_root = static_cast<KnowModel *>(_tree_view->model());
+//        //        _know_root = _tree_view->source_model();
 //        _item = _know_root->root_item()->add_child();
 //    } else {
 //        _item = _know_root->root_item()->child(_know_root->root_item()->current_count() - 1);
@@ -521,4 +528,55 @@ QModelIndex KnowView::view_index(void)const
 //    return selectionModel()->currentIndex();
 //}
 
+void KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
+{
+    QModelIndex index = _know_root->index(_item);//_record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
+    int pos = index.row();
 
+    //    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
+    //    if(pos != to_pos) {
+    //        QMessageBox msgBox;
+    //        msgBox.setText("In RecordView::setSelectionToPos() input pos not equal model pos");
+    //        msgBox.exec();
+    //    }
+
+    int rowCount = _know_root->root_item()->current_count();
+
+    if(pos > (rowCount - 1))
+        return;
+
+    // Простой механизм выбора строки. Похоже, что его использовать не получится
+    selectionModel()->select(index
+                             // , QItemSelectionModel::SelectCurrent
+                             , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+                            );
+
+    //    auto recordSourceModel = controller->getRecordTableModel();
+    //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+    // Установка засветки на нужный индекс
+    // Set the backlight to the desired index
+    selectionModel()->setCurrentIndex(index   // selIdx
+                                      , QItemSelectionModel::Select    // ClearAndSelect
+                                     );
+
+    // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+    // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+    // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+    // Therefore, the recording must be made a virtual click to fill the final table of records
+    if(appconfig.getInterfaceMode() == "mobile")
+        emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+
+    // emit this->clicked(index);
+
+    scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
+
+    this->setFocus();   // ?
+}
+
+void KnowView::selection_to_pos(int to_pos)
+{
+    auto item = _know_root->root_item()->item(to_pos);
+    selection_to_pos(item);
+
+}

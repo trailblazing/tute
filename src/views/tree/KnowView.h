@@ -32,6 +32,8 @@ public:
 
     QModelIndex view_index(void) const;
     //    QModelIndex view_index_last(void)const;
+    void selection_to_pos(int to_pos);
+    void selection_to_pos(boost::intrusive_ptr<TreeItem> _item);
 
 signals:
     void tapAndHoldGestureFinished(const QPoint &);

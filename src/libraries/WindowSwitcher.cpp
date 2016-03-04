@@ -65,17 +65,22 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(globalparameters.tree_screen()->tree_view()->view_index());
 
-    if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
-        RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
-        QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
-        // temporary setting
-        object->show();
-        appconfig.setFocusWidget(object->objectName());
+    auto index = globalparameters.tree_screen()->tree_view()->view_index();
 
-        globalparameters.vtab()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
-        // temporary setting
+    if(index.isValid()) {
+        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
+
+        if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+            RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+            QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
+            // temporary setting
+            object->show();
+            appconfig.setFocusWidget(object->objectName());
+
+            globalparameters.vtab()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
+            // temporary setting
+        }
     }
 }
 
@@ -105,18 +110,22 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(globalparameters.tree_screen()->tree_view()->view_index());
+    auto index = globalparameters.tree_screen()->tree_view()->view_index();
 
-    if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
-        RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
-        QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
-                                                ); // temporary setting
-        object->show();
+    if(index.isValid()) {
+        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
 
-        globalparameters.vtab()->setCurrentWidget(record_screen         // globalparameters.record_screens()[0]
-                                                 ); // temporary setting
+        if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+            RecordScreen *record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+            QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
+                                                    ); // temporary setting
+            object->show();
 
-        appconfig.setFocusWidget(object->objectName());
+            globalparameters.vtab()->setCurrentWidget(record_screen         // globalparameters.record_screens()[0]
+                                                     ); // temporary setting
+
+            appconfig.setFocusWidget(object->objectName());
+        }
     }
 }
 
@@ -230,24 +239,28 @@ void WindowSwitcher::restoreFocusWidget()
     }
 
     if(widgetName == record_screen_multi_instance_name) {
-        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(globalparameters.tree_screen()->tree_view()->view_index());
+        auto index = globalparameters.tree_screen()->tree_view()->view_index();
 
-        if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
-            RecordScreen *_record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+        if(index.isValid()) {
+            auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
+
+            if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+                RecordScreen *_record_screen = item->unique_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 
-            QWidget *object = static_cast<QWidget *>(_record_screen);              // globalparameters.record_screens()[0]
-            // temporary setting
-            object->show();
+                QWidget *object = static_cast<QWidget *>(_record_screen);              // globalparameters.record_screens()[0]
+                // temporary setting
+                object->show();
 
-            globalparameters.vtab()->setCurrentWidget(_record_screen);             // globalparameters.record_screens()[0]
-            // temporary setting
+                globalparameters.vtab()->setCurrentWidget(_record_screen);             // globalparameters.record_screens()[0]
+                // temporary setting
 
-            appconfig.setFocusWidget(object->objectName());
+                appconfig.setFocusWidget(object->objectName());
 
-            //        for(auto &i : globalparameters.record_screens())i->show();
+                //        for(auto &i : globalparameters.record_screens())i->show();
 
-            //        for(auto &i : globalparameters.record_screens())i->setFocus(); // temporary setting
+                //        for(auto &i : globalparameters.record_screens())i->setFocus(); // temporary setting
+            }
         }
 
         return;

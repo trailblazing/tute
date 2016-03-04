@@ -25,11 +25,11 @@ When writing code to be guided by the following agreements:
 * Tab prohibited padding spaces are made;
 * Margin - 2 spaces;
 * Comments must have the same indentation that of the code;
-* The name of the file with the implementation of the class is based on the principle EtoMoyKlass.cpp/class.cxx;
-* The name of the file with the title of class is based on the principle EtoMoyKlass.h/ClassName.hxx;
-* The name of the class is based on the principle EtoMoyKlass/ClassName;
-* The name of the method is based on the principle etoMetodKlassa/method_name;
-* The name of the variables is based on the principle etoPeremennaya/parameter_name;
+* The name of the file with the implementation of the class is based on the principle ClassName.cpp/classname.cxx;
+* The name of the file with the title of class is based on the principle ClassName.hxx/classname.hxx;
+* The name of the class is based on the principle ClassName;
+* The name of the method is based on the principle method_name;
+* The name of the variables is based on the principle _parameter_name;
 * The opening "{" and closing bracket "}" should be on separate lines. It is unacceptable to place an opening bracket in the line for (), if (), etc .;
 * Each newly created method should contain a comment that describes what the method does. So it is desirable to describe the purpose of the method parameters;
 * The header class, after the section is necessary in #include class assignment to write comments.
