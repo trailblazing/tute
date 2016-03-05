@@ -850,7 +850,7 @@ namespace browser {
 
 #if defined(QWEBENGINEHISTORY_RESTORESESSION)
         _restorelastsession = new QAction(tr("Restore Last Session"), this);
-        connect(_restorelastsession, SIGNAL(triggered()), QtSingleApplication::instance(), SLOT(restoreLastSession()));
+        connect(_restorelastsession, &QAction::triggered, QtSingleApplication::instance(), &QtSingleApplication::restoreLastSession;
         _restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
         historyActions.append(_tabwidget->recentlyClosedTabsAction());
         historyActions.append(_restorelastsession);

@@ -818,7 +818,7 @@ QString KnowModel::paste_sub_branch(boost::intrusive_ptr<TreeItem> item, Clipboa
         add_new_branch(item, id, subbranch_name);
 
         // Выясняется указатель на эту добавленную ветку
-        auto newitem = item_by_id(id);
+        auto newitem = find_item_by_id(id);
 
         qDebug() << "KnowTreeModel::paste_subbranch_recurse() : create branch with field" << newitem->all_fields();
 
@@ -1303,7 +1303,7 @@ void KnowModel::re_encrypt(QString previousPassword, QString currentPassword)
 
 // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
 // Если ветка с указанным ID не будет найдена, возвращается NULL
-boost::intrusive_ptr<TreeItem> KnowModel::item_by_name(QString name)
+boost::intrusive_ptr<TreeItem> KnowModel::find_item_by_name(QString name)
 {
     std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, QString, int)>
     item_by_name_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
@@ -1337,7 +1337,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::item_by_name(QString name)
 
 // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
 // Если ветка с указанным ID не будет найдена, возвращается NULL
-boost::intrusive_ptr<TreeItem> KnowModel::item_by_id(QString id)
+boost::intrusive_ptr<TreeItem> KnowModel::find_item_by_id(QString id)
 {
     std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeItem>, QString, int)>
     item_by_id_recurse

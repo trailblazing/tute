@@ -1635,7 +1635,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::is_registered_to_browser()
         if(_page->view()) {
             if(_page->view()->record_controller()) {
                 auto _record_controller = _page->view()->record_controller();
-                found = _record_controller->source_model()->find_bind(boost::intrusive_ptr<TreeItem>(this));
+                found = _record_controller->source_model()->find_bind_in_list(boost::intrusive_ptr<TreeItem>(this));
             }
         }
     }

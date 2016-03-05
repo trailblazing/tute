@@ -83,19 +83,22 @@ namespace browser {
         _findtext->setVisible(false);
 
         QMenu *m = menu();
-        connect(m, SIGNAL(aboutToShow()), this, SLOT(aboutToShowMenu()));
-        connect(m, SIGNAL(triggered(QAction *)), this, SLOT(triggeredMenuAction(QAction *)));
+        connect(m, &QMenu::aboutToShow, this, &ToolbarSearch::aboutToShowMenu);
+        connect(m, &QMenu::triggered, this, &ToolbarSearch::triggeredMenuAction);
 
         QCompleter *completer = new QCompleter(_stringlistmodel, this);
         completer->setCompletionMode(QCompleter::InlineCompletion);
         lineEdit()->setCompleter(completer);
 
-        connect(lineEdit(), SIGNAL(returnPressed()), SLOT(searchNow()));
+        assert(lineEdit());
+        connect(lineEdit(), &QLineEdit::returnPressed, this, &ToolbarSearch::searchNow);
+
         connect(this, &SearchLineEdit::textChanged, _findtext, [&](const QString & text) {_findtext->setText(text);});
         //connect(this, &ToolbarSearch::returnPressed, _tabmanager, &TabManager::lineEditReturnPressed);
         connect(this, &ToolbarSearch::returnPressed, _findtext, &QLineEdit::returnPressed);
 
         setInactiveText(tr("Google"));
+
         load();
     }
 

@@ -83,7 +83,7 @@ namespace qt4 {
         : QCoreApplication(argc, argv)
     {
         peer = new QtLocalPeer(this);
-        connect(peer, SIGNAL(messageReceived(const QString &)), SIGNAL(messageReceived(const QString &)));
+        connect(peer, &QtLocalPeer::messageReceived, &QtSingleCoreApplication::messageReceived);
     }
 
 
@@ -96,7 +96,7 @@ namespace qt4 {
         : QCoreApplication(argc, argv)
     {
         peer = new QtLocalPeer(this, appId);
-        connect(peer, SIGNAL(messageReceived(const QString &)), SIGNAL(messageReceived(const QString &)));
+        connect(peer, &QtLocalPeer::(messageReceived, &QtSingleCoreApplication::messageReceived);
     }
 
 

@@ -219,8 +219,10 @@ void RecordScreen::setup_actions(void)
 
                     //                new_branch_item->field("id", tree_source_model->root_item()->id());
                     //                new_branch_item->field("name", tree_source_model->root_item()->name());
-                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
-                        source_model->is_item_id_exists(new_branch_root->id()));
+
+                    //                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
+                    //                        source_model->is_item_id_exists(new_branch_root->id()));
+
                     _tree_screen->add_branch(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
                         //,
                         new_branch_root

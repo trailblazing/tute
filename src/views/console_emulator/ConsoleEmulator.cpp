@@ -58,10 +58,10 @@ void ConsoleEmulator::setupUI(void)
 
 void ConsoleEmulator::setupSignals(void)
 {
-    connect(buttonCancel, SIGNAL(clicked()), this, SLOT(onCancelClick()));
-    connect(buttonDetails, SIGNAL(clicked()), this, SLOT(onDetailsClick()));
+    connect(buttonCancel, &QPushButton::clicked, this, &ConsoleEmulator::onCancelClick);
+    connect(buttonDetails, &FlatToolButton::clicked, this, &ConsoleEmulator::onDetailsClick);
 
-    connect(escShortcut, SIGNAL(activated()), this, SLOT(onCancelClick()));
+    connect(escShortcut, &QShortcut::activated, this, &ConsoleEmulator::onCancelClick);
 }
 
 

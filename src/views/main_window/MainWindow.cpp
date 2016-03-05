@@ -611,42 +611,42 @@ void MainWindow::init_file_menu(void)
     _filemenu->clear();
     menuBar()->addMenu(_filemenu);
 
-    // Создание тулбара
-    /*
-    QToolBar *tb = new QToolBar(this);
-    tb->setWindowTitle(tr("File Actions"));
-    addToolBar(tb);
-    */
+    //    // Создание тулбара
+    //    /*
+    //    QToolBar *tb = new QToolBar(this);
+    //    tb->setWindowTitle(tr("File Actions"));
+    //    addToolBar(tb);
+    //    */
 
     QAction *a;
 
-    /*
-    a = new QAction(tr("&New"), this);
-    a->setShortcut(QKeySequence::New);
-    connect(a, SIGNAL(triggered()), this, SLOT(fileNew()));
-    // tb->addAction(a);
-    menu->addAction(a);
+    //    /*
+    //    a = new QAction(tr("&New"), this);
+    //    a->setShortcut(QKeySequence::New);
+    //    connect(a, SIGNAL(triggered()), this, SLOT(fileNew()));
+    //    // tb->addAction(a);
+    //    menu->addAction(a);
 
-    a = new QAction(tr("&Open..."), this);
-    a->setShortcut(QKeySequence::Open);
-    connect(a, SIGNAL(triggered()), this, SLOT(fileOpen()));
-    // tb->addAction(a);
-    menu->addAction(a);
+    //    a = new QAction(tr("&Open..."), this);
+    //    a->setShortcut(QKeySequence::Open);
+    //    connect(a, SIGNAL(triggered()), this, SLOT(fileOpen()));
+    //    // tb->addAction(a);
+    //    menu->addAction(a);
 
-    menu->addSeparator();
+    //    menu->addSeparator();
 
-    a = new QAction(tr("&Save"), this);
-    a->setShortcut(QKeySequence::Save);
-    connect(a, SIGNAL(triggered()), this, SLOT(fileSave()));
-    a->setEnabled(false);
-    // tb->addAction(a);
-    menu->addAction(a);
+    //    a = new QAction(tr("&Save"), this);
+    //    a->setShortcut(QKeySequence::Save);
+    //    connect(a, SIGNAL(triggered()), this, SLOT(fileSave()));
+    //    a->setEnabled(false);
+    //    // tb->addAction(a);
+    //    menu->addAction(a);
 
-    a = new QAction(tr("Save &As..."), this);
-    connect(a, SIGNAL(triggered()), this, SLOT(fileSaveAs()));
-    menu->addAction(a);
-    menu->addSeparator();
-    */
+    //    a = new QAction(tr("Save &As..."), this);
+    //    connect(a, SIGNAL(triggered()), this, SLOT(fileSaveAs()));
+    //    menu->addAction(a);
+    //    menu->addSeparator();
+    //    */
 
     a = new QAction(tr("&Print..."), this);
     a->setShortcut(QKeySequence::Print);
@@ -1071,16 +1071,16 @@ void MainWindow::synchronization(void)
 void MainWindow::setup_icon_actions(void)
 {
     _action_tray_restore = new QAction(tr("&Restore window"), this);
-    connect(_action_tray_restore, SIGNAL(triggered()), this, SLOT(showNormal()));
+    connect(_action_tray_restore, &QAction::triggered, this, &MainWindow::showNormal);
 
     _action_tray_maximize = new QAction(tr("Ma&ximize window"), this);
-    connect(_action_tray_maximize, SIGNAL(triggered()), this, SLOT(showMaximized()));
+    connect(_action_tray_maximize, &QAction::triggered, this, &MainWindow::showMaximized);
 
     _action_tray_minimize = new QAction(tr("Mi&nimize window"), this);
-    connect(_action_tray_minimize, SIGNAL(triggered()), this, SLOT(hide()));
+    connect(_action_tray_minimize, &QAction::triggered, this, &MainWindow::hide);
 
     _action_tray_quit = new QAction(tr("&Quit"), this);
-    connect(_action_tray_quit, SIGNAL(triggered()), this, SLOT(application_exit()));
+    connect(_action_tray_quit, &QAction::triggered, this, &MainWindow::application_exit);
 }
 
 

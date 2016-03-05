@@ -537,7 +537,7 @@ void MetaEditor::tags(QString tags)
         // то есть в данном случае строку с номером метки
         // Clicking on a label will cause the signal slot will accept Url tag
         // Ie in this case the line with the number of tags
-        connect(tempLabel, SIGNAL(linkActivated(const QString &)), this, SLOT(onClickToTag(const QString &)));
+        connect(tempLabel, &QLabel::linkActivated, this, &MetaEditor::onClickToTag);
 
         // Метка запоминается в список меток
         _item_tags_labels << tempLabel;

@@ -61,8 +61,8 @@
 #include <QtWidgets/QStyleOptionFrameV2>
 
 #include <QtCore/QDebug>
-
-
+#include <QCompleter>
+#include <QLineEdit>
 
 namespace browser {
 
@@ -94,10 +94,8 @@ namespace browser {
 
         // clearButton
         _clearbutton = new ClearButton(this);
-        connect(_clearbutton, SIGNAL(clicked()),
-                _lineedit, SLOT(clear()));
-        connect(_lineedit, SIGNAL(textChanged(QString)),
-                _clearbutton, SLOT(textChanged(QString)));
+        connect(_clearbutton, &ClearButton::clicked, _lineedit, &QLineEdit::clear);
+        connect(_lineedit, &QLineEdit::textChanged, _clearbutton, &ClearButton::textChanged);
     }
 
     void ExLineEdit::setLeftWidget(QWidget *widget)
@@ -176,11 +174,13 @@ namespace browser {
     {
         _lineedit->event(event);
 
+        void (QCompleter::*_activated)(const QString &text) = &QCompleter::activated;
+
         if(_lineedit->completer()) {
-            connect(_lineedit->completer(), SIGNAL(activated(QString)),
-                    _lineedit, SLOT(setText(QString)));
-            connect(_lineedit->completer(), SIGNAL(highlighted(QString)),
-                    _lineedit, SLOT(_q_completionHighlighted(QString)));
+            connect(_lineedit->completer(), _activated,  _lineedit, &QLineEdit::setText);
+#ifndef QT_NO_COMPLETER
+            //            connect(_lineedit->completer(), &QCompleter::highlighted, _lineedit, &QLineEdit::_q_completionHighlighted);
+#endif
         }
 
         QWidget::focusOutEvent(event);
@@ -284,9 +284,9 @@ namespace browser {
         Q_ASSERT(!_webview);
         _webview = webView;
         _iconlabel->_browserview = webView;
-        connect(webView, SIGNAL(urlChanged(QUrl)), this, SLOT(webViewUrlChanged(QUrl)));
-        connect(webView, SIGNAL(iconChanged()), this, SLOT(webViewIconChanged()));
-        connect(webView, SIGNAL(loadProgress(int)), this, SLOT(update()));
+        connect(webView, &WebView::urlChanged, this, &UrlLineEdit::webViewUrlChanged);
+        connect(webView, &WebView::iconChanged, this, &UrlLineEdit::webViewIconChanged);
+        connect(webView, &WebView::loadProgress, this, [&](int i) {Q_UNUSED(i); update();});
     }
 
     void UrlLineEdit::webViewUrlChanged(const QUrl &url)

@@ -177,8 +177,7 @@ namespace browser {
     SearchLineEdit::SearchLineEdit(QWidget *parent) : ExLineEdit(parent),
         _searchbutton(new SearchButton(this))
     {
-        connect(lineEdit(), SIGNAL(textChanged(QString)),
-                this, SIGNAL(textChanged(QString)));
+        connect(lineEdit(), &QLineEdit::textChanged, this, &SearchLineEdit::textChanged);
         setLeftWidget(_searchbutton);
         _inactivetext = tr("Search");
 

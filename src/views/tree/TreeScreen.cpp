@@ -1732,7 +1732,7 @@ void TreeScreen::paste_branch_smart(bool is_branch)
         update_branch_on_screen(index.parent());
 
         // Установка курсора на новую созданную ветку
-        auto pasted_branch_item = _tree_view->source_model()->item_by_id(pasted_branch_id);
+        auto pasted_branch_item = _tree_view->source_model()->find_item_by_id(pasted_branch_id);
         QStringList pasted_branch_path = pasted_branch_item->absolute_path();
         //    find_object<MainWindow>("mainwindow")
         globalparameters.mainwindow()->set_tree_position(_tree_view->source_model()->root_item()->id(), pasted_branch_path);
@@ -1904,10 +1904,11 @@ void TreeScreen::view_up_one_level(void)
     boost::intrusive_ptr<TreeItem> current_root = current_treemodel->root_item();    // ->parent();
     auto index = _tree_view->view_index();
 
-    if(!index.isValid()) {
-        _tree_view->selection_to_pos(0);
-        index = _tree_view->view_index();
-    }
+    //    if(!index.isValid()) {
+    //        _tree_view->selection_to_pos(_tree_view->source_model()->root_item()->current_count() - 1);
+    //        index = _tree_view->view_index();
+    //        assert(index.isValid());
+    //    }
 
     auto current_item = current_treemodel->item(index);
     //    assert(current_treemodel == _know_branch);
@@ -2087,10 +2088,11 @@ void TreeScreen::view_return_to_root(void)
     //    boost::intrusive_ptr<TreeItem> current_root = current_treemodel->root_item();
     auto index = _tree_view->view_index();
 
-    if(!index.isValid()) {
-        _tree_view->selection_to_pos(0);
-        index = _tree_view->view_index();
-    }
+    //    if(!index.isValid()) {
+    //        _tree_view->selection_to_pos(_tree_view->source_model()->root_item()->current_count() - 1);
+    //        index = _tree_view->view_index();
+    //        assert(index.isValid());
+    //    }
 
     if(index.isValid()) {
         auto current_item = current_treemodel->item(index);
@@ -2152,7 +2154,7 @@ void TreeScreen::candidate_from_search_result(boost::intrusive_ptr<TreeItem> _re
 
 
 
-        setup_model(_result_item);   // _know_branch->intercept(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr, resultset_item)));
+        add_branch(_result_item, true, _tree_view->source_model()); // setup_model(_result_item);   // _know_branch->intercept(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr, resultset_item)));
 
 
 

@@ -45,13 +45,11 @@ void ConfigDialog::setup_ui(void)
 
 void ConfigDialog::setup_signals(void)
 {
-    connect(confirmButtons, SIGNAL(accepted()), this, SLOT(apply_changes()));
+    connect(confirmButtons, &QDialogButtonBox::accepted, this, &ConfigDialog::apply_changes);
 
-    connect(confirmButtons, SIGNAL(rejected()), this, SLOT(reject()));
+    connect(confirmButtons, &QDialogButtonBox::rejected, this, &ConfigDialog::reject);
 
-    connect(contentsWidget,
-            SIGNAL(currentItemChanged(QListWidgetItem *, QListWidgetItem *)),
-            this, SLOT(change_page(QListWidgetItem *, QListWidgetItem *)));
+    connect(contentsWidget, &QListWidget::currentItemChanged, this, &ConfigDialog::change_page);
 
 }
 

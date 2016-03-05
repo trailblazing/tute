@@ -114,13 +114,10 @@ namespace browser {
         setNetworkAccessManager(BrowserApplication::networkAccessManager());
 #endif
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-        connect(this, SIGNAL(unsupportedContent(QNetworkReply *)),
-                this, SLOT(handleUnsupportedContent(QNetworkReply *)));
+        connect(this, &PopupPage::unsupportedContent, this, &PopupPage::handleUnsupportedContent;
 #endif
-        connect(this, SIGNAL(authenticationRequired(const QUrl &, QAuthenticator *)),
-                SLOT(authenticationRequired(const QUrl &, QAuthenticator *)));
-        connect(this, SIGNAL(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)),
-                SLOT(proxyAuthenticationRequired(const QUrl &, QAuthenticator *, const QString &)));
+                connect(this, &PopupPage::authenticationRequired, &PopupPage::authenticationRequired);
+                connect(this, &PopupPage::proxyAuthenticationRequired, &PopupPage::proxyAuthenticationRequired);
     }
 
     Browser *PopupPage::browser()
@@ -959,10 +956,8 @@ namespace browser {
         , m_page(0)
         , m_iconReply(0)
     {
-        connect(this, SIGNAL(loadProgress(int)),
-                this, SLOT(setProgress(int)));
-        connect(this, SIGNAL(loadFinished(bool)),
-                this, SLOT(loadFinished(bool)));
+        connect(this, &PopupView::loadProgress, this, &PopupView::setProgress);
+        connect(this, &QWebEngineView::loadFinished, this, &PopupView::loadFinished;
         connect(this, &QWebEngineView::renderProcessTerminated,
         [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
             const char *status = "";
@@ -998,13 +993,10 @@ namespace browser {
         m_page = _page;
         QWebEngineView::setPage(_page);
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
-        connect(page(), SIGNAL(statusBarMessage(QString)),
-                SLOT(setStatusBarText(QString)));
+        connect(page(), &PopupPage::statusBarMessage, &PopupView::setStatusBarText);
 #endif
-        connect(page(), SIGNAL(loadingUrl(QUrl)),
-                this, SIGNAL(urlChanged(QUrl)));
-        connect(page(), SIGNAL(iconUrlChanged(QUrl)),
-                this, SLOT(onIconUrlChanged(QUrl)));
+        connect(page(), &PopupPage::loadingUrl, this, &PopupView::urlChanged);
+        connect(page(), &PopupPage::iconUrlChanged, this, &PopupView::onIconUrlChanged);
         connect(page(), &PopupPage::featurePermissionRequested, this, &PopupView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         page()->setForwardUnsupportedContent(true);
@@ -1108,7 +1100,7 @@ namespace browser {
         QNetworkRequest iconRequest(url);
         m_iconReply = QtSingleApplication::networkAccessManager()->get(iconRequest);
         m_iconReply->setParent(this);
-        connect(m_iconReply, SIGNAL(finished()), this, SLOT(iconLoaded()));
+        connect(m_iconReply, &QNetworkReply::finished, this, &PopupView::iconLoaded);
     }
 
     void PopupView::iconLoaded()
@@ -1241,7 +1233,7 @@ namespace browser {
             assert(item);
             assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
 
-            if(source_model->is_item_exists(item->field("id"))) { //                && record->unique_page() == this
+            if(source_model->is_item_id_exists_in_list(item->field("id"))) { //                && record->unique_page() == this
                 _record_controller->remove_child(item->id());
             }
         }
@@ -2091,7 +2083,7 @@ namespace browser {
 
         connect(this, &WebView::loadProgress, this, &WebView::setProgress);
 
-        connect(this, SIGNAL(loadFinished(bool)), this, SLOT(onLoadFinished(bool)));
+        connect(this, &WebView::loadFinished, this, &WebView::onLoadFinished);
         connect(this, &QWebEngineView::renderProcessTerminated
         , [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
             const char *status = "";

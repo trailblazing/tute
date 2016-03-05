@@ -651,7 +651,7 @@ void RecordModel::fields(int pos, QMap<QString, QString> data)
 }
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::find_bind(boost::intrusive_ptr<TreeItem> item)const
+boost::intrusive_ptr<TreeItem> RecordModel::find_bind_in_list(boost::intrusive_ptr<TreeItem> item)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
@@ -664,7 +664,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::find_bind(boost::intrusive_ptr<TreeI
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::find(boost::intrusive_ptr<TreeItem> item)const
+boost::intrusive_ptr<TreeItem> RecordModel::find_in_list(boost::intrusive_ptr<TreeItem> item)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
@@ -677,7 +677,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::find(boost::intrusive_ptr<TreeItem> 
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::find(QUrl _url)const
+boost::intrusive_ptr<TreeItem> RecordModel::find_in_list(QUrl _url)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
@@ -690,7 +690,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::find(QUrl _url)const
     return result;
 }
 
-int RecordModel::is_item_exists(QString find_id)
+int RecordModel::is_item_id_exists_in_list(QString find_id)
 {
     int pos = -1;
 

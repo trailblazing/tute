@@ -64,9 +64,9 @@ namespace browser {
         : QDialog(parent)
     {
         setupUi(this);
-        connect(setHomeToCurrentPageButton, SIGNAL(clicked()), this, SLOT(setHomeToCurrentPage()));
-        connect(standardFontButton, SIGNAL(clicked()), this, SLOT(chooseFont()));
-        connect(fixedFontButton, SIGNAL(clicked()), this, SLOT(chooseFixedFont()));
+        connect(setHomeToCurrentPageButton, &QPushButton::clicked, this, &SettingsDialog::setHomeToCurrentPage);
+        connect(standardFontButton, &QPushButton::clicked, this, &SettingsDialog::chooseFont);
+        connect(fixedFontButton, &QPushButton::clicked, this, &SettingsDialog::chooseFixedFont);
 
         loadDefaults();
         loadFromSettings();

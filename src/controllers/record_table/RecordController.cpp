@@ -1169,7 +1169,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     int selected_position = -1;
 
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    if(!_source_model->find(item)) {
+    if(!_source_model->find_in_list(item)) {
         selected_position = _source_model->insert_new_item(position_index, item, mode);
     } else {
         selected_position = _source_model->locate(item);
@@ -1798,7 +1798,7 @@ void RecordController::on_print_click(void)
 
 boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intrusive_ptr<TreeItem> item)
 {
-    boost::intrusive_ptr<TreeItem> _item = _source_model->find(item);
+    boost::intrusive_ptr<TreeItem> _item = _source_model->find_in_list(item);
     int source_position = -1;
 
     if(!_item) {
@@ -1904,7 +1904,7 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url)
     assert(_source_model->count() > 0);
 
     //    if(browser_pages) {
-    item = _source_model->find(_url);
+    item = _source_model->find_in_list(_url);
     //    }
 
     //    }
@@ -1971,7 +1971,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //    assert(browser_pages);
 
         //    if(_source_model->count() > 0) {
-        _result = _source_model->find(item);
+        _result = _source_model->find_in_list(item);
 
         if(_source_item != _know_model_board->root_item()) {
             if(!_result) {
@@ -2035,22 +2035,22 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             auto idx = _tree_screen->tree_view()->view_index();
 
-            if(idx.isValid()) {
+            // if(idx.isValid()) {
 
-                auto it = _current_view_model->item(idx);
-                assert(it);
+            auto it = _current_view_model->item(idx);
+            assert(it);
 
-                //        if(_item->is_lite())_item->to_fat();
+            //        if(_item->is_lite())_item->to_fat();
 
-                if(it != _result && item_is_brand_new) {
-                    // int pos
-                    _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
-                    _tree_screen->synchronized(false);
-                    // assert(_result == it->child(pos));
-                }
-
-                _tree_screen->save_knowtree();
+            if(it != _result && item_is_brand_new) {
+                // int pos
+                _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                _tree_screen->synchronized(false);
+                // assert(_result == it->child(pos));
             }
+
+            _tree_screen->save_knowtree();
+            // }
         }
 
         if(_result->is_lite())_result->to_fat();
@@ -2111,7 +2111,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    assert(browser_pages);
 
     //    if(browser_pages) {
-    _result = _source_model->find(_url);
+    _result = _source_model->find_in_list(_url);
 
     if(_source_item != _know_model_board->root_item()) {
         if(!_result) {
@@ -2254,21 +2254,22 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
         auto idx = _tree_screen->tree_view()->view_index();
 
-        if(idx.isValid()) {
-            auto it = _current_view_model->item(idx);
-            assert(it);
+        // if(idx.isValid()) {
+        auto it = _current_view_model->item(idx);
+        assert(it);
 
-            //        if(_item->is_lite())_item->to_fat();
+        //        if(_item->is_lite())_item->to_fat();
 
-            if(it != _result && item_is_brand_new) {
-                // int pos
-                _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
-                _tree_screen->synchronized(false);
-                // assert(_result == it->child(pos));
-            }
-
-            _tree_screen->save_knowtree();
+        if(it != _result && item_is_brand_new) {
+            // int pos
+            _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+            assert(_result);
+            _tree_screen->synchronized(false);
+            // assert(_result == it->child(pos));
         }
+
+        _tree_screen->save_knowtree();
+        // }
     }
 
     if(_result->is_lite())_result->to_fat();

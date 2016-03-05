@@ -105,7 +105,7 @@ void InfoFieldEnter::setup_ui(void)
 
 void InfoFieldEnter::setup_signals(void)
 {
-    connect(expandInfo, SIGNAL(pressed()), this, SLOT(expandInfoClick(void)));
+    connect(expandInfo, &FlatToolButton::pressed, this, &InfoFieldEnter::expandInfoClick);
 }
 
 

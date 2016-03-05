@@ -135,10 +135,10 @@ void RecordView::init(void)
 void RecordView::setup_signals(void)
 {
     // Сигнал чтобы показать контекстное меню по правому клику на списке записей
-    connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(on_custom_context_menu_requested(const QPoint &)));
+    connect(this, &RecordView::customContextMenuRequested, this, &RecordView::on_custom_context_menu_requested);
 
     // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
-    connect(this, SIGNAL(tap_and_hold_gesture_finished(const QPoint &)), this, SLOT(on_custom_context_menu_requested(const QPoint &)));
+    connect(this, &RecordView::tap_and_hold_gesture_finished, this, &RecordView::on_custom_context_menu_requested);
 
     // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
     // Signal to open for editing the parameters of the recording double click
@@ -155,21 +155,19 @@ void RecordView::setup_signals(void)
     RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
 
     // Сигналы для обновления панели инструментов при изменении в selectionModel()
-    connect(this->selectionModel(), SIGNAL(currentChanged(const QModelIndex &, const QModelIndex &)),
-            parentPointer, SLOT(toolsUpdate(void)));
-    connect(this->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-            parentPointer, SLOT(toolsUpdate(void)));
+    connect(this->selectionModel(), &QItemSelectionModel::currentChanged, parentPointer, &RecordScreen::tools_update);
+    connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, parentPointer, &RecordScreen::tools_update);
 
     // Сигналы для обновления панели инструментов
-    connect(this, SIGNAL(activated(const QModelIndex &)), parentPointer, SLOT(toolsUpdate(void)));
-    connect(this, SIGNAL(clicked(const QModelIndex &)), parentPointer, SLOT(toolsUpdate(void)));
-    connect(this, SIGNAL(doubleClicked(const QModelIndex &)), parentPointer, SLOT(toolsUpdate(void)));
-    connect(this, SIGNAL(entered(const QModelIndex &)), parentPointer, SLOT(toolsUpdate(void)));
-    connect(this, SIGNAL(pressed(const QModelIndex &)), parentPointer, SLOT(toolsUpdate(void)));
-    connect(QApplication::clipboard(), SIGNAL(dataChanged()), parentPointer, SLOT(toolsUpdate(void)));
+    connect(this, &RecordView::activated, parentPointer, &RecordScreen::tools_update);
+    connect(this, &RecordView::clicked, parentPointer, &RecordScreen::tools_update);
+    connect(this, &RecordView::doubleClicked, parentPointer, &RecordScreen::tools_update);
+    connect(this, &RecordView::entered, parentPointer, &RecordScreen::tools_update);
+    connect(this, &RecordView::pressed, parentPointer, &RecordScreen::tools_update);
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, parentPointer, &RecordScreen::tools_update);
 
-    connect(this->horizontalHeader(), SIGNAL(sectionMoved(int, int, int)), this, SLOT(on_section_moved(int, int, int)));
-    connect(this->horizontalHeader(), SIGNAL(sectionResized(int, int, int)), this, SLOT(on_section_resized(int, int, int)));
+    connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &RecordView::on_section_moved);
+    connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &RecordView::on_section_resized);
 }
 
 
@@ -189,8 +187,7 @@ void RecordView::restore_header_state(void)
 }
 
 
-void RecordView::on_selection_changed(const QItemSelection &selected,
-                                    const QItemSelection &deselected)
+void RecordView::on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected)
 {
     QModelIndex selectRecord;
     QModelIndex deselectRecord;

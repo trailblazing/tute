@@ -40,8 +40,8 @@ public:
     //    QModelIndex index(boost::intrusive_ptr<TreeItem> item);
 
     // Поиск ветки с указанным ID
-    boost::intrusive_ptr<TreeItem> item_by_id(QString id);
-    boost::intrusive_ptr<TreeItem> item_by_name(QString name);
+    boost::intrusive_ptr<TreeItem> find_item_by_id(QString id);
+    boost::intrusive_ptr<TreeItem> find_item_by_name(QString name);
 
     // Возвращает общее количество записей, хранимых в дереве
     int all_records_count(void);

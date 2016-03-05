@@ -142,7 +142,7 @@ namespace qt4 {
         if(!res)
             qWarning("QtSingleCoreApplication: listen on local socket failed, %s", qPrintable(server->errorString()));
 
-        QObject::connect(server, SIGNAL(newConnection()), SLOT(receiveConnection()));
+        QObject::connect(server, &QLocalServer::newConnection, &QtLocalPeer::receiveConnection);
         return false;
     }
 

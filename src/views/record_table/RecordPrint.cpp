@@ -75,9 +75,9 @@ void RecordPrint::setup_signals()
     // connect(buttonBox, SIGNAL(accepted()), this, SLOT(print()));
     // connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
-    connect(printButton,  SIGNAL(clicked()), this, SLOT(print()));
-    connect(saveButton,   SIGNAL(clicked()), this, SLOT(save()));
-    connect(cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
+    connect(printButton,  &QPushButton::clicked, this, &RecordPrint::print);
+    connect(saveButton,   &QPushButton::clicked, this, &RecordPrint::save);
+    connect(cancelButton, &QPushButton::clicked, this, &RecordPrint::reject);
 }
 
 

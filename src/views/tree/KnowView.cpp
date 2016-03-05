@@ -395,7 +395,7 @@ void KnowView::dropEvent(QDropEvent *event)
 
 
 // Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
-QModelIndex KnowView::view_index(void)const
+QModelIndex KnowView::view_index(void)
 {
     //    if(!_tree_view->selectionModel()->currentIndex().isValid()) {
 
@@ -472,10 +472,11 @@ QModelIndex KnowView::view_index(void)const
     //    auto v = _treeknowview->selectionModel()->currentIndex();
     //    candidate_from_knowtree_item(cur_index);
 
-    //    if(!selectionModel()->currentIndex().isValid()) {
-    //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
-    //        assert(selectionModel()->currentIndex().isValid());    // this line is to be recovery
-    //    }
+    if(!selectionModel()->currentIndex().isValid()) {
+        selection_to_pos(_know_root->root_item()->current_count() - 1);
+        //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
+        assert(selectionModel()->currentIndex().isValid());    // this line is to be recovery
+    }
 
     //    assert(cur_index.isValid());
     return // cur_index;   // temporary setting???   //

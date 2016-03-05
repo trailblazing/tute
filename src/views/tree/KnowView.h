@@ -30,7 +30,7 @@ public:
     KnowModel *source_model()const {return _know_root;}
     //    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
 
-    QModelIndex view_index(void) const;
+    QModelIndex view_index(void);
     //    QModelIndex view_index_last(void)const;
     void selection_to_pos(int to_pos);
     void selection_to_pos(boost::intrusive_ptr<TreeItem> _item);

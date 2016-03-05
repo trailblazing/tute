@@ -88,10 +88,10 @@ public:
 
     QString field(int pos, QString name);
     void fields(int pos, QMap<QString, QString> data);
-    boost::intrusive_ptr<TreeItem> find_bind(boost::intrusive_ptr<TreeItem> item)const;
-    boost::intrusive_ptr<TreeItem> find(boost::intrusive_ptr<TreeItem> item)const;
-    boost::intrusive_ptr<TreeItem> find(QUrl _url)const;
-    int is_item_exists(QString find_id);
+    boost::intrusive_ptr<TreeItem> find_bind_in_list(boost::intrusive_ptr<TreeItem> item)const;
+    boost::intrusive_ptr<TreeItem> find_in_list(boost::intrusive_ptr<TreeItem> item)const;
+    boost::intrusive_ptr<TreeItem> find_in_list(QUrl _url)const;
+    int is_item_id_exists_in_list(QString find_id);
     //    bool remove_child(QString find_id);
     //    bool remove_child(int index);
     //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}

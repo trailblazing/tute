@@ -75,11 +75,9 @@ namespace browser {
           requestFinishedCount(0), requestFinishedFromCacheCount(0), requestFinishedPipelinedCount(0),
           requestFinishedSecureCount(0), requestFinishedDownloadBufferCount(0)
     {
-        connect(this, SIGNAL(finished(QNetworkReply *)),
-                SLOT(requestFinished(QNetworkReply *)));
+        connect(this, &NetworkAccessManager::finished, this, &NetworkAccessManager::requestFinished);
 #ifndef QT_NO_OPENSSL
-        connect(this, SIGNAL(sslErrors(QNetworkReply *, QList<QSslError>)),
-                SLOT(sslErrors(QNetworkReply *, QList<QSslError>)));
+        connect(this, &QNetworkAccessManager::sslErrors, this, &NetworkAccessManager::sslErrors);
 #endif
         loadSettings();
 

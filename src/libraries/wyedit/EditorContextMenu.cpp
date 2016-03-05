@@ -20,19 +20,19 @@ EditorContextMenu::~EditorContextMenu(void)
 
 void EditorContextMenu::setup_actions(void)
 {
-    actionUndo=new QAction(tr("Undo"),this);
+    actionUndo = new QAction(tr("Undo"), this);
 
-    actionRedo=new QAction(tr("Redo"),this);
+    actionRedo = new QAction(tr("Redo"), this);
 
-    actionCut=new QAction(tr("Cut"),this);
+    actionCut = new QAction(tr("Cut"), this);
 
-    actionCopy=new QAction(tr("Copy"),this);
+    actionCopy = new QAction(tr("Copy"), this);
 
-    actionPaste=new QAction(tr("Paste"),this);
+    actionPaste = new QAction(tr("Paste"), this);
 
-    actionSelectAll=new QAction(tr("Select All"),this);
+    actionSelectAll = new QAction(tr("Select All"), this);
 
-    actionEditImageProperties=new QAction(tr("Edit image properties"),this);
+    actionEditImageProperties = new QAction(tr("Edit image properties"), this);
 }
 
 
@@ -47,16 +47,16 @@ void EditorContextMenu::set_edit_image_properties(bool is_image_select)
 
 void EditorContextMenu::setup_signals(void)
 {
-    connect(actionUndo,SIGNAL(triggered()),this,SIGNAL(undo()));
-    connect(actionRedo,SIGNAL(triggered()),this,SIGNAL(redo()));
+    connect(actionUndo, &QAction::triggered, this, &EditorContextMenu::undo);
+    connect(actionRedo, &QAction::triggered, this, &EditorContextMenu::redo);
 
-    connect(actionCut,SIGNAL(triggered()),this,SIGNAL(cut()));
-    connect(actionCopy,SIGNAL(triggered()),this,SIGNAL(copy()));
-    connect(actionPaste,SIGNAL(triggered()),this,SIGNAL(paste()));
+    connect(actionCut, &QAction::triggered, this, &EditorContextMenu::cut);
+    connect(actionCopy, &QAction::triggered, this, &EditorContextMenu::copy);
+    connect(actionPaste, &QAction::triggered, this, &EditorContextMenu::paste);
 
-    connect(actionSelectAll,SIGNAL(triggered()),this,SIGNAL(selectAll()));
+    connect(actionSelectAll, &QAction::triggered, this, &EditorContextMenu::selectAll);
 
-    connect(actionEditImageProperties,SIGNAL(triggered()),this,SIGNAL(contextMenuEditImageProperties()));
+    connect(actionEditImageProperties, &QAction::triggered, this, &EditorContextMenu::contextMenuEditImageProperties);
 }
 
 

@@ -101,16 +101,16 @@ void AttachTableScreen::setupUI(void)
 void AttachTableScreen::setupSignals(void)
 {
     // Связывание действий
-    connect(actionAddAttach, SIGNAL(triggered()), attachTableController, SLOT(onAddAttach()));
-    connect(actionAddLink, SIGNAL(triggered()), attachTableController, SLOT(onAddLink()));
-    connect(actionEditFileName, SIGNAL(triggered()), attachTableController, SLOT(onEditFileName()));
-    connect(actionDeleteAttach, SIGNAL(triggered()), attachTableController, SLOT(onDeleteAttach()));
-    connect(actionOpenAttach, SIGNAL(triggered()), attachTableController, SLOT(onOpenAttach()));
-    connect(actionSaveAsAttach, SIGNAL(triggered()), attachTableController, SLOT(onSaveAsAttach()));
+    connect(actionAddAttach, &QAction::triggered, attachTableController, &AttachTableController::on_add_attach);
+    connect(actionAddLink, &QAction::triggered, attachTableController, &AttachTableController::on_add_link);
+    connect(actionEditFileName, &QAction::triggered, attachTableController, &AttachTableController::on_edit_file_name);
+    connect(actionDeleteAttach, &QAction::triggered, attachTableController, &AttachTableController::on_delete_attach);
+    connect(actionOpenAttach, &QAction::triggered, attachTableController, &AttachTableController::on_open_attach);
+    connect(actionSaveAsAttach, &QAction::triggered, attachTableController, &AttachTableController::on_save_as_attach);
 
-    connect(actionShowAttachInfo, SIGNAL(triggered()), attachTableController, SLOT(onShowAttachInfo()));
+    connect(actionShowAttachInfo, &QAction::triggered, attachTableController, &AttachTableController::on_show_attach_info);
 
-    connect(actionSwitchToEditor, SIGNAL(triggered()), attachTableController, SLOT(onSwitchToEditor()));
+    connect(actionSwitchToEditor, &QAction::triggered, attachTableController, &AttachTableController::on_switch_to_editor);
 }
 
 

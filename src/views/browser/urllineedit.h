@@ -88,9 +88,9 @@ namespace browser {
         void updateGeometries();
         void initStyleOption(QStyleOptionFrameV2 *option) const;
 
-        QWidget *_leftwidget;
-        QLineEdit *_lineedit;
-        ClearButton *_clearbutton;
+        QWidget         *_leftwidget;
+        QLineEdit       *_lineedit;
+        ClearButton     *_clearbutton;
     };
 
     class UrlIconLabel;
@@ -113,9 +113,9 @@ namespace browser {
 
     private:
         QLinearGradient generateGradient(const QColor &color) const;
-        WebView *_webview;
-        UrlIconLabel *_iconlabel;
-        QColor _defaultbasecolor;
+        WebView         *_webview;
+        UrlIconLabel    *_iconlabel;
+        QColor          _defaultbasecolor;
 
     };
 

@@ -74,7 +74,7 @@ namespace browser {
         color: black;");
 
         _animation = new QPropertyAnimation(this, "windowOpacity");
-        connect(_animation, SIGNAL(finished()), this, SLOT(fadeOutFinished()));
+        connect(_animation, &QPropertyAnimation::finished, this, &FullScreenNotification::fadeOutFinished);
     }
 
     FullScreenNotification::~FullScreenNotification()

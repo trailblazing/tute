@@ -222,64 +222,65 @@ void Editor::init(int mode)
 void Editor::setup_signals(void)
 {
     // Создание сигналов, генерируемых кнопками форматирования текста
-    connect(_bold, SIGNAL(clicked()),        this, SLOT(on_bold_clicked()));
-    connect(_italic, SIGNAL(clicked()),      this, SLOT(on_italic_clicked()));
-    connect(_underline, SIGNAL(clicked()),   this, SLOT(on_underline_clicked()));
-    connect(_monospace, SIGNAL(clicked()),   this, SLOT(on_monospace_clicked()));
-    connect(_code, SIGNAL(clicked()),        this, SLOT(on_code_clicked()));
-    connect(_clear, SIGNAL(clicked()),       this, SLOT(on_clear_clicked()));
+    connect(_bold, &FlatToolButton::clicked,        this, &Editor::on_bold_clicked);
+    connect(_italic, &FlatToolButton::clicked,      this, &Editor::on_italic_clicked);
+    connect(_underline, &FlatToolButton::clicked,   this, &Editor::on_underline_clicked);
+    connect(_monospace, &FlatToolButton::clicked,   this, &Editor::on_monospace_clicked);
+    connect(_code, &FlatToolButton::clicked,        this, &Editor::on_code_clicked);
+    connect(_clear, &FlatToolButton::clicked,       this, &Editor::on_clear_clicked);
 
-    connect(_numeric_list, SIGNAL(clicked()), this, SLOT(on_numericlist_clicked()));
-    connect(_dot_list, SIGNAL(clicked()),     this, SLOT(on_dotlist_clicked()));
+    connect(_numeric_list, &FlatToolButton::clicked, this, &Editor::on_numericlist_clicked);
+    connect(_dot_list, &FlatToolButton::clicked,     this, &Editor::on_dotlist_clicked);
 
-    connect(_indent_plus, SIGNAL(clicked()),  this, SLOT(on_indentplus_clicked()));
-    connect(_indent_minus, SIGNAL(clicked()), this, SLOT(on_indentminus_clicked()));
+    connect(_indent_plus, &FlatToolButton::clicked,  this, &Editor::on_indentplus_clicked);
+    connect(_indent_minus, &FlatToolButton::clicked, this, &Editor::on_indentminus_clicked);
 
-    connect(_align_left, SIGNAL(clicked()),   this, SLOT(on_alignleft_clicked()));
-    connect(_align_center, SIGNAL(clicked()), this, SLOT(on_aligncenter_clicked()));
-    connect(_align_right, SIGNAL(clicked()),  this, SLOT(on_alignright_clicked()));
-    connect(_align_width, SIGNAL(clicked()),  this, SLOT(on_alignwidth_clicked()));
+    connect(_align_left, &FlatToolButton::clicked,   this, &Editor::on_alignleft_clicked);
+    connect(_align_center, &FlatToolButton::clicked, this, &Editor::on_aligncenter_clicked);
+    connect(_align_right, &FlatToolButton::clicked,  this, &Editor::on_alignright_clicked);
+    connect(_align_width, &FlatToolButton::clicked,  this, &Editor::on_alignwidth_clicked);
 
-    connect(_font_select, SIGNAL(currentFontChanged(const QFont &)), this, SLOT(on_fontselect_changed(const QFont &)));
-    connect(_font_size, SIGNAL(currentIndexChanged(int)),            this, SLOT(on_fontsize_changed(int)));
-    connect(_font_color, SIGNAL(clicked()),                          this, SLOT(on_fontcolor_clicked()));
+    connect(_font_select, &FlatFontComboBox::currentFontChanged, this, &Editor::on_fontselect_changed);
+    void (FlatComboBox::*_currentIndexChanged)(int index) = &FlatComboBox::currentIndexChanged;
+    connect(_font_size, _currentIndexChanged, this, &Editor::on_fontsize_changed);
+    connect(_font_color, &FlatToolButton::clicked, this, &Editor::on_fontcolor_clicked);
 
-    connect(_show_html, SIGNAL(clicked()), this, SLOT(on_showhtml_clicked()));
-    connect(_find_text, SIGNAL(clicked()), this, SLOT(on_findtext_clicked()));
-    connect(_settings, SIGNAL(clicked()), this, SLOT(on_settings_clicked()));
-    connect(_show_formatting, SIGNAL(clicked()), this, SLOT(on_showformatting_clicked()));
+    connect(_show_html, &FlatToolButton::clicked, this, &Editor::on_showhtml_clicked);
+    connect(_find_text, &FlatToolButton::clicked, this, &Editor::on_findtext_clicked);
+    connect(_settings, &FlatToolButton::clicked, this, &Editor::on_settings_clicked);
+    connect(_show_formatting, &FlatToolButton::clicked, this, &Editor::on_showformatting_clicked);
 
     // Работа с таблицами
-    connect(_create_table, SIGNAL(clicked()),    this, SLOT(on_createtable_clicked()));
-    connect(_table_remove_row, SIGNAL(clicked()), this, SLOT(on_table_remove_row_clicked()));
-    connect(_table_remove_col, SIGNAL(clicked()), this, SLOT(on_table_remove_col_clicked()));
-    connect(_table_add_row, SIGNAL(clicked()),    this, SLOT(on_table_add_row_clicked()));
-    connect(_table_add_col, SIGNAL(clicked()),    this, SLOT(on_table_add_col_clicked()));
-    connect(_table_merge_cells, SIGNAL(clicked()), this, SLOT(on_table_merge_cells_clicked()));
-    connect(_table_split_cell, SIGNAL(clicked()), this, SLOT(on_table_split_cell_clicked()));
+    connect(_create_table, &FlatToolButton::clicked,    this, &Editor::on_createtable_clicked);
+    connect(_table_remove_row, &FlatToolButton::clicked, this, &Editor::on_table_remove_row_clicked);
+    connect(_table_remove_col, &FlatToolButton::clicked, this, &Editor::on_table_remove_col_clicked);
+    connect(_table_add_row, &FlatToolButton::clicked,    this, &Editor::on_table_add_row_clicked);
+    connect(_table_add_col, &FlatToolButton::clicked,    this, &Editor::on_table_add_col_clicked);
+    connect(_table_merge_cells, &FlatToolButton::clicked, this, &Editor::on_table_merge_cells_clicked);
+    connect(_table_split_cell, &FlatToolButton::clicked, this, &Editor::on_table_split_cell_clicked);
 
-    connect(_insert_image_from_file, SIGNAL(clicked()), this, SLOT(on_insert_image_from_file_clicked()));
-    connect(_expand_edit_area, SIGNAL(clicked()), this, SLOT(on_expand_edit_area_clicked()));
-    connect(_expand_tools_lines, SIGNAL(clicked()), this, SLOT(on_expand_tools_lines_clicked()));
-    connect(_save, SIGNAL(clicked()), this, SLOT(on_save_clicked()));
-    connect(_back, SIGNAL(clicked()), this, SLOT(on_back_clicked()));
+    connect(_insert_image_from_file, &FlatToolButton::clicked, this, &Editor::on_insert_image_from_file_clicked);
+    connect(_expand_edit_area, &FlatToolButton::clicked, this, &Editor::on_expand_edit_area_clicked);
+    connect(_expand_tools_lines, &FlatToolButton::clicked, this, &Editor::on_expand_tools_lines_clicked);
+    connect(_save, &FlatToolButton::clicked, this, &Editor::on_save_clicked);
+    connect(_back, &FlatToolButton::clicked, this, &Editor::on_back_clicked);
     connect(_freeze, &FlatToolButton::clicked, this, &Editor::on_freeze_clicked);
 
-    connect(_find_in_base, SIGNAL(clicked()), this, SLOT(on_find_in_base_clicked()));
-    connect(_show_text, SIGNAL(clicked()), this, SLOT(on_show_text_clicked()));
-    connect(_to_attach, SIGNAL(clicked()), this, SLOT(on_to_attach_clicked()));
+    connect(_find_in_base, &FlatToolButton::clicked, this, &Editor::on_find_in_base_clicked);
+    connect(_show_text, &FlatToolButton::clicked, this, &Editor::on_show_text_clicked);
+    connect(_to_attach, &FlatToolButton::clicked, this, &Editor::on_to_attach_clicked);
 
-    connect(_text_area, SIGNAL(cursorPositionChanged()), this, SLOT(on_cursor_position_changed()));
-    connect(_text_area, SIGNAL(selectionChanged()),      this, SLOT(on_selection_changed()));
+    connect(_text_area, &EditorTextArea::cursorPositionChanged, this, &Editor::on_cursor_position_changed);
+    connect(_text_area, &EditorTextArea::selectionChanged,      this, &Editor::on_selection_changed);
 
-    connect(_indent_slider, SIGNAL(change_textindent_pos(int)), this, SLOT(on_indentline_change_textindent_pos(int)));
-    connect(_indent_slider, SIGNAL(change_leftindent_pos(int)), this, SLOT(on_indentline_change_leftindent_pos(int)));
-    connect(_indent_slider, SIGNAL(change_rightindent_pos(int)), this, SLOT(on_indentline_change_rightindent_pos(int)));
-    connect(_indent_slider, SIGNAL(mouse_release()),            this, SLOT(on_indentline_mouse_release()));
+    connect(_indent_slider, &IndentSlider::change_textindent_pos, this, &Editor::on_indentline_change_textindent_pos);
+    connect(_indent_slider, &IndentSlider::change_leftindent_pos, this, &Editor::on_indentline_change_leftindent_pos);
+    connect(_indent_slider, &IndentSlider::change_rightindent_pos, this, &Editor::on_indentline_change_rightindent_pos);
+    connect(_indent_slider, &IndentSlider::mouse_release,            this, &Editor::on_indentline_mouse_release);
 
-    connect(this, SIGNAL(send_set_textindent_pos(int)), _indent_slider, SLOT(set_textindent_pos(int)));
-    connect(this, SIGNAL(send_set_leftindent_pos(int)), _indent_slider, SLOT(set_leftindent_pos(int)));
-    connect(this, SIGNAL(send_set_rightindent_pos(int)), _indent_slider, SLOT(set_rightindent_pos(int)));
+    connect(this, &Editor::send_set_textindent_pos, _indent_slider, &IndentSlider::set_textindent_pos);
+    connect(this, &Editor::send_set_leftindent_pos, _indent_slider, &IndentSlider::set_leftindent_pos);
+    connect(this, &Editor::send_set_rightindent_pos, _indent_slider, &IndentSlider::set_rightindent_pos);
 
     // Соединение сигнал-слот чтобы показать контекстное меню по правому клику в редакторе
     connect(_text_area, &EditorTextArea::customContextMenuRequested, this, &Editor::on_customContextMenuRequested);
@@ -288,16 +289,16 @@ void Editor::setup_signals(void)
     connect(_text_area, &EditorTextArea::tap_and_hold_gesture_finished, this, &Editor::on_customContextMenuRequested);
 
     // connect(textArea->document(), SIGNAL(modificationChanged (bool )),
-    //         this, SLOT(onModificationChanged(bool)));
+    //         this, &Editor::(onModificationChanged(bool)));
 
 
     // Сигналы контекстного меню
-    connect(_editor_context_menu, SIGNAL(undo()), this, SLOT(on_undo()));
-    connect(_editor_context_menu, SIGNAL(redo()), this, SLOT(on_redo()));
-    connect(_editor_context_menu, SIGNAL(cut()), this, SLOT(on_cut()));
-    connect(_editor_context_menu, SIGNAL(copy()), this, SLOT(on_copy()));
-    connect(_editor_context_menu, SIGNAL(paste()), this, SLOT(on_paste()));
-    connect(_editor_context_menu, SIGNAL(selectAll()), this, SLOT(on_selectAll()));
+    connect(_editor_context_menu, &EditorContextMenu::undo, this, &Editor::on_undo);
+    connect(_editor_context_menu, &EditorContextMenu::redo, this, &Editor::on_redo);
+    connect(_editor_context_menu, &EditorContextMenu::cut, this, &Editor::on_cut);
+    connect(_editor_context_menu, &EditorContextMenu::copy, this, &Editor::on_copy);
+    connect(_editor_context_menu, &EditorContextMenu::paste, this, &Editor::on_paste);
+    connect(_editor_context_menu, &EditorContextMenu::selectAll, this, &Editor::on_selectAll);
     connect(_editor_context_menu, &EditorContextMenu::contextMenuEditImageProperties, this, &Editor::on_context_menu_edit_image_properties);
 
     // Вызов диалога поиска в тексте

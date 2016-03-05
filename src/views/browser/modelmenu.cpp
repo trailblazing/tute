@@ -59,7 +59,7 @@ namespace browser {
         , _separatorrole(0)
         , _model(0)
     {
-        connect(this, SIGNAL(aboutToShow()), this, SLOT(aboutToShow()));
+        connect(this, &ModelMenu::aboutToShow, this, &ModelMenu::aboutToShow);
     }
 
     bool ModelMenu::prePopulated()
@@ -141,7 +141,7 @@ namespace browser {
             if(v.canConvert<QModelIndex>()) {
                 QModelIndex idx = qvariant_cast<QModelIndex>(v);
                 createMenu(idx, -1, menu, menu);
-                disconnect(menu, SIGNAL(aboutToShow()), this, SLOT(aboutToShow()));
+                disconnect(menu, &QMenu::aboutToShow, this, &ModelMenu::aboutToShow);
                 return;
             }
         }
@@ -171,7 +171,7 @@ namespace browser {
             QVariant v;
             v.setValue(parent);
             menu->menuAction()->setData(v);
-            connect(menu, SIGNAL(aboutToShow()), this, SLOT(aboutToShow()));
+            connect(menu, &QMenu::aboutToShow, this, &ModelMenu::aboutToShow);
             return;
         }
 
@@ -180,8 +180,8 @@ namespace browser {
         if(max != -1)
             end = qMin(max, end);
 
-        connect(menu, SIGNAL(triggered(QAction *)), this, SLOT(triggered(QAction *)));
-        connect(menu, SIGNAL(hovered(QAction *)), this, SLOT(hovered_signal(QAction *)));
+        connect(menu, &QMenu::triggered, this, &ModelMenu::triggered);
+        connect(menu, &QMenu::hovered, this, &ModelMenu::hovered);
 
         for(int i = 0; i < end; ++i) {
             QModelIndex idx = _model->index(i, 0, parent);
