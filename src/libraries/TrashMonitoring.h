@@ -11,29 +11,29 @@ public:
     TrashMonitoring(void);
     virtual ~TrashMonitoring(void);
 
-    void init(QString trashPath);
+    void init(QString _trash_path);
 
 // Функция, вызываемая после фактического добавления файла в корзину
 // принимает имя файла без пути к директории
-    void addFile(QString filename);
+    void add_file(QString _file_name);
 
     void update(void);
 
 private:
 
-    void removeOldesFile(void);
+    void remove_oldest_file(void);
 
-    QString path;
-    QDir dir;
-    unsigned int dirSize;
+    QString         _path;
+    QDir            _dir;
+    unsigned int    _dir_size;
 
     struct FileData {
-        QString fileName;
-        unsigned int fileTime;
-        unsigned int fileSize;
+        QString         _file_name;
+        unsigned int    _file_time;
+        unsigned int    _file_size;
     };
 
-    QList<FileData> filesTable;
+    QList<FileData>     _files_table;
 
 };
 

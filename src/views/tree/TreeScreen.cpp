@@ -569,7 +569,13 @@ void TreeScreen::setup_signals(void)
     // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
     // connect(knowTreeView, SIGNAL(doubleClicked(const QModelIndex &)), actionList["editBranch"], SLOT(trigger(void)));
     if(appconfig.getInterfaceMode() == "desktop") {
-        connect(_tree_view, &KnowView::clicked, this, &TreeScreen::candidate_from_knowtree_item);
+        connect(_tree_view, &KnowView::clicked, this
+        , [&](const QModelIndex index) {
+            //            _tree_view->collapse(index);
+            //            _tree_view->expand(index);
+            (_tree_view->isExpanded(index)) ? _tree_view->setExpanded(index, false) : _tree_view->setExpanded(index, true);
+        }//&TreeScreen::candidate_from_knowtree_item)
+               );
         connect(_tree_view, &KnowView::doubleClicked, this, &TreeScreen::invoke_index);
     }
 

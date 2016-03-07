@@ -63,6 +63,8 @@ public:
     QAction *historyforward() {return _historyforward;}
     QAction *historyhome() {return _historyhome;}
     QAction *stopreload() {return _stopreload;}
+    QAction *stop() {return _stop;}
+    QAction *reload() {return _reload;}
     browser::ChaseWidget *chasewidget() {return _chasewidget;}
     //    void remove_child(const QString &id);
     //    void remove_child(const int row);
@@ -116,6 +118,9 @@ private:
     QAction         *_historyforward;   //    FlatToolButton *_history_forward;
     QAction         *_historyhome;      //    FlatToolButton *_history_home;
     QAction         *_stopreload;       //    FlatToolButton *_stop_reload;
+
+    QAction         *_stop;
+    QAction         *_reload;
 
     browser::ChaseWidget *_chasewidget;
 

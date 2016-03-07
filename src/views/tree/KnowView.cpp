@@ -473,7 +473,23 @@ QModelIndex KnowView::view_index(void)
     //    candidate_from_knowtree_item(cur_index);
 
     if(!selectionModel()->currentIndex().isValid()) {
-        selection_to_pos(_know_root->root_item()->current_count() - 1);
+        if(_know_root->root_item()->current_count() > 0) {
+            selection_to_pos(_know_root->root_item()->current_count() - 1);
+        } else {
+            auto _tree_screen = globalparameters.tree_screen();
+
+            if(_know_root->root_item()->parent()) {
+                _tree_screen->tree_view()->setup_model(_know_root->root_item()->parent());
+
+            } else {
+                globalparameters.entrance()->activate(QUrl(browser::Browser::_defaulthome));
+
+            }
+
+            assert(_know_root->root_item()->current_count() > 0);
+            selection_to_pos(_know_root->root_item()->current_count() - 1);
+        }
+
         //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
         assert(selectionModel()->currentIndex().isValid());    // this line is to be recovery
     }
@@ -529,7 +545,7 @@ QModelIndex KnowView::view_index(void)
 //    return selectionModel()->currentIndex();
 //}
 
-void KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
+QModelIndex KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
 {
     QModelIndex index = _know_root->index(_item);//_record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
     int pos = index.row();
@@ -543,41 +559,51 @@ void KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
 
     int rowCount = _know_root->root_item()->current_count();
 
-    if(pos > (rowCount - 1))
-        return;
+    if(pos < rowCount) {  // pos > (rowCount - 1)   // return ;
 
-    // Простой механизм выбора строки. Похоже, что его использовать не получится
-    selectionModel()->select(index
-                             // , QItemSelectionModel::SelectCurrent
-                             , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-                            );
 
-    //    auto recordSourceModel = controller->getRecordTableModel();
-    //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
+        // Простой механизм выбора строки. Похоже, что его использовать не получится
+        selectionModel()->select(index
+                                 // , QItemSelectionModel::SelectCurrent
+                                 , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+                                );
 
-    // Установка засветки на нужный индекс
-    // Set the backlight to the desired index
-    selectionModel()->setCurrentIndex(index   // selIdx
-                                      , QItemSelectionModel::Select    // ClearAndSelect
-                                     );
+        //    auto recordSourceModel = controller->getRecordTableModel();
+        //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
-    // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-    // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-    // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-    // Therefore, the recording must be made a virtual click to fill the final table of records
-    if(appconfig.getInterfaceMode() == "mobile")
-        emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+        // Установка засветки на нужный индекс
+        // Set the backlight to the desired index
+        selectionModel()->setCurrentIndex(index   // selIdx
+                                          , QItemSelectionModel::Select    // ClearAndSelect
+                                         );
 
-    // emit this->clicked(index);
+        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+        // Therefore, the recording must be made a virtual click to fill the final table of records
+        if(appconfig.getInterfaceMode() == "mobile")
+            emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
-    scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
+        // emit this->clicked(index);
 
-    this->setFocus();   // ?
+        scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
+
+        this->setFocus();   // ?
+    }
+
+    return index;
 }
 
-void KnowView::selection_to_pos(int to_pos)
+QModelIndex KnowView::selection_to_pos(int to_pos)
 {
-    auto item = _know_root->root_item()->item(to_pos);
-    selection_to_pos(item);
+    //    bool result = false;
+    QModelIndex index;
 
+    if(to_pos != -1) {
+        auto item = _know_root->root_item()->item(to_pos);
+        index = selection_to_pos(item);
+        //        result = true;
+    }
+
+    return index;
 }

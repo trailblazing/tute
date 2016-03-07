@@ -812,12 +812,22 @@ namespace browser {
     void Entrance::activate(boost::intrusive_ptr<TreeItem> item)
     {
 
-        //        if(activiated_browser().first) {
-        Browser *browser = activated_browser();
+        if(item->page_valid()) {
+            for(auto &browser : _browsers) {
+                if(browser->tabmanager()->indexOf(item->unique_page()->view()) != -1) {
+                    item->activate();
+                }
+            }
+        } else {
+            //        if(activiated_browser().first) {
+            Browser *browser = activated_browser();
 
-        auto r = browser->tabmanager()->request_item(item);
+            auto r = browser->tabmanager()->request_item(item);
 
-        r->activate();
+            r->activate();
+        }
+
+
 
         //        } else {
         //            new_browser(item);

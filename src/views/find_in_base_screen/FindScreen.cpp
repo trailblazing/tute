@@ -43,11 +43,17 @@ FindScreen::FindScreen(QString      object_name
                        , TreeScreen *_tree_screen    // boost::intrusive_ptr<TreeItem> _selected_branch_root
                        , QWidget    *parent)
     : QWidget(parent)
+    , _tree_screen(_tree_screen)
+    , _navigater(new QToolBar(this))
+    , _historyback(new QAction(tr("Back"), _navigater))      //    FlatToolButton *_history_back;
+    , _historyforward(new QAction(tr("Forward"), _navigater))  //    FlatToolButton *_history_forward;
+    , _historyhome(new QAction(tr("Home"), _navigater))     //    FlatToolButton *_history_home;
+    , _stopreload(new QAction(_navigater))       //    FlatToolButton *_stop_reload;
+    , _stop(new QAction(tr("&Stop"), _navigater))
+    , _reload(new QAction(tr("Reload Page"), _navigater))
       //    , back_ground{
       //    _tree_screen->know_branch()->root_item()  //_selected_branch_root
       //}
-    , _tree_screen(_tree_screen)
-    , _navigater(new QToolBar(this))
     , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
     , _progress(new QProgressDialog(this))
       //    , _findtable(new FindTableWidget(this)) // deprecated
@@ -120,7 +126,9 @@ void FindScreen::setup_navigate(void)
     //    historyback_->setObjectName("Back");
 
     //_history_home = new FlatToolButton(this);
-    _historyhome = new QAction(tr("Home"), _navigater);
+
+    //    _historyhome = new QAction(tr("Home"), _navigater);
+
     _historyhome->setIcon(
         //        QIcon(
         //            ":/resource/pic/up-arrow-circle.svg"    // ":/resource/pic/streamline_home.svg"
@@ -133,7 +141,9 @@ void FindScreen::setup_navigate(void)
     insert_action_as_button<QToolButton>(_navigater, _historyhome); // _navigater->addAction(_historyhome);
 
     //_history_back = new FlatToolButton(this);
-    _historyback = new QAction(tr("Back"), _navigater);
+
+    //    _historyback = new QAction(tr("Back"), _navigater);
+
     _historyback->setShortcuts(QKeySequence::Back);
     //    _historyback->setIconVisibleInMenu(false);
     _historyback->setIcon(  //QIcon(":/resource/pic/walk_history_next.svg")//
@@ -147,7 +157,9 @@ void FindScreen::setup_navigate(void)
     //insertActionAsButton(_container, _historyback);
 
     //_history_forward = new FlatToolButton(this);
-    _historyforward = new QAction(tr("Forward"), _navigater);
+
+    //    _historyforward = new QAction(tr("Forward"), _navigater);
+
     _historyforward->setShortcuts(QKeySequence::Forward);
     _historyforward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
     //    _historyforwardmenu = new QMenu(this);
@@ -158,7 +170,9 @@ void FindScreen::setup_navigate(void)
 
 
     //_stop_reload = new FlatToolButton(this);
-    _stopreload = new QAction(_navigater);
+
+    //    _stopreload = new QAction(_navigater);
+
     //_reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
     _stopreload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
     insert_action_as_button<QToolButton>(_navigater, _stopreload); // _navigater->addAction(_stopreload);

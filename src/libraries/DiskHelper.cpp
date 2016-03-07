@@ -48,7 +48,7 @@ void DiskHelper::removeDirectoryToTrash(QString nameDirFrom)
 
         // Перенос файла в корзину
         if(QFile::rename(fileNameFrom, fileNameTo) == true)
-            trashmonitoring.addFile(fileNameToShort); // Оповещение что в корзину добавлен файл
+            trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
         else
             critical_error("Can not remove file\n" + fileNameFrom + "\nto directory\n" + nameDirTo + "\nwith new name\n" + fileNameTo);
     }
@@ -87,7 +87,7 @@ void DiskHelper::removeFileToTrash(QString fileNameFrom)
 
     // Файл перемещается в корзину
     if(QFile::rename(fileNameFrom, fileNameTo) == true)
-        trashmonitoring.addFile(fileNameToShort); // Оповещение что в корзину добавлен файл
+        trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
     else
         critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 }
@@ -109,7 +109,7 @@ QString DiskHelper::copyFileToTrash(QString fileNameFrom)
 
     // Файл копируется в корзину
     if(QFile::copy(fileNameFrom, fileNameTo) == true)
-        trashmonitoring.addFile(fileNameToShort); // Оповещение что в корзину добавлен файл
+        trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
     else
         critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 

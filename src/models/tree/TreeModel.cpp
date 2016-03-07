@@ -239,7 +239,7 @@ QModelIndex TreeModel::index(delegater _del) const
 QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 {
     QModelIndex result;
-    assert(!result.isValid());
+    //    assert(!result.isValid());
 
     std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<TreeItem>           // , int
                              )>

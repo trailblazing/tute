@@ -333,8 +333,8 @@ namespace browser {
         , _historyhome(_find_screen->historyhome())
         , _historyback(_find_screen->historyback())
         , _historyforward(_find_screen->historyforward())
-        , _stop(0)
-        , _reload(0)
+        , _stop(_find_screen->stop())
+        , _reload(_find_screen->reload())
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
@@ -379,8 +379,8 @@ namespace browser {
         , _historyhome(_find_screen->historyhome())
         , _historyback(_find_screen->historyback())
         , _historyforward(_find_screen->historyforward())
-        , _stop(0)
-        , _reload(0)
+        , _stop(_find_screen->stop())
+        , _reload(_find_screen->reload())
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
@@ -425,8 +425,8 @@ namespace browser {
         , _historyhome(_find_screen->historyhome())
         , _historyback(_find_screen->historyback())
         , _historyforward(_find_screen->historyforward())
-        , _stop(0)
-        , _reload(0)
+        , _stop(_find_screen->stop())
+        , _reload(_find_screen->reload())
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
@@ -469,8 +469,8 @@ namespace browser {
         , _historyhome(_find_screen->historyhome())
         , _historyback(_find_screen->historyback())
         , _historyforward(_find_screen->historyforward())
-        , _stop(0)
-        , _reload(0)
+        , _stop(_find_screen->stop())
+        , _reload(_find_screen->reload())
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
@@ -783,14 +783,14 @@ namespace browser {
 
         viewMenu->addSeparator();
 
-        _stop = viewMenu->addAction(tr("&Stop"));
+        //        _stop = viewMenu->addAction(tr("&Stop"));
         QList<QKeySequence> shortcuts;
         shortcuts.append(QKeySequence(Qt::CTRL | Qt::Key_Period));
         shortcuts.append(Qt::Key_Escape);
         _stop->setShortcuts(shortcuts);
         _tabmanager->addWebAction(_stop, QWebEnginePage::Stop);
 
-        _reload = viewMenu->addAction(tr("Reload Page"));
+        //        _reload = viewMenu->addAction(tr("Reload Page"));
         _reload->setShortcuts(QKeySequence::Refresh);
         _tabmanager->addWebAction(_reload, QWebEnginePage::Reload);
 
@@ -851,13 +851,13 @@ namespace browser {
 #if defined(QWEBENGINEHISTORY_RESTORESESSION)
         _restorelastsession = new QAction(tr("Restore Last Session"), this);
         connect(_restorelastsession, &QAction::triggered, QtSingleApplication::instance(), &QtSingleApplication::restoreLastSession;
-        _restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
-        historyActions.append(_tabwidget->recentlyClosedTabsAction());
-        historyActions.append(_restorelastsession);
+                _restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
+                historyActions.append(_tabwidget->recentlyClosedTabsAction());
+                historyActions.append(_restorelastsession);
 #endif
 
-        historyMenu->setInitialActions(historyActions);
-        _tree_screen->buttonmenu()->addMenu(historyMenu);
+                historyMenu->setInitialActions(historyActions);
+                _tree_screen->buttonmenu()->addMenu(historyMenu);
     }
 
     void Browser::append_bookmark_menu()
@@ -1442,9 +1442,11 @@ namespace browser {
             _stopreload->setToolTip(tr("Stop loading the current page"));
         } else {
             _chasewidget->setAnimated(false);
-            disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);
+            disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);   //&QAction::setChecked
+
             _stopreload->setIcon(_reloadicon);
-            connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
+
+            connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);   //&QAction::setChecked
             _stopreload->setToolTip(tr("Reload the current page"));
         }
     }
