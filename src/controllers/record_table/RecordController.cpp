@@ -895,7 +895,7 @@ void RecordController::paste(void)
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->update_selected();
+    globalparameters.tree_screen()->items_update_selected();
 }
 
 
@@ -1020,7 +1020,7 @@ void RecordController::addnew_blank(int mode)
     //        return; // Была нажата отмена, ничего ненужно делать
 
     // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-    QString directory = DiskHelper::createTempDirectory();  //
+    QString directory = DiskHelper::create_temp_directory();  //
     // addNewRecordWin.getImagesDirectory();
 
     // todo: сделать заполнение таблицы приаттаченных файлов
@@ -1054,7 +1054,7 @@ void RecordController::addnew_blank(int mode)
     //    item->field("url",    browser::Browser::_defaulthome);
     //    item->field("tags",   "");
 
-    item->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
     // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
     // Запись должна быть создана, потом можно аттачить файлы.
@@ -1062,7 +1062,7 @@ void RecordController::addnew_blank(int mode)
     // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
 
     // Временная директория с картинками и приаттаченными файлами удаляется
-    DiskHelper::removeDirectory(directory);
+    DiskHelper::remove_directory(directory);
 
     // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
     addnew_item(item, mode);
@@ -1088,7 +1088,7 @@ int RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const
     //        return; // Была нажата отмена, ничего ненужно делать
 
     // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-    QString directory = DiskHelper::createTempDirectory();  //
+    QString directory = DiskHelper::create_temp_directory();  //
     // addNewRecordWin.getImagesDirectory();
 
     // todo: сделать заполнение таблицы приаттаченных файлов
@@ -1114,7 +1114,7 @@ int RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const
     //    record.setField("url",    url.toString());
     //    record.setField("tags",   "");
 
-    item->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
     //    record->generator(generator);
 
@@ -1124,7 +1124,7 @@ int RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const
     // record->setAttachFiles(DiskHelper::getFilesFromDirectory(directory, "*.bin"));
 
     // Временная директория с картинками и приаттаченными файлами удаляется
-    DiskHelper::removeDirectory(directory);
+    DiskHelper::remove_directory(directory);
 
     // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
     return addnew_item(item, mode);
@@ -1169,7 +1169,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     int selected_position = -1;
 
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    if(!_source_model->find_in_list(item)) {
+    if(!_source_model->find_current(item)) {
         selected_position = _source_model->insert_new_item(position_index, item, mode);
     } else {
         selected_position = _source_model->locate(item);
@@ -1184,7 +1184,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
     //    }
 
     //    else {
@@ -1405,7 +1405,7 @@ void RecordController::edit_field(int pos
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
 }
 
 
@@ -1697,7 +1697,7 @@ void RecordController::move_up(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
 }
 
 
@@ -1720,7 +1720,7 @@ void RecordController::move_dn(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
 }
 
 
@@ -1798,7 +1798,7 @@ void RecordController::on_print_click(void)
 
 boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intrusive_ptr<TreeItem> item)
 {
-    boost::intrusive_ptr<TreeItem> _item = _source_model->find_in_list(item);
+    boost::intrusive_ptr<TreeItem> _item = _source_model->find_current(item);
     int source_position = -1;
 
     if(!_item) {
@@ -1904,7 +1904,7 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url)
     assert(_source_model->count() > 0);
 
     //    if(browser_pages) {
-    item = _source_model->find_in_list(_url);
+    item = _source_model->find_current(_url);
     //    }
 
     //    }
@@ -1971,7 +1971,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
         //    assert(browser_pages);
 
         //    if(_source_model->count() > 0) {
-        _result = _source_model->find_in_list(item);
+        _result = _source_model->find_current(item);
 
         if(_source_item != _know_model_board->root_item()) {
             if(!_result) {
@@ -2033,7 +2033,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
                 //                // _item->self_bind();
             }
 
-            auto idx = _tree_screen->tree_view()->view_index();
+            auto idx = _tree_screen->tree_view()->index_current();
 
             // if(idx.isValid()) {
 
@@ -2044,12 +2044,12 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             if(it != _result && item_is_brand_new) {
                 // int pos
-                _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                _result = _tree_screen->branch_add(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
                 _tree_screen->synchronized(false);
                 // assert(_result == it->child(pos));
             }
 
-            _tree_screen->save_knowtree();
+            _tree_screen->knowtree_save();
             // }
         }
 
@@ -2075,6 +2075,10 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     } else {
         _result = item;
     }
+
+    if(_result->field("dir") == "")_result->field("dir", _result->field("id"));
+
+    if(_result->field("file") == "")_result->field("file", "text.html");
 
     return _result;
 
@@ -2111,7 +2115,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //    assert(browser_pages);
 
     //    if(browser_pages) {
-    _result = _source_model->find_in_list(_url);
+    _result = _source_model->find_current(_url);
 
     if(_source_item != _know_model_board->root_item()) {
         if(!_result) {
@@ -2178,7 +2182,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
 
             // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-            QString directory = DiskHelper::createTempDirectory();  //
+            QString directory = DiskHelper::create_temp_directory();  //
 
             QMap<QString, QString> data;
             data["id"]      = get_unical_id();
@@ -2188,6 +2192,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             data["home"]    = _url.toString();
             data["url"]     = _url.toString();
             data["tags"]    = "";
+            data["dir"]     = data["id"];
+            data["file"]    = "text.html";
 
             boost::intrusive_ptr<TreeItem> item
                 = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
@@ -2214,7 +2220,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             //            //                record->binder(generator);
             //            //                record->activator(activator);
 
-            item->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+            item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
 
             // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
@@ -2223,7 +2229,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             // record->setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
 
             // Временная директория с картинками и приаттаченными файлами удаляется
-            DiskHelper::removeDirectory(directory);
+            DiskHelper::remove_directory(directory);
 
             if(item->is_lite())item->to_fat();
 
@@ -2252,7 +2258,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             //            // _item->self_bind();
         }
 
-        auto idx = _tree_screen->tree_view()->view_index();
+        auto idx = _tree_screen->tree_view()->index_current();
 
         // if(idx.isValid()) {
         auto it = _current_view_model->item(idx);
@@ -2262,13 +2268,13 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
         if(it != _result && item_is_brand_new) {
             // int pos
-            _result = _tree_screen->add_branch(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+            _result = _tree_screen->branch_add(_result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
             assert(_result);
             _tree_screen->synchronized(false);
             // assert(_result == it->child(pos));
         }
 
-        _tree_screen->save_knowtree();
+        _tree_screen->knowtree_save();
         // }
     }
 

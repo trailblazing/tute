@@ -552,10 +552,10 @@ namespace browser {
         return _lineedits;
     }
 
-    void TabWidget::lineEditStack(QStackedWidget *lineedits)
-    {
-        _lineedits = lineedits;
-    }
+    //    void TabWidget::lineEditStack(QStackedWidget *lineedits)
+    //    {
+    //        _lineedits = lineedits;
+    //    }
 
     QLineEdit *TabWidget::currentLineEdit() const
     {

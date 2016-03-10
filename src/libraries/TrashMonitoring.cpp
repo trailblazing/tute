@@ -5,6 +5,7 @@
 #include "main.h"
 #include "TrashMonitoring.h"
 #include "models/app_config/AppConfig.h"
+#include "libraries/DiskHelper.h"
 
 extern AppConfig appconfig;
 
@@ -20,6 +21,11 @@ TrashMonitoring::~TrashMonitoring(void)
 
 }
 
+void TrashMonitoring::recover_from_trash()
+{
+    auto file_data = _files_table.first();
+    DiskHelper::copy_file_to_data(appconfig.get_trashdir() + '/' + file_data._file_name);
+}
 
 void TrashMonitoring::init(QString _trash_path)
 {
@@ -60,6 +66,7 @@ void TrashMonitoring::init(QString _trash_path)
     }
 
     // qDebug() << "In init trash " << filesTable.size() << "files";
+    _is_inited = true;
 }
 
 
@@ -68,20 +75,20 @@ void TrashMonitoring::init(QString _trash_path)
 void TrashMonitoring::add_file(QString _file_name)
 {
     // Выясняется время создания файла берется текущее, особой точности не нужно
-    unsigned int fileTime = (QDateTime::currentDateTime()).toTime_t();
+    unsigned int _file_time = (QDateTime::currentDateTime()).toTime_t();
 
     // Выясняется размер файла
     QFile currentFile(_path + "/" + _file_name);
-    unsigned int fileSize = currentFile.size();
+    unsigned int _file_size = currentFile.size();
 
     // Увеличивается подсчитываемый размер директории
-    _dir_size = _dir_size + fileSize;
+    _dir_size = _dir_size + _file_size;
 
     // Информация о файле добавляется в таблицу
     FileData currentfiledata;
     currentfiledata._file_name = _file_name;
-    currentfiledata._file_time = fileTime;
-    currentfiledata._file_size = fileSize;
+    currentfiledata._file_time = _file_time;
+    currentfiledata._file_size = _file_size;
     _files_table.insert(0, currentfiledata);
 
     update();
@@ -94,8 +101,9 @@ void TrashMonitoring::update(void)
     // условие что количество файлов слишком велико или
     // суммарный размер файлов превышает предельно допустимый размер корзины
     while(_files_table.size() > appconfig.get_trashmaxfilecount() ||
-          _dir_size > appconfig.get_trashsize() * 1000000) {
-        if(_files_table.size() == 1) { // Оставляется последний файл, какого бы размера он не был
+          _dir_size > appconfig.get_trashsize() * 1000000
+         ) {
+        if(_files_table.size() <= 1) { // Оставляется последний файл, какого бы размера он не был
             break;
         } else {
             remove_oldest_file();
@@ -110,15 +118,19 @@ void TrashMonitoring::remove_oldest_file(void)
 
     qDebug() << "Remove file " << _file_name << " from trash";
 
-    if(QFile::remove(_file_name)) { // Файл физически удаляется
-        // Расчетный размер директории уменьшается на размер файла
-        _dir_size = _dir_size - _files_table.last()._file_size;
+    if(QFile::exists(_file_name)) {
+        if(QFile::remove(_file_name)) { // Файл физически удаляется
+            // Расчетный размер директории уменьшается на размер файла
+            _dir_size = _dir_size - _files_table.last()._file_size;
 
-        // Файл удаляется из списка
-        _files_table.removeLast();
+            // Файл удаляется из списка
+            _files_table.removeLast();
+        } else {
+            critical_error("In trash monitoring can not delete file " + _file_name);
+            exit(0);
+        }
     } else {
-        critical_error("In trash monitoring can not delete file " + _file_name);
-        exit(0);
+        _files_table.removeLast();
     }
 }
 

@@ -151,7 +151,7 @@ void AddNewRecord::okClick(void)
     //    }
 
     // Картинки сохраняются
-    imagesDirName = DiskHelper::createTempDirectory();
+    imagesDirName = DiskHelper::create_temp_directory();
     recordTextEditor->work_directory(imagesDirName);
     recordTextEditor->save_textarea_images(Editor::SAVE_IMAGES_SIMPLE);
 

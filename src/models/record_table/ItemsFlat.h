@@ -58,18 +58,18 @@ public:
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
     boost::intrusive_ptr<TreeItem> child(int pos) const;
     boost::intrusive_ptr<TreeItem> item(int pos) const;
-    boost::intrusive_ptr<TreeItem> find_list(const QUrl &url) const;
-    boost::intrusive_ptr<TreeItem> find_list(boost::intrusive_ptr<TreeItem> item) const;
+    boost::intrusive_ptr<TreeItem> find_direct(const QUrl &url) const;
+    boost::intrusive_ptr<TreeItem> find_direct(boost::intrusive_ptr<TreeItem> item) const;
     //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
-    boost::intrusive_ptr<TreeItem> find_list(QString id)const;
-    int list_index(boost::intrusive_ptr<TreeItem> item)const;
+    boost::intrusive_ptr<TreeItem> find_direct(QString id)const;
+    int index_direct(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
 
     // Удаление всех элементов таблицы конечных записей
     void delete_list_items(void);
 
     // Количество записей в таблице данных
-    int current_count(void) const;
+    int count_direct(void) const;
 
     //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
     void dom_to_items(const QDomElement &dom_model, boost::intrusive_ptr<TreeItem> _parent_item);
@@ -89,15 +89,16 @@ public:
 
     void fields(int pos, QMap<QString, QString> edit_fields);
 
-    bool remove_child(int i);
-    bool remove_child(QString id);
-    bool remove_child(boost::intrusive_ptr<TreeItem> item);
+    bool child_remove(int i);
+    bool child_remove(QString id);
+    bool child_remove(boost::intrusive_ptr<TreeItem> item);
 
-    int is_item_exists(const QString &id) const;
-    int is_item_exists(const QUrl &url) const;
+    int is_name_exists(const QString &name)const;
+    int is_id_exists(const QString &id) const;
+    int is_url_exists(const QUrl &url) const;
 
-    int list_position(QString id) const;
-    int list_position(boost::intrusive_ptr<TreeItem> it)const;
+    int position_current(QString id) const;
+    int position_current(boost::intrusive_ptr<TreeItem> it)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -123,10 +124,10 @@ public:
 
 
 
-    int count()const {return _child_items.size();}
+    //    int direct_count()const {return _child_items.size();}
     void parent(boost::intrusive_ptr<TreeItem> parent_item);
-
-
+    void duplicate_remove();
+    bool is_empty() const;
 protected:
 
     // Initialize the data table based on the transmitted item DOM- // Первичное заполнение таблицы конечных записей

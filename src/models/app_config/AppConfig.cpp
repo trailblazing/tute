@@ -155,13 +155,13 @@ bool AppConfig::set_trashmaxfilecount(int count)
 }
 
 
-bool AppConfig::get_cutbranchconfirm(void) const
+bool AppConfig::cut_branch_confirm(void) const
 {
     return conf->value("cutbranchconfirm").toBool();
 }
 
 
-bool AppConfig::set_cutbranchconfirm(bool confirm)
+bool AppConfig::cut_branch_confirm(bool confirm)
 {
     conf->setValue("cutbranchconfirm", confirm);
     return true;

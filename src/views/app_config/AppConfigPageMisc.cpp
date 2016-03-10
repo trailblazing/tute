@@ -16,7 +16,7 @@ AppConfigPageMisc::AppConfigPageMisc(QWidget *parent) : ConfigPage(parent)
     // Блок настройки подтверждения для действия "cut" на ветке
     cutBranchConfirm=new QCheckBox(this);
     cutBranchConfirm->setText(tr("Confirm item cut"));
-    cutBranchConfirm->setChecked(appconfig.get_cutbranchconfirm());
+    cutBranchConfirm->setChecked(appconfig.cut_branch_confirm());
 
     // Блок настройки отображения отладочных сообщений в консоли
     printDebugMessages=new QCheckBox(this);
@@ -69,8 +69,8 @@ int AppConfigPageMisc::apply_changes(void)
     qDebug() << "Apply changes misc";
 
 // Сохраняется настройка подтверждения для действия "cut" на ветке
-    if(appconfig.get_cutbranchconfirm()!=cutBranchConfirm->isChecked())
-        appconfig.set_cutbranchconfirm(cutBranchConfirm->isChecked());
+    if(appconfig.cut_branch_confirm()!=cutBranchConfirm->isChecked())
+        appconfig.cut_branch_confirm(cutBranchConfirm->isChecked());
 
 // Сохраняется настройка отображения отладочных сообщений в консоли
     if(appconfig.get_printdebugmessages()!=printDebugMessages->isChecked())

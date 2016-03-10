@@ -149,7 +149,7 @@ void AttachTableController::add_smart(QString attach_type)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() > 0) {
@@ -373,7 +373,7 @@ void AttachTableController::on_edit_file_name(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
 
 }
 
@@ -408,7 +408,7 @@ void AttachTableController::on_delete_attach(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->save_knowtree();
+    globalparameters.tree_screen()->knowtree_save();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() == 0) {
@@ -431,7 +431,7 @@ void AttachTableController::on_open_attach(void)
         // Если запись зашифрована и открывается файл (не линк), аттач надо скопировать в директорию корзины и расшифровать
         if(attachTableData->is_record_crypt() && attachTableData->attach(id).getField("type") == "file") {
             if(appconfig.getEnableDecryptFileToTrashDirectory()) {
-                fullFileName = DiskHelper::copyFileToTrash(fullFileName); // Копирование
+                fullFileName = DiskHelper::copy_file_to_trash(fullFileName); // Копирование
                 CryptService::decryptFile(globalparameters.crypt_key(), fullFileName); // Расшифровка
             } else {
                 show_message_box(tr("Can't preview encrypted attach file %1.\n\nUse \"Save As...\" button or enable decrypt to temporary file in settings.").arg(fullFileName));

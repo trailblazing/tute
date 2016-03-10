@@ -247,7 +247,7 @@ namespace browser {
 
         //        QDockWidget   *dock_widget;
         //        QToolBar      *navigater;
-        ToolbarSearch       *_toolbarsearch;
+        //        ToolbarSearch       *_toolbarsearch;
         BookmarksToolBar    *_bookmarkstoolbar;
         ChaseWidget         *_chasewidget;
 

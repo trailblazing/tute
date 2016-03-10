@@ -56,6 +56,8 @@
 #include "libraries/WindowSwitcher.h"
 #include "libraries/WalkHistory.h"
 #include "models/attach_table/AttachTableData.h"
+#include "views/tree/KnowView.h"
+
 
 #include <QtGui/QClipboard>
 #include <QtNetwork/QAuthenticator>
@@ -540,10 +542,31 @@ namespace browser {
                     //        if(checked) // globalparameters.mainwindow()
                     _view->setFocus();   // make upate validate
 
-                    if(_record_controller->view()->selection_first_id() != _item->field("id"))
+                    //assert(_lineedits);
+
+                    //if(_lineedits) {
+                    QLineEdit *line_edit = _tabmanager->currentLineEdit();  //qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+
+                    if(line_edit)line_edit->setText(_url_str);
+
+                    //}
+
+                    if(_record_controller->view()->selection_first_id() != _item->field("id")) {
                         _record_controller->select_id(_item->field("id"));
+                    }
                 }
             }
+
+            auto _tree_screen = globalparameters.tree_screen();
+            auto _index_item = _tree_screen->tree_view()->source_model()->index(_item);
+
+            while(!_index_item.isValid()) {
+                _tree_screen->cursor_up_one_level();
+                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
+            }
+
+            _tree_screen->cursor_to_index(_index_item);
+
         }
 
         return _view;
@@ -742,9 +765,9 @@ namespace browser {
 
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
-            boost::intrusive_ptr<TreeItem> record = page->_item;
-            record->field("url", url.toString());
-            page->load(record); // record->generate();
+            boost::intrusive_ptr<TreeItem> _current_item = page->_item;
+            _current_item->field("url", url.toString());
+            page->load(_current_item); // record->generate();
             // page->activate();     // record->active();
         });
 
@@ -958,7 +981,7 @@ namespace browser {
     {
         connect(this, &PopupView::loadProgress, this, &PopupView::setProgress);
         connect(this, &QWebEngineView::loadFinished, this, &PopupView::loadFinished;
-        connect(this, &QWebEngineView::renderProcessTerminated,
+                connect(this, &QWebEngineView::renderProcessTerminated,
         [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
             const char *status = "";
 
@@ -1233,7 +1256,7 @@ namespace browser {
             assert(item);
             assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
 
-            if(source_model->is_item_id_exists_in_list(item->field("id"))) { //                && record->unique_page() == this
+            if(source_model->find_current(item->field("id"))) { //                && record->unique_page() == this
                 _record_controller->remove_child(item->id());
             }
         }

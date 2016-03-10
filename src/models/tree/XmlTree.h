@@ -5,6 +5,8 @@
 #include <QtXml>
 #include <QTreeWidgetItem>
 
+class DiskHelper;
+class TrashMonitoring;
 
 class XmlTree : public QObject {
     Q_OBJECT
@@ -12,11 +14,11 @@ class XmlTree : public QObject {
 public:
     XmlTree(void);
     ~XmlTree(void);
-    bool load(QString file);
-    QDomDocument* getDomModel(void);
+    bool load(QString _file_name);
+    QDomDocument* dom_model(void);
 
 protected:
-    QDomDocument *domModel; // DOM-представление документа
+    QDomDocument *_dom_model; // DOM-представление документа
 };
 
 

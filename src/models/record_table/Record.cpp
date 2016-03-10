@@ -25,6 +25,7 @@ extern GlobalParameters globalparameters;
 Record::Record()
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
     , _lite_flag(true)
+    , _text("")
     , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
@@ -34,6 +35,7 @@ Record::Record(QMap<QString, QString> _field_data)
     : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
     , _lite_flag(true)
     , _field_data(_field_data)
+    , _text("")
     , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
@@ -74,7 +76,7 @@ Record::Record(const Record &obj)
     //    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
 
     _attach_table_data->update_attach_table_back_link();
-//    _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
+    //    _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
     //        _position = obj->_position;
     //        _open_link_in_new_window = obj->_open_link_in_new_window;
     //    bool    _active_immediately = false;
@@ -122,7 +124,7 @@ Record &Record::operator =(const Record &obj)
         //    _attach_table_data->record(boost::intrusive_ptr<Record>(this));
 
         _attach_table_data->update_attach_table_back_link();
-//        _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
+        //        _is_registered_to_shadow_list = obj._is_registered_to_shadow_list;
         //        _position = obj->_position;
         //        _open_link_in_new_window = obj->_open_link_in_new_window;
         //    bool    _active_immediately = false;
@@ -168,7 +170,7 @@ Record::Record(boost::intrusive_ptr<Record> obj)
         // Обратный указатель во включенном объекте должен указывать на новый экземпляр
         //        _attach_table_data->record(boost::intrusive_ptr<Record>(this));
         _attach_table_data->update_attach_table_back_link();
-//        _is_registered_to_shadow_list = obj->_is_registered_to_shadow_list;
+        //        _is_registered_to_shadow_list = obj->_is_registered_to_shadow_list;
         //        _position = obj->_position;
         //        _open_link_in_new_window = obj->_open_link_in_new_window;
         //    bool    _active_immediately = false;
@@ -358,10 +360,12 @@ QDomElement Record::dom_from_record(std::shared_ptr<QDomDocument> doc) const
 bool Record::is_empty() const
 {
     // Заполненная запись не может содержать пустые свойства
-    if(_field_data.count() == 0)
-        return true;
-    else
-        return false;
+    //    if(_field_data.count() == 0)
+    //        return true;
+    //    else
+    //        return false;
+    return (_field_data.count() == 0)
+           && ((is_lite()) ? (text_from_lite_direct() == "") : (text_from_fat() == ""));
 }
 
 
@@ -398,6 +402,8 @@ void Record::to_fat()
     if(_lite_flag != true || _text.length() > 0 || _picture_files.count() > 0)
         critical_error("Unavailable switching record object to fat state. " + id_and_name());
 
+    if(_text.size() == 0)check_and_create_text_file();
+
     _attach_table_data->switch_to_fat();
 
     _lite_flag = false;
@@ -424,7 +430,7 @@ QString Record::field(QString _name) const
 {
     // Если имя поля недопустимо
     if(fixedparameters.is_record_field_available(_name) == false)
-        critical_error("RecordTableData::getField() : get unavailable field " + _name);
+        critical_error("Record::field() : get unavailable field " + _name);
 
     // Для настоящего поля
     if(fixedparameters.is_record_field_natural(_name))
@@ -719,7 +725,7 @@ QString Record::text_from_fat() const
 
 
 // Получение значения текста напрямую из файла, без заполнения свойства text
-QString Record::text_direct_from_lite()
+QString Record::text_from_lite_direct() const
 {
     // У тяжелого объекта невозможно получить текст записи из файла (у тяжелого объекта текст записи хранится в памяти)
     if(_lite_flag == false) {
@@ -735,7 +741,7 @@ QString Record::text_direct_from_lite()
     // Выясняется полное имя файла с текстом записи
     QString fileName = full_text_file_name();
 
-    check_and_create_text_file();
+    const_cast<Record *>(this)->check_and_create_text_file();
 
     QFile f(fileName);
 
@@ -758,7 +764,7 @@ QString Record::text_direct_from_lite()
 
 // Установка текста записи как свойства объекта
 // Принимает незашифрованные данные, сохраняет их в памяти, при записи шифрует если запись зашифрована
-void Record::text_to_fat(QString i_text)
+void Record::text_to_fat(QString _text_source)
 {
     // Легкому объекту невозможно установить текст, если так происходит - это ошибка вызывающей логики
     if(_lite_flag == true)
@@ -766,9 +772,9 @@ void Record::text_to_fat(QString i_text)
 
     // Если шифровать ненужно
     if(_field_data.value("crypt").length() == 0 || _field_data.value("crypt") == "0")
-        _text = i_text.toUtf8(); // Текст просто запоминается в виде QByteArray
+        _text = _text_source.toUtf8(); // Текст просто запоминается в виде QByteArray
     else if(_field_data.value("crypt") == "1") // Если нужно шифровать
-        _text = CryptService::encryptStringToByteArray(globalparameters.crypt_key(), i_text);
+        _text = CryptService::encryptStringToByteArray(globalparameters.crypt_key(), _text_source);
     else
         critical_error("Record::setText() : Unavailable crypt field value \"" + _field_data.value("crypt") + "\"");
 }
@@ -776,24 +782,24 @@ void Record::text_to_fat(QString i_text)
 
 // Сохранение текста записи на диск без установки текста записи как свойства
 // Принимает незашифрованные данные, сохраняет в файл, при записи шифрует если запись зашифрована
-void Record::save_text_direct(QString iText)
+void Record::text_to_direct(QString _text_source)
 {
     QString fileName = full_text_file_name();
 
     // Если шифровать ненужно
     if(_field_data.value("crypt").length() == 0 || _field_data.value("crypt") == "0") {
         // Текст сохраняется в файл
-        QFile wfile(fileName);
+        QFile _file(fileName);
 
-        if(!wfile.open(QIODevice::WriteOnly | QIODevice::Text))
+        if(!_file.open(QIODevice::WriteOnly | QIODevice::Text))
             critical_error("Can\'t open text file " + fileName + " for write.");
 
-        QTextStream out(&wfile);
+        QTextStream out(&_file);
         out.setCodec("UTF-8");
-        out << iText;
+        out << _text_source;
     } else if(_field_data.value("crypt") == "1") {
         // Текст шифруется
-        QByteArray encryptData = CryptService::encryptStringToByteArray(globalparameters.crypt_key(), iText);
+        QByteArray encryptData = CryptService::encryptStringToByteArray(globalparameters.crypt_key(), _text_source);
 
         // В файл сохраняются зашифрованные данные
         QFile wfile(fileName);
@@ -812,6 +818,9 @@ void Record::create_file_and_save_text()
 {
     QString fileName = full_text_file_name();
     assert(fileName != "");
+
+    if(_text.size() == 0)check_and_create_text_file();
+
     // В файл сохраняются зашифрованные данные
     QFile wfile(fileName);
 
@@ -1062,7 +1071,7 @@ void Record::push_fat_attributes()
 
     // Если есть файлы картинок, они вставляются в конечную директорию
     if(_picture_files.size() > 0)
-        DiskHelper::saveFilesToDirectory(dir_name, _picture_files);
+        DiskHelper::save_files_to_directory(dir_name, _picture_files);
 
     // Если есть приаттаченные файлы, они вставляются в конечную директорию
     if(_attach_table_data->size() > 0)
@@ -1178,16 +1187,16 @@ void Record::check_and_create_text_file()
 
     // Если директория с файлом не существует
     if(!fileInfo.absoluteDir().exists()) {
-        QString messageText = QObject::tr("Database consistency was broken.\n Directory %1 not found.\n MyTetra will try to create a blank entry for the corrections.").arg(fileInfo.absoluteDir().absolutePath());
+        //        QString messageText = QObject::tr("Database consistency was broken.\n Directory %1 not found.\n MyTetra will try to create a blank entry for the corrections.").arg(fileInfo.absoluteDir().absolutePath());
 
-        qWarning() << messageText;
+        //        qWarning() << messageText;
 
-        // Выводится уведомление что будет создана пустая директория записи
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(QObject::tr("Warning!"));
-        msgBox.setText(messageText);
-        msgBox.setIcon(QMessageBox::Information);
-        msgBox.exec();
+        //        // Выводится уведомление что будет создана пустая директория записи
+        //        QMessageBox msgBox;
+        //        msgBox.setWindowTitle(QObject::tr("Warning!"));
+        //        msgBox.setText(messageText);
+        //        msgBox.setIcon(QMessageBox::Information);
+        //        msgBox.exec();
 
         // Создается пустая директория записи
         QDir tempDir("/");
@@ -1196,19 +1205,19 @@ void Record::check_and_create_text_file()
 
     // Если файл записи не существует
     if(!f.exists()) {
-        QString messageText = QObject::tr("Database consistency was broken.\n File %1 not found.\n MyTetra will try to create a blank entry for the corrections.").arg(fileName);
+        //        QString messageText = QObject::tr("Database consistency was broken.\n File %1 not found.\n MyTetra will try to create a blank entry for the corrections.").arg(fileName);
 
-        qWarning() << messageText;
+        //        qWarning() << messageText;
 
-        // Выводится уведомление что будет создан пустой текст записи
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(QObject::tr("Warning!"));
-        msgBox.setText(messageText);
-        msgBox.setIcon(QMessageBox::Information);
-        msgBox.exec();
+        //        // Выводится уведомление что будет создан пустой текст записи
+        //        QMessageBox msgBox;
+        //        msgBox.setWindowTitle(QObject::tr("Warning!"));
+        //        msgBox.setText(messageText);
+        //        msgBox.setIcon(QMessageBox::Information);
+        //        msgBox.exec();
 
         // Создается пустой текст записи
-        save_text_direct(QString());
+        text_to_direct(QString());
     }
 }
 

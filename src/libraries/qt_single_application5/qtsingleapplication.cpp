@@ -296,7 +296,7 @@
 #include <QWebEngineScriptCollection>
 
 #include <QtCore/QDebug>
-
+extern TrashMonitoring trashmonitoring;
 browser::DownloadManager    *QtSingleApplication::_downloadmanager = nullptr;
 browser::HistoryManager     *QtSingleApplication::_historymanager = nullptr;
 QNetworkAccessManager       *QtSingleApplication::_networkaccessmanager = nullptr;
@@ -357,6 +357,11 @@ void QtSingleApplication::sys_init()
 
     // Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
     _appconfig.init();
+
+
+    // Инициализируется объект слежения за корзиной
+    trashmonitoring.init(_appconfig.get_trashdir());
+    trashmonitoring.update();
 
     // Инициализация переменных, отвечающих за хранилище данных
     _databaseconfig.init();

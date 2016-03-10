@@ -77,10 +77,10 @@ public:
     void field(QString _name, QString value) {Record::field(_name, value);}
 
     // Получение всех полей данных
-    QMap<QString, QString> all_fields();
+    QMap<QString, QString> fields_all();
 
     // Получение всех полей данных напрямую, без преобразований
-    QMap<QString, QString> all_fields_direct();
+    QMap<QString, QString> fields_all_direct();
 
     // Заполнение указанного поля
     //    void field(QString name, QString value);
@@ -90,30 +90,30 @@ public:
 
     // Добавление нового подчиненного элемента
     // в конец списка подчиненных элементов
-    boost::intrusive_ptr<TreeItem> add_child(void);
+    boost::intrusive_ptr<TreeItem> child_add_new(int pos);
 
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> child_clone(boost::intrusive_ptr<TreeItem> item);
 
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
     // count - сколько потомков вставить (обычно 1, но можно и несколько)
     // columns - сколько столбцов должен содержать потомок
-    bool insert_children(int position, int count, int columns);
+    bool children_insert_new(int position, int count, int columns);
 
 
     void unload_page();
-    boost::intrusive_ptr<TreeItem> remove_child(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> child_remove(boost::intrusive_ptr<TreeItem> item);
 
     void parent(boost::intrusive_ptr<TreeItem> it);
     // Возвращение ссылки на родительский элемент
     boost::intrusive_ptr<TreeItem> parent();
 
     // Удаление потомков, начиная с позиции position массива childItems
-    bool remove_children(int position, int count);
+    bool children_remove(int position, int count);
 
     // Удаление всех потомков элемента
-    void remove_all_children();
+    void children_remove_all();
 
     // Возвращает номер, под которым данный объект хранится
     // в массиве childItems своего родителя
@@ -124,21 +124,21 @@ public:
     void move_up(int pos) {ItemsFlat::move_up(pos);}
     void move_dn(int pos) {ItemsFlat::move_dn(pos);}
     // Возвращает id путь (список идентификаторов от корня до текущего элемента)
-    QStringList absolute_path(void);
+    QStringList path_absolute(void);
 
     // Возвращает путь в виде названий веток дерева
-    QStringList absolute_path_as_name(void);
+    QStringList path_absolute_as_name(void);
 
-    QString absolute_path_as_name_with_delimiter(QString delimeter);
+    QString path_absolute_as_name_with_delimiter(QString delimeter);
 
     // Возвращает набор значений указанного поля для пути от корня к ветке
-    QStringList absolute_path_as_field(QString field_name);
+    QStringList path_absolute_as_field(QString field_name);
 
     // Возвращает массив путей всех подветок, которые содержит ветка
-    QList<QStringList> all_children_path(void);
+    QList<QStringList> path_children_all(void);
 
     // Возвращает набор значений указанного поля для подветок
-    QList<QStringList> all_children_path_as_field(QString fieldName);
+    QList<QStringList> path_children_all_as_field(QString fieldName);
 
     // Получение идентификатора элемента
     QString id();
@@ -178,7 +178,7 @@ public:
     void records_to_children();
 #endif
 
-    void clear_children(void);
+    void children_clear(void);
 
     browser::WebPage *unique_page();   // const; // {return _page;}
     browser::WebView *bind();
@@ -197,8 +197,12 @@ public:
     boost::intrusive_ptr<TreeItem> active_subset() const;
 
 
-    boost::intrusive_ptr<TreeItem> insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
-    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
+    boost::intrusive_ptr<TreeItem> child_transfer(int pos, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
+    //    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
+
+
+    bool is_empty() const;
+    bool remove();
 
 protected:
 
@@ -206,12 +210,12 @@ protected:
     active_helper   _activator;
 
 private:
-    bool remove_children_link(int position, int count);
+    //    bool children_remove_link(int position, int count);
 
     void isolate(void);
 
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
-    QList<QStringList> all_children_path_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode);
+    QList<QStringList> path_children_all_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode);
 
     //    bool is_field_name_available(QString name) const;
     //    QStringList field_name_available_list(void) const;

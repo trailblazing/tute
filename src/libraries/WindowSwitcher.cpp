@@ -66,7 +66,7 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    auto index = globalparameters.tree_screen()->tree_view()->view_index();
+    auto index = globalparameters.tree_screen()->tree_view()->index_current();
 
     if(index.isValid()) {
         auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
@@ -110,7 +110,7 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto index = globalparameters.tree_screen()->tree_view()->view_index();
+    auto index = globalparameters.tree_screen()->tree_view()->index_current();
 
     if(index.isValid()) {
         auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
@@ -239,7 +239,7 @@ void WindowSwitcher::restoreFocusWidget()
     }
 
     if(widgetName == record_screen_multi_instance_name) {
-        auto index = globalparameters.tree_screen()->tree_view()->view_index();
+        auto index = globalparameters.tree_screen()->tree_view()->index_current();
 
         if(index.isValid()) {
             auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);

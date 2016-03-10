@@ -170,13 +170,13 @@ QString ItemsFlat::field(int pos, QString name) const
     if(pos < 0 || pos >= _child_items.size()) {
         QString i;
         i.setNum(pos);
-        critical_error("RecordTableData::getField() : get unavailable record index " + i);
+        critical_error("ItemsFlat::field() : get unavailable record index " + i);
     }
 
     return _child_items.at(pos)->field(name);
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(const QUrl &url)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(const QUrl &url)const
 {
     boost::intrusive_ptr<TreeItem> record;
 
@@ -210,7 +210,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(const QUrl &url)const
 
 
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(boost::intrusive_ptr<TreeItem> item)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(boost::intrusive_ptr<TreeItem> item)const
 {
     boost::intrusive_ptr<TreeItem> result;
 
@@ -225,7 +225,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(boost::intrusive_ptr<TreeIte
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(QString id)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(QString id)const
 {
     boost::intrusive_ptr<TreeItem> result;
 
@@ -240,25 +240,25 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find_list(QString id)const
     return result;
 }
 
-int ItemsFlat::list_position(QString id)const
+int ItemsFlat::position_current(QString id)const
 {
-    for(int i = 0; i < current_count(); i++)
+    for(int i = 0; i < count_direct(); i++)
         if(field(i, "id") == id)
             return i;
 
     return -1;
 }
 
-int ItemsFlat::list_position(boost::intrusive_ptr<TreeItem> it)const
+int ItemsFlat::position_current(boost::intrusive_ptr<TreeItem> it)const
 {
-    for(int i = 0; i < current_count(); i++)
+    for(int i = 0; i < count_direct(); i++)
         if(child(i) == it)
             return i;
 
     return -1;
 }
 
-int ItemsFlat::list_index(boost::intrusive_ptr<TreeItem> item)const
+int ItemsFlat::index_direct(boost::intrusive_ptr<TreeItem> item)const
 {
     int in = 0;
     int result = -1;
@@ -300,11 +300,11 @@ void ItemsFlat::field(int pos, QString name, QString value)
 QString ItemsFlat::text(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая строка
-    if(pos < 0 || pos >= current_count())
+    if(pos < 0 || pos >= count_direct())
         return QString();
 
     if(_child_items[pos]->is_lite())
-        return _child_items[pos]->text_direct_from_lite();
+        return _child_items[pos]->text_from_lite_direct();
     else
         return _child_items[pos]->text_from_fat();
 }
@@ -399,7 +399,7 @@ void ItemsFlat::editor_save_callback(QObject *editor, QString saveText)
         QFile wfile(fileName);
 
         if(!wfile.open(QIODevice::WriteOnly | QIODevice::Text))
-            critical_error("RecordTableData::editor_save_callback() : Cant open text file " + fileName + " for write.");
+            critical_error("ItemsFlat::editor_save_callback() : Can\'t open text file " + fileName + " for write.");
 
         QTextStream out(&wfile);
         out.setCodec("UTF-8");
@@ -412,7 +412,7 @@ void ItemsFlat::editor_save_callback(QObject *editor, QString saveText)
         QFile wfile(fileName);
 
         if(!wfile.open(QIODevice::WriteOnly))
-            critical_error("ItemsFlat::editor_save_callback() : Cant open binary file " + fileName + " for write.");
+            critical_error("ItemsFlat::editor_save_callback() : Can\'t open binary file " + fileName + " for write.");
 
         wfile.write(encryptData);
     }
@@ -432,7 +432,7 @@ void ItemsFlat::editor_save_callback(QObject *editor, QString saveText)
 boost::intrusive_ptr<TreeItem> ItemsFlat::item_lite(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая запись
-    if(pos < 0 || pos >= current_count())
+    if(pos < 0 || pos >= count_direct())
         return boost::intrusive_ptr<TreeItem>(nullptr);
 
     // Хранимая в дереве запись не может быть "тяжелой"
@@ -461,7 +461,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
 
     // Добавление бинарных образов файлов картинок
     QString directory = appconfig.get_tetradir() + "/base/" + result->field("dir");
-    result->picture_files(DiskHelper::getFilesFromDirectory(directory, "*.png"));
+    result->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
     return result;
 }
@@ -474,7 +474,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::child(int pos)const
 boost::intrusive_ptr<TreeItem> ItemsFlat::item(int pos)const
 {
     // Если индекс недопустимый, возвращается пустая запись
-    if(pos < 0 || pos >= current_count())
+    if(pos < 0 || pos >= count_direct())
         return nullptr;
 
     return _child_items.at(pos);    // _child_items[pos];
@@ -646,7 +646,7 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields)
 
 // Удаление записи с указанным индексом
 // todo: добавить удаление приаттаченных файлов и очистку таблицы приаттаченных файлов
-bool ItemsFlat::remove_child(int i)
+bool ItemsFlat::child_remove(int i)
 {
     bool result = false;
     qDebug() << "Try delete record num " << i << " table count " << _child_items.size();
@@ -658,7 +658,7 @@ bool ItemsFlat::remove_child(int i)
     // Удаление директории и файлов внутри, с сохранением в резервной директории
     QString dirForDelete = appconfig.get_tetradir() + "/base/" + field(i, "dir");
     qDebug() << "Remove dir " << dirForDelete;
-    DiskHelper::removeDirectoryToTrash(dirForDelete);
+    DiskHelper::remove_directory_to_trash(dirForDelete);
 
 
     // Удаление позиции курсора из истории
@@ -693,13 +693,13 @@ bool ItemsFlat::remove_child(int i)
 }
 
 
-bool ItemsFlat::remove_child(QString id)
+bool ItemsFlat::child_remove(QString id)
 {
     bool result = false;
 
-    for(int i = 0; i < current_count(); i++) {
+    for(int i = 0; i < count_direct(); i++) {
         if(field(i, "id") == id) {
-            result = remove_child(i); // Так как id уникальный, удаляться будет только одна запись
+            result = child_remove(i); // Так как id уникальный, удаляться будет только одна запись
             break;
         }
     }
@@ -707,10 +707,10 @@ bool ItemsFlat::remove_child(QString id)
     return result;
 }
 
-bool ItemsFlat::remove_child(boost::intrusive_ptr<TreeItem> item)
+bool ItemsFlat::child_remove(boost::intrusive_ptr<TreeItem> item)
 {
     bool result = false;
-    result = remove_child(item->id());
+    result = child_remove(item->id());
 
     //    for(int i = 0; i < size(); i++) {
     //        if(child(i) == item) {
@@ -726,10 +726,10 @@ bool ItemsFlat::remove_child(boost::intrusive_ptr<TreeItem> item)
 // Удаление всех элементов таблицы конечных записей
 void ItemsFlat::delete_list_items(void)
 {
-    int tableSize = current_count(); // Запоминается размер таблицы, так как он при удалении меняется
+    int tableSize = count_direct(); // Запоминается размер таблицы, так как он при удалении меняется
 
     for(int i = 0; i < tableSize; i++)
-        remove_child(0);   // Deleted very first record many times   // Удаляется самая первая запись много раз
+        child_remove(0);   // Deleted very first record many times   // Удаляется самая первая запись много раз
 }
 
 
@@ -769,21 +769,29 @@ void ItemsFlat::clear(void)
 //    //    return result;
 //}
 
-
-int ItemsFlat::is_item_exists(const QString &id)const
+int ItemsFlat::is_name_exists(const QString &name)const
 {
-    for(int i = 0; i < current_count(); i++)
+    for(int i = 0; i < count_direct(); i++)
+        if(field(i, "name") == name)
+            return i;
+
+    return -1;
+}
+
+int ItemsFlat::is_id_exists(const QString &id)const
+{
+    for(int i = 0; i < count_direct(); i++)
         if(field(i, "id") == id)
             return i;
 
     return -1;
 }
 
-int ItemsFlat::is_item_exists(const QUrl &url)const
+int ItemsFlat::is_url_exists(const QUrl &url)const
 {
     int found = -1;
 
-    for(int i = 0; i < current_count(); i++) {
+    for(int i = 0; i < count_direct(); i++) {
         std::string compare = difference(field(i, "url").toStdString(), url.toString().toStdString());
 
         if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
@@ -798,7 +806,7 @@ int ItemsFlat::is_item_exists(const QUrl &url)const
 
 
 // Количество записей в таблице данных
-int ItemsFlat::current_count(void) const
+int ItemsFlat::count_direct(void) const
 {
     return _child_items.size();
 }
@@ -840,7 +848,7 @@ void ItemsFlat::move_dn(int pos)
 void ItemsFlat::to_encrypt(void)
 {
     // Перебор записей
-    for(int i = 0; i < current_count(); i++) {
+    for(int i = 0; i < count_direct(); i++) {
         // Если запись уже зашифрована, ее шифровать ненужно
         if(field(i, "crypt") == "1")
             continue;
@@ -858,7 +866,7 @@ void ItemsFlat::to_encrypt(void)
 void ItemsFlat::to_decrypt(void)
 {
     // Перебор записей
-    for(int i = 0; i < current_count(); i++) {
+    for(int i = 0; i < count_direct(); i++) {
         // Если запись не зашифрована, ее не нужно расшифровывать
         if(field(i, "crypt") == "" || field(i, "crypt") == "0")
             continue;
@@ -892,13 +900,13 @@ void ItemsFlat::work_pos(int pos)
 void ItemsFlat::crypt(const bool _is_crypt)
 {
     if(_is_crypt && !this->_is_crypt) {
-        for(int i = 0; i < current_count(); i++) {
+        for(int i = 0; i < count_direct(); i++) {
             item(i)->to_encrypt_fields();
         }
     }
 
     if(!_is_crypt && this->_is_crypt) {
-        for(int i = 0; i < current_count(); i++) {
+        for(int i = 0; i < count_direct(); i++) {
             item(i)->to_decrypt_fields();
         }
     }
@@ -906,3 +914,33 @@ void ItemsFlat::crypt(const bool _is_crypt)
     if(_is_crypt != this->_is_crypt)this->_is_crypt = _is_crypt;
 
 }
+
+
+void ItemsFlat::duplicate_remove()
+{
+    for(QList<boost::intrusive_ptr<TreeItem>>::iterator _item = _child_items.begin(); _item != _child_items.end(); _item++) {
+        int found = 0;
+
+        for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
+            if(it->get() == _item->get()) {
+                found++;
+
+                if(found > 1) {
+                    // result = *it;
+                    // else
+                    _child_items.erase(it);
+                }
+            }
+        }
+    }
+}
+
+
+bool ItemsFlat::is_empty() const
+{
+    return _child_items.size() == 0;
+}
+
+
+
+

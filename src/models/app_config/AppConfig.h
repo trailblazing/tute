@@ -42,8 +42,8 @@ public:
     bool set_trashmaxfilecount(int count);
 
     // Нужно ли показывать подтверждение при выполнении действия "cut на ветке
-    bool get_cutbranchconfirm(void)const;
-    bool set_cutbranchconfirm(bool confirm);
+    bool cut_branch_confirm(void)const;
+    bool cut_branch_confirm(bool confirm);
 
     // Нужно ли печатать отладочные сообщения в консоль
     bool get_printdebugmessages(void)const;

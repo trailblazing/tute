@@ -34,6 +34,8 @@
 #include "views/browser/chasewidget.h"
 #include "libraries/FlatControl.h"
 #include "models/record_table/ItemsFlat.h"
+#include "views/browser/tabwidget.h"
+
 
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
@@ -596,7 +598,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    auto _tree_screen = globalparameters.tree_screen();
 
     if(globalparameters.vtab()->currentWidget()->objectName() == record_screen_multi_instance_name
-       && !_tree_screen->tree_view()->view_index().isValid()
+       && !_tree_screen->tree_view()->index_current().isValid()
       ) {
         appconfig.setFindScreenTreeSearchArea(2);
     }
@@ -610,18 +612,21 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    _findtable->re_initialize();
 
     // Выясняется ссылка на модель дерева данных
-    KnowModel *_current_tree_model = _tree_screen->tree_view()->source_model(); // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
+    KnowModel *_current_source_model = _tree_screen->tree_view()->source_model(); // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
 
 
     QMap<QString, QString> data;
 
     data["id"]      = get_unical_id();
     data["name"]    = _toolbarsearch->text();
-
+    data["dir"]     = data["id"];
+    data["file"]    = "text.html";
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
-    boost::intrusive_ptr<TreeItem> _result_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+    boost::intrusive_ptr<TreeItem> _result_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));  // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
+
+
 
     //    //    auto _candidate_root = find_object<TreeScreen>(tree_screen_singleton_name)->_shadow_candidate_model->_root_item;
     //    _result_item->field("id", get_unical_id());
@@ -647,42 +652,42 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //__________________________________________________________________________________________________
 
 
-    auto global_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &search_start_item
-                                     , int                              &candidate_records
+    auto global_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &_start_item
+                                     , int                              &_candidate_records
                                      , boost::intrusive_ptr<TreeItem>   &_result_item
                                      // , std::shared_ptr<RecordTable>     &resultset_data
     ) {
         // Корневой элемент дерева
-        search_start_item = _current_tree_model->root_item();    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+        _start_item = _current_source_model->root_item();    // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
         // Количество элементов (веток) во всем дереве
-        candidate_records = _current_tree_model->all_records_count();
-        _result_item = _result_item->active_subset();
+        _candidate_records = _current_source_model->count_records_all();
+        assert(_result_item->count_direct() == 0);  //_result_item = _result_item->active_subset();
     };
 
-    auto branch_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &search_start_item
-                                     , int                              &candidate_records
+    auto branch_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &_start_item
+                                     , int                              &_candidate_records
                                      , boost::intrusive_ptr<TreeItem>   &_result_item
     ) {
 
         // Индекс текущей выбранной ветки
         QModelIndex current_item_index =    // find_object<TreeScreen>(tree_screen_singleton_name)
-            _tree_screen->tree_view()->view_index();
+            _tree_screen->tree_view()->index_current();
 
         if(current_item_index.isValid()) {
             // Текущая ветка
-            search_start_item = _current_tree_model->item(current_item_index);
+            _start_item = _current_source_model->item(current_item_index);
 
             // Количество элементов (веток) в текущей ветке и всех подветках
-            candidate_records = _current_tree_model->size_of(search_start_item);
+            _candidate_records = _current_source_model->size_of(_start_item);
             _result_item = _result_item->active_subset();
         }
     };
 
     Q_UNUSED(branch_search_prepare)
 
-    auto resultset_second_search_prepare = [&](boost::intrusive_ptr<TreeItem>      &search_start_item
-                                               , int                               &candidate_records
-                                               , boost::intrusive_ptr<TreeItem>    &_result_item
+    auto active_subset_search_prepare = [&](boost::intrusive_ptr<TreeItem>      &_start_item
+                                            , int                               &_candidate_records
+                                            , boost::intrusive_ptr<TreeItem>    &_result_item
     ) {
         // to be done
         //        QMap<QString, QString> data;
@@ -694,15 +699,27 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         //        search_start_item->tabledata(dommodel);
         //        QMap<QString, QString> field_data;
 
-        search_start_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
+        _start_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
         // boost::intrusive_ptr<TreeItem> _parent_item
         // resultset_item;
+        browser::Entrance *_entrance = globalparameters.entrance();
 
+        for(int w = 0; w < _entrance->browsers().size(); w++) {
+            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();
+
+            for(int i = 0; i < tabmanager->count(); i++) {
+                auto item = tabmanager->webView(i)->page()->current_item();
+
+                _start_item->child_transfer(_start_item->count_direct(), item);
+            }
+        }
+
+        //        assert(_result_item->direct_count() == 0);
         _result_item = _result_item->active_subset();
         // resultset_item
         // resultset_record_source->active_subset(_tree_screen->insert_branch_process(_tree_screen->last_index(), "buffer", true));  //
         //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
-        candidate_records = search_start_item->current_count();
+        _candidate_records = _start_item->count_direct();
 
     };
 
@@ -745,26 +762,29 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         _progress->close();
     };
 
-    auto final_search = [&](boost::intrusive_ptr<TreeItem>      &search_start_item
+    auto final_search = [&](boost::intrusive_ptr<TreeItem>      &_start_item
                             , boost::intrusive_ptr<TreeItem>    &_result_item  // std::shared_ptr<RecordTable> &resultset_data
     ) {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
-        _result_item->clear();
-        //Вызывается рекурсивный поиск в дереве
-        //        find_recursive(search_start_item, candidate_root);
 
-        //        if(result->size() == 0 && appconfig.getFindScreenTreeSearchArea() == 2) {
-        //            global_search_prepare(start_item, total_records, result);
-        //        }
-        return find_recursive(search_start_item, _result_item);   // candidate_root->tabledata();
+        //        _result_item->clear();
+
+        //        //Вызывается рекурсивный поиск в дереве
+        //        //        find_recursive(search_start_item, candidate_root);
+
+        //        //        if(result->size() == 0 && appconfig.getFindScreenTreeSearchArea() == 2) {
+        //        //            global_search_prepare(start_item, total_records, result);
+        //        //        }
+
+        return find_recursive(_start_item, _result_item);   // candidate_root->tabledata();
     };
 
     auto output = [&](boost::intrusive_ptr<TreeItem> &_result_item) { // , std::shared_ptr<RecordTable> &resultset_data
 
         // После вставки всех данных подгоняется ширина колонок
         //        _findtable->updateColumnsWidth();
-        _tree_screen->candidate_from_search_result(_result_item);   // dump to table screen
+        _tree_screen->search_result_append(_result_item);   // dump to table screen
     };
 
 
@@ -772,13 +792,14 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
 
 
-    // stage 1
+    // stage 1, should search current tree_item and all browsers
     if( // appconfig.getFindScreenTreeSearchArea() == 2
         //        globalparameters.vtab()->currentWidget()->objectName() == table_screen_singleton_name
         //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
-        _result_item->current_count() > 0
+        _result_item->count_direct() > 0
     ) { // search in last search result
-        resultset_second_search_prepare(_start_item, _candidate_records, _result_item);  // , _resultset_data, _resultset_data
+
+        active_subset_search_prepare(_start_item, _candidate_records, _result_item);  // , _resultset_data, _resultset_data
 
         if(!_start_item) {assert_start_item(); return nullptr;}
 
@@ -790,7 +811,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     }
 
     // stage 2
-    if(0 == _result_item->current_count()) {
+    if(0 == _result_item->count_direct()) {
         //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
         //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -843,37 +864,44 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 }
 
 
-boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(
-    boost::intrusive_ptr<TreeItem>      curritem
-    , boost::intrusive_ptr<TreeItem>    _candidate_pages
-)
+boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> _start_item, boost::intrusive_ptr<TreeItem> _result_item)
 {
-    auto result_pages = _candidate_pages;  // ->record_table();
+    //    auto _result_item = _result_item;  // ->record_table();
 
     // Если была нажата отмена поиска
-    if(_cancel_flag == 1)return result_pages;
+    if(_cancel_flag == 1)return _result_item;
 
     // Если ветка зашифрована, и пароль не был введен
-    if(curritem->field("crypt") == "1" &&
-       globalparameters.crypt_key().length() == 0)
-        return result_pages;
+    if(_start_item->field("crypt") == "1" &&
+       globalparameters.crypt_key().length() == 0) {
+        return _result_item;
+    }
 
     // Если в ветке присутсвует таблица конечных записей
-    if(curritem->current_count() > 0) {
+    if(_start_item->count_direct() > 0) {
+
+        auto _source_model = _tree_screen->tree_view()->source_model();
+        auto _current_item = _source_model->item(_tree_screen->tree_view()->index_current());
+        //        boost::intrusive_ptr<TreeItem> _current_branch_root;
+
+        //        if(_current_item->is_registered_to_browser())_current_branch_root = _current_item->parent();
+        //        else _current_branch_root = _current_item;
+
         // Обработка таблицы конечных записей
 
         // Выясняется ссылка на таблицу конечных записей
-        auto child_items_root = curritem;   // ->record_table();
+        //        auto _start_item = _start_item;   // ->record_table();
 
         // Перебираются записи таблицы
-        for(int i = 0; i < child_items_root->current_count(); i++) {
+        for(int i = 0; i < _start_item->count_direct(); i++) {
+            auto candidate = _start_item->item(i);
             // Обновляется линейка наполняемости
             _progress->setValue(++ _total_progress_counter);
             qApp->processEvents();
 
             if(_progress->wasCanceled()) {
                 _cancel_flag = 1;
-                return result_pages;
+                return _result_item;
             }
 
             // Результаты поиска в полях
@@ -901,11 +929,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(
                 if(_search_area[key] == true) {
                     if(key != "text") {
                         // Поиск в обычном поле
-                        inspect_text = child_items_root->child(i)->field(key);
+                        inspect_text = _start_item->child(i)->field(key);
                         iteration_search_result[key] = find_in_text_process(inspect_text);
                     } else {
                         // Поиск в тексте записи
-                        if(child_items_root->item(i)->file_exists()) inspect_text = child_items_root->text(i);
+                        if(_start_item->item(i)->file_exists()) inspect_text = _start_item->text(i);
                         else inspect_text = QString();
 
                         QTextDocument textdoc;
@@ -924,7 +952,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(
 
             // Если запись найдена
             if(found_flag == 1) {
-                qDebug() << "Find succesfull in " << child_items_root->child(i)->field("name");
+                qDebug() << "Find succesfull in " << candidate->field("name");
 
                 // QString pin0 = curritem->getField("pin");
                 // QString pin1 = searchRecordTable->getField("pin", i);   // work
@@ -943,28 +971,36 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(
                 //                                   , searchRecordTable->field("id", i)
                 //                                  );
 
-                if(child_items_root->item(i)->is_lite())child_items_root->item(i)->to_fat();
+                if(candidate->is_lite())candidate->to_fat();
 
-                result_pages->insert_new_item(result_pages->current_count() - 1, child_items_root->item(i)); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+                if((candidate->parent() != _current_item->parent()) && !_result_item->find_direct(candidate)) {
+                    //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
+                    _result_item->child_transfer(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
 
-                //                assert(_recordtable->record(i)->is_lite());
-                //                result->shadow_record_lite(result->size(), _recordtable->record(i));
+                    //                assert(_recordtable->record(i)->is_lite());
+                    //                result->shadow_record_lite(result->size(), _recordtable->record(i));
 
-                //                if(_recordtable->record(i)->isLite()) {
-                //                    result->shadow_record(result->work_pos(), _recordtable->record_lite(i), ADD_NEW_RECORD_TO_END);
-                //                } else {
-                //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
+                    //                if(_recordtable->record(i)->isLite()) {
+                    //                    result->shadow_record(result->work_pos(), _recordtable->record_lite(i), ADD_NEW_RECORD_TO_END);
+                    //                } else {
+                    //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
+                    //                }
+                }
+
+                //                else {
+                //                    find_recursive(_start_item->child(i), _result_item);
                 //                }
             }
 
+            if(candidate) { if(candidate->count_direct() > 0) find_recursive(candidate, _result_item);}
         } // Закрылся цикл перебора записей в таблице конечных записей
     } // Закрылось условие что в ветке есть таблица конечных записей
 
 
-    // Рекурсивная обработка каждой подчиненной ветки
-    for(int i = 0; i < curritem->current_count(); i++) find_recursive(curritem->child(i), _candidate_pages);
+    //    // Рекурсивная обработка каждой подчиненной ветки
+    //    for(int i = 0; i < _start_item->current_count(); i++) find_recursive(_start_item->child(i), _result_item);
 
-    return result_pages;
+    return _result_item;
 }
 
 

@@ -5,37 +5,48 @@
 #include "XmlTree.h"
 #include "main.h"
 #include "models/record_table/ItemsFlat.h"
+#include "libraries/DiskHelper.h"
+#include "libraries/TrashMonitoring.h"
 
-XmlTree::XmlTree(void)
+extern TrashMonitoring trashmonitoring;
+
+
+XmlTree::XmlTree(void): _dom_model(new QDomDocument())
 {
-    domModel=new QDomDocument();
+    //    _dom_model = new QDomDocument();
 }
 
 XmlTree::~XmlTree(void)
 {
-    delete domModel;
+    delete _dom_model;
 }
 
 
-bool XmlTree::load(QString file)
+bool XmlTree::load(QString _file_name)
 {
-// Загрузка файла дерева разделов
-    QFile xmlFile(file);
+    if(!QFile::exists(_file_name)) {
+        assert(trashmonitoring.is_inited());
+        trashmonitoring.recover_from_trash();
+    }
 
-// Если файл не может быть открыт
+    // Загрузка файла дерева разделов
+    QFile xmlFile(_file_name);
+
+    // Если файл не может быть открыт
     if(!xmlFile.open(QIODevice::ReadOnly | QIODevice::Text)) {
         QMessageBox::information(0, tr("Error"),
                                  tr("Cannot read file %1:\n%2.")
-                                 .arg(file)
+                                 .arg(_file_name)
                                  .arg(xmlFile.errorString()));
         return false;
     }
 
-// Преобразование xml-документа в Dom представление
+    // Преобразование xml-документа в Dom представление
     QString errorStr;
     int errorLine;
     int errorColumn;
-    if (!domModel->setContent(&xmlFile, true, &errorStr, &errorLine,&errorColumn)) {
+
+    if(!_dom_model->setContent(&xmlFile, true, &errorStr, &errorLine, &errorColumn)) {
         QMessageBox::information(0, tr("Error converting to DOM"),
                                  tr("Parse error at line %1, column %2:\n%3")
                                  .arg(errorLine)
@@ -48,8 +59,8 @@ bool XmlTree::load(QString file)
 }
 
 
-QDomDocument* XmlTree::getDomModel(void)
+QDomDocument *XmlTree::dom_model(void)
 {
-    return domModel;
+    return _dom_model;
 }
 

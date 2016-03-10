@@ -46,7 +46,7 @@ QVariant TreeModel::data(const QModelIndex &_index, int role) const
     if(role == Qt::ForegroundRole) {
         boost::intrusive_ptr<TreeItem> it = item(_index);
 
-        if(it->current_count() > 0)
+        if(it->count_direct() > 0)
             return QColor(Qt::black);// Если узел содержит таблицу конечных записей
         else
             return QColor(Qt::darkGray); // Ветка без таблицы конечных записей
@@ -176,7 +176,7 @@ QModelIndex TreeModel::index(delegater _del) const
 
         auto it = this->item(_index);
 
-        for(int i = 0; i < it->current_count(); i++) {
+        for(int i = 0; i < it->count_direct(); i++) {
             auto _index_child = index(i, 0, _index);    // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
 
             if(_del._equal(it->child(i).get())) {       //_del.get() == it->child(i).get()
@@ -291,7 +291,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
         auto it = this->item(_index);   // TreeItem *index_item = static_cast<TreeItem *>(_index.internalPointer());    // same
         //            assert(_index.row() == it->current_count());  // wrong
 
-        for(int i = 0; i < it->current_count(); i++) { // _index.row()    //
+        for(int i = 0; i < it->count_direct(); i++) { // _index.row()    //
             auto _index_child = index(i, 0, _index);  // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
             //        index_recursive(_idx, item, 1);
             assert(static_cast<TreeItem *>(_index_child.internalPointer()) == it->child(i).get());
@@ -446,7 +446,7 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
         //        int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->current_count(); j++)
+        for(int j = 0; j < curritem->count_direct(); j++)
             if((curritem->child(j))->id() == path.at(i)) {
                 // Узел найден, он становится текущим
                 // result =
@@ -508,7 +508,7 @@ bool TreeModel::is_item_valid(QStringList path) const
         //        int found = 0;
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->current_count(); j++)
+        for(int j = 0; j < curritem->count_direct(); j++)
             if((curritem->child(j))->id() == path.at(i)) {
                 // Узел найден, он становится текущим
                 curritem = curritem->child(j);
@@ -571,7 +571,7 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
 
     // Добавляются строки начиная с указанной позиции, в количестве rows
     // с числом столбцов равным единице
-    success = parentItem->insert_children(position, rows, 1);
+    success = parentItem->children_insert_new(position, rows, 1);
 
     endInsertRows();
 
@@ -606,7 +606,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     bool success = false;
 
     beginRemoveRows(parent, position, position + rows - 1);
-    success = parent_item->remove_children(position, rows);
+    success = parent_item->children_remove(position, rows);
     endRemoveRows();
 
     return success;
@@ -624,7 +624,7 @@ int TreeModel::rowCount(const QModelIndex &_index) const
     //        count = it->current_count();
     //    }
 
-    return item(_index)->current_count();    //count;
+    return item(_index)->count_direct();    //count;
 }
 
 

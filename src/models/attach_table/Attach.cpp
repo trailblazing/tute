@@ -284,7 +284,7 @@ void Attach::pushFatDataToDisk()
 
     QMap<QString, QByteArray> fileList;
     fileList[innerFileName] = _file_content;
-    DiskHelper::saveFilesToDirectory(innerDirName, fileList);
+    DiskHelper::save_files_to_directory(innerDirName, fileList);
 }
 
 
@@ -299,7 +299,7 @@ void Attach::pushFatDataToDirectory(QString dirName)
 
     QMap<QString, QByteArray> fileList;
     fileList[ getInnerFileName() ] = _file_content;
-    DiskHelper::saveFilesToDirectory(dirName, fileList);
+    DiskHelper::save_files_to_directory(dirName, fileList);
 }
 
 
@@ -315,7 +315,7 @@ void Attach::popFatDataFromDisk()
     QString innerFileName = getInnerFileName();
     QString innerDirName = _parent_table->_record->full_dir();
 
-    _file_content.append((DiskHelper::getFilesFromDirectory(innerDirName, innerFileName)).value(innerFileName));
+    _file_content.append((DiskHelper::get_files_from_directory(innerDirName, innerFileName)).value(innerFileName));
 }
 
 

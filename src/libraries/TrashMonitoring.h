@@ -1,9 +1,10 @@
 #ifndef _TRASHMONITORING_H_
-#define	_TRASHMONITORING_H_
+#define _TRASHMONITORING_H_
 
 #include <QWidget>
 #include <QDir>
 
+class DiskHelper;
 
 class TrashMonitoring {
 
@@ -13,12 +14,13 @@ public:
 
     void init(QString _trash_path);
 
-// Функция, вызываемая после фактического добавления файла в корзину
-// принимает имя файла без пути к директории
+    // Функция, вызываемая после фактического добавления файла в корзину
+    // принимает имя файла без пути к директории
     void add_file(QString _file_name);
 
     void update(void);
-
+    void recover_from_trash();
+    bool is_inited(){return _is_inited;}
 private:
 
     void remove_oldest_file(void);
@@ -34,8 +36,9 @@ private:
     };
 
     QList<FileData>     _files_table;
+    bool                _is_inited = false;
 
 };
 
-#endif	/* _TRASHMONITORING_H_ */
+#endif  /* _TRASHMONITORING_H_ */
 

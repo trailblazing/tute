@@ -67,8 +67,8 @@ public:
 
 
     QString text_from_fat() const;
-    QString text_direct_from_lite();
-    void text_to_fat(QString i_text);
+    QString text_from_lite_direct() const;
+    void text_to_fat(QString _text_source);
 
     QString field(QString _name) const;
     void field(QString _name, QString value);
@@ -157,7 +157,7 @@ protected:
     // Защищенные методы
     // -----------------
 
-    void save_text_direct(QString iText);
+    void text_to_direct(QString _text_source);
     void create_file_and_save_text();
 
     QString id_and_name() const; // Внутренний метод для облегчения печати отладочной информации

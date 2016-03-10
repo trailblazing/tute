@@ -123,9 +123,9 @@ MainWindow::MainWindow(
     if(QSystemTrayIcon::isSystemTrayAvailable())
         _tray_icon->show();
 
-    // Инициализируется объект слежения за корзиной
-    trashmonitoring.init(_appconfig.get_trashdir());
-    trashmonitoring.update();
+    //    // Инициализируется объект слежения за корзиной
+    //    trashmonitoring.init(_appconfig.get_trashdir());
+    //    trashmonitoring.update();
 
     // Закрывать ли по-настоящему окно при обнаружении сигнала closeEvent
     _enable_real_close = false;
@@ -473,7 +473,7 @@ void MainWindow::save_tree_position(void)
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
 
     // Получение QModelIndex выделенного в дереве элемента
-    const QModelIndex index = _tree_screen->tree_view()->view_index();
+    const QModelIndex index = _tree_screen->tree_view()->index_current();
 
     if(index.isValid()) {
 
@@ -484,7 +484,7 @@ void MainWindow::save_tree_position(void)
         // Сохраняем путь к элементу item
         appconfig.tree_position(
             _tree_screen->tree_view()->source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
-            , item->absolute_path());
+            , item->path_absolute());
         //    }
     }
 }
@@ -1057,7 +1057,7 @@ void MainWindow::synchronization(void)
     walkhistory.set_drop(true);
 
     // Заново считываются данные в дерево
-    _tree_screen->reload_knowtree();
+    _tree_screen->knowtree_reload();
     restore_tree_position();
     //    restore_recordtable_position();
     restore_editor_cursor_position();
@@ -1226,7 +1226,7 @@ void MainWindow::go_walk_history(void)
     auto item = _tree_screen->know_model_board()->item(absolute_path);    // on know_root semantic
 
     // Проверяем, есть ли такая позиция
-    if(item->is_item_exists(record_id) == false) {
+    if(item->is_id_exists(record_id) == false) {
         walkhistory.set_drop(false);
         return;
     }

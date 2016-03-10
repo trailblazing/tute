@@ -127,13 +127,13 @@ void RecordScreen::save_in_new_branch(bool checked)
     assert(entrance);
     auto tree_source_model = tree_screen->tree_view()->source_model();  // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
 
-    auto _index = tree_screen->tree_view()->view_index();
+    auto _index = tree_screen->tree_view()->index_current();
 
     if(_index.isValid()) {
         if(tree_screen && entrance) {
             assert(objectName() != "");
             boost::intrusive_ptr<TreeItem> into_know_branch   // = tree_screen->_root->item_by_name(this->objectName());
-                = tree_screen->add_branch(_index
+                = tree_screen->branch_add(_index
                                           , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
                                           , true, tree_source_model);
             //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
@@ -145,17 +145,17 @@ void RecordScreen::save_in_new_branch(bool checked)
             auto source_model = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source_model->size(); i++) {
-                if(!tree_screen->know_model_board()->is_item_id_exists(source_model->item(i)->field("id"))) {
+                if(!tree_screen->know_model_board()->is_item_exists(source_model->item(i)->field("id"))) {
                     if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
                     source_model->item(i)->parent(into_know_branch);
-                    into_know_branch->insert_new_item(into_know_branch->work_pos(), source_model->item(i));
+                    into_know_branch->child_transfer(into_know_branch->work_pos(), source_model->item(i));
                 }
             }
 
             //            new_tree_item_in_treeknow_root = target;
             tree_screen->synchronized(false);
-            tree_screen->save_knowtree();
+            tree_screen->knowtree_save();
             // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
         }
     }
@@ -179,7 +179,7 @@ void RecordScreen::setup_actions(void)
         browser::Entrance *_entrance = globalparameters.entrance();
         assert(_entrance);
 
-        auto _index = _tree_screen->tree_view()->view_index();
+        auto _index = _tree_screen->tree_view()->index_current();
 
         if(_index.isValid()) {
             if(_tree_screen && _entrance) {
@@ -201,12 +201,12 @@ void RecordScreen::setup_actions(void)
                     for(int i = 0; i < tabmanager->count(); i++) {
                         auto item = tabmanager->webView(i)->page()->current_item();
 
-                        if(!_tree_screen->know_model_board()->is_item_id_exists(item->field("id"))) {
+                        if(!_tree_screen->know_model_board()->is_item_exists(item->field("id"))) {
 
                             if(item->is_lite())item->to_fat();
 
                             item->parent(new_branch_root);
-                            new_branch_root->insert_new_item(new_branch_root->work_pos(), item);
+                            new_branch_root->child_transfer(new_branch_root->work_pos(), item);
                             modified = true;
                         }
                     }
@@ -223,7 +223,7 @@ void RecordScreen::setup_actions(void)
                     //                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
-                    _tree_screen->add_branch(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
+                    _tree_screen->branch_add(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
                         //,
                         new_branch_root
                         , true

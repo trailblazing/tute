@@ -327,6 +327,7 @@ namespace browser {
                                           , _main_window))
         , _main_window(_main_window)
         , _tabmanager(_record_screen->tabmanager())
+          //        , _toolbarsearch(_find_screen->toolbarsearch())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(_find_screen->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -373,6 +374,7 @@ namespace browser {
                                           , _main_window))
         , _main_window(_main_window)
         , _tabmanager(_record_screen->tabmanager())
+          //        , _toolbarsearch(_find_screen->toolbarsearch())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(_find_screen->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -419,6 +421,7 @@ namespace browser {
                                           , _main_window))
         , _main_window(_main_window)
         , _tabmanager(_record_screen->tabmanager())
+          //        , _toolbarsearch(_find_screen->toolbarsearch())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(_find_screen->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -463,6 +466,7 @@ namespace browser {
                                           , _main_window))
         , _main_window(_main_window)
         , _tabmanager(_record_screen->tabmanager())
+          //        , _toolbarsearch(_find_screen->toolbarsearch())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(_find_screen->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -986,23 +990,25 @@ namespace browser {
         _stopreload->setIcon(_reloadicon);
 
 
-        //navigater->addAction(_stopreload);
+        //        //navigater->addAction(_stopreload);
 
 
-        //navigater->addWidget(_tabmanager->lineEditStack());
-        _toolbarsearch = _find_screen->toolbarsearch();
+        //        //navigater->addWidget(_tabmanager->lineEditStack());
+        //        _toolbarsearch = _find_screen->toolbarsearch();
+        //        assert(_toolbarsearch);
+        assert(_tabmanager->lineEditStack());
 
-        if(_tabmanager->lineEditStack() == nullptr)
-            _tabmanager->lineEditStack(_find_screen->toolbarsearch()->lineedits());
+        //        if(_tabmanager->lineEditStack() == nullptr)
+        //            _tabmanager->lineEditStack(_find_screen->toolbarsearch()->lineedits());
 
-        //_toolbarsearch = new ToolbarSearch(_tabmanager->lineEditStack(), findscreen->findtable(), navigater);
+        //        //_toolbarsearch = new ToolbarSearch(_tabmanager->lineEditStack(), findscreen->findtable(), navigater);
 
-        //navigater->addWidget(_toolbarsearch);
+        //        //navigater->addWidget(_toolbarsearch);
 
-        //connect(_toolbarsearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));   // move to Entrance
+        //        //connect(_toolbarsearch, SIGNAL(search(QUrl)), SLOT(loadUrl(QUrl)));   // move to Entrance
 
-        //_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
-        //navigater->addWidget(_chasewidget);
+        //        //_chasewidget = new ChaseWidget(findscreen->size(), findscreen); //this
+        //        //navigater->addWidget(_chasewidget);
     }
 
     void Browser::slotShowBookmarksDialog()
@@ -1379,8 +1385,10 @@ namespace browser {
 
     void Browser::slotWebSearch()
     {
-        _toolbarsearch->lineEdit()->selectAll();
-        _toolbarsearch->lineEdit()->setFocus();
+        // _toolbarsearch
+        _find_screen->toolbarsearch()->lineEdit()->selectAll();
+        // _toolbarsearch
+        _find_screen->toolbarsearch()->lineEdit()->setFocus();
     }
 
     void Browser::slotToggleInspector(bool enable)

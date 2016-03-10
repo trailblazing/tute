@@ -841,8 +841,8 @@ namespace browser {
     void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
     {
         //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        void(Entrance::*ac)(const QUrl &) = &Entrance::activate;
-        connect(toolbarsearch, &ToolbarSearch::search, this, ac);
+        void(Entrance::*_activate)(const QUrl &) = &Entrance::activate;
+        connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
         //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
     }

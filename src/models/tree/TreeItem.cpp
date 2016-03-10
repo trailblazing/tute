@@ -8,6 +8,9 @@
 #include "libraries/crypt/CryptService.h"
 #include "views/browser/webview.h"
 #include "views/browser/tabwidget.h"
+#include "views/browser/entrance.h"
+#include "views/tree/TreeScreen.h"
+
 
 
 extern GlobalParameters globalparameters;
@@ -74,7 +77,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _parent_item
 {
     if(_parent_item) {
         assert(_parent_item->id() != _field_data.value("id"));
-        assert(_parent_item->name() != _field_data.value("name"));
+        //        assert(_parent_item->name() != _field_data.value("name"));
 
         // _parent_item->add_child(boost::intrusive_ptr<TreeItem>(this));
 
@@ -331,7 +334,7 @@ int TreeItem::sibling_order() const
 }
 
 
-void TreeItem::clear_children(void)
+void TreeItem::children_clear(void)
 {
     ItemsFlat::clear();
 }
@@ -349,7 +352,7 @@ void TreeItem::isolate(void)
 
     //    // Удаляются все подветки
     //    qDeleteAll(_child_items);
-    remove_all_children();
+    children_remove_all();
     //    if(_parent_item) {
     //        _parent_item->remove_child(boost::intrusive_ptr<TreeItem>(this));
     _parent_item.reset();
@@ -389,7 +392,7 @@ QString TreeItem::field(QString _name)const
         }
 
         // Выясняется, есть ли у текущего элемента конечные записи
-        int recordCount = this->current_count();
+        int recordCount = this->count_direct();
 
         // Если конечных элементов нет, возвращатся просто имя
         if(recordCount == 0) {
@@ -453,7 +456,7 @@ QString TreeItem::field(QString _name)const
 
 
 // Получение всех установленных полей "имя_поля"->"значение"
-QMap<QString, QString> TreeItem::all_fields()
+QMap<QString, QString> TreeItem::fields_all()
 {
     qDebug() << "TreeItem::getAllFields() : Fields data " << _field_data;
 
@@ -473,7 +476,7 @@ QMap<QString, QString> TreeItem::all_fields()
 
 // Получение всех установленных полей "имя_поля"->"значение"
 // Напрямую, без преобразований, без расшифровки
-QMap<QString, QString> TreeItem::all_fields_direct()
+QMap<QString, QString> TreeItem::fields_all_direct()
 {
     return _field_data;
 }
@@ -589,22 +592,43 @@ QString TreeItem::parent_id()
 
 // Добавление нового подчиненного элемента
 // в конец списка подчиненных элементов
-boost::intrusive_ptr<TreeItem> TreeItem::add_child(void)
+boost::intrusive_ptr<TreeItem> TreeItem::child_add_new(int pos)
 {
     //    QMap<QString, QString> data;
 
-    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(
-                                              // this  //
-                                              new TreeItem(this)
-                                          );
+    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(this));
     // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
     // ); // Создается объект item
 
     //    _child_items << item; // Добавление item в конец массива childItems
     // int pos
-    auto _item = insert_new_item(_child_items.count() - 1, item, ADD_NEW_RECORD_AFTER);
+    auto _item = child_transfer(pos                      // _child_items.count() - 1
+                                , item, ADD_NEW_RECORD_AFTER);
     // auto _item = child(pos);
     return _item;
+}
+
+
+// Добавление новых подчиненных элементов
+// position - позиция в списке подчиненных элементов для вставки элементов
+// count - сколько новых элементов будет вставлено
+// columns - сколько колонок содержит добавляемый элемент
+bool TreeItem::children_insert_new(int position, int count, int columns)
+{
+    Q_UNUSED(columns);
+
+    if(position < 0 || position > _child_items.size())
+        return false;
+
+    for(int row = 0; row < count; ++row) {
+        //        QMap<QString, QString> data;
+        boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(this));
+        // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
+        // );    // Создается объект item
+        child_transfer(position, item, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
+    }
+
+    return true;
 }
 
 #ifdef _with_record_table
@@ -662,7 +686,9 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 
 #endif
 
-boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<TreeItem> _item)
+
+
+boost::intrusive_ptr<TreeItem> TreeItem::child_clone(boost::intrusive_ptr<TreeItem> _item)
 {
 
     boost::intrusive_ptr<TreeItem> result(nullptr);
@@ -682,13 +708,20 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<TreeItem
             }
         }
 
-        if(_item->parent() != this) {
-            _item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch, but does not remove orignal one
-        }
+        //        if(_item->parent()) {
+        //            if(_item->parent() != this) {
+
+        //                item->parent()->remove_child(item);
+        //                item->parent(boost::intrusive_ptr<TreeItem>(this));
+
+        //                //            _item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch, but does not remove orignal one
+        //            }
+        //        }
 
         if(0 == found) {
+            _child_items << _item;
             // pos =
-            result = insert_new_item(_child_items.count() - 1, _item, ADD_NEW_RECORD_AFTER); // _child_items << item; // Добавление item в конец массива childItems
+            result = _item; // get_transfer(_child_items.count() - 1, _item, ADD_NEW_RECORD_AFTER); // _child_items << item; // Добавление item в конец массива childItems
             // result = item(pos);
         }
     }
@@ -696,30 +729,21 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<TreeItem
     return result;
 }
 
-// Добавление новых подчиненных элементов
-// position - позиция в списке подчиненных элементов для вставки элементов
-// count - сколько новых элементов будет вставлено
-// columns - сколько колонок содержит добавляемый элемент
-bool TreeItem::insert_children(int position, int count, int columns)
+
+
+bool TreeItem::remove()
 {
-    Q_UNUSED(columns);
+    bool result = false;
 
-    if(position < 0 || position > _child_items.size())
-        return false;
-
-    for(int row = 0; row < count; ++row) {
-        //        QMap<QString, QString> data;
-        boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(this);
-        // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
-        // );    // Создается объект item
-        insert_new_item(position, item, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
+    if(is_empty()) {
+        if(parent()) {
+            if(parent()->child_remove(boost::intrusive_ptr<TreeItem>(this)))
+                result = true;
+        }
     }
 
-    return true;
+    return result;
 }
-
-
-
 
 // Добавление новой записи
 // Метод только добавляет во внутреннее представление новые данные,
@@ -731,30 +755,41 @@ bool TreeItem::insert_children(int position, int count, int columns)
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-boost::intrusive_ptr<TreeItem> TreeItem::insert_new_item(int pos, boost::intrusive_ptr<TreeItem> item, int mode)  // does not set parent pointer?
+boost::intrusive_ptr<TreeItem> TreeItem::child_transfer(int pos, boost::intrusive_ptr<TreeItem> _item, int mode)  // does not set parent pointer?
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    assert(item != this);
+    assert(_item != this);
 
-    if(item != this) {
+    if(_item != this) {
         // Запись добавляется в таблицу конечных записей
         int insert_position = -1;
 
-        item->parent(boost::intrusive_ptr<TreeItem>(this));
+
         // get shadow_branch
         //    TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
 
-        if(!find_list(item)  //       && !shadow_branch->is_record_id_exists(item->field("id"))
-          ) {
+        if(!find_direct(_item)) {  //       && !shadow_branch->is_record_id_exists(item->field("id"))
+
+            if(_item->parent()) {
+                if(_item->parent() != this) {
+                    _item->parent()->child_remove(_item);
+                    auto check = _item->parent();
+
+                    while(check->remove()) {
+                        check = check->parent();
+                        if(!check)break;
+                    }
+                }
+            }
+
+            // !!!, this make item move to new branch, remember to remove orignal one
+            _item->parent(boost::intrusive_ptr<TreeItem>(this));    //_item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));
+
 
             //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
 
-            // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
-            if(item->is_lite()) {
-                item->to_fat();
-                //            critical_error("ItemsFlat::insert_new_item() can't insert lite record");
-            }
+
 
             // Выясняется, есть ли в дереве запись с указанным ID
             // Если есть, то генерируются новые ID для записи и новая директория хранения
@@ -766,7 +801,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::insert_new_item(int pos, boost::intrusi
             // And it is desirable to stick with the same ID and the same name directory
             //        KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
-            if(0 == item->field("id").length()) { //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
+            if(0 == _item->field("id").length()) { //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
                 // Создается новая запись (ID был пустой) или
                 // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
                 // Create a new record (ID was empty) or
@@ -775,27 +810,31 @@ boost::intrusive_ptr<TreeItem> TreeItem::insert_new_item(int pos, boost::intrusi
                 QString id = get_unical_id();
 
                 // Store directory entries and files    // Директория хранения записи и файл
-                if(item->field("dir") == "")item->field("dir", id); // get_unical_id()
+                if(_item->field("dir") == "")_item->field("dir", id); // get_unical_id()
 
-                if(item->field("file") == "")item->field("file", "text.html");
+                if(_item->field("file") == "")_item->field("file", "text.html");
 
                 // Unique ID of XML records             // Уникальный идентификатор XML записи
                 //            QString id = get_unical_id();
-                item->field("id", id);
+                _item->field("id", id);
             } else {
-                if(item->field("dir") == "")item->field("dir", item->field("id")); // get_unical_id()
+                if(_item->field("dir") == "")_item->field("dir", _item->field("id")); // get_unical_id()
 
-                if(item->field("file") == "")item->field("file", "text.html");
+                if(_item->field("file") == "")_item->field("file", "text.html");
             }
 
-
+            // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
+            if(_item->is_lite()) {
+                _item->to_fat();
+                //            critical_error("ItemsFlat::insert_new_item() can't insert lite record");
+            }
 
             // В список переданных полей добавляются вычислимые в данном месте поля
 
             // Время создания данной записи
             QDateTime ctime_dt = QDateTime::currentDateTime();
             QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
-            item->field("ctime", ctime);
+            _item->field("ctime", ctime);
 
 
             // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
@@ -812,16 +851,16 @@ boost::intrusive_ptr<TreeItem> TreeItem::insert_new_item(int pos, boost::intrusi
             //        }
 
             // Запись полновесных данных с учетом шифрации
-            if(is_crypt && item->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
-                item->to_encrypt_and_save_fat();
-            } else if(!is_crypt && item->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
-                item->to_decrypt_and_save_fat();
+            if(is_crypt && _item->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
+                _item->to_encrypt_and_save_fat();
+            } else if(!is_crypt && _item->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
+                _item->to_decrypt_and_save_fat();
             } else {
-                item->push_fat_attributes();
+                _item->push_fat_attributes();
             }
 
             // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
-            item->to_lite();
+            _item->to_lite();
 
             //        //        // Запись добавляется в таблицу конечных записей
             //        //        int insertPos = -1;
@@ -829,150 +868,150 @@ boost::intrusive_ptr<TreeItem> TreeItem::insert_new_item(int pos, boost::intrusi
             //        item->is_registered_to_record_controller_and_tabmanager(true);
 
             if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-                _child_items << item;
+                _child_items << _item;
                 //            insert_position = _child_items.size() - 1;
             } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-                _child_items.insert(pos, item);
+                _child_items.insert(pos, _item);
                 //            insert_position = pos;
             } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-                _child_items.insert(pos + 1, item);
+                _child_items.insert(pos + 1, _item);
                 //            insert_position = pos + 1;
             }
 
-            insert_position = list_position(item);
+            insert_position = position_current(_item);
             qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
 
             // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
 
         } else {
-            insert_position = list_position(item);
+            insert_position = position_current(_item);
         }
 
-        assert(_child_items[insert_position] == item);
-        result = item;
+        assert(_child_items[insert_position] == _item);
+        result = _item;
     }
 
     return result;    // insert_position;
 
 }
 
-int TreeItem::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode)
-{
-    // Запись добавляется в таблицу конечных записей
-    int insert_position = -1;
+//int TreeItem::shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode)
+//{
+//    // Запись добавляется в таблицу конечных записей
+//    int insert_position = -1;
 
-    it->parent(boost::intrusive_ptr<TreeItem>(this));
+//    it->parent(boost::intrusive_ptr<TreeItem>(this));
 
-    //    KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
-    assert(it->is_lite());
+//    //    KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
+//    assert(it->is_lite());
 
-    if(!find_list(it)    //            && !dataModel->isRecordIdExists(record->getField("id"))
-      ) {
+//    if(!find_direct(it)    //            && !dataModel->isRecordIdExists(record->getField("id"))
+//      ) {
 
-        //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
+//        //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
 
-        //        // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
-        //        if(record->isLite() == true)
-        //            critical_error("RecordTable::insert_new_record() can't insert lite record");
+//        //        // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
+//        //        if(record->isLite() == true)
+//        //            critical_error("RecordTable::insert_new_record() can't insert lite record");
 
-        // Выясняется, есть ли в дереве запись с указанным ID
-        // Если есть, то генерируются новые ID для записи и новая директория хранения
-        // Если нет, то это значит что запись была вырезана, но хранится в буфере,
-        // и ее желательно вставить с прежним ID и прежним именем директории
-        // It turns out, is there a record of a tree with specified ID
-        // If there is, then the generated ID for the new record and the new storage directory
-        // If not, then it means that the recording was cut out, but stored in a buffer
-        // And it is desirable to stick with the same ID and the same name directory
-        //        KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
-
-
-        assert(0 != it->field("id").length());
-
-        //        if(0 == record->getField("id").length()
-        //           //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
-        //          ) {
-        //            // Создается новая запись (ID был пустой) или
-        //            // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
-        //            // Create a new record (ID was empty) or
-        //            // Record with ID in a tree there, so stand the new ID and a new storage directory (not to overwrite existing)
-
-        //            QString id = get_unical_id();
-        //            // Store directory entries and files    // Директория хранения записи и файл
-        //            record->setField("dir", id);   // get_unical_id()
-
-        //            record->setField("file", "text.html");
-
-        //            // Unique ID of XML records             // Уникальный идентификатор XML записи
-        //            //            QString id = get_unical_id();
-        //            record->setField("id", id);
-        //        }
+//        // Выясняется, есть ли в дереве запись с указанным ID
+//        // Если есть, то генерируются новые ID для записи и новая директория хранения
+//        // Если нет, то это значит что запись была вырезана, но хранится в буфере,
+//        // и ее желательно вставить с прежним ID и прежним именем директории
+//        // It turns out, is there a record of a tree with specified ID
+//        // If there is, then the generated ID for the new record and the new storage directory
+//        // If not, then it means that the recording was cut out, but stored in a buffer
+//        // And it is desirable to stick with the same ID and the same name directory
+//        //        KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
 
 
-        // В список переданных полей добавляются вычислимые в данном месте поля
+//        assert(0 != it->field("id").length());
 
-        //        // Время создания данной записи
-        //        QDateTime ctime_dt = QDateTime::currentDateTime();
-        //        QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
-        //        record->field("ctime", ctime);
+//        //        if(0 == record->getField("id").length()
+//        //           //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
+//        //          ) {
+//        //            // Создается новая запись (ID был пустой) или
+//        //            // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
+//        //            // Create a new record (ID was empty) or
+//        //            // Record with ID in a tree there, so stand the new ID and a new storage directory (not to overwrite existing)
 
-        assert(it->field("ctime") != "");
+//        //            QString id = get_unical_id();
+//        //            // Store directory entries and files    // Директория хранения записи и файл
+//        //            record->setField("dir", id);   // get_unical_id()
 
-        // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
-        bool is_crypt = false;
+//        //            record->setField("file", "text.html");
 
-        //        if(_tree_item) {
-        if(_is_crypt) { //            if(_tree_item->field("crypt") == "1") {
-            if(globalparameters.crypt_key().length() > 0)
-                is_crypt = true;
-            else
-                critical_error("ItemsFlat::shadow_item_lite() : Can not insert data to crypt branch. Password not setted.");
-        }
+//        //            // Unique ID of XML records             // Уникальный идентификатор XML записи
+//        //            //            QString id = get_unical_id();
+//        //            record->setField("id", id);
+//        //        }
 
-        //        }
 
-        // Запись полновесных данных с учетом шифрации
-        if(is_crypt && it->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
-            it->to_encrypt_and_save_lite();
-        } else if(!is_crypt && it->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
-            it->to_decrypt_and_save_lite();
-        } else {
-            it->push_lite_attributes();
-        }
+//        // В список переданных полей добавляются вычислимые в данном месте поля
 
-        //        // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
-        //        record->switchToLite();
+//        //        // Время создания данной записи
+//        //        QDateTime ctime_dt = QDateTime::currentDateTime();
+//        //        QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
+//        //        record->field("ctime", ctime);
 
-        //        // Запись добавляется в таблицу конечных записей
-        //        int insertPos = -1;
+//        assert(it->field("ctime") != "");
 
-        //        record->is_registered(true);
-        // assert(record->is_registered_to_browser());
+//        // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
+//        bool is_crypt = false;
 
-        if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-            _child_items << it;
-            insert_position = _child_items.size() - 1;
-        } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-            _child_items.insert(pos, it);
-            insert_position = pos;
-        } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-            _child_items.insert(pos + 1, it);
-            insert_position = pos + 1;
-        }
+//        //        if(_tree_item) {
+//        if(_is_crypt) { //            if(_tree_item->field("crypt") == "1") {
+//            if(globalparameters.crypt_key().length() > 0)
+//                is_crypt = true;
+//            else
+//                critical_error("ItemsFlat::shadow_item_lite() : Can not insert data to crypt branch. Password not setted.");
+//        }
 
-        qDebug() << "ItemsFlat::shadow_item_lite() : New record pos" << QString::number(insert_position);
+//        //        }
 
-        // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
+//        // Запись полновесных данных с учетом шифрации
+//        if(is_crypt && it->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
+//            it->to_encrypt_and_save_lite();
+//        } else if(!is_crypt && it->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
+//            it->to_decrypt_and_save_lite();
+//        } else {
+//            it->push_lite_attributes();
+//        }
 
-    }
+//        //        // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
+//        //        record->switchToLite();
 
-    return insert_position;
-}
+//        //        // Запись добавляется в таблицу конечных записей
+//        //        int insertPos = -1;
+
+//        //        record->is_registered(true);
+//        // assert(record->is_registered_to_browser());
+
+//        if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
+//            _child_items << it;
+//            insert_position = _child_items.size() - 1;
+//        } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
+//            _child_items.insert(pos, it);
+//            insert_position = pos;
+//        } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
+//            _child_items.insert(pos + 1, it);
+//            insert_position = pos + 1;
+//        }
+
+//        qDebug() << "ItemsFlat::shadow_item_lite() : New record pos" << QString::number(insert_position);
+
+//        // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
+
+//    }
+
+//    return insert_position;
+//}
 
 
 void TreeItem::unload_page()
 {
-    if(page_valid()    // _page != nullptr
-      ) {
+    if(page_valid()) {    // _page != nullptr
+
         //
         browser::WebView *view = _page->view();
         browser::TabWidget *tabmanager = nullptr;
@@ -1013,7 +1052,7 @@ void TreeItem::unload_page()
     }
 }
 
-boost::intrusive_ptr<TreeItem> TreeItem::remove_child(boost::intrusive_ptr<TreeItem> item)
+boost::intrusive_ptr<TreeItem> TreeItem::child_remove(boost::intrusive_ptr<TreeItem> item)
 {
 
     for(int row = 0; row < _child_items.size(); ++row) {
@@ -1026,7 +1065,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::remove_child(boost::intrusive_ptr<TreeI
     return item;
 }
 
-bool TreeItem::remove_children(int position, int count)
+bool TreeItem::children_remove(int position, int count)
 {
     if(position < 0 || position + count > _child_items.size())
         return false;
@@ -1039,25 +1078,25 @@ bool TreeItem::remove_children(int position, int count)
 }
 
 
-void TreeItem::remove_all_children()
+void TreeItem::children_remove_all()
 {
     for(int i = 0; i < _child_items.size(); i++)
         _child_items.removeAt(i);    // _child_items.takeAt(i).reset(); // delete _child_items.takeAt(i);
 }
 
 
-bool TreeItem::remove_children_link(int position, int count)
-{
-    if(position < 0 || position + count > _child_items.size())
-        return false;
+//bool TreeItem::children_remove_link(int position, int count)
+//{
+//    if(position < 0 || position + count > _child_items.size())
+//        return false;
 
-    // Ссылка на удаленный элемент убирается из списка подчиненных элементов
-    for(int row = 0; row < count; ++row) {
-        _child_items.removeAt(position);
-    }
+//    // Ссылка на удаленный элемент убирается из списка подчиненных элементов
+//    for(int row = 0; row < count; ++row) {
+//        _child_items.removeAt(position);
+//    }
 
-    return true;
-}
+//    return true;
+//}
 
 
 bool TreeItem::move_up(void)
@@ -1081,7 +1120,7 @@ bool TreeItem::move_dn(void)
     int num = sibling_order();
 
     // Если двигать вниз некуда, ничего делать ненужно
-    if(num >= (_parent_item->current_count() - 1))return false;
+    if(num >= (_parent_item->count_direct()))return false;
 
     // Элемент перемещается вниз по списку
     (_parent_item->_child_items).swap(num, num + 1);
@@ -1091,23 +1130,23 @@ bool TreeItem::move_dn(void)
 
 
 // Путь к элементу (список идентификаторов от корня до текущего элемента)
-QStringList TreeItem::absolute_path(void)
+QStringList TreeItem::path_absolute(void)
 {
-    return absolute_path_as_field("id");
+    return path_absolute_as_field("id");
 }
 
 
 // Путь к элементу (в виде списка названий веток)
-QStringList TreeItem::absolute_path_as_name(void)
+QStringList TreeItem::path_absolute_as_name(void)
 {
-    return absolute_path_as_field("name");
+    return path_absolute_as_field("name");
 }
 
 
 // Путь к элементу в виде строки, разделенной указанным разделителем
-QString TreeItem::absolute_path_as_name_with_delimiter(QString delimeter)
+QString TreeItem::path_absolute_as_name_with_delimiter(QString delimeter)
 {
-    QStringList path = absolute_path_as_name();
+    QStringList path = path_absolute_as_name();
 
     // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
     int emptyStringIndex = path.indexOf("");
@@ -1117,7 +1156,7 @@ QString TreeItem::absolute_path_as_name_with_delimiter(QString delimeter)
 }
 
 
-QStringList TreeItem::absolute_path_as_field(QString field_name)
+QStringList TreeItem::path_absolute_as_field(QString field_name)
 {
     QStringList path;
     boost::intrusive_ptr<TreeItem> currentItem =
@@ -1142,15 +1181,15 @@ QStringList TreeItem::absolute_path_as_field(QString field_name)
 
 
 // Возвращает массив путей всех подветок, которые содержит ветка
-QList<QStringList> TreeItem::all_children_path(void)
+QList<QStringList> TreeItem::path_children_all(void)
 {
     // Очищение списка путей
-    all_children_path_as_field(
+    path_children_all_as_field(
         boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
         , "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = all_children_path_as_field(
+    QList<QStringList> pathList = path_children_all_as_field(
                                       boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
                                       , "id", 1);
 
@@ -1158,7 +1197,7 @@ QList<QStringList> TreeItem::all_children_path(void)
 }
 
 
-QList<QStringList> TreeItem::all_children_path_as_field(QString fieldName)
+QList<QStringList> TreeItem::path_children_all_as_field(QString fieldName)
 {
 
     //    std::function<QList<QStringList>(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)> all_children_path_as_field =
@@ -1187,12 +1226,12 @@ QList<QStringList> TreeItem::all_children_path_as_field(QString fieldName)
 
 
     // Очищение списка путей
-    all_children_path_as_field(
+    path_children_all_as_field(
         boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
         , "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = all_children_path_as_field(
+    QList<QStringList> pathList = path_children_all_as_field(
                                       boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
                                       , fieldName, 1);
 
@@ -1227,7 +1266,7 @@ QList<QStringList> TreeItem::all_children_path_as_field(QString fieldName)
 
 // Возвращает массив указанных полей всех подветок, которые содержит ветка
 // Внутренняя рекурсивная функция
-QList<QStringList> TreeItem::all_children_path_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)
+QList<QStringList> TreeItem::path_children_all_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)
 {
     static QList<QStringList> pathList;
 
@@ -1237,10 +1276,10 @@ QList<QStringList> TreeItem::all_children_path_as_field(boost::intrusive_ptr<Tre
         return QList<QStringList>();
     }
 
-    for(int i = 0; i < (item->current_count()); i++) {
-        QStringList path = (item->child(i))->absolute_path_as_field(fieldName);
+    for(int i = 0; i < (item->count_direct()); i++) {
+        QStringList path = (item->child(i))->path_absolute_as_field(fieldName);
         pathList << path;
-        all_children_path_as_field(item->child(i), fieldName, 2);
+        path_children_all_as_field(item->child(i), fieldName, 2);
     }
 
     if(mode == 1)return pathList;
@@ -1274,7 +1313,7 @@ void TreeItem::to_encrypt(void)
 
 
     // Шифрация подветок
-    for(int i = 0; i < current_count(); i++)
+    for(int i = 0; i < count_direct(); i++)
         child(i)->to_encrypt();
 
     if(is_lite())
@@ -1313,7 +1352,7 @@ void TreeItem::to_decrypt(void)
 
 
     // Дешифрация подветок
-    for(int i = 0; i < current_count(); i++)
+    for(int i = 0; i < count_direct(); i++)
         child(i)->to_decrypt();
 
 
@@ -1411,7 +1450,7 @@ QDomElement TreeItem::dom_from_treeitem()
     //    QDomElement node = QDomDocument().createElement("node");
     QDomElement record = Record::dom_from_record();
 
-    if(ItemsFlat::count() > 0) {
+    if(ItemsFlat::count_direct() > 0) {
         QDomElement children = ItemsFlat::dom_from_itemsflat();
         record.appendChild(children);
     }
@@ -1426,7 +1465,7 @@ QDomElement TreeItem::dom_from_treeitem(std::shared_ptr<QDomDocument> doc)
     //    QDomElement node = doc->createElement("node");
     QDomElement record = Record::dom_from_record(doc);
 
-    if(ItemsFlat::count() > 0) {
+    if(ItemsFlat::count_direct() > 0) {
         QDomElement children = ItemsFlat::dom_from_itemsflat(doc);
         record.appendChild(children);
     }
@@ -1615,8 +1654,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::active_subset()const
     //    result->field("name", this->field("name"));
     //    //    QList<boost::intrusive_ptr<TreeItem>> result;
 
-    for(int i = 0; i < current_count(); i++) {
-        if(_child_items.at(i)->page_valid())result->insert_new_item(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
+    for(int i = 0; i < count_direct(); i++) {
+        if(_child_items.at(i)->page_valid())result->child_transfer(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
     }
 
     //    _child_items.clear();
@@ -1635,10 +1674,35 @@ boost::intrusive_ptr<TreeItem> TreeItem::is_registered_to_browser()
         if(_page->view()) {
             if(_page->view()->record_controller()) {
                 auto _record_controller = _page->view()->record_controller();
-                found = _record_controller->source_model()->find_bind_in_list(boost::intrusive_ptr<TreeItem>(this));
+                found = _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
             }
         }
     }
 
+    //    else {
+    //        browser::Entrance *_entrance = globalparameters.entrance();
+
+    //        for(int w = 0; w < _entrance->browsers().size(); w++) {
+    //            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+
+    //            for(int i = 0; i < tabmanager->count(); i++) {
+    //                auto item = tabmanager->webView(i)->page()->current_item();
+
+    //                if(item->field("id") == id()) {
+    //                    found = item;
+    //                }
+    //            }
+    //        }
+    //    }
+
     return found;
+}
+
+
+
+bool TreeItem::is_empty() const
+{
+    return static_cast<const Record *>(this)->is_empty()
+           && static_cast<const ItemsFlat *>(this)->is_empty()
+           ;
 }

@@ -132,7 +132,7 @@ namespace browser {
 
         auto result_item = globalparameters.find_screen()->find_clicked();
 
-        if(!result_item || 0 == result_item->current_count()) {
+        if(!result_item || 0 == result_item->count_direct()) {
 
             QUrl url = QUrl(searchText);
 
@@ -234,12 +234,13 @@ namespace browser {
         } else {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             TreeScreen *_tree_screen = globalparameters.tree_screen();
+            _tree_screen->branch_add(result_item, true, _tree_screen->tree_view()->source_model());
             _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
             auto index = _tree_screen->tree_view()->source_model()->index(result_item->child(0));
             _tree_screen->selection_model()->setCurrentIndex(index
                                                              , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
-            _tree_screen->invoke_index(index);
+            _tree_screen->index_invoke_in_sub_branch(index);
         }
     }
 

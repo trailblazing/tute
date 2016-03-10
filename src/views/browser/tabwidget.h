@@ -249,7 +249,7 @@ namespace browser {
 
         //QWidget *
         QStackedWidget *lineEditStack() const;
-        void lineEditStack(QStackedWidget *lineedits);
+        //        void lineEditStack(QStackedWidget *lineedits);
         QLineEdit *currentLineEdit() const;
         WebView *currentWebView() const;
         WebView *webView(int index) const;

@@ -884,7 +884,7 @@ void Editor::file_name(QString _file_name)
         QFileInfo fileInfo(f);
 
         if(!f.open(QIODevice::WriteOnly | QIODevice::Text | QIODevice::ReadOnly))
-            critical_error("Editor::file_name(QString _file_name) : Cant open text file " + _file_name + " for read / write.");
+            critical_error("Editor::file_name(QString _file_name) : Can\'t open text file " + _file_name + " for read / write.");
 
         if(fileInfo.absoluteDir().exists() && f.exists()) {
             _work_file_name = _file_name;
@@ -983,7 +983,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText)
         QFile wfile(fileName);
 
         if(!wfile.open(QIODevice::WriteOnly | QIODevice::Text))
-            critical_error("RecordTableData::editor_save_callback() : Cant open text file " + fileName + " for write.");
+            critical_error("Editor::editor_save_callback() : Can\'t open text file " + fileName + " for write.");
 
         QTextStream out(&wfile);
         out.setCodec("UTF-8");
@@ -996,7 +996,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText)
         QFile wfile(fileName);
 
         if(!wfile.open(QIODevice::WriteOnly))
-            critical_error("RecordTableData::editor_save_callback() : Cant open binary file " + fileName + " for write.");
+            critical_error("Editor::editor_save_callback() : Can\'t open binary file " + fileName + " for write.");
 
         wfile.write(encryptData);
     }
@@ -1130,7 +1130,7 @@ void Editor::save_textarea(void)
 
         if(QFileInfo(work_directory() + "/" + file_name()).exists()) {
             qDebug() << "File exists. Remove it.";
-            DiskHelper::removeFileToTrash(work_directory() + "/" + file_name());
+            DiskHelper::remove_file_to_trash(work_directory() + "/" + file_name());
         } else
             qDebug() << "Cant remove file. File not exists.";
 
