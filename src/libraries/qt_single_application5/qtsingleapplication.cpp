@@ -906,7 +906,7 @@ void QtSingleApplication::newLocalSocketConnection()
 
             browser::Browser *browser = globalparameters.entrance()->activated_browser();
             //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-            auto record = browser->tabmanager()->request_item(url);
+            auto record = browser->tabmanager()->item_request_from_tree(url);
             //            record->generate();
             record->activate();
 

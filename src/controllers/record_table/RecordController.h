@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QModelIndexList>
 #include "utility/delegate.h"
-#include "models/record_table/ItemsFlat.h"
+//#include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
 
 //#include <boost/serialization/strong_typedef.hpp>
@@ -43,7 +43,7 @@ class RecordController : public QObject {
 public:
 
     typedef TreeItem::bind_helper bind_helper;
-    typedef TreeItem::active_helper active_helper;
+    typedef TreeItem::activate_helper active_helper;
     RecordController(MetaEditor             *_editor_screen
                      , browser::TabWidget   *_tabmanager
                      , RecordScreen         *_record_screen
@@ -94,9 +94,9 @@ public:
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
-    boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item, bind_helper generator, active_helper activator);
+    boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item, std::shared_ptr<CouplerDelegation> _record_binder);
 
-    boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url, bind_helper generator, active_helper activator);
+    boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url, std::shared_ptr<CouplerDelegation> _record_binder);
 
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 

@@ -93,7 +93,7 @@ void KnowView::sychronize()
                 auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                 for(int i = 0; i < tabmanager->count(); i++) {
-                    auto item = tabmanager->webView(i)->page()->current_item();
+                    auto item = tabmanager->webView(i)->page()->bounded_item();
 
                     if(!_tree_screen->know_model_board()->is_item_exists(item->field("id"))) {
 

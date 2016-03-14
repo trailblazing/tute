@@ -16,11 +16,59 @@
 #include "models/record_table/Record.h"
 #include "models/record_table/ItemsFlat.h"
 
+//class coupler;
+class Record;
+class ItemsFlat;
+class TreeItem;
+
 
 namespace browser {
     class WebPage;
+    class WebView;
     class TabWidget;
 }
+
+
+
+struct CouplerDelegation {
+public:
+    typedef sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>> bind_interface;   // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
+    typedef sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>                                 activate_interface;
+    typedef sd::_interface<sd::meta_info<boost::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>>                     bounded_item_interface;
+    typedef sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebPage *>                                 bounded_page_interface;
+
+    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> bind_helper;   // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
+    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>                                 activate_helper;
+    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>>>                     bounded_item_helper;
+    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebPage *>>                                 bounded_page_helper;
+
+    //    template<typename T>
+    CouplerDelegation(bounded_item_helper      _bounded_item
+                      , bounded_page_helper    _bounded_page
+                      , bind_helper            _bind_helper
+                      , activate_helper        _active_helper
+                     ): _bounded_item(_bounded_item), _bounded_page(_bounded_page), _bind_helper(_bind_helper), _activate_helper(_active_helper)
+    {}
+
+public:
+    boost::intrusive_ptr<TreeItem> bounded_item() {return (*_bounded_item)();}
+
+    browser::WebPage *bounded_page() {return (*_bounded_page)();}
+
+    browser::WebView *binder(boost::intrusive_ptr<TreeItem> item)    // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(browser::WebPage *)
+    {
+        return (*_bind_helper)(item);   // , _bind
+    }
+
+    browser::WebView *activator() {return (*_activate_helper)();}
+private:
+    bounded_item_helper _bounded_item;
+    bounded_page_helper _bounded_page;
+    bind_helper         _bind_helper;
+    activate_helper     _activate_helper;
+
+};
+
 
 
 // TreeItem = {item |record + items }
@@ -32,8 +80,15 @@ class TreeItem  //        : public std::enable_shared_from_this<TreeItem>
     // boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
 public:
 
-    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)>> bind_helper;
-    typedef std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> active_helper;
+    typedef CouplerDelegation::bind_interface          bind_interface;
+    typedef CouplerDelegation::activate_interface      activate_interface;
+    typedef CouplerDelegation::bounded_item_interface  bounded_item_interface;
+    typedef CouplerDelegation::bounded_page_interface  bounded_page_interface;
+
+    typedef CouplerDelegation::bind_helper         bind_helper;
+    typedef CouplerDelegation::activate_helper     activate_helper;
+    typedef CouplerDelegation::bounded_item_helper bounded_item_helper;
+    typedef CouplerDelegation::bounded_page_helper bounded_page_helper;
 
     typedef boost::sp_adl_block::thread_safe_counter counter_type; // boost::intrusive_ref_counter<TreeItem>::counter_type
 
@@ -74,7 +129,7 @@ public:
 
     // Получение значения поля по имени
     QString field(QString _name) const;
-    void field(QString _name, QString value) {Record::field(_name, value);}
+    void field(QString _name, QString value);   // {Record::field(_name, value);}
 
     // Получение всех полей данных
     QMap<QString, QString> fields_all();
@@ -102,7 +157,7 @@ public:
     bool children_insert_new(int position, int count, int columns);
 
 
-    void unload_page();
+    void page_break();
     boost::intrusive_ptr<TreeItem> child_remove(boost::intrusive_ptr<TreeItem> item);
 
     void parent(boost::intrusive_ptr<TreeItem> it);
@@ -167,6 +222,8 @@ public:
 
     boost::intrusive_ptr<TreeItem> is_registered_to_browser();
 
+    std::shared_ptr<CouplerDelegation> record_binder();
+    void record_binder(std::shared_ptr<CouplerDelegation> _record_binder);
 
     //    // Взятие ссылки на данные конечных записей
     //    std::shared_ptr<RecordTable> record_table(void);
@@ -182,17 +239,17 @@ public:
 
     browser::WebPage *unique_page();   // const; // {return _page;}
     browser::WebView *bind();
-    boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
+    //    boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
     browser::WebView *activate();
 
-    void binder(bind_helper g); // {_binder = g;}
-    bind_helper binder() const; // {return _binder;}
+    //    void binder(bind_helper g); // {_binder = g;}
+    //    bind_helper binder() const; // {return _binder;}
 
-    void activator(active_helper a);    // {_activator = a;}
-    active_helper activator() const;    // {return _activator;}
+    //    void activator(activate_helper a);    // {_activator = a;}
+    //    activate_helper activator() const;    // {return _activator;}
 
     void active_request(int pos, int openLinkIn);
-    bool page_valid()const {return _page_valid;}
+    bool page_valid()const;// {return _page_valid;}
     //    operator ItemsFlat() {return *this;}
     boost::intrusive_ptr<TreeItem> active_subset() const;
 
@@ -206,9 +263,9 @@ public:
 
 protected:
 
-    bind_helper     _binder;
-    active_helper   _activator;
-
+    //    bind_helper     _binder;
+    //    activate_helper   _activator;
+    //    coupler         _coupler;
 private:
     //    bool children_remove_link(int position, int count);
 
@@ -229,8 +286,10 @@ private:
 
     //    //    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
     //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
-    browser::WebPage    *_page;
-    bool                _page_valid = false;
+
+    //    browser::WebPage    *_page;
+    std::shared_ptr<CouplerDelegation>   _record_binder;
+    //    bool                _page_valid = false;
     int                 _position = -1;
     int                 _open_link_in_new_window = 0;
     //    friend void intrusive_ptr_add_ref(TreeItem *px);
@@ -238,7 +297,7 @@ private:
     //    friend void boost::sp_adl_block::intrusive_ptr_add_ref< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;
     //    friend void boost::sp_adl_block::intrusive_ptr_release< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;
 
-    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
+    //    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
     bool is_holder();
     friend class browser::WebPage;
 

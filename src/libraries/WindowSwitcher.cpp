@@ -12,6 +12,7 @@
 #include "views/record/MetaEditor.h"
 #include "views/browser/tabwidget.h"
 #include "views/tree/KnowView.h"
+#include "models/tree/KnowModel.h"
 
 extern const char *record_screen_multi_instance_name;
 

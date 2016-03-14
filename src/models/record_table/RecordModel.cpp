@@ -656,7 +656,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::find_current_bound(boost::intrusive_
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
     for(int i = 0; i < count(); i++) {
-        if( item->page_valid() && child(i)->unique_page() == item->unique_page()) {
+        if(item->page_valid() && child(i)->unique_page() == item->unique_page()) {
             result = item; break;
         }
     }
@@ -752,7 +752,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     for(int pos = 0; pos < _tabmanager->count(); pos++) {
-        auto it = _tabmanager->webView(pos)->page()->current_item();
+        auto it = _tabmanager->webView(pos)->page()->bounded_item();
 
         if(it->id() == id) {
             r = it;
@@ -769,7 +769,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)const
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     for(int pos = 0; pos < _tabmanager->count(); pos++) {
-        auto it = _tabmanager->webView(pos)->page()->current_item();
+        auto it = _tabmanager->webView(pos)->page()->bounded_item();
 
         if(it->id() == id) {
             r = it;
@@ -786,7 +786,14 @@ boost::intrusive_ptr<TreeItem> RecordModel::child(int pos)const
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     if(pos >= 0 && pos < size()) {
-        r = _tabmanager->webView(pos)->page()->current_item();
+        assert(_tabmanager->webView(pos)->page()->record_binder());
+        r = _tabmanager->webView(pos)->page()->record_binder()->bounded_item();
+
+        //        if(!r) {
+        //            //            _tabmanager->webView(pos)->page()->record_binder()->binder();
+        //        }
+
+        assert(r);
     }
 
     return r;
@@ -797,7 +804,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::child(int pos)
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     if(pos >= 0 && pos < size()) {
-        r = _tabmanager->webView(pos)->page()->current_item();
+        r = _tabmanager->webView(pos)->page()->bounded_item();
     }
 
     return r;
@@ -813,7 +820,7 @@ void RecordModel::work_pos(int pos)
 
 boost::intrusive_ptr<TreeItem> RecordModel::item_fat(int index)
 {
-    boost::intrusive_ptr<TreeItem> item = _tabmanager->webView(index)->page()->current_item();
+    boost::intrusive_ptr<TreeItem> item = _tabmanager->webView(index)->page()->bounded_item();
 
     if(item->is_lite())item->to_fat();
 
@@ -826,7 +833,7 @@ int RecordModel::position(QString id)
     int result = -1;
 
     for(int i = 0; i < _tabmanager->count(); i++) {
-        if(_tabmanager->webView(i)->page()->current_item()->id() == id) {
+        if(_tabmanager->webView(i)->page()->bounded_item()->id() == id) {
             result = i;
             break;
         }
@@ -840,7 +847,7 @@ int RecordModel::locate(boost::intrusive_ptr<TreeItem> item)
     int result = -1;
 
     for(int i = 0; i < _tabmanager->count(); i++) {
-        if(_tabmanager->webView(i)->page()->current_item() == item) {
+        if(_tabmanager->webView(i)->page()->bounded_item() == item) {
             result = i;
             break;
         }

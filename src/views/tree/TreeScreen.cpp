@@ -29,6 +29,10 @@
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/toolbarsearch.h"
 #include "views/browser/entrance.h"
+#include "views/record/RecordInfoFieldsEditor.h"
+#include "views/browser/webview.h"
+//#include "models/tree/KnowModel.h"
+
 
 #include "TreeScreen.h"
 
@@ -66,6 +70,7 @@ TreeScreen::TreeScreen(QString              object_name
     , _menubutton(new QPushButton("", _menubar))
     , _menuaction(new QWidgetAction(_menubutton))
     , _menus_in_button(new QMenu("buttonmenu"))
+    , _context_menu(new QMenu(this))
     , _tree_view(new KnowView(this))
     , _tools_layout(new QHBoxLayout())
       //    , _recordtree_search(new browser::ToolbarSearch(this))
@@ -112,6 +117,8 @@ TreeScreen::~TreeScreen()
     //    QMenu           *_menus_in_button;
 
     if(_menus_in_button) {delete _menus_in_button; _menus_in_button = nullptr;}
+
+    if(_context_menu) {delete _context_menu; _context_menu = nullptr;}
 
     //    if(_menuaction) {delete _menuaction; _menuaction = nullptr;}
 
@@ -251,9 +258,22 @@ void TreeScreen::setup_actions(void)
     _actionlist["decryptBranch"] = ac;
 
     ac = new QAction(tr("Pin / freeze browser view"), this);
-    ac->setStatusTip(tr("Pin / freeze browser view"));
-    ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
+    ac->setStatusTip(tr("Pin / freeze browser view"));  // _pin->setStatusTip(tr("Pin a note"));
+    ac->setIcon(QIcon(":/resource/pic/pentalpha.svg")); // _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
+    connect(ac, &QAction::triggered
+    , [&](bool checked = false) {
+        Q_UNUSED(checked)
+        // Обновление инфополей в области редактирования записи
+        MetaEditor *metaeditor = globalparameters.meta_editor();  //MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
+
+        if(metaeditor)metaeditor->switch_pin();
+    }
+           );
     _actionlist["freeze_browser_view"] = ac;
+
+
+
+
 
     // Открытие поиска по базе (связывание клика происходит в MainWindows)
     ac = new QAction(tr("Find in base"), this);
@@ -261,8 +281,132 @@ void TreeScreen::setup_actions(void)
     ac->setIcon(QIcon(":/resource/pic/find_in_base.svg"));
     // connection in void MainWindow::setupSignals(void)
     _actionlist["find_in_base"] = ac;
+
+
+    //    QAction             *_addnew_to_end = (new QAction(tr("Add note"), this));
+    //    _addnew_to_end->setIcon(QIcon(":/resource/pic/note_add.svg"));
+    //    connect(_addnew_to_end, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_to_end);
+    //    insert_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
+
+    //    QAction             *_addnew_before = (new QAction(tr("Add note before"), this));
+    //    QAction             *_addnew_after = (new QAction(tr("Add note after"), this));
+
+    QAction *_edit_field = (new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this));
+    _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
+    _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
+    connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) {Q_UNUSED(checked); edit_field_context(this->_tree_view->index_current());});
+    _actionlist["edit_field"] = _edit_field;
+
+
+
+
+    QAction *_editor_switch = (new QAction(tr("&Editor switch"), this));
+    _editor_switch->setStatusTip(tr("Open/Close editor"));
+    _editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
+    connect(_editor_switch, &QAction::triggered, []() {globalparameters.mainwindow()->editor_switch();});
+    //    insert_action_as_button<QToolButton>(_toolsline, _settings);
+    _actionlist["editor_switch"] = _editor_switch;
+
+
+    //    QAction             *_action_syncro = (new QAction(tr("Synchronization"), this));
+    //    QAction             *_action_walk_history_previous = (new QAction(tr("Previous viewing note"), this));
+    //    QAction             *_action_walk_history_next = (new QAction(tr("Next viewing note"), this));
+    //    QAction             *_back = (new QAction(tr("Back to item tree"), this));
+    //    //    , _sort(new QAction(tr("Toggle sorting"), this))
+    //    QAction             *_print = (new QAction(tr("Print table"), this));
+
+    //    , _delete(new QAction(tr("Delete note(s)"), this))
+    //    , _cut(new QAction(tr("&Cut note(s)"), this))
+    //    , _copy(new QAction(tr("&Copy note(s)"), this))
+    //    , _paste(new QAction(tr("&Paste note(s)"), this))
+    //    , _action_move_up(new QAction(tr("&Move Up"), this))
+    //    , _action_move_dn(new QAction(tr("&Move Down"), this))
+    //    , _find_in_base(new QAction(tr("Find in base"), this))
+
 }
 
+
+// Действия при нажатии кнопки редактирования записи
+void TreeScreen::edit_field_context(QModelIndex index_current)
+{
+    //    qDebug() << "RecordTableController::editFieldContext()";
+
+    //    QModelIndex sourceIndex = proxyindex_to_sourceindex(proxyIndex);
+    //    int pos = sourceIndex.row(); // Номер строки в базе
+
+    // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
+    InfoFieldsEditor edit_record_dialog;
+
+    // Выясняется ссылка на таблицу конечных данных
+    auto item = _tree_view->source_model()->item(index_current);
+
+    // Поля окна заполняются начальными значениями
+    edit_record_dialog.setField("pin",       item->field("pin"));
+    edit_record_dialog.setField("name",      item->field("name"));
+    edit_record_dialog.setField("author",    item->field("author"));
+    edit_record_dialog.setField("home",      item->field("home"));
+    edit_record_dialog.setField("url",       item->field("url"));
+    edit_record_dialog.setField("tags",      item->field("tags"));
+
+
+    int i = edit_record_dialog.exec();
+
+    if(i == QDialog::Rejected)
+        return; // Была нажата отмена, ничего ненужно делать
+
+    // Измененные данные записываются
+    edit_field(edit_record_dialog.getField("pin"),
+               edit_record_dialog.getField("name"),
+               edit_record_dialog.getField("author"),
+               edit_record_dialog.getField("home"),
+               edit_record_dialog.getField("url"),
+               edit_record_dialog.getField("tags"));
+}
+
+
+// Функция сохранения отредактированных полей записи в таблицу конечных записей
+void TreeScreen::edit_field(QString pin
+                            , QString name
+                            , QString author
+                            , QString home
+                            , QString url
+                            , QString tags
+                           )
+{
+    qDebug() << "In edit_field()";
+
+    // Выясняется ссылка на таблицу конечных данных
+    //    auto pages = _source_model->browser_pages();
+
+    // Переданные отредактированные поля преобразуются в вид имя-значение
+    QMap<QString, QString> edit_data;
+    edit_data["pin"] = pin;
+    edit_data["name"] = name;
+    edit_data["author"] = author;
+    edit_data["home"] = home;
+    edit_data["url"] = url;
+    edit_data["tags"] = tags;
+
+    // Обновление новых данных в таблице конечных записей
+    auto item = _tree_view->source_model()->item(_tree_view->index_current());
+
+    for(QMap<QString, QString>::iterator i = edit_data.begin(); i != edit_data.end(); i++) {
+        item->field(i.key(), i.value());
+    }
+
+
+    // Обновление инфополей в области редактирования записи
+    MetaEditor *meta_editor = globalparameters.meta_editor();   //find_object<MetaEditor>(meta_editor_singleton_name);
+    meta_editor->pin(pin);
+    meta_editor->name(name);
+    meta_editor->author(author);
+    meta_editor->url(url);
+    meta_editor->tags(tags);
+
+    // Сохранение дерева веток
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    knowtree_save();
+}
 
 void TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
 {
@@ -464,32 +608,35 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
 {
     qDebug() << "In TreeScreen::on_customContextMenuRequested";
 
-    // Конструирование меню
-    QMenu menu(this);
+    //    // Конструирование меню
+    //    QMenu _context_menu(this);
 
+    _context_menu->addAction(_actionlist["freeze_browser_view"]);
+    _context_menu->addAction(_actionlist["find_in_base"]);
+    _context_menu->addAction(_actionlist["edit_field"]);
+    _context_menu->addAction(_actionlist["editor_switch"]);
 
+    _context_menu->addAction(_actionlist["view_up_one_level"]);
+    _context_menu->addAction(_actionlist["return_to_root"]);
 
-    menu.addAction(_actionlist["view_up_one_level"]);
-    menu.addAction(_actionlist["return_to_root"]);
-
-    menu.addAction(_actionlist["insBranch"]);
-    menu.addAction(_actionlist["insSubbranch"]);
-    menu.addAction(_actionlist["editBranch"]);
-    menu.addAction(_actionlist["delBranch"]);
-    menu.addSeparator();
-    menu.addAction(_actionlist["expandAllSubbranch"]);
-    menu.addAction(_actionlist["collapseAllSubbranch"]);
-    menu.addSeparator();
-    menu.addAction(_actionlist["moveUpBranch"]);
-    menu.addAction(_actionlist["moveDnBranch"]);
-    menu.addSeparator();
-    menu.addAction(_actionlist["cutBranch"]);
-    menu.addAction(_actionlist["copyBranch"]);
-    menu.addAction(_actionlist["pasteBranch"]);
-    menu.addAction(_actionlist["pasteSubbranch"]);
-    menu.addSeparator();
-    menu.addAction(_actionlist["encryptBranch"]);
-    menu.addAction(_actionlist["decryptBranch"]);
+    _context_menu->addAction(_actionlist["insBranch"]);
+    _context_menu->addAction(_actionlist["insSubbranch"]);
+    _context_menu->addAction(_actionlist["editBranch"]);
+    _context_menu->addAction(_actionlist["delBranch"]);
+    _context_menu->addSeparator();
+    _context_menu->addAction(_actionlist["expandAllSubbranch"]);
+    _context_menu->addAction(_actionlist["collapseAllSubbranch"]);
+    _context_menu->addSeparator();
+    _context_menu->addAction(_actionlist["moveUpBranch"]);
+    _context_menu->addAction(_actionlist["moveDnBranch"]);
+    _context_menu->addSeparator();
+    _context_menu->addAction(_actionlist["cutBranch"]);
+    _context_menu->addAction(_actionlist["copyBranch"]);
+    _context_menu->addAction(_actionlist["pasteBranch"]);
+    _context_menu->addAction(_actionlist["pasteSubbranch"]);
+    _context_menu->addSeparator();
+    _context_menu->addAction(_actionlist["encryptBranch"]);
+    _context_menu->addAction(_actionlist["decryptBranch"]);
 
     // Получение индекса выделенной ветки
     QModelIndex index = _tree_view->index_current();
@@ -542,9 +689,36 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &pos)
         }
     }
 
+
+
+    //    //    _context_menu->addAction(_table_screen->_pin);
+    //    _context_menu->addAction(_table_screen->_addnew_to_end);
+    //    _context_menu->addAction(_table_screen->_edit_field);
+    //    _context_menu->addAction(_table_screen->_delete);
+
+    //    _context_menu->addSeparator();
+
+    //    _context_menu->addAction(_table_screen->_addnew_before);
+    //    _context_menu->addAction(_table_screen->_addnew_after);
+    //    //    contextMenu->addAction(parentPointer->actionMoveUp);
+    //    //    contextMenu->addAction(parentPointer->actionMoveDn);
+    //    //    contextMenu->addAction(parentPointer->actionSyncro);
+
+    //    _context_menu->addSeparator();
+
+    //    _context_menu->addAction(_table_screen->_cut);
+    //    _context_menu->addAction(_table_screen->_copy);
+    //    _context_menu->addAction(_table_screen->_paste);
+
+    //    _context_menu->addSeparator();
+
+    //    _context_menu->addAction(_table_screen->_sort);
+    //    _context_menu->addAction(_table_screen->_print);
+    //    _context_menu->addAction(_table_screen->_settings);
+
     // Включение отображения меню на экране
     // menu.exec(event->globalPos());
-    menu.exec(_tree_view->viewport()->mapToGlobal(pos));
+    _context_menu->exec(_tree_view->viewport()->mapToGlobal(pos));
 }
 
 
@@ -2706,3 +2880,7 @@ void TreeScreen::knowtree_reload(void)
 //{
 //    return know_root_holder::know_root()->item(_del);
 //}
+
+const KnowModel *TreeScreen::know_model_board()const {return _know_model_board;}
+void TreeScreen::synchronized(bool _synchronized) {_know_model_board->synchronized(_synchronized);}
+bool TreeScreen::sysynchronized() {return _know_model_board->synchronized();}

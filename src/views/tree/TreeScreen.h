@@ -15,7 +15,7 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include "utility/delegate.h"
-#include "models/tree/KnowModel.h"
+#include "models/tree/TreeItem.h"
 
 
 
@@ -30,7 +30,7 @@ class TreeItem;
 class TreeController;
 class RecordController;
 class TreeScreen;
-
+class InfoFieldsEditor;
 
 namespace  browser {
     class ToolbarSearch;
@@ -65,9 +65,9 @@ public:
     //    TreeKnowModel const *know_root()const {return know_root_holder::know_root();}
     //    TreeKnowModel *know_root_modify() {return know_root_holder::know_root();}
 
-    const KnowModel *know_model_board()const {return _know_model_board;}
-    void synchronized(bool _synchronized) {_know_model_board->synchronized(_synchronized);}
-    bool sysynchronized() {return _know_model_board->synchronized();}
+    const KnowModel *know_model_board()const;   // {return _know_model_board;}
+    void synchronized(bool _synchronized);  // {_know_model_board->synchronized(_synchronized);}
+    bool sysynchronized();  // {return _know_model_board->synchronized();}
     //    std::shared_ptr<sd::_interface<sd::meta_info<void *>, RecordController *>>      reocrd_controller;  // for entrance
     //    std::shared_ptr<sd::_interface<sd::meta_info<void *>, browser::TabWidget *>>    tabmanager;         // for entrance
 
@@ -152,6 +152,14 @@ private slots:
     // Открытие контекстного меню
     void on_custom_contextmenu_requested(const QPoint &pos);
 
+    void edit_field_context(QModelIndex index_current);
+    void edit_field(QString pin
+                    , QString name
+                    , QString author
+                    , QString home
+                    , QString url
+                    , QString tags
+                   );
 private:
 
 
@@ -163,6 +171,7 @@ private:
     QPushButton     *_menubutton;
     QWidgetAction   *_menuaction;
     QMenu           *_menus_in_button;
+    QMenu           *_context_menu;
 
     KnowView        *_tree_view;
     QHBoxLayout     *_tools_layout;

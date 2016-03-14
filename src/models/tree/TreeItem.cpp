@@ -10,7 +10,8 @@
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
 #include "views/tree/TreeScreen.h"
-
+//#include "models/record_table/Record.h"
+//#include "models/record_table/ItemsFlat.h"
 
 
 extern GlobalParameters globalparameters;
@@ -90,7 +91,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _parent_item
 
     return _parent_item;
 }())
-, _page(nullptr)
+//, _page(nullptr)
 {
     //    record_to_item();
 }
@@ -291,7 +292,7 @@ TreeItem::~TreeItem()
     //        //
     //    }
 
-    unload_page();
+    page_break();
 }
 
 
@@ -778,6 +779,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_transfer(int pos, boost::intrusiv
 
                     while(check->remove()) {
                         check = check->parent();
+
                         if(!check)break;
                     }
                 }
@@ -1008,19 +1010,19 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_transfer(int pos, boost::intrusiv
 //}
 
 
-void TreeItem::unload_page()
+void TreeItem::page_break()
 {
-    if(page_valid()) {    // _page != nullptr
+    if(_record_binder) {    // _page != nullptr
 
         //
-        browser::WebView *view = _page->view();
+        browser::WebView *view = _record_binder->bounded_page()->view();    //_page->view();
         browser::TabWidget *tabmanager = nullptr;
 
         if(view) {
             tabmanager = view->tabmanager();
         }
 
-        if(_page->current_item()) {
+        if(_record_binder->bounded_item()) {
 
 
             // multi record to one page:
@@ -1028,27 +1030,27 @@ void TreeItem::unload_page()
             // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
             // assert(_page->record().get() == this);
 
-            bool is_holder = (_page->current_item().get() == this);     // _page->record() may mean some other record
+            bool is_holder = (_record_binder->bounded_item().get() == this);     // _page->record() may mean some other record
 
             //            page_to_nullptr();
 
             //        _page->record(nullptr);
             //        _page = nullptr;
 
-            if(view && tabmanager && is_holder
-               // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
-              ) {
-                assert(_page == _page->current_item()->unique_page());   // _page->rebind_record() make sure of this statement
+            if(view && tabmanager && is_holder) {
+                // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+
+                //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
 
                 if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
             }
 
         }
 
-        _binder.reset();
-        _activator.reset();
+        _record_binder.reset();
+        //        _activator.reset();
 
-        page_to_nullptr();
+        //        page_to_nullptr();
     }
 }
 
@@ -1058,7 +1060,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_remove(boost::intrusive_ptr<TreeI
     for(int row = 0; row < _child_items.size(); ++row) {
         if(_child_items.at(row) == item) { //_child_items.removeAt(position);    // _child_items.takeAt(position).reset(); // delete _child_items.takeAt(position);
             _child_items.removeOne(item);
-            item->unload_page();
+            item->page_break();
         }
     }
 
@@ -1492,26 +1494,30 @@ QDomElement TreeItem::dom_from_treeitem(std::shared_ptr<QDomDocument> doc)
 //    _record_table = _table_data;
 //}
 
-void TreeItem::page_to_nullptr()
-{
-    //    QSet<Record *> binded_records = _page->binded_records();
+//void TreeItem::page_to_nullptr()
+//{
+//    //    QSet<Record *> binded_records = _page->binded_records();
 
-    //    for(auto i : binded_records) {
-    //        if(i == this) {
-    //            i->_page = nullptr;    // _page->break_record();  // _page->bind_record(nullptr);
-    //        }
-    //    }
+//    //    for(auto i : binded_records) {
+//    //        if(i == this) {
+//    //            i->_page = nullptr;    // _page->break_record();  // _page->bind_record(nullptr);
+//    //        }
+//    //    }
 
-    _page = nullptr;
-    _page_valid = false;
-}
+//    _page = nullptr;
+//    _page_valid = false;
+//}
 
 
 
 
 browser::WebPage *TreeItem::unique_page()
 {
-    //    browser::WebPage *page = nullptr;
+    browser::WebPage *page = nullptr;
+
+    if(_record_binder) {
+        page = _record_binder->bounded_page();
+    }
 
     //    //    if(_page) {
     //    //        if(_page->record() == this)
@@ -1529,66 +1535,68 @@ browser::WebPage *TreeItem::unique_page()
 
     //    return page;
 
-    return _page;
+    return page;
 }
 
 bool TreeItem::is_holder()
 {
     bool is_holder_ = false;
 
-    if(page_valid()    // _page
-      ) is_holder_ = _page->_item.get() == this;
+    if(_record_binder->bounded_page())    // _page
+        is_holder_ = (_record_binder->bounded_item().get() == this);
 
     return is_holder_;
 }
 
-void TreeItem::binder(TreeItem::bind_helper g) {_binder = g;}
+//void TreeItem::binder(TreeItem::bind_helper g) {_binder = g;}
 
-TreeItem::bind_helper TreeItem::binder() const {return _binder;}
+//TreeItem::bind_helper TreeItem::binder() const {return _binder;}
 
-void TreeItem::activator(TreeItem::active_helper a) {_activator = a;}
+//void TreeItem::activator(TreeItem::activate_helper a) {_activator = a;}
 
-TreeItem::active_helper TreeItem::activator() const {return _activator;}
+//TreeItem::activate_helper TreeItem::activator() const {return _activator;}
 
-boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page)
-{
-    assert(page);
+//boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page)
+//{
+//    assert(page);
 
-    if(_page != page) {
+//    if(_record_binder->bounded_page() != page) {
 
-        if(_page_valid) {   // _page
+//        if(_record_binder->bounded_page()) {   // _page
 
-            auto _item = _page->current_item();
+//            auto _item = _record_binder->bounded_item();
 
-            if(_item) {
-                _page->break_item(_item);
-                _item->page_to_nullptr();
-            }
+//            if(_item) {
+//                _record_binder->bounded_page()->break_item(_item);
+//                _item->page_to_nullptr();
+//            }
 
-            _page_valid = false;
-        }
+//            _page_valid = false;
+//        }
 
-        _page = page;
-    }
+//        _page = page;
+//    }
 
-    if(!_page->_item || _page->_item.get() != this) {
-        _page->bind(boost::intrusive_ptr<TreeItem>(this));
-    }
+//    if(!_record_binder->bounded_item() || _record_binder->bounded_item().get() != this) {
+//        _record_binder->bounded_page()->bind(boost::intrusive_ptr<TreeItem>(this));
+//    }
 
-    _page_valid = true;
-    return this;
-}
+//    _page_valid = true;
+//    return this;
+//}
 
 browser::WebView *TreeItem::bind()
 {
     browser::WebView *view = nullptr;
 
-    if(!_page_valid
-       || (_page_valid && _page->current_item().get() != this)
+    if(!_record_binder->bounded_page()
+       || !_record_binder->bounded_item()
+       || (_record_binder->bounded_item() && _record_binder->bounded_item().get() != this)
+       || (_record_binder->bounded_page() && _record_binder->bounded_page()->record_binder() != _record_binder)
       ) {
-        view = (*binder())(boost::intrusive_ptr<TreeItem>(this), &TreeItem::bind);
+        view = _record_binder->binder(boost::intrusive_ptr<TreeItem>(this));
     } else {
-        view = _page->view();
+        view = _record_binder->bounded_page()->view();
     }
 
     return view;
@@ -1598,13 +1606,15 @@ browser::WebView *TreeItem::activate()
 {
     bind();
 
-    assert(page_valid());
-    assert(_page);
-    assert(_page->current_item() && _page->current_item().get() == this);
+    //    assert(page_valid());
+    //    assert(_record_binder->bounded_page());
+    //    assert(_record_binder->bounded_item() && _record_binder->bounded_item().get() == this);
 
     //    if(_page->url().toString() != getNaturalFieldSource("url"))   // wrong! just activate the wiew
     //    if(_page->record_controller()->tabmanager()->currentWebView() != _page->view())
-    return (*activator())(boost::intrusive_ptr<TreeItem>(this));
+
+    return _record_binder->activator(); // boost::intrusive_ptr<TreeItem>(this)
+
 
     //    else
     //        return _page->view();
@@ -1670,10 +1680,10 @@ boost::intrusive_ptr<TreeItem> TreeItem::is_registered_to_browser()
 {
     boost::intrusive_ptr<TreeItem> found(nullptr);
 
-    if(_page_valid) {
-        if(_page->view()) {
-            if(_page->view()->record_controller()) {
-                auto _record_controller = _page->view()->record_controller();
+    if(page_valid()) {
+        if(_record_binder->bounded_page()->view()) {
+            if(_record_binder->bounded_page()->view()->record_controller()) {
+                auto _record_controller = _record_binder->bounded_page()->view()->record_controller();
                 found = _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
             }
         }
@@ -1706,3 +1716,23 @@ bool TreeItem::is_empty() const
            && static_cast<const ItemsFlat *>(this)->is_empty()
            ;
 }
+
+void TreeItem::field(QString _name, QString value) {Record::field(_name, value);}
+
+std::shared_ptr<CouplerDelegation> TreeItem::record_binder() {return _record_binder;}
+void TreeItem::record_binder(std::shared_ptr<CouplerDelegation> _record_binder) {this->_record_binder = _record_binder;}
+
+
+bool TreeItem::page_valid()const
+{
+    bool result = false;
+
+    if(_record_binder) {
+        result = (_record_binder->bounded_page() != nullptr);
+    }
+
+    return result;
+}
+
+
+

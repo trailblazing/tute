@@ -259,52 +259,51 @@ namespace browser {
         QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::equip_registered(boost::intrusive_ptr<TreeItem> record)
+    boost::intrusive_ptr<TreeItem> Browser::item_equip_registered(boost::intrusive_ptr<TreeItem> record)
     {
-        auto binder = [](boost::shared_ptr<TabWidget::ActiveRecordBinder> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
-                       ""
-                       , &TabWidget::ActiveRecordBinder::binder
-                       , ar
-                   );
-        };
-        auto activator = [](boost::shared_ptr<TabWidget::ActiveRecordBinder> ar) {
-            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> (
-                       ""
-                       , &TabWidget::ActiveRecordBinder::activator
-                       , ar
-                   );
-        };
+        //        auto binder = [](boost::shared_ptr<TabWidget::Coupler> ar) {
+        //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>("", &TabWidget::Coupler::binder, ar);   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+
+        //        };
+        //        auto activator = [](boost::shared_ptr<TabWidget::Coupler> ar) {
+        //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>> ("", &TabWidget::Coupler::activator, ar);
+        //        };
 
         // registered record, but have no generator:
-        boost::shared_ptr<TabWidget::ActiveRecordBinder> ar = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager);
-        record->binder(
-            binder(ar)
-        );
+        boost::shared_ptr<TabWidget::Coupler> ar = boost::make_shared<TabWidget::Coupler>(_tabmanager);
+        //        record->binder(
+        //            binder(ar)
+        //        );
 
-        record->activator(
-            activator(ar)
-        );
+        //        record->activator(
+        //            activator(ar)
+        //        );
 
+        record->record_binder(std::make_shared<CouplerDelegation>(
+                                  std::make_shared<bounded_item_interface>("", &TabWidget::Coupler::bounded_item, ar)
+                                  , std::make_shared<bounded_page_interface>("", &TabWidget::Coupler::bounded_page, ar)
+                                  , std::make_shared<bind_interface>("", &TabWidget::Coupler::binder, ar)   // binder(ar)
+                                  , std::make_shared<activate_interface> ("", &TabWidget::Coupler::activator, ar)   // activator(ar)
+                              ));
         //        _tabmanager->newTab(record);
         //        assert(record->binded_only_page());
         return record;
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::request_item(QUrl const &url)
+    boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(QUrl const &url)
     {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
 
-        return _tabmanager->request_item(url);
+        return _tabmanager->item_request_from_tree(url);
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::request_item(boost::intrusive_ptr<TreeItem> item)
+    boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(boost::intrusive_ptr<TreeItem> item)
     {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
 
-        return _tabmanager->request_item(item);
+        return _tabmanager->item_request_from_tree(item);
     }
 
     Browser::Browser(const QByteArray   &state
@@ -390,7 +389,7 @@ namespace browser {
     {
         init();
 
-        auto r = _tabmanager->request_item(url);
+        auto r = _tabmanager->item_request_from_tree(url);
         r->activate();
 
         run_script(style_source);       //        assert(record->linkpage());
@@ -491,7 +490,7 @@ namespace browser {
         //            _tabmanager->equip_registered(item);
         //        } else {
         //            //        if(!item->is_registered_to_browser()) {
-        _tabmanager->request_item(item);    // this->tabWidget() does not work, because initialization has not accomplished
+        _tabmanager->item_request_from_tree(item);    // this->tabWidget() does not work, because initialization has not accomplished
 
         //            //        }
         //        }
@@ -1365,7 +1364,7 @@ namespace browser {
         //        auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(
         //                       _tabmanager // _entrance
         //                   );
-        auto r = _tabmanager->request_item(
+        auto r = _tabmanager->item_request_from_tree(
                      QUrl(home)
                      //                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
                      //                         ""
@@ -1639,14 +1638,14 @@ namespace browser {
             if(blankview != nullptr) {
                 view = blankview;
                 //                view->page()->load(record);
-                view->page()->equip_registered(item)->activate();
+                view->page()->item_equip_registered(item)->activate();
 
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
                 if(view->page()->url().toString() != item->field("url")) {
 
-                    view->page()->equip_registered(item)->activate(); // view->page()->load(record);
+                    view->page()->item_equip_registered(item)->activate(); // view->page()->load(record);
                 }
             } else {
                 view = tab->newTab(item);  // , false

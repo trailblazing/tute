@@ -708,7 +708,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
             auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();
 
             for(int i = 0; i < tabmanager->count(); i++) {
-                auto item = tabmanager->webView(i)->page()->current_item();
+                auto item = tabmanager->webView(i)->page()->bounded_item();
 
                 _start_item->child_transfer(_start_item->count_direct(), item);
             }

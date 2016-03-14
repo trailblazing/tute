@@ -6,12 +6,14 @@
 #include <QUrl>
 #include <QDockWidget>
 #include "utility/delegate.h"
-#include "models/record_table/Record.h"
-#include "libraries/GlobalParameters.h"
-#include "browser.h"
-#include "webview.h"
-#include "views/record/MetaEditor.h"
-
+//#include "models/record_table/Record.h"
+//#include "libraries/GlobalParameters.h"
+//#include "browser.h"
+//#include "webview.h"
+//#include "views/record/MetaEditor.h"
+#include "models/tree/TreeItem.h"
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
 class KnowModel;
 class QNetworkReply;
@@ -19,13 +21,22 @@ class QSslError;
 class QtSingleApplication;
 class RecordController;
 class HidableTabWidget;
-
+class TreeScreen;
+class FindScreen;
+class MetaEditor;
+class MainWindow;
+class AppConfig;
+class Record;
+class TreeItem;
+class GlobalParameters;
 
 
 extern GlobalParameters globalparameters;
 
 namespace browser {
     class WebView;
+    class Browser;
+    class ToolbarSearch;
 }
 
 //extern boost::intrusive_ptr<Record> request_record(const QUrl &_url
@@ -41,7 +52,7 @@ namespace browser {
     // Architecture:
     // Entrance(<=>DockWidget)__DockedWindow(s)
     //               |
-    //               |____Browser
+    //               |____Browser(s)
     //                         |
     //                         |____TabWidget
     //                                  |
@@ -104,7 +115,7 @@ namespace browser {
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
-        WebView *equip_registered(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
+        WebView *item_equip_registered(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
         void activate(const QUrl &url);
         void activate(boost::intrusive_ptr<TreeItem> item);
 

@@ -275,16 +275,16 @@ void RecordController::update_browser(const int source_pos)
 
         if(entrance && !item->page_valid()    // unique_page()
           ) {    // !record->binder() || !record->activator())) {
-            entrance->equip_registered(item);
+            entrance->item_equip_registered(item);
 
 
             //        assert(record->unique_page());    // not sure
-            assert(item->binder());
-            assert(item->activator());
+            assert(item->record_binder());
+            //            assert(item->activator());
 
             //        if(record->binder() && !record->unique_page())record->bind();
             //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
-            if(item->binder() && item->activator())item->activate();
+            if(item->record_binder())item->activate();
 
             //        else if(entrance)
         } else {
@@ -1817,9 +1817,9 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
         if(item->is_lite())item->to_fat();
 
         //    item->is_registered_to_record_controller_and_tabmanager(true);
-        int source_position = this->addnew_item_fat(item, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
+        source_position = this->addnew_item_fat(item, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
         assert(source_position != -1);
-
+        _item = _source_model->item(source_position);
         //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
 
         //    Record *_record = nullptr;
@@ -1827,12 +1827,13 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
 
         //                int pos = _record_controller->getFirstSelectionPos();
     } else {
-        source_position = _source_model->locate(item);
+        source_position = _source_model->locate(_item);
     }
 
+    assert(_item);
 
 
-    int pos = _source_model->locate(item);
+    int pos = _source_model->locate(_item);
 
     assert(pos == source_position); // maybe duplicated
     _item = _source_model->item(source_position);
@@ -1917,10 +1918,9 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url)
 //    class WebView;
 //}
 
-boost::intrusive_ptr<TreeItem> RecordController::request_item(
+boost::intrusive_ptr<TreeItem> RecordController::item_request_from_tree(
     boost::intrusive_ptr<TreeItem> item
-    , bind_helper generator
-    , active_helper activator
+    , std::shared_ptr<CouplerDelegation> _record_binder
 )
 {
     TreeScreen *_tree_screen = globalparameters.tree_screen();
@@ -1931,11 +1931,12 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
     if(item->is_lite())item->to_fat();
 
-    item->binder(generator);
-    item->activator(activator);
+    item->record_binder(_record_binder);
+    //    item->activator(activator);
+
     //    item->is_registered_to_record_controller_and_tabmanager(false);
 
-    if(!item->binder() || !item->activator()) {
+    if(!item->record_binder()) {
 
         //        if(item->is_lite())item->to_fat();
 
@@ -1997,10 +1998,11 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             } else {
                 assert(_result == _source_item);
+                assert(_result->is_registered_to_browser());
             }
 
             assert(!_result->is_lite());
-            assert(_result->is_registered_to_browser());
+            //            assert(_result->is_registered_to_browser());
 
         } else {
 
@@ -2027,6 +2029,7 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
                 if(_result->field("id") == "")_result->field("id", get_unical_id());
 
+                assert(_result->is_registered_to_browser());
                 //                _item->binder(generator);
                 //                _item->activator(activator);
                 //                _item->is_registered_to_record_controller(true);
@@ -2063,7 +2066,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
         assert(_result != _know_model_board->root_item());
 
-        assert(_result->is_registered_to_browser());
+        //        assert(_result->is_registered_to_browser());
+
         assert(_result->field("url") == item->field("url"));
         //    }
 
@@ -2084,10 +2088,9 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
 }
 
-boost::intrusive_ptr<TreeItem> RecordController::request_item(
+boost::intrusive_ptr<TreeItem> RecordController::item_request_from_tree(
     const QUrl &_url
-    , bind_helper generator
-    , active_helper activator
+    , std::shared_ptr<CouplerDelegation> _record_binder
 )
 {
     TreeScreen *_tree_screen = globalparameters.tree_screen();
@@ -2136,6 +2139,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
             if(_result->is_lite())_result->to_fat();
 
             if(_result->field("id") == "")_result->field("id", get_unical_id());
+
+            assert(_result->is_registered_to_browser());
 
             //            //            _result->binder(generator);
             //            //            _result->activator(activator);
@@ -2251,6 +2256,8 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
 
             if(_result->field("id") == "")_result->field("id", get_unical_id());
 
+            assert(_result->is_registered_to_browser());
+
             //            //            _result->binder(generator);
             //            //            _result->activator(activator);
 
@@ -2287,19 +2294,19 @@ boost::intrusive_ptr<TreeItem> RecordController::request_item(
     //        //                //                _record->generate();    // why?
     //        //            }
 
-    _result->binder(generator);
-    _result->activator(activator);
+    _result->record_binder(_record_binder);
+    //    _result->activator(activator);
 
     assert(_result != _know_model_board->root_item());
-    //    assert(_result->is_registered_to_record_controller_and_tabmanager());
-    assert(_result->field("url") == _url.toString());
-    //    } // browser_pages
+    //    //    assert(_result->is_registered_to_record_controller_and_tabmanager());
+    //    assert(_result->field("url") == _url.toString());   // maybe other url loaded !
+    //    //    } // browser_pages
 
-    //    }
+    //    //    }
 
-    //    }
+    //    //    }
 
-    //    assert(_record);
+    //    //    assert(_record);
 
     return _result;
 }

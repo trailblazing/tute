@@ -189,6 +189,11 @@ namespace browser {
         settings.setValue(QLatin1String("openLinksIn"), openLinksIn->currentIndex());
         settings.endGroup();
 
+
+        settings.beginGroup(QLatin1String("downloadmanager"));
+        settings.setValue(QLatin1String("downloadDirectory"), downloadsLocation->text());
+        settings.endGroup();
+
         settings.beginGroup(QLatin1String("history"));
         int historyExpire = expireHistory->currentIndex();
         int idx = -1;
@@ -231,6 +236,7 @@ namespace browser {
         settings.setValue(QLatin1String("persistentDataPath"), pdataPath);
 
         settings.endGroup();
+
 
         // proxy
         settings.beginGroup(QLatin1String("proxy"));

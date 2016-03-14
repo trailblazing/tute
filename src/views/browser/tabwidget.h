@@ -235,8 +235,16 @@ namespace browser {
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-        typedef TreeItem::bind_helper bind_helper;
-        typedef TreeItem::active_helper active_helper;
+        typedef CouplerDelegation::bind_interface          bind_interface;
+        typedef CouplerDelegation::activate_interface      activate_interface;
+        typedef CouplerDelegation::bounded_item_interface  bounded_item_interface;
+        typedef CouplerDelegation::bounded_page_interface  bounded_page_interface;
+
+        typedef CouplerDelegation::bind_helper         bind_helper;
+        typedef CouplerDelegation::activate_helper     activate_helper;
+        typedef CouplerDelegation::bounded_item_helper bounded_item_helper;
+        typedef CouplerDelegation::bounded_page_helper bounded_page_helper;
+
         ~TabWidget();
         void clear();
         void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
@@ -265,20 +273,22 @@ namespace browser {
         WebView *find_nopin()const;
         Browser *browser() {return _browser;}
 
-        struct ActiveRecordBinder {
-            TabWidget       *_tabmanager;
-            bool            _make_current;
+        struct Coupler : public std::enable_shared_from_this<Coupler> {
+            TabWidget                       *_tabmanager;
+            boost::intrusive_ptr<TreeItem>  _bounded_item;
+            WebPage                         *_bounded_page;
+            bool                            _make_current;
 
-            ActiveRecordBinder(
+            Coupler(
                 TabWidget *_tabmanager
-                , bool make_current = true
-            ): _tabmanager(_tabmanager) , _make_current(make_current)
+                , bool _make_current = true
+            ): _tabmanager(_tabmanager), _bounded_page(nullptr), _make_current(_make_current)
             {}
 
-            WebView *binder(boost::intrusive_ptr<TreeItem> item, boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *));
-
-
-            WebView *activator(boost::intrusive_ptr<TreeItem> item);
+            WebView *binder(boost::intrusive_ptr<TreeItem> item);   // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
+            boost::intrusive_ptr<TreeItem> bounded_item() {return _bounded_item;}
+            WebPage *bounded_page() {return _bounded_page;}
+            WebView *activator();
 
 
         };
@@ -293,9 +303,9 @@ namespace browser {
         TabBar *tabbar() {return _tabbar;}
         RecordController *record_controller() {return _record_controller;}
 
-        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item);
-        boost::intrusive_ptr<TreeItem> request_item(const QUrl &_url);
-        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url);
+        boost::intrusive_ptr<TreeItem> item_equip_registered(boost::intrusive_ptr<TreeItem> record);
 
         RecordModel *source_model() {return _record_controller->source_model();}
         RecordView *view() {return _record_controller->view();}
@@ -381,6 +391,7 @@ namespace browser {
         // void moveTab(int fromIndex, int toIndex);
         void onTabsChanged();
         void fullScreenRequested(QWebEngineFullScreenRequest request);
+        WebView *view_no_pinned();
     private:
         Browser             *_browser;
         // RecordScreen        *_record_screen;

@@ -202,7 +202,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         if(_item->natural_field_source("url") != home)
             _item->natural_field_source("url", home);
 
-        page->equip_registered(_item)->activate(); // page->load(_record, true);
+        page->item_equip_registered(_item)->activate(); // page->load(_record, true);
         //        _record->active();
     });
 

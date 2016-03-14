@@ -33,6 +33,7 @@ extern AppConfig appconfig;
 
 RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_controller)
     : QTableView(_record_screen)
+    , _context_menu(new QMenu(this))
     , _table_screen(_record_screen)
     , _record_controller(_record_controller)
     , _layout(new QVBoxLayout(this))
@@ -58,6 +59,7 @@ RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_c
 
 RecordView::~RecordView()
 {
+    delete _context_menu;
     delete _layout;
 }
 
@@ -230,8 +232,8 @@ void RecordView::click_record(const QModelIndex &index)
 
 void RecordView::assembly_context_menu(void)
 {
-    // Конструирование меню
-    _context_menu = new QMenu(this);
+    //    // Конструирование меню
+    //    _context_menu = new QMenu(this);
 
     //    RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 

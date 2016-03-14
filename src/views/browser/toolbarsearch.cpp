@@ -61,6 +61,9 @@
 #include "main.h"
 #include "views/tree/TreeScreen.h"
 #include "views/tree/KnowView.h"
+#include "models/tree/KnowModel.h"
+
+
 
 namespace browser {
 
@@ -180,7 +183,7 @@ namespace browser {
                 //                if(globalparameters.entrance()->activiated_browser()) {
                 browser::Browser *browser = globalparameters.entrance()->activated_browser();
                 //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-                auto r = browser->tabmanager()->request_item(url);
+                auto r = browser->tabmanager()->item_request_from_tree(url);
 
                 r->activate();
                 //                } else {

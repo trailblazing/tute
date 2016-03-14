@@ -51,6 +51,12 @@
 #include "models/tree/KnowModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/main_window/MainWindow.h"
+#include "models/record_table/Record.h"
+#include "libraries/GlobalParameters.h"
+#include "browser.h"
+#include "webview.h"
+#include "views/record/MetaEditor.h"
+#include "models/tree/TreeItem.h"
 
 
 namespace browser {
@@ -345,7 +351,7 @@ namespace browser {
                 WebPage *page = view->page();
 
                 if(page) {
-                    boost::intrusive_ptr<TreeItem> record = page->current_item();
+                    boost::intrusive_ptr<TreeItem> record = page->bounded_item();
                     assert(record);
                     QString home = record->field("home");
                     QUrl homeurl = QUrl(home);
@@ -354,7 +360,7 @@ namespace browser {
                        && homeurl != page->url()
                       ) {
                         record->field("url", home);
-                        page->equip_registered(record)->activate(); // page->load(record, true);
+                        page->item_equip_registered(record)->activate(); // page->load(record, true);
                     }
                 }
             }
@@ -798,7 +804,7 @@ namespace browser {
         Browser *browser = activated_browser();
         //            auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
 
-        auto r = browser->tabmanager()->request_item(url);
+        auto r = browser->tabmanager()->item_request_from_tree(url);
         //            r->self_bind();
         r->activate();
         //        } else {
@@ -822,7 +828,7 @@ namespace browser {
             //        if(activiated_browser().first) {
             Browser *browser = activated_browser();
 
-            auto r = browser->tabmanager()->request_item(item);
+            auto r = browser->tabmanager()->item_request_from_tree(item);
 
             r->activate();
         }
@@ -1072,7 +1078,7 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    WebView *Entrance::equip_registered(boost::intrusive_ptr<TreeItem> _it)
+    WebView *Entrance::item_equip_registered(boost::intrusive_ptr<TreeItem> _it)
     {
         assert(_it);
         assert(!_it->is_lite());
@@ -1111,7 +1117,7 @@ namespace browser {
 
                     if(_view == nullptr && _browser) {
                         //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                        _view = _browser->tabmanager()->equip_registered(_it)->bind(); // _browser->invoke_registered_page(_it);
+                        _view = _browser->tabmanager()->item_equip_registered(_it)->bind(); // _browser->invoke_registered_page(_it);
                     } else {
 
                         //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
@@ -1133,7 +1139,7 @@ namespace browser {
                         //                        activator(ar)
                         //                    );
 
-                        _view->page()->equip_registered(_it);
+                        _view->page()->item_equip_registered(_it);
 
 
                         //                    }

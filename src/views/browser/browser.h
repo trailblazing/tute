@@ -49,7 +49,7 @@
 #include <QWebEngineSettings>
 #include "controllers/record_table/RecordController.h"
 //#include "tabmanager.h"
-
+#include "models/tree/TreeItem.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -134,6 +134,15 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
+        typedef CouplerDelegation::bind_interface          bind_interface;
+        typedef CouplerDelegation::activate_interface      activate_interface;
+        typedef CouplerDelegation::bounded_item_interface  bounded_item_interface;
+        typedef CouplerDelegation::bounded_page_interface  bounded_page_interface;
+
+        typedef CouplerDelegation::bind_helper         bind_helper;
+        typedef CouplerDelegation::activate_helper     activate_helper;
+        typedef CouplerDelegation::bounded_item_helper bounded_item_helper;
+        typedef CouplerDelegation::bounded_page_helper bounded_page_helper;
 
         TabWidget   *tabWidget() {return _tabmanager;}
         TabWidget   *tabWidget() const {return _tabmanager;}
@@ -155,7 +164,7 @@ namespace browser {
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
         WebView     *invoke_registered_page(boost::intrusive_ptr<TreeItem> item);
-        boost::intrusive_ptr<TreeItem> equip_registered(boost::intrusive_ptr<TreeItem> record);
+        boost::intrusive_ptr<TreeItem> item_equip_registered(boost::intrusive_ptr<TreeItem> record);
         RecordScreen *record_screen() {return _record_screen;}
         Entrance    *entrance() {return _entrance;}
     public slots:
@@ -218,8 +227,8 @@ namespace browser {
 
     private:
         void init();
-        boost::intrusive_ptr<TreeItem> request_item(QUrl const &url);
-        boost::intrusive_ptr<TreeItem> request_item(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url);
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item);
         void run_script(const QString &style_source);
         void load_default_state();
         void append_to_file_menu();

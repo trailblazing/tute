@@ -24,7 +24,7 @@
 #include "models/record_table/RecordModel.h"
 #include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
-
+#include "models/tree/KnowModel.h"
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
@@ -189,7 +189,7 @@ void RecordScreen::setup_actions(void)
                 auto current_root_item = source_model->item(_index);
 
                 data["id"]      =  get_unical_id(); //current_root_item->id();     // source_model->root_item()->id();     //
-                data["name"]    =  this->tabmanager()->webView(0)->page()->current_item()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
+                data["name"]    =  this->tabmanager()->webView(0)->page()->bounded_item()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
 
                 boost::intrusive_ptr<TreeItem> new_branch_root = boost::intrusive_ptr<TreeItem>(new TreeItem(current_root_item, data));
 
@@ -199,7 +199,7 @@ void RecordScreen::setup_actions(void)
                     auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                     for(int i = 0; i < tabmanager->count(); i++) {
-                        auto item = tabmanager->webView(i)->page()->current_item();
+                        auto item = tabmanager->webView(i)->page()->bounded_item();
 
                         if(!_tree_screen->know_model_board()->is_item_exists(item->field("id"))) {
 
