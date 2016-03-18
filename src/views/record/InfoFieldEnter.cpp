@@ -9,7 +9,7 @@
 
 extern AppConfig appconfig;
 
-QMap<Qt::CheckState, QString> _check_state{
+QMap<Qt::CheckState, QString> _string_from_check_state{
     {
         Qt::CheckState::Checked
         , QChar(0x2705)//QChar(0x2713)//QChar(0x2611) // QChar(Qt::UNICODE_ACCEL + 2713) // QChar(Qt::ALT + 251)  //  "v"   //QChar(0xfb)
@@ -17,7 +17,7 @@ QMap<Qt::CheckState, QString> _check_state{
     , {Qt::CheckState::Unchecked, ""}
 };
 
-QMap<QString, Qt::CheckState> _state_check{
+QMap<QString, Qt::CheckState> _state_check_from_string{
     {
         QChar(0x2705) // QChar(Qt::UNICODE_ACCEL + 2713) // QChar(Qt::ALT + 251)  //  "v"    //QChar(0xfb)
         , Qt::CheckState::Checked
@@ -226,7 +226,7 @@ bool InfoFieldEnter::checkFieldName(QString name)
 QString InfoFieldEnter::getField(QString name)
 {
     if(checkFieldName(name)) {
-        if(name == "pin")   return  _check_state[_recordpin->checkState()];
+        if(name == "pin")   return  _string_from_check_state[_recordpin->checkState()];
 
         if(name == "name")  return  recordName->text();
 
@@ -247,7 +247,7 @@ QString InfoFieldEnter::getField(QString name)
 void InfoFieldEnter::setField(QString name, QString value)
 {
     if(checkFieldName(name)) {
-        if(name == "pin")       _recordpin->setCheckState(_state_check[value]);
+        if(name == "pin")       _recordpin->setCheckState(_state_check_from_string[value]);
 
         if(name == "name")      recordName->setText(value);
 

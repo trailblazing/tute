@@ -15,6 +15,13 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
+#include "views/browser/tabwidget.h"
+
+
+
+
+
+
 class KnowModel;
 class QNetworkReply;
 class QSslError;
@@ -87,7 +94,7 @@ namespace browser {
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
         //        void setupDynamicSignals(void);
 
-        std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
+        //        std::pair<Browser *, WebView *> invoke_page(Record *const record);  //= register_record(QUrl(DockedWindow::_defaulthome))
 
 
 
@@ -115,13 +122,43 @@ namespace browser {
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
-        WebView *item_equip_registered(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
-        void activate(const QUrl &url);
+        WebView *item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
+
+        template<typename url_type>
+        void activate(const QUrl &url)
+        {
+            clean();
+
+            WebView *v = nullptr;
+
+            if(_browsers.size() > 0) {
+                for(auto &browser : _browsers) {
+                    v = browser->tabmanager()->find<url_type>(url);
+
+                    if(v) {
+                        v->page()->activate();
+                    }
+                }
+            }
+
+            if(v == nullptr) {
+
+                Browser *browser = activated_browser();
+
+                auto r = browser->tabmanager()->item_request_from_tree<url_type>(url);
+
+                r->activate();
+
+            }
+        }
+
         void activate(boost::intrusive_ptr<TreeItem> item);
 
         bool restore_state(const QByteArray &state);
-        std::pair<Browser *, WebView *> find(boost::intrusive_ptr<TreeItem> record);
-        std::pair<Browser *, WebView *> find(QUrl url);
+        //        std::pair<Browser *, WebView *>
+        WebView *find(boost::intrusive_ptr<TreeItem> item);
+        //        std::pair<Browser *, WebView *>
+        WebView *find(QUrl url);
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);

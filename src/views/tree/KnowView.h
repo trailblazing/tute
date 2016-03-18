@@ -25,7 +25,7 @@ public:
 
     void sychronize();
 
-    void setup_model(boost::intrusive_ptr<TreeItem> _item);
+    void source_model(boost::intrusive_ptr<TreeItem> _item);
 
     KnowModel *source_model()const {return _know_root;}
     //    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;

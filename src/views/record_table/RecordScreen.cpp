@@ -33,13 +33,12 @@ extern AppConfig appconfig;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
-RecordScreen::RecordScreen(//TreeScreen           *_tree_screen
-    //,
+RecordScreen::RecordScreen(//TreeScreen           *_tree_screen    //,
     FindScreen          *_find_screen
-    , MetaEditor         *_editor_screen
-    , browser::Browser   *_browser
-    , HidableTabWidget   *_vtabwidget
-    , MainWindow         *_main_window
+    , MetaEditor        *_editor_screen
+    , browser::Browser  *_browser
+    , HidableTabWidget  *_vtabwidget
+    , MainWindow        *_main_window
 )
     : QWidget(_vtabwidget)
     , _save_in_new_branch(new QAction(tr("Save in new branch"), this))
@@ -65,14 +64,12 @@ RecordScreen::RecordScreen(//TreeScreen           *_tree_screen
     , _toolsline(new QToolBar(this))
     , _extra_toolsline(new QToolBar(this))
     , _treepathlabel(new QLabel(this))
-    , _tabmanager(
-          new browser::TabWidget(// _tree_screen,
-              _find_screen
-              , _editor_screen
-              , this
-              , _browser
-              , _main_window
-          ))
+    , _tabmanager(new browser::TabWidget(_find_screen          // _tree_screen,
+                                         , _editor_screen
+                                         , this
+                                         , _browser
+                                         , _main_window
+                                        ))
     , _record_controller(_tabmanager->record_controller())
       //    , _record_controller(new RecordController(object_name
       //                                              , _tree_screen
@@ -145,7 +142,7 @@ void RecordScreen::save_in_new_branch(bool checked)
             auto source_model = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source_model->size(); i++) {
-                if(!tree_screen->know_model_board()->is_item_exists(source_model->item(i)->field("id"))) {
+                if(!tree_screen->know_model_board()->is_id_exists(source_model->item(i)->field("id"))) {
                     if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
                     source_model->item(i)->parent(into_know_branch);
@@ -201,7 +198,7 @@ void RecordScreen::setup_actions(void)
                     for(int i = 0; i < tabmanager->count(); i++) {
                         auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                        if(!_tree_screen->know_model_board()->is_item_exists(item->field("id"))) {
+                        if(!_tree_screen->know_model_board()->is_id_exists(item->field("id"))) {
 
                             if(item->is_lite())item->to_fat();
 
@@ -224,8 +221,8 @@ void RecordScreen::setup_actions(void)
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
                     _tree_screen->branch_add(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
-                        //,
-                        new_branch_root
+                        _tree_screen->tree_view()->index_current()  //,
+                        , new_branch_root
                         , true
                         , source_model             // _tree_screen->know_branch()
                     );

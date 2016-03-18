@@ -24,6 +24,10 @@
 #include <boost/serialization/scoped_ptr.hpp>           // for serialization
 #include <boost/serialization/tracking.hpp>             // for serialization
 #include <boost/shared_ptr.hpp>
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
+
 #include <iostream>
 #include <sstream>
 //  // #include <remote/archive/text_iarchive.hpp>           // for serialization
@@ -52,21 +56,81 @@ using boost::static_pointer_cast;
 #include <exception>
 namespace sd {
 
+
     template <typename A, typename B>struct STATIC_SAME { enum { value = false }; };
     template <typename A>struct STATIC_SAME<A, A> { enum { value = true }; };
 
+    template <bool, typename T, typename F> struct static_if {
+        // static const bool value = false;
+        typedef F type;
+    };
+
+    template <typename T, typename F> struct static_if < true, T, F > {
+        // static const bool value = true;
+        typedef T type;
+    };
+
+    template <int factorial> struct _ {
+        operator char()
+        {
+            return factorial + std::numeric_limits<int>::max(); // always overflow?
+        }
+    };
+
     template<typename T, typename shared_type>
-    struct STATIC_IF_SHARED;
+    struct static_if_shared;
 
     template<typename T>
-    struct STATIC_IF_SHARED <T, void *> {
-        typedef T *type;   // object "this" pointer
+    struct static_if_shared <T, void *> {
+        typedef typename static_if<std::is_pointer<T>::value, T, T *>::type type; // object "this" pointer
     };
 
     template<typename T>
-    struct STATIC_IF_SHARED <T, boost::shared_ptr<void>> {
+    struct static_if_shared <T, boost::shared_ptr<void>> {
         typedef boost::shared_ptr<T> type;
     };
+
+    //    template<typename T>
+    //    struct static_if_shared <T, boost::intrusive_ptr<void>> {
+    //        typedef boost::intrusive_ptr<T> type;
+    //    };
+
+    template<typename T>
+    struct static_if_shared <T, std::shared_ptr<void>> {
+        typedef std::shared_ptr<T> type;
+    };
+
+    template<typename T, typename shared_type>
+    typename static_if_shared<T, shared_type>::type static_if_shared_pointer_cast(shared_type obj);
+
+    template<typename T>
+    typename static_if_shared<T, void *>::type static_if_shared_pointer_cast/* <T, void *>*/(void *obj)
+    {
+        //        typedef typename static_if_shared<T, void *>::type type;   // object "this" pointer
+        return static_cast<T *>(obj);
+    }
+
+    template<typename T>
+    typename static_if_shared<T, boost::shared_ptr<void>>::type static_if_shared_pointer_cast /*<T, boost::shared_ptr<void>>*/ (boost::shared_ptr<void> obj)
+    {
+        //        typedef typename static_if_shared<T, boost::shared_ptr<void>>::type type;
+        return boost::static_pointer_cast<T>(obj);
+    }
+
+    //    template<typename T>
+    //    typename static_if_shared<T, boost::intrusive_ptr<void>>::type static_if_shared_pointer_cast /*<T, boost::shared_ptr<void>>*/ (boost::intrusive_ptr<void> obj)
+    //    {
+    //        //        typedef typename static_if_shared<T, boost::shared_ptr<void>>::type type;
+    //        return boost::intrusive_ptr<T>(static_cast<typename static_if<std::is_pointer<T>::value, T, T *>::type>(obj));
+    //    }
+
+    template<typename T>
+    typename static_if_shared<T, std::shared_ptr<void>>::type static_if_shared_pointer_cast /*<T, std::shared_ptr<void>>*/ (std::shared_ptr<void> obj)
+    {
+        //        typedef typename static_if_shared<T, std::shared_ptr<void>>::type type;
+        return std::static_pointer_cast<T>(obj);
+    }
+
 
     template<typename bailee, typename bailee_return, typename bailee_require>
     struct _invoke_functor {
@@ -269,22 +333,7 @@ namespace sd {
         }
     };
 
-    template <bool, typename T, typename F> struct static_if {
-        // static const bool value = false;
-        typedef F type;
-    };
 
-    template <typename T, typename F> struct static_if < true, T, F > {
-        // static const bool value = true;
-        typedef T type;
-    };
-
-    template <int factorial> struct _ {
-        operator char()
-        {
-            return factorial + std::numeric_limits<int>::max(); // always overflow?
-        }
-    };
 
     //int test() {
     //  char(_<Factorial<5>::value>()); // http://stackoverflow.com/questions/4977715/calculating-and-printing-factorial-at-compile-time-in-c
@@ -420,8 +469,8 @@ namespace sd {
 
         static void transmit(std::shared_ptr<void> _functor, boost::shared_ptr<void> _object, _Arg &&... _arg)
         {
-            auto obj = boost::static_pointer_cast<object_type>(_object);
-            auto real_functor = boost::static_pointer_cast<lazy_functor>(_functor);
+            auto obj = static_if_shared_pointer_cast<object_type>(_object);
+            auto real_functor = static_if_shared_pointer_cast<lazy_functor>(_functor);
 
             (*obj.*real_functor->_func)(std::forward<_Arg>(_arg)...);
 
@@ -499,7 +548,7 @@ namespace sd {
             template <typename object_type_, typename return_type_, std::size_t... _I, typename... _Arg_>
             inner_impl(
                 return_type_* _return
-                , typename STATIC_IF_SHARED<object_type_, object_pointer_type>::type object
+                , typename static_if_shared<object_type_, object_pointer_type>::type object
                 , std::shared_ptr<transmitter<object_type_, return_type_, _Arg_...> > real_functor
                 , sequence<_I...>)
             {
@@ -513,7 +562,7 @@ namespace sd {
             template <typename object_type_, std::size_t... _I, typename... _Arg_>
             inner_impl(
                 void *_return
-                , typename STATIC_IF_SHARED<object_type_, object_pointer_type>::type object
+                , typename static_if_shared<object_type_, object_pointer_type>::type object
                 , std::shared_ptr<transmitter<object_type_, void, _Arg_...> > real_functor
                 , sequence<_I...>)
             {
@@ -542,7 +591,7 @@ namespace sd {
         static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg... arg)
         {
             return  // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
-                (*boost::static_pointer_cast<object_type>(_object).*boost::static_pointer_cast<transmitter_interface>(_functor)->_func)(arg...);
+                (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter_interface>(_functor)->_func)(arg...);
         }
 
     private:
@@ -563,7 +612,7 @@ namespace sd {
         static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg... arg)
         {
             return  // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
-                (*boost::static_pointer_cast<object_type>(_object).*boost::static_pointer_cast<transmitter_interface_const>(_functor)->_func)(arg...);
+                (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter_interface_const>(_functor)->_func)(arg...);
         }
 
     private:
@@ -584,7 +633,7 @@ namespace sd {
 
         static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg... arg)
         {
-            (*boost::static_pointer_cast<object_type>(_object).*boost::static_pointer_cast<transmitter_interface>(_functor)->_func)(arg...);
+            (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter_interface>(_functor)->_func)(arg...);
         }
 
     private:
@@ -605,7 +654,7 @@ namespace sd {
 
         static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg... arg)
         {
-            (*boost::static_pointer_cast<object_type>(_object).*boost::static_pointer_cast<transmitter_interface_const>(_functor)->_func)(arg...);
+            (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter_interface_const>(_functor)->_func)(arg...);
         }
 
     private:
@@ -625,7 +674,7 @@ namespace sd {
         static return_type transmit(boost::shared_ptr<void> _functor, _Arg... arg)
         {
             return  // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
-                (boost::static_pointer_cast<static_transmitter_interface>(_functor)->_func)(arg...);
+                (static_if_shared_pointer_cast<static_transmitter_interface>(_functor)->_func)(arg...);
         }
 
     private:
@@ -644,7 +693,7 @@ namespace sd {
         static void transmit(boost::shared_ptr<void> _functor, _Arg... arg)
         {
             //return    // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
-            (boost::static_pointer_cast<static_transmitter_interface>(_functor)->_func)(arg...);
+            (static_if_shared_pointer_cast<static_transmitter_interface>(_functor)->_func)(arg...);
         }
 
     private:
@@ -706,14 +755,14 @@ namespace sd {
     //inline void save_transmit(remote::archive::text_oarchive ar, const shared_ptr<void> _obj, const unsigned int file_version)
     //{
     //  ::boost::serialization::save_construct_data //<remote::archive::text_oarchive, object_type_>
-    //      (ar, boost::static_pointer_cast<object_type_>(_obj), file_version);
+    //      (ar, static_if_shared_pointer_cast<object_type_>(_obj), file_version);
     //}
 
     //template<typename object_type_>
     //inline void load_transmit(remote::archive::text_iarchive ar, shared_ptr<void> _obj, const unsigned int file_version)
     //{
     //  ::boost::serialization::load_construct_data //<remote::archive::text_iarchive, object_type_>
-    //      (ar, boost::static_pointer_cast<object_type_>(_obj), file_version);
+    //      (ar, static_if_shared_pointer_cast<object_type_>(_obj), file_version);
     //}
 
 
@@ -783,8 +832,8 @@ namespace sd {
     //      , std::string object_name = ""
     //      ) :
     //      meta_info(o, object_name)
-    //      , _functor_save(boost::static_pointer_cast<void>(boost::make_shared<lazy_functor<_object_type, std::ostream&> >(save)))
-    //      , _functor_load(boost::static_pointer_cast<void>(boost::make_shared<lazy_functor<_object_type, std::istream&> >(load)))
+    //      , _functor_save(static_if_shared_pointer_cast<void>(boost::make_shared<lazy_functor<_object_type, std::ostream&> >(save)))
+    //      , _functor_load(static_if_shared_pointer_cast<void>(boost::make_shared<lazy_functor<_object_type, std::istream&> >(load)))
     //      , _save(lazy_functor<_object_type, std::ostream&>::transmit)
     //      , _load(lazy_functor<_object_type, std::istream&>::transmit)
     //  {
@@ -898,7 +947,7 @@ namespace sd {
             std::string _method_name
             , return_type(object_type::*f)(Arg...)          //  f can be std::function<> template?
             , return_type *r            // = (return_type *)0
-            , typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+            , typename static_if_shared<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
             , Arg &&... arg             // use std::forward<Type> to supply
         ) : // arguments_types(typeid(std::tuple<Arg ...>).name())  //(typeid(std::tuple<std::nullptr_t>).name())
             meta_info(o, "")
@@ -964,12 +1013,12 @@ namespace sd {
         _interface(
             std::string _method_name
             , return_type(object_type::*f)(Arg...)
-            , typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+            , typename static_if_shared<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
         ) :
             meta_info(o, "")
             , _method_name(_method_name)
             , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
-            , _transmitter(boost::static_pointer_cast<void>(boost::make_shared<transmitter_interface<object_pointer_type, object_type, return_type, Arg...> >(f)))
+            , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter_interface<object_pointer_type, object_type, return_type, Arg...> >(f)))
             , _transmit(transmitter_interface<object_pointer_type, object_type, return_type, Arg...>::transmit)
         {
         }
@@ -1012,12 +1061,12 @@ namespace sd {
         _interface_const(
             std::string _method_name
             , return_type(object_type::*f)(Arg...)const
-            , typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+            , typename static_if_shared<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
         ) :
             meta_info(o, "")
             , _method_name(_method_name)
             , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
-            , _transmitter(boost::static_pointer_cast<void>(boost::make_shared<transmitter_interface_const<object_pointer_type, object_type, return_type, Arg...> >(f)))
+            , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter_interface_const<object_pointer_type, object_type, return_type, Arg...> >(f)))
             , _transmit(transmitter_interface_const<object_pointer_type, object_type, return_type, Arg...>::transmit)
         {
         }
@@ -1060,12 +1109,12 @@ namespace sd {
         _interface(
             std::string _method_name
             , void(object_type::*f)(Arg...)
-            , typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+            , typename static_if_shared<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
         ) :
             meta_info(o, "")
             , _method_name(_method_name)
             , _return_type_name(typeid(typename std::remove_reference<void>::type).name())
-            , _transmitter(boost::static_pointer_cast<void>(boost::make_shared<transmitter_interface<object_pointer_type, object_type, void, Arg...> >(f)))
+            , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter_interface<object_pointer_type, object_type, void, Arg...> >(f)))
             , _transmit(transmitter_interface<object_pointer_type, object_type, void, Arg...>::transmit)
         {
         }
@@ -1109,12 +1158,12 @@ namespace sd {
         _interface_const(
             std::string _method_name
             , void(object_type::*f)(Arg...)const
-            , typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+            , typename static_if_shared<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
         ) :
             meta_info(o, "")
             , _method_name(_method_name)
             , _return_type_name(typeid(typename std::remove_reference<void>::type).name())
-            , _transmitter(boost::static_pointer_cast<void>(boost::make_shared<transmitter_interface_const<object_pointer_type, object_type, void, Arg...> >(f)))
+            , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter_interface_const<object_pointer_type, object_type, void, Arg...> >(f)))
             , _transmit(transmitter_interface_const<object_pointer_type, object_type, void, Arg...>::transmit)
         {
         }
@@ -1155,7 +1204,7 @@ namespace sd {
         ) :
             _method_name(_method_name)
             , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
-            , static_transmitter(boost::static_pointer_cast<void>(boost::make_shared<static_transmitter_interface<return_type, Arg...> >(f)))
+            , static_transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<static_transmitter_interface<return_type, Arg...> >(f)))
             , static_transmit(static_transmitter_interface<return_type, Arg...>::transmit)
         {
         }
@@ -1196,7 +1245,7 @@ namespace sd {
         ) :
             _method_name(_method_name)
             , _return_type_name(typeid(void).name())
-            , static_transmitter(boost::static_pointer_cast<void>(boost::make_shared<static_transmitter_interface<void, Arg...> >(f)))
+            , static_transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<static_transmitter_interface<void, Arg...> >(f)))
             , static_transmit(static_transmitter_interface<void, Arg...>::transmit)
         {
         }
@@ -1246,7 +1295,7 @@ namespace sd {
 
         template <typename object_type>
         record(
-            typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o //object_type* const o //= (object_type * const)0
+            typename static_if_shared<object_type, object_pointer_type>::type o //object_type* const o //= (object_type * const)0
             , const std::string object_name = ""
         )
             : meta_info(o, object_name)

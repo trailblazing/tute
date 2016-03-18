@@ -598,7 +598,8 @@ int RecordModel::insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<Tre
     Q_UNUSED(mode)      // to be used
 
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
-    browser::WebView *view = _item->activate();
+
+    browser::WebView *view = _item->record_binder()->bounded_page()->view();    // activate();
     // Вставка новых данных в таблицу конечных записей
 
     // accomplished by TabWidget::addTab in TabWidget::newTab?
@@ -656,7 +657,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::find_current_bound(boost::intrusive_
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
     for(int i = 0; i < count(); i++) {
-        if(item->page_valid() && child(i)->unique_page() == item->unique_page()) {
+        if(item->page_valid() && child(i)->bounded_page() == item->bounded_page()) {
             result = item; break;
         }
     }

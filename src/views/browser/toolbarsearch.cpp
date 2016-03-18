@@ -224,20 +224,23 @@ namespace browser {
                 }
 
                 QUrl url(QLatin1String("https://www.google.com/search"));
-                QUrlQuery urlQuery;
-                urlQuery.addQueryItem(QLatin1String("q"), searchText);
-                urlQuery.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-                urlQuery.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-                urlQuery.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
+                QUrlQuery url_query;
+
+                //                url_query.addQueryItem(QLatin1String("q"), searchText);
+                url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+                url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+                url_query.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
                 // urlQuery.addQueryItem();
-                url.setQuery(urlQuery);
+
+                url.setQuery(url_query);
+                url.setFragment("q=" + searchText);
                 // QString u = url.toString();
                 emit search(url);
             }
         } else {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->branch_add(result_item, true, _tree_screen->tree_view()->source_model());
+            _tree_screen->branch_add(_tree_screen->tree_view()->index_current(), result_item, true, _tree_screen->tree_view()->source_model());
             _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
             auto index = _tree_screen->tree_view()->source_model()->index(result_item->child(0));

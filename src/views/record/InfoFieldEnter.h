@@ -22,8 +22,8 @@ namespace browser {
     class TabBar;
 }
 
-extern QMap<Qt::CheckState, QString> _check_state;
-extern QMap<QString, Qt::CheckState> _state_check;
+extern QMap<Qt::CheckState, QString> _string_from_check_state;
+extern QMap<QString, Qt::CheckState> _state_check_from_string;
 
 class InfoFieldEnter : public QWidget {
     Q_OBJECT

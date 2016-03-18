@@ -341,21 +341,22 @@ namespace browser {
           //              openinnewtab  //false
           //          )
           //, _create_window_generated(false)
-        , _record_binder([ & ]()
-    {
-        boost::intrusive_ptr<TreeItem> item_result;
+        , _record_binder(boost::intrusive_ptr<CouplerDelegation>(new CouplerDelegation(std::make_shared<WebPage::Coupler>(this, _item)))
+                         //              [ & ]()
+                         //    {
+                         //        boost::intrusive_ptr<TreeItem> item_result;
 
-        if(!_item->record_binder()) {
-            item_result = item_request_from_tree(_item);    // _record_controller->   // may be recursive calling!
-        } else {
-            item_result = item_equip_registered(_item);
-        }
+                         //        if(!_item->record_binder()) {
+                         //            item_result = item_request_from_tree(_item);    // _record_controller->   // may be recursive calling!
+                         //        } else {
+                         //            item_result = item_equip_registered(_item);
+                         //        }
 
-        if(item_result->is_lite())item_result->to_fat();
+                         //        if(item_result->is_lite())item_result->to_fat();
 
-        return item_result->record_binder();
-    }()
-                    )
+                         //        return item_result->record_binder();
+                         //    }()
+                        )
     {
         //        assert(url != nullptr);
 
@@ -449,6 +450,16 @@ namespace browser {
     //        QWebEnginePage::load(url);
     //    }
 
+    void WebPage::setUrl(const QUrl &url)
+    {
+
+
+        QWebEnginePage::setUrl(url);    // load(QUrl(_record->getNaturalFieldSource("url")));
+
+
+    }
+
+
     WebView *WebPage::load(const boost::intrusive_ptr<TreeItem> item, bool checked)
     {
         //        Q_UNUSED(checked)
@@ -506,14 +517,17 @@ namespace browser {
 
         if(_view    // && _loadingurl.isValid()  // && url().isValid()    // && url().toString() != _url_str
            && _url_str != Browser::_defaulthome  // url() may be nothing
-           && _url != _loadingurl
+           // && _url != _loadingurl
           ) {
             triggerAction(QWebEnginePage::Stop);
 
             // QUrl url = QUrl(_record->getNaturalFieldSource("url"));
-            QWebEnginePage::setUrl(_url);    // load(QUrl(_record->getNaturalFieldSource("url")));
 
-            QWebEnginePage::load(_url);
+            setUrl(_url);   // QWebEnginePage::setUrl(_url);    // load(QUrl(_record->getNaturalFieldSource("url")));
+
+            //            QWebEnginePage::load(_url);
+
+
             //            }
             //            update_record(_url, title(), checked);
 
@@ -682,8 +696,8 @@ namespace browser {
 
                 // assert(_record);
 
-                //            QUrl current = url();
-                //            QUrl requestedurl = requestedUrl();
+                QUrl current = url();
+                QUrl requestedurl = requestedUrl(); //requestedUrl
                 //            QString previous_url = _record->getNaturalFieldSource("url");    // the parent page that host the new link
 
                 //            return globalparameters.entrance()->activebrowser()->tabWidget()->newTab()->page();
@@ -694,7 +708,7 @@ namespace browser {
 
                 // return nullptr;
 
-                WebView *view = globalparameters.entrance()->find(QUrl(Browser::_defaulthome)).second;
+                WebView *view = globalparameters.entrance()->find(QUrl(Browser::_defaulthome));
 
                 if(view) {
                     //                return view->page();
@@ -722,7 +736,7 @@ namespace browser {
                     //                r->generate();
                     r->activate();
 
-                    page = r->unique_page();
+                    page = r->bounded_page();
 
                 }
 
@@ -764,6 +778,13 @@ namespace browser {
 
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
+            boost::intrusive_ptr<TreeItem> _current_item = page->_record_binder->bounded_item();
+            _current_item->field("url", url.toString());
+            page->load(_current_item); // record->generate();
+            // page->activate();     // record->active();
+        });
+
+        connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::load, [&](const QUrl & url) {
             boost::intrusive_ptr<TreeItem> _current_item = page->_record_binder->bounded_item();
             _current_item->field("url", url.toString());
             page->load(_current_item); // record->generate();
@@ -918,39 +939,44 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(boost::intrusive_ptr<TreeItem> item)
     {
-        auto ar = boost::make_shared<WebPage::Coupler>(this);
+        boost::intrusive_ptr<TreeItem> re;
+        auto it = _tabmanager->item_request_from_tree_impl(item);
 
-        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-        //                             >>("", &WebPage::RecordBinder::binder, ar);
-        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+        //        if(// !it->is_registered_to_browser() &&
+        //            !it->record_binder())
+        re = item_registered_imperative_equip(it);
+        //        else
+        //            re = it;
 
-        return _record_controller->item_request_from_tree(item
-                                                          , std::make_shared<CouplerDelegation>(
-                                                              std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
-                                                              , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
-                                                              , std::make_shared<bind_interface>("", &Coupler::binder, ar)
-                                                              , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
-                                                          ));
+        //        auto ar = boost::make_shared<WebPage::Coupler>(this, item);
+        //        assert(_record_binder);
+        //        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+        //        //                             >>("", &WebPage::RecordBinder::binder, ar);
+        //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+
+        return re;
     }
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(const QUrl &_url)
     {
-        auto ar = boost::make_shared<WebPage::Coupler>(this);
+        //        auto ar = boost::make_shared<WebPage::Coupler>(this);
 
-        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-        //                             >>("", &WebPage::RecordBinder::binder, ar);
-        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+        //        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+        //        //                             >>("", &WebPage::RecordBinder::binder, ar);
+        //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+        boost::intrusive_ptr<TreeItem> re;
+        auto it = _tabmanager->item_request_from_tree_impl(_url);
 
-        return _record_controller->item_request_from_tree(_url
-                                                          , std::make_shared<CouplerDelegation>(
-                                                              std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
-                                                              , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
-                                                              , std::make_shared<bind_interface>("", &Coupler::binder, ar)
-                                                              , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
-                                                          ));
+        //        if(// !it->is_registered_to_browser() &&
+        //            !it->record_binder())
+        re = item_registered_imperative_equip(it);
+        //        else
+        //            re = it;
+
+        return re;
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item_equip_registered(boost::intrusive_ptr<TreeItem> it)  // , browser::WebPage *page
+    boost::intrusive_ptr<TreeItem> WebPage::item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item)  // , browser::WebPage *page
     {
         //        auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
         //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
@@ -961,22 +987,32 @@ namespace browser {
         //        };
 
         // registered record, but have no generator:
-        auto ar = boost::make_shared<WebPage::Coupler>(this);
-        //        it->binder(
-        //            binder(ar)
-        //        );
+        //        auto ar =
 
-        //        it->activator(
-        //            activator(ar)
-        //        );
+        //        if(!item->is_registered_to_browser() && !item->record_binder()) {
+        _record_binder = boost::intrusive_ptr<CouplerDelegation>(new CouplerDelegation(std::make_shared<WebPage::Coupler>(this, item)));
+        item->record_binder(_record_binder);
+        //        } else {
+        //            if(_record_binder != item->record_binder())_record_binder = item->record_binder();
+        //        }
 
-        it->record_binder(std::make_shared<CouplerDelegation>(
-                              std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
-                              , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
-                              , std::make_shared<bind_interface>("", &Coupler::binder, ar)
-                              , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
-                          ));
-        return it;
+
+
+        //        //        it->binder(
+        //        //            binder(ar)
+        //        //        );
+
+        //        //        it->activator(
+        //        //            activator(ar)
+        //        //        );
+
+        //        it->record_binder(std::make_shared<CouplerDelegation>(
+        //                              std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
+        //                              , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
+        //                              , std::make_shared<bind_interface>("", &Coupler::binder, ar)
+        //                              , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
+        //                          ));
+        return item;
     }
 
 #ifdef USE_POPUP_WINDOW
@@ -1235,7 +1271,7 @@ namespace browser {
             for(int i = 0; i < source_model_size; i++) {
                 auto item_maybe_to_removed = _record_controller->source_model()->child(i);
 
-                if(item_maybe_to_removed->unique_page() == this || !item_maybe_to_removed->page_valid()) { // others refrer to this
+                if(item_maybe_to_removed->bounded_page() == this || !item_maybe_to_removed->page_valid()) { // others refrer to this
                     //                        if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)
                     //                            _tabmanager->closeTab(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()));  // _record_controller->source_model()->remove_child(item_maybe_to_removed->id());
 
@@ -1262,7 +1298,7 @@ namespace browser {
         if(_tabmanager && _tabmanager->count() > 0) {
             RecordModel *source_model = _record_controller->source_model(); // tab_manager->source_model();
             assert(item);
-            assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
+            //            assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
 
             if(source_model->find_current(item->field("id"))) { //                && record->unique_page() == this
                 _record_controller->remove_child(item->id());
@@ -1277,10 +1313,10 @@ namespace browser {
         if(item) {
 
 
-            item_remove_from_record_screen(item);
+            //            item_remove_from_record_screen(item);
 
-            if(item->page_valid() && item->unique_page()) {
-                if(item->unique_page() == this) {
+            if(item->page_valid() && item->bounded_page()) {
+                if(item->bounded_page() == this) {
                     // remove_item_from_source_model(item);    // this will delete record for ever from database if you use real tree_item as source model of record_view
                     item->page_break();
                     //                    item->binder().reset();
@@ -1288,7 +1324,7 @@ namespace browser {
                     //                    item->page_to_nullptr();   // _record->_page = nullptr; // _record->bind_page(nullptr);
                     //                    assert(!record->binder());
                     //                    assert(!record->activator());
-                    assert(!item->page_valid() && !item->unique_page());
+                    assert(!item->page_valid() && !item->bounded_page());
                 }
             }
 
@@ -1505,9 +1541,11 @@ namespace browser {
     {
         //        assert(_page->url() != QUrl());
         //        assert(url != QUrl());
-
-        //        assert(_page->url() == url);
-        if(_record_binder->bounded_item()) { //           && url == _loadingurl
+        if(_record_binder->bounded_item()) {
+            //            //        assert(_page->url() == url);
+            //            if(_record_binder->bounded_item()->field("pin") != _string_from_check_state[Qt::Checked]
+            //               || url.toString() == _record_binder->bounded_item()->field("home")
+            //              ) { //           && url == _loadingurl
 
             if(url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty()
                && url != QUrl(Browser::_defaulthome)
@@ -1598,17 +1636,30 @@ namespace browser {
                 //                }
 
             }
-        }
 
-        //        if(//_initialurl == QUrl() &&
-        //            url.isValid()
-        //            && _page->record() == nullptr
-        //        ) {  // never in
-        //            Record *record = register_record(url);
-        //            _page->load(record);    // _page->load(url) already invoked?
-        //            // openLinkInNewTab(url);
-        //            update_recordtableview(url, _page->title());
-        //        }
+            //            }
+
+            //            else {
+            //                WebPage *page = static_cast<WebPage *>(createWindow(QWebEnginePage::WebBrowserTab));
+            //                assert(page);
+
+            //                if(page) {
+            //                    // auto ar = boost::make_shared<Coupler>(page);
+            //                    auto r = page->item_request_from_tree(url);
+            //                    r->activate();
+            //                }
+            //            }
+
+            //        if(//_initialurl == QUrl() &&
+            //            url.isValid()
+            //            && _page->record() == nullptr
+            //        ) {  // never in
+            //            Record *record = register_record(url);
+            //            _page->load(record);    // _page->load(url) already invoked?
+            //            // openLinkInNewTab(url);
+            //            update_recordtableview(url, _page->title());
+            //        }
+        }
     }
 
     void WebPage::on_close_requested()
@@ -2192,8 +2243,6 @@ namespace browser {
         connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::loadFinished, this, &WebView::onLoadFinished);
         connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::titleChanged, this->_page, &WebPage::onTitleChanged);
         connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::urlChanged, this->_page, &WebPage::onUrlChanged);
-        //    &WebPage::titleChanged(const QString &title);
-        //    &WebPage::urlChanged(const QUrl &url);
 
     }
 
@@ -2440,7 +2489,7 @@ namespace browser {
     WebView *WebView::load(boost::intrusive_ptr<TreeItem> record)
     {
         //        _page->record(record);
-        return _page->item_equip_registered(record)->activate();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
+        return _page->item_registered_imperative_equip(record)->activate();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
 
     }
 
@@ -2452,8 +2501,18 @@ namespace browser {
     //        show();
     //    }
 
-    WebView *WebPage::Coupler::binder(boost::intrusive_ptr<TreeItem> item)
+    WebPage::Coupler::Coupler(WebPage *_page, boost::intrusive_ptr<TreeItem> _bounded_item)  // , bool make_current = true
+        : std::enable_shared_from_this<Coupler>()
+        , _bounded_page(_page)            // , _make_current(make_current)
+        , _bounded_item(_bounded_item)
     {
+        //        _bounded_page->record_binder(boost::intrusive_ptr<CouplerDelegation>(new CouplerDelegation(shared_from_this())));
+        //        _bounded_item->record_binder(_bounded_page->record_binder());
+    }
+
+    WebView *WebPage::Coupler::binder(/*boost::intrusive_ptr<TreeItem> item*/)
+    {
+
         //        //                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
         WebView *view = _bounded_page->view();;
 
@@ -2466,15 +2525,16 @@ namespace browser {
         //        //        //                }
         //        _bounded_item = item;
 
-        if(item) {
+        if(_bounded_item) {
 
-            if((_bounded_item && _bounded_item.get() != item.get())) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
-                _bounded_page->item_break(_bounded_item);
-            }
+            //            if((_bounded_item && _bounded_item.get() != item.get())) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
+            //                _bounded_page->item_break(_bounded_item);
+            //            }
 
-            _bounded_item = item;
+            //            _bounded_item = item;
 
             if(_bounded_item->record_binder() != _bounded_page->record_binder()) {
+                assert(_bounded_item->record_binder());
                 _bounded_page->record_binder(_bounded_item->record_binder());
             }
 
@@ -2492,13 +2552,24 @@ namespace browser {
         return view;  // _the->load(record, _make_current);
     }
 
+    WebPage::Coupler::~Coupler()
+    {
+        //        if(_bounded_item && _bounded_page) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
+        //            if(_bounded_page->record_binder() && _bounded_item->record_binder())
+        //                _bounded_page->item_break(_bounded_item);
+        //        }
+
+        //        _bounded_page->record_binder().reset();
+        //        _bounded_item->record_binder().reset();
+    }
 
     WebView *WebPage::Coupler::activator(
         // boost::intrusive_ptr<TreeItem> item
     )
     {
+        assert(_bounded_item->record_binder());
         assert(_bounded_item->record_binder() == _bounded_page->record_binder());
-        assert(_bounded_item->unique_page() == _bounded_page);
+        assert(_bounded_item->bounded_page() == _bounded_page);
         assert(_bounded_item == _bounded_page->bounded_item());
         //        WebView *view = nullptr;
 
@@ -2515,9 +2586,26 @@ namespace browser {
 
         return _bounded_page->activate();   // view;
     }
+
     boost::intrusive_ptr<TreeItem> WebPage::bounded_item()const {return _record_binder->bounded_item();}
-    std::shared_ptr<CouplerDelegation> WebPage::record_binder() {return _record_binder;}
-    void WebPage::record_binder(std::shared_ptr<CouplerDelegation> _record_binder) {this->_record_binder = _record_binder;}
+
+    boost::intrusive_ptr<CouplerDelegation> WebPage::record_binder() {return _record_binder;}
+
+    void WebPage::record_binder(boost::intrusive_ptr<CouplerDelegation> _record_binder) {this->_record_binder = _record_binder;}
+
+    WebView *WebPage::view()
+    {
+        //        assert(_view);
+        return _view;
+    }
+
+    RecordController *WebPage::record_controller() {return _record_controller;}
+
+    TabWidget *WebPage::tabmanager() {return _tabmanager;}
+
+
+
+
 }
 
 

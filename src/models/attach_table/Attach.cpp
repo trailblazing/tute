@@ -77,7 +77,7 @@ QStringList Attach::typeAvailableList(void) const
 
 
 // На вход метода подается тег <file>
-void Attach::setupDataFromDom(QDomElement iDomElement)
+void Attach::dom_to_data(QDomElement iDomElement)
 {
     QStringList fieldsName = fieldAvailableList();
 
@@ -86,7 +86,7 @@ void Attach::setupDataFromDom(QDomElement iDomElement)
 }
 
 
-QDomElement Attach::export_to_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement Attach::dom_from_data(std::shared_ptr<QDomDocument> doc) const
 {
     QDomElement elem = doc->createElement("file");
 

@@ -156,7 +156,7 @@ private:
     //    bool            _is_search_global = true;
     //    FindTableWidget     *_findtable;
     //    std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
-    browser::ToolbarSearch          *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
+    browser::ToolbarSearch  *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
     void setup_navigate(void);
     void assembly_navigate(void);

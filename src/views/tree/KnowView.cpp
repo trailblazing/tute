@@ -95,7 +95,7 @@ void KnowView::sychronize()
                 for(int i = 0; i < tabmanager->count(); i++) {
                     auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                    if(!_tree_screen->know_model_board()->is_item_exists(item->field("id"))) {
+                    if(!_tree_screen->know_model_board()->is_id_exists(item->field("id"))) {
 
                         if(item->is_lite())item->to_fat();
 
@@ -110,11 +110,12 @@ void KnowView::sychronize()
             if(modified) {
                 //                new_branch_item->field("id", _know_root->root_item()->id());
                 //                new_branch_item->field("name", _know_root->root_item()->name());
-                assert(_tree_screen->know_model_board()->is_item_exists(_know_root->root_item()->id()));    // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
+                assert(_tree_screen->know_model_board()->is_id_exists(_know_root->root_item()->id()));    // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
-                _tree_screen->children_transfer(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
-                    new_branch_item
+                _tree_screen->branch_children_transfer(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
+                    index_current()
+                    , new_branch_item
                     , _know_root    // _tree_screen->know_branch()
                 );
 
@@ -124,13 +125,13 @@ void KnowView::sychronize()
             }
 
             _tree_screen->branch_update_on_screen(
-                selectionModel()->currentIndex()    // _tree_screen->view_index()
+                index_current() // selectionModel()->currentIndex()    // _tree_screen->view_index()
             );
         }
     }
 }
 
-void KnowView::setup_model(boost::intrusive_ptr<TreeItem> _item)
+void KnowView::source_model(boost::intrusive_ptr<TreeItem> _item)
 {
     //    TreeScreen *_tree_screen = globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
     //    assert(_tree_screen);
@@ -321,7 +322,7 @@ void KnowView::dropEvent(QDropEvent *event)
         //        auto tree_item_drop = tree_item_drop;    // ->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = selectionModel()->currentIndex();    // find_object<TreeScreen>(tree_screen_singleton_name)
+        QModelIndex indexFrom = index_current(); // selectionModel()->currentIndex();    // find_object<TreeScreen>(tree_screen_singleton_name)
         // static_cast<TreeScreen *>(this->parent())->view_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
@@ -350,8 +351,8 @@ void KnowView::dropEvent(QDropEvent *event)
         // В настоящий момент в MimeData попадает только одна запись,
         // но в дальнейшем планируется переносить несколько записей
         // и здесь код подготовлен для переноса нескольких записей
-        RecordController *_record_controller = treeItemDrag->unique_page()->record_controller(); // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
-        browser::TabWidget *_tabmanager = treeItemDrag->unique_page()->view()->tabmanager();
+        RecordController *_record_controller = treeItemDrag->bounded_page()->record_controller(); // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
+        browser::TabWidget *_tabmanager = treeItemDrag->bounded_page()->view()->tabmanager();
 
         for(int i = 0; i < clipboardRecords->size(); i++) {
             // Полные данные записи
@@ -361,7 +362,7 @@ void KnowView::dropEvent(QDropEvent *event)
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
             // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
 
-            _tabmanager->closeTab(_tabmanager->indexOf(record->unique_page()->view()));    // _record_controller->remove_child(record->field("id"));
+            _tabmanager->closeTab(_tabmanager->indexOf(record->bounded_page()->view()));    // _record_controller->remove_child(record->field("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(_record_controller->row_count() == 0)
@@ -479,10 +480,10 @@ QModelIndex KnowView::index_current(void)
             auto _tree_screen = globalparameters.tree_screen();
 
             if(_know_root->root_item()->parent()) {
-                _tree_screen->tree_view()->setup_model(_know_root->root_item()->parent());
+                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
 
             } else {
-                globalparameters.entrance()->activate(QUrl(browser::Browser::_defaulthome));
+                globalparameters.entrance()->activate<url_full>(QUrl(browser::Browser::_defaulthome));
 
             }
 

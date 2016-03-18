@@ -13,8 +13,8 @@
 #include "libraries/wyedit/Editor.h"
 
 
-extern QMap<Qt::CheckState, QString> _check_state;
-extern QMap<QString, Qt::CheckState> _state_check;
+extern QMap<Qt::CheckState, QString> _string_from_check_state;
+extern QMap<QString, Qt::CheckState> _state_check_from_string;
 
 
 class QHBoxLayout;

@@ -23,8 +23,8 @@ public:
     virtual ~Attach();
 
 
-    void setupDataFromDom(QDomElement iDomElement);
-    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
+    void dom_to_data(QDomElement iDomElement);
+    QDomElement dom_from_data(std::shared_ptr<QDomDocument> doc) const;
 
     QString getField(QString name) const;
     void setField(QString name, QString value);

@@ -183,7 +183,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
         assert(_item);
-        assert(_item->page_valid() && _item->unique_page());
+        assert(_item->page_valid() && _item->bounded_page());
         _item->activate();
     });
 
@@ -195,14 +195,14 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         //            Q_UNUSED(home)
         assert(_item);
         assert(_item->page_valid());
-        browser::WebPage *page = _item->unique_page();
+        browser::WebPage *page = _item->bounded_page();
         assert(page);
         QString home = _item->natural_field_source("home");
 
         if(_item->natural_field_source("url") != home)
             _item->natural_field_source("url", home);
 
-        page->item_equip_registered(_item)->activate(); // page->load(_record, true);
+        page->item_registered_imperative_equip(_item)->activate(); // page->load(_record, true);
         //        _record->active();
     });
 
@@ -368,7 +368,7 @@ void MetaEditor::switch_pin()
             //            auto item = source_model->tree_item();  //->record_table();    //getTableData();
 
             QString p = source_model->field(pos, "pin");
-            _item_pin->setCheckState(_state_check[p]);
+            _item_pin->setCheckState(_state_check_from_string[p]);
 
             QString h = source_model->field(pos, "url");
 
@@ -378,14 +378,14 @@ void MetaEditor::switch_pin()
             if(_item_pin->checkState() == Qt::CheckState::Checked) {
                 _item_pin->setCheckState(Qt::CheckState::Unchecked);
 
-                pin(p = _check_state[Qt::CheckState::Unchecked]);
+                pin(p = _string_from_check_state[Qt::CheckState::Unchecked]);
 
                 edit_data["pin"] = p;
 
             } else {
                 _item_pin->setCheckState(Qt::CheckState::Checked);
 
-                pin(p = _check_state[Qt::CheckState::Checked]);
+                pin(p = _string_from_check_state[Qt::CheckState::Checked]);
                 home(h);
 
                 edit_data["pin"] = p;
@@ -422,7 +422,7 @@ void MetaEditor::switch_pin()
 void MetaEditor::pin(QString p)
 {
     //recordPin->setVisible(true);
-    _item_pin->setCheckState(_state_check[p]);
+    _item_pin->setCheckState(_state_check_from_string[p]);
     //    recordPin->setText("<b>" + pin + "</b>");
 }
 

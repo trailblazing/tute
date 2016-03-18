@@ -299,7 +299,7 @@ void Record::dom_to_record(const QDomElement &_dom_element)
 
     // Проверка, есть ли у переданного DOM-элемента таблица файлов для заполнения
     if(!_dom_element.firstChildElement("files").isNull())
-        _attach_table_data->setupDataFromDom(_dom_element.firstChildElement("files"));   // Заполнение таблицы приаттаченных файлов
+        _attach_table_data->dom_to_data(_dom_element.firstChildElement("files"));   // Заполнение таблицы приаттаченных файлов
 }
 
 QDomElement Record::dom_from_record() const
@@ -327,7 +327,7 @@ QDomElement Record::dom_from_record(std::shared_ptr<QDomDocument> doc) const
 
     // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
     if(_attach_table_data->size() > 0)
-        elem.appendChild(_attach_table_data->export_to_dom(doc));
+        elem.appendChild(_attach_table_data->dom_from_data(doc));
 
     return elem;
 }

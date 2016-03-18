@@ -123,10 +123,9 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
 QModelIndex TreeModel::index(delegater _del) const
 {
     QModelIndex result;
-    assert(!result.isValid());
+    //    assert(!result.isValid());
 
-    std::function<QModelIndex(QModelIndex, delegater            // , int
-                             )>
+    std::function<QModelIndex(QModelIndex, delegater)>            // , int
     index_recursive = [&](QModelIndex _index, delegater _del    // , int mode
     ) {
         //static
@@ -241,8 +240,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
     QModelIndex result;
     //    assert(!result.isValid());
 
-    std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<TreeItem>           // , int
-                             )>
+    std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<TreeItem>)>           // , int
     index_recursive = [&](QModelIndex _index, boost::intrusive_ptr<TreeItem> _item  // , int mode
     ) {
         // static
@@ -296,10 +294,9 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
             //        index_recursive(_idx, item, 1);
             assert(static_cast<TreeItem *>(_index_child.internalPointer()) == it->child(i).get());
 
-            if(_item.get() == static_cast<TreeItem *>(_index_child.internalPointer())
-               // || _item->id() == static_cast<TreeItem *>(_index_child.internalPointer())->id() // it->child(i).get()
-              ) { // index_recursive(_idx, _item, 1);
-
+            if(_item.get() == static_cast<TreeItem *>(_index_child.internalPointer())) {
+                // || _item->id() == static_cast<TreeItem *>(_index_child.internalPointer())->id() // it->child(i).get()
+                // index_recursive(_idx, _item, 1);
                 find_index = _index_child;
                 // is_find = true;
                 // return find_index;
@@ -393,36 +390,25 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 //    return QModelIndex();
 //}
 
-//QModelIndex TreeModel::index(const QUrl &find_url)const
-//{
-//    QModelIndex result;
-//    return result;
 
-//}
-
-
-//QModelIndex TreeModel::index(const QString &id)const
-//{
-//    QModelIndex result;
-//    return result;
-
-//}
 
 // Get a pointer to the Item-element associated with the specified QModelIndex  // Получение указателя на Item-злемент связанный с заданным QModelIndex
 boost::intrusive_ptr<TreeItem> TreeModel::item(const QModelIndex &_index) const    //???
 {
-    boost::intrusive_ptr<TreeItem> result = _root_item; // (nullptr);
+    boost::intrusive_ptr<TreeItem> _result = _root_item; // (nullptr);
 
     if(_index.isValid()) {
-        boost::intrusive_ptr<TreeItem> item
-            = boost::const_pointer_cast<TreeItem>(
-                  boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
-              );
+        boost::intrusive_ptr<TreeItem> _item = // item(static_cast<TreeItem *>(_index.internalPointer())->path_absolute());
+            //boost::const_pointer_cast<TreeItem>(
+            boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
+            //)
+            ;
 
-        if(item) {
+        if(_item) {
             // qDebug() << "Get tree item " << item->data("name").toString();
-            result = item;
+            _result = _item;
         } else {
+            assert(!_index.internalPointer());
             qDebug() << "Detect bad castind to TreeItem in getItem() method ";
             return nullptr;
         }
@@ -430,7 +416,7 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(const QModelIndex &_index) const 
     }
 
     // qDebug() << "Detect bad QModelIndex in getItem() method ";
-    return result;  // _root_item;
+    return _result;  // _root_item;
 }
 
 // Получение указателя на Item-злемент с указанным путем
@@ -562,16 +548,16 @@ QVariant TreeModel::headerData(int section
 
 
 // Вставка пустых строк с позиции position в количестве rows
-bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
+bool TreeModel::insertRows(int position, int rows, const QModelIndex &_index_parent)
 {
-    boost::intrusive_ptr<TreeItem> parentItem = item(parent);
+    boost::intrusive_ptr<TreeItem> parent_item = item(_index_parent);
     bool success;
 
-    beginInsertRows(parent, position, position + rows - 1);
+    beginInsertRows(_index_parent, position, position + rows - 1);
 
     // Добавляются строки начиная с указанной позиции, в количестве rows
     // с числом столбцов равным единице
-    success = parentItem->children_insert_new(position, rows, 1);
+    success = parent_item->children_insert_new(position, rows, 1);
 
     endInsertRows();
 

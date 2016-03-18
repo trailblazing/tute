@@ -69,7 +69,7 @@ AttachTableData::~AttachTableData()
 
 
 // На вход этого метода подается тег <files>
-void AttachTableData::setupDataFromDom(QDomElement iDomElement)
+void AttachTableData::dom_to_data(QDomElement iDomElement)
 {
     // Первый файл
     QDomElement currentFile = iDomElement.firstChildElement("file");
@@ -82,14 +82,14 @@ void AttachTableData::setupDataFromDom(QDomElement iDomElement)
         _attach_table.append(attach);
 
         // После размещения в памяти инициализируется начальными данными
-        _attach_table.last().setupDataFromDom(currentFile);
+        _attach_table.last().dom_to_data(currentFile);
 
         currentFile = currentFile.nextSiblingElement("file");
     }
 }
 
 
-QDomElement AttachTableData::export_to_dom(std::shared_ptr<QDomDocument> doc) const
+QDomElement AttachTableData::dom_from_data(std::shared_ptr<QDomDocument> doc) const
 {
     // Если у записи нет таблицы приаттаченных файлов
     if(_attach_table.size() == 0)
@@ -99,7 +99,7 @@ QDomElement AttachTableData::export_to_dom(std::shared_ptr<QDomDocument> doc) co
 
     // Пробегаются все приаттаченные файлы
     for(int i = 0; i < _attach_table.size(); i++)
-        attachTableDom.appendChild(_attach_table.at(i).export_to_dom(doc));     // К элементу files прикрепляются элементы file
+        attachTableDom.appendChild(_attach_table.at(i).dom_from_data(doc));     // К элементу files прикрепляются элементы file
 
     return attachTableDom;
 }
@@ -402,4 +402,16 @@ void AttachTableData::update_attach_table_back_link()
 {
     for(int i = 0; i < _attach_table.size(); ++i)
         _attach_table[i].setParentTable(this);
+}
+
+
+std::shared_ptr<AttachTableData> AttachTableData::merge(std::shared_ptr<AttachTableData> cut)
+{
+    std::shared_ptr<AttachTableData> result;
+
+    for(auto i : cut->_attach_table) {
+        _attach_table.append(i);
+    }
+
+    return result;
 }

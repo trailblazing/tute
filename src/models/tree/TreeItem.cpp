@@ -10,6 +10,8 @@
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
 #include "views/tree/TreeScreen.h"
+#include "models/attach_table/AttachTableData.h"
+
 //#include "models/record_table/Record.h"
 //#include "models/record_table/ItemsFlat.h"
 
@@ -393,17 +395,17 @@ QString TreeItem::field(QString _name)const
         }
 
         // Выясняется, есть ли у текущего элемента конечные записи
-        int recordCount = this->count_direct();
+        int record_count = this->count_direct();
 
         // Если конечных элементов нет, возвращатся просто имя
-        if(recordCount == 0) {
+        if(record_count == 0) {
             //            return itemName;
             field_found = true;
         } else {
             // Иначе конечные элементы есть, возвращается имя записи
             // и количество конечных элементов
             QString r, i;
-            r = item_name + " [" + i.setNum(recordCount) + "]";
+            r = item_name + " [" + i.setNum(record_count) + "]";
             item_name = r; //            return r;
             field_found = true;
         }
@@ -730,9 +732,63 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_clone(boost::intrusive_ptr<TreeIt
     return result;
 }
 
+boost::intrusive_ptr<TreeItem> TreeItem::record_merge(boost::intrusive_ptr<TreeItem> cut)
+{
+    //    typedef QPair<QString, QString> pair;
+    QMap<QString, QString> r = cut->fields_all();
+
+    //    foreach(pair i, r) {
+
+    for(auto i : r) {
+        if(field(i) == "")field(i) = r[i];
+    }
+
+    QString text = cut->is_lite() ? cut->text_from_lite_direct() : cut->text_from_fat();
+
+    if(is_lite())text_to_direct(text_from_lite_direct() + text);
+    else
+        text_to_fat(text_from_fat() + text);
+
+    auto attach = cut->attach_table();
+    auto this_attach = attach_table();
+
+    if(!attach->is_empty()) {
+        auto new_attach = this_attach->merge(attach);
+        attach_table(new_attach);
+    }
 
 
-bool TreeItem::remove()
+    auto pic = cut->picture_files();
+    auto this_pic = picture_files();
+
+    if(pic.size() > 0) {
+
+        for(auto i : pic) { // auto new_pic = this_pic.merge(pic);
+            if(this_pic.value(i).isEmpty())this_pic[i] = pic[i];
+        }
+
+        picture_files(this_pic);
+    }
+
+    return boost::intrusive_ptr<TreeItem>(this);
+}
+
+bool TreeItem::self_remove()
+{
+    bool result = false;
+
+    //    if(is_empty()) {
+    if(parent()) {
+        if(parent()->child_remove(boost::intrusive_ptr<TreeItem>(this)))
+            result = true;
+    }
+
+    //    }
+
+    return result;
+}
+
+bool TreeItem::self_empty_remove()
 {
     bool result = false;
 
@@ -777,7 +833,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_transfer(int pos, boost::intrusiv
                     _item->parent()->child_remove(_item);
                     auto check = _item->parent();
 
-                    while(check->remove()) {
+                    while(check->self_empty_remove()) {
                         check = check->parent();
 
                         if(!check)break;
@@ -893,6 +949,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_transfer(int pos, boost::intrusiv
         result = _item;
     }
 
+    assert(_child_items.contains(result));
     return result;    // insert_position;
 
 }
@@ -1161,18 +1218,18 @@ QString TreeItem::path_absolute_as_name_with_delimiter(QString delimeter)
 QStringList TreeItem::path_absolute_as_field(QString field_name)
 {
     QStringList path;
-    boost::intrusive_ptr<TreeItem> currentItem =
+    boost::intrusive_ptr<TreeItem> current_item =
         boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
         ;
 
-    path << currentItem->field(field_name);
+    path << current_item->field(field_name);
 
-    while(currentItem->parent() != nullptr) {
-        currentItem = currentItem->parent();
-        path << currentItem->field(field_name);
+    while(current_item->parent() != nullptr) {
+        current_item = current_item->parent();
+        path << current_item->field(field_name);
     }
 
-    // Поворот массива идентификаторов задом наперед
+    // Rotate backwards array identifiers advance   // Поворот массива идентификаторов задом наперед
     int k = path.size() - 1;
     int j = path.size() / 2;
 
@@ -1228,14 +1285,10 @@ QList<QStringList> TreeItem::path_children_all_as_field(QString fieldName)
 
 
     // Очищение списка путей
-    path_children_all_as_field(
-        boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-        , "", 0);
+    path_children_all_as_field(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)), "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = path_children_all_as_field(
-                                      boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-                                      , fieldName, 1);
+    QList<QStringList> pathList = path_children_all_as_field(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)), fieldName, 1);
 
     return pathList;
 }
@@ -1510,8 +1563,7 @@ QDomElement TreeItem::dom_from_treeitem(std::shared_ptr<QDomDocument> doc)
 
 
 
-
-browser::WebPage *TreeItem::unique_page()
+browser::WebPage *TreeItem::bounded_page()
 {
     browser::WebPage *page = nullptr;
 
@@ -1589,16 +1641,18 @@ browser::WebView *TreeItem::bind()
 {
     browser::WebView *view = nullptr;
 
-    if(!_record_binder->bounded_page()
-       || !_record_binder->bounded_item()
+    if(!_record_binder
+       || (_record_binder && !_record_binder->bounded_page())
+       || (_record_binder && !_record_binder->bounded_item())
        || (_record_binder->bounded_item() && _record_binder->bounded_item().get() != this)
        || (_record_binder->bounded_page() && _record_binder->bounded_page()->record_binder() != _record_binder)
       ) {
-        view = _record_binder->binder(boost::intrusive_ptr<TreeItem>(this));
+        view = _record_binder->binder(/*boost::intrusive_ptr<TreeItem>(this)*/);
     } else {
         view = _record_binder->bounded_page()->view();
     }
 
+    assert(_record_binder);
     return view;
 }
 
@@ -1679,30 +1733,61 @@ boost::intrusive_ptr<TreeItem> TreeItem::active_subset()const
 boost::intrusive_ptr<TreeItem> TreeItem::is_registered_to_browser()
 {
     boost::intrusive_ptr<TreeItem> found(nullptr);
+    //    bool re = false;
+    auto _entrance = globalparameters.entrance();
+    auto v = _entrance->find(boost::intrusive_ptr<TreeItem>(this));
 
-    if(page_valid()) {
-        if(_record_binder->bounded_page()->view()) {
-            if(_record_binder->bounded_page()->view()->record_controller()) {
-                auto _record_controller = _record_binder->bounded_page()->view()->record_controller();
-                found = _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
+    if(v) {
+        if(v->page()->record_binder()) {
+            if(v->page()->record_binder()->bounded_item() == boost::intrusive_ptr<TreeItem>(this)) {
+                found = v->page()->record_binder()->bounded_item();
             }
         }
     }
 
-    //    else {
-    //        browser::Entrance *_entrance = globalparameters.entrance();
+    //    if(page_valid()) {
+    //        auto p = _record_binder->bounded_page();
+    //        auto v = p->view();
 
-    //        for(int w = 0; w < _entrance->browsers().size(); w++) {
-    //            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+    //        if(v) {
+    //            auto _tabmanager = p->tabmanager();
 
-    //            for(int i = 0; i < tabmanager->count(); i++) {
-    //                auto item = tabmanager->webView(i)->page()->current_item();
-
-    //                if(item->field("id") == id()) {
-    //                    found = item;
+    //            if(_tabmanager) {
+    //                if(_tabmanager->indexOf(v) != -1) {
+    //                    re = true;
+    //                    found = p->record_binder()->bounded_item();
+    //                    assert(found);
     //                }
     //            }
+
+    //            //            if(_record_binder->bounded_page()->view()->record_controller()) {
+    //            //                auto _record_controller = _record_binder->bounded_page()->view()->record_controller();
+    //            //                found = _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
+    //            //            }
     //        }
+    //    }
+
+    //    //    else {
+    //    //        browser::Entrance *_entrance = globalparameters.entrance();
+
+    //    //        for(int w = 0; w < _entrance->browsers().size(); w++) {
+    //    //            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+
+    //    //            for(int i = 0; i < tabmanager->count(); i++) {
+    //    //                auto item = tabmanager->webView(i)->page()->current_item();
+
+    //    //                if(item->field("id") == id()) {
+    //    //                    found = item;
+    //    //                }
+    //    //            }
+    //    //        }
+    //    //    }
+
+    //    assert((found && re) || (!found && !re));
+    // assert(found);
+
+    //    if(found && found != boost::intrusive_ptr<TreeItem>(this)) {
+    //        found = globalparameters.tree_screen()->duplicated_remove(boost::intrusive_ptr<TreeItem>(this), found);
     //    }
 
     return found;
@@ -1719,8 +1804,8 @@ bool TreeItem::is_empty() const
 
 void TreeItem::field(QString _name, QString value) {Record::field(_name, value);}
 
-std::shared_ptr<CouplerDelegation> TreeItem::record_binder() {return _record_binder;}
-void TreeItem::record_binder(std::shared_ptr<CouplerDelegation> _record_binder) {this->_record_binder = _record_binder;}
+boost::intrusive_ptr<CouplerDelegation> TreeItem::record_binder() {return _record_binder;}
+void TreeItem::record_binder(boost::intrusive_ptr<CouplerDelegation> _record_binder) {this->_record_binder = _record_binder;}
 
 
 bool TreeItem::page_valid()const
@@ -1732,6 +1817,28 @@ bool TreeItem::page_valid()const
     }
 
     return result;
+}
+
+
+int TreeItem::count_records_all()
+{
+    std::function<int(boost::intrusive_ptr<TreeItem>, int)> count_all_recursive = [&](boost::intrusive_ptr<TreeItem> it, int mode) {
+        static int size = 0;
+
+        if(mode == 0) {size = 0; return size;}
+
+        size += it->count_direct();
+
+        for(auto i : it->_child_items) {
+            count_all_recursive(i, 1);
+        }
+
+        return size;
+    };
+
+    count_all_recursive(boost::intrusive_ptr<TreeItem> (this), 0);
+
+    return count_all_recursive(boost::intrusive_ptr<TreeItem> (this), 1);
 }
 
 

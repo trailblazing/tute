@@ -259,7 +259,7 @@ namespace browser {
         QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_equip_registered(boost::intrusive_ptr<TreeItem> record)
+    boost::intrusive_ptr<TreeItem> Browser::item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item)
     {
         //        auto binder = [](boost::shared_ptr<TabWidget::Coupler> ar) {
         //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>("", &TabWidget::Coupler::binder, ar);   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
@@ -270,24 +270,28 @@ namespace browser {
         //        };
 
         // registered record, but have no generator:
-        boost::shared_ptr<TabWidget::Coupler> ar = boost::make_shared<TabWidget::Coupler>(_tabmanager);
-        //        record->binder(
-        //            binder(ar)
-        //        );
+        //        boost::shared_ptr<TabWidget::Coupler> ar =
 
-        //        record->activator(
-        //            activator(ar)
-        //        );
 
-        record->record_binder(std::make_shared<CouplerDelegation>(
-                                  std::make_shared<bounded_item_interface>("", &TabWidget::Coupler::bounded_item, ar)
-                                  , std::make_shared<bounded_page_interface>("", &TabWidget::Coupler::bounded_page, ar)
-                                  , std::make_shared<bind_interface>("", &TabWidget::Coupler::binder, ar)   // binder(ar)
-                                  , std::make_shared<activate_interface> ("", &TabWidget::Coupler::activator, ar)   // activator(ar)
-                              ));
-        //        _tabmanager->newTab(record);
-        //        assert(record->binded_only_page());
-        return record;
+
+
+        //        //        record->binder(
+        //        //            binder(ar)
+        //        //        );
+
+        //        //        record->activator(
+        //        //            activator(ar)
+        //        //        );
+
+        //        item->record_binder(std::make_shared<CouplerDelegation>(
+        //                                std::make_shared<bounded_item_interface>("", &TabWidget::Coupler::bounded_item, ar)
+        //                                , std::make_shared<bounded_page_interface>("", &TabWidget::Coupler::bounded_page, ar)
+        //                                , std::make_shared<bind_interface>("", &TabWidget::Coupler::binder, ar)   // binder(ar)
+        //                                , std::make_shared<activate_interface> ("", &TabWidget::Coupler::activator, ar)   // activator(ar)
+        //                            ));
+        //        //        _tabmanager->newTab(record);
+        //        //        assert(record->binded_only_page());
+        return _tabmanager->item_registered_imperative_equip(item);
     }
 
     boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(QUrl const &url)
@@ -499,7 +503,7 @@ namespace browser {
         item->activate();
         //        }
 
-        assert(item->page_valid() && item->unique_page());
+        assert(item->page_valid() && item->bounded_page());
 
         run_script(style_source);       //        assert(record->linkpage());
 
@@ -1582,10 +1586,10 @@ namespace browser {
     WebView *Browser::invoke_registered_page(boost::intrusive_ptr<TreeItem> item)
     {
         // clean();
-        assert(item->is_registered_to_browser());
+        assert(item->is_registered_to_browser() || item->field("url") == browser::Browser::_defaulthome);
 
         WebView *view = nullptr;
-
+        TabWidget *const tab = tabWidget();
         //        if(_mainWindows.isEmpty()) {
         //            dp = new_dockedwindow(record);
         //        } else
@@ -1595,12 +1599,10 @@ namespace browser {
 
         if(view != nullptr) {
             //            dp.first = i.data();
-
             if(!isVisible()) {
                 raise();
                 activateWindow();
             }
-
             //            break;
         }
 
@@ -1618,11 +1620,12 @@ namespace browser {
 
 
         //        const DockedWindow *w = dp.first;
-        TabWidget *const tab = tabWidget();
 
-        if(view == nullptr
-           // && w != nullptr
-          ) {
+
+        //        if(view == nullptr
+        //           // && w != nullptr
+        //          )
+        else {
 
             // Record *blank_url = check_register_record(QUrl(DockedWindow::_defaulthome));
 
@@ -1637,15 +1640,12 @@ namespace browser {
 
             if(blankview != nullptr) {
                 view = blankview;
-                //                view->page()->load(record);
-                view->page()->item_equip_registered(item)->activate();
-
+                view->page()->item_registered_imperative_equip(item)->activate();//                view->page()->load(record);
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
                 if(view->page()->url().toString() != item->field("url")) {
-
-                    view->page()->item_equip_registered(item)->activate(); // view->page()->load(record);
+                    view->page()->item_registered_imperative_equip(item)->activate(); // view->page()->load(record);
                 }
             } else {
                 view = tab->newTab(item);  // , false

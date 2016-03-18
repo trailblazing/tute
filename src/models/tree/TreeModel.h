@@ -21,12 +21,14 @@ class TreeModel : public QAbstractItemModel {
 
 public:
     struct  delegater {
+    private:
         boost::intrusive_ptr<TreeItem> _item;
         QUrl _find_url;
         QString _id = "";
-        delegater(boost::intrusive_ptr<TreeItem> _item): _item(_item) {_equal = [&](TreeItem * it) {return _item.get() == it;};}
-        delegater(const QUrl &_find_url):  _find_url(_find_url) {_equal = [&](TreeItem * it) {return _find_url.toString() == it->field("url");};}
-        delegater(const QString &_id): _id(_id) {_equal = [&](TreeItem * it) {return _id == it->field("id");};}
+    public:
+        explicit delegater(boost::intrusive_ptr<TreeItem> _item): _item(_item) {_equal = [&](TreeItem * it) {return _item.get() == it;};}
+        explicit delegater(const QUrl &_find_url):  _find_url(_find_url) {_equal = [&](TreeItem * it) {return _find_url.toString() == it->field("url");};}
+        explicit delegater(const QString &_id): _id(_id) {_equal = [&](TreeItem * it) {return _id == it->field("id");};}
 
         //        bool (*equal)(TreeItem * it);
         std::function<bool(TreeItem *)> _equal;
@@ -52,7 +54,7 @@ public:
     bool setData(const QModelIndex &_index, const QVariant &value, int role = Qt::EditRole);
     bool setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role = Qt::EditRole);
 
-    bool insertRows(int position, int rows, const QModelIndex &parent = QModelIndex());
+    bool insertRows(int position, int rows, const QModelIndex &_index_parent = QModelIndex());
     bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 
 

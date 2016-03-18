@@ -360,7 +360,7 @@ namespace browser {
                        && homeurl != page->url()
                       ) {
                         record->field("url", home);
-                        page->item_equip_registered(record)->activate(); // page->load(record, true);
+                        page->item_registered_imperative_equip(record)->activate(); // page->load(record, true);
                     }
                 }
             }
@@ -501,7 +501,7 @@ namespace browser {
         //        assert(record->binded_only_page());
         //        assert(record->binded_only_page()->view());
 
-        return find(url).second;   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
 
     //    WebView *Entrance::new_dockedwindow(Record *const record)
@@ -798,29 +798,73 @@ namespace browser {
     //    }
     //}
 
-    void Entrance::activate(const QUrl &url)
-    {
-        //        if(activiated_browser()) {
-        Browser *browser = activated_browser();
-        //            auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
+    //    void Entrance::activate_search_fragment(const QUrl &url)
+    //    {
+    //        clean();
 
-        auto r = browser->tabmanager()->item_request_from_tree(url);
-        //            r->self_bind();
-        r->activate();
-        //        } else {
-        //            new_browser(url);
-        //        }
+    //        WebView *v = nullptr;
 
-        //        r->active_immediately(true);
-        //        return active_record(r);
-    }
+    //        if(_browsers.size() > 0) {
+    //            for(auto &browser : _browsers) {
+    //                v = browser->tabmanager()->find<url_fragment>(url);
+
+    //                if(v) {
+    //                    v->page()->activate();
+    //                }
+    //            }
+    //        }
+
+    //        if(v == nullptr) {
+
+    //            Browser *browser = activated_browser();
+
+    //            auto r = browser->tabmanager()->item_request_from_tree<url_fragment>(url);
+
+    //            r->activate();
+
+    //        }
+    //    }
+
+    //    void Entrance::activate(const QUrl &url)
+    //    {
+    //        clean();
+
+    //        WebView *v = nullptr;
+
+    //        if(_browsers.size() > 0) {
+    //            for(auto &browser : _browsers) {
+    //                v = browser->tabmanager()->find(url);
+
+    //                if(v) {
+    //                    v->page()->activate();
+    //                }
+    //            }
+    //        }
+
+    //        if(v == nullptr) {
+    //            //        if(activiated_browser()) {
+    //            Browser *browser = activated_browser();
+    //            //            auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(browser->tabWidget());   // boost::make_shared<Entrance::ActiveRecordBinder>(this);
+
+    //            auto r = browser->tabmanager()->item_request_from_tree(url);
+    //            //            r->self_bind();
+    //            r->activate();
+    //            //        } else {
+    //            //            new_browser(url);
+    //            //        }
+
+    //            //        r->active_immediately(true);
+    //            //        return active_record(r);
+    //        }
+    //    }
 
     void Entrance::activate(boost::intrusive_ptr<TreeItem> item)
     {
+        clean();
 
-        if(item->page_valid()) {
+        if(item->page_valid() && _browsers.size() > 0) {
             for(auto &browser : _browsers) {
-                if(browser->tabmanager()->indexOf(item->unique_page()->view()) != -1) {
+                if(browser->tabmanager()->indexOf(item->bounded_page()->view()) != -1) {
                     item->activate();
                 }
             }
@@ -847,7 +891,7 @@ namespace browser {
     void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
     {
         //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        void(Entrance::*_activate)(const QUrl &) = &Entrance::activate;
+        void(Entrance::*_activate)(const QUrl &) = &Entrance::activate<url_fragment>;
         connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
         //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
@@ -1078,17 +1122,20 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    WebView *Entrance::item_equip_registered(boost::intrusive_ptr<TreeItem> _it)
+    WebView *Entrance::item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it)
     {
         assert(_it);
         assert(!_it->is_lite());
-        assert(_it->is_registered_to_browser());
+        //        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
+
         clean();
         //DockedWindow *w = nullptr;
         Browser *_browser = nullptr;
         WebView *_view = nullptr;
 
-        if(_it) {
+        if(_it
+           // && !_it->record_binder()
+          ) {
             //            assert(!record->generator()); // maybe Entrance::ActiveRecordBinder registered
             assert(QUrl(_it->field("url")).isValid());
 
@@ -1117,7 +1164,7 @@ namespace browser {
 
                     if(_view == nullptr && _browser) {
                         //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                        _view = _browser->tabmanager()->item_equip_registered(_it)->bind(); // _browser->invoke_registered_page(_it);
+                        _view = _browser->tabmanager()->item_registered_imperative_equip(_it)->bind(); // _browser->invoke_registered_page(_it);
                     } else {
 
                         //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
@@ -1139,7 +1186,7 @@ namespace browser {
                         //                        activator(ar)
                         //                    );
 
-                        _view->page()->item_equip_registered(_it);
+                        _view->page()->item_registered_imperative_equip(_it);
 
 
                         //                    }
@@ -1285,24 +1332,26 @@ namespace browser {
     //    }
 
 
-    std::pair<Browser *, WebView *> Entrance::find(boost::intrusive_ptr<TreeItem> record)
+    //    std::pair<Browser *, WebView *>
+    WebView *Entrance::find(boost::intrusive_ptr<TreeItem> item)
     {
-        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
-
+        //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
+        WebView *v = nullptr;
         //        if(_mainWindows.isEmpty())dp.first = activebrowser();
 
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
         for(auto &i : _browsers) {
-            dp.second = i->tabWidget()->find(record->natural_field_source("url"));
+            v = i->tabWidget()->find(item); // ->field("url")
 
-            if(dp.second != nullptr) {
-                //setWidget(i.data());
-                dp.first = i.data();
+            if(v != nullptr) {  // setWidget(i.data());
+                //                dp.first = i.data();
                 break;
-            } else if(i->isVisible() || i->isActiveWindow()) {
-                dp.first = i.data();
             }
+
+            //            else if(i->isVisible() || i->isActiveWindow()) {
+            //                dp.first = i.data();
+            //            }
         }
 
         //        }
@@ -1313,28 +1362,29 @@ namespace browser {
         //            dp.first->raise();
         //            dp.first->activateWindow();
         //        }
-        assert(dp.first);
-        return dp;
+        //        assert(dp.first);
+        return v;
     }
 
-    std::pair<Browser *, WebView *> Entrance::find(QUrl url)
+    WebView *Entrance::find(QUrl url)
     {
-        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
-
+        //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
+        WebView *v = nullptr;
         //        if(_mainWindows.isEmpty())dp.first = activebrowser();
 
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
         for(auto &i : _browsers) {
-            dp.second = i->tabWidget()->find(url);
+            v = i->tabWidget()->find(url);
 
-            if(dp.second != nullptr) {
-                //setWidget(i.data());
-                dp.first = i.data();
+            if(v != nullptr) {  // setWidget(i.data());
+                //                dp.first = i.data();
                 break;
-            } else if(i->isVisible() || i->isActiveWindow()) {
-                dp.first = i.data();
             }
+
+            //            else if(i->isVisible() || i->isActiveWindow()) {
+            //                dp.first = i.data();
+            //            }
         }
 
         //        }
@@ -1345,8 +1395,8 @@ namespace browser {
         //            dp.first->raise();
         //            dp.first->activateWindow();
         //        }
-        assert(dp.first);
-        return dp;
+        //        assert(dp.first);
+        return v;
     }
 
     //    BrowserView *BrowserManager::create_view(Record *record, BrowserWindow *window)

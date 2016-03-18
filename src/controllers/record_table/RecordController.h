@@ -94,9 +94,9 @@ public:
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
-    boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item, std::shared_ptr<CouplerDelegation> _record_binder);
+    //    boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item);
 
-    boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url, std::shared_ptr<CouplerDelegation> _record_binder);
+    //    boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url);
 
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 

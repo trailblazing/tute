@@ -25,8 +25,8 @@ public:
     //    AttachTableData();
     virtual ~AttachTableData();
 
-    void setupDataFromDom(QDomElement iDomElement);
-    QDomElement export_to_dom(std::shared_ptr<QDomDocument> doc) const;
+    void dom_to_data(QDomElement iDomElement);
+    QDomElement dom_from_data(std::shared_ptr<QDomDocument> doc) const;
 
     void record(boost::intrusive_ptr<Record> record);
     void related_attach_table_model(AttachTableModel *model);
@@ -73,7 +73,7 @@ public:
 
     // Обновление ссылок на таблицу аттачей внутри аттачей
     void update_attach_table_back_link();
-
+    std::shared_ptr<AttachTableData> merge(std::shared_ptr<AttachTableData> cut);
 protected:
 
     bool                            _lite_flag;

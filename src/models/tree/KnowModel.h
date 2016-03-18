@@ -40,14 +40,53 @@ public:
     //    QModelIndex index(boost::intrusive_ptr<TreeItem> item);
 
     // Поиск ветки с указанным ID
-    boost::intrusive_ptr<TreeItem> find_id(QString id);
-    boost::intrusive_ptr<TreeItem> find_name(QString name);
+    boost::intrusive_ptr<TreeItem> item_by_id(QString id) const;
+    boost::intrusive_ptr<TreeItem> item_by_name(QString name) const;
+
+
+    //    boost::intrusive_ptr<TreeItem> item_by_url(QUrl find_url)const;
+    // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
+    // Если ветка с указанным ID не будет найдена, возвращается NULL
+    template<typename url_type = url_full>
+    inline boost::intrusive_ptr<TreeItem> item_by_url(QUrl find_url)const
+    {
+        std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, QUrl, int)>
+        item_by_url_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
+        = [&](boost::intrusive_ptr<TreeItem> item, QUrl find_url, int mode) {
+            static boost::intrusive_ptr<TreeItem> find_item;
+
+            if(mode == 0) {
+                find_item = nullptr;
+                return find_item;   // nullptr;
+            }
+
+            if(find_item) return find_item;
+
+            if(item->url<url_type>() == url_type()(find_url)) {
+                find_item = item;
+                return find_item;
+            } else {
+                for(int i = 0; i < item->count_direct(); i++)
+                    item_by_url_recurse(item->child(i), find_url, 1);
+
+                return find_item;
+            }
+        };
+
+        // Инициализация поиска
+        item_by_url_recurse(_root_item, QUrl(), 0);
+
+        // Запуск поиска и возврат результата
+        return item_by_url_recurse(_root_item, find_url, 1);
+    }
+
+
 
     // Возвращает общее количество записей, хранимых в дереве
-    int count_records_all(void);
+    int count_records_all(void) const;
 
     // Возвращает количество записей в ветке и всех подветках
-    int size_of(boost::intrusive_ptr<TreeItem> item);
+    int size_of(boost::intrusive_ptr<TreeItem> item) const;
 
 
 
@@ -57,11 +96,11 @@ public:
 
     QStringList record_path(QString recordId) const;
 
-    // Проверка наличия идентификатора ветки во всем дереве
-    bool is_item_exists(QString findId);
+    //    // Проверка наличия идентификатора ветки во всем дереве
+    //    bool is_item_exists(QString findId);
 
     // Проверка наличия идентификатора записи во всем дереве
-    bool is_item_exists(QString findId) const;
+    bool is_id_exists(QString findId) const;
 
 #ifdef _with_record_table
     void record_to_item();
@@ -73,6 +112,11 @@ public:
     //    bool is_global_root() {return _is_global_root;}
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
+    boost::intrusive_ptr<TreeItem> duplicated_remove(boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
+    void record_remove(boost::intrusive_ptr<TreeItem> _item);
+
+
+
 
 private:
 
@@ -100,7 +144,7 @@ private:
     //    bool is_contains_crypt_branches_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString branch_paste_sub(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch);
+    QString lock_paste_sub(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch);
 
     //    QStringList record_path_recurse(boost::intrusive_ptr<TreeItem> item, QStringList currentPath, QString recordId, int mode);
 
@@ -113,29 +157,29 @@ private:
     bool update_sub_version_from_1_to_2(void);
 
     // Добавление новой ветки после указанной ветки
-    boost::intrusive_ptr<TreeItem> branch_add_as_sibling(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> branch_add_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> lock_add_as_sibling(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> lock_add_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к указанной ветке
-    boost::intrusive_ptr<TreeItem> branch_add_as_child(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> child_transfer(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> lock_add_as_child(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> lock_child_transfer(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к Item элементу
-    boost::intrusive_ptr<TreeItem> child_transfer(int pos, boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> lock_child_transfer(int pos, boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
 
 #ifdef _with_record_table
     boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
 #endif
 
-    boost::intrusive_ptr<TreeItem> child_transfer(int pos, boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> lock_child_transfer(int pos, boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
     //    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
 
     // Перемещение ветки вверх и вниз
     QModelIndex branch_move_up(const QModelIndex &_index);
     QModelIndex branch_move_dn(const QModelIndex &_index);
 
-    QString branch_paste_as_child(const QModelIndex &_index, ClipboardBranch *subbranch);
-    QString branch_paste_as_sibling(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString lock_paste_as_child(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString lock_paste_as_sibling(const QModelIndex &_index, ClipboardBranch *subbranch);
 
     boost::intrusive_ptr<TreeItem> intercept_self(boost::intrusive_ptr<TreeItem> _item);
     boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
@@ -180,5 +224,10 @@ private:
     friend class TreeScreen;
 
 };
+
+
+
+
+
 
 #endif // __TREEKNOWMODEL_H__   // __TREENODE_H__
