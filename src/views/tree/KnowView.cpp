@@ -23,6 +23,8 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
+enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;
+
 const char *knowtreeview_singleton_name = "knowtreeview";
 
 KnowView::KnowView(QWidget *parent) : QTreeView(parent), _know_root(nullptr)
@@ -399,6 +401,7 @@ void KnowView::dropEvent(QDropEvent *event)
 // Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
 QModelIndex KnowView::index_current(void)
 {
+    QModelIndex result = selectionModel()->currentIndex();
     //    if(!_tree_view->selectionModel()->currentIndex().isValid()) {
 
     //        boost::intrusive_ptr<TreeItem> _item = nullptr;
@@ -431,10 +434,10 @@ QModelIndex KnowView::index_current(void)
 
     //            assert(_tree_view->model());
 
-    //            _tree_view->selectionModel()->setCurrentIndex(cur_index // , QItemSelectionModel::SelectCurrent    //
+    //            _tree_view->selectionModel()->setCurrentIndex(cur_index // , current_tree_selection_mode    //
     //                                                          , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
     //                                                         );
-    //            _tree_view->selectionModel()->select(cur_index  //, QItemSelectionModel::SelectCurrent
+    //            _tree_view->selectionModel()->select(cur_index  //, current_tree_selection_mode
     //                                                 , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
     //                                                );
     //            //            _tree_view->clicked(cur_index);
@@ -466,7 +469,7 @@ QModelIndex KnowView::index_current(void)
     //        //                //                )
     //        //                //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
     //        //                //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
-    //        //                , QItemSelectionModel::SelectCurrent
+    //        //                , current_tree_selection_mode
     //        //            );
     //        //        }
     //    }
@@ -474,7 +477,7 @@ QModelIndex KnowView::index_current(void)
     //    auto v = _treeknowview->selectionModel()->currentIndex();
     //    candidate_from_knowtree_item(cur_index);
 
-    if(!selectionModel()->currentIndex().isValid()) {
+    if(!result.isValid()) {
         if(_know_root->root_item()->count_direct() > 0) {
             selection_to_pos(_know_root->root_item()->count_direct() - 1);
         } else {
@@ -492,13 +495,19 @@ QModelIndex KnowView::index_current(void)
             selection_to_pos(_know_root->root_item()->count_direct() - 1);
         }
 
+        result = selectionModel()->currentIndex();
         //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
-        assert(selectionModel()->currentIndex().isValid());    // this line is to be recovery
+        assert(result.isValid());    // this line is to be recovery
+
+    }
+
+    if(selectionModel()->selectedIndexes().size() > 0) {
+        result = selectionModel()->selectedIndexes()[0];
     }
 
     //    assert(cur_index.isValid());
-    return // cur_index;   // temporary setting???   //
-        selectionModel()->currentIndex();
+    return result;  // cur_index;   // temporary setting???   //
+    //        selectionModel()->currentIndex();
 }
 
 //// Получение индекса текущего элемента на котором стоит курсор
@@ -530,12 +539,12 @@ QModelIndex KnowView::index_current(void)
 //        //        _knowtreemodel->index(_knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1))
 //        //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
 //        //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
-//        // , QItemSelectionModel::SelectCurrent
+//        // , current_tree_selection_mode
 //        , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 //    );
 //    //    }
 //    selectionModel()->select(cur_index
-//                             // , QItemSelectionModel::SelectCurrent
+//                             // , current_tree_selection_mode
 //                             , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 //                            );
 //    //        _tree_view->clicked(cur_index);
@@ -565,9 +574,8 @@ QModelIndex KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
 
 
         // Простой механизм выбора строки. Похоже, что его использовать не получится
-        selectionModel()->select(index
-                                 // , QItemSelectionModel::SelectCurrent
-                                 , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+        selectionModel()->select(index, current_tree_selection_mode // QItemSelectionModel::SelectCurrent
+                                 // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
                                 );
 
         //    auto recordSourceModel = controller->getRecordTableModel();
@@ -575,8 +583,7 @@ QModelIndex KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
 
         // Установка засветки на нужный индекс
         // Set the backlight to the desired index
-        selectionModel()->setCurrentIndex(index   // selIdx
-                                          , QItemSelectionModel::Select    // ClearAndSelect
+        selectionModel()->setCurrentIndex(index, current_tree_selection_mode // QItemSelectionModel::SelectCurrent    // ClearAndSelect
                                          );
 
         // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)

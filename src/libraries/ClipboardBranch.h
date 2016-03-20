@@ -47,7 +47,8 @@ public:
 
     void init(void);
 
-    void branch_copy(boost::intrusive_ptr<TreeItem> it);
+    void branch_push(boost::intrusive_ptr<TreeItem> it);
+    void branch_push(QList<boost::intrusive_ptr<TreeItem>> current_items);
 
     void print(void) const;
 

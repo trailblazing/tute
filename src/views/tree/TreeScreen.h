@@ -217,7 +217,7 @@ private:
 
     //    void branch_add_to_clipboard(ClipboardBranch *branch_clipboard_data, QStringList path, bool is_root);
 
-    void branch_paste_func(std::function<QString(const QModelIndex &, ClipboardBranch *)> lock_paste_as);
+    void branch_paste_func(std::function<QString(const QModelIndex &, ClipboardBranch *)> lock_paste_as_if);
     //    void branch_paste_smart(bool is_branch);
 
     void tree_empty_controll(void);

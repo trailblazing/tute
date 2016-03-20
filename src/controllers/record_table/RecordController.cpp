@@ -518,7 +518,7 @@ RecordProxyModel *RecordController::proxy_model()
 //        // Если номер записи допустимый
 //        if(workPos > 0 && workPos < _source_model->rowCount()) {
 //            // Выделение устанавливается на нужную запись
-//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , current_tree_selection_mode);
 //            _view->selectRow(workPos);
 //            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 
@@ -587,7 +587,7 @@ RecordProxyModel *RecordController::proxy_model()
 //        // Если номер записи допустимый
 //        if(workPos > 0 && workPos < _source_model->rowCount()) {
 //            // Выделение устанавливается на нужную запись
-//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , current_tree_selection_mode);
 //            _view->selectRow(workPos);
 //            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 
@@ -643,7 +643,7 @@ RecordProxyModel *RecordController::proxy_model()
 //        // Если номер записи допустимый
 //        if(workPos > 0 && workPos < _source_model->rowCount()) {
 //            // Выделение устанавливается на нужную запись
-//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , current_tree_selection_mode);
 //            _view->selectRow(workPos);
 //            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 
@@ -1821,13 +1821,13 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
         source_position = this->addnew_item_fat(item, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
         assert(source_position != -1);
         _item = _source_model->item(source_position);
-        //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
+        //        //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
 
-        //    Record *_record = nullptr;
-        //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
+        //        //    Record *_record = nullptr;
+        //        //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
 
-        //                int pos = _record_controller->getFirstSelectionPos();
-        _source_model->on_table_config_changed();
+        //        //                int pos = _record_controller->getFirstSelectionPos();
+        //        _source_model->on_table_config_changed();
 
     } else {
         source_position = _source_model->locate(_item);
@@ -1853,6 +1853,7 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
 
     //    }
 
+    _source_model->on_table_config_changed();
 
     return _item; //_record;
 }

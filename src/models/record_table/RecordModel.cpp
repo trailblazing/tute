@@ -131,7 +131,7 @@ pages_container::~pages_container()
 //        // Если номер записи допустимый
 //        if(!_record_controller->no_view() && _work_pos > 0 && _work_pos < rowCount()) {
 //            // Выделение устанавливается на нужную запись
-//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , current_tree_selection_mode);
 //            _view->selectRow(_work_pos);
 //            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 
@@ -201,7 +201,7 @@ pages_container::~pages_container()
 //        // Если номер записи допустимый
 //        if(!_record_controller->no_view() && _work_pos > 0 && _work_pos < rowCount()) {
 //            // Выделение устанавливается на нужную запись
-//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , QItemSelectionModel::SelectCurrent);
+//            // selectionModel()->setCurrentIndex( model()->index( workPos, 0 ) , current_tree_selection_mode);
 //            _view->selectRow(_work_pos);
 //            _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
 

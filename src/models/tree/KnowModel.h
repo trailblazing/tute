@@ -146,7 +146,7 @@ private:
     //    bool is_contains_crypt_branches_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_item, ClipboardBranch *subbranch);
+    QString lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_item, int _sibling_order, ClipboardBranch *subbranch);
 
     //    QStringList record_path_recurse(boost::intrusive_ptr<TreeItem> item, QStringList currentPath, QString recordId, int mode);
 

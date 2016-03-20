@@ -189,7 +189,23 @@ QVariant ClipboardBranch::retrieveData(const QString &format, QVariant::Type pre
     return 0;
 }
 
-void ClipboardBranch::branch_copy(boost::intrusive_ptr<TreeItem> current_item)  //QStringList path
+void ClipboardBranch::branch_push(QList<boost::intrusive_ptr<TreeItem>> current_items)
+{
+    if(current_items.size() > 0) {
+        _clip_root_item_parent_id = current_items[0]->parent_id();
+
+        for(auto i : current_items) {
+            assert(_clip_root_item_parent_id == i->parent_id());
+            branch_push(i);
+
+            //            if(_clip_root_item_parent_id != i->parent_id()) {
+            //                current_items[0]->child_move(current_items[0]->count_direct(), i);
+            //            }
+        }
+    }
+}
+
+void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeItem> current_item)  //QStringList path
 {
     std::function<void (boost::intrusive_ptr<TreeItem>)>branch_copy_recursive = [&](boost::intrusive_ptr<TreeItem> it) {
         branch_fields_add_parent_id(it->parent_id(), it->fields_all());

@@ -798,7 +798,7 @@ QString KnowModel::lock_child_paste(const QModelIndex &_index, ClipboardBranch *
     boost::intrusive_ptr<TreeItem> parent = item(_index);
 
     //    beginInsertRows(_index, parent->count_direct(), parent->count_direct());
-    pasted_branch_id = lock_child_paste_impl(parent, (ClipboardBranch *)subbranch);
+    pasted_branch_id = lock_child_paste_impl(parent, parent->count_direct(), (ClipboardBranch *)subbranch);
     //    endInsertRows();
 
     return pasted_branch_id;
@@ -816,7 +816,7 @@ QString KnowModel::lock_sibling_paste(const QModelIndex &_index, ClipboardBranch
 
     if(parent) {
         //        beginInsertRows(_index.parent(), parent->count_direct(), parent->count_direct());
-        pasted_branch_id = lock_child_paste_impl(parent, (ClipboardBranch *)subbranch);
+        pasted_branch_id = lock_child_paste_impl(parent, current->sibling_order(), (ClipboardBranch *)subbranch);
         //        endInsertRows();
     }
 
@@ -826,122 +826,123 @@ QString KnowModel::lock_sibling_paste(const QModelIndex &_index, ClipboardBranch
 
 // Добавление подветки из буфера обмена относительно указанного элемента
 // Функция возвращает новый идентификатор стартовой добавленной подветки
-QString KnowModel::lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_item, ClipboardBranch *subbranch)
+QString KnowModel::lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_item, int _sibling_order, ClipboardBranch *subbranch)
 {
     qDebug() << "In paste_subbranch()";
 
 
-    std::function<QString(boost::intrusive_ptr<TreeItem>, QString, ClipboardBranch *)>
+    std::function<QString(boost::intrusive_ptr<TreeItem>, int, QString, ClipboardBranch *)>
     child_paste_recursive
         = [&](boost::intrusive_ptr<TreeItem>    _clip_parent
+              , int                             _sibling_order
               , QString                         _clip_child_parent_id
               , ClipboardBranch *               _sub_branch
     ) {
         QString id = _clip_parent->id();
 
-        if(_clip_parent->parent()) {
-            qDebug() << "In paste_subbranch_recurse()";
+        //        if(_clip_parent->parent()) {
+        qDebug() << "In paste_subbranch_recurse()";
 
-            QModelIndex _index = index(_clip_parent);
+        QModelIndex _index = index(_clip_parent);
 
-            beginInsertRows(_index.parent()
-                            , _index.row()  // item->sibling_order() //item->parent()->position_current(item->id())
-                            , _index.row()  // item->sibling_order() //item->parent()->position_current(item->id())
-                           );
-
-
+        beginInsertRows(_index  // .parent()
+                        , _sibling_order    // _index.row()  // item->sibling_order() //item->parent()->position_current(item->id())
+                        , _sibling_order    // _index.row()  // item->sibling_order() //item->parent()->position_current(item->id())
+                       );
 
 
-            //            // ---------------------------
-            //            // Добавляется стартовая ветка
-            //            // ---------------------------
-
-            //            // Выясняются поля стартовой ветки
-            //            QMap<QString, QString> subbranch_fields = _sub_branch->branch_fields_by_id(_start_branch_id);
-
-            //            // Выясняется имя ветки
-            //            QString subbranch_name = subbranch_fields["name"];
-
-            //            // Получение уникального идентификатора, под которым будет добавляться ветка
-            //            id = get_unical_id();
-
-            //            // Стартовая ветка добавляется
-            //            auto _new_item = lock_child_add_new(_item, _item->parent()->count_direct(), id, subbranch_name);
-
-            //            //        // Выясняется указатель на эту добавленную ветку
-            //            //        auto newitem = item_by_id(id);
-
-            //            qDebug() << "KnowTreeModel::branch_paste_sub_recurse() : create branch with field" << _new_item->fields_all();
 
 
-            // -----------------------------------------------
-            // Для стартовой ветки добавляются конечные записи
-            // -----------------------------------------------
+        //            // ---------------------------
+        //            // Добавляется стартовая ветка
+        //            // ---------------------------
 
-            // Выясняются данные конечных записей
-            QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(_clip_child_parent_id);
+        //            // Выясняются поля стартовой ветки
+        //            QMap<QString, QString> subbranch_fields = _sub_branch->branch_fields_by_id(_start_branch_id);
 
-            foreach(boost::intrusive_ptr<TreeItem> record, records) {
-                qDebug() << "Add table record " + record->field("name");
-                // _new_item
-                auto result = _clip_parent->child_move(// _new_item
-                                  _clip_parent->count_direct(), record, ADD_NEW_RECORD_TO_END);
+        //            // Выясняется имя ветки
+        //            QString subbranch_name = subbranch_fields["name"];
 
-                //                // --------------------
-                //                // Добавляются подветки
-                //                // --------------------
+        //            // Получение уникального идентификатора, под которым будет добавляться ветка
+        //            id = get_unical_id();
 
-                //                // Выясняется линейная структура добавляемого дерева
-                //                QList<CLIPB_TREE_ONE_LINE> tree = _sub_branch->id_tree_get();
+        //            // Стартовая ветка добавляется
+        //            auto _new_item = lock_child_add_new(_item, _item->parent()->count_direct(), id, subbranch_name);
 
-                //                // Выясняется список подветок для стартовой ветки
-                //                QStringList subbranch_id_list;
+        //            //        // Выясняется указатель на эту добавленную ветку
+        //            //        auto newitem = item_by_id(id);
 
-                //                foreach(CLIPB_TREE_ONE_LINE one_line, tree) {
-                //                    if(one_line._branch_id == _start_branch_id) {
-                //                        subbranch_id_list = one_line._subbranches_id;
-                //                    }
-                //                }
+        //            qDebug() << "KnowTreeModel::branch_paste_sub_recurse() : create branch with field" << _new_item->fields_all();
 
-                for(int i; i < result->count_direct(); i++) { //foreach(QString current_subbranch_id, subbranch_id_list) {
-                    // QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(current_subbranch_id);
-                    assert(result->item_fat(i)->parent_id() == result->id());
-                    // foreach(boost::intrusive_ptr<TreeItem> record, records) {
-                    child_paste_recursive(result, result->item_fat(i)->parent_id(), _sub_branch);
-                    // }
-                }
+
+        // -----------------------------------------------
+        // Для стартовой ветки добавляются конечные записи
+        // -----------------------------------------------
+
+        // Выясняются данные конечных записей
+        QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(_clip_child_parent_id);
+
+        foreach(boost::intrusive_ptr<TreeItem> record, records) {
+            qDebug() << "Add table record " + record->field("name");
+            // _new_item
+            auto result = _clip_parent->child_move(// _new_item
+                              _clip_parent->count_direct(), record, ADD_NEW_RECORD_TO_END);
+
+            //                // --------------------
+            //                // Добавляются подветки
+            //                // --------------------
+
+            //                // Выясняется линейная структура добавляемого дерева
+            //                QList<CLIPB_TREE_ONE_LINE> tree = _sub_branch->id_tree_get();
+
+            //                // Выясняется список подветок для стартовой ветки
+            //                QStringList subbranch_id_list;
+
+            //                foreach(CLIPB_TREE_ONE_LINE one_line, tree) {
+            //                    if(one_line._branch_id == _start_branch_id) {
+            //                        subbranch_id_list = one_line._subbranches_id;
+            //                    }
+            //                }
+
+            for(int i; i < result->count_direct(); i++) { //foreach(QString current_subbranch_id, subbranch_id_list) {
+                // QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(current_subbranch_id);
+                assert(result->item_fat(i)->parent_id() == result->id());
+                // foreach(boost::intrusive_ptr<TreeItem> record, records) {
+                child_paste_recursive(result, i, result->item_fat(i)->parent_id(), _sub_branch);
+                // }
             }
-
-            endInsertRows();
-
-
-
-            //            // --------------------
-            //            // Добавляются подветки
-            //            // --------------------
-
-            //            // Выясняется линейная структура добавляемого дерева
-            //            QList<CLIPB_TREE_ONE_LINE> tree = _sub_branch->id_tree_get();
-
-            //            // Выясняется список подветок для стартовой ветки
-            //            QStringList subbranch_id_list;
-
-            //            foreach(CLIPB_TREE_ONE_LINE one_line, tree) {
-            //                if(one_line._branch_id == _start_branch_id) {
-            //                    subbranch_id_list = one_line._subbranches_id;
-            //                }
-            //            }
-
-            //            foreach(QString current_subbranch_id, subbranch_id_list) {
-            //                QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(current_subbranch_id);
-
-            //                foreach(boost::intrusive_ptr<TreeItem> record, records) {
-            //                    child_paste_recurse(record, current_subbranch_id, _sub_branch);
-            //                }
-            //            }
-
-
         }
+
+        endInsertRows();
+
+
+
+        //            // --------------------
+        //            // Добавляются подветки
+        //            // --------------------
+
+        //            // Выясняется линейная структура добавляемого дерева
+        //            QList<CLIPB_TREE_ONE_LINE> tree = _sub_branch->id_tree_get();
+
+        //            // Выясняется список подветок для стартовой ветки
+        //            QStringList subbranch_id_list;
+
+        //            foreach(CLIPB_TREE_ONE_LINE one_line, tree) {
+        //                if(one_line._branch_id == _start_branch_id) {
+        //                    subbranch_id_list = one_line._subbranches_id;
+        //                }
+        //            }
+
+        //            foreach(QString current_subbranch_id, subbranch_id_list) {
+        //                QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(current_subbranch_id);
+
+        //                foreach(boost::intrusive_ptr<TreeItem> record, records) {
+        //                    child_paste_recurse(record, current_subbranch_id, _sub_branch);
+        //                }
+        //            }
+
+
+        //        }
 
         assert(id != "");
         return id;
@@ -954,7 +955,7 @@ QString KnowModel::lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_
     //    QString start_branch_id = tree[0]._branch_id;
     auto _clip_root_item_parent_id = subbranch->clip_root_item_parent_id();
 
-    child_paste_recursive(_target_item, _clip_root_item_parent_id, subbranch);
+    child_paste_recursive(_target_item, _sibling_order, _clip_root_item_parent_id, subbranch);
 
     return _target_item->id();
 }

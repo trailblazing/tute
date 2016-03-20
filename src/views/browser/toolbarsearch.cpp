@@ -244,8 +244,10 @@ namespace browser {
             _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
             auto index = _tree_screen->tree_view()->source_model()->index(result_item->child(0));
-            _tree_screen->selection_model()->setCurrentIndex(index
-                                                             , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current);
+            _tree_screen->selection_model()->select(index, current_tree_selection_mode);
+            _tree_screen->selection_model()->setCurrentIndex(index, current_tree_selection_mode
+                                                             // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+                                                            );
             _tree_screen->index_invoke_in_sub_branch(index);
         }
     }

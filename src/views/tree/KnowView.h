@@ -13,6 +13,10 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
+
+extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
+
+
 class KnowModel;
 class TreeItem;
 
