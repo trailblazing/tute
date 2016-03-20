@@ -72,7 +72,7 @@ class GlobalParameters;
 extern GlobalParameters globalparameters;
 extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
-extern QString     get_unical_id(void);
+extern QString get_unical_id(void);
 
 
 QT_BEGIN_NAMESPACE
@@ -560,7 +560,7 @@ namespace browser {
                         assert(_result->url<url_type>() == url_type()(_url));
                         // assert(_result->fragment() == _url.fragment());
                         // int pos
-                        _result = _tree_screen->branch_add(_view_index, _result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                        _result = _tree_screen->branch_paste(_current_view_model, _view_index, _result); // it->insert_new_item(it->current_count() - 1, _result);
                         assert(_result);
                         _tree_screen->synchronized(false);
                         // assert(_result == it->child(pos));

@@ -288,8 +288,8 @@ void RecordController::update_browser(const int source_pos)
 
             //        else if(entrance)
         } else {
-            if(!item->is_registered_to_browser())
-                item->activate();
+            //            if(!item->is_registered_to_browser())
+            item->activate();
         }
     }
 

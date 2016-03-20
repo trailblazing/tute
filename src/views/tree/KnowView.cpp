@@ -100,7 +100,7 @@ void KnowView::sychronize()
                         if(item->is_lite())item->to_fat();
 
                         item->parent(new_branch_item);
-                        new_branch_item->child_transfer(new_branch_item->work_pos(), item);
+                        new_branch_item->child_move(new_branch_item->work_pos(), item);
                         modified = true;
                     }
                 }
@@ -113,10 +113,10 @@ void KnowView::sychronize()
                 assert(_tree_screen->know_model_board()->is_id_exists(_know_root->root_item()->id()));    // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
-                _tree_screen->branch_children_transfer(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
-                    index_current()
+                _tree_screen->branch_paste_new_children_only(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
+                    _know_root    // _tree_screen->know_branch()
+                    , index_current()
                     , new_branch_item
-                    , _know_root    // _tree_screen->know_branch()
                 );
 
                 _tree_screen->synchronized(false);
@@ -271,7 +271,8 @@ void KnowView::dragMoveEvent(QDragMoveEvent *event)
 }
 
 
-template <class X> bool KnowView::isDragableData(X *event)
+template <class X>
+bool KnowView::isDragableData(X *event)
 {
     // Проверяется, содержит ли объект переноса данные нужного формата
     const QMimeData *mimeData = event->mimeData();
@@ -373,7 +374,7 @@ void KnowView::dropEvent(QDropEvent *event)
             _record_controller->record_screen()->tools_update();
 
             // Добавление записи в базу
-            tree_item_drop->child_transfer(0, record, ADD_NEW_RECORD_TO_END);
+            tree_item_drop->child_move(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
             //            find_object<TreeScreen>(tree_screen_singleton_name)

@@ -1724,7 +1724,7 @@ namespace browser {
                         assert(_result->url() == item->url());
                         // assert(_result->fragment() == item->fragment());
                         // int pos
-                        _result = _tree_screen->branch_add(_view_index, _result, true, _current_view_model); // it->insert_new_item(it->current_count() - 1, _result);
+                        _result = _tree_screen->branch_paste(_current_view_model, _view_index, _result); // it->insert_new_item(it->current_count() - 1, _result);
                         _tree_screen->synchronized(false);
                         // assert(_result == it->child(pos));
                     }

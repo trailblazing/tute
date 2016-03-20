@@ -617,9 +617,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
 
     QMap<QString, QString> data;
-
+    QDateTime ctime_dt = QDateTime::currentDateTime();
+    QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
     data["id"]      = get_unical_id();
     data["name"]    = _toolbarsearch->text();
+    data["ctime"]   = ctime;
     data["dir"]     = data["id"];
     data["file"]    = "text.html";
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
@@ -719,7 +721,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
             for(int i = 0; i < tabmanager->count(); i++) {
                 auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                _start_item->child_clone(item);
+                _start_item->child_duplicate(item);
             }
         }
 
@@ -795,7 +797,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         // После вставки всех данных подгоняется ширина колонок
         //        _findtable->updateColumnsWidth();
-        _tree_screen->branch_search_result_append(_result_item);   // dump to table screen
+        _tree_screen->branch_paste_from_search(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->index_current(), _result_item);  // dump to table screen
     };
 
 
@@ -998,7 +1000,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
 
                 if((candidate->parent() != _current_item->parent()) && !_result_item->find_direct(candidate)) {
                     //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
-                    _result_item->child_transfer(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+                    _result_item->child_move(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
 
                     //                assert(_recordtable->record(i)->is_lite());
                     //                result->shadow_record_lite(result->size(), _recordtable->record(i));

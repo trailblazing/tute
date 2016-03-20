@@ -133,7 +133,9 @@ private:
     void dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
 
     // Перемещение ветки вверх или вниз
-    QModelIndex branch_move_up_dn(const QModelIndex &_index, int direction);
+    QModelIndex branch_move_up_dn(const QModelIndex &_index
+                                  , int(TreeItem::*_move)()   //int direction
+                                 );
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
@@ -144,7 +146,7 @@ private:
     //    bool is_contains_crypt_branches_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString lock_paste_sub(boost::intrusive_ptr<TreeItem> item, ClipboardBranch *subbranch);
+    QString lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_item, ClipboardBranch *subbranch);
 
     //    QStringList record_path_recurse(boost::intrusive_ptr<TreeItem> item, QStringList currentPath, QString recordId, int mode);
 
@@ -157,29 +159,29 @@ private:
     bool update_sub_version_from_1_to_2(void);
 
     // Добавление новой ветки после указанной ветки
-    boost::intrusive_ptr<TreeItem> lock_add_as_sibling(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> lock_add_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> lock_sibling_add(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> lock_sibling_move(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к указанной ветке
-    boost::intrusive_ptr<TreeItem> lock_add_as_child(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> lock_child_transfer(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> lock_child_add_new(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> lock_child_move(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к Item элементу
-    boost::intrusive_ptr<TreeItem> lock_child_transfer(int pos, boost::intrusive_ptr<TreeItem> parent, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> lock_child_add_new(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
 
 #ifdef _with_record_table
-    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
+    boost::intrusive_ptr<TreeItem> lock_child_add(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
 #endif
 
-    boost::intrusive_ptr<TreeItem> lock_child_transfer(int pos, boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> lock_child_move(boost::intrusive_ptr<TreeItem> parent, int pos, boost::intrusive_ptr<TreeItem> item);
     //    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
 
     // Перемещение ветки вверх и вниз
-    QModelIndex branch_move_up(const QModelIndex &_index);
-    QModelIndex branch_move_dn(const QModelIndex &_index);
+    //    QModelIndex branch_move_up(const QModelIndex &_index);
+    //    QModelIndex branch_move_dn(const QModelIndex &_index);
 
-    QString lock_paste_as_child(const QModelIndex &_index, ClipboardBranch *subbranch);
-    QString lock_paste_as_sibling(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString lock_child_paste(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString lock_sibling_paste(const QModelIndex &_index, ClipboardBranch *subbranch);
 
     boost::intrusive_ptr<TreeItem> intercept_self(boost::intrusive_ptr<TreeItem> _item);
     boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);

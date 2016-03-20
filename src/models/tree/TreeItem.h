@@ -171,7 +171,7 @@ public:
     boost::intrusive_ptr<TreeItem> child_add_new(int pos);
 
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
-    boost::intrusive_ptr<TreeItem> child_clone(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> child_duplicate(boost::intrusive_ptr<TreeItem> item);
 
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
@@ -197,8 +197,8 @@ public:
     // в массиве childItems своего родителя
     int sibling_order() const;
 
-    bool move_up(void);
-    bool move_dn(void);
+    int move_up(void);
+    int move_dn(void);
     void move_up(int pos) {ItemsFlat::move_up(pos);}
     void move_dn(int pos) {ItemsFlat::move_dn(pos);}
     // Возвращает id путь (список идентификаторов от корня до текущего элемента)
@@ -277,7 +277,7 @@ public:
     boost::intrusive_ptr<TreeItem> active_subset() const;
 
 
-    boost::intrusive_ptr<TreeItem> child_transfer(int pos, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
+    boost::intrusive_ptr<TreeItem> child_move(int pos, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
     //    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
 
 

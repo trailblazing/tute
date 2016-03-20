@@ -118,41 +118,72 @@ void RecordScreen::save_in_new_branch(bool checked)
 {
 
     Q_UNUSED(checked)
-    TreeScreen *tree_screen = globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
-    assert(tree_screen);
-    auto entrance = globalparameters.entrance();
-    assert(entrance);
-    auto tree_source_model = tree_screen->tree_view()->source_model();  // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
+    TreeScreen *_tree_screen = globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+    assert(_tree_screen);
+    auto _entrance = globalparameters.entrance();
+    assert(_entrance);
+    auto _tree_source_model = _tree_screen->tree_view()->source_model();  // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
 
-    auto _index = tree_screen->tree_view()->index_current();
+    auto _index = _tree_screen->tree_view()->index_current();
 
     if(_index.isValid()) {
-        if(tree_screen && entrance) {
-            assert(objectName() != "");
-            boost::intrusive_ptr<TreeItem> into_know_branch   // = tree_screen->_root->item_by_name(this->objectName());
-                = tree_screen->branch_add(_index
-                                          , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
-                                          , true, tree_source_model);
-            //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
-
+        if(_tree_screen && _entrance) {
             //            assert(objectName() != "");
-            //            into_know_branch->field("name", objectName());
 
-            //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
+            QMap<QString, QString> data;
+
+            QDateTime ctime_dt = QDateTime::currentDateTime();
+            QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
+            //            _item->field("ctime", ctime);
+
+            data["id"]      = get_unical_id();
+            data["name"]    = ctime;
+            data["ctime"]   = ctime;
+            data["dir"]     = data["id"];
+            data["file"]    = "text.html";
+
+            boost::intrusive_ptr<TreeItem> _result_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+            //                = tree_screen->branch_add(tree_source_model, _index
+            //                                          , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
+            //            , [&](KnowModel * _current_model, QModelIndex _current_index, QString _id, QString _name) {
+            //                boost::intrusive_ptr<TreeItem> result;
+            //                auto parent = _current_model->item(_current_index)->parent();
+            //                assert(parent);
+            //                auto same = parent->child(parent->is_name_exists(_name));
+
+            //                if(same) {  // && same->is_empty()
+            //                    assert(same->name() == _name);
+            //                    result = same;
+            //                    //            children_transfer(_new_item, _current_model);
+            //                } else {
+            //                    // Вставка новых данных в модель дерева записей
+            //                    result = _current_model->lock_sibling_add(_current_index, _id, _name);
+            //                }
+
+            //                return result;
+            //            });
+            //            //            tree_item->field("name", tree_screen->_shadow_page_model->_root_item->field("name"));
+
+            //            //            assert(objectName() != "");
+            //            //            into_know_branch->field("name", objectName());
+
+            //            //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
             auto source_model = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source_model->size(); i++) {
-                if(!tree_screen->know_model_board()->is_id_exists(source_model->item(i)->field("id"))) {
+                if(!_tree_screen->know_model_board()->is_id_exists(source_model->item(i)->field("id"))) {
                     if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
-                    source_model->item(i)->parent(into_know_branch);
-                    into_know_branch->child_transfer(into_know_branch->work_pos(), source_model->item(i));
+                    source_model->item(i)->parent(_result_item);
+                    _result_item->child_duplicate(// _result_item->work_pos(),
+                        source_model->item(i));
                 }
             }
 
+            _tree_screen->branch_paste_new_children_only(_tree_source_model, _index, _result_item);
             //            new_tree_item_in_treeknow_root = target;
-            tree_screen->synchronized(false);
-            tree_screen->knowtree_save();
+            _tree_screen->synchronized(false);
+            _tree_screen->knowtree_save();
             // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
         }
     }
@@ -203,7 +234,7 @@ void RecordScreen::setup_actions(void)
                             if(item->is_lite())item->to_fat();
 
                             item->parent(new_branch_root);
-                            new_branch_root->child_transfer(new_branch_root->work_pos(), item);
+                            new_branch_root->child_move(new_branch_root->work_pos(), item);
                             modified = true;
                         }
                     }
@@ -220,11 +251,10 @@ void RecordScreen::setup_actions(void)
                     //                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
-                    _tree_screen->branch_add(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
-                        _tree_screen->tree_view()->index_current()  //,
+                    _tree_screen->branch_paste(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
+                        source_model             // _tree_screen->know_branch()
+                        , _tree_screen->tree_view()->index_current() //,
                         , new_branch_root
-                        , true
-                        , source_model             // _tree_screen->know_branch()
                     );
 
 

@@ -171,7 +171,7 @@ namespace browser {
 
             // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
             if(!url.isEmpty()
-               // && !url.host().isNull()
+               && !url.host().isNull()
                && url.isValid()
                && !url.scheme().isEmpty()
                // && url != QUrl(DockedWindow::_defaulthome) //&& !url.host().isNull()
@@ -240,7 +240,7 @@ namespace browser {
         } else {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->branch_add(_tree_screen->tree_view()->index_current(), result_item, true, _tree_screen->tree_view()->source_model());
+            _tree_screen->branch_paste(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->index_current(), result_item);
             _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
             auto index = _tree_screen->tree_view()->source_model()->index(result_item->child(0));

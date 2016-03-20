@@ -517,9 +517,9 @@ namespace browser {
 
         if(_view    // && _loadingurl.isValid()  // && url().isValid()    // && url().toString() != _url_str
            && _url_str != Browser::_defaulthome  // url() may be nothing
-           // && _url != _loadingurl
+           && _url != _loadingurl
           ) {
-            triggerAction(QWebEnginePage::Stop);
+            //triggerAction(QWebEnginePage::Stop);
 
             // QUrl url = QUrl(_record->getNaturalFieldSource("url"));
 

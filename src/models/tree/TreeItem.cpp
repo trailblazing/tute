@@ -605,8 +605,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_add_new(int pos)
 
     //    _child_items << item; // Добавление item в конец массива childItems
     // int pos
-    auto _item = child_transfer(pos                      // _child_items.count() - 1
-                                , item, ADD_NEW_RECORD_AFTER);
+    auto _item = child_move(pos                      // _child_items.count() - 1
+                            , item, ADD_NEW_RECORD_AFTER);
     // auto _item = child(pos);
     return _item;
 }
@@ -628,7 +628,7 @@ bool TreeItem::children_insert_new(int position, int count, int columns)
         boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(this));
         // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
         // );    // Создается объект item
-        child_transfer(position, item, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
+        child_move(position, item, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
     }
 
     return true;
@@ -690,8 +690,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 #endif
 
 
-
-boost::intrusive_ptr<TreeItem> TreeItem::child_clone(boost::intrusive_ptr<TreeItem> _item)
+// copy introduce duplicated item
+boost::intrusive_ptr<TreeItem> TreeItem::child_duplicate(boost::intrusive_ptr<TreeItem> _item)
 {
 
     boost::intrusive_ptr<TreeItem> result(nullptr);
@@ -812,7 +812,7 @@ bool TreeItem::self_empty_remove()
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-boost::intrusive_ptr<TreeItem> TreeItem::child_transfer(int pos, boost::intrusive_ptr<TreeItem> _item, int mode)  // does not set parent pointer?
+boost::intrusive_ptr<TreeItem> TreeItem::child_move(int pos, boost::intrusive_ptr<TreeItem> _item, int mode)  // does not set parent pointer?
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -1113,15 +1113,17 @@ void TreeItem::page_break()
 
 boost::intrusive_ptr<TreeItem> TreeItem::child_remove(boost::intrusive_ptr<TreeItem> item)
 {
+    boost::intrusive_ptr<TreeItem> result(nullptr);
 
     for(int row = 0; row < _child_items.size(); ++row) {
         if(_child_items.at(row) == item) { //_child_items.removeAt(position);    // _child_items.takeAt(position).reset(); // delete _child_items.takeAt(position);
             _child_items.removeOne(item);
             item->page_break();
+            result = item;
         }
     }
 
-    return item;
+    return result;
 }
 
 bool TreeItem::children_remove(int position, int count)
@@ -1158,33 +1160,37 @@ void TreeItem::children_remove_all()
 //}
 
 
-bool TreeItem::move_up(void)
+int TreeItem::move_up(void)
 {
+    int row = 0;
     // Выясняется номер данного элемента в списке родителя
     int num = sibling_order();
 
-    // Если двигать вверх некуда, ничего делать ненужно
-    if(num == 0)return false;
+    if(num > 0) {   // if(num == 0)return false;    // Если двигать вверх некуда, ничего делать ненужно
+        row = -1;
+        // Элемент перемещается вверх по списку
+        (_parent_item->_child_items).swap(num, num + row);
+    }
 
-    // Элемент перемещается вверх по списку
-    (_parent_item->_child_items).swap(num, num - 1);
-
-    return true;
+    return row;
 }
 
 
-bool TreeItem::move_dn(void)
+int TreeItem::move_dn(void)
 {
+    int row = 0;
     // Выясняется номер данного элемента в списке родителя
     int num = sibling_order();
 
     // Если двигать вниз некуда, ничего делать ненужно
-    if(num >= (_parent_item->count_direct()))return false;
+    if(num < (_parent_item->count_direct())) { //if(num >= (_parent_item->count_direct()))return false;
 
-    // Элемент перемещается вниз по списку
-    (_parent_item->_child_items).swap(num, num + 1);
+        row = 1;
+        // Элемент перемещается вниз по списку
+        (_parent_item->_child_items).swap(num, num + row);
+    }
 
-    return true;
+    return row;
 }
 
 
@@ -1719,7 +1725,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::active_subset()const
     //    //    QList<boost::intrusive_ptr<TreeItem>> result;
 
     for(int i = 0; i < count_direct(); i++) {
-        if(_child_items.at(i)->page_valid())result->child_transfer(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
+        if(_child_items.at(i)->page_valid())result->child_move(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
     }
 
     //    _child_items.clear();
