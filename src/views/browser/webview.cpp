@@ -452,11 +452,7 @@ namespace browser {
 
     void WebPage::setUrl(const QUrl &url)
     {
-
-
         QWebEnginePage::setUrl(url);    // load(QUrl(_record->getNaturalFieldSource("url")));
-
-
     }
 
 
@@ -571,14 +567,19 @@ namespace browser {
             }
 
             auto _tree_screen = globalparameters.tree_screen();
-            QModelIndex _index_item;   // = _tree_screen->tree_view()->source_model()->index(_item);
+            QModelIndex _index = _tree_screen->tree_view()->source_model()->index(_record_binder->bounded_item());  // = _tree_screen->tree_view()->source_model()->index(_item);
 
-            while(!(_index_item = _tree_screen->tree_view()->source_model()->index(_record_binder->bounded_item())).isValid()) {
+            while(!_index.isValid()
+                  && _tree_screen->tree_view()->source_model()->root_item() != _tree_screen->know_model_board()->root_item()
+                 ) {
                 _tree_screen->cursor_up_one_level();
+                _index = _tree_screen->tree_view()->source_model()->index(_record_binder->bounded_item());
                 //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
             }
 
-            _tree_screen->cursor_to_index(_index_item);
+            if(_index.isValid() && _tree_screen->tree_view()->index_current() != _index) {
+                _tree_screen->cursor_to_index(_index);
+            }
 
         }
 

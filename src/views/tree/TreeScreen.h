@@ -59,8 +59,7 @@ private:
 };
 
 class TreeScreen
-    : public QWidget    //    , public know_root_holder
-{
+    : public QWidget {  //    , public know_root_holder
     Q_OBJECT
 
 public:
@@ -93,7 +92,7 @@ public:
     QItemSelectionModel *selection_model(void);
 
     // Установка курсора на указанный элемент
-    void cursor_to_index(QModelIndex index);
+    void cursor_to_index(QModelIndex _index);
 
     void branch_update_on_screen(const QModelIndex &index);
 
@@ -109,13 +108,12 @@ public:
     //    boost::intrusive_ptr<TreeItem> branch_add(QModelIndex _current_index, QString name, bool insert_sibling_branch, KnowModel *_current_model);
     //    template<bool insert_sibling_branch = true>
     boost::intrusive_ptr<TreeItem> branch_add_new(KnowModel *_current_model, QModelIndex _current_index, QString _name
-                                              , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, QString, QString)> _branch_add_impl);
+                                                  , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, QString, QString)> _branch_add_impl);
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch, std::shared_ptr<KnowModel> _current_model);
 
     //    TreeController *treecontroller() {return _tree_controller;}
-    void index_invoke_in_current_branch(const QModelIndex &index);
-    void index_invoke_in_sub_branch(const QModelIndex &index);
+
     void enable_up_action();
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
     boost::intrusive_ptr<TreeItem> branch_cut(boost::intrusive_ptr<TreeItem> item);
@@ -134,6 +132,10 @@ public:
 
 public slots:
     void branch_paste_from_search(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _result_item); // , std::shared_ptr<RecordTable> resultset_data
+    void on_current_row_changed(const QModelIndex &current, const QModelIndex &previous);
+    void index_invoke_in_current_branch(const QModelIndex &_index);
+    void index_invoke_in_sub_branch(const QModelIndex &_index);
+
 
 private slots:
 
@@ -144,9 +146,9 @@ private slots:
     //    boost::intrusive_ptr<TreeItem> branch_insert_sibling(void);
     void branch_edit(void);
 
-    QList<boost::intrusive_ptr<TreeItem>> branchs_delete(QModelIndexList _index_list, QString mode, bool _cut_branch_confirm = false);
+    QList<boost::intrusive_ptr<TreeItem>> branchs_delete(QModelIndexList _origin_index_list, QString mode, bool _cut_branch_confirm = false);
     QList<boost::intrusive_ptr<TreeItem>> branchs_delete(QString mode = "delete", bool _cut_branch_confirm = false);
-    boost::intrusive_ptr<TreeItem> branch_delete_one(QModelIndex index, KnowModel *_current_know_branch);
+    boost::intrusive_ptr<TreeItem> branch_delete_one(QModelIndex _to_be_delete_index, KnowModel *_current_model);
 
 
 

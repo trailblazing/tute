@@ -38,15 +38,15 @@ extern AppConfig appconfig;
 extern TrashMonitoring trashmonitoring;
 extern GlobalParameters globalparameters;
 extern WalkHistory walkhistory;
-const char *meta_editor_singleton_name  = "editor_screen";
-const char *record_screen_multi_instance_name = "record_screen";
-const char *tree_screen_singleton_name  = "tree_screen";
-const char *find_screen_singleton_name  = "find_screen";
-const char *download_manager_singleton_name = "download_manager";
-const char *windowswitcher_singleton_name   = "window_switcher";
-const char *entrance_singleton_name     = "entrance";
-const char *record_controller_multi_instance_name = "record_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
-
+const char *meta_editor_singleton_name          = "editor_screen";
+const char *record_screen_multi_instance_name   = "record_screen";
+const char *tree_screen_singleton_name          = "tree_screen";
+const char *find_screen_singleton_name          = "find_screen";
+const char *download_manager_singleton_name     = "download_manager";
+const char *windowswitcher_singleton_name       = "window_switcher";
+const char *entrance_singleton_name             = "entrance";
+const char *record_controller_multi_instance_name   = "record_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
+const char *record_view_multi_instance_name     = "record_view";
 
 MainWindow::MainWindow(
     GlobalParameters    &_globalparameters

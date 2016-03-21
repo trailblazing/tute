@@ -97,8 +97,8 @@ public:
     int is_id_exists(const QString &id) const;
     int is_url_exists(const QUrl &url) const;
 
-    int position_current(QString id) const;
-    int position_current(boost::intrusive_ptr<TreeItem> it)const;
+    int sibling_order(QString id) const;
+    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();

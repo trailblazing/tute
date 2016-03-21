@@ -325,15 +325,17 @@ boost::intrusive_ptr<TreeItem> TreeItem::child(int number)
 // Array of the parent child items
 int TreeItem::sibling_order() const
 {
-    if(_parent_item)
-        return _parent_item->_child_items.indexOf(
-                   // boost::const_pointer_cast<TreeItem>(
-                   //                   const_cast<TreeItem *>(this) //
-                   boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-                   // ) // const_cast<TreeItem *>(this)
-               );
+    int result = -1;
 
-    return 0;
+    if(_parent_item)
+        result = _parent_item->_child_items.indexOf(
+                     // boost::const_pointer_cast<TreeItem>(
+                     //                   const_cast<TreeItem *>(this) //
+                     boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
+                     // ) // const_cast<TreeItem *>(this)
+                 );
+
+    return result;
 }
 
 
@@ -778,8 +780,8 @@ bool TreeItem::self_remove()
     bool result = false;
 
     //    if(is_empty()) {
-    if(parent()) {
-        if(parent()->child_remove(boost::intrusive_ptr<TreeItem>(this)))
+    if(_parent_item) {
+        if(_parent_item->child_remove(boost::intrusive_ptr<TreeItem>(this)))
             result = true;
     }
 
@@ -793,10 +795,11 @@ bool TreeItem::self_empty_remove()
     bool result = false;
 
     if(is_empty()) {
-        if(parent()) {
-            if(parent()->child_remove(boost::intrusive_ptr<TreeItem>(this)))
-                result = true;
-        }
+        result = self_remove();
+        //        if(_parent_item) {
+        //            if(_parent_item->child_remove(boost::intrusive_ptr<TreeItem>(this)))
+        //                result = true;
+        //        }
     }
 
     return result;
@@ -828,15 +831,16 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_move(int pos, boost::intrusive_pt
 
         if(!find_direct(_item)) {  //       && !shadow_branch->is_record_id_exists(item->field("id"))
 
-            if(_item->parent()) {
-                if(_item->parent() != this) {
-                    _item->parent()->child_remove(_item);
-                    auto check = _item->parent();
+            auto _parent = _item->parent();
 
-                    while(check->self_empty_remove()) {
-                        check = check->parent();
+            if(_parent) {
+                if(_parent != this) {
+                    _parent->child_remove(_item);
 
-                        if(!check)break;
+                    while(_parent->self_empty_remove()) {
+                        _parent = _parent->parent();
+
+                        if(!_parent)break;
                     }
                 }
             }
@@ -936,13 +940,13 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_move(int pos, boost::intrusive_pt
                 //            insert_position = pos + 1;
             }
 
-            insert_position = position_current(_item);
+            insert_position = ItemsFlat::sibling_order(_item);
             qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
 
             // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
 
         } else {
-            insert_position = position_current(_item);
+            insert_position = ItemsFlat::sibling_order(_item);
         }
 
         assert(_child_items[insert_position] == _item);
@@ -1735,6 +1739,17 @@ boost::intrusive_ptr<TreeItem> TreeItem::active_subset()const
     //    return result;
 }
 
+boost::intrusive_ptr<TreeItem> TreeItem::is_activated()
+{
+    boost::intrusive_ptr<TreeItem> found(nullptr);
+    auto _entrance = globalparameters.entrance();
+    auto v = _entrance->find(boost::intrusive_ptr<TreeItem>(this));
+    auto test = is_registered_to_browser();
+
+    if(test && (v->tabmanager()->currentWebView() == v))found = test;
+
+    return found;
+}
 
 boost::intrusive_ptr<TreeItem> TreeItem::is_registered_to_browser()
 {

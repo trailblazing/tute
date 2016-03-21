@@ -243,6 +243,7 @@ public:
     QDomElement dom_from_treeitem();
     void dom_to_direct(const QDomElement &_dom_element);
 
+    boost::intrusive_ptr<TreeItem> is_activated();
     boost::intrusive_ptr<TreeItem> is_registered_to_browser();
 
     boost::intrusive_ptr<CouplerDelegation> record_binder();

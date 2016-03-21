@@ -35,7 +35,7 @@ KnowView::KnowView(QWidget *parent) : QTreeView(parent), _know_root(nullptr)
 
     // Разрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);
-
+    setDragDropMode(QAbstractItemView::InternalMove);
     // Настройка области виджета для кинетической прокрутки
     set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));
     connect(static_cast<QTreeView *>(const_cast<KnowView *>(this)), &QTreeView::setModel, this, [&](QAbstractItemModel * model) {   // does not work
@@ -258,12 +258,12 @@ void KnowView::dragMoveEvent(QDragMoveEvent *event)
         QModelIndex index = indexAt(event->pos());
 
         // Указатель на родительский элемент, чтобы далее получить модель данных
-        TreeScreen *parentPointer = qobject_cast<TreeScreen *>(parent());
+        TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
 
         // В модели данных отмечается элемент дерева, над которым находится курсор
-        parentPointer->tree_view()->source_model()->setData(index, QVariant(true), Qt::UserRole);
+        _tree_screen->tree_view()->source_model()->setData(index, QVariant(true), Qt::UserRole);
 
-        parentPointer->synchronized(false);
+        _tree_screen->synchronized(false);
 
     } else
         event->ignore();
@@ -273,25 +273,25 @@ void KnowView::dragMoveEvent(QDragMoveEvent *event)
 }
 
 
-template <class X>
-bool KnowView::isDragableData(X *event)
-{
-    // Проверяется, содержит ли объект переноса данные нужного формата
-    const QMimeData *mimeData = event->mimeData();
+//template <class X>
+//bool KnowView::isDragableData(X *event)
+//{
+//    // Проверяется, содержит ли объект переноса данные нужного формата
+//    const QMimeData *mimeData = event->mimeData();
 
-    if(mimeData == nullptr)
-        return false;
+//    if(mimeData == nullptr)
+//        return false;
 
-    if(!(mimeData->hasFormat("mytetra/records")))
-        return false;
+//    if(!(mimeData->hasFormat("mytetra/records")))
+//        return false;
 
-    QObject *sourceObject = qobject_cast<QObject *>(event->source());
+//    QObject *sourceObject = qobject_cast<QObject *>(event->source());
 
-    if(sourceObject->objectName() == "recordTableView")
-        return true;
-    else
-        return false;
-}
+//    if(sourceObject->objectName() == "record_view") // "recordTableView"
+//        return true;
+//    else
+//        return false;
+//}
 
 
 void KnowView::dropEvent(QDropEvent *event)
@@ -316,10 +316,10 @@ void KnowView::dropEvent(QDropEvent *event)
             return;
 
         // Указатель на родительский элемент
-        TreeScreen *parent_tree_screen_pointer = qobject_cast<TreeScreen *>(parent());
+        TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto tree_item_drop = parent_tree_screen_pointer->tree_view()->source_model()->item(index);
+        auto tree_item_drop = _tree_screen->tree_view()->source_model()->item(index);
 
         //        // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
         //        auto tree_item_drop = tree_item_drop;    // ->record_table();
@@ -329,7 +329,7 @@ void KnowView::dropEvent(QDropEvent *event)
         // static_cast<TreeScreen *>(this->parent())->view_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = parent_tree_screen_pointer->tree_view()->source_model()->item(indexFrom);
+        auto treeItemDrag = _tree_screen->tree_view()->source_model()->item(indexFrom);
 
         // Если перенос происходит в ту же самую ветку
         if(indexFrom == index)
@@ -384,15 +384,15 @@ void KnowView::dropEvent(QDropEvent *event)
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось
-        parent_tree_screen_pointer->branch_update_on_screen(indexFrom);
+        _tree_screen->branch_update_on_screen(indexFrom);
 
         // Обновлении конечной ветки чтобы было видно что записей прибавилось
-        parent_tree_screen_pointer->branch_update_on_screen(index);
+        _tree_screen->branch_update_on_screen(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
-        parent_tree_screen_pointer->tree_view()->source_model()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+        _tree_screen->tree_view()->source_model()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
 
-        parent_tree_screen_pointer->synchronized(false);
+        _tree_screen->synchronized(false);
     }
 }
 
@@ -477,21 +477,27 @@ QModelIndex KnowView::index_current(void)
     //    auto v = _treeknowview->selectionModel()->currentIndex();
     //    candidate_from_knowtree_item(cur_index);
 
+    if(selectionModel()->selectedIndexes().size() > 0) {
+        result = selectionModel()->selectedIndexes().first();
+    }
+
     if(!result.isValid()) {
         if(_know_root->root_item()->count_direct() > 0) {
             selection_to_pos(_know_root->root_item()->count_direct() - 1);
         } else {
-            auto _tree_screen = globalparameters.tree_screen();
+            TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
+
+            //            auto parent_tree_screen_pointer = globalparameters.tree_screen();
+            while(_know_root->root_item()->parent() && _know_root->root_item()->parent()->count_direct() == 0) {
+                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
+            }
 
             if(_know_root->root_item()->parent()) {
                 _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
-
-            } else {
+            } else if(_know_root->root_item()->count_direct() == 0) {
                 globalparameters.entrance()->activate<url_full>(QUrl(browser::Browser::_defaulthome));
-
             }
 
-            assert(_know_root->root_item()->count_direct() > 0);
             selection_to_pos(_know_root->root_item()->count_direct() - 1);
         }
 
@@ -501,9 +507,6 @@ QModelIndex KnowView::index_current(void)
 
     }
 
-    if(selectionModel()->selectedIndexes().size() > 0) {
-        result = selectionModel()->selectedIndexes()[0];
-    }
 
     //    assert(cur_index.isValid());
     return result;  // cur_index;   // temporary setting???   //

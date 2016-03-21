@@ -240,7 +240,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(QString id)const
     return result;
 }
 
-int ItemsFlat::position_current(QString id)const
+int ItemsFlat::sibling_order(QString id)const
 {
     for(int i = 0; i < count_direct(); i++)
         if(field(i, "id") == id)
@@ -249,7 +249,7 @@ int ItemsFlat::position_current(QString id)const
     return -1;
 }
 
-int ItemsFlat::position_current(boost::intrusive_ptr<TreeItem> it)const
+int ItemsFlat::sibling_order(boost::intrusive_ptr<TreeItem> it)const
 {
     for(int i = 0; i < count_direct(); i++)
         if(child(i) == it)

@@ -26,7 +26,7 @@
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
-
+extern const char *record_view_multi_instance_name;
 
 // Виджет, отображащий список записей в ветке
 
@@ -38,7 +38,8 @@ RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_c
     , _record_controller(_record_controller)
     , _layout(new QVBoxLayout(this))
 {
-    // setObjectName(screen_name + "_view");
+    setObjectName(record_view_multi_instance_name   // screen_name + "_view"
+                 );
 
     // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
     this->setSortingEnabled(false);

@@ -1870,7 +1870,7 @@ void KnowModel::record_remove(boost::intrusive_ptr<TreeItem> _item)
 {
     if(_item->count_direct() > 0) {
         auto p = _item->parent();
-        int pos = p->position_current(_item);
+        int pos = _item->sibling_order();   // p->sibling_order(_item);
         beginInsertRows(index(p), pos, _item->count_direct() - 1);
 
         for(int i = 0; i < _item->count_direct(); i++) {

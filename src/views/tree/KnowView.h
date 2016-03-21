@@ -9,13 +9,15 @@
 #include <QTapAndHoldGesture>
 #include <QEvent>
 #include <QGestureEvent>
+#include <QMimeData>
+
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
-
+extern const char *record_view_multi_instance_name;
 
 class KnowModel;
 class TreeItem;
@@ -54,7 +56,25 @@ protected:
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
 
-    template <class X> bool isDragableData(X *event);
+    template <class X> bool isDragableData(X *event)
+    {
+        // Проверяется, содержит ли объект переноса данные нужного формата
+        const QMimeData *mimeData = event->mimeData();
+
+        if(mimeData == nullptr)
+            return false;
+
+        if(!(mimeData->hasFormat("mytetra/records")))
+            return false;
+
+        QObject *sourceObject = qobject_cast<QObject *>(event->source());
+
+        if(sourceObject->objectName() == record_view_multi_instance_name) // "recordTableView"
+            return true;
+        else
+            return false;
+    }
+
     bool is_owner();
     void setModel(KnowModel *model);
 private:
