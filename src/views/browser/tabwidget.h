@@ -560,7 +560,7 @@ namespace browser {
                         assert(_result->url<url_type>() == url_type()(_url));
                         // assert(_result->fragment() == _url.fragment());
                         // int pos
-                        _result = _tree_screen->branch_paste(_current_view_model, _view_index, _result); // it->insert_new_item(it->current_count() - 1, _result);
+                        _result = _tree_screen->branch_paste_as_sibling(_current_view_model, _view_index, _result); // it->insert_new_item(it->current_count() - 1, _result);
                         assert(_result);
                         _tree_screen->synchronized(false);
                         // assert(_result == it->child(pos));

@@ -1226,7 +1226,7 @@ void MainWindow::go_walk_history(void)
     auto item = _tree_screen->know_model_board()->item(absolute_path);    // on know_root semantic
 
     // Проверяем, есть ли такая позиция
-    if(item->is_id_exists(record_id) == false) {
+    if(!item->item_direct(record_id)) {  // == false
         walkhistory.set_drop(false);
         return;
     }

@@ -56,12 +56,16 @@ public:
     // Получение образа записи
     boost::intrusive_ptr<TreeItem> item_lite(int pos) const;
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
-    boost::intrusive_ptr<TreeItem> child(int pos) const;
-    boost::intrusive_ptr<TreeItem> item(int pos) const;
-    boost::intrusive_ptr<TreeItem> find_direct(const QUrl &url) const;
-    boost::intrusive_ptr<TreeItem> find_direct(boost::intrusive_ptr<TreeItem> item) const;
+    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
+    //    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
+
+    QList<boost::intrusive_ptr<TreeItem> > items_direct_with_the_same_name(const QString &name)const;
+    boost::intrusive_ptr<TreeItem> item_direct(const QString &id) const;
+    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
+    //    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
+    boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem> item) const;
     //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
-    boost::intrusive_ptr<TreeItem> find_direct(QString id)const;
+    //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id)const;
     int index_direct(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
 
@@ -93,9 +97,6 @@ public:
     bool child_remove(QString id);
     bool child_remove(boost::intrusive_ptr<TreeItem> item);
 
-    int is_name_exists(const QString &name)const;
-    int is_id_exists(const QString &id) const;
-    int is_url_exists(const QUrl &url) const;
 
     int sibling_order(QString id) const;
     int sibling_order(boost::intrusive_ptr<TreeItem> it)const;

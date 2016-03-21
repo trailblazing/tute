@@ -57,7 +57,7 @@ public:
     RecordModel *source_model();    // {return _source_model;}
     RecordProxyModel *proxy_model();
     browser::TabWidget *tabmanager() {return _tabmanager;}
-    void click_item(const QModelIndex &index);
+    void item_click(const QModelIndex &index);
 
     //    bool is_tree_item_exists(void);
     //    void reset_tabledata_test(TableData *rtData);
@@ -68,7 +68,7 @@ public:
 
     void add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
 
-    void open_website(QModelIndex proxyIndex);
+    void url_load(QModelIndex proxyIndex);
     // Действия при редактировании инфополей записи из контекстного меню
     void edit_field_context(QModelIndex proxyIndex);
 
@@ -89,8 +89,8 @@ public:
     void    select_id(QString id);
 
 
-    void remove_child(QString del_id);
-    void remove_children(QVector<QString> del_ids);
+    void page_remove(QString del_id);
+    void pages_remove(QVector<QString> del_ids);
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
@@ -101,7 +101,7 @@ public:
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
     //    boost::intrusive_ptr<TreeItem> tree_item();
-    void sychronize_metaeditor_to_item(const int pos);
+    void sychronize_metaeditor_to_item(const int _index);
     void sychronize_attachtable_to_item(const int pos);
 
     void addnew_blank(int mode);
@@ -134,7 +134,7 @@ public slots:
 
     void on_edit_fieldcontext(void);
 
-    void delete_items_selected(void);
+    void pages_remove(void);
 
     // Вызов действий из контекстного меню для открытия окна с вводом новой записи
     void addnew_to_end(void);
@@ -143,7 +143,7 @@ public slots:
     //void autoAddNewAfterContext(void);
 
     // Вызов действий из контекстного меню для удаления конечной записи
-    void delete_context(void);
+    void context_delete(void);
 
     void move_up(void);
     void move_dn(void);
@@ -163,7 +163,7 @@ public slots:
 protected:
 
 
-    void update_browser(const int source_pos);
+    void browser_update(const int source_pos);
 
     bool                _no_view = true;
     RecordModel         *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
@@ -186,7 +186,7 @@ protected:
 
     // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
 
-    void remove_children_from_source_model(QVector<QString> del_ids);
+    void pages_remove_from_browser(QVector<QString> del_ids);
     //    void remove_child(int index);
 
     //    friend class browser::Entrance;

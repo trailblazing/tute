@@ -175,12 +175,12 @@ void KnowModel::dom_to_records(QDomElement _record_dom_element, boost::intrusive
 
         assert(id != "");
 
-        int index = current_parent->is_id_exists(id);
+        int index = current_parent->item_direct(id)->sibling_order();
 
         boost::intrusive_ptr<TreeItem> item = nullptr;
 
         if(index != -1) {
-            item = current_parent->child(index);
+            item = current_parent->item_direct(index);
         } else {
             item = current_parent->child_add_new(current_parent->count_direct());
         }
@@ -522,7 +522,7 @@ void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement
     for(int i = 0; i < curr_item->count_direct(); i++) {
         //        assert(curr_item->child(i).get() != curr_item);
 
-        if(curr_item->child(i) != curr_item) {
+        if(curr_item->item_direct(i) != curr_item) {
             //            // Временный элемент, куда будет внесена текущая перебираемая ветка
             //            QDomElement  tempElement = doc->createElement("node");
 
@@ -548,7 +548,7 @@ void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement
 
             // Рекурсивная обработка
             QDomElement workElement = xml_data.lastChildElement();
-            dom_from_treeitem(doc, workElement, curr_item->child(i));
+            dom_from_treeitem(doc, workElement, curr_item->item_direct(i));
         }
     }
 
@@ -1055,7 +1055,7 @@ QModelIndex KnowModel::index_direct(const QModelIndex &_parent_index, int n) con
     }
 
     // Выясняется указатель на подчиненный Item элемент
-    boost::intrusive_ptr<TreeItem> child_item = it->child(n);
+    boost::intrusive_ptr<TreeItem> child_item = it->item_direct(n);
 
     // Если указатель на подчиненный Item элемент непустой
     if(child_item) {
@@ -1107,7 +1107,7 @@ int KnowModel::size_of(boost::intrusive_ptr<TreeItem> item)const
         n = n + item->count_direct();
 
         for(int i = 0; i < item->count_direct(); i++)
-            get_all_record_count_recurse(item->child(i), 1);
+            get_all_record_count_recurse(item->item_direct(i), 1);
 
         return n;
     };
@@ -1467,7 +1467,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::item_by_name(QString name)const
             return find_item;
         } else {
             for(int i = 0; i < item->count_direct(); i++)
-                item_by_name_recurse(item->child(i), name, 1);
+                item_by_name_recurse(item->item_direct(i), name, 1);
 
             return find_item;
         }
@@ -1501,7 +1501,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::item_by_id(QString id)const
             return find_item;
         } else {
             for(int i = 0; i < item->count_direct(); i++)
-                item_by_id_recurse(item->child(i), id, 1);
+                item_by_id_recurse(item->item_direct(i), id, 1);
 
             return find_item;
         }
@@ -1568,13 +1568,13 @@ QStringList KnowModel::record_path(QString recordId)const
         currentPath << item->id();
 
         // Если в данной ветке есть искомая запись
-        if(item->is_id_exists(recordId)) {
+        if(item->item_direct(recordId)) {
             isFind = true;
             findPath = currentPath;
         } else {
             // Иначе перебираются подветки
             for(int i = 0; i < item->count_direct(); i++)
-                record_path_recurse(item->child(i), currentPath, recordId, 1);
+                record_path_recurse(item->item_direct(i), currentPath, recordId, 1);
         }
 
         return findPath;
@@ -1642,7 +1642,7 @@ bool KnowModel::is_contains_crypt_branches(void)const
         }
 
         for(int i = 0; i < item->count_direct(); i++)
-            is_contains_crypt_branches_recurse(item->child(i), 1);
+            is_contains_crypt_branches_recurse(item->item_direct(i), 1);
 
         return isCrypt;
     };
@@ -1874,7 +1874,7 @@ void KnowModel::record_remove(boost::intrusive_ptr<TreeItem> _item)
         beginInsertRows(index(p), pos, _item->count_direct() - 1);
 
         for(int i = 0; i < _item->count_direct(); i++) {
-            p->child_move(pos, _item->child(i));
+            p->child_move(pos, _item->item_direct(i));
         }
 
         endInsertRows();

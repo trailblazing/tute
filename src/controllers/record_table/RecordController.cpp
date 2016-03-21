@@ -113,7 +113,7 @@ RecordView *RecordController::view(void)
 
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-void RecordController::click_item(const QModelIndex &index)
+void RecordController::item_click(const QModelIndex &index)
 {
     // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
     QModelIndex sourceIndex = proxyindex_to_sourceindex(index);
@@ -127,18 +127,18 @@ void RecordController::click_item(const QModelIndex &index)
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
     if(sourceIndex.isValid()) {
         sychronize_attachtable_to_item(source_pos);
-        update_browser(source_pos); // if new one, create it? no, you can't click a record which does not exist.
+        browser_update(source_pos); // if new one, create it? no, you can't click a record which does not exist.
     }
 }
 
-void RecordController::open_website(QModelIndex proxyIndex)
+void RecordController::url_load(QModelIndex proxyIndex)
 {
     qDebug() << "RecordTableController::editFieldContext()";
 
-    QModelIndex sourceIndex = proxyindex_to_sourceindex(proxyIndex);
-    int pos = sourceIndex.row(); // Номер строки в базе
+    QModelIndex source_index = proxyindex_to_sourceindex(proxyIndex);
+    int _index = source_index.row(); // Номер строки в базе
 
-    update_browser(pos);
+    browser_update(_index);
 
     //    // Create input window after exiting the function window should retire  // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
     //    //RecordInfoFieldsEditor editRecordWin;
@@ -178,7 +178,7 @@ void RecordController::open_website(QModelIndex proxyIndex)
 
 // you can't click a record which does not exist.
 // you can switch between two already existing record from this
-void RecordController::update_browser(const int source_pos)
+void RecordController::browser_update(const int source_pos)
 {
     //RecordTableData *table = recordSourceModel->getTableData();
 
@@ -230,7 +230,7 @@ void RecordController::update_browser(const int source_pos)
 
 
 
-    boost::intrusive_ptr<TreeItem> item = this->source_model()->child(source_pos);
+    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(source_pos);
 
     if(item->is_lite())item->to_fat();
 
@@ -325,10 +325,10 @@ void RecordController::update_browser(const int source_pos)
 // so if our records are come from different tree path, we must switch the parent node, our give them a sharing parent.
 // that's why we need a page_controller,  or we should implement a multi table screen architecture -- but with this design,
 // we can not settle the medium results easily.
-void RecordController::sychronize_metaeditor_to_item(const int pos)
+void RecordController::sychronize_metaeditor_to_item(const int _index)
 {
 
-    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(pos);
+    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(_index);
     assert(item);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -343,7 +343,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // В таблице конечных данных запоминается какая запись была выбрана
     // чтобы затем при выборе этой же подветки засветка автоматически
     // установилась на последнюю рабочую запись
-    this->source_model()->work_pos(pos);   // item->work_pos(pos);
+    this->source_model()->index_current(_index);   // item->work_pos(pos);
 
 
     // Устанавливается функция обратного вызова для записи данных
@@ -355,8 +355,8 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
 
 
     // Для новой выбраной записи выясняется директория и основной файл
-    QString currentDir = item->child(pos)->field("dir");
-    QString currentFile = item->child(pos)->field("file");
+    QString currentDir = item->item_direct(_index)->field("dir");
+    QString currentFile = item->item_direct(_index)->field("file");
     QString fullDir = appconfig.get_tetradir() + "/base/" + currentDir;
     QString fullFileName = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
@@ -373,7 +373,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
     // Before the opening of the editor it attempts to get the text records
     // This call will create a text file with the record if it is not already created (think remake)
-    item->text(pos);
+    item->text(_index);
 
     // Редактору задаются имя файла и директории
     // И дается команда загрузки файла
@@ -384,16 +384,16 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // И если имя директории или имя файла пусты, то это означает что
     // запись не была расшифрована, и редактор должен просто показывать пустой текст
     // ничего не сохранять и не считывать
-    qDebug() << "RecordTableView::onClickToRecord() : id " << item->child(pos)->field("id");
-    qDebug() << "RecordTableView::onClickToRecord() : name " << item->child(pos)->field("name");
-    qDebug() << "RecordTableView::onClickToRecord() : crypt " << item->child(pos)->field("crypt");
+    qDebug() << "RecordTableView::onClickToRecord() : id " << item->item_direct(_index)->field("id");
+    qDebug() << "RecordTableView::onClickToRecord() : name " << item->item_direct(_index)->field("name");
+    qDebug() << "RecordTableView::onClickToRecord() : crypt " << item->item_direct(_index)->field("crypt");
 
-    if(item->child(pos)->field("crypt") == "1")
+    if(item->item_direct(_index)->field("crypt") == "1")
         if(fullDir.length() == 0 || currentFile.length() == 0)
             meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
     // В редактор заносится информация, идет ли работа с зашифрованным текстом
-    meta_editor->misc_field("crypt", item->child(pos)->field("crypt"));
+    meta_editor->misc_field("crypt", item->item_direct(_index)->field("crypt"));
 
     // В редакторе устанавливается функция обратного вызова для чтения данных
     meta_editor->load_callback(item->editor_load_callback);
@@ -402,17 +402,17 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // edView->set_textarea(table->get_text(index.row()));
 
     // Заполняются прочие инфо-поля
-    meta_editor->pin(item->child(pos)->field("pin"));
-    meta_editor->name(item->child(pos)->field("name"));
-    meta_editor->author(item->child(pos)->field("author"));
-    meta_editor->home(item->child(pos)->field("home"));
-    meta_editor->url(item->child(pos)->field("url"));
-    meta_editor->tags(item->child(pos)->field("tags"));
+    meta_editor->pin(item->item_direct(_index)->field("pin"));
+    meta_editor->name(item->item_direct(_index)->field("name"));
+    meta_editor->author(item->item_direct(_index)->field("author"));
+    meta_editor->home(item->item_direct(_index)->field("home"));
+    meta_editor->url(item->item_direct(_index)->field("url"));
+    meta_editor->tags(item->item_direct(_index)->field("tags"));
 
-    QString id = item->child(pos)->field("id");
+    QString id = item->item_direct(_index)->field("id");
     meta_editor->misc_field("id", id);
 
-    meta_editor->misc_field("title", item->child(pos)->field("name"));
+    meta_editor->misc_field("title", item->item_direct(_index)->field("name"));
 
     // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
     QString path = qobject_cast<RecordScreen *>(parent())->tree_path();
@@ -428,7 +428,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     }
 
     // Обновление иконки аттачей
-    if(item->item(pos)->attach_table()->size() == 0)
+    if(item->item_direct(_index)->attach_table()->size() == 0)
         meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_not_exists);   // Если нет приаттаченных файлов
     else
         meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_exists);   // Есть приаттаченные файлы
@@ -713,7 +713,7 @@ QString RecordController::first_selectionid(void) const
 
 void RecordController::select_pos(int pos)
 {
-    _view->selection_to_pos(pos);
+    _view->cursor_to_index(pos);
 }
 
 
@@ -731,7 +731,7 @@ void RecordController::select_id(QString id)
     //    if(_view->selection_first_pos()
     //       != sourcepos_to_proxypos(pos)
     //      ) {
-    _view->selection_to_pos(sourcepos_to_proxypos(pos));
+    _view->cursor_to_index(sourcepos_to_proxypos(pos));
     //    }
 
     //    }
@@ -853,7 +853,7 @@ void RecordController::cut(void)
     globalparameters.meta_editor()->save_textarea();
 
     copy();
-    delete_items_selected();
+    pages_remove();
 }
 
 
@@ -1152,7 +1152,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
 
         position_index = _source_model->createIndex(_source_model->size() - 1
                                                     , 0
-                                                    , static_cast<void *>(_source_model->child(_source_model->size() - 1).get())
+                                                    , static_cast<void *>(_source_model->item(_source_model->size() - 1).get())
                                                    );
     }
 
@@ -1170,15 +1170,15 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     int selected_position = -1;
 
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    if(!_source_model->find_current(item)) {
+    if(!_source_model->item(item)) {
         selected_position = _source_model->insert_new_item(position_index, item, mode);
     } else {
-        selected_position = _source_model->locate(item);
+        selected_position = _source_model->position(item);
     }
 
     assert(selected_position != -1);
     assert(_source_model->item(selected_position) == item);
-    assert(_source_model->locate(item) == selected_position);
+    assert(_source_model->position(item) == selected_position);
     //    assert(_source_model->child(selected_position) == item);
 
     _view->move_cursor_to_new_record(mode, sourcepos_to_proxypos(selected_position));   // modify _source_model? yeah
@@ -1203,7 +1203,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     //        find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
     //    }
 
-    selected_position = _source_model->locate(item);
+    selected_position = _source_model->position(item);
     assert(selected_position != -1);
     assert(_source_model->item(selected_position) == item);
 
@@ -1411,7 +1411,7 @@ void RecordController::edit_field(int pos
 
 
 // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
-void RecordController::delete_context(void)
+void RecordController::context_delete(void)
 {
     // Создается окно с вопросом нужно удалять запись (записи) или нет
     QMessageBox messageBox(_view);
@@ -1426,14 +1426,20 @@ void RecordController::delete_context(void)
 
     if(messageBox.clickedButton() == deleteButton) {
         // Выбранные данные удаляются
-        delete_items_selected();
+        pages_remove();
     }
 
 }
 
+void RecordController::page_remove(QString del_id)
+{
+    QVector<QString> del_ids;
+    del_ids.append(del_id);
+    pages_remove(del_ids);
+}
 
 // Удаление отмеченных записей
-void RecordController::delete_items_selected(void)
+void RecordController::pages_remove(void)
 {
     qDebug() << "RecordController::delete_items_selected()";
 
@@ -1487,7 +1493,7 @@ void RecordController::delete_items_selected(void)
     globalparameters.meta_editor()->clear_all();
 
     // Вызывается удаление отмеченных записей
-    remove_children_from_source_model(del_ids);
+    pages_remove_from_browser(del_ids);
 
     //    // Сохранение дерева веток
     //    //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1513,15 +1519,9 @@ void RecordController::delete_items_selected(void)
     qobject_cast<RecordScreen *>(parent())->tools_update();
 }
 
-void RecordController::remove_child(QString del_id)
-{
-    QVector<QString> del_ids;
-    del_ids.append(del_id);
-    remove_children(del_ids);
-}
 
 // Удаление одной записи по идентификатору
-void RecordController::remove_children(QVector<QString> del_ids)
+void RecordController::pages_remove(QVector<QString> del_ids)
 {
     //    QVector<QString> del_ids;
     //    del_ids.append(del_id);
@@ -1568,7 +1568,7 @@ void RecordController::remove_children(QVector<QString> del_ids)
     globalparameters.meta_editor()->clear_all();
 
     // Вызывается удаление отмеченных записей
-    remove_children_from_source_model(del_ids);
+    pages_remove_from_browser(del_ids);
 
     //    // Сохранение дерева веток
     //    //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1597,7 +1597,7 @@ void RecordController::remove_children(QVector<QString> del_ids)
 
 
 // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
-void RecordController::remove_children_from_source_model(QVector<QString> del_ids)
+void RecordController::pages_remove_from_browser(QVector<QString> del_ids)
 {
     qDebug() << "Remove rows by ID list: " << del_ids;
 
@@ -1612,7 +1612,7 @@ void RecordController::remove_children_from_source_model(QVector<QString> del_id
     for(int i = 0; i < del_ids.count(); i++) {
         QString id = del_ids[i];
         //        QModelIndex idx = id_to_proxyindex(id);
-        auto item = _source_model->child(id);
+        auto item = _source_model->item(id);
 
         if(item) {
 
@@ -1694,7 +1694,7 @@ void RecordController::move_up(void)
     _source_model->move_up(pos);
 
     // Установка засветки на перемещенную запись
-    _view->selection_to_pos(pos - 1);
+    _view->cursor_to_index(pos - 1);
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1717,7 +1717,7 @@ void RecordController::move_dn(void)
     _source_model->move_dn(pos);
 
     // Установка засветки на перемещенную запись
-    _view->selection_to_pos(pos + 1);
+    _view->cursor_to_index(pos + 1);
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1799,7 +1799,7 @@ void RecordController::on_print_click(void)
 
 boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intrusive_ptr<TreeItem> item)
 {
-    boost::intrusive_ptr<TreeItem> _item = _source_model->find_current(item);
+    boost::intrusive_ptr<TreeItem> _item = _source_model->item(item);
     int source_position = -1;
 
     if(!_item) {
@@ -1830,13 +1830,13 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
         //        _source_model->on_table_config_changed();
 
     } else {
-        source_position = _source_model->locate(_item);
+        source_position = _source_model->position(_item);
     }
 
     assert(_item);
 
 
-    int pos = _source_model->locate(_item);
+    int pos = _source_model->position(_item);
 
     assert(pos == source_position); // maybe duplicated
     _item = _source_model->item(source_position);
@@ -1909,7 +1909,7 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url)
     assert(_source_model->count() > 0);
 
     //    if(browser_pages) {
-    item = _source_model->find_current(_url);
+    item = _source_model->item(_url);
     //    }
 
     //    }

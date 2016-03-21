@@ -102,8 +102,8 @@ public:
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, KnowModel *_current_model);
     std::vector<boost::intrusive_ptr<TreeItem>> branch_paste_new_children_only(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _blank_root);
-    boost::intrusive_ptr<TreeItem> branch_paste_to_child(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _new_item);
-    boost::intrusive_ptr<TreeItem> branch_paste(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _new_item);
+    boost::intrusive_ptr<TreeItem> branch_paste_as_child(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
+    boost::intrusive_ptr<TreeItem> branch_paste_as_sibling(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
 
     //    boost::intrusive_ptr<TreeItem> branch_add(QModelIndex _current_index, QString name, bool insert_sibling_branch, KnowModel *_current_model);
     //    template<bool insert_sibling_branch = true>

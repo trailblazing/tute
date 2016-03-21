@@ -176,20 +176,84 @@ QString ItemsFlat::field(int pos, QString name) const
     return _child_items.at(pos)->field(name);
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(const QUrl &url)const
-{
-    boost::intrusive_ptr<TreeItem> record;
 
-    for(auto &i : _child_items) {
-        if(i->field("url") == url.toString()) {
-            // assert(i->is_registered_to_browser());
-            record = i;
+QList<boost::intrusive_ptr<TreeItem>> ItemsFlat::items_direct_with_the_same_name(const QString &name)const
+{
+    QList<boost::intrusive_ptr<TreeItem>> results;
+
+    for(int i = 0; i < count_direct(); i++) {
+        if(field(i, "name") == name) {
+            results.push_back(item_direct(i));    //return i;
+        }
+    }
+
+    return results; // -1;
+}
+
+//boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QString &id)const
+//{
+//    boost::intrusive_ptr<TreeItem> result;
+
+//    for(int i = 0; i < count_direct(); i++) {
+//        if(field(i, "id") == id) {
+//            result = child(i);
+//        }
+//    }
+
+//    return result;   // -1;
+//}
+
+//boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(int pos)const
+//{
+//    return item_direct(pos);
+//}
+
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(int pos)const
+{
+    boost::intrusive_ptr<TreeItem> result(nullptr);
+
+    //    // Если индекс недопустимый, возвращается пустая запись
+    //    if(pos < 0 || pos >= count_direct())
+    //        return nullptr;
+
+    if(pos >= 0 && pos < count_direct())result = _child_items.at(pos);
+
+    return result;  //_child_items.at(pos);    // _child_items[pos];
+}
+
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QUrl &url)const
+{
+    boost::intrusive_ptr<TreeItem> result;
+    //    int found = -1;
+
+    for(int i = 0; i < count_direct(); i++) {
+        std::string compare = difference(field(i, "url").toStdString(), url.toString().toStdString());
+
+        if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
+            //            found = i;
+            result = item_direct(i);
             break;
         }
     }
 
-    return record;
+    return result;  // found;
 }
+
+
+//boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QUrl &url)const
+//{
+//    boost::intrusive_ptr<TreeItem> record;
+
+//    for(auto &i : _child_items) {
+//        if(i->field("url") == url.toString()) {
+//            // assert(i->is_registered_to_browser());
+//            record = i;
+//            break;
+//        }
+//    }
+
+//    return record;
+//}
 
 //int ItemsFlat::find_list(boost::intrusive_ptr<TreeItem> item)const
 //{
@@ -210,7 +274,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(const QUrl &url)const
 
 
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(boost::intrusive_ptr<TreeItem> item)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(boost::intrusive_ptr<TreeItem> item)const
 {
     boost::intrusive_ptr<TreeItem> result;
 
@@ -225,7 +289,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(boost::intrusive_ptr<TreeI
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::find_direct(QString id)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QString &id)const
 {
     boost::intrusive_ptr<TreeItem> result;
 
@@ -252,7 +316,7 @@ int ItemsFlat::sibling_order(QString id)const
 int ItemsFlat::sibling_order(boost::intrusive_ptr<TreeItem> it)const
 {
     for(int i = 0; i < count_direct(); i++)
-        if(child(i) == it)
+        if(item_direct(i) == it)
             return i;
 
     return -1;
@@ -450,7 +514,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_lite(int pos)const
 boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
 {
     // Копия записи из дерева
-    boost::intrusive_ptr<TreeItem> result = item(pos);  //boost::intrusive_ptr<Record> resultRecord = getRecordLite(pos);
+    boost::intrusive_ptr<TreeItem> result = item_direct(pos);  //boost::intrusive_ptr<Record> resultRecord = getRecordLite(pos);
 
     // original
     // Переключение копии записи на режим с хранением полного содержимого
@@ -466,19 +530,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::child(int pos)const
-{
-    return item(pos);
-}
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::item(int pos)const
-{
-    // Если индекс недопустимый, возвращается пустая запись
-    if(pos < 0 || pos >= count_direct())
-        return nullptr;
-
-    return _child_items.at(pos);    // _child_items[pos];
-}
 
 //void RecordTable::tree_item(boost::intrusive_ptr<TreeItem> item)
 //{
@@ -769,40 +821,6 @@ void ItemsFlat::clear(void)
 //    //    return result;
 //}
 
-int ItemsFlat::is_name_exists(const QString &name)const
-{
-    for(int i = 0; i < count_direct(); i++)
-        if(field(i, "name") == name)
-            return i;
-
-    return -1;
-}
-
-int ItemsFlat::is_id_exists(const QString &id)const
-{
-    for(int i = 0; i < count_direct(); i++)
-        if(field(i, "id") == id)
-            return i;
-
-    return -1;
-}
-
-int ItemsFlat::is_url_exists(const QUrl &url)const
-{
-    int found = -1;
-
-    for(int i = 0; i < count_direct(); i++) {
-        std::string compare = difference(field(i, "url").toStdString(), url.toString().toStdString());
-
-        if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
-            found = i;
-            break;
-        }
-    }
-
-    return found;
-}
-
 
 
 // Количество записей в таблице данных
@@ -901,13 +919,13 @@ void ItemsFlat::crypt(const bool _is_crypt)
 {
     if(_is_crypt && !this->_is_crypt) {
         for(int i = 0; i < count_direct(); i++) {
-            item(i)->to_encrypt_fields();
+            item_direct(i)->to_encrypt_fields();
         }
     }
 
     if(!_is_crypt && this->_is_crypt) {
         for(int i = 0; i < count_direct(); i++) {
-            item(i)->to_decrypt_fields();
+            item_direct(i)->to_decrypt_fields();
         }
     }
 

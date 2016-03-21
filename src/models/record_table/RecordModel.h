@@ -88,19 +88,23 @@ public:
 
     QString field(int pos, QString name);
     void fields(int pos, QMap<QString, QString> data);
-    boost::intrusive_ptr<TreeItem> find_current_bound(boost::intrusive_ptr<TreeItem> item)const;
-    boost::intrusive_ptr<TreeItem> find_current(boost::intrusive_ptr<TreeItem> item)const;
-    boost::intrusive_ptr<TreeItem> find_current(QUrl _url)const;
-    int find_current(QString find_id);
+
+    // for multi items link with unique page
+    boost::intrusive_ptr<TreeItem> item_bound(boost::intrusive_ptr<TreeItem> it)const;
+    boost::intrusive_ptr<TreeItem> item(boost::intrusive_ptr<TreeItem> it)const;
+
+    //    int item_current(QString find_id);
     //    bool remove_child(QString find_id);
     //    bool remove_child(int index);
     //    boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
-    boost::intrusive_ptr<TreeItem> child(int pos);
-    boost::intrusive_ptr<TreeItem> child(int pos)const;
-    boost::intrusive_ptr<TreeItem> child(QString id);
-    boost::intrusive_ptr<TreeItem> child(QString id)const;
-    boost::intrusive_ptr<TreeItem> item(int pos) {return child(pos);}
-    boost::intrusive_ptr<TreeItem> item(int pos)const {return child(pos);}
+    boost::intrusive_ptr<TreeItem> item(const int _index);
+    boost::intrusive_ptr<TreeItem> item(const int _index)const;
+    boost::intrusive_ptr<TreeItem> item(const QString &id);
+    boost::intrusive_ptr<TreeItem> item(const QString &id)const;
+    boost::intrusive_ptr<TreeItem> item(const QUrl &_url)const;
+    boost::intrusive_ptr<TreeItem> item_fat(int index);
+    //    boost::intrusive_ptr<TreeItem> item(int pos) {return item(pos);}
+    //    boost::intrusive_ptr<TreeItem> item(int pos)const {return item(pos);}
 
 
 
@@ -117,20 +121,24 @@ public:
 
     //    ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
     RecordController *reocrd_controller()const {return _record_controller;}
-    boost::intrusive_ptr<TreeItem> item_fat(int index);
+
     int position(QString id);
-    int locate(boost::intrusive_ptr<TreeItem> item);
+    int position(boost::intrusive_ptr<TreeItem> item);
+
     int count()const; // {return _tabmanager->count();}
-    void work_pos(int pos);
-    int work_pos()const;
+
+    void index_current(int _index);
+    int index_current()const;
 
 
 
 
 public slots:
-    void reset_internal_data();
+
 
 private:
+
+    void reset_internal_data();
 
     //    // Установка указателя на таблицу данных, с которой нужно работать модели
     //    void reset_tabledata(std::shared_ptr<RecordTable> record_table);

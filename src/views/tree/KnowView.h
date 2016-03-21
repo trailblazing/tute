@@ -38,7 +38,7 @@ public:
 
     QModelIndex index_current(void);
     //    QModelIndex view_index_last(void)const;
-    QModelIndex selection_to_pos(int to_pos);
+    QModelIndex selection_to_pos(int _index);
     QModelIndex selection_to_pos(boost::intrusive_ptr<TreeItem> _item);
 
 signals:

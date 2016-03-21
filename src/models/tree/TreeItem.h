@@ -139,9 +139,9 @@ public:
 
     ~TreeItem();
 
-    // Возвращение ссылки на потомка, который хранится в списке childItems
-    // под указанным номером
-    boost::intrusive_ptr<TreeItem> child(int number);
+    //    // Возвращение ссылки на потомка, который хранится в списке childItems
+    //    // под указанным номером
+    //    boost::intrusive_ptr<TreeItem> item_direct(int number);
 
     //    int direct_children_count()const;
     //    // Возвращение количества потомков (т.е. количество записей в списке childItems)

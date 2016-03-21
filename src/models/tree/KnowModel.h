@@ -67,7 +67,7 @@ public:
                 return find_item;
             } else {
                 for(int i = 0; i < item->count_direct(); i++)
-                    item_by_url_recurse(item->child(i), find_url, 1);
+                    item_by_url_recurse(item->item_direct(i), find_url, 1);
 
                 return find_item;
             }
@@ -217,7 +217,7 @@ private:
 
         // Перебираются подветки
         for(int i = 0; i < item->count_direct(); i++)
-            is_item_id_exists_recurse(item->child(i), id_to_find, 1);
+            is_item_id_exists_recurse(item->item_direct(i), id_to_find, 1);
 
         return is_exists;
     };

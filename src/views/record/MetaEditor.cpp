@@ -412,7 +412,7 @@ void MetaEditor::switch_pin()
 
             if(treescreen)treescreen->knowtree_save();
 
-            if(recordtableview)recordtableview->selection_to_pos(pos);
+            if(recordtableview)recordtableview->cursor_to_index(pos);
         }
     }
 

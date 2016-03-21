@@ -225,7 +225,7 @@ void RecordView::on_click_to_record(const QModelIndex &index)
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
 void RecordView::click_record(const QModelIndex &index)
 {
-    _record_controller->click_item(index);
+    _record_controller->item_click(index);
 
     globalparameters.window_switcher()->switchFromRecordtableToRecord();
 }
@@ -406,13 +406,13 @@ bool RecordView::is_selected_set_to_bottom(void)
 
 
 // Установка засветки в нужную строку на экране
-void RecordView::selection_to_pos(int to_pos)
+void RecordView::cursor_to_index(int _index)
 {
-    QModelIndex index = _record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
+    QModelIndex index = _record_controller->pos_to_proxyindex(_index); // Модельный индекс в Proxy модели
     int pos = index.row();
 
     // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    if(pos != to_pos) {
+    if(pos != _index) {
         QMessageBox msgBox;
         msgBox.setText("In RecordView::setSelectionToPos() input pos not equal model pos");
         msgBox.exec();
@@ -452,7 +452,7 @@ void RecordView::selection_to_pos(int to_pos)
 
 // mode - режим в котором добавлялась новая запись
 // pos - позиция новой записи в размерности Source модели
-void RecordView::move_cursor_to_new_record(int mode, int pos)
+void RecordView::move_cursor_to_new_record(int mode, int _index)
 {
     // Установка курсора на только что созданную позицию
     /*
@@ -466,12 +466,12 @@ void RecordView::move_cursor_to_new_record(int mode, int pos)
     // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
     // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
     if(mode == ADD_NEW_RECORD_TO_END
-       || (mode == ADD_NEW_RECORD_AFTER && pos >= (model()->rowCount() - 1))
+       || (mode == ADD_NEW_RECORD_AFTER && _index >= (model()->rowCount() - 1))
       ) {
         scrollToBottom();
     }
 
-    int proxy_pos = _record_controller->pos_to_proxyindex(pos).row();
+    int proxy_pos = _record_controller->pos_to_proxyindex(_index).row();
 
     selectRow(proxy_pos);
 }

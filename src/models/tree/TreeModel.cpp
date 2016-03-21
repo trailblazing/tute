@@ -109,7 +109,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
     }
 
     boost::intrusive_ptr<TreeItem> current_item  = this->item(current_index);
-    boost::intrusive_ptr<TreeItem> child_item   = current_item->child(row);
+    boost::intrusive_ptr<TreeItem> child_item   = current_item->item_direct(row);
 
     if(child_item) {
         return createIndex(row, column, static_cast<void *>(child_item.get()));
@@ -178,7 +178,7 @@ QModelIndex TreeModel::index(delegater _del) const
         for(int i = 0; i < it->count_direct(); i++) {
             auto _index_child = index(i, 0, _index);    // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
 
-            if(_del._equal(it->child(i).get())) {       //_del.get() == it->child(i).get()
+            if(_del._equal(it->item_direct(i).get())) {       //_del.get() == it->child(i).get()
                 // is_find = true;
                 find_index = _index_child;
                 break;  //return find_index;
@@ -292,7 +292,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
         for(int i = 0; i < it->count_direct(); i++) { // _index.row()    //
             auto _index_child = index(i, 0, _index);  // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
             //        index_recursive(_idx, item, 1);
-            assert(static_cast<TreeItem *>(_index_child.internalPointer()) == it->child(i).get());
+            assert(static_cast<TreeItem *>(_index_child.internalPointer()) == it->item_direct(i).get());
 
             if(_item.get() == static_cast<TreeItem *>(_index_child.internalPointer())) {
                 // || _item->id() == static_cast<TreeItem *>(_index_child.internalPointer())->id() // it->child(i).get()
@@ -433,10 +433,10 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
         for(int j = 0; j < curritem->count_direct(); j++)
-            if((curritem->child(j))->id() == path.at(i)) {
+            if((curritem->item_direct(j))->id() == path.at(i)) {
                 // Узел найден, он становится текущим
                 // result =
-                curritem = curritem->child(j);
+                curritem = curritem->item_direct(j);
                 // found = 1;
                 break;
             }
@@ -495,9 +495,9 @@ bool TreeModel::is_item_valid(QStringList path) const
 
         // Поиск нужного идентификатора в подчиненных узлах текущего узла
         for(int j = 0; j < curritem->count_direct(); j++)
-            if((curritem->child(j))->id() == path.at(i)) {
+            if((curritem->item_direct(j))->id() == path.at(i)) {
                 // Узел найден, он становится текущим
-                curritem = curritem->child(j);
+                curritem = curritem->item_direct(j);
                 found = 1;
                 break;
             }

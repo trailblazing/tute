@@ -307,7 +307,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
         if(index.column() < showFields.size()) {
             QString fieldName = showFields.value(index.column());
 
-            QString field = child(index.row())->field(fieldName);
+            QString field = item(index.row())->field(fieldName);
 
 
             // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
@@ -339,7 +339,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 
     if(role == RECORD_ID_ROLE) {
         return // _table
-            child(index.row())->field("id");
+            item(index.row())->field("id");
     }
 
     // Если происходит запрос ссылки на таблицу данных
@@ -386,7 +386,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 
             // Изменяется поле в таблице конечных записей
             //            _table
-            child(index.row())->field(fieldName, cellValue);
+            item(index.row())->field(fieldName, cellValue);
 
             emit dataChanged(index, index); // Посылается сигнал что данные были изменены
 
@@ -636,7 +636,7 @@ QString RecordModel::field(int pos, QString name)
     QString result = "";
 
     if(pos >= 0 && pos < count()) {
-        result = child(pos)->field(name);
+        result = item(pos)->field(name);
     }
 
     return result;
@@ -646,64 +646,129 @@ void RecordModel::fields(int pos, QMap<QString, QString> data)
 {
     if(pos >= 0 && pos < count()) {
         for(QMap<QString, QString>::iterator i = data.begin(); i != data.end(); i++) {
-            child(pos)->field(i.key(), i.value());
+            item(pos)->field(i.key(), i.value());
         }
     }
 }
 
-
-boost::intrusive_ptr<TreeItem> RecordModel::find_current_bound(boost::intrusive_ptr<TreeItem> item)const
+// for multi items link with unique page
+boost::intrusive_ptr<TreeItem> RecordModel::item_bound(boost::intrusive_ptr<TreeItem> it)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
     for(int i = 0; i < count(); i++) {
-        if(item->page_valid() && child(i)->bounded_page() == item->bounded_page()) {
-            result = item; break;
+        if(it->page_valid() && item(i)->bounded_page() == it->bounded_page()) {
+            result = it; break;
         }
     }
 
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::find_current(boost::intrusive_ptr<TreeItem> item)const
+boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
     for(int i = 0; i < count(); i++) {
-        if(child(i) == item) {
-            result = item; break;
+        if(item(i) == it) {
+            result = it; break;
         }
     }
 
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::find_current(QUrl _url)const
+boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
     for(int i = 0; i < count(); i++) {
-        if(child(i)->field("url") == _url.toString()) {
-            result = child(i); break;
+        if(item(i)->field("url") == _url.toString()) {
+            result = item(i); break;
         }
     }
 
     return result;
 }
 
-int RecordModel::find_current(QString find_id)
-{
-    int pos = -1;
+//int RecordModel::item_current(QString find_id)
+//{
+//    int pos = -1;
 
-    for(int i = 0; i < count(); i++) {
-        if(child(i)->id() == find_id) {
-            pos = i;
+//    for(int i = 0; i < count(); i++) {
+//        if(item(i)->id() == find_id) {
+//            pos = i;
+//            break;
+//        }
+//    }
+
+//    return pos;
+//}
+
+boost::intrusive_ptr<TreeItem> RecordModel::item(const QString &id)
+{
+    boost::intrusive_ptr<TreeItem> r = nullptr;
+
+    for(int pos = 0; pos < _tabmanager->count(); pos++) {
+        auto it = _tabmanager->webView(pos)->page()->bounded_item();
+
+        if(it->id() == id) {
+            r = it;
             break;
         }
     }
 
-    return pos;
+    return r;
+
 }
+
+boost::intrusive_ptr<TreeItem> RecordModel::item(const QString &id)const
+{
+    boost::intrusive_ptr<TreeItem> r = nullptr;
+
+    for(int pos = 0; pos < _tabmanager->count(); pos++) {
+        auto it = _tabmanager->webView(pos)->page()->bounded_item();
+
+        if(it->id() == id) {
+            r = it;
+            break;
+        }
+    }
+
+    return r;
+}
+
+boost::intrusive_ptr<TreeItem> RecordModel::item(const int _index)
+{
+    boost::intrusive_ptr<TreeItem> r = nullptr;
+
+    if(_index >= 0 && _index < size()) {
+        r = _tabmanager->webView(_index)->page()->bounded_item();
+    }
+
+    return r;
+}
+
+
+boost::intrusive_ptr<TreeItem> RecordModel::item(const int _index)const
+{
+    boost::intrusive_ptr<TreeItem> r = nullptr;
+
+    if(_index >= 0 && _index < size()) {
+        assert(_tabmanager->webView(_index)->page()->record_binder());
+        r = _tabmanager->webView(_index)->page()->record_binder()->bounded_item();
+
+        //        if(!r) {
+        //            //            _tabmanager->webView(pos)->page()->record_binder()->binder();
+        //        }
+
+        assert(r);
+    }
+
+    return r;
+}
+
+
 
 //bool RecordModel::remove_child(int index)
 //{
@@ -748,73 +813,11 @@ int RecordModel::find_current(QString find_id)
 //    return r;
 //}
 
-boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)
+
+
+void RecordModel::index_current(int _index)
 {
-    boost::intrusive_ptr<TreeItem> r = nullptr;
-
-    for(int pos = 0; pos < _tabmanager->count(); pos++) {
-        auto it = _tabmanager->webView(pos)->page()->bounded_item();
-
-        if(it->id() == id) {
-            r = it;
-            break;
-        }
-    }
-
-    return r;
-
-}
-
-boost::intrusive_ptr<TreeItem> RecordModel::child(QString id)const
-{
-    boost::intrusive_ptr<TreeItem> r = nullptr;
-
-    for(int pos = 0; pos < _tabmanager->count(); pos++) {
-        auto it = _tabmanager->webView(pos)->page()->bounded_item();
-
-        if(it->id() == id) {
-            r = it;
-            break;
-        }
-    }
-
-    return r;
-}
-
-
-boost::intrusive_ptr<TreeItem> RecordModel::child(int pos)const
-{
-    boost::intrusive_ptr<TreeItem> r = nullptr;
-
-    if(pos >= 0 && pos < size()) {
-        assert(_tabmanager->webView(pos)->page()->record_binder());
-        r = _tabmanager->webView(pos)->page()->record_binder()->bounded_item();
-
-        //        if(!r) {
-        //            //            _tabmanager->webView(pos)->page()->record_binder()->binder();
-        //        }
-
-        assert(r);
-    }
-
-    return r;
-}
-
-boost::intrusive_ptr<TreeItem> RecordModel::child(int pos)
-{
-    boost::intrusive_ptr<TreeItem> r = nullptr;
-
-    if(pos >= 0 && pos < size()) {
-        r = _tabmanager->webView(pos)->page()->bounded_item();
-    }
-
-    return r;
-}
-
-
-void RecordModel::work_pos(int pos)
-{
-    _tabmanager->setCurrentIndex(pos);
+    _tabmanager->setCurrentIndex(_index);
 }
 
 
@@ -843,7 +846,7 @@ int RecordModel::position(QString id)
     return result;
 }
 
-int RecordModel::locate(boost::intrusive_ptr<TreeItem> item)
+int RecordModel::position(boost::intrusive_ptr<TreeItem> item)
 {
     int result = -1;
 
@@ -862,7 +865,7 @@ int RecordModel::count()const {return _tabmanager->count();}
 
 int RecordModel::size() const {return _tabmanager->count();}
 
-int RecordModel::work_pos()const {return _tabmanager->currentIndex();}
+int RecordModel::index_current()const {return _tabmanager->currentIndex();}
 
 int RecordModel::move_up(const int pos)
 {

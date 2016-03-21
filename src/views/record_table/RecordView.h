@@ -37,7 +37,7 @@ public:
     int selection_first_pos(void);
     QString selection_first_id(void);
 
-    void selection_to_pos(int to_pos);
+    void cursor_to_index(int _index);
 
     QModelIndex selection_first_proxy_index(void);
     QModelIndex selection_first_source_index(void);
@@ -47,7 +47,7 @@ public:
 
     ClipboardRecords *get_selected_records(void);
 
-    void move_cursor_to_new_record(int mode, int pos);
+    void move_cursor_to_new_record(int mode, int _index);
     //    void on_parent_resizevent(QResizeEvent *e);
 
 

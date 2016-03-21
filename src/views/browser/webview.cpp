@@ -1270,7 +1270,7 @@ namespace browser {
             bool found = false;
 
             for(int i = 0; i < source_model_size; i++) {
-                auto item_maybe_to_removed = _record_controller->source_model()->child(i);
+                auto item_maybe_to_removed = _record_controller->source_model()->item(i);
 
                 if(item_maybe_to_removed->bounded_page() == this || !item_maybe_to_removed->page_valid()) { // others refrer to this
                     //                        if(_tabmanager->indexOf(item_maybe_to_removed->unique_page()->view()) != -1)
@@ -1301,8 +1301,8 @@ namespace browser {
             assert(item);
             //            assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
 
-            if(source_model->find_current(item->field("id"))) { //                && record->unique_page() == this
-                _record_controller->remove_child(item->id());
+            if(source_model->item(item->field("id"))) { //                && record->unique_page() == this
+                _record_controller->page_remove(item->id());
             }
         }
     }

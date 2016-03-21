@@ -240,10 +240,10 @@ namespace browser {
         } else {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->branch_paste(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->index_current(), result_item);
+            _tree_screen->branch_paste_as_sibling(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->index_current(), result_item);
             _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
-            auto index = _tree_screen->tree_view()->source_model()->index(result_item->child(0));
+            auto index = _tree_screen->tree_view()->source_model()->index(result_item->item_direct(0));
             _tree_screen->selection_model()->select(index, current_tree_selection_mode);
             _tree_screen->selection_model()->setCurrentIndex(index, current_tree_selection_mode
                                                              // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current

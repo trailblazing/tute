@@ -298,12 +298,12 @@ TreeItem::~TreeItem()
 }
 
 
-// Возвращение ссылки на потомка, который хранится в списке childItems
-// под указанным номером
-boost::intrusive_ptr<TreeItem> TreeItem::child(int number)
-{
-    return _child_items.value(number);
-}
+//// Возвращение ссылки на потомка, который хранится в списке childItems
+//// под указанным номером
+//boost::intrusive_ptr<TreeItem> TreeItem::item_direct(int number)
+//{
+//    return _child_items.value(number);
+//}
 
 
 //int TreeItem::direct_children_count()const
@@ -829,7 +829,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_move(int pos, boost::intrusive_pt
         // get shadow_branch
         //    TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
 
-        if(!find_direct(_item)) {  //       && !shadow_branch->is_record_id_exists(item->field("id"))
+        if(!item_direct(_item)) {  //       && !shadow_branch->is_record_id_exists(item->field("id"))
 
             auto _parent = _item->parent();
 
@@ -1342,9 +1342,9 @@ QList<QStringList> TreeItem::path_children_all_as_field(boost::intrusive_ptr<Tre
     }
 
     for(int i = 0; i < (item->count_direct()); i++) {
-        QStringList path = (item->child(i))->path_absolute_as_field(fieldName);
+        QStringList path = (item->item_direct(i))->path_absolute_as_field(fieldName);
         pathList << path;
-        path_children_all_as_field(item->child(i), fieldName, 2);
+        path_children_all_as_field(item->item_direct(i), fieldName, 2);
     }
 
     if(mode == 1)return pathList;
@@ -1379,7 +1379,7 @@ void TreeItem::to_encrypt(void)
 
     // Шифрация подветок
     for(int i = 0; i < count_direct(); i++)
-        child(i)->to_encrypt();
+        item_direct(i)->to_encrypt();
 
     if(is_lite())
         Record::to_encrypt_and_save_lite();
@@ -1418,7 +1418,7 @@ void TreeItem::to_decrypt(void)
 
     // Дешифрация подветок
     for(int i = 0; i < count_direct(); i++)
-        child(i)->to_decrypt();
+        item_direct(i)->to_decrypt();
 
 
     if(is_lite())

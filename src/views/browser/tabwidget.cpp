@@ -498,9 +498,9 @@ namespace browser {
                 webView->setFocus();
 
                 //                auto controller = webView->recordtablecontroller();
-                auto record = webView->page()->bounded_item();
+                auto _record = webView->page()->bounded_item();
 
-                if(record != nullptr) { // controller != nullptr &&
+                if(_record != nullptr) { // controller != nullptr &&
                     //                    QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
                     //                    int position = controller->convertProxyIndexToPos(proxyindex);
                     //                    RecordTableView *recordtableview = controller->getView();
@@ -508,16 +508,23 @@ namespace browser {
                     webView->setFocus();
 
                     //                    globalparameters.mainwindow()
-                    if(_record_controller->view()->selection_first_id() != record->field("id"))
-                        _record_controller->select_id(record->field("id"));
+                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
+                        _record_controller->select_id(_record->field("id"));
+                    }
+
+                    auto _tree_view = globalparameters.tree_screen()->tree_view();
+
+                    if(_tree_view->index_current() != _tree_view->source_model()->index(_record)) {
+                        _tree_view->selection_to_pos(_record);
+                    }
 
                     //                    webView->setFocus();
                     MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
                     assert(metaeditor);
 
-                    if(metaeditor->item() != record) {
+                    if(metaeditor->item() != _record) {
 
-                        webView->page()->sychronize_metaeditor_to_item(record);  // metaeditor->bind(record);
+                        webView->page()->sychronize_metaeditor_to_item(_record);  // metaeditor->bind(record);
                     }
                 }
             }
@@ -1724,7 +1731,7 @@ namespace browser {
                         assert(_result->url() == item->url());
                         // assert(_result->fragment() == item->fragment());
                         // int pos
-                        _result = _tree_screen->branch_paste(_current_view_model, _view_index, _result); // it->insert_new_item(it->current_count() - 1, _result);
+                        _result = _tree_screen->branch_paste_as_sibling(_current_view_model, _view_index, _result); // it->insert_new_item(it->current_count() - 1, _result);
                         _tree_screen->synchronized(false);
                         // assert(_result == it->child(pos));
                     }
@@ -2346,7 +2353,7 @@ namespace browser {
     // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
     void TabWidget::delete_context(void)
     {
-        _record_controller->delete_context();
+        _record_controller->context_delete();
 
     }
 
