@@ -135,7 +135,7 @@ void ClipboardBranch::record_duplicate_to_parent_id(QString parent_id, boost::in
 
 
 // Получение полей для указанной ветки
-QMap<QString, QString> ClipboardBranch::fields_by_branch_id(QString id)const
+QMap<QString, QString> ClipboardBranch::fields_by_parent_id(QString id)const
 {
     //    // Перебираются ветки чтобы найти ветку с нужным идентификатором
     //    typedef QMap<QString, QString> branch_type;
@@ -155,8 +155,9 @@ QMap<QString, QString> ClipboardBranch::fields_by_branch_id(QString id)const
 }
 
 
+
 // Получение списка записей для указанной ветки
-QList< boost::intrusive_ptr<TreeItem>> ClipboardBranch::records_by_branch_id(QString id)const
+QList< boost::intrusive_ptr<TreeItem>> ClipboardBranch::records_by_parent_id(QString id)const
 {
     //    QList< boost::intrusive_ptr<TreeItem> > records;
 
@@ -168,6 +169,28 @@ QList< boost::intrusive_ptr<TreeItem>> ClipboardBranch::records_by_branch_id(QSt
 
     return _branch_data._records.values(id);    // records;
 }
+
+//// Получение списка записей для указанной ветки
+//QList< boost::intrusive_ptr<TreeItem>> ClipboardBranch::records_by_parent_id_list(std::set<QString> id_list)const
+//{
+//    QList< boost::intrusive_ptr<TreeItem> > records;
+
+//    //    // Находятся записи с нужным идентификатором
+//    //    // Записи добавляются в records в последовательности задом-наперёд
+//    //    // из-за особенностей реализации foreach для QMultiMap
+//    //    foreach(boost::intrusive_ptr<TreeItem> current_record, _branch_data._records.values(id))
+//    for(auto id : id_list) {
+//        for(auto record : _branch_data._records.values(id)) {
+//            records << record;
+//        }
+//    }
+
+//    //        records.insert(0, current_record);
+
+//    return // _branch_data._records.values(id);    //
+//        records;
+//}
+
 
 
 QStringList ClipboardBranch::formats() const
@@ -192,10 +215,16 @@ QVariant ClipboardBranch::retrieveData(const QString &format, QVariant::Type pre
 void ClipboardBranch::branch_push(QList<boost::intrusive_ptr<TreeItem>> current_items)
 {
     if(current_items.size() > 0) {
-        _clip_root_item_parent_id = current_items[0]->parent_id();
+        //        _clip_root_items_id_list = current_items[0]->parent_id();
 
         for(auto i : current_items) {
-            assert(_clip_root_item_parent_id == i->parent_id());
+            if(_clip_root_items_parent_id_list.find(i->parent_id()) != _clip_root_items_parent_id_list.end())
+                _clip_root_items_parent_id_list.insert(i->parent_id());
+
+            //            assert(_clip_root_items_id_list == i->parent_id());
+
+            //            _clip_root_items_id_list.push_back(i->id());
+
             branch_push(i);
 
             //            if(_clip_root_item_parent_id != i->parent_id()) {
@@ -225,7 +254,11 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeItem> current_item)  
     //    // Добавление ветки
     //    boost::intrusive_ptr<TreeItem> current_item = _know_model_board->item(path);
     //    QMap<QString, QString> current_item_fields = current_item->fields_all(); // Раньше было getAllFieldsDirect()
-    _clip_root_item_parent_id = current_item->parent_id();    // current_item_fields["id"];
+    if(_clip_root_items_parent_id_list.find(current_item->parent_id()) == _clip_root_items_parent_id_list.end())
+        _clip_root_items_parent_id_list.insert(current_item->parent_id());
+
+    //    _clip_root_items_id_list.push_back(current_item->id()); // = current_item->parent_id();    // current_item_fields["id"];
+
 
     //    //        if(is_root)
     //    //            branch_clipboard_data->branch_add(curr_item->parent_id(), curr_item_fields);

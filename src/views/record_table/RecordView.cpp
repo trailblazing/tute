@@ -27,6 +27,8 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 extern const char *record_view_multi_instance_name;
+extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
+extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
 // Виджет, отображащий список записей в ветке
 
@@ -34,12 +36,11 @@ extern const char *record_view_multi_instance_name;
 RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_controller)
     : QTableView(_record_screen)
     , _context_menu(new QMenu(this))
-    , _table_screen(_record_screen)
+    , _record_screen(_record_screen)
     , _record_controller(_record_controller)
     , _layout(new QVBoxLayout(this))
 {
-    setObjectName(record_view_multi_instance_name   // screen_name + "_view"
-                 );
+    setObjectName(record_view_multi_instance_name);   // screen_name + "_view"
 
     // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
     this->setSortingEnabled(false);
@@ -55,6 +56,8 @@ RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_c
     _layout->setMargin(0);
 
     //    viewport()->getContentsMargins();
+
+    init();
 }
 
 
@@ -82,9 +85,9 @@ void RecordView::init(void)
 
     setup_signals();
 
-    setSelectionMode(QAbstractItemView::
-                     SingleSelection  // MultiSelection //ExtendedSelection
-                    ); // // It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop
+    setSelectionMode(QAbstractItemView::ExtendedSelection); // // It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop   // SingleSelection  // MultiSelection //ExtendedSelection
+
+
     setSelectionBehavior(QAbstractItemView::SelectRows);
 
     restore_header_state();
@@ -116,10 +119,7 @@ void RecordView::init(void)
     if(appconfig.getInterfaceMode() == "mobile")
         verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
 
-    setHorizontalScrollBarPolicy(Qt::
-                                 // ScrollBarAsNeeded  //
-                                 ScrollBarAlwaysOff
-                                );   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //
 
     restore_column_width();
 
@@ -238,30 +238,30 @@ void RecordView::assembly_context_menu(void)
 
     //    RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 
-    _context_menu->addAction(_table_screen->_pin);
-    _context_menu->addAction(_table_screen->_addnew_to_end);
-    _context_menu->addAction(_table_screen->_edit_field);
-    _context_menu->addAction(_table_screen->_delete);
+    _context_menu->addAction(_record_screen->_pin);
+    _context_menu->addAction(_record_screen->_addnew_to_end);
+    _context_menu->addAction(_record_screen->_edit_field);
+    _context_menu->addAction(_record_screen->_delete);
 
     _context_menu->addSeparator();
 
-    _context_menu->addAction(_table_screen->_addnew_before);
-    _context_menu->addAction(_table_screen->_addnew_after);
+    _context_menu->addAction(_record_screen->_addnew_before);
+    _context_menu->addAction(_record_screen->_addnew_after);
     //    contextMenu->addAction(parentPointer->actionMoveUp);
     //    contextMenu->addAction(parentPointer->actionMoveDn);
     //    contextMenu->addAction(parentPointer->actionSyncro);
 
     _context_menu->addSeparator();
 
-    _context_menu->addAction(_table_screen->_cut);
-    _context_menu->addAction(_table_screen->_copy);
-    _context_menu->addAction(_table_screen->_paste);
+    _context_menu->addAction(_record_screen->_cut);
+    _context_menu->addAction(_record_screen->_copy);
+    _context_menu->addAction(_record_screen->_paste);
 
     _context_menu->addSeparator();
 
-    _context_menu->addAction(_table_screen->_sort);
-    _context_menu->addAction(_table_screen->_print);
-    _context_menu->addAction(_table_screen->_settings);
+    _context_menu->addAction(_record_screen->_sort);
+    _context_menu->addAction(_record_screen->_print);
+    _context_menu->addAction(_record_screen->_settings);
 }
 
 
@@ -277,14 +277,14 @@ void RecordView::on_custom_context_menu_requested(const QPoint &pos)
 
     // Устанавливается надпись для пункта сортировки
     if(!this->isSortingEnabled())
-        _table_screen->_sort->setText(tr("Enable sorting"));
+        _record_screen->_sort->setText(tr("Enable sorting"));
     else
-        _table_screen->_sort->setText(tr("Disable sorting"));
+        _record_screen->_sort->setText(tr("Disable sorting"));
 
     // Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
     int n = this->horizontalHeader()->logicalIndexAt(pos);
     qDebug() << "Click on column number " << n;
-    _table_screen->_sort->setData(n);   // Запоминается в объект действия для сортировки
+    _record_screen->_sort->setData(n);   // Запоминается в объект действия для сортировки
 
 
     // Включение отображения меню на экране
@@ -429,10 +429,11 @@ void RecordView::cursor_to_index(int _index)
     //    auto recordSourceModel = controller->getRecordTableModel();
     //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
+    selectionModel()->select(index, current_tree_selection_mode);
     // Установка засветки на нужный индекс
     // Set the backlight to the desired index
     selectionModel()->setCurrentIndex(index   // selIdx
-                                      , QItemSelectionModel::Select    // ClearAndSelect
+                                      , current_tree_current_index_mode // QItemSelectionModel::Select    // ClearAndSelect
                                      );
 
     // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
@@ -455,10 +456,10 @@ void RecordView::cursor_to_index(int _index)
 void RecordView::move_cursor_to_new_record(int mode, int _index)
 {
     // Установка курсора на только что созданную позицию
-    /*
-    QModelIndex selIdx=recordSourceModel->index(selPos, 0); // Создание индекса из номера
-    selectionModel()->setCurrentIndex(selIdx,QItemSelectionModel::ClearAndSelect);
-    */
+
+    //    QModelIndex selIdx = recordSourceModel->index(selPos, 0); // Создание индекса из номера
+    //    selectionModel()->setCurrentIndex(selIdx, QItemSelectionModel::ClearAndSelect);
+
 
     // В QTableView некорректно работает установка на только что созданную строку
     // Это как-то связано с отрисовкой виджета QTableView
@@ -474,6 +475,16 @@ void RecordView::move_cursor_to_new_record(int mode, int _index)
     int proxy_pos = _record_controller->pos_to_proxyindex(_index).row();
 
     selectRow(proxy_pos);
+
+
+    QModelIndex index = _record_controller->pos_to_proxyindex(_index);
+    selectionModel()->select(index, current_tree_selection_mode);
+    // Установка засветки на нужный индекс
+    // Set the backlight to the desired index
+    selectionModel()->setCurrentIndex(index   // selIdx
+                                      , current_tree_current_index_mode // QItemSelectionModel::Select    // ClearAndSelect
+                                     );
+
 }
 
 

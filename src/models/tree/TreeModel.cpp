@@ -359,7 +359,28 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
     return result;
 }
 
+// Обновление на экране ветки и подветок
+void TreeModel::index_update(const QModelIndex &_index)
+{
+    //    auto _source_model = _tree_view->source_model();
+    // Для корневой ветки дается команда чтобы модель сообщила о своем изменении
+    emit_datachanged_signal(_index);
 
+    // По модельному индексу выясняется указатель на ветку
+    auto _item = item(_index);
+
+    // Перебираются подветки
+    QList<QStringList> updatePathts = _item->path_children_all();
+
+    foreach(QStringList currentPath, updatePathts) {
+        auto current_item = item(currentPath);
+
+        QModelIndex _current_index = index(current_item);
+
+        // Для подветки дается команда чтобы модель сообщила о своем изменении
+        emit_datachanged_signal(_current_index);
+    }
+}
 
 //QModelIndex TreeModel::index_recursive(QModelIndex _index, boost::intrusive_ptr<TreeItem> item, int mode)
 //{
@@ -398,19 +419,19 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(const QModelIndex &_index) const 
     boost::intrusive_ptr<TreeItem> _result = _root_item; // (nullptr);
 
     if(_index.isValid()) {
-        boost::intrusive_ptr<TreeItem> _item = // item(static_cast<TreeItem *>(_index.internalPointer())->path_absolute());
-            //boost::const_pointer_cast<TreeItem>(
-            boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
-            //)
-            ;
+        boost::intrusive_ptr<TreeItem> _item = boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()));   // item(static_cast<TreeItem *>(_index.internalPointer())->path_absolute());
+        //            //boost::const_pointer_cast<TreeItem>(
+        //            boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
+        //            //)
+        //            ;
 
         if(_item) {
             // qDebug() << "Get tree item " << item->data("name").toString();
             _result = _item;
         } else {
             assert(!_index.internalPointer());
-            qDebug() << "Detect bad castind to TreeItem in getItem() method ";
-            return nullptr;
+            qDebug() << "Detect bad castind to TreeItem in item() method ";
+            _result = nullptr;
         }
 
     }
@@ -480,38 +501,38 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(const delegater &_del)const
 //    return item(idx);
 //}
 
-bool TreeModel::is_item_valid(QStringList path) const
-{
-    if(path.count() == 1 && path[0] == global_root_id)
-        return false;
+//bool TreeModel::is_item_valid(QStringList path) const
+//{
+//    if(path.count() == 1 && path[0] == global_root_id)
+//        return false;
 
-    boost::intrusive_ptr<TreeItem> curritem = _root_item;
+//    boost::intrusive_ptr<TreeItem> curritem = _root_item;
 
-    int found = 0;
+//    int found = 0;
 
-    // Перебор идентификаторов пути
-    for(int i = 1; i < path.size(); i++) {
-        //        int found = 0;
+//    // Перебор идентификаторов пути
+//    for(int i = 1; i < path.size(); i++) {
+//        //        int found = 0;
 
-        // Поиск нужного идентификатора в подчиненных узлах текущего узла
-        for(int j = 0; j < curritem->count_direct(); j++)
-            if((curritem->item_direct(j))->id() == path.at(i)) {
-                // Узел найден, он становится текущим
-                curritem = curritem->item_direct(j);
-                found = 1;
-                break;
-            }
+//        // Поиск нужного идентификатора в подчиненных узлах текущего узла
+//        for(int j = 0; j < curritem->count_direct(); j++)
+//            if((curritem->item_direct(j))->id() == path.at(i)) {
+//                // Узел найден, он становится текущим
+//                curritem = curritem->item_direct(j);
+//                found = 1;
+//                break;
+//            }
 
-        //        // Если очередной идентификатор пути не был найден
-        //        if(found == 0)
-        //            return false;
-    }
+//        //        // Если очередной идентификатор пути не был найден
+//        //        if(found == 0)
+//        //            return false;
+//    }
 
-    // Если очередной идентификатор пути не был найден
-    if(found == 0)return false;
+//    // Если очередной идентификатор пути не был найден
+//    if(found == 0)return false;
 
-    return true;
-}
+//    return true;
+//}
 
 
 void TreeModel::emit_datachanged_signal(const QModelIndex &_index)
@@ -551,7 +572,7 @@ QVariant TreeModel::headerData(int section
 bool TreeModel::insertRows(int position, int rows, const QModelIndex &_index_parent)
 {
     boost::intrusive_ptr<TreeItem> parent_item = item(_index_parent);
-    bool success;
+    bool success = false;
 
     beginInsertRows(_index_parent, position, position + rows - 1);
 
@@ -576,8 +597,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
     if(child_item) {
         parent_item = child_item->parent();
 
-        if(!parent_item
-           || (parent_item == _root_item)) {
+        if(!parent_item || (parent_item == _root_item)) {
             return QModelIndex();
         }
     }

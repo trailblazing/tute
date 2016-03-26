@@ -85,7 +85,7 @@ protected slots:
 protected:
 
     QMenu               *_context_menu;
-    RecordScreen        *_table_screen;
+    RecordScreen        *_record_screen;
     RecordController    *_record_controller;
     QVBoxLayout         *_layout;
     QPoint              _mouse_start_position;

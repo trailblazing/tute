@@ -124,41 +124,15 @@ namespace browser {
 
         WebView *item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
 
-        template<typename url_type>
-        void activate(const QUrl &url)
-        {
-            clean();
-
-            WebView *v = nullptr;
-
-            if(_browsers.size() > 0) {
-                for(auto &browser : _browsers) {
-                    v = browser->tabmanager()->find<url_type>(url);
-
-                    if(v) {
-                        v->page()->activate();
-                    }
-                }
-            }
-
-            if(v == nullptr) {
-
-                Browser *browser = activated_browser();
-
-                auto r = browser->tabmanager()->item_request_from_tree<url_type>(url);
-
-                r->activate();
-
-            }
-        }
-
-        void activate(boost::intrusive_ptr<TreeItem> item);
+        //        template<typename url_type>
+        void activate(const QUrl &_find_url, equal_type _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();});
+        void activate(boost::intrusive_ptr<TreeItem> item, equal_type _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();});
 
         bool restore_state(const QByteArray &state);
         //        std::pair<Browser *, WebView *>
-        WebView *find(boost::intrusive_ptr<TreeItem> item);
+        //        WebView *find(boost::intrusive_ptr<const TreeItem> item) const;
         //        std::pair<Browser *, WebView *>
-        WebView *find(QUrl url);
+        WebView *find(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
@@ -179,7 +153,7 @@ namespace browser {
         void setup_actions(void);
 
         //        WebView *new_dockedwindow(Record *const record);
-        WebView *new_view(QUrl const &url);
+        WebView *new_view(QUrl const &_url);
 
         Browser *new_browser();
         Browser *new_browser(QUrl const &url);

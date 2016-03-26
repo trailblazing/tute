@@ -124,7 +124,7 @@ void RecordScreen::save_in_new_branch(bool checked)
     assert(_entrance);
     auto _tree_source_model = _tree_screen->tree_view()->source_model();  // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
 
-    auto _index = _tree_screen->tree_view()->index_current();
+    auto _index = _tree_screen->tree_view()->current_index();
 
     if(_index.isValid()) {
         if(_tree_screen && _entrance) {
@@ -171,7 +171,7 @@ void RecordScreen::save_in_new_branch(bool checked)
             auto source_model = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source_model->size(); i++) {
-                if(!_tree_screen->know_model_board()->is_id_exists(source_model->item(i)->field("id"))) {
+                if(!_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == source_model->item(i)->field("id");})) {   // source_model->item(i)->field("id")
                     if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
                     source_model->item(i)->parent(_result_item);
@@ -180,7 +180,7 @@ void RecordScreen::save_in_new_branch(bool checked)
                 }
             }
 
-            _tree_screen->branch_paste_new_children_only(_tree_source_model, _index, _result_item);
+            _tree_screen->view_paste_children(_tree_source_model, _index, _result_item);
             //            new_tree_item_in_treeknow_root = target;
             _tree_screen->synchronized(false);
             _tree_screen->knowtree_save();
@@ -207,7 +207,7 @@ void RecordScreen::setup_actions(void)
         browser::Entrance *_entrance = globalparameters.entrance();
         assert(_entrance);
 
-        auto _index = _tree_screen->tree_view()->index_current();
+        auto _index = _tree_screen->tree_view()->current_index();
 
         if(_index.isValid()) {
             if(_tree_screen && _entrance) {
@@ -229,7 +229,7 @@ void RecordScreen::setup_actions(void)
                     for(int i = 0; i < tabmanager->count(); i++) {
                         auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                        if(!_tree_screen->know_model_board()->is_id_exists(item->field("id"))) {
+                        if(!_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {    // item->field("id")
 
                             if(item->is_lite())item->to_fat();
 
@@ -251,9 +251,9 @@ void RecordScreen::setup_actions(void)
                     //                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
-                    _tree_screen->branch_paste_as_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
+                    _tree_screen->view_paste_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
                         source_model             // _tree_screen->know_branch()
-                        , _tree_screen->tree_view()->index_current() //,
+                        , _tree_screen->tree_view()->current_index() //,
                         , new_branch_root
                     );
 

@@ -38,55 +38,26 @@ public:
     QModelIndex index_direct(const QModelIndex &_parent_index, int n) const;
 
     //    QModelIndex index(boost::intrusive_ptr<TreeItem> item);
-
+    boost::intrusive_ptr<TreeItem> item(QStringList path) const;
+    boost::intrusive_ptr<TreeItem> item(const QModelIndex &_index) const;
     // Поиск ветки с указанным ID
-    boost::intrusive_ptr<TreeItem> item_by_id(QString id) const;
-    boost::intrusive_ptr<TreeItem> item_by_name(QString name) const;
+    //    boost::intrusive_ptr<TreeItem> item(QString id) const;
+    //    boost::intrusive_ptr<TreeItem> item_by_name(QString name) const;
 
-
+    QModelIndexList indexes(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal);
     //    boost::intrusive_ptr<TreeItem> item_by_url(QUrl find_url)const;
     // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
     // Если ветка с указанным ID не будет найдена, возвращается NULL
-    template<typename url_type = url_full>
-    inline boost::intrusive_ptr<TreeItem> item_by_url(QUrl find_url)const
-    {
-        std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, QUrl, int)>
-        item_by_url_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
-        = [&](boost::intrusive_ptr<TreeItem> item, QUrl find_url, int mode) {
-            static boost::intrusive_ptr<TreeItem> find_item;
-
-            if(mode == 0) {
-                find_item = nullptr;
-                return find_item;   // nullptr;
-            }
-
-            if(find_item) return find_item;
-
-            if(item->url<url_type>() == url_type()(find_url)) {
-                find_item = item;
-                return find_item;
-            } else {
-                for(int i = 0; i < item->count_direct(); i++)
-                    item_by_url_recurse(item->item_direct(i), find_url, 1);
-
-                return find_item;
-            }
-        };
-
-        // Инициализация поиска
-        item_by_url_recurse(_root_item, QUrl(), 0);
-
-        // Запуск поиска и возврат результата
-        return item_by_url_recurse(_root_item, find_url, 1);
-    }
-
+    //    template<typename url_type = url_full>
+    // boost::intrusive_ptr<TreeItem> item_by_url(const QUrl &_find_url, equal_type _equal)const;
+    boost::intrusive_ptr<TreeItem> item(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal)const;          //const QUrl &_find_url, equal_type _equal
 
 
     // Возвращает общее количество записей, хранимых в дереве
     int count_records_all(void) const;
 
     // Возвращает количество записей в ветке и всех подветках
-    int size_of(boost::intrusive_ptr<TreeItem> item) const;
+    int size_of(boost::intrusive_ptr<TreeItem> it) const;
 
 
 
@@ -100,7 +71,7 @@ public:
     //    bool is_item_exists(QString findId);
 
     // Проверка наличия идентификатора записи во всем дереве
-    bool is_id_exists(QString findId) const;
+    //    bool is_id_exists(QString findId) const;
 
 #ifdef _with_record_table
     void record_to_item();
@@ -133,9 +104,9 @@ private:
     void dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
 
     // Перемещение ветки вверх или вниз
-    QModelIndex branch_move_up_dn(const QModelIndex &_index
-                                  , int(TreeItem::*_move)()   //int direction
-                                 );
+    QModelIndex model_move_up_dn(const QModelIndex &_index
+                                 , int(TreeItem::*_move)()   //int direction
+                                );
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
@@ -146,7 +117,7 @@ private:
     //    bool is_contains_crypt_branches_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString lock_child_paste_impl(boost::intrusive_ptr<TreeItem> _target_item, int _sibling_order, ClipboardBranch *subbranch);
+    QString model_paste_child_impl(boost::intrusive_ptr<TreeItem> _target_item, int _sibling_order, ClipboardBranch *subbranch);
 
     //    QStringList record_path_recurse(boost::intrusive_ptr<TreeItem> item, QStringList currentPath, QString recordId, int mode);
 
@@ -159,29 +130,29 @@ private:
     bool update_sub_version_from_1_to_2(void);
 
     // Добавление новой ветки после указанной ветки
-    boost::intrusive_ptr<TreeItem> lock_sibling_add(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> lock_sibling_move(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> model_add_sibling(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_move_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item);
 
     // Добавление новой подветки к указанной ветке
-    boost::intrusive_ptr<TreeItem> lock_child_add_new(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> lock_child_move(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> model_add_child_new(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_move_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к Item элементу
-    boost::intrusive_ptr<TreeItem> lock_child_add_new(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_add_child_new(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
 
 #ifdef _with_record_table
     boost::intrusive_ptr<TreeItem> lock_child_add(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
 #endif
 
-    boost::intrusive_ptr<TreeItem> lock_child_move(boost::intrusive_ptr<TreeItem> parent, int pos, boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> model_move_child(boost::intrusive_ptr<TreeItem> parent, int pos, boost::intrusive_ptr<TreeItem> _source_item, int _mode = ADD_NEW_RECORD_AFTER);
     //    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
 
     // Перемещение ветки вверх и вниз
     //    QModelIndex branch_move_up(const QModelIndex &_index);
     //    QModelIndex branch_move_dn(const QModelIndex &_index);
 
-    QString lock_child_paste(const QModelIndex &_index, ClipboardBranch *subbranch);
-    QString lock_sibling_paste(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString model_paste_child(const QModelIndex &_index, ClipboardBranch *subbranch);
+    QString model_paste_sibling(const QModelIndex &_index, ClipboardBranch *subbranch);
 
     boost::intrusive_ptr<TreeItem> intercept_self(boost::intrusive_ptr<TreeItem> _item);
     boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
@@ -192,35 +163,6 @@ private:
     QString _xml_file_name = "";
 
     bool _synchronized = false;
-
-    std::function<bool (boost::intrusive_ptr<TreeItem>, QString, int)>
-    is_item_id_exists_recurse =
-        [&](boost::intrusive_ptr<TreeItem> item, QString id_to_find, int mode)
-    {
-        static bool is_exists = false;
-
-        // Инициализация
-        if(mode == 0) {
-            return is_exists = false;
-            //            return false;
-        }
-
-        // Если ветка найдена, дальше проверять не имеет смысла. Это условие ускоряет возврат из рекурсии.
-        if(is_exists)
-            return true;
-
-        // Если текущая ветка содержит искомый идетнификатор
-        if(item->field("id") == id_to_find) {
-            return is_exists = true;
-            //            return true;
-        }
-
-        // Перебираются подветки
-        for(int i = 0; i < item->count_direct(); i++)
-            is_item_id_exists_recurse(item->item_direct(i), id_to_find, 1);
-
-        return is_exists;
-    };
 
     //    bool _is_global_root = false;
     friend class TreeScreen;

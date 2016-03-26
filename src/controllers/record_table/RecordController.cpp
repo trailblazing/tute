@@ -46,7 +46,8 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordController::RecordController(//TreeScreen           *_tree_screen
+RecordController::RecordController(
+    //TreeScreen           *_tree_screen
     //, FindScreen         *_find_screen
     //,
     MetaEditor         *_editor_screen
@@ -86,7 +87,7 @@ RecordController::RecordController(//TreeScreen           *_tree_screen
 
     // Модель данных задается для вида
     _view->setModel(_proxy_model);
-    init();
+    //    init();
     _no_view = false;
 }
 
@@ -99,10 +100,10 @@ RecordController::~RecordController()
 }
 
 
-void RecordController::init(void)
-{
-    _view->init();
-}
+//void RecordController::init(void)
+//{
+//    _view->init();
+//}
 
 
 RecordView *RecordController::view(void)
@@ -896,7 +897,7 @@ void RecordController::paste(void)
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->items_update_selected();
+    globalparameters.tree_screen()->tree_view()->selected_indexes_update();
 }
 
 

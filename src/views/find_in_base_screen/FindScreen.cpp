@@ -598,7 +598,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    auto _tree_screen = globalparameters.tree_screen();
     // deprecated:
     if(globalparameters.vtab()->currentWidget()->objectName() == record_screen_multi_instance_name
-       && !_tree_screen->tree_view()->index_current().isValid()
+       && !_tree_screen->tree_view()->current_index().isValid()
       ) {
         appconfig.setFindScreenTreeSearchArea(2);
     }
@@ -797,7 +797,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         // После вставки всех данных подгоняется ширина колонок
         //        _findtable->updateColumnsWidth();
-        _tree_screen->branch_paste_from_search(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->index_current(), _result_item);  // dump to table screen
+        _tree_screen->view_paste_from_search(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->current_index(), _result_item);  // dump to table screen
     };
 
 
@@ -905,8 +905,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
     // Если в ветке присутсвует таблица конечных записей
     if(_start_item->count_direct() > 0) {
 
-        auto _source_model = _tree_screen->tree_view()->source_model();
-        auto _current_item = _source_model->item(_tree_screen->tree_view()->index_current());
+        //        auto _source_model = _tree_screen->tree_view()->source_model();
+        auto _current_item = _tree_screen->tree_view()->current_item();
         //        boost::intrusive_ptr<TreeItem> _current_branch_root;
 
         //        if(_current_item->is_registered_to_browser())_current_branch_root = _current_item->parent();

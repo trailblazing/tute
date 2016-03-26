@@ -67,10 +67,10 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    auto index = globalparameters.tree_screen()->tree_view()->index_current();
+    auto _index = globalparameters.tree_screen()->tree_view()->current_index();
 
-    if(index.isValid()) {
-        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
+    if(_index.isValid()) {
+        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
 
         if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
             RecordScreen *record_screen = item->bounded_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
@@ -111,10 +111,10 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto index = globalparameters.tree_screen()->tree_view()->index_current();
+    auto _index = globalparameters.tree_screen()->tree_view()->current_index();
 
-    if(index.isValid()) {
-        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
+    if(_index.isValid()) {
+        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
 
         if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
             RecordScreen *record_screen = item->bounded_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
@@ -240,10 +240,10 @@ void WindowSwitcher::restoreFocusWidget()
     }
 
     if(widgetName == record_screen_multi_instance_name) {
-        auto index = globalparameters.tree_screen()->tree_view()->index_current();
+        auto _index = globalparameters.tree_screen()->tree_view()->current_index();
 
-        if(index.isValid()) {
-            auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(index);
+        if(_index.isValid()) {
+            auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
 
             if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
                 RecordScreen *_record_screen = item->bounded_page()->view()->record_controller()->tabmanager()->browser()->record_screen();

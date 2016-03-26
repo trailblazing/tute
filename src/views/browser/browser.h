@@ -163,7 +163,7 @@ namespace browser {
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
-        WebView     *invoke_registered_page(boost::intrusive_ptr<TreeItem> item);
+        WebView     *invoke_registered_page(boost::intrusive_ptr<TreeItem> _it);
         boost::intrusive_ptr<TreeItem> item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item);
         RecordScreen *record_screen() {return _record_screen;}
         Entrance    *entrance() {return _entrance;}

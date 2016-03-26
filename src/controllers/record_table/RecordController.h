@@ -51,7 +51,7 @@ public:
                     );
     virtual ~RecordController();
 
-    void init(void);
+    //    void init(void);
 
     RecordView *view(void);
     RecordModel *source_model();    // {return _source_model;}

@@ -1583,10 +1583,10 @@ namespace browser {
 
 
 
-    WebView *Browser::invoke_registered_page(boost::intrusive_ptr<TreeItem> item)
+    WebView *Browser::invoke_registered_page(boost::intrusive_ptr<TreeItem> _it)
     {
         // clean();
-        assert(item->is_registered_to_browser() || item->field("url") == browser::Browser::_defaulthome);
+        assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
 
         WebView *view = nullptr;
         TabWidget *const tab = tabWidget();
@@ -1595,7 +1595,7 @@ namespace browser {
         //        } else
         //        {
         //        for(auto &i : _mainWindows) {
-        view = tabWidget()->find(item->field("url"));
+        view = tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _it->field("url");});
 
         if(view != nullptr) {
             //            dp.first = i.data();
@@ -1633,22 +1633,22 @@ namespace browser {
             //            blank.setNaturalFieldSource("url", DockedWindow::_defaulthome);
 
             WebView *blankview = nullptr;
-            blankview = tab->find(QUrl(Browser::_defaulthome));
+            blankview = tab->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;}); // QUrl(Browser::_defaulthome)
             //PageView *no_pin = nullptr;
             WebView *nopin_view = tab->find_nopin();
             // assert(dp.first);
 
             if(blankview != nullptr) {
                 view = blankview;
-                view->page()->item_registered_imperative_equip(item)->activate();//                view->page()->load(record);
+                view->page()->item_registered_imperative_equip(_it)->activate();//                view->page()->load(record);
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
-                if(view->page()->url().toString() != item->field("url")) {
-                    view->page()->item_registered_imperative_equip(item)->activate(); // view->page()->load(record);
+                if(view->page()->url().toString() != _it->field("url")) {
+                    view->page()->item_registered_imperative_equip(_it)->activate(); // view->page()->load(record);
                 }
             } else {
-                view = tab->newTab(item);  // , false
+                view = tab->newTab(_it);  // , false
                 // auto load
             }
 

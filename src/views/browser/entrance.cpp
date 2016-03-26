@@ -454,7 +454,7 @@ namespace browser {
         //        return find(item);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    WebView *Entrance::new_view(QUrl const &url)
+    WebView *Entrance::new_view(QUrl const &_url)
     {
         //BrowserView *browser_view = globalParameters.getBrowserView();
         //BrowserWindow *browser = nullptr;
@@ -465,7 +465,7 @@ namespace browser {
         //dock_widget->setParent(this);
 
         //        DockedWindow *browser =
-        new Browser(url
+        new Browser(_url
                     , _tree_screen
                     , _find_screen
                     , _editor_screen
@@ -501,7 +501,7 @@ namespace browser {
         //        assert(record->binded_only_page());
         //        assert(record->binded_only_page()->view());
 
-        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+        return find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _url.toString();});   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
 
     //    WebView *Entrance::new_dockedwindow(Record *const record)
@@ -858,7 +858,34 @@ namespace browser {
     //        }
     //    }
 
-    void Entrance::activate(boost::intrusive_ptr<TreeItem> item)
+    void Entrance::activate(const QUrl &_find_url, equal_type _equal)
+    {
+        clean();
+
+        WebView *v = nullptr;
+
+        if(_browsers.size() > 0) {
+            for(auto &browser : _browsers) {
+                v = browser->tabmanager()->find([&](boost::intrusive_ptr<const TreeItem> it) { return _equal(it, _find_url);});
+
+                if(v) {
+                    v->page()->activate();
+                }
+            }
+        }
+
+        if(v == nullptr) {
+
+            Browser *browser = activated_browser();
+
+            auto r = browser->tabmanager()->item_request_from_tree(_find_url, _equal);
+
+            r->activate();
+
+        }
+    }
+
+    void Entrance::activate(boost::intrusive_ptr<TreeItem> item, equal_type _equal)
     {
         clean();
 
@@ -872,26 +899,16 @@ namespace browser {
             //        if(activiated_browser().first) {
             Browser *browser = activated_browser();
 
-            auto r = browser->tabmanager()->item_request_from_tree(item);
+            auto r = browser->tabmanager()->item_request_from_tree(item, _equal);
 
             r->activate();
         }
-
-
-
-        //        } else {
-        //            new_browser(item);
-        //        }
-
-
-        //        r->active_immediately(true);
-        //        return active_record(r);
     }
 
     void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
     {
         //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        void(Entrance::*_activate)(const QUrl &) = &Entrance::activate<url_fragment>;
+        void(Entrance::*_activate)(const QUrl &, equal_type) = &Entrance::activate;  // <url_fragment>;
         connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
         //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
@@ -1133,9 +1150,8 @@ namespace browser {
         Browser *_browser = nullptr;
         WebView *_view = nullptr;
 
-        if(_it
-           // && !_it->record_binder()
-          ) {
+        if(_it) {   // && !_it->record_binder()
+
             //            assert(!record->generator()); // maybe Entrance::ActiveRecordBinder registered
             assert(QUrl(_it->field("url")).isValid());
 
@@ -1149,7 +1165,7 @@ namespace browser {
 
                     for(auto &i : _browsers) {
 
-                        _view = i->tabWidget()->find(_it->field("url"));
+                        _view = i->tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _it->field("url");});
 
                         if(_view != nullptr) {
                             _browser = i.data();
@@ -1332,9 +1348,48 @@ namespace browser {
     //    }
 
 
-    //    std::pair<Browser *, WebView *>
-    WebView *Entrance::find(boost::intrusive_ptr<TreeItem> item)
+    //    //    std::pair<Browser *, WebView *>
+    //    WebView *Entrance::find(boost::intrusive_ptr<const TreeItem> item)const
+    //    {
+    //        //        clean();
+    //        //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
+    //        WebView *v = nullptr;
+    //        //        if(_mainWindows.isEmpty())dp.first = activebrowser();
+
+    //        //        if(!_mainWindows.isEmpty()) {
+    //        //new_dockedwindow(record);
+    //        for(auto &i : _browsers) {
+    //            if(!i.isNull()) {
+    //                v = i->tabWidget()->find(item); // ->field("url")
+
+    //                if(v != nullptr) {  // setWidget(i.data());
+    //                    //                dp.first = i.data();
+    //                    break;
+    //                }
+    //            }
+
+    //            //            else if(i->isVisible() || i->isActiveWindow()) {
+    //            //                dp.first = i.data();
+    //            //            }
+    //        }
+
+    //        //        }
+
+    //        //        if(dp.first == nullptr)dp.first = _mainWindows[0].data();
+
+    //        //        if(!dp.first->isActiveWindow()) {
+    //        //            dp.first->raise();
+    //        //            dp.first->activateWindow();
+    //        //        }
+    //        //        assert(dp.first);
+    //        return v;
+    //    }
+
+    WebView *Entrance::find(
+        std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal  // const QUrl &url
+    )const
     {
+        //        clean();
         //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
         WebView *v = nullptr;
         //        if(_mainWindows.isEmpty())dp.first = activebrowser();
@@ -1342,44 +1397,13 @@ namespace browser {
         //        if(!_mainWindows.isEmpty()) {
         //new_dockedwindow(record);
         for(auto &i : _browsers) {
-            v = i->tabWidget()->find(item); // ->field("url")
+            if(!i.isNull()) {
+                v = i->tabWidget()->find(_equal);
 
-            if(v != nullptr) {  // setWidget(i.data());
-                //                dp.first = i.data();
-                break;
-            }
-
-            //            else if(i->isVisible() || i->isActiveWindow()) {
-            //                dp.first = i.data();
-            //            }
-        }
-
-        //        }
-
-        //        if(dp.first == nullptr)dp.first = _mainWindows[0].data();
-
-        //        if(!dp.first->isActiveWindow()) {
-        //            dp.first->raise();
-        //            dp.first->activateWindow();
-        //        }
-        //        assert(dp.first);
-        return v;
-    }
-
-    WebView *Entrance::find(QUrl url)
-    {
-        //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
-        WebView *v = nullptr;
-        //        if(_mainWindows.isEmpty())dp.first = activebrowser();
-
-        //        if(!_mainWindows.isEmpty()) {
-        //new_dockedwindow(record);
-        for(auto &i : _browsers) {
-            v = i->tabWidget()->find(url);
-
-            if(v != nullptr) {  // setWidget(i.data());
-                //                dp.first = i.data();
-                break;
+                if(v != nullptr) {  // setWidget(i.data());
+                    //                dp.first = i.data();
+                    break;
+                }
             }
 
             //            else if(i->isVisible() || i->isActiveWindow()) {

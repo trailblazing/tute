@@ -201,7 +201,7 @@ namespace browser {
         void record_binder(boost::intrusive_ptr<CouplerDelegation> _record_binder);
 
     protected:
-        void setUrl(const QUrl &url);
+        //        void setUrl(const QUrl &url);
 
         bool acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame) Q_DECL_OVERRIDE;
         QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type) Q_DECL_OVERRIDE;

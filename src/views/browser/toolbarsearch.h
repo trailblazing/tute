@@ -42,8 +42,19 @@
 #ifndef TOOLBARSEARCH_H
 #define TOOLBARSEARCH_H
 
+#include <functional>
+
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
+
 #include "searchlineedit.h"
 #include <QLineEdit>
+
+
+#include "models/tree/TreeItem.h"
+
+
 
 QT_BEGIN_NAMESPACE
 class QUrl;
@@ -61,6 +72,7 @@ class QStackedWidget;
 class FindTableWidget;
 QT_END_NAMESPACE
 
+class TreeItem;
 
 namespace browser {
 
@@ -80,7 +92,7 @@ namespace browser {
         Q_OBJECT
 
     signals:
-        void search(const QUrl &url);
+        void search(const QUrl &url, equal_type _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return QUrl(it->field("url")).fragment() == _url.fragment();});
         void returnPressed();
     public:
         ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,

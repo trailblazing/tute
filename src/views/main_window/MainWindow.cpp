@@ -473,7 +473,7 @@ void MainWindow::save_tree_position(void)
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
 
     // Получение QModelIndex выделенного в дереве элемента
-    const QModelIndex index = _tree_screen->tree_view()->index_current();
+    const QModelIndex index = _tree_screen->tree_view()->current_index();
 
     if(index.isValid()) {
 
@@ -496,24 +496,27 @@ void MainWindow::set_tree_position(QString view_root_id, QStringList current_ite
         _tree_screen->intercept(view_root_id);
     }
 
-    if(_tree_screen->know_model_board()->is_item_valid(current_item_absolute_path) == false)   // on know_root semantic
-        return;
+    //    if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
+    //        return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
     auto item = _tree_screen->know_model_board()->item(current_item_absolute_path);            // on know_root semantic
 
-    qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
+    if(item) {
+        qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
-    // Из указателя на элемент TreeItem получаем QModelIndex
-    QModelIndex setto = _tree_screen->tree_view()->source_model()->index(item);
+        // Из указателя на элемент TreeItem получаем QModelIndex
+        QModelIndex setto = _tree_screen->tree_view()->source_model()->index(item);
 
-    // Курсор устанавливается в нужную позицию
-    _tree_screen->cursor_to_index(setto);
+        // Курсор устанавливается в нужную позицию
+        _tree_screen->tree_view()->select_and_current(setto);
+    }
 }
 
 
 bool MainWindow::is_tree_position_crypt()
 {
+    bool result = false;
     auto pair = appconfig.tree_position();
     QString id = pair.first;
     QStringList path = pair.second;
@@ -522,15 +525,20 @@ bool MainWindow::is_tree_position_crypt()
         _tree_screen->intercept(id);
     }
 
-    if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
+    //    if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
     auto item = _tree_screen->know_model_board()->item(path);
 
-    if(item->field("crypt") == "1")
-        return true;
-    else
-        return false;
+    if(item) {
+        if(item->field("crypt") == "1")
+            result = true;
+
+        //        else
+        //            return false;
+    }
+
+    return result;
 }
 
 // too many _record_screen objects, deprecated
@@ -1207,36 +1215,48 @@ void MainWindow::go_walk_history(void)
     // Выясняется идентификатор записи, на которую надо переключиться
     QString record_id = walkhistory.record_id();
 
-    if(record_id.length() == 0) {
-        walkhistory.set_drop(false);
-        return;
-    }
+    //    if(record_id.length() == 0) {
+    //        walkhistory.set_drop(false);
+    //        return;
+    //    }
 
-    // Выясняется путь к ветке, где находится данная запись
-    QStringList absolute_path = _tree_screen->know_model_board()->record_path(record_id);    // on know_root semantic
+    if(record_id.length() > 0) {
+        // Выясняется путь к ветке, где находится данная запись
+        QStringList absolute_path = _tree_screen->know_model_board()->record_path(record_id);    // on know_root semantic
 
-    // Проверяем, есть ли такая ветка
-    if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
-        walkhistory.set_drop(false);
-        return;
-    }
+        //    // Проверяем, есть ли такая ветка
+        //    if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
+        //        walkhistory.set_drop(false);
+        //        return;
+        //    }
 
 
-    // Выясняется позицию записи в таблице конечных записей
-    auto item = _tree_screen->know_model_board()->item(absolute_path);    // on know_root semantic
+        // Выясняется позицию записи в таблице конечных записей
+        auto item = _tree_screen->know_model_board()->item(absolute_path);    // on know_root semantic
 
-    // Проверяем, есть ли такая позиция
-    if(!item->item_direct(record_id)) {  // == false
-        walkhistory.set_drop(false);
-        return;
-    }
+        if(item) {
+            //            // Проверяем, есть ли такая позиция
+            //            if(!item->item_direct(record_id)) {  // == false
+            //                walkhistory.set_drop(false);
+            //                return;
+            //            }
 
-    set_tree_position(global_root_id, absolute_path);
-    //    select_id(id);
+            if(item->item_direct(record_id)) {
+                set_tree_position(global_root_id, absolute_path);
+                //    select_id(id);
 
-    if(appconfig.getRememberCursorAtHistoryNavigation()) {
-        _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
-        _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
+                if(appconfig.getRememberCursorAtHistoryNavigation()) {
+                    _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
+                    _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
+                }
+            }
+
+            //            walkhistory.set_drop(false);
+        }
+
+        //        else {
+        //            walkhistory.set_drop(false);
+        //        }
     }
 
     walkhistory.set_drop(false);

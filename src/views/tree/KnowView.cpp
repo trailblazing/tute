@@ -23,15 +23,49 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
-enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;
+enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;   //    Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
+enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemSelectionModel::SelectionFlag::SelectCurrent;    // Select   // SelectCurrent
 
 const char *knowtreeview_singleton_name = "knowtreeview";
 
-KnowView::KnowView(QWidget *parent) : QTreeView(parent), _know_root(nullptr)
+KnowView::KnowView(QString _name, QWidget *_parent) : QTreeView(_parent), _know_root(nullptr)
 {
     // Разрешение принимать Drop-события
     setAcceptDrops(true);
     setDropIndicatorShown(true);
+
+    setObjectName(_name);
+
+    setMinimumSize(1, 1);     // 150, 250
+
+    setWordWrap(true);
+
+    // Временно сделан одинарный режим выбора пунктов
+    // todo: Множественный режим надо выставить тогда, когда
+    // станет ясно, как удалять несколько произвольных веток так, чтобы
+    // в процессе удаления QModelIndex нижестоящих еще не удаленных
+    // веток не менялся
+    // Time to do single mode select items
+    // todo: Multi Mode should be exposed when
+    // it will be clear how to remove some arbitrary branches so that the
+    // in the removal of the lower QModelIndex not yet deleted
+    // branches has not changed
+    // knowTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+    setSelectionMode(QAbstractItemView::ExtendedSelection);     // SingleSelection //// MultiSelection  //
+
+    setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);        // ScrollBarAlwaysOn
+
+
+    // Нужно установить правила показа контекстного самодельного меню
+    // чтобы оно могло вызываться
+    setContextMenuPolicy(Qt::CustomContextMenu);
+
+    // Представление не должно позволять редактировать элементы обычным путем
+    setEditTriggers(QAbstractItemView::NoEditTriggers);
+
 
     // Разрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);
@@ -41,6 +75,18 @@ KnowView::KnowView(QWidget *parent) : QTreeView(parent), _know_root(nullptr)
     connect(static_cast<QTreeView *>(const_cast<KnowView *>(this)), &QTreeView::setModel, this, [&](QAbstractItemModel * model) {   // does not work
         _know_root = static_cast<KnowModel *>(model);
     });
+
+    //    void clearSelection();
+    //    virtual void clearCurrentIndex();
+
+    //Q_SIGNALS:
+    //    void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+
+    TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+    assert(_tree_screen);
+    // Сигналы для обновления панели инструментов при изменении в selectionModel()
+    connect(this->selectionModel(), &QItemSelectionModel::currentChanged, _tree_screen, &TreeScreen::on_current_changed);
+    connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, _tree_screen, &TreeScreen::on_selection_changed);
 }
 
 
@@ -97,7 +143,7 @@ void KnowView::sychronize()
                 for(int i = 0; i < tabmanager->count(); i++) {
                     auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                    if(!_tree_screen->know_model_board()->is_id_exists(item->field("id"))) {
+                    if(!_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {
 
                         if(item->is_lite())item->to_fat();
 
@@ -112,12 +158,15 @@ void KnowView::sychronize()
             if(modified) {
                 //                new_branch_item->field("id", _know_root->root_item()->id());
                 //                new_branch_item->field("name", _know_root->root_item()->name());
-                assert(_tree_screen->know_model_board()->is_id_exists(_know_root->root_item()->id()));    // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
+                assert(_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == _know_root->root_item()->id();}));  //_know_root->root_item()->id()
+
+                // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
+
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
-                _tree_screen->branch_paste_new_children_only(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
+                _tree_screen->view_paste_children(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
                     _know_root    // _tree_screen->know_branch()
-                    , index_current()
+                    , current_index()
                     , new_branch_item
                 );
 
@@ -126,12 +175,13 @@ void KnowView::sychronize()
                 // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
             }
 
-            _tree_screen->branch_update_on_screen(
-                index_current() // selectionModel()->currentIndex()    // _tree_screen->view_index()
-            );
+            _know_root->index_update(current_index());  // selectionModel()->currentIndex()    // _tree_screen->view_index()
+
         }
     }
 }
+
+KnowModel *KnowView::source_model()const {return _know_root;}
 
 void KnowView::source_model(boost::intrusive_ptr<TreeItem> _item)
 {
@@ -325,7 +375,7 @@ void KnowView::dropEvent(QDropEvent *event)
         //        auto tree_item_drop = tree_item_drop;    // ->record_table();
 
         // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = index_current(); // selectionModel()->currentIndex();    // find_object<TreeScreen>(tree_screen_singleton_name)
+        QModelIndex indexFrom = current_index(); // selectionModel()->currentIndex();    // find_object<TreeScreen>(tree_screen_singleton_name)
         // static_cast<TreeScreen *>(this->parent())->view_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
@@ -384,22 +434,31 @@ void KnowView::dropEvent(QDropEvent *event)
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось
-        _tree_screen->branch_update_on_screen(indexFrom);
+        _know_root->index_update(indexFrom);
 
         // Обновлении конечной ветки чтобы было видно что записей прибавилось
-        _tree_screen->branch_update_on_screen(index);
+        _know_root->index_update(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
-        _tree_screen->tree_view()->source_model()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+        _know_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
 
         _tree_screen->synchronized(false);
     }
 }
 
+boost::intrusive_ptr<TreeItem> KnowView::current_item()const
+{
+    return _know_root->item(current_index());
+}
 
+
+QModelIndex KnowView::current_index(void)const
+{
+    return selectionModel()->currentIndex();
+}
 
 // Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
-QModelIndex KnowView::index_current(void)
+QModelIndex KnowView::current_index(void)
 {
     QModelIndex result = selectionModel()->currentIndex();
     //    if(!_tree_view->selectionModel()->currentIndex().isValid()) {
@@ -477,35 +536,48 @@ QModelIndex KnowView::index_current(void)
     //    auto v = _treeknowview->selectionModel()->currentIndex();
     //    candidate_from_knowtree_item(cur_index);
 
-    if(selectionModel()->selectedIndexes().size() > 1) {
-        result = selectionModel()->selectedIndexes().last();
-    }
+
 
     if(!result.isValid()) {
-        if(_know_root->root_item()->count_direct() > 0) {
-            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
-        } else {
-            TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
+        boost::intrusive_ptr<TreeItem> new_item;
 
-            if(_know_root->root_item()->parent()) {
-                //            auto parent_tree_screen_pointer = globalparameters.tree_screen();
-                do {
-                    _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
-                } while(_know_root->root_item()->parent() && _know_root->root_item()->parent()->count_direct() == 0);
-                //                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
-            } else if(_know_root->root_item()->count_direct() == 0) {
-                globalparameters.entrance()->activate<url_full>(QUrl(browser::Browser::_defaulthome));
+        if(selectionModel()->selectedIndexes().size() > 1) {
+            result = selectionModel()->selectedIndexes().first();
+        }
+
+        if(result.isValid()) {
+            new_item = _know_root->item(result);
+        } else {
+            if(_know_root->root_item()->count_direct() == 0) {
+                //            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
+                //        } else {
+                TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
+
+                if(_know_root->root_item()->parent()) {
+                    //            auto parent_tree_screen_pointer = globalparameters.tree_screen();
+                    do {
+                        _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
+                    } while(_know_root->root_item()->parent() && _know_root->root_item()->parent()->count_direct() == 0);
+
+                    //                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
+                } else if(_know_root->root_item()->count_direct() == 0) {
+                    globalparameters.entrance()->activate(QUrl(browser::Browser::_defaulthome));
+                }
+
+                //            new_item = _know_root->root_item()->item_direct(0); // _know_root->root_item()->count_direct() - 1
             }
 
-            selection_to_pos(_know_root->root_item()->item_direct(0));  // _know_root->root_item()->count_direct() - 1
+            //            else {
+            new_item = _know_root->root_item()->item_direct(0);
+            //            }
         }
+
+        select_and_current(new_item);
 
         result = selectionModel()->currentIndex();
         //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
         assert(result.isValid());    // this line is to be recovery
-
     }
-
 
     //    assert(cur_index.isValid());
     return result;  // cur_index;   // temporary setting???   //
@@ -558,9 +630,9 @@ QModelIndex KnowView::index_current(void)
 //    return selectionModel()->currentIndex();
 //}
 
-QModelIndex KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
+QModelIndex KnowView::select_and_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
 {
-    QModelIndex index = _know_root->index(_item);//_record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
+    QModelIndex _result;
     //    int pos = index.row();
 
     //    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
@@ -572,50 +644,134 @@ QModelIndex KnowView::selection_to_pos(boost::intrusive_ptr<TreeItem> _item)
 
     //    int rowCount = _know_root->root_item()->count_direct();
 
-    //    if(pos < rowCount) {  // pos > (rowCount - 1)   // return ;
+    //    if(pos < rowCount) {  // pos > (rowCount - 1)   // return;
+    _result = _strategy(this, _index);
 
+    //    // Простой механизм выбора строки. Похоже, что его использовать не получится
+    //    selectionModel()->select(_result
+    //                             , (_result == _index) ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Deselect
+    //                            ); // QItemSelectionModel::SelectCurrent // current_tree_selection_mode
+    // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 
-    // Простой механизм выбора строки. Похоже, что его использовать не получится
-    selectionModel()->select(index, current_tree_selection_mode // QItemSelectionModel::SelectCurrent
-                             // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-                            );
 
     //    auto recordSourceModel = controller->getRecordTableModel();
     //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
     // Установка засветки на нужный индекс
     // Set the backlight to the desired index
-    selectionModel()->setCurrentIndex(index, current_tree_selection_mode // QItemSelectionModel::SelectCurrent    // ClearAndSelect
-                                     );
+    selectionModel()->setCurrentIndex(_result, current_tree_current_index_mode); // QItemSelectionModel::SelectCurrent    // ClearAndSelect   // current_tree_selection_mode
+
+    //    assert(_result == selectionModel()->currentIndex());
+
+#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
 
     // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
     // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
     // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
     // Therefore, the recording must be made a virtual click to fill the final table of records
     if(appconfig.getInterfaceMode() == "mobile")
-        emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+        emit this->clicked(_result); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+#endif
 
     // emit this->clicked(index);
+    //    _result = currentIndex();
 
-    scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
+    scrollTo(_result);   // QAbstractItemView::PositionAtCenter
 
     this->setFocus();   // ?
 
     //    }
-
-    return index;
+    return _result;
 }
 
-QModelIndex KnowView::selection_to_pos(int _index)
-{
-    //    bool result = false;
-    QModelIndex index;
 
-    if(_index != -1) {
-        auto item = _know_root->root_item()->item_direct(_index);
-        index = selection_to_pos(item);
-        //        result = true;
+QModelIndex KnowView::select_and_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
+{
+
+    TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+    assert(_tree_screen);
+    // auto _tree_screen = globalparameters.tree_screen();
+
+    QModelIndex _index = _know_root->index(_item);  // = _tree_screen->tree_view()->source_model()->index(_item);
+
+    while(!_index.isValid()
+          && _know_root->root_item() != _tree_screen->know_model_board()->root_item()
+         ) {
+        _tree_screen->cursor_up_one_level();
+        _index = _know_root->index(_item);
+        //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
     }
 
-    return index;
+    if(_index.isValid() && _index != current_index()) {
+        //                _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, QItemSelectionModel::SelectionFlag::SelectCurrent);
+        _index = select_and_current(_index, _strategy);
+
+    }
+
+    //    QModelIndex _index = _know_root->index(_item);  //_record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
+
+    //    _index = select_and_current(_index, _strategy);
+
+    return _index;
 }
+
+//QModelIndex KnowView::deselect(const QModelIndex &_index)
+//{
+//    QModelIndex _result;
+
+//    selectionModel()->select(_index, QItemSelectionModel::SelectionFlag::Deselect);
+//    _result = selectionModel()->selectedIndexes().last();
+//    selectionModel()->setCurrentIndex(_result, QItemSelectionModel::SelectionFlag::Current);
+//    assert(_result == currentIndex());
+
+//    // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+//    // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+//    // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+//    // Therefore, the recording must be made a virtual click to fill the final table of records
+//    if(appconfig.getInterfaceMode() == "mobile")
+//        emit this->clicked(_result); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+
+//    // emit this->clicked(index);
+//    //    _result = currentIndex();
+
+//    scrollTo(_result);   // QAbstractItemView::PositionAtCenter
+
+//    this->setFocus();   // ?
+//    return _result;
+//}
+
+//QModelIndex KnowView::deselect(boost::intrusive_ptr<TreeItem> _item)
+//{
+//    QModelIndex _index = _know_root->index(_item);
+//    _index = deselect(_index);
+
+//    return _index;
+//}
+
+//QModelIndex KnowView::selection_to_pos(int _index)
+//{
+//    //    bool result = false;
+//    QModelIndex index;
+
+//    if(_index != -1) {
+//        auto item = _know_root->root_item()->item_direct(_index);
+//        index = selection_to_pos(item);
+//        //        result = true;
+//    }
+
+//    return index;
+//}
+
+
+void KnowView::selected_indexes_update(void)
+{
+    // Получение списка выделенных Item-элементов
+    QModelIndexList selectitems = selectionModel()->selectedIndexes();
+
+    // Обновление на экране
+    for(int i = 0; i < selectitems.size(); ++i) {
+        update(selectitems.at(i));
+    }
+}
+

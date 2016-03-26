@@ -17,6 +17,8 @@
 
 
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
+extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
+
 extern const char *record_view_multi_instance_name;
 
 class KnowModel;
@@ -26,20 +28,26 @@ class KnowView : public QTreeView {
     Q_OBJECT
 
 public:
-    explicit KnowView(QWidget *parent = 0);
+    explicit KnowView(QString _name, QWidget *_parent = 0);
     virtual ~KnowView();
 
     void sychronize();
 
     void source_model(boost::intrusive_ptr<TreeItem> _item);
 
-    KnowModel *source_model()const {return _know_root;}
+    KnowModel *source_model()const; // {return _know_root;}
     //    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
+    boost::intrusive_ptr<TreeItem> current_item()const;
 
-    QModelIndex index_current(void);
+    QModelIndex current_index(void)const;
+    QModelIndex current_index(void);
+
+
     //    QModelIndex view_index_last(void)const;
-    QModelIndex selection_to_pos(int _index);
-    QModelIndex selection_to_pos(boost::intrusive_ptr<TreeItem> _item);
+    //    QModelIndex selection_to_pos(int _index);
+    QModelIndex select_and_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
+    QModelIndex select_and_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
+    void selected_indexes_update(void);
 
 signals:
     void tapAndHoldGestureFinished(const QPoint &);

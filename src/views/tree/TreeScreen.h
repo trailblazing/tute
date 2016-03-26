@@ -82,33 +82,33 @@ public:
     void knowtree_save(void);
     void knowtree_reload(void);
 
-    void items_update_selected(void);
-    void branchs_update_selected(void);
+    //    void view_update_selected_indexes(void);
+    //    void indexes_update_for_selected(void);
 
-    int item_first_selected(void);
+    //    int item_first_selected(void);
 
 
 
-    QItemSelectionModel *selection_model(void);
+    //    QItemSelectionModel *selection_model(void);
 
-    // Установка курсора на указанный элемент
-    void cursor_to_index(QModelIndex _index);
+    //    // Установка курсора на указанный элемент
+    //    void cursor_to_index(QModelIndex _index);
 
-    void branch_update_on_screen(const QModelIndex &index);
+    //    void branch_update_from_model(const QModelIndex &index);
 
     QMenu *buttonmenu() {return _menus_in_button;}
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, KnowModel *_current_model);
-    std::vector<boost::intrusive_ptr<TreeItem>> branch_paste_new_children_only(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _blank_root);
-    boost::intrusive_ptr<TreeItem> branch_paste_as_child(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
-    boost::intrusive_ptr<TreeItem> branch_paste_as_sibling(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
+    std::vector<boost::intrusive_ptr<TreeItem>> view_paste_children(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
+    boost::intrusive_ptr<TreeItem> view_paste_child(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
+    boost::intrusive_ptr<TreeItem> view_paste_sibling(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _source_item);
 
     //    boost::intrusive_ptr<TreeItem> branch_add(QModelIndex _current_index, QString name, bool insert_sibling_branch, KnowModel *_current_model);
     //    template<bool insert_sibling_branch = true>
-    boost::intrusive_ptr<TreeItem> branch_add_new(KnowModel *_current_model, QModelIndex _current_index, QString _name
-                                                  , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, QString, QString)> _branch_add_impl);
+    boost::intrusive_ptr<TreeItem> view_add_new(KnowModel *_current_model, QModelIndex _current_index, QString _name
+                                                , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, QString, QString)> _branch_add_impl);
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch, std::shared_ptr<KnowModel> _current_model);
 
@@ -116,7 +116,7 @@ public:
 
     void enable_up_action();
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
-    boost::intrusive_ptr<TreeItem> branch_cut(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> view_cut(boost::intrusive_ptr<TreeItem> item);
     //    boost::intrusive_ptr<TreeItem> branch_paste(boost::intrusive_ptr<TreeItem> item, KnowModel *_current_know_branch);
 
 
@@ -131,42 +131,45 @@ public:
     boost::intrusive_ptr<TreeItem> duplicated_remove(boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
 
 public slots:
-    void branch_paste_from_search(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _result_item); // , std::shared_ptr<RecordTable> resultset_data
+    void view_paste_from_search(KnowModel *_current_model, QModelIndex _current_index, boost::intrusive_ptr<TreeItem> _result_item); // , std::shared_ptr<RecordTable> resultset_data
+    void on_pressed(const QModelIndex &_index);
+    void on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+    void on_current_changed(const QModelIndex &current, const QModelIndex &previous);
     void on_current_row_changed(const QModelIndex &current, const QModelIndex &previous);
-    void index_invoke_in_current_branch(const QModelIndex &_index);
-    void index_invoke_in_sub_branch(const QModelIndex &_index);
+    void index_invoke(const QModelIndex &_index);
+    //    void index_invoke_in_sub_branch(const QModelIndex &_index);
 
 
 private slots:
 
-    void branch_expand_all_sub(void);
-    void branch_collapse_all_sub(void);
+    void view_expand_all_sub(void);
+    void view_collapse_all_sub(void);
     void expand_or_collapse_recurse(QModelIndex index, bool mode);
     //    boost::intrusive_ptr<TreeItem> branch_insert_sub(void);
     //    boost::intrusive_ptr<TreeItem> branch_insert_sibling(void);
-    void branch_edit(void);
+    void view_edit(void);
 
-    QList<boost::intrusive_ptr<TreeItem>> branchs_delete(QModelIndexList _origin_index_list, QString mode, bool _cut_branch_confirm = false);
-    QList<boost::intrusive_ptr<TreeItem>> branchs_delete(QString mode = "delete", bool _cut_branch_confirm = false);
-    boost::intrusive_ptr<TreeItem> branch_delete_one(QModelIndex _to_be_delete_index, KnowModel *_current_model);
+    QList<boost::intrusive_ptr<TreeItem>> view_delete(QModelIndexList _origin_index_list, QString mode, bool _cut_branch_confirm = false);
+    QList<boost::intrusive_ptr<TreeItem>> view_delete(QString mode = "delete", bool _cut_branch_confirm = false);
+    boost::intrusive_ptr<TreeItem> view_delete(QModelIndex _index_delete, KnowModel *_current_model);
 
 
 
     //    void item_move_up_branch(void);
     //    void item_move_dn_branch(void);
-    void branch_cut(bool _cut_branch_confirm = false);
-    bool branch_copy(void);
+    void view_cut(bool _cut_branch_confirm = false);
+    bool view_copy(void) const;
     //    void branch_paste(void);
     //    void branch_paste_sub(void);
 
-    void branch_encrypt(void);
-    void branch_decrypt(void);
+    void view_encrypt(void);
+    void view_decrypt(void);
 
     // Действия при клике на ветку дерева
-    void branch_step_into(const QModelIndex &index);
+    void view_step_into(const QModelIndex &_index);
 
     // Открытие контекстного меню
-    void on_custom_contextmenu_requested(const QPoint &pos);
+    void on_custom_contextmenu_requested(const QPoint &_position);
 
     void edit_field_context(QModelIndex index_current);
     void edit_field(QString pin
@@ -210,23 +213,25 @@ private:
     bool move_checkenable(void);
 
     //    template<bool insert_sibling_branch = true>
-    boost::intrusive_ptr<TreeItem> branch_insert_new(
-        std::function < boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, QString
-                                                        , std::function < boost::intrusive_ptr<TreeItem>(KnowModel *, QModelIndex, QString, QString) >) > _branch_add
-        , std::function < boost::intrusive_ptr<TreeItem>(KnowModel *, QModelIndex, QString, QString) > _branch_add_impl
-    );
+    boost::intrusive_ptr<TreeItem> view_insert_new(std::function < boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, QString
+                                                   , std::function < boost::intrusive_ptr<TreeItem>(KnowModel *, QModelIndex, QString, QString) >) > _branch_add_new
+                                                   , std::function < boost::intrusive_ptr<TreeItem>(KnowModel *, QModelIndex, QString, QString) > _branch_add_new_impl
+                                                  );
     //    boost::intrusive_ptr<TreeItem> insert_branch_process(QModelIndex current_index, QString name, bool insert_sibling_branch);
 
     //    void branch_add_to_clipboard(ClipboardBranch *branch_clipboard_data, QStringList path, bool is_root);
 
-    void branch_paste_func(std::function<QString(const QModelIndex &, ClipboardBranch *)> lock_paste_as_if);
+    void view_paste_func(std::function<QString(const QModelIndex &, ClipboardBranch *)> _paste_as_if);
     //    void branch_paste_smart(bool is_branch);
 
     void tree_empty_controll(void);
     void tree_crypt_control(void);
 
-    void branch_item_encrypt(void);
-    void branch_item_decrypt(void);
+    void item_encrypt(void);
+    void item_decrypt(void);
+    bool is_index_localized(const QModelIndexList _origin_index_list)const;
+    QModelIndexList index_localize(const QModelIndexList _origin_index_list)const;
+    void assembly_context_menu();
     //    friend class browser::WebPage;
     // friend void browser::WebPage::onUrlChanged(const QUrl &url);
     friend class KnowView;

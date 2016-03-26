@@ -1,6 +1,7 @@
 #ifndef _CLIPBBRANCH_H_
 #define _CLIPBBRANCH_H_
 
+#include <set>
 #include <QWidget>
 #include <QMimeData>
 #include <QMap>
@@ -59,11 +60,13 @@ public:
     QStringList formats() const;
 
     // Получение полей для указанной ветки
-    QMap<QString, QString> fields_by_branch_id(QString id) const;
+    QMap<QString, QString> fields_by_parent_id(QString id) const;
 
     // Получение списка записей для указанной ветки
-    QList<boost::intrusive_ptr<TreeItem> > records_by_branch_id(QString id) const;
-    QString clip_root_item_parent_id() {return _clip_root_item_parent_id;}
+    QList<boost::intrusive_ptr<TreeItem> > records_by_parent_id(QString id) const;
+    //    QList< boost::intrusive_ptr<TreeItem>> records_by_parent_id_list(std::set<QString> id_list)const;
+    std::set<QString> clip_root_items_parent_id_list() const {return _clip_root_items_parent_id_list;}
+    //    QList<QString> clip_root_items_id_list() const {return _clip_root_items_id_list;}
 
 protected:
     // Этот метод QMimeData надо переопределить, так как он виртуальный
@@ -71,7 +74,8 @@ protected:
     void branch_fields_add_parent_id(QString parent_id, QMap<QString, QString> _branch_fields);
     void record_duplicate_to_parent_id(QString parent_id, boost::intrusive_ptr<TreeItem> record);
 private:
-    QString             _clip_root_item_parent_id;
+    std::set<QString>   _clip_root_items_parent_id_list;
+    //    QList<QString>      _clip_root_items_id_list;
     CLIPB_BRANCH_STRUCT _branch_data; // Данные, которые передаются через буфер обмена
     QStringList         _clipboard_branch_format; // Строка с идентификатором формата
 

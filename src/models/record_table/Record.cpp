@@ -836,7 +836,7 @@ QMap<QString, QByteArray> Record::picture_files() const
 {
     // У легкого объекта невозможно запросить картинки, если так происходит - это ошибка вызывающей логики
     if(_lite_flag == true)
-        critical_error("Cant get picture files from lite record object" + id_and_name());
+        critical_error("Can\'t get picture files from lite record object" + id_and_name());
 
     return _picture_files;
 }

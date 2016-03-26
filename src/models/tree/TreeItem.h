@@ -22,16 +22,17 @@ class Record;
 class ItemsFlat;
 class TreeItem;
 
-// url_type
+//// url_type
 
-struct url_full {
-    QString operator()(QUrl url) {return url.toString();}
-};
+//struct url_full {
+//    QString operator()(QUrl url) {return url.toString();}
+//};
 
-struct url_fragment {
-    QString operator()(QUrl url) {return url.fragment();}
-};
+//struct url_fragment {
+//    QString operator()(QUrl url) {return url.fragment();}
+//};
 
+typedef std::function<bool(boost::intrusive_ptr<const TreeItem>, const QUrl &)> equal_type;
 
 namespace browser {
     class WebPage;
@@ -202,28 +203,28 @@ public:
     void move_up(int pos) {ItemsFlat::move_up(pos);}
     void move_dn(int pos) {ItemsFlat::move_dn(pos);}
     // Возвращает id путь (список идентификаторов от корня до текущего элемента)
-    QStringList path_absolute(void);
+    QStringList path_absolute(void) const;
 
     // Возвращает путь в виде названий веток дерева
-    QStringList path_absolute_as_name(void);
+    QStringList path_absolute_as_name(void)const;
 
-    QString path_absolute_as_name_with_delimiter(QString delimeter);
+    QString path_absolute_as_name_with_delimiter(QString delimeter) const;
 
     // Возвращает набор значений указанного поля для пути от корня к ветке
-    QStringList path_absolute_as_field(QString field_name);
+    QStringList path_absolute_as_field(QString field_name)const;
 
     // Возвращает массив путей всех подветок, которые содержит ветка
-    QList<QStringList> path_children_all(void);
+    QList<QStringList> path_children_all(void) const;
 
     // Возвращает набор значений указанного поля для подветок
-    QList<QStringList> path_children_all_as_field(QString fieldName);
+    QList<QStringList> path_children_all_as_field(QString fieldName)const;
 
     // Получение идентификатора элемента
-    QString id();
-    QString name();
+    QString id() const;
+    QString name()const;
 
     // Получение идентификатора родительской ветки
-    QString parent_id();
+    QString parent_id() const;
 
     // Шифрация данной ветки и всех подветок
     void to_encrypt(void);
@@ -243,10 +244,10 @@ public:
     QDomElement dom_from_treeitem();
     void dom_to_direct(const QDomElement &_dom_element);
 
-    boost::intrusive_ptr<TreeItem> is_activated();
-    boost::intrusive_ptr<TreeItem> is_registered_to_browser();
+    boost::intrusive_ptr<TreeItem> is_activated() const;
+    boost::intrusive_ptr<TreeItem> is_registered_to_browser() const;
 
-    boost::intrusive_ptr<CouplerDelegation> record_binder();
+    boost::intrusive_ptr<CouplerDelegation> record_binder() const;
     void record_binder(boost::intrusive_ptr<CouplerDelegation> _record_binder);
 
     //    // Взятие ссылки на данные конечных записей
@@ -278,18 +279,18 @@ public:
     boost::intrusive_ptr<TreeItem> active_subset() const;
 
 
-    boost::intrusive_ptr<TreeItem> child_move(int pos, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
+    boost::intrusive_ptr<TreeItem> child_move(int pos, boost::intrusive_ptr<TreeItem> _source_item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
     //    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
 
 
     bool is_empty() const;
     bool self_remove();
     bool self_empty_remove();
-    boost::intrusive_ptr<TreeItem> record_merge(boost::intrusive_ptr<TreeItem> cut);
+    boost::intrusive_ptr<TreeItem> item_merge(boost::intrusive_ptr<TreeItem> cut);
     int count_records_all();
 
-    template<typename T = url_full>
-    inline QString url() const;
+    //    template<typename T = url_full>
+    //    inline QString url() const;
 
 
 
@@ -304,7 +305,7 @@ private:
     void isolate(void);
 
     // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
-    QList<QStringList> path_children_all_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode);
+    QList<QStringList> path_children_all_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)const;
 
     //    bool is_field_name_available(QString name) const;
     //    QStringList field_name_available_list(void) const;
@@ -355,11 +356,11 @@ private:
 
 
 
-template<>
-inline QString TreeItem::url<url_fragment>()const {return QUrl(field("url")).fragment();}
+//template<>
+//inline QString TreeItem::url<url_fragment>()const {return QUrl(field("url")).fragment();}
 
-template<>
-inline QString TreeItem::url<url_full>() const    {return field("url");}
+//template<>
+//inline QString TreeItem::url<url_full>() const    {return field("url");}
 
 
 

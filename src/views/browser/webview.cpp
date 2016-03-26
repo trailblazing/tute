@@ -450,10 +450,10 @@ namespace browser {
     //        QWebEnginePage::load(url);
     //    }
 
-    void WebPage::setUrl(const QUrl &url)
-    {
-        QWebEnginePage::setUrl(url);    // load(QUrl(_record->getNaturalFieldSource("url")));
-    }
+    //    void WebPage::setUrl(const QUrl &url)
+    //    {
+    //        QWebEnginePage::setUrl(url);    // load(QUrl(_record->getNaturalFieldSource("url")));
+    //    }
 
 
     WebView *WebPage::load(const boost::intrusive_ptr<TreeItem> item, bool checked)
@@ -519,7 +519,7 @@ namespace browser {
 
             // QUrl url = QUrl(_record->getNaturalFieldSource("url"));
 
-            setUrl(_url);   // QWebEnginePage::setUrl(_url);    // load(QUrl(_record->getNaturalFieldSource("url")));
+            QWebEnginePage::setUrl(_url);    // setUrl(_url);   // load(QUrl(_record->getNaturalFieldSource("url")));
 
             //            QWebEnginePage::load(_url);
 
@@ -543,6 +543,9 @@ namespace browser {
                 _browser->activateWindow();
             }
 
+            auto _tree_screen = globalparameters.tree_screen();
+            _tree_screen->tree_view()->select_and_current(_record_binder->bounded_item());
+
             if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
 
                 if(_record_controller->first_selectionid() != _record_binder->bounded_item()->field("id") || _view->tabmanager()->currentWebView() != _view) {
@@ -560,26 +563,13 @@ namespace browser {
 
                     //}
 
-                    if(_record_controller->view()->selection_first_id() != _record_binder->bounded_item()->field("id")) {
-                        _record_controller->select_id(_record_binder->bounded_item()->field("id"));
-                    }
+                    //                    if(_record_controller->view()->selection_first_id() != _record_binder->bounded_item()->field("id")) {
+                    //                        _record_controller->select_id(_record_binder->bounded_item()->field("id"));
+                    //                    }
                 }
             }
 
-            auto _tree_screen = globalparameters.tree_screen();
-            QModelIndex _index = _tree_screen->tree_view()->source_model()->index(_record_binder->bounded_item());  // = _tree_screen->tree_view()->source_model()->index(_item);
 
-            while(!_index.isValid()
-                  && _tree_screen->tree_view()->source_model()->root_item() != _tree_screen->know_model_board()->root_item()
-                 ) {
-                _tree_screen->cursor_up_one_level();
-                _index = _tree_screen->tree_view()->source_model()->index(_record_binder->bounded_item());
-                //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
-            }
-
-            if(_index.isValid() && _tree_screen->tree_view()->index_current() != _index) {
-                _tree_screen->cursor_to_index(_index);
-            }
 
         }
 
@@ -709,13 +699,13 @@ namespace browser {
 
                 // return nullptr;
 
-                WebView *view = globalparameters.entrance()->find(QUrl(Browser::_defaulthome));
+                WebView *view = globalparameters.entrance()->find([](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;});
 
                 if(view) {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
 
-                    auto record = view->page()->item_request_from_tree(QUrl(Browser::_defaulthome));
+                    auto record = view->page()->item_request_from_tree(QUrl(Browser::_defaulthome));   // QUrl(Browser::_defaulthome)
                     //                record->generate();
                     record->activate();
                     page = view->page();
@@ -958,7 +948,9 @@ namespace browser {
         return re;
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(const QUrl &_url)
+    boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
+        const QUrl &_url
+    )
     {
         //        auto ar = boost::make_shared<WebPage::Coupler>(this);
 
@@ -966,7 +958,7 @@ namespace browser {
         //        //                             >>("", &WebPage::RecordBinder::binder, ar);
         //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
         boost::intrusive_ptr<TreeItem> re;
-        auto it = _tabmanager->item_request_from_tree_impl(_url);
+        auto it = _tabmanager->item_request_from_tree_impl(_url);   // [&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == _url.toString();}
 
         //        if(// !it->is_registered_to_browser() &&
         //            !it->record_binder())
@@ -1754,6 +1746,10 @@ namespace browser {
 
 
             _view->setFocus();   // make upate validate
+
+
+            auto _tree_screen = globalparameters.tree_screen();
+            _tree_screen->tree_view()->select_and_current(_record_binder->bounded_item());
 
             if(is_current) {// globalparameters.mainwindow()
                 if(_record_controller->view()->selection_first_id() != _record_binder->bounded_item()->field("id"))

@@ -58,10 +58,11 @@ public:
     bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 
 
-    bool is_item_valid(QStringList path) const;
+    //    bool is_item_valid(QStringList path) const;
 
     QModelIndex index(delegater _del) const;
     QModelIndex index(boost::intrusive_ptr<TreeItem> _item) const;
+    void index_update(const QModelIndex &_index);
     //    QModelIndex index(const QUrl &find_url)const;
     //    QModelIndex index(const QString &id)const;
 
@@ -80,6 +81,8 @@ public:
 
     // void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
     boost::intrusive_ptr<TreeItem> root_item()const {return _root_item;}
+
+
 
 protected:
     boost::intrusive_ptr<TreeItem>  _root_item; // Ссылка на первый (корневой) item-объект
