@@ -119,6 +119,12 @@ namespace browser {
 
     Browser::~Browser()
     {
+        auto bs = _entrance->browsers();
+
+        for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+            if(*i == this)
+                bs.erase(i);
+        }
 
         _autosaver->changeOccurred();
         //        _autosaver->saveIfNeccessary();
@@ -252,6 +258,16 @@ namespace browser {
 
         //        connect(_main_window, &MainWindow::setEnabled, this, &DockedWindow::setEnabled);
         //        connect(_main_window, &MainWindow::blockSignals, this, &DockedWindow::blockSignals);
+
+        //        // test:
+        //        connect(const_cast<Browser *>(this), &Browser::~Browser, [&]() {
+        //            auto bs = _entrance->browsers();
+
+        //            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+        //                if(*i == this)
+        //                    bs.erase(i);
+        //            }
+        //        });
     }
 
     void Browser::run_script(const QString &style_source)
@@ -321,7 +337,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
-        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -343,7 +359,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         //        auto r = request_item(QUrl(Browser::_defaulthome));
@@ -369,7 +385,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
-        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -391,7 +407,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
 
@@ -417,7 +433,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
-        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -439,7 +455,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
 
@@ -463,7 +479,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
-        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -485,7 +501,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         assert(item);
 

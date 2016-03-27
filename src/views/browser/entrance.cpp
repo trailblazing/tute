@@ -298,9 +298,9 @@ namespace browser {
     //        }
     //    }
 
-    Entrance *Entrance::prepend(boost::intrusive_ptr<Browser> browser)
+    Entrance *Entrance::prepend(Browser *browser)
     {
-        setWidget(browser.get());
+        setWidget(browser);
         browser->setParent(this);
 
 
@@ -397,7 +397,7 @@ namespace browser {
         return browser;     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    boost::intrusive_ptr<Browser> Entrance::new_browser()
+    Browser *Entrance::new_browser()
     {
 
         //        DockedWindow *browser =
@@ -415,7 +415,7 @@ namespace browser {
         //        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    boost::intrusive_ptr<Browser> Entrance::new_browser(QUrl const &url)
+    Browser *Entrance::new_browser(QUrl const &url)
     {
 
         //        DockedWindow *browser =
@@ -435,7 +435,7 @@ namespace browser {
     }
 
 
-    boost::intrusive_ptr<Browser> Entrance::new_browser(boost::intrusive_ptr<TreeItem> item)
+    Browser *Entrance::new_browser(boost::intrusive_ptr<TreeItem> item)
     {
 
         //        DockedWindow *browser =
@@ -579,7 +579,7 @@ namespace browser {
                        , Qt::WindowFlags flags
                       )
         : QDockWidget(_main_window, flags)  //, _application(application)
-        , _browsers(std::vector<boost::intrusive_ptr<browser::Browser>>())    // , _shadow_branch(_record_controller->source_model()->_browser_pages)
+        , _browsers(std::vector<Browser * >())   // , _shadow_branch(_record_controller->source_model()->_browser_pages)
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _editor_screen(_editor_screen) //, _record_controller(_record_controller)
@@ -707,7 +707,7 @@ namespace browser {
 
 
         //        for(int i = 0; i < _browsers.size(); ++i) {
-        //            boost::intrusive_ptr<Browser> window = _browsers.at(i);
+        //            Browser * window = _browsers.at(i);
 
         //            if(window) {delete window; window = nullptr;}
         //        }
@@ -858,9 +858,54 @@ namespace browser {
     //        }
     //    }
 
+
+    // not sure to succeeded
+    Browser *Entrance::activated_browser()
+    {
+        //        clean();
+
+        //        std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
+        Browser *_browser = nullptr;
+
+        //        if(_mainWindows.isEmpty()) {
+        //            dp = new_dockedwindow(
+        //                     QUrl(DockedWindow::_defaulthome)
+        //                 );
+        //        } else { //
+
+        //        if(_browsers.size() > 0) {
+        for(auto i : _browsers) {
+            if(i->isVisible() || i->isActiveWindow()) {
+                // assert(i);
+                // dp.first
+                _browser = i;    //.data();
+                //                    assert(_browser);
+                // dp.second = i->tabWidget()->currentWebView();
+                break;
+            }
+        }
+
+        if(!_browser) {
+            //                _browser = _browsers[0];
+            //            }
+            //        } else {
+            _browser = new_browser();
+            //            assert(_browser);
+            //            return _browser;
+            // dp.second = dp.first->tabWidget()->currentWebView();
+        }
+
+        //        assert(dp.first);
+        //        assert(dp.second);
+        assert(_browser);
+        return _browser;  //qobject_cast<DockedWindow *>(widget()); //
+        //_mainWindows[0];
+    }
+
+
     void Entrance::activate(const QUrl &_find_url, equal_type _equal)
     {
-        clean();
+        //        clean();
 
         WebView *v = nullptr;
 
@@ -876,7 +921,7 @@ namespace browser {
 
         if(v == nullptr) {
 
-            boost::intrusive_ptr<Browser> browser = activated_browser();
+            Browser *browser = activated_browser();
 
             auto r = browser->tabmanager()->item_request_from_tree(_find_url, _equal);
 
@@ -887,7 +932,7 @@ namespace browser {
 
     void Entrance::activate(boost::intrusive_ptr<TreeItem> item, equal_type _equal)
     {
-        clean();
+        //        clean();
 
         if(item->page_valid() && _browsers.size() > 0) {
             for(auto browser : _browsers) {
@@ -897,7 +942,7 @@ namespace browser {
             }
         } else {
             //        if(activiated_browser().first) {
-            boost::intrusive_ptr<Browser> _current_browser = activated_browser();
+            Browser *_current_browser = activated_browser();
 
             auto r = _current_browser->tabmanager()->item_request_from_tree(item, _equal);
 
@@ -1089,62 +1134,22 @@ namespace browser {
         reply->ignoreSslErrors(errors);
     }
 
-    void Entrance::clean()
-    {
-        if(_browsers.size() > 0) {
-            // cleanup any deleted main windows first
-            //            for(int i = _browsers.count() - 1; i >= 0; --i) {
-            //                if(!_browsers.at(i)) {
-            //                    _browsers.removeAt(i);
-            //                }
-            //            }
-            for(std::vector<boost::intrusive_ptr<Browser>>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
-                if(!*i)_browsers.erase(i);
-            }
-        }
-    }
+    //    void Entrance::clean()
+    //    {
+    //        //        if(_browsers.size() > 0) {
+    //        //            // cleanup any deleted main windows first
+    //        //            //            for(int i = _browsers.count() - 1; i >= 0; --i) {
+    //        //            //                if(!_browsers.at(i)) {
+    //        //            //                    _browsers.removeAt(i);
+    //        //            //                }
+    //        //            //            }
+    //        //            for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+    //        //                if(!*i)_browsers.erase(i);
+    //        //            }
+    //        //        }
+    //    }
 
-    // not sure to succeeded
-    boost::intrusive_ptr<Browser> Entrance::activated_browser()
-    {
-        clean();
-        //        std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-        boost::intrusive_ptr<browser::Browser> _browser;  // = nullptr;
 
-        //        if(_mainWindows.isEmpty()) {
-        //            dp = new_dockedwindow(
-        //                     QUrl(DockedWindow::_defaulthome)
-        //                 );
-        //        } else { //
-
-        //        if(_browsers.size() > 0) {
-        for(auto i : _browsers) {
-            if(i->isVisible() || i->isActiveWindow()) {
-                // assert(i);
-                // dp.first
-                _browser = i;    //.data();
-                //                    assert(_browser);
-                // dp.second = i->tabWidget()->currentWebView();
-                break;
-            }
-        }
-
-        if(!_browser) {
-            //                _browser = _browsers[0];
-            //            }
-            //        } else {
-            _browser = new_browser();
-            //            assert(_browser);
-            //            return _browser;
-            // dp.second = dp.first->tabWidget()->currentWebView();
-        }
-
-        //        assert(dp.first);
-        //        assert(dp.second);
-        assert(_browser);
-        return _browser;  //qobject_cast<DockedWindow *>(widget()); //
-        //_mainWindows[0];
-    }
 
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
@@ -1155,9 +1160,10 @@ namespace browser {
         assert(!_it->is_lite());
         //        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
 
-        clean();
+        //        clean();
+
         //DockedWindow *w = nullptr;
-        boost::intrusive_ptr<browser::Browser> _browser = nullptr;
+        Browser *_browser = nullptr;
         WebView *_view = nullptr;
 
         if(_it) {   // && !_it->record_binder()
@@ -1238,7 +1244,7 @@ namespace browser {
 
                 assert(_browser);
                 assert(_view);
-                setWidget(_browser.get());
+                setWidget(_browser);
             }
         }
 
@@ -1330,9 +1336,10 @@ namespace browser {
     //        return list;
     //    }
 
-    std::vector<boost::intrusive_ptr<Browser> > Entrance::browsers()
+    std::vector<Browser * > Entrance::browsers() const
     {
-        clean();
+        //        clean();
+
         //        QList<DockedWindow *> list;
 
         //        for(int i = 0; i < _mainWindows.count(); ++i)
@@ -1345,7 +1352,7 @@ namespace browser {
     void BrowserView::lastWindowClosed()
     {
         clean();
-        boost::intrusive_ptr<Browser> browser = new browser::Browser(this);
+        Browser *browser = new browser::Browser(this);
         browser->slotHome();
         _main_windows.prepend(browser);
     }

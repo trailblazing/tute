@@ -117,9 +117,11 @@ namespace browser {
         //            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item);assert(item->page_valid()); return item->unique_page()->active();}
         //        };
 
-        boost::intrusive_ptr<Browser> activated_browser();
-        std::vector<boost::intrusive_ptr<Browser> > browsers();  //        QList<DockedWindow*> window_raw_list();
-        void clean();
+        Browser *activated_browser();
+        std::vector<Browser * > browsers()const;  //        QList<DockedWindow*> window_raw_list();
+
+        //        void clean();
+
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
         WebView *item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
@@ -155,14 +157,14 @@ namespace browser {
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &_url);
 
-        boost::intrusive_ptr<Browser> new_browser();
-        boost::intrusive_ptr<Browser> new_browser(QUrl const &url);
+        Browser *new_browser();
+        Browser *new_browser(QUrl const &url);
 
-        boost::intrusive_ptr<Browser> new_browser(boost::intrusive_ptr<TreeItem> record);
+        Browser *new_browser(boost::intrusive_ptr<TreeItem> record);
         Browser *new_browser(const QByteArray &state);
         //        Browser *activate_browser(boost::intrusive_ptr<TreeItem> item);
 
-        Entrance *prepend(boost::intrusive_ptr<Browser>);
+        Entrance *prepend(Browser *);
         void on_activate_window();
         //        void on_splitter_moved(int pos, int index);
 
@@ -185,7 +187,7 @@ namespace browser {
         void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
-        std::vector<boost::intrusive_ptr<Browser>>       _browsers;
+        std::vector<Browser *>       _browsers;
         //        ItemsFlat                       *_shadow_branch;
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;

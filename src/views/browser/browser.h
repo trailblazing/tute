@@ -85,7 +85,8 @@ namespace browser {
      */
     class Browser :
         public QMainWindow
-        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter> {
+    //        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
+    {
         Q_OBJECT
 
     public:
