@@ -3038,7 +3038,7 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
             for(auto _i : duplicated_item_index_list) {
                 auto duplicated_item = _tree_view->source_model()->item(_i);
 
-                if(duplicated_item != result_item) {
+                if(duplicated_item->id() != result_item->id()) {
                     duplicated_remove(result_item, duplicated_item);
                 }
             }

@@ -308,7 +308,16 @@ namespace browser {
         //        setAutoFillBackground(true);
         //        setFeatures(QDockWidget::NoDockWidgetFeatures);
         //        _browser = browser;
-        _browsers.push_back(browser);
+        bool found = false;
+
+        for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+            if(*i == browser) {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)_browsers.push_back(browser);
 
         return this;
     }
@@ -574,7 +583,7 @@ namespace browser {
                        , MetaEditor *_editor_screen
                        , HidableTabWidget *_vtabwidget
                        , MainWindow *_main_window
-                       , AppConfig  &_appconfig
+                       , AppConfig   &_appconfig
                        , const QString &style_source
                        , Qt::WindowFlags flags
                       )
@@ -705,12 +714,15 @@ namespace browser {
     Entrance::~Entrance()
     {
 
-
-        //        for(int i = 0; i < _browsers.size(); ++i) {
-        //            Browser * window = _browsers.at(i);
-
-        //            if(window) {delete window; window = nullptr;}
-        //        }
+        if(_browsers.size() > 0) {
+            for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+                if(*i) {
+                    //                    _browsers.erase(i);
+                    (*i)->deleteLater();   // delete *i;
+                    //                    *i = nullptr;
+                }
+            }
+        }
 
         //if(isselfcreated())delete current_record;   // no, do not apply memory by this class for record, from the original source
         //        if(_actionFreeze)delete _actionFreeze;
@@ -1336,7 +1348,7 @@ namespace browser {
     //        return list;
     //    }
 
-    std::vector<Browser * > Entrance::browsers() const
+    std::vector<Browser *> Entrance::browsers() const
     {
         //        clean();
 

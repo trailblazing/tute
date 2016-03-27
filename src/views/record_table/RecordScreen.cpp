@@ -110,7 +110,7 @@ RecordScreen::~RecordScreen()
 {
     //    delete _recordtree_search;
     //    delete _record_controller;
-    delete _tabmanager;
+    //    delete _tabmanager;
     delete _vertical_scrollarea;
 }
 

@@ -148,18 +148,21 @@ MainWindow::~MainWindow()
 {
     save_all_state();
 
-    delete  _entrance;
+    //    delete  _entrance; _entrance = nullptr;
     delete  _switcher;
     delete  _statusbar;
     delete  _editor_screen;
     delete  _find_screen;
-    delete  _download;
+
+    //    delete  _download;
 
     //    if(_page_screen)delete  _page_screen;
 
     //    delete  _table_screen;
-    delete  _tree_screen;
-    delete  _vtabwidget;
+
+    //    if(_tree_screen) {delete  _tree_screen; _tree_screen = nullptr;}
+
+    //    delete  _vtabwidget;
 
     delete  _v_right_splitter;
     delete  _find_splitter;

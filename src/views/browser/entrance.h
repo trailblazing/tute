@@ -1,6 +1,7 @@
 #ifndef _BROWSERMANAGER_H_
 #define _BROWSERMANAGER_H_
 
+#include <vector>
 #include <QWidget>
 #include <QList>
 #include <QUrl>
@@ -187,7 +188,7 @@ namespace browser {
         void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
-        std::vector<Browser *>       _browsers;
+        std::vector<Browser *>          _browsers;
         //        ItemsFlat                       *_shadow_branch;
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;

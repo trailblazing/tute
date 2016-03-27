@@ -119,13 +119,14 @@ namespace browser {
 
     Browser::~Browser()
     {
-        auto bs = _entrance->browsers();
+        auto _browsers = _entrance->browsers();
 
-        if(bs.size() > 0) {
-            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
-                if(*i == this)
-                    bs.erase(i);
-            }
+        for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+            //            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+            if(*i == this)
+                _browsers.erase(i);
+
+            //            }
         }
 
         _autosaver->changeOccurred();
@@ -137,9 +138,15 @@ namespace browser {
         if(globalparameters.vtab()->indexOf(_record_screen) != -1)
             globalparameters.vtab()->removeTab(globalparameters.vtab()->indexOf(_record_screen));
 
-        delete _record_screen;
+        //        if(_record_screen) {
+        //            _record_screen->deleteLater();
+        //            //            delete _record_screen; _record_screen = nullptr;
+        //        }
+
         delete _layout;
         delete _centralwidget;
+
+
 
     }
 
@@ -1535,10 +1542,10 @@ namespace browser {
         _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
         _windowmenu->addSeparator();
 
-        auto windows = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
+        auto _browsers = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
 
-        for(size_t i = 0; i < windows.size(); ++i) {
-            auto window = windows.at(i);
+        for(size_t i = 0; i < _browsers.size(); i++) {
+            auto window = _browsers[i];
             QAction *action = _windowmenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
             action->setData(static_cast<uint>(i));
             action->setCheckable(true);
@@ -1553,11 +1560,16 @@ namespace browser {
         if(QAction *action = qobject_cast<QAction *>(sender())) {
             QVariant v = action->data();
 
-            if(v.canConvert<int>()) {
-                int offset = qvariant_cast<int>(v);
-                auto windows = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
-                windows.at(offset)->activateWindow();
-                windows.at(offset)->currentTab()->setFocus();
+            if(v.canConvert<uint>()) {
+                uint offset = qvariant_cast<uint>(v);
+                auto _browsers = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
+                auto window = _browsers[offset];
+
+                if(window) {
+                    window->activateWindow();
+                    window->currentTab()->setFocus();
+                }
+
             }
         }
     }
