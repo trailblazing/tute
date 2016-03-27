@@ -715,7 +715,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         // resultset_item;
         browser::Entrance *_entrance = globalparameters.entrance();
 
-        for(int w = 0; w < _entrance->browsers().size(); w++) {
+        for(size_t w = 0; w < _entrance->browsers().size(); w++) {
             auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();
 
             for(int i = 0; i < tabmanager->count(); i++) {

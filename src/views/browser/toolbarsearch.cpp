@@ -181,7 +181,7 @@ namespace browser {
                 //            globalparameters.entrance()->active_record(request_record(url));
 
                 //                if(globalparameters.entrance()->activiated_browser()) {
-                browser::Browser *browser = globalparameters.entrance()->activated_browser();
+                Browser *browser = globalparameters.entrance()->activated_browser();
                 //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
                 auto r = browser->tabmanager()->item_request_from_tree(url);
 

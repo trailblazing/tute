@@ -118,8 +118,10 @@ namespace browser {
         //        };
 
         Browser *activated_browser();
-        QList<QPointer<Browser> > &browsers();  //        QList<DockedWindow*> window_raw_list();
-        void clean();
+        std::vector<Browser * > browsers()const;  //        QList<DockedWindow*> window_raw_list();
+
+        //        void clean();
+
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
         WebView *item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
@@ -185,7 +187,7 @@ namespace browser {
         void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
-        QList<QPointer<Browser> >       _browsers;
+        std::vector<Browser *>       _browsers;
         //        ItemsFlat                       *_shadow_branch;
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;

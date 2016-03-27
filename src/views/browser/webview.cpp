@@ -666,7 +666,7 @@ namespace browser {
         //        else
         if(type == QWebEnginePage::WebBrowserWindow) {
 
-            Browser *browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                // QtSingleApplication::instance()->newMainWindow();
+            Browser * browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
@@ -863,7 +863,7 @@ namespace browser {
         //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser *browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
+        Browser * browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
@@ -899,7 +899,7 @@ namespace browser {
         //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser *browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
+        Browser * browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);

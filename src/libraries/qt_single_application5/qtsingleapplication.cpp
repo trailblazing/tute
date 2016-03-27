@@ -1120,7 +1120,7 @@ void QtSingleApplication::saveSession()
     if(_private_browsing)
         return;
 
-    globalparameters.entrance()->clean();
+    //    globalparameters.entrance()->clean();
 
     QSettings settings;
     settings.beginGroup(QLatin1String("sessions"));
@@ -1130,11 +1130,11 @@ void QtSingleApplication::saveSession()
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadWrite);
 
-    QList<QPointer<browser::Browser> > mws = globalparameters.entrance()->browsers();
+    std::vector<browser::Browser * > mws = globalparameters.entrance()->browsers();
 
-    stream << mws.count();
+    stream << static_cast<uint>(mws.size());
 
-    for(int i = 0; i < mws.count(); ++i)
+    for(size_t i = 0; i < mws.size(); ++i)
         stream << mws.at(i)->save_state();
 
     settings.setValue(QLatin1String("lastSession"), data);
@@ -1182,7 +1182,7 @@ void QtSingleApplication::restoreLastSession()
 
         assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
 
-        if(globalparameters.entrance()->browsers().count() == 1
+        if(globalparameters.entrance()->browsers().size() == 1
            && browser->tabWidget()->count() == 1
            && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
           ) {
@@ -1423,11 +1423,11 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
         if(!_private_profile)
             _private_profile = new QWebEngineProfile(this);
 
-        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->browsers()) {
+        for(auto window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(_private_profile);
         }
     } else {
-        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->browsers()) {
+        for(auto window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
             window->lastsearch() = QString::null;
             window->tabWidget()->clear();

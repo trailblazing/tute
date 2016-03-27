@@ -3031,13 +3031,16 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
     if(_index.isValid()) { //       && _tree_view->index_current() != _index
         // Получаем указатель на текущую выбранную ветку дерева
         auto result_item = _tree_view->source_model()->item(_index);
-        auto duplicated_item_index_list = _tree_view->source_model()->indexes([&](boost::intrusive_ptr<TreeItem> it) {return it->id() == result_item->id();});
+        auto duplicated_item_index_list =   // _tree_view->source_model()
+        _know_model_board->indexes([&](boost::intrusive_ptr<TreeItem> it) {return it->id() == result_item->id();});
 
-        for(auto _i : duplicated_item_index_list) {
-            auto duplicated_item = _tree_view->source_model()->item(_i);
+        if(duplicated_item_index_list.size() > 1) {
+            for(auto _i : duplicated_item_index_list) {
+                auto duplicated_item = _tree_view->source_model()->item(_i);
 
-            if(duplicated_item != result_item) {
-                duplicated_remove(result_item, duplicated_item);
+                if(duplicated_item != result_item) {
+                    duplicated_remove(result_item, duplicated_item);
+                }
             }
         }
 
@@ -3180,6 +3183,7 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
             if(result_item->field("url") != "") {
                 //            _tree_view->select_and_current(result_item);
                 globalparameters.entrance()->activate(result_item);
+                //                result_item->activate();
             }
         }
     }

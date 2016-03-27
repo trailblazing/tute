@@ -119,9 +119,17 @@ namespace browser {
 
     Browser::~Browser()
     {
+        auto bs = _entrance->browsers();
+
+        if(bs.size() > 0) {
+            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+                if(*i == this)
+                    bs.erase(i);
+            }
+        }
 
         _autosaver->changeOccurred();
-        _autosaver->saveIfNeccessary();
+        //        _autosaver->saveIfNeccessary();
         delete _autosaver;
         delete _bookmarkstoolbar;
         //        delete _tabmanager;
@@ -252,6 +260,16 @@ namespace browser {
 
         //        connect(_main_window, &MainWindow::setEnabled, this, &DockedWindow::setEnabled);
         //        connect(_main_window, &MainWindow::blockSignals, this, &DockedWindow::blockSignals);
+
+        //        // test:
+        //        connect(const_cast<Browser *>(this), &Browser::~Browser, [&]() {
+        //            auto bs = _entrance->browsers();
+
+        //            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+        //                if(*i == this)
+        //                    bs.erase(i);
+        //            }
+        //        });
     }
 
     void Browser::run_script(const QString &style_source)
@@ -321,6 +339,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -368,6 +387,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -415,6 +435,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -460,6 +481,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -1513,12 +1535,12 @@ namespace browser {
         _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
         _windowmenu->addSeparator();
 
-        QList<QPointer<Browser > > windows = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
+        auto windows = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
 
-        for(int i = 0; i < windows.count(); ++i) {
-            QPointer<Browser> window = windows.at(i);
+        for(size_t i = 0; i < windows.size(); ++i) {
+            auto window = windows.at(i);
             QAction *action = _windowmenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
-            action->setData(i);
+            action->setData(static_cast<uint>(i));
             action->setCheckable(true);
 
             if(window == this)
@@ -1533,7 +1555,7 @@ namespace browser {
 
             if(v.canConvert<int>()) {
                 int offset = qvariant_cast<int>(v);
-                QList<QPointer<Browser> > windows = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
+                auto windows = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
                 windows.at(offset)->activateWindow();
                 windows.at(offset)->currentTab()->setFocus();
             }
@@ -1603,6 +1625,7 @@ namespace browser {
                 raise();
                 activateWindow();
             }
+
             //            break;
         }
 

@@ -1477,6 +1477,11 @@ namespace browser {
         //            }
         //        }
         //    }
+
+
+        auto _tree_view = globalparameters.tree_screen()->tree_view();
+        QModelIndex _current = _tree_view->current_index();
+
         for(int i = 0; i < count(); i++) {
             auto vi = webView(i);
 
@@ -1484,13 +1489,15 @@ namespace browser {
                 auto it = vi->page()->bounded_item();
 
                 if(it) {
-                    auto _tree_view = globalparameters.tree_screen()->tree_view();
+
                     // _tree_view->select_and_current(it);
                     QModelIndex _i = _tree_view->source_model()->index(it);
                     _tree_view->selectionModel()->select(_i, QItemSelectionModel::SelectionFlag::Select);
                 }
             }
         }
+
+        _tree_view->select_and_current(_current);
     }
 
     WebView *TabWidget::find_nopin()const
@@ -1865,6 +1872,7 @@ namespace browser {
                 auto _index = _tree_screen->tree_view()->current_index();
 
                 // if(idx.isValid()) {
+                _current_view_model = _tree_screen->tree_view()->source_model();
 
                 auto it = _current_view_model->item(_index);  //item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
                 assert(it);
@@ -2102,6 +2110,7 @@ namespace browser {
                     auto _index = _tree_screen->tree_view()->current_index();
 
                     // if(idx.isValid()) {
+                    _current_view_model = _tree_screen->tree_view()->source_model();
 
                     auto it = _current_view_model->item(_index);  // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
                     assert(it);
