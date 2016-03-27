@@ -121,7 +121,7 @@ namespace browser {
     {
 
         _autosaver->changeOccurred();
-        _autosaver->saveIfNeccessary();
+        //        _autosaver->saveIfNeccessary();
         delete _autosaver;
         delete _bookmarkstoolbar;
         //        delete _tabmanager;
@@ -321,6 +321,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -342,7 +343,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
         //        auto r = request_item(QUrl(Browser::_defaulthome));
@@ -368,6 +369,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -389,7 +391,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
 
@@ -415,6 +417,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -436,7 +439,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
 
@@ -460,6 +463,7 @@ namespace browser {
                      , Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
+        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _record_screen(new RecordScreen(_find_screen
@@ -481,7 +485,7 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(boost::intrusive_ptr<Browser>(this)))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         assert(item);
 
@@ -1513,12 +1517,12 @@ namespace browser {
         _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
         _windowmenu->addSeparator();
 
-        QList<QPointer<Browser > > windows = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
+        auto windows = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
 
-        for(int i = 0; i < windows.count(); ++i) {
-            QPointer<Browser> window = windows.at(i);
+        for(size_t i = 0; i < windows.size(); ++i) {
+            auto window = windows.at(i);
             QAction *action = _windowmenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
-            action->setData(i);
+            action->setData(static_cast<uint>(i));
             action->setCheckable(true);
 
             if(window == this)
@@ -1533,7 +1537,7 @@ namespace browser {
 
             if(v.canConvert<int>()) {
                 int offset = qvariant_cast<int>(v);
-                QList<QPointer<Browser> > windows = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
+                auto windows = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
                 windows.at(offset)->activateWindow();
                 windows.at(offset)->currentTab()->setFocus();
             }
@@ -1603,6 +1607,7 @@ namespace browser {
                 raise();
                 activateWindow();
             }
+
             //            break;
         }
 

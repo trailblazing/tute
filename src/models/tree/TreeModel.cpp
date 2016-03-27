@@ -118,6 +118,44 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
     }
 }
 
+// does not must be succeeded
+QModelIndex TreeModel::index(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const
+{
+    //    QModelIndex result;
+
+    std::function<QModelIndex(QModelIndex, std::function<bool(boost::intrusive_ptr<const TreeItem>)>)>
+    index_recursive = [&](QModelIndex _index, std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) {
+
+        QModelIndex find_index;
+
+        auto it = this->item(_index);   // how about _index itself? as a child of root, it will ever checked
+
+        for(int i = 0; i < it->count_direct(); i++) {
+            auto _index_child = index(i, 0, _index);    // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
+
+            if(_equal(it->item_direct(i))) {
+
+                find_index = _index_child;
+                break;
+            } else {
+                find_index = index_recursive(_index_child, _equal);
+
+                if(_equal(item(find_index))) {
+                    break;
+                }
+            }
+        }
+
+
+        return find_index;
+    };
+
+    assert(_root_item);
+
+    //    result = index_recursive(QModelIndex(), _equal);
+
+    return index_recursive(QModelIndex(), _equal);;
+}
 
 // does not must be succeeded
 QModelIndex TreeModel::index(delegater _del) const
@@ -173,7 +211,7 @@ QModelIndex TreeModel::index(delegater _del) const
         //                }
 
 
-        auto it = this->item(_index);
+        auto it = this->item(_index);   // how about _index itself?
 
         for(int i = 0; i < it->count_direct(); i++) {
             auto _index_child = index(i, 0, _index);    // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
@@ -474,6 +512,42 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
 
     return // result;  //
         curritem;
+}
+
+boost::intrusive_ptr<TreeItem> TreeModel::item(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal)const
+{
+    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>, int)>
+    item_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
+        = [&](boost::intrusive_ptr<TreeItem> _it
+              , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
+              , int mode
+    ) {
+        static boost::intrusive_ptr<TreeItem> find_item;
+
+        if(mode == 0) {
+            find_item = nullptr;
+            return find_item;   // nullptr;
+        }
+
+        if(find_item) return find_item;
+
+        if(_equal(_it)) {
+            find_item = _it;
+            return find_item;
+        } else {
+            for(int i = 0; i < _it->count_direct(); i++)
+                item_recurse(_it->item_direct(i), _equal, 1);
+
+            return find_item;
+        }
+    };
+
+    // Инициализация поиска
+    item_recurse(_root_item, _equal, 0);    // QUrl()
+
+    // Запуск поиска и возврат результата
+    return item_recurse(_root_item, _equal, 1); // _find_url
+
 }
 
 boost::intrusive_ptr<TreeItem> TreeModel::item(const delegater &_del)const

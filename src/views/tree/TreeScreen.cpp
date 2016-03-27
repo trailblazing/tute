@@ -3180,6 +3180,7 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
             if(result_item->field("url") != "") {
                 //            _tree_view->select_and_current(result_item);
                 globalparameters.entrance()->activate(result_item);
+                //                result_item->activate();
             }
         }
     }

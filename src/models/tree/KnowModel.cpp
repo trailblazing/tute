@@ -1529,37 +1529,40 @@ QModelIndexList KnowModel::indexes(std::function<bool(boost::intrusive_ptr<TreeI
 
 boost::intrusive_ptr<TreeItem> KnowModel::item(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal)const      //const QUrl &_find_url, equal_type _equal
 {
-    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>, int)>
-    item_by_url_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
-        = [&](boost::intrusive_ptr<TreeItem> _it
-              , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal    // const QUrl & _find_url
-    , int mode) {
-        static boost::intrusive_ptr<TreeItem> find_item;
+    //    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>, int)>
+    //    item_by_url_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
+    //        = [&](boost::intrusive_ptr<TreeItem> _it
+    //              , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal    // const QUrl & _find_url
+    //              , int mode
+    //    ) {
+    //        static boost::intrusive_ptr<TreeItem> find_item;
 
-        if(mode == 0) {
-            find_item = nullptr;
-            return find_item;   // nullptr;
-        }
+    //        if(mode == 0) {
+    //            find_item = nullptr;
+    //            return find_item;   // nullptr;
+    //        }
 
-        if(find_item) return find_item;
+    //        if(find_item) return find_item;
 
-        if(_equal(_it)) {  //, _find_url
-            // if(item->url<url_type>() == url_type()(find_url)) {
-            find_item = _it;
-            return find_item;
-        } else {
-            for(int i = 0; i < _it->count_direct(); i++)
-                item_by_url_recurse(_it->item_direct(i), _equal, 1);    // _find_url
+    //        if(_equal(_it)) {  //, _find_url
+    //            // if(item->url<url_type>() == url_type()(find_url)) {
+    //            find_item = _it;
+    //            return find_item;
+    //        } else {
+    //            for(int i = 0; i < _it->count_direct(); i++)
+    //                item_by_url_recurse(_it->item_direct(i), _equal, 1);    // _find_url
 
-            return find_item;
-        }
-    };
+    //            return find_item;
+    //        }
+    //    };
 
-    // Инициализация поиска
-    item_by_url_recurse(_root_item, _equal, 0);    // QUrl()
+    //    // Инициализация поиска
+    //    item_by_url_recurse(_root_item, _equal, 0);    // QUrl()
 
-    // Запуск поиска и возврат результата
-    return item_by_url_recurse(_root_item, _equal, 1); // _find_url
+    //    // Запуск поиска и возврат результата
+    //    return item_by_url_recurse(_root_item, _equal, 1); // _find_url
+
+    return TreeModel::item(_equal);
 
 }
 

@@ -904,7 +904,7 @@ void QtSingleApplication::newLocalSocketConnection()
         } else {
 
 
-            browser::Browser *browser = globalparameters.entrance()->activated_browser();
+            boost::intrusive_ptr<browser::Browser> browser = globalparameters.entrance()->activated_browser();
             //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
             auto record = browser->tabmanager()->item_request_from_tree(url);
             //            record->generate();
@@ -1000,7 +1000,7 @@ void QtSingleApplication::postLaunch()
     // newMainWindow() needs to be called in main() for this to happen
     if(_globalparameters.entrance()->browsers().size() > 0) { // _mainWindows.count()
         QStringList args = QCoreApplication::arguments();
-        browser::Browser *browser = _globalparameters.entrance()->activated_browser();
+        boost::intrusive_ptr<browser::Browser> browser = _globalparameters.entrance()->activated_browser();
         //        assert(browser);
         //        if(!browser) {
         //            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
@@ -1130,11 +1130,11 @@ void QtSingleApplication::saveSession()
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadWrite);
 
-    QList<QPointer<browser::Browser> > mws = globalparameters.entrance()->browsers();
+    std::vector<boost::intrusive_ptr<browser::Browser> > mws = globalparameters.entrance()->browsers();
 
-    stream << mws.count();
+    stream << static_cast<uint>(mws.size());
 
-    for(int i = 0; i < mws.count(); ++i)
+    for(size_t i = 0; i < mws.size(); ++i)
         stream << mws.at(i)->save_state();
 
     settings.setValue(QLatin1String("lastSession"), data);
@@ -1173,7 +1173,7 @@ void QtSingleApplication::restoreLastSession()
         //        browser::BrowserWindow *newWindow = 0;
         //        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
 
-        browser::Browser *browser = globalparameters.entrance()->activated_browser();
+        boost::intrusive_ptr<browser::Browser> browser = globalparameters.entrance()->activated_browser();
 
         //        if(!browser) {
         //            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
@@ -1182,7 +1182,7 @@ void QtSingleApplication::restoreLastSession()
 
         assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
 
-        if(globalparameters.entrance()->browsers().count() == 1
+        if(globalparameters.entrance()->browsers().size() == 1
            && browser->tabWidget()->count() == 1
            && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
           ) {
@@ -1423,11 +1423,11 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
         if(!_private_profile)
             _private_profile = new QWebEngineProfile(this);
 
-        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->browsers()) {
+        for(auto window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(_private_profile);
         }
     } else {
-        Q_FOREACH(browser::Browser *window, globalparameters.entrance()->browsers()) {
+        for(auto window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
             window->lastsearch() = QString::null;
             window->tabWidget()->clear();

@@ -666,7 +666,7 @@ namespace browser {
         //        else
         if(type == QWebEnginePage::WebBrowserWindow) {
 
-            Browser *browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                // QtSingleApplication::instance()->newMainWindow();
+            boost::intrusive_ptr<Browser> browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
@@ -863,16 +863,16 @@ namespace browser {
         //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser *browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
+        boost::intrusive_ptr<Browser> browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
 
-        QDialog dialog(browser);
+        QDialog dialog(browser.get());
         dialog.setWindowFlags(Qt::Sheet);
 
         Ui::PasswordDialog passwordDialog;
         passwordDialog.setupUi(&dialog);
 
         passwordDialog.iconLabel->setText(QString());
-        passwordDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser).pixmap(32, 32));
+        passwordDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser.get()).pixmap(32, 32));
 
         QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
         introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
@@ -899,16 +899,16 @@ namespace browser {
         //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser *browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
+        boost::intrusive_ptr<Browser> browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
 
-        QDialog dialog(browser);
+        QDialog dialog(browser.get());
         dialog.setWindowFlags(Qt::Sheet);
 
         Ui::ProxyDialog proxyDialog;
         proxyDialog.setupUi(&dialog);
 
         proxyDialog.iconLabel->setText(QString());
-        proxyDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser).pixmap(32, 32));
+        proxyDialog.iconLabel->setPixmap(browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, browser.get()).pixmap(32, 32));
 
         QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
         introMessage = introMessage.arg(proxyHost.toHtmlEscaped());

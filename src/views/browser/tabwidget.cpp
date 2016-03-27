@@ -1865,6 +1865,7 @@ namespace browser {
                 auto _index = _tree_screen->tree_view()->current_index();
 
                 // if(idx.isValid()) {
+                _current_view_model = _tree_screen->tree_view()->source_model();
 
                 auto it = _current_view_model->item(_index);  //item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
                 assert(it);
@@ -2102,6 +2103,7 @@ namespace browser {
                     auto _index = _tree_screen->tree_view()->current_index();
 
                     // if(idx.isValid()) {
+                    _current_view_model = _tree_screen->tree_view()->source_model();
 
                     auto it = _current_view_model->item(_index);  // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
                     assert(it);

@@ -223,7 +223,7 @@ void RecordScreen::setup_actions(void)
 
                 bool modified = false;
 
-                for(int w = 0; w < _entrance->browsers().size(); w++) {
+                for(size_t w = 0; w < _entrance->browsers().size(); w++) {
                     auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                     for(int i = 0; i < tabmanager->count(); i++) {

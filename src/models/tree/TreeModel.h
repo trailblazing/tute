@@ -59,7 +59,7 @@ public:
 
 
     //    bool is_item_valid(QStringList path) const;
-
+    QModelIndex index(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;
     QModelIndex index(delegater _del) const;
     QModelIndex index(boost::intrusive_ptr<TreeItem> _item) const;
     void index_update(const QModelIndex &_index);
@@ -73,6 +73,7 @@ public:
     // в виде последовательности идентификаторов
     boost::intrusive_ptr<TreeItem> item(QStringList path) const;
 
+    boost::intrusive_ptr<TreeItem> item(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal)const;
     boost::intrusive_ptr<TreeItem> item(const delegater &_del)const;
     //    boost::intrusive_ptr<TreeItem> find_recursive(const QUrl &find_url) const;
     //    boost::intrusive_ptr<TreeItem> find_recursive(const QString &id)const;

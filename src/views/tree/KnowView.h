@@ -39,7 +39,7 @@ public:
     //    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
     boost::intrusive_ptr<TreeItem> current_item()const;
 
-    QModelIndex current_index(void)const;
+    //    QModelIndex current_index(void)const;
     QModelIndex current_index(void);
 
 

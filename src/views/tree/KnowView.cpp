@@ -137,7 +137,7 @@ void KnowView::sychronize()
 
             bool modified = false;
 
-            for(int w = 0; w < _entrance->browsers().size(); w++) {
+            for(size_t w = 0; w < _entrance->browsers().size(); w++) {
                 auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                 for(int i = 0; i < tabmanager->count(); i++) {
@@ -448,14 +448,26 @@ void KnowView::dropEvent(QDropEvent *event)
 
 boost::intrusive_ptr<TreeItem> KnowView::current_item()const
 {
-    return _know_root->item(current_index());
+    return _know_root->item(selectionModel()->currentIndex());
 }
 
 
-QModelIndex KnowView::current_index(void)const
-{
-    return selectionModel()->currentIndex();
-}
+//QModelIndex KnowView::current_index(void)const
+//{
+//    QModelIndex result = selectionModel()->currentIndex();
+
+//    if(!result.isValid()) {
+//        result = QModelIndex();
+//        QMessageBox msgBox;
+//        msgBox.setWindowTitle(tr("Warning!"));
+//        msgBox.setText(tr("Invalid index, please select an item from tree screen."));
+//        msgBox.setIcon(QMessageBox::Information);
+//        msgBox.exec();
+
+//    }
+
+//    return result;
+//}
 
 // Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
 QModelIndex KnowView::current_index(void)
@@ -556,6 +568,7 @@ QModelIndex KnowView::current_index(void)
                 if(_know_root->root_item()->parent()) {
                     //            auto parent_tree_screen_pointer = globalparameters.tree_screen();
                     do {
+                        _tree_screen->tree_view()->reset();
                         _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
                     } while(_know_root->root_item()->parent() && _know_root->root_item()->parent()->count_direct() == 0);
 
@@ -703,7 +716,7 @@ QModelIndex KnowView::select_and_current(boost::intrusive_ptr<TreeItem> _item, s
         //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
     }
 
-    if(_index.isValid() && _index != current_index()) {
+    if(_index.isValid() && _index != selectionModel()->currentIndex()) {
         //                _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, QItemSelectionModel::SelectionFlag::SelectCurrent);
         _index = select_and_current(_index, _strategy);
 

@@ -117,8 +117,8 @@ namespace browser {
         //            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item);assert(item->page_valid()); return item->unique_page()->active();}
         //        };
 
-        Browser *activated_browser();
-        QList<QPointer<Browser> > &browsers();  //        QList<DockedWindow*> window_raw_list();
+        boost::intrusive_ptr<Browser> activated_browser();
+        std::vector<boost::intrusive_ptr<Browser> > browsers();  //        QList<DockedWindow*> window_raw_list();
         void clean();
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
@@ -155,14 +155,14 @@ namespace browser {
         //        WebView *new_dockedwindow(Record *const record);
         WebView *new_view(QUrl const &_url);
 
-        Browser *new_browser();
-        Browser *new_browser(QUrl const &url);
+        boost::intrusive_ptr<Browser> new_browser();
+        boost::intrusive_ptr<Browser> new_browser(QUrl const &url);
 
-        Browser *new_browser(boost::intrusive_ptr<TreeItem> record);
+        boost::intrusive_ptr<Browser> new_browser(boost::intrusive_ptr<TreeItem> record);
         Browser *new_browser(const QByteArray &state);
         //        Browser *activate_browser(boost::intrusive_ptr<TreeItem> item);
 
-        Entrance *prepend(Browser *);
+        Entrance *prepend(boost::intrusive_ptr<Browser>);
         void on_activate_window();
         //        void on_splitter_moved(int pos, int index);
 
@@ -185,7 +185,7 @@ namespace browser {
         void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
-        QList<QPointer<Browser> >       _browsers;
+        std::vector<boost::intrusive_ptr<Browser>>       _browsers;
         //        ItemsFlat                       *_shadow_branch;
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;

@@ -42,6 +42,9 @@
 #ifndef BROWSERWINDOW_H
 #define BROWSERWINDOW_H
 
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
 #include <QBoxLayout>
 #include <QtWidgets/QMainWindow>
 #include <QtGui/QIcon>
@@ -80,7 +83,9 @@ namespace browser {
 
         Handles the tab widget and all the actions
      */
-    class Browser : public QMainWindow {
+    class Browser :
+        public QMainWindow
+        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter> {
         Q_OBJECT
 
     public:
