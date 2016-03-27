@@ -121,9 +121,11 @@ namespace browser {
     {
         auto bs = _entrance->browsers();
 
-        for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
-            if(*i == this)
-                bs.erase(i);
+        if(bs.size() > 0) {
+            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+                if(*i == this)
+                    bs.erase(i);
+            }
         }
 
         _autosaver->changeOccurred();
