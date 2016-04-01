@@ -21,12 +21,12 @@ AppConfigPageMisc::AppConfigPageMisc(QWidget *parent) : ConfigPage(parent)
     // Блок настройки отображения отладочных сообщений в консоли
     printDebugMessages=new QCheckBox(this);
     printDebugMessages->setText(tr("Print debug messages to console"));
-    printDebugMessages->setChecked(appconfig.get_printdebugmessages());
+    printDebugMessages->setChecked(appconfig.print_debug_messages());
 
     // Настройка запуска MyTetra в свернутом окне
     runInMinimizedWindow=new QCheckBox(this);
     runInMinimizedWindow->setText(tr("Run MyTetra in a minimized window"));
-    runInMinimizedWindow->setChecked(appconfig.get_runinminimizedwindow());
+    runInMinimizedWindow->setChecked(appconfig.run_in_minimized_window());
 
 
     // Группировщик виджетов для настройки автоматического старта синхронизации
@@ -35,11 +35,11 @@ AppConfigPageMisc::AppConfigPageMisc(QWidget *parent) : ConfigPage(parent)
 
     rememberAtHistoryNavigationCheckBox=new QCheckBox(this);
     rememberAtHistoryNavigationCheckBox->setText(tr("Remember cursor position at history navigation"));
-    rememberAtHistoryNavigationCheckBox->setChecked(appconfig.getRememberCursorAtHistoryNavigation());
+    rememberAtHistoryNavigationCheckBox->setChecked(appconfig.remember_cursor_at_history_navigation());
 
     rememberAtOrdinarySelectionCheckBox=new QCheckBox(this);
     rememberAtOrdinarySelectionCheckBox->setText(tr("Try remember cursor position at ordinary selection"));
-    rememberAtOrdinarySelectionCheckBox->setChecked(appconfig.getRememberCursorAtOrdinarySelection());
+    rememberAtOrdinarySelectionCheckBox->setChecked(appconfig.remember_cursor_at_ordinary_selection());
 
     // Виджеты вставляются в группировщик
     QVBoxLayout *historyLayout = new QVBoxLayout;
@@ -73,22 +73,22 @@ int AppConfigPageMisc::apply_changes(void)
         appconfig.cut_branch_confirm(cutBranchConfirm->isChecked());
 
 // Сохраняется настройка отображения отладочных сообщений в консоли
-    if(appconfig.get_printdebugmessages()!=printDebugMessages->isChecked())
-        appconfig.set_printdebugmessages(printDebugMessages->isChecked());
+    if(appconfig.print_debug_messages()!=printDebugMessages->isChecked())
+        appconfig.print_debug_messages(printDebugMessages->isChecked());
 
 // Сохраняется настройка режима запуска MyTetra - обычный или свернутый
-    if(appconfig.get_runinminimizedwindow()!=runInMinimizedWindow->isChecked())
-        appconfig.set_runinminimizedwindow(runInMinimizedWindow->isChecked());
+    if(appconfig.run_in_minimized_window()!=runInMinimizedWindow->isChecked())
+        appconfig.run_in_minimized_window(runInMinimizedWindow->isChecked());
 
 // Сохраняется настройка нужно ли вспоминать позицию курсора при перемещении
 // по истории
-    if(appconfig.getRememberCursorAtHistoryNavigation()!=rememberAtHistoryNavigationCheckBox->isChecked())
-        appconfig.setRememberCursorAtHistoryNavigation(rememberAtHistoryNavigationCheckBox->isChecked());
+    if(appconfig.remember_cursor_at_history_navigation()!=rememberAtHistoryNavigationCheckBox->isChecked())
+        appconfig.remember_cursor_at_history_navigation(rememberAtHistoryNavigationCheckBox->isChecked());
 
 // Сохраняется настройка нужно ли пытаться вспоминать позицию курсора при
 // обычном выборе записи
-    if(appconfig.getRememberCursorAtOrdinarySelection()!=rememberAtOrdinarySelectionCheckBox->isChecked())
-        appconfig.setRememberCursorAtOrdinarySelection(rememberAtOrdinarySelectionCheckBox->isChecked());
+    if(appconfig.remember_cursor_at_ordinary_selection()!=rememberAtOrdinarySelectionCheckBox->isChecked())
+        appconfig.remember_cursor_at_ordinary_selection(rememberAtOrdinarySelectionCheckBox->isChecked());
 
     return 0;
 }

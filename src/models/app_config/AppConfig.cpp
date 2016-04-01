@@ -80,7 +80,7 @@ QString AppConfig::get_parameter(QString name)const
 
 
 // Установка имени директории с данными (в которой находится mytetra.xml)
-bool AppConfig::set_tetradir(QString dirName)
+bool AppConfig::tetra_dir(QString dirName)
 {
     QDir directory(dirName);
 
@@ -93,14 +93,14 @@ bool AppConfig::set_tetradir(QString dirName)
 
 
 // Получение имени директории с данными (в которой находится mytetra.xml)
-QString AppConfig::get_tetradir(void)const
+QString AppConfig::tetra_dir(void)const
 {
     return get_parameter("tetradir");
 }
 
 
 // Установка имени директории с корзиной
-bool AppConfig::set_trashdir(QString dirName)
+bool AppConfig::trash_dir(QString dirName)
 {
     QDir directory(dirName);
 
@@ -113,21 +113,21 @@ bool AppConfig::set_trashdir(QString dirName)
 
 
 // Получение имени директории с корзиной
-QString AppConfig::get_trashdir(void)const
+QString AppConfig::trash_dir(void)const
 {
     return get_parameter("trashdir");
 }
 
 
 // Получение максимального размера директории корзины в мегабайтах
-unsigned int AppConfig::get_trashsize(void) const
+unsigned int AppConfig::trash_size(void) const
 {
     return get_parameter("trashsize").toInt();
 }
 
 
 // Установка максимального размера директории корзины в мегабайтах
-bool AppConfig::set_trashsize(unsigned int mbSize)
+bool AppConfig::trash_size(unsigned int mbSize)
 {
     if(mbSize > 0) {
         conf->setValue("trashsize", mbSize);
@@ -138,14 +138,14 @@ bool AppConfig::set_trashsize(unsigned int mbSize)
 
 
 // Получение максимально допустимого числа файлов в корзине
-int AppConfig::get_trashmaxfilecount(void)const
+int AppConfig::trash_max_file_count(void)const
 {
     return get_parameter("trashmaxfilecount").toInt();
 }
 
 
 // Установка максимально допустимого числа файлов в корзине
-bool AppConfig::set_trashmaxfilecount(int count)
+bool AppConfig::trash_max_file_count(int count)
 {
     if(count > 0) {
         conf->setValue("trashmaxfilecount", count);
@@ -168,20 +168,20 @@ bool AppConfig::cut_branch_confirm(bool confirm)
 }
 
 
-bool AppConfig::get_printdebugmessages(void)const
+bool AppConfig::print_debug_messages(void)const
 {
     return conf->value("printdebugmessages").toBool();
 }
 
 
-bool AppConfig::set_printdebugmessages(bool isPrint)
+bool AppConfig::print_debug_messages(bool isPrint)
 {
     conf->setValue("printdebugmessages", isPrint);
     return true;
 }
 
 
-QString AppConfig::get_interfacelanguage(void)const
+QString AppConfig::interface_language(void)const
 {
     QString language = get_parameter("interfacelanguage");
     qDebug() << "Get interface language" << language;
@@ -189,20 +189,20 @@ QString AppConfig::get_interfacelanguage(void)const
 }
 
 
-bool AppConfig::set_interfacelanguage(QString language)
+bool AppConfig::interface_language(QString language)
 {
     conf->setValue("interfacelanguage", language);
     return true;
 }
 
 
-QString AppConfig::get_addnewrecord_expand_info(void) const
+QString AppConfig::add_new_record_expand_info(void) const
 {
     return get_parameter("addnewrecord_expand_info");
 }
 
 
-void AppConfig::set_addnewrecord_expand_info(QString state)
+void AppConfig::add_new_record_expand_info(QString state)
 {
     if(state == "0" || state == "1")
         conf->setValue("addnewrecord_expand_info", state);
@@ -358,94 +358,94 @@ void AppConfig::tree_position(QString view_root_id, QStringList current_item_abs
 
 
 // ID записи в таблице конечных записей, которая выделена на экране
-QString AppConfig::get_recordtable_selected_record_id(void)const
+QString AppConfig::recordtable_selected_record_id(void)const
 {
     return conf->value("recordtableSelectedRecordId", 0).toString();
 }
 
 
 // ID записи в таблице конечных записей, которая выделена на экране
-void AppConfig::set_recordtable_selected_record_id(QString id)
+void AppConfig::recordtable_selected_record_id(QString id)
 {
     conf->setValue("recordtableSelectedRecordId", id);
 }
 
 
-int AppConfig::get_findscreen_wordregard(void) const
+int AppConfig::findscreen_wordregard(void) const
 {
     return conf->value("findscreen_wordregard", 0).toInt();
 }
 
 
-void AppConfig::set_findscreen_wordregard(int pos)
+void AppConfig::findscreen_wordregard(int pos)
 {
     conf->setValue("findscreen_wordregard", pos);
 }
 
 
-int AppConfig::get_findscreen_howextract(void) const
+int AppConfig::findscreen_howextract(void) const
 {
     return conf->value("findscreen_howextract", 0).toInt();
 }
 
 
-void AppConfig::set_findscreen_howextract(int pos)
+void AppConfig::findscreen_howextract(int pos)
 {
     conf->setValue("findscreen_howextract", pos);
 }
 
 
-int AppConfig::getFindScreenTreeSearchArea(void)const
+int AppConfig::find_screen_tree_search_area(void)const
 {
     return conf->value("findScreenTreeSearchArea", 0).toInt();
 }
 
 
-void AppConfig::setFindScreenTreeSearchArea(int pos)
+void AppConfig::find_screen_tree_search_area(int pos)
 {
     conf->setValue("findScreenTreeSearchArea", pos);
 }
 
 
-bool AppConfig::get_findscreen_find_in_field(QString fieldName) const
+bool AppConfig::findscreen_find_in_field(QString fieldName) const
 {
     return conf->value("findscreen_find_in_" + fieldName, 0).toBool();
 }
 
 
-void AppConfig::set_findscreen_find_in_field(QString fieldName, bool isChecked)
+void AppConfig::findscreen_find_in_field(QString fieldName, bool isChecked)
 {
     conf->setValue("findscreen_find_in_" + fieldName, isChecked);
 }
 
 
-bool AppConfig::get_findscreen_show(void)const
+bool AppConfig::findscreen_show(void)const
 {
     return conf->value("findscreen_show", 0).toBool();
 }
 
-void AppConfig::set_findscreen_show(bool isShow)
+void AppConfig::findscreen_show(bool isShow)
 {
     conf->setValue("findscreen_show", isShow);
 }
 
-bool AppConfig::get_editor_show(void)const
+bool AppConfig::editor_show(void)const
 {
     return conf->value("editor_show", 0).toBool();
 }
 
-void AppConfig::set_editor_show(bool isShow)
+void AppConfig::editor_show(bool isShow)
 {
     conf->setValue("editor_show", isShow);
 }
 
-QString AppConfig::get_howpassrequest(void) const
+QString AppConfig::howpassrequest(void) const
 {
     return get_parameter("howpassrequest");
 }
 
 
-void AppConfig::set_howpassrequest(QString mode)
+void AppConfig::howpassrequest(QString mode)
 {
     if(mode == "atClickOnCryptBranch" || mode == "atStartProgram")
         conf->setValue("howpassrequest", mode);
@@ -454,182 +454,182 @@ void AppConfig::set_howpassrequest(QString mode)
 }
 
 
-bool AppConfig::get_autoClosePasswordEnable(void)const
+bool AppConfig::auto_close_password_enable(void)const
 {
     return conf->value("autoClosePasswordEnable", 0).toBool();
 }
 
 
-void AppConfig::set_autoClosePasswordEnable(bool flag)
+void AppConfig::auto_close_password_enable(bool flag)
 {
     conf->setValue("autoClosePasswordEnable", flag);
 }
 
 
-int AppConfig::get_autoClosePasswordDelay(void) const
+int AppConfig::auto_close_password_delay(void) const
 {
     return conf->value("autoClosePasswordDelay", 0).toInt();
 }
 
 
-void AppConfig::set_autoClosePasswordDelay(int delay)
+void AppConfig::auto_close_password_delay(int delay)
 {
     conf->setValue("autoClosePasswordDelay", delay);
 }
 
 
-bool AppConfig::get_runinminimizedwindow(void)const
+bool AppConfig::run_in_minimized_window(void)const
 {
     return conf->value("runinminimizedwindow").toBool();
 }
 
 
-void AppConfig::set_runinminimizedwindow(bool flag)
+void AppConfig::run_in_minimized_window(bool flag)
 {
     conf->setValue("runinminimizedwindow", flag);
 }
 
 
-QString AppConfig::get_synchrocommand(void)const
+QString AppConfig::synchro_command(void)const
 {
     return get_parameter("synchrocommand");
 }
 
 
-void AppConfig::set_synchrocommand(QString command)
+void AppConfig::synchro_command(QString command)
 {
     conf->setValue("synchrocommand", command);
 }
 
 
-bool AppConfig::get_synchroonstartup(void) const
+bool AppConfig::synchro_on_startup(void) const
 {
     return conf->value("synchroonstartup").toBool();
 }
 
 
-void AppConfig::set_synchroonstartup(bool flag)
+void AppConfig::synchro_on_startup(bool flag)
 {
     conf->setValue("synchroonstartup", flag);
 }
 
 
-bool AppConfig::get_synchroonexit(void)const
+bool AppConfig::synchro_on_exit(void)const
 {
     return conf->value("synchroonexit").toBool();
 }
 
 
-void AppConfig::set_synchroonexit(bool flag)
+void AppConfig::synchro_on_exit(bool flag)
 {
     conf->setValue("synchroonexit", flag);
 }
 
 
-bool AppConfig::getSyncroConsoleDetails(void) const
+bool AppConfig::synchro_console_details(void) const
 {
     return conf->value("syncroConsoleDetails").toBool();
 }
 
 
-void AppConfig::setSyncroConsoleDetails(bool flag)
+void AppConfig::synchro_console_details(bool flag)
 {
     conf->setValue("syncroConsoleDetails", flag);
 }
 
 
-int AppConfig::getEditorCursorPosition(void)const
+int AppConfig::editor_cursor_position(void)const
 {
     return conf->value("editorCursorPosition", 0).toInt();
 }
 
 
-void AppConfig::setEditorCursorPosition(int n)
+void AppConfig::editor_cursor_position(int n)
 {
     conf->setValue("editorCursorPosition", n);
 }
 
 
-int AppConfig::getEditorScrollBarPosition(void) const
+int AppConfig::editor_scroll_bar_position(void) const
 {
     return conf->value("editorScrollBarPosition", 0).toInt();
 }
 
 
-void AppConfig::setEditorScrollBarPosition(int n)
+void AppConfig::editor_scroll_bar_position(int n)
 {
     conf->setValue("editorScrollBarPosition", n);
 }
 
 
-QString AppConfig::getPasswordMiddleHash(void)const
+QString AppConfig::password_middle_hash(void)const
 {
     return get_parameter("passwordMiddleHash");
 }
 
 
-void AppConfig::setPasswordMiddleHash(QString hash)
+void AppConfig::password_middle_hash(QString hash)
 {
     conf->setValue("passwordMiddleHash", hash);
 }
 
 
 // Нужно ли локально хранить пароль (точнее, промежуточный хеш пароля)
-bool AppConfig::getPasswordSaveFlag(void)const
+bool AppConfig::password_save_flag(void)const
 {
     return conf->value("passwordSaveFlag").toBool();
 }
 
 
-void AppConfig::setPasswordSaveFlag(bool flag)
+void AppConfig::password_save_flag(bool flag)
 {
     conf->setValue("passwordSaveFlag", flag);
 }
 
 
-bool AppConfig::getRememberCursorAtHistoryNavigation(void)const
+bool AppConfig::remember_cursor_at_history_navigation(void)const
 {
     return conf->value("rememberCursorAtHistoryNavigation").toBool();
 }
 
 
-void AppConfig::setRememberCursorAtHistoryNavigation(bool flag)
+void AppConfig::remember_cursor_at_history_navigation(bool flag)
 {
     conf->setValue("rememberCursorAtHistoryNavigation", flag);
 }
 
 
-bool AppConfig::getRememberCursorAtOrdinarySelection(void) const
+bool AppConfig::remember_cursor_at_ordinary_selection(void) const
 {
     return conf->value("rememberCursorAtOrdinarySelection").toBool();
 }
 
 
-void AppConfig::setRememberCursorAtOrdinarySelection(bool flag)
+void AppConfig::remember_cursor_at_ordinary_selection(bool flag)
 {
     conf->setValue("rememberCursorAtOrdinarySelection", flag);
 }
 
 
-int AppConfig::getUglyQssReplaceHeightForTableView(void)const
+int AppConfig::ugly_qss_replace_height_for_table_view(void)const
 {
     return conf->value("uglyQssReplaceHeightForTableView", 0).toInt();
 }
 
-void AppConfig::setUglyQssReplaceHeightForTableView(int n)
+void AppConfig::ugly_qss_replace_height_for_table_view(int n)
 {
     conf->setValue("uglyQssReplaceHeightForTableView", n);
 }
 
 
 // Перечень полей, отображаемых в таблице конечных записей
-QStringList AppConfig::getRecordTableShowFields(void) const
+QStringList AppConfig::record_table_show_fields(void) const
 {
     return (conf->value("recordTableShowFields", "name")).toString().split(",");
 }
 
 
-void AppConfig::setRecordTableShowFields(QStringList fields)
+void AppConfig::record_table_show_fields(QStringList fields)
 {
     // Не должно быть так, чтобы был пустой список
     if(fields.size() == 0)
@@ -639,38 +639,38 @@ void AppConfig::setRecordTableShowFields(QStringList fields)
 }
 
 
-bool AppConfig::getRecordTableShowHorizontalHeaders(void)const
+bool AppConfig::record_table_show_horizontal_headers(void)const
 {
     return conf->value("recordTableShowHorizontalHeaders").toBool();
 }
 
 
-void AppConfig::setRecordTableShowHorizontalHeaders(bool flag)
+void AppConfig::record_table_show_horizontal_headers(bool flag)
 {
     conf->setValue("recordTableShowHorizontalHeaders", flag);
 }
 
 
-bool AppConfig::getRecordTableShowVerticalHeaders(void) const
+bool AppConfig::record_table_show_vertical_headers(void) const
 {
     return conf->value("recordTableShowVerticalHeaders").toBool();
 }
 
 
-void AppConfig::setRecordTableShowVerticalHeaders(bool flag)
+void AppConfig::record_table_show_vertical_headers(bool flag)
 {
     conf->setValue("recordTableShowVerticalHeaders", flag);
 }
 
 
 // Ширина полей, отображаемых в таблице конечных записей
-QStringList AppConfig::getRecordTableFieldsWidth(void)const
+QStringList AppConfig::record_table_fields_width(void)const
 {
     return (conf->value("recordTableFieldsWidth", "256")).toString().split(",");
 }
 
 
-void AppConfig::setRecordTableFieldsWidth(QStringList fields)
+void AppConfig::record_table_fields_width(QStringList fields)
 {
     // В списке с одним элементом должна стоять стандартная величина (всеравно она не влияет, и начнет влиять только после появления второй колонки)
     if(fields.size() == 1)
@@ -685,59 +685,59 @@ void AppConfig::setRecordTableFieldsWidth(QStringList fields)
 
 
 // Показывать ли сплешскрин при старте программы
-bool AppConfig::getShowSplashScreen(void) const
+bool AppConfig::show_splash_screen(void) const
 {
     return conf->value("showSplashScreen").toBool();
 }
 
 
-void AppConfig::setShowSplashScreen(bool isShow)
+void AppConfig::show_splash_screen(bool isShow)
 {
     conf->setValue("showSplashScreen", isShow);
 }
 
 
 // Режим интерфейса, возможные значения "desktop" и "mobile"
-QString AppConfig::getInterfaceMode(void)const
+QString AppConfig::interface_mode(void)const
 {
     QString mode = get_parameter("interfaceMode");
     return mode;
 }
 
 
-void AppConfig::setInterfaceMode(QString mode)
+void AppConfig::interface_mode(QString mode)
 {
     conf->setValue("interfaceMode", mode);
 }
 
 // Имя последнего активного виджета
-QString AppConfig::getFocusWidget(void)const
+QString AppConfig::focus_widget(void)const
 {
     QString widgetName = get_parameter("focusWidget");
     return widgetName;
 }
 
 
-void AppConfig::setFocusWidget(QString widgetName)
+void AppConfig::focus_widget(QString widgetName)
 {
     // qDebug() << "AppConfig::setFocusWidget() : " << widgetName;
     conf->setValue("focusWidget", widgetName);
 }
 
 
-QStringList AppConfig::getHideEditorTools(void) const
+QStringList AppConfig::hide_editor_tools(void) const
 {
     return (conf->value("hideEditorTools", "")).toString().split(",");
 }
 
 
-void AppConfig::setHideEditorTools(QStringList toolsNames)
+void AppConfig::hide_editor_tools(QStringList toolsNames)
 {
     conf->setValue("hideEditorTools", toolsNames.join(","));
 }
 
 
-bool AppConfig::getFindInBaseExpand(void)const
+bool AppConfig::find_in_base_expand(void)const
 {
     return conf->value(
                FindScreen::_find_in_base_expand    // "findInBaseExpand"
@@ -745,7 +745,7 @@ bool AppConfig::getFindInBaseExpand(void)const
 }
 
 
-void AppConfig::setFindInBaseExpand(bool state)
+void AppConfig::find_in_base_expand(bool state)
 {
     conf->setValue(
         FindScreen::_find_in_base_expand    // "findInBaseExpand"
@@ -756,60 +756,60 @@ void AppConfig::setFindInBaseExpand(bool state)
 
 
 // Разрешено ли использовать собственный формат вывода даты и времени
-bool AppConfig::getEnableCustomDateTimeFormat(void)const
+bool AppConfig::enable_custom_datetime_format(void)const
 {
     return conf->value("enableCustomDateTimeFormat").toBool();
 }
 
-void AppConfig::setEnableCustomDateTimeFormat(bool state)
+void AppConfig::enable_custom_datetime_format(bool state)
 {
     conf->setValue("enableCustomDateTimeFormat", state);
 }
 
 
 // Строка собственного формата вывода даты и времени
-QString AppConfig::getCustomDateTimeFormat(void) const
+QString AppConfig::custom_datetime_format(void) const
 {
     return get_parameter("customDateTimeFormat");
 }
 
-void AppConfig::setCustomDateTimeFormat(QString format)
+void AppConfig::custom_datetime_format(QString format)
 {
     conf->setValue("customDateTimeFormat", format);
 }
 
 
 // Путь на диске по которому пользователь открывал файлы чтобы приаттачить их к записи
-QString AppConfig::getAttachAppendDir(void)const
+QString AppConfig::attach_append_dir(void)const
 {
     return get_parameter("attachAppendDir");
 }
 
-void AppConfig::setAttachAppendDir(QString dir)
+void AppConfig::attach_append_dir(QString dir)
 {
     conf->setValue("attachAppendDir", dir);
 }
 
 
 // Путь на диске по которому пользователь сохранял (Сохранить как...)приаттаченные файлы
-QString AppConfig::getAttachSaveAsDir(void) const
+QString AppConfig::attach_save_as_dir(void) const
 {
     return get_parameter("attachSaveAsDir");
 }
 
-void AppConfig::setAttachSaveAsDir(QString dir)
+void AppConfig::attach_save_as_dir(QString dir)
 {
     conf->setValue("attachSaveAsDir", dir);
 }
 
 
 // Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины MyTetra
-bool AppConfig::getEnableDecryptFileToTrashDirectory(void)const
+bool AppConfig::enable_decrypt_file_to_trash_directory(void)const
 {
     return conf->value("enableDecryptFileToTrashDirectory").toBool();
 }
 
-void AppConfig::setEnableDecryptFileToTrashDirectory(bool state)
+void AppConfig::enable_decrypt_file_to_trash_directory(bool state)
 {
     conf->setValue("enableDecryptFileToTrashDirectory", state);
 }
@@ -819,7 +819,7 @@ void AppConfig::setEnableDecryptFileToTrashDirectory(bool state)
 // Номер версии конфига
 // --------------------
 
-int AppConfig::get_config_version(void) const
+int AppConfig::config_version(void) const
 {
     if(conf->contains("version"))
         return conf->value("version").toInt();
@@ -828,13 +828,13 @@ int AppConfig::get_config_version(void) const
 }
 
 
-void AppConfig::set_config_version(int i)
+void AppConfig::config_version(int i)
 {
     conf->setValue("version", i);
 }
 
 
-QStringList AppConfig::removeParameterFromTable(QString removeName, QStringList table)
+QStringList AppConfig::remove_parameter_from_table(QString removeName, QStringList table)
 {
     // Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i++) {
@@ -857,7 +857,7 @@ QStringList AppConfig::removeParameterFromTable(QString removeName, QStringList 
 
 
 // Получение типа параметра в виде строки
-QString AppConfig::getParameterTypeFromTable(QString parameterName, QStringList table) const
+QString AppConfig::parameter_type_from_table(QString parameterName, QStringList table) const
 {
     // Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i++) {
@@ -873,7 +873,7 @@ QString AppConfig::getParameterTypeFromTable(QString parameterName, QStringList 
 
 
 // Получение значения параметра в виде строки
-QString AppConfig::getParameterValueFromTable(QString parameterName, QStringList table)const
+QString AppConfig::parameter_value_from_table(QString parameterName, QStringList table)const
 {
     // Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i++) {
@@ -889,7 +889,7 @@ QString AppConfig::getParameterValueFromTable(QString parameterName, QStringList
 
 
 // Замена типа и значения параметра
-QStringList AppConfig::replaceParameterInTable(QString replaceName, QString replaceType, QString replaceValue, QStringList table)
+QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString replaceType, QString replaceValue, QStringList table)
 {
     // Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i++) {
@@ -921,7 +921,7 @@ void AppConfig::update_version_process(void)
     AppConfigUpdater updater;
     updater.set_config_file(configFileName);
 
-    int fromVersion = get_config_version();
+    int fromVersion = config_version();
 
     // Последняя версия на данный момент - 26
     if(fromVersion <= 1)
@@ -1109,9 +1109,9 @@ QStringList AppConfig::get_parameter_table_5(bool withEndSignature)
     table << get_parameter_table_4(false);
 
     // Исключаются ненужные в новой версии параметры
-    table = removeParameterFromTable("lastidnum", table);
-    table = removeParameterFromTable("lastnotenum", table);
-    table = removeParameterFromTable("lastprefixnum", table);
+    table = remove_parameter_from_table("lastidnum", table);
+    table = remove_parameter_from_table("lastnotenum", table);
+    table = remove_parameter_from_table("lastprefixnum", table);
 
     if(withEndSignature)
         table << "0" << "0" << "0";
@@ -1474,7 +1474,7 @@ QStringList AppConfig::get_parameter_table_23(bool withEndSignature)
     table << get_parameter_table_22(false);
 
     // Исключаются ненужные в новой версии параметры
-    table = removeParameterFromTable("recordtable_position", table);
+    table = remove_parameter_from_table("recordtable_position", table);
 
     if(withEndSignature)
         table << "0" << "0" << "0";

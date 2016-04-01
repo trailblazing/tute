@@ -358,7 +358,7 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     // Для новой выбраной записи выясняется директория и основной файл
     QString currentDir = item->item_direct(_index)->field("dir");
     QString currentFile = item->item_direct(_index)->field("file");
-    QString fullDir = appconfig.get_tetradir() + "/base/" + currentDir;
+    QString fullDir = appconfig.tetra_dir() + "/base/" + currentDir;
     QString fullFileName = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
 
@@ -419,11 +419,11 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     QString path = qobject_cast<RecordScreen *>(parent())->tree_path();
 
     // В мобильном интерфейсе редактор должен показывать путь до записи
-    if(appconfig.getInterfaceMode() == "mobile")
+    if(appconfig.interface_mode() == "mobile")
         meta_editor->tree_path(path);
 
     // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
-    if(appconfig.getRememberCursorAtOrdinarySelection()) {
+    if(appconfig.remember_cursor_at_ordinary_selection()) {
         meta_editor->cursor_position(walkhistory.cursor_position(id));
         meta_editor->scrollbar_position(walkhistory.scrollbar_position(id));
     }
@@ -1463,9 +1463,9 @@ void RecordController::pages_remove(void)
     // так как итератор начинает указывать на несуществующие элементы
     QVector<QString>    del_ids;
     QVector<int>        del_rows;
-    QModelIndexList::iterator it;
+    //    QModelIndexList::iterator it;
 
-    for(it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
+    for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
         QModelIndex curr_idx;
         curr_idx = *it;
 

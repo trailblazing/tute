@@ -308,7 +308,7 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
     }
 
     // Если в конфигурации запрещен вывод отладочных сообщений
-    if(!appconfig.get_printdebugmessages())
+    if(!appconfig.print_debug_messages())
         return;
 
     switch(type) {

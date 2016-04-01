@@ -39,18 +39,18 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
     : Editor()
 {
     setObjectName(object_name);
-    Editor::disable_tool_list(appconfig.getHideEditorTools());
+    Editor::disable_tool_list(appconfig.hide_editor_tools());
 
     Editor::init_enable_assembly(false);
     Editor::init_config_file_name(globalparameters.work_directory() + "/editorconf.ini");
     Editor::init_enable_random_seed(false);
 
-    if(appconfig.getInterfaceMode() == "desktop")
+    if(appconfig.interface_mode() == "desktop")
         Editor::init(Editor::WYEDIT_DESKTOP_MODE);
-    else if(appconfig.getInterfaceMode() == "mobile")
+    else if(appconfig.interface_mode() == "mobile")
         Editor::init(Editor::WYEDIT_MOBILE_MODE);
     else
-        critical_error("In MetaEditor constructor unknown interface mode: " + appconfig.getInterfaceMode());
+        critical_error("In MetaEditor constructor unknown interface mode: " + appconfig.interface_mode());
 
     setupLabels();
     setup_ui();
@@ -87,7 +87,7 @@ void MetaEditor::setupLabels(void)
     _tree_path->setTextInteractionFlags(Qt::TextSelectableByMouse |
                                         Qt::TextSelectableByKeyboard);
 
-    if(appconfig.getInterfaceMode() == "desktop")
+    if(appconfig.interface_mode() == "desktop")
         _tree_path->setVisible(false);
     else
         _tree_path->setVisible(true);

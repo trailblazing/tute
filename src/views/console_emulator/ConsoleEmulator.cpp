@@ -47,7 +47,7 @@ void ConsoleEmulator::setupUI(void)
     consoleOutput->setReadOnly(true);
     consoleOutput->setFontFamily("monospace");
 
-    if(appconfig.getSyncroConsoleDetails() == false)
+    if(appconfig.synchro_console_details() == false)
         consoleOutput->hide();
 
     waitClock = new WaitClock(this);
@@ -139,10 +139,10 @@ void ConsoleEmulator::onDetailsClick(void)
 {
     if(consoleOutput->isHidden()) {
         consoleOutput->show();
-        appconfig.setSyncroConsoleDetails(true);
+        appconfig.synchro_console_details(true);
     } else {
         consoleOutput->hide();
-        appconfig.setSyncroConsoleDetails(false);
+        appconfig.synchro_console_details(false);
     }
 
     this->adjustSize();

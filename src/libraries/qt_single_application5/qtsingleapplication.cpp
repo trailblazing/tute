@@ -296,6 +296,9 @@
 #include <QWebEngineScriptCollection>
 
 #include <QtCore/QDebug>
+
+const char *application_name = "MyTetra";
+
 extern TrashMonitoring trashmonitoring;
 browser::DownloadManager    *QtSingleApplication::_downloadmanager = nullptr;
 browser::HistoryManager     *QtSingleApplication::_historymanager = nullptr;
@@ -360,7 +363,7 @@ void QtSingleApplication::sys_init()
 
 
     // Инициализируется объект слежения за корзиной
-    trashmonitoring.init(_appconfig.get_trashdir());
+    trashmonitoring.init(_appconfig.trash_dir());
     trashmonitoring.update();
 
     // Инициализация переменных, отвечающих за хранилище данных
@@ -368,7 +371,7 @@ void QtSingleApplication::sys_init()
 
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
     QCoreApplication::setOrganizationName(QLatin1String("mytetra"));
-    QCoreApplication::setApplicationName(QLatin1String("MyTetra"));
+    QCoreApplication::setApplicationName(QLatin1String(application_name));
     QCoreApplication::setApplicationVersion(version);   // QLatin1String("0.1")
 
     QString serverName = QCoreApplication::applicationName() + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
@@ -443,7 +446,7 @@ void QtSingleApplication::browser_init()
 
     // Подключение перевода интерфейса
     // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
-    QString langFileName = ":/resource/translations/mytetra_" + _appconfig.get_interfacelanguage() + ".qm";
+    QString langFileName = ":/resource/translations/mytetra_" + _appconfig.interface_language() + ".qm";
     qDebug() << "Use language file " << langFileName;
 
     //QTranslator langTranslator;
@@ -489,7 +492,7 @@ void QtSingleApplication::main_window()
     // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
     QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
 
-    if(_appconfig.getShowSplashScreen())
+    if(_appconfig.show_splash_screen())
         splash.show();
 
 
@@ -506,14 +509,16 @@ void QtSingleApplication::main_window()
 
 
     // Создание объекта главного окна
-    _window = std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
+    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig); // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
 
-    _window->setWindowTitle("MyTetra");
+    _globalparameters.mainwindow(_window);
+
+    _window->setWindowTitle(application_name);
 
     if(_globalparameters.target_os() == "android")
         _window->show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else {
-        if(_appconfig.get_runinminimizedwindow() == false)
+        if(_appconfig.run_in_minimized_window() == false)
             _window->show();
         else
             _window->hide();
@@ -534,7 +539,7 @@ void QtSingleApplication::main_window()
     _window->restore_editor_scrollbar_position();
     _globalparameters.window_switcher()->enableSwitch();
 
-    if(_appconfig.getInterfaceMode() == "mobile")
+    if(_appconfig.interface_mode() == "mobile")
         _globalparameters.window_switcher()->restoreFocusWidget();
 
     qDebug() << "Restore session succesfull";
@@ -547,15 +552,15 @@ void QtSingleApplication::main_window()
 
     // Если в конфиге настроено, что нужно синхронизироваться при старте
     // И задана команда синхронизации
-    if(_appconfig.get_synchroonstartup())
-        if(_appconfig.get_synchrocommand().trimmed().length() > 0)
+    if(_appconfig.synchro_on_startup())
+        if(_appconfig.synchro_command().trimmed().length() > 0)
             _window->synchronization();
 
 
     // Если настроено в конфиге, сразу запрашивается пароль доступа
     // к зашифрованным данным
     // И если есть хоть какие-то зашифрованные данные
-    if(_appconfig.get_howpassrequest() == "atStartProgram")
+    if(_appconfig.howpassrequest() == "atStartProgram")
         if(_globalparameters.crypt_key().length() == 0)
             if(_databaseconfig.get_crypt_mode() > 0) {
                 // Запрашивается пароль только в том случае, если ветка,
@@ -572,8 +577,8 @@ void QtSingleApplication::main_window()
     // И хранимый пароль (точнее его хеш) заполнен
     if(_globalparameters.crypt_key().length() == 0) {
         if(_databaseconfig.get_crypt_mode() > 0) {
-            if(_appconfig.getPasswordSaveFlag()) {
-                if(_appconfig.getPasswordMiddleHash().length() > 0) {
+            if(_appconfig.password_save_flag()) {
+                if(_appconfig.password_middle_hash().length() > 0) {
                     // При запросе пароля ключ шифрования будет восстановлен автоматически
                     Password password;
                     password.retrievePassword();
@@ -605,8 +610,8 @@ void QtSingleApplication::main_window()
     // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win->commitData(QSessionManager)));
 
     // Окно сплеш-скрина скрывается
-    if(_appconfig.getShowSplashScreen())
-        splash.finish(_window.get());
+    if(_appconfig.show_splash_screen())
+        splash.finish(_window);
 }
 
 /*!
@@ -629,7 +634,7 @@ QtSingleApplication::QtSingleApplication(
 )
     : QApplication(argc, argv)
     , _peer(new QtLocalPeer(this, QString()))
-    , act_window(nullptr)
+    , _act_window(nullptr)
     , _gui_enabled(GUIenabled)
     , _localserver(new QLocalServer(this))
     , _private_profile(nullptr)
@@ -667,7 +672,7 @@ QtSingleApplication::QtSingleApplication(
 )
     : QApplication(argc, argv)
     , _peer(new QtLocalPeer(this, appId))
-    , act_window(0)
+    , _act_window(nullptr)
     , _gui_enabled(true)
     , _localserver(new QLocalServer(this))
     , _private_profile(0)
@@ -799,7 +804,7 @@ QString QtSingleApplication::id() const
 
 void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessage)
 {
-    act_window = aw;
+    _act_window = aw;
 
     if(activateOnMessage)
         connect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
@@ -816,7 +821,7 @@ void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessag
 */
 QWidget *QtSingleApplication::activationWindow() const
 {
-    return act_window;
+    return _act_window;
 }
 
 
@@ -836,10 +841,10 @@ QWidget *QtSingleApplication::activationWindow() const
 */
 void QtSingleApplication::activateWindow()
 {
-    if(act_window) {
-        act_window->setWindowState(act_window->windowState() & ~Qt::WindowMinimized);
-        act_window->raise();
-        act_window->activateWindow();
+    if(_act_window) {
+        _act_window->setWindowState(_act_window->windowState() & ~Qt::WindowMinimized);
+        _act_window->raise();
+        _act_window->activateWindow();
     }
 }
 
@@ -906,7 +911,10 @@ void QtSingleApplication::newLocalSocketConnection()
 
             browser::Browser *browser = globalparameters.entrance()->activated_browser();
             //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-            auto record = browser->tabmanager()->item_request_from_tree(url);
+            auto record = browser->tabmanager()->item_request_from_tree(
+                              url
+                              , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                          );
             //            record->generate();
             record->activate();
 
@@ -935,6 +943,7 @@ QtSingleApplication::~QtSingleApplication()
 
     delete _networkaccessmanager;
     delete _bookmarksmanager;
+    delete _window;
 }
 
 //#if defined(Q_OS_OSX)
@@ -1130,12 +1139,12 @@ void QtSingleApplication::saveSession()
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadWrite);
 
-    std::vector<browser::Browser * > mws = globalparameters.entrance()->browsers();
+    auto _browsers = globalparameters.entrance()->browsers();
 
-    stream << static_cast<uint>(mws.size());
+    stream << static_cast<uint>(_browsers.size());
 
-    for(size_t i = 0; i < mws.size(); ++i)
-        stream << mws.at(i)->save_state();
+    for(auto &browser : _browsers)
+        stream << browser->save_state();
 
     settings.setValue(QLatin1String("lastSession"), data);
     settings.endGroup();
@@ -1423,11 +1432,11 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
         if(!_private_profile)
             _private_profile = new QWebEngineProfile(this);
 
-        for(auto window : globalparameters.entrance()->browsers()) {
+        for(auto &window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(_private_profile);
         }
     } else {
-        for(auto window : globalparameters.entrance()->browsers()) {
+        for(auto &window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
             window->lastsearch() = QString::null;
             window->tabWidget()->clear();

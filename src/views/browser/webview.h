@@ -75,6 +75,7 @@ extern boost::intrusive_ptr<Record> check_record(const QUrl &_url);
 
 class Record;
 class TreeItem;
+class TreeScreen;
 class RecordController;
 struct CouplerDelegation;
 
@@ -193,9 +194,21 @@ namespace browser {
         void items_break();
         void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> bounded_item);
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item);
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url);
-        boost::intrusive_ptr<TreeItem> item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(
+            const QUrl &_url
+            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        );
+
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(
+            boost::intrusive_ptr<TreeItem> item
+            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        );
+
+        boost::intrusive_ptr<TreeItem> item_registered_imperative_equip(
+            boost::intrusive_ptr<TreeItem> item
+        );
 
         boost::intrusive_ptr<CouplerDelegation> record_binder();
         void record_binder(boost::intrusive_ptr<CouplerDelegation> _record_binder);

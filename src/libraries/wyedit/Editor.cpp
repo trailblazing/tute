@@ -591,7 +591,7 @@ void Editor::setup_closebutton(void)
     _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton SP_DialogCloseButton
     _close_button->setAutoRaise(true);
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         int w = _close_button->geometry().width();
         int h = _close_button->geometry().height();
         int x = min(w, h) / 2; // imin(w, h) / 2;
@@ -623,7 +623,7 @@ void Editor::widget_hide(bool checked)
     //    appconfig.set_findsplitter_size_list(findSplitterRel->sizes());
 
     // Виджет скрывается
-    appconfig.set_editor_show(false);
+    appconfig.editor_show(false);
     this->close();
 }
 
@@ -1055,9 +1055,9 @@ bool Editor::save_textarea_images(int mode = SAVE_IMAGES_SIMPLE)
     QTextBlock textBlock = _text_area->document()->begin();
 
     while(textBlock.isValid()) {
-        QTextBlock::iterator it;
+        //        QTextBlock::iterator it;
 
-        for(it = textBlock.begin(); !(it.atEnd()); ++it) {
+        for(auto it = textBlock.begin(); !(it.atEnd()); ++it) {
             QTextFragment currentFragment = it.fragment();
 
             if(currentFragment.isValid()) {
@@ -2676,13 +2676,13 @@ bool Editor::is_image_select(void)
 
     // Блок, в пределах которого находится курсор
     QTextBlock currentBlock = _text_area->textCursor().block();
-    QTextBlock::iterator it;
+    //    QTextBlock::iterator it;
     QTextFragment fragment;
 
     // Если есть выделение
     if(_text_area->textCursor().hasSelection()) {
         // Перебиратся фрагметы блока
-        for(it = currentBlock.begin(); !(it.atEnd()); ++it) {
+        for(auto it = currentBlock.begin(); !(it.atEnd()); ++it) {
             fragment = it.fragment();
 
             // Если фрагмент содержит изображение
@@ -2713,13 +2713,13 @@ QTextImageFormat Editor::image_format_on_select(void)
 {
     // Блок, в пределах которого находится курсор
     QTextBlock currentBlock = _text_area->textCursor().block();
-    QTextBlock::iterator it;
+    //    QTextBlock::iterator it;
     QTextFragment fragment;
 
     // Если есть выделение
     if(_text_area->textCursor().hasSelection()) {
         // Перебиратся фрагметы блока
-        for(it = currentBlock.begin(); !(it.atEnd()); ++it) {
+        for(auto it = currentBlock.begin(); !(it.atEnd()); ++it) {
             fragment = it.fragment();
 
             // Если фрагмент содержит изображение
@@ -2901,11 +2901,11 @@ void Editor::edit_image_properties(void)
 
             // Блок, в пределах которого находится курсор
             QTextBlock currentBlock = _text_area->textCursor().block();
-            QTextBlock::iterator it;
+            //            QTextBlock::iterator it;
 
             // Перебиратся фрагметы блока
             // Так как известно, что картинка выделена, поиск фрагмента будет успешным
-            for(it = currentBlock.begin(); !(it.atEnd()); ++it) {
+            for(auto it = currentBlock.begin(); !(it.atEnd()); ++it) {
                 fragment = it.fragment();
 
                 // Если фрагмент содержит изображение

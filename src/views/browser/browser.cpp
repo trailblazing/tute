@@ -119,14 +119,12 @@ namespace browser {
 
     Browser::~Browser()
     {
-        auto _browsers = _entrance->browsers();
+        auto &_browsers = _entrance->browsers();
 
-        for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
-            //            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
-            if(*i == this)
-                _browsers.erase(i);
-
-            //            }
+        for(auto it = _browsers.begin(); it != _browsers.end(); ++it) {
+            if(_browsers.size() > 0) {
+                if(*it == this && *it) _browsers.erase(it);
+            } else break;
         }
 
         _autosaver->changeOccurred();
@@ -272,7 +270,7 @@ namespace browser {
         //        connect(const_cast<Browser *>(this), &Browser::~Browser, [&]() {
         //            auto bs = _entrance->browsers();
 
-        //            for(std::vector<Browser *>::iterator i = bs.begin(); i != bs.end(); i++) {
+        //            for(auto i = bs.begin(); i != bs.end(); i++) {
         //                if(*i == this)
         //                    bs.erase(i);
         //            }
@@ -319,20 +317,28 @@ namespace browser {
         return _tabmanager->item_registered_imperative_equip(item);
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(QUrl const &url)
+    boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(
+        QUrl const &url
+        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , equal_url_t _equal
+    )
     {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
 
-        return _tabmanager->item_request_from_tree(url);
+        return _tabmanager->item_request_from_tree(url, _view_paste_strategy, _equal);
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(boost::intrusive_ptr<TreeItem> item)
+    boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(
+        boost::intrusive_ptr<TreeItem> item
+        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , equal_t _equal
+    )
     {
 
         //        connect(this, &DockedWindow::activateWindow, _entrance, &Entrance::on_activate_window);
 
-        return _tabmanager->item_request_from_tree(item);
+        return _tabmanager->item_request_from_tree(item, _view_paste_strategy, _equal);
     }
 
     Browser::Browser(const QByteArray   &state
@@ -420,7 +426,10 @@ namespace browser {
     {
         init();
 
-        auto r = _tabmanager->item_request_from_tree(url);
+        auto r = _tabmanager->item_request_from_tree(
+                     url
+                     , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                 );
         r->activate();
 
         run_script(style_source);       //        assert(record->linkpage());
@@ -523,7 +532,10 @@ namespace browser {
         //            _tabmanager->equip_registered(item);
         //        } else {
         //            //        if(!item->is_registered_to_browser()) {
-        _tabmanager->item_request_from_tree(item);    // this->tabWidget() does not work, because initialization has not accomplished
+        _tabmanager->item_request_from_tree(
+            item
+            , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+        );    // this->tabWidget() does not work, because initialization has not accomplished
 
         //            //        }
         //        }
@@ -755,7 +767,7 @@ namespace browser {
         QAction *find_ = editMenu->addAction(tr("&Find"));
         find_->setShortcuts(QKeySequence::Find);
         connect(find_, &QAction::triggered, this, &Browser::slotEditFind);
-        new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
+        //        new QShortcut(QKeySequence(Qt::Key_Slash), this, SLOT(slotEditFind()));
 
         QAction *findnext_ = editMenu->addAction(tr("&Find Next"));
         findnext_->setShortcuts(QKeySequence::FindNext);
@@ -1163,7 +1175,7 @@ namespace browser {
     void Browser::slotUpdateWindowTitle(const QString &title)
     {
         if(title.isEmpty()) {
-            setWindowTitle(tr("MyTetra"));
+            setWindowTitle(tr(application_name));
         } else {
 #if defined(Q_OS_OSX)
             setWindowTitle(title);
@@ -1310,9 +1322,7 @@ namespace browser {
             return;
 
         bool ok;
-        QString search = QInputDialog::getText(this, tr("Find"),
-                                               tr("Text:"), QLineEdit::Normal,
-                                               _lastsearch, &ok);
+        QString search = QInputDialog::getText(this, tr("Find"), tr("Text:"), QLineEdit::Normal, _lastsearch, &ok);
 
         if(ok && !search.isEmpty()) {
             _lastsearch = search;
@@ -1399,16 +1409,7 @@ namespace browser {
         //                   );
         auto r = _tabmanager->item_request_from_tree(
                      QUrl(home)
-                     //                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>>(
-                     //                         ""
-                     //                         , &TabWidget::ActiveRecordBinder::binder
-                     //                         , ara
-                     //                     )
-                     //                     , std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>(
-                     //                         ""
-                     //                         , &TabWidget::ActiveRecordBinder::activator
-                     //                         , ara
-                     //                     )
+                     , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                  );
         assert(!r->is_lite());
         //        r->self_bind();
@@ -1542,7 +1543,7 @@ namespace browser {
         _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
         _windowmenu->addSeparator();
 
-        auto _browsers = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
+        auto &_browsers = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
 
         for(size_t i = 0; i < _browsers.size(); i++) {
             auto window = _browsers[i];
@@ -1562,7 +1563,7 @@ namespace browser {
 
             if(v.canConvert<uint>()) {
                 uint offset = qvariant_cast<uint>(v);
-                auto _browsers = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
+                auto &_browsers = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
                 auto window = _browsers[offset];
 
                 if(window) {

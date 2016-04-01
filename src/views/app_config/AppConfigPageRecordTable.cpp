@@ -21,7 +21,7 @@ AppConfigPageTable::AppConfigPageTable(RecordController *_record_controller, QWi
 
     QStringList allFieldNames = fixedparameters._record_field;
     QMap<QString, QString> descriptionFields = fixedparameters.record_field_description(allFieldNames);
-    QStringList showFields = appconfig.getRecordTableShowFields();
+    QStringList showFields = appconfig.record_table_show_fields();
 
     // Создаются чекбоксы для каждого поля, хранимого в записи
     for(int i = 0; i < allFieldNames.size(); i++) {
@@ -39,13 +39,13 @@ AppConfigPageTable::AppConfigPageTable(RecordController *_record_controller, QWi
     showHorizontalHeader = new QCheckBox(this);
     showHorizontalHeader->setText(tr("Show horisontal header"));
 
-    if(appconfig.getRecordTableShowHorizontalHeaders())
+    if(appconfig.record_table_show_horizontal_headers())
         showHorizontalHeader->setCheckState(Qt::Checked);
 
     showVerticalHeader = new QCheckBox(this);
     showVerticalHeader->setText(tr("Show row number"));
 
-    if(appconfig.getRecordTableShowVerticalHeaders())
+    if(appconfig.record_table_show_vertical_headers())
         showVerticalHeader->setCheckState(Qt::Checked);
 
     QVBoxLayout *vboxVisibleHeaders = new QVBoxLayout;
@@ -138,19 +138,19 @@ int AppConfigPageTable::apply_changes(void)
     // Запоминается ширина полей
     // Это надо сделать в первую очередь, потому что в дальнейшем после перечитывания модели и
     // установки заголовков таблицы конечных записей слетают ширины полей (устанавливаюся в 100 px самим Qt)
-    QStringList showFields = appconfig.getRecordTableShowFields();
-    QStringList fieldsWidth = appconfig.getRecordTableFieldsWidth();
+    QStringList showFields = appconfig.record_table_show_fields();
+    QStringList fieldsWidth = appconfig.record_table_fields_width();
     qDebug() << "showFields" << showFields;
     qDebug() << "fieldsWidth" << fieldsWidth;
 
 
     // Запоминание в конфигурацию отображения горизонтальных заголовков
-    if(appconfig.getRecordTableShowHorizontalHeaders() != showHorizontalHeader->isChecked())
-        appconfig.setRecordTableShowHorizontalHeaders(showHorizontalHeader->isChecked());
+    if(appconfig.record_table_show_horizontal_headers() != showHorizontalHeader->isChecked())
+        appconfig.record_table_show_horizontal_headers(showHorizontalHeader->isChecked());
 
     // Запоминание в конфигурацию отображения нумерации строк
-    if(appconfig.getRecordTableShowVerticalHeaders() != showVerticalHeader->isChecked())
-        appconfig.setRecordTableShowVerticalHeaders(showVerticalHeader->isChecked());
+    if(appconfig.record_table_show_vertical_headers() != showVerticalHeader->isChecked())
+        appconfig.record_table_show_vertical_headers(showVerticalHeader->isChecked());
 
 
     QStringList addFieldsList; // Список полей, которые добавились в результате настройки
@@ -187,7 +187,7 @@ int AppConfigPageTable::apply_changes(void)
     qDebug() << "newShowFields" << newShowFields;
 
     // Установка имен полей в конфигурацию
-    appconfig.setRecordTableShowFields(newShowFields);
+    appconfig.record_table_show_fields(newShowFields);
 
 
     // Если полей становится больше чем было
@@ -222,7 +222,7 @@ int AppConfigPageTable::apply_changes(void)
         qDebug() << "newFieldsWidth" << newFieldsWidth;
 
         // Новые ширины полей запомниаются в конфигурацию
-        appconfig.setRecordTableFieldsWidth(newFieldsWidth);
+        appconfig.record_table_fields_width(newFieldsWidth);
     }
 
 
@@ -240,7 +240,7 @@ int AppConfigPageTable::apply_changes(void)
         qDebug() << "newFieldsWidth in result" << newFieldsWidth;
 
         // Установка новых ширин полей в конфигурацию
-        appconfig.setRecordTableFieldsWidth(newFieldsWidth);
+        appconfig.record_table_fields_width(newFieldsWidth);
     }
 
 
@@ -250,7 +250,7 @@ int AppConfigPageTable::apply_changes(void)
 
         // Установка запомненных ширин полей в конфигурацию
         // Так как это значение в конфигурации было искажено в момент переподключения модели
-        appconfig.setRecordTableFieldsWidth(fieldsWidth);
+        appconfig.record_table_fields_width(fieldsWidth);
     }
 
     emit recordTableConfigChange();

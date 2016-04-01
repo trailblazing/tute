@@ -524,7 +524,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos)
     result->text_to_fat(text(pos));
 
     // Добавление бинарных образов файлов картинок
-    QString directory = appconfig.get_tetradir() + "/base/" + result->field("dir");
+    QString directory = appconfig.tetra_dir() + "/base/" + result->field("dir");
     result->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
     return result;
@@ -708,7 +708,7 @@ bool ItemsFlat::child_remove(int i)
         return result;
 
     // Удаление директории и файлов внутри, с сохранением в резервной директории
-    QString dirForDelete = appconfig.get_tetradir() + "/base/" + field(i, "dir");
+    QString dirForDelete = appconfig.tetra_dir() + "/base/" + field(i, "dir");
     qDebug() << "Remove dir " << dirForDelete;
     DiskHelper::remove_directory_to_trash(dirForDelete);
 
@@ -936,10 +936,12 @@ void ItemsFlat::crypt(const bool _is_crypt)
 
 void ItemsFlat::duplicate_remove()
 {
-    for(QList<boost::intrusive_ptr<TreeItem>>::iterator _item = _child_items.begin(); _item != _child_items.end(); _item++) {
+    for(    // QList<boost::intrusive_ptr<TreeItem>>::iterator
+        auto _item = _child_items.begin(); _item != _child_items.end(); _item++) {
         int found = 0;
 
-        for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
+        for(    // QList<boost::intrusive_ptr<TreeItem>>::iterator
+            auto it = _child_items.begin(); it != _child_items.end(); it++) {
             if(it->get() == _item->get()) {
                 found++;
 

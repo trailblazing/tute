@@ -32,7 +32,8 @@ class TreeItem;
 //    QString operator()(QUrl url) {return url.fragment();}
 //};
 
-typedef std::function<bool(boost::intrusive_ptr<const TreeItem>, const QUrl &)> equal_type;
+typedef std::function<bool(boost::intrusive_ptr<const TreeItem>, const QUrl &)> equal_url_t;
+typedef std::function<bool(boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)> equal_t;
 
 namespace browser {
     class WebPage;
@@ -284,8 +285,9 @@ public:
 
 
     bool is_empty() const;
-    bool self_remove();
-    bool self_empty_remove();
+    bool is_ancestor_of(boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> self_remove();
+    boost::intrusive_ptr<TreeItem> self_empty_remove();
     boost::intrusive_ptr<TreeItem> item_merge(boost::intrusive_ptr<TreeItem> cut);
     int count_records_all();
 
@@ -332,6 +334,7 @@ private:
 
     //    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
     bool is_holder();
+
     friend class browser::WebPage;
 
 };

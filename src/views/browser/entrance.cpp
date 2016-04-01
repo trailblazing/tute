@@ -310,7 +310,7 @@ namespace browser {
         //        _browser = browser;
         bool found = false;
 
-        for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+        for(auto i = _browsers.begin(); i != _browsers.end(); i++) {
             if(*i == browser) {
                 found = true;
                 break;
@@ -715,7 +715,7 @@ namespace browser {
     {
 
         if(_browsers.size() > 0) {
-            for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+            for(auto i = _browsers.begin(); i != _browsers.end(); i++) {
                 if(*i) {
                     //                    _browsers.erase(i);
                     (*i)->deleteLater();   // delete *i;
@@ -915,10 +915,13 @@ namespace browser {
     }
 
 
-    void Entrance::activate(const QUrl &_find_url, equal_type _equal)
+    void Entrance::activate(const QUrl &_find_url
+                            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                            , equal_url_t _equal
+                           )
     {
         //        clean();
-
+        Browser *_current_browser = nullptr;
         WebView *v = nullptr;
 
         if(_browsers.size() > 0) {
@@ -926,6 +929,7 @@ namespace browser {
                 v = browser->tabmanager()->find([&](boost::intrusive_ptr<const TreeItem> it) { return _equal(it, _find_url);});
 
                 if(v) {
+                    _current_browser = browser;
                     v->page()->activate();
                 }
             }
@@ -933,39 +937,57 @@ namespace browser {
 
         if(v == nullptr) {
 
-            Browser *browser = activated_browser();
+            _current_browser = activated_browser();
 
-            auto r = browser->tabmanager()->item_request_from_tree(_find_url, _equal);
+            auto r = _current_browser->tabmanager()->item_request_from_tree(_find_url, _view_paste_strategy, _equal);
 
             r->activate();
 
         }
+
+
+        auto vtab = globalparameters.vtab();
+
+        if(vtab->currentWidget() != _current_browser->record_screen()) {
+            vtab->setCurrentWidget(_current_browser->record_screen());
+        }
     }
 
-    void Entrance::activate(boost::intrusive_ptr<TreeItem> item, equal_type _equal)
+    void Entrance::activate(boost::intrusive_ptr<TreeItem> item
+                            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                            , equal_t _equal
+                           )
     {
         //        clean();
+        Browser *_current_browser = nullptr;
 
         if(item->page_valid() && _browsers.size() > 0) {
             for(auto browser : _browsers) {
                 if(browser->tabmanager()->indexOf(item->bounded_page()->view()) != -1) {
+                    _current_browser = browser;
                     item->activate();
                 }
             }
         } else {
             //        if(activiated_browser().first) {
-            Browser *_current_browser = activated_browser();
+            _current_browser = activated_browser();
 
-            auto r = _current_browser->tabmanager()->item_request_from_tree(item, _equal);
+            auto r = _current_browser->tabmanager()->item_request_from_tree(item, _view_paste_strategy, _equal);
 
             r->activate();
+        }
+
+        auto vtab = globalparameters.vtab();
+
+        if(vtab->currentWidget() != _current_browser->record_screen()) {
+            vtab->setCurrentWidget(_current_browser->record_screen());
         }
     }
 
     void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
     {
         //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        void(Entrance::*_activate)(const QUrl &, equal_type) = &Entrance::activate;  // <url_fragment>;
+        void(Entrance::*_activate)(const QUrl &, std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)>, equal_url_t) = &Entrance::activate;  // <url_fragment>;
         connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
         //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
@@ -1155,7 +1177,7 @@ namespace browser {
     //        //            //                    _browsers.removeAt(i);
     //        //            //                }
     //        //            //            }
-    //        //            for(std::vector<Browser *>::iterator i = _browsers.begin(); i != _browsers.end(); i++) {
+    //        //            for(auto i = _browsers.begin(); i != _browsers.end(); i++) {
     //        //                if(!*i)_browsers.erase(i);
     //        //            }
     //        //        }
@@ -1348,7 +1370,7 @@ namespace browser {
     //        return list;
     //    }
 
-    std::vector<Browser *> Entrance::browsers() const
+    std::vector<Browser *> &Entrance::browsers()
     {
         //        clean();
 

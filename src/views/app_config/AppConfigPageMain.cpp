@@ -34,7 +34,7 @@ void AppConfigPageMain::setup_ui(void)
 
     tetradirInput = new QLineEdit(this);
     tetradirInput->setMinimumWidth(50);
-    tetradirInput->setText(appconfig.get_tetradir());
+    tetradirInput->setText(appconfig.tetra_dir());
 
     tetradirButton = new FlatToolButton(this);
     tetradirButton->setText(tr("..."));
@@ -46,7 +46,7 @@ void AppConfigPageMain::setup_ui(void)
 
     trashdirInput = new QLineEdit(this);
     trashdirInput->setMinimumWidth(50);
-    trashdirInput->setText(appconfig.get_trashdir());
+    trashdirInput->setText(appconfig.trash_dir());
 
     trashdirButton = new FlatToolButton(this);
     trashdirButton->setText(tr("..."));
@@ -58,7 +58,7 @@ void AppConfigPageMain::setup_ui(void)
 
     trashsizeInput = new QSpinBox(this);
     trashsizeInput->setRange(1, 1000);
-    trashsizeInput->setValue(appconfig.get_trashsize());
+    trashsizeInput->setValue(appconfig.trash_size());
 
     trashsizeFlexion = new QLabel(this);
     trashsizeFlexion->setText(tr("Mb"));
@@ -70,7 +70,7 @@ void AppConfigPageMain::setup_ui(void)
 
     trashmaxfilecountInput = new QSpinBox(this);
     trashmaxfilecountInput->setRange(1, 3000);
-    trashmaxfilecountInput->setValue(appconfig.get_trashmaxfilecount());
+    trashmaxfilecountInput->setValue(appconfig.trash_max_file_count());
 
     trashmaxfilecountFlexion = new QLabel(this);
     trashmaxfilecountFlexion->setText(tr("files"));
@@ -84,7 +84,7 @@ void AppConfigPageMain::setup_ui(void)
     interfaceLanguage->setMinimumContentsLength(2);
     interfaceLanguage->addItem("en");
     interfaceLanguage->addItem("ru");
-    interfaceLanguage->setCurrentIndex(interfaceLanguage->findText(appconfig.get_interfacelanguage(), Qt::MatchCaseSensitive));
+    interfaceLanguage->setCurrentIndex(interfaceLanguage->findText(appconfig.interface_language(), Qt::MatchCaseSensitive));
 
 
     // Блок работы с отображением даты и времени
@@ -99,7 +99,7 @@ void AppConfigPageMain::setup_ui(void)
     dateTimeFormatHelpButton->setIcon(styleHelp.standardIcon(QStyle::SP_MessageBoxQuestion));
 
     // Точка устанавливается возле того пункта, который настроен в конфиге
-    if(appconfig.getEnableCustomDateTimeFormat() == false) {
+    if(appconfig.enable_custom_datetime_format() == false) {
         disableCustomDateTimeFormat->setChecked(true);
         enableCustomDateTimeFormat->setChecked(false);
         customDateTimeFormat->setEnabled(false);
@@ -108,7 +108,7 @@ void AppConfigPageMain::setup_ui(void)
         disableCustomDateTimeFormat->setChecked(false);
         enableCustomDateTimeFormat->setChecked(true);
         customDateTimeFormat->setEnabled(true);
-        customDateTimeFormat->setText(appconfig.getCustomDateTimeFormat());
+        customDateTimeFormat->setText(appconfig.custom_datetime_format());
     }
 
 }
@@ -298,7 +298,7 @@ int AppConfigPageMain::apply_changes(void)
     int difficultChanges = 0;
 
     // Если был изменен путь к базе, он запоминается в конфигфайл
-    if(appconfig.get_tetradir() != tetradirInput->text()) {
+    if(appconfig.tetra_dir() != tetradirInput->text()) {
         QDir dir(tetradirInput->text());
 
         // Проверяется, допустимо ли имя директории
@@ -308,14 +308,14 @@ int AppConfigPageMain::apply_changes(void)
                                  QMessageBox::Ok);
         else {
             // Новое имя запоминается в конфиг
-            appconfig.set_tetradir(tetradirInput->text());
+            appconfig.tetra_dir(tetradirInput->text());
             difficultChanges = 1;
         }
     }
 
 
     // Если был изменен путь к корзине, он запоминается в конфигфайл
-    if(appconfig.get_trashdir() != trashdirInput->text()) {
+    if(appconfig.trash_dir() != trashdirInput->text()) {
         QDir dir(trashdirInput->text());
 
         // Проверяется, допустимо ли имя директории
@@ -325,38 +325,38 @@ int AppConfigPageMain::apply_changes(void)
                                  QMessageBox::Ok);
         else {
             // Новое имя запоминается в конфиг
-            appconfig.set_trashdir(trashdirInput->text());
+            appconfig.trash_dir(trashdirInput->text());
         }
     }
 
 
     // Если был изменен размер корзины
-    if((int)appconfig.get_trashsize() != (int)trashsizeInput->text().toInt()) {
-        appconfig.set_trashsize(trashsizeInput->text().toInt());
+    if((int)appconfig.trash_size() != (int)trashsizeInput->text().toInt()) {
+        appconfig.trash_size(trashsizeInput->text().toInt());
     }
 
 
     // Если было изменено максимально возможное количество файлов в корзине
-    if(appconfig.get_trashmaxfilecount() != trashmaxfilecountInput->text().toInt()) {
-        appconfig.set_trashmaxfilecount(trashmaxfilecountInput->text().toInt());
+    if(appconfig.trash_max_file_count() != trashmaxfilecountInput->text().toInt()) {
+        appconfig.trash_max_file_count(trashmaxfilecountInput->text().toInt());
     }
 
 
     // Если было изменено использование пользовательского формата даты и времени
-    if(appconfig.getEnableCustomDateTimeFormat() != enableCustomDateTimeFormat->isChecked()) {
-        appconfig.setEnableCustomDateTimeFormat(enableCustomDateTimeFormat->isChecked());
+    if(appconfig.enable_custom_datetime_format() != enableCustomDateTimeFormat->isChecked()) {
+        appconfig.enable_custom_datetime_format(enableCustomDateTimeFormat->isChecked());
     }
 
 
     // Если было изменен пользовательский формат даты и времени
-    if(appconfig.getCustomDateTimeFormat() != customDateTimeFormat->text()) {
-        appconfig.setCustomDateTimeFormat(customDateTimeFormat->text());
+    if(appconfig.custom_datetime_format() != customDateTimeFormat->text()) {
+        appconfig.custom_datetime_format(customDateTimeFormat->text());
     }
 
 
     // Если был изменен язык
-    if(appconfig.get_interfacelanguage() != interfaceLanguage->currentText()) {
-        appconfig.set_interfacelanguage(interfaceLanguage->currentText());
+    if(appconfig.interface_language() != interfaceLanguage->currentText()) {
+        appconfig.interface_language(interfaceLanguage->currentText());
         difficultChanges = 1;
     }
 

@@ -1085,7 +1085,7 @@ QString Record::full_dir() const
     if(_field_data.contains("dir") == false)
         critical_error("Record::getFullDirName() : Not present dir field");
 
-    return appconfig.get_tetradir() + "/base/" + _field_data.value("dir");
+    return appconfig.tetra_dir() + "/base/" + _field_data.value("dir");
 }
 
 
@@ -1139,7 +1139,7 @@ void Record::check_and_fill_file_dir(QString &idir_name, QString &i_file_name)
     // Проверяется наличие директории, куда будет вставляться файл с текстом записи
     if(!recordDir.exists()) {
         // Создается новая директория в директории base
-        QDir directory(appconfig.get_tetradir() + "/base");
+        QDir directory(appconfig.tetra_dir() + "/base");
         bool result = directory.mkdir(short_dir());
 
         if(!result)

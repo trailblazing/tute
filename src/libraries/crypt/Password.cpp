@@ -71,8 +71,8 @@ bool Password::retrievePassword()
 
 
             // Проверяется, запомнен ли пароль (точнее, промежуточный хеш)
-            if(appconfig.getPasswordSaveFlag() &&
-               appconfig.getPasswordMiddleHash().length() > 0) {
+            if(appconfig.password_save_flag() &&
+               appconfig.password_middle_hash().length() > 0) {
                 // Пароль хранится в системе
 
                 // Если хранимый пароль (точнее, промежуточный хеш) правильный
@@ -82,7 +82,7 @@ bool Password::retrievePassword()
                     // И пароль у пользователя запрашивать ненужно
                     return true;
                 } else
-                    appconfig.setPasswordMiddleHash(""); // хранимый пароль сбрасывается
+                    appconfig.password_middle_hash(""); // хранимый пароль сбрасывается
             }
 
 
@@ -187,7 +187,7 @@ void Password::setCryptKeyToMemory(QString password)
 void Password::setCryptKeyToMemoryFromMiddleHash(void)
 {
     // Из общего конфига считывается промежуточный хеш
-    QByteArray middleHash = QByteArray::fromBase64(appconfig.getPasswordMiddleHash().toLatin1());
+    QByteArray middleHash = QByteArray::fromBase64(appconfig.password_middle_hash().toLatin1());
 
     // Ключ в виде MD5
     QByteArray key = QCryptographicHash::hash(middleHash, QCryptographicHash::Md5);
@@ -202,7 +202,7 @@ void Password::setCryptKeyToMemoryFromMiddleHash(void)
 bool Password::checkMiddleHash(void)
 {
     // Из общего конфига считывается промежуточный хеш
-    QByteArray middleHash = QByteArray::fromBase64(appconfig.getPasswordMiddleHash().toLatin1());
+    QByteArray middleHash = QByteArray::fromBase64(appconfig.password_middle_hash().toLatin1());
     // qDebug() << "Password::checkMiddleHash() : middleHash :" << middleHash.toHex();
 
     // Промежуточный хеш преобразуется в ключ (MD5 сумма)
@@ -249,13 +249,13 @@ void Password::smartSaveMiddleHash(QString password)
 {
     // Если стоит настройка, что надо хранить пароль локально,
     // и пароль (точнее промежуточный хеш) еще не запомнен
-    if(appconfig.getPasswordSaveFlag() &&
-       appconfig.getPasswordMiddleHash().length() == 0) {
+    if(appconfig.password_save_flag() &&
+       appconfig.password_middle_hash().length() == 0) {
         QByteArray middleHash = calculateMiddleHash(password);
         // qDebug() << "Password::smartSaveMiddleHash() : middleHash " << middleHash.toHex();
 
         // В общий конфиг запоминается промежуточный хеш
-        appconfig.setPasswordMiddleHash(QString(middleHash.toBase64().data()));
+        appconfig.password_middle_hash(QString(middleHash.toBase64().data()));
 
         // В конфиг базы данных запоминаются проверочные данные
         // Эти данные нужны для последующей проверки промежуточного хеша
@@ -269,7 +269,7 @@ void Password::smartSaveMiddleHash(QString password)
         msgBox.exec();
     } else {
         // В общем конфиге сбрасывается промежуточный хеш
-        appconfig.setPasswordMiddleHash("");
+        appconfig.password_middle_hash("");
     }
 
 }
@@ -336,8 +336,8 @@ bool Password::enterExistsPassword(void)
     // Запрашивается пароль
     EnterPassword enterPwd(ENTER_PASSWORD_MODE_SINGLE);
 
-    if(appconfig.get_autoClosePasswordEnable())
-        enterPwd.setCancelDelay(appconfig.get_autoClosePasswordDelay());
+    if(appconfig.auto_close_password_enable())
+        enterPwd.setCancelDelay(appconfig.auto_close_password_delay());
 
     int i = enterPwd.exec();
 
@@ -356,8 +356,8 @@ bool Password::enterExistsPassword(void)
         // Дополнительно, если в общих настройках указано,
         // что пароль нужно запоминать, и он (точнее промежуточный хеш )
         // еще не запомнен
-        if(appconfig.getPasswordSaveFlag() &&
-           appconfig.getPasswordMiddleHash().length() == 0)
+        if(appconfig.password_save_flag() &&
+           appconfig.password_middle_hash().length() == 0)
             smartSaveMiddleHash(password);
 
         return true;
@@ -394,7 +394,7 @@ void Password::resetPassword(void)
         databaseconfig.set_crypt_check_salt("");
         databaseconfig.set_crypt_check_hash("");
 
-        appconfig.setPasswordMiddleHash("");
+        appconfig.password_middle_hash("");
         databaseconfig.set_middle_hash_check_data("");
 
         // Ключ в памяти удаляется
