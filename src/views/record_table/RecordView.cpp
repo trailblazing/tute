@@ -111,12 +111,12 @@ void RecordView::init(void)
     // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
     // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
     verticalHeader()->setDefaultSectionSize(verticalHeader()->minimumSectionSize());
-    int height = appconfig.getUglyQssReplaceHeightForTableView();
+    int height = appconfig.ugly_qss_replace_height_for_table_view();
 
     if(height != 0)
         verticalHeader()->setDefaultSectionSize(height);
 
-    if(appconfig.getInterfaceMode() == "mobile")
+    if(appconfig.interface_mode() == "mobile")
         verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
 
     setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //
@@ -147,7 +147,7 @@ void RecordView::setup_signals(void)
     // Signal to open for editing the parameters of the recording double click
     connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
 
-    if(appconfig.getInterfaceMode() == "desktop")
+    if(appconfig.interface_mode() == "desktop")
         connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
 
     // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
@@ -177,13 +177,13 @@ void RecordView::setup_signals(void)
 void RecordView::restore_header_state(void)
 {
     // Видимость горизонтальных заголовков
-    if(appconfig.getRecordTableShowHorizontalHeaders() == false)
+    if(appconfig.record_table_show_horizontal_headers() == false)
         horizontalHeader()->hide();
     else
         horizontalHeader()->show();
 
     // Видимость вертикальных заголовков
-    if(appconfig.getRecordTableShowVerticalHeaders() == false)
+    if(appconfig.record_table_show_vertical_headers() == false)
         verticalHeader()->hide();
     else
         verticalHeader()->show();
@@ -440,14 +440,14 @@ void RecordView::cursor_to_index(int _index)
     // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
     // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
     // Therefore, the recording must be made a virtual click to fill the final table of records
-    if(appconfig.getInterfaceMode() == "mobile")
+    if(appconfig.interface_mode() == "mobile")
         emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
     // emit this->clicked(index);
 
     scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
 
-    this->setFocus();   // ?
+    //    this->setFocus();   // ?
 }
 
 
@@ -676,9 +676,9 @@ void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newV
     int newVisualWidth = horizontalHeader()->sectionSize(newVisualIndex);
 
     // В настройках последовательность полей меняется
-    QStringList showFields = appconfig.getRecordTableShowFields();
+    QStringList showFields = appconfig.record_table_show_fields();
     showFields.move(oldVisualIndex, newVisualIndex);
-    appconfig.setRecordTableShowFields(showFields);
+    appconfig.record_table_show_fields(showFields);
 
     qDebug() << "New show field sequence" << showFields;
 
@@ -719,7 +719,7 @@ void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize)
 void RecordView::save_column_width(void)
 {
     // Выясняется количество полей
-    int count = appconfig.getRecordTableShowFields().size();
+    int count = appconfig.record_table_show_fields().size();
 
     QStringList columnWidthList;
 
@@ -729,7 +729,7 @@ void RecordView::save_column_width(void)
         columnWidthList << width;
     }
 
-    appconfig.setRecordTableFieldsWidth(columnWidthList);
+    appconfig.record_table_fields_width(columnWidthList);
 
     // qDebug() << "Save column width " << columnWidthList;
 }
@@ -738,7 +738,7 @@ void RecordView::save_column_width(void)
 // Восстановление ширины колонок из конфигфайла
 void RecordView::restore_column_width(void)
 {
-    QStringList columnWidthList = appconfig.getRecordTableFieldsWidth();
+    QStringList columnWidthList = appconfig.record_table_fields_width();
 
     // qDebug() << "Restore column width " << columnWidthList;
 

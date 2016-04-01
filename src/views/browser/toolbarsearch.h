@@ -73,6 +73,9 @@ class FindTableWidget;
 QT_END_NAMESPACE
 
 class TreeItem;
+class TreeScreen;
+class KnowModel;
+
 
 namespace browser {
 
@@ -92,7 +95,11 @@ namespace browser {
         Q_OBJECT
 
     signals:
-        void search(const QUrl &url, equal_type _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return QUrl(it->field("url")).fragment() == _url.fragment();});
+        void search(const QUrl &url
+                    , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return QUrl(it->field("url")).fragment() == _url.fragment();}
+                   );
+
         void returnPressed();
     public:
         ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,

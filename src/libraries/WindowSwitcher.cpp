@@ -36,7 +36,7 @@ WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QOb
 void WindowSwitcher::enableSwitch(void)
 {
     // Для десктопа переключение окон виджетов вообще не должно включаться
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         enableSwitcher = false;
         return;
     }
@@ -77,7 +77,7 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
             QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
             // temporary setting
             object->show();
-            appconfig.setFocusWidget(object->objectName());
+            appconfig.focus_widget(object->objectName());
 
             globalparameters.vtab()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
             // temporary setting
@@ -104,7 +104,7 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     if(!globalparameters.window_switcher()->getSwitchStatus())
         return;
 
-    if(appconfig.getInterfaceMode() != "mobile") // В статическом методе использовать нестатическую переменну enableSwitcher нельзя
+    if(appconfig.interface_mode() != "mobile") // В статическом методе использовать нестатическую переменну enableSwitcher нельзя
         return;
 
     // Скрываются все прочие области
@@ -125,7 +125,7 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
             globalparameters.vtab()->setCurrentWidget(record_screen         // globalparameters.record_screens()[0]
                                                      ); // temporary setting
 
-            appconfig.setFocusWidget(object->objectName());
+            appconfig.focus_widget(object->objectName());
         }
     }
 }
@@ -153,7 +153,7 @@ void WindowSwitcher::switchFromRecordtableToRecord(void)
 
     QWidget *object = static_cast<QWidget *>(globalparameters.meta_editor());
     object->show();
-    appconfig.setFocusWidget(object->objectName());
+    appconfig.focus_widget(object->objectName());
 }
 
 
@@ -179,7 +179,7 @@ void WindowSwitcher::switchFromRecordtableToTree(void)
 
     QWidget *object = static_cast<QWidget *>(globalparameters.tree_screen());
     object->show();
-    appconfig.setFocusWidget(object->objectName());
+    appconfig.focus_widget(object->objectName());
 }
 
 
@@ -230,7 +230,7 @@ void WindowSwitcher::restoreFocusWidget()
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    QString widgetName = appconfig.getFocusWidget();
+    QString widgetName = appconfig.focus_widget();
 
     // Оформить через case
     if(widgetName == tree_screen_singleton_name) {
@@ -256,7 +256,7 @@ void WindowSwitcher::restoreFocusWidget()
                 globalparameters.vtab()->setCurrentWidget(_record_screen);             // globalparameters.record_screens()[0]
                 // temporary setting
 
-                appconfig.setFocusWidget(object->objectName());
+                appconfig.focus_widget(object->objectName());
 
                 //        for(auto &i : globalparameters.record_screens())i->show();
 

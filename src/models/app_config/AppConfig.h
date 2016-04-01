@@ -22,40 +22,40 @@ public:
     void sync(void);
 
     // Версия формата конфигфайла
-    int get_config_version(void)const;
-    void set_config_version(int i);
+    int config_version(void)const;
+    void config_version(int i);
 
     // Рабочая директория
-    QString get_tetradir(void)const;
-    bool set_tetradir(QString dirName);
+    QString tetra_dir(void)const;
+    bool tetra_dir(QString dirName);
 
     // Директория с корзиной
-    QString get_trashdir(void)const;
-    bool set_trashdir(QString dirName);
+    QString trash_dir(void)const;
+    bool trash_dir(QString dirName);
 
     // Максимальный размер директории корзины в мегабайтах
-    unsigned int get_trashsize(void)const;
-    bool set_trashsize(unsigned int mbSize);
+    unsigned int trash_size(void)const;
+    bool trash_size(unsigned int mbSize);
 
     // Максимально допустимое число файлов в корзине
-    int get_trashmaxfilecount(void)const;
-    bool set_trashmaxfilecount(int count);
+    int trash_max_file_count(void)const;
+    bool trash_max_file_count(int count);
 
     // Нужно ли показывать подтверждение при выполнении действия "cut на ветке
     bool cut_branch_confirm(void)const;
     bool cut_branch_confirm(bool confirm);
 
     // Нужно ли печатать отладочные сообщения в консоль
-    bool get_printdebugmessages(void)const;
-    bool set_printdebugmessages(bool isPrint);
+    bool print_debug_messages(void)const;
+    bool print_debug_messages(bool isPrint);
 
     // Язык интерфейса
-    QString get_interfacelanguage(void)const;
-    bool set_interfacelanguage(QString language);
+    QString interface_language(void)const;
+    bool interface_language(QString language);
 
     // Номер последнего префикса в виде строки с ведущими нулями
-    QString get_addnewrecord_expand_info(void)const;
-    void set_addnewrecord_expand_info(QString);
+    QString add_new_record_expand_info(void)const;
+    void add_new_record_expand_info(QString);
 
     // Геометрия основного окна
     QRect mainwin_geometry(void)const;
@@ -85,129 +85,129 @@ public:
 
 
     // ID записи в таблице конечных записей, которая выделена на экране
-    QString get_recordtable_selected_record_id(void)const;
-    void set_recordtable_selected_record_id(QString id);
+    QString recordtable_selected_record_id(void)const;
+    void recordtable_selected_record_id(QString id);
 
 
     // Настройки виджета поиска по базе
-    int get_findscreen_wordregard(void)const;
-    void set_findscreen_wordregard(int pos);
+    int findscreen_wordregard(void)const;
+    void findscreen_wordregard(int pos);
 
-    int get_findscreen_howextract(void)const;
-    void set_findscreen_howextract(int pos);
+    int findscreen_howextract(void)const;
+    void findscreen_howextract(int pos);
 
-    int getFindScreenTreeSearchArea(void)const;
-    void setFindScreenTreeSearchArea(int pos);
+    int find_screen_tree_search_area(void)const;
+    void find_screen_tree_search_area(int pos);
 
-    bool get_findscreen_find_in_field(QString fieldName)const;
-    void set_findscreen_find_in_field(QString fieldName, bool isChecked);
+    bool findscreen_find_in_field(QString fieldName)const;
+    void findscreen_find_in_field(QString fieldName, bool isChecked);
 
-    bool get_editor_show(void)const;
-    void set_editor_show(bool isShow);
+    bool editor_show(void)const;
+    void editor_show(bool isShow);
 
-    bool get_findscreen_show(void)const;
-    void set_findscreen_show(bool isShow);
+    bool findscreen_show(void)const;
+    void findscreen_show(bool isShow);
 
-    QString get_howpassrequest(void)const;
-    void set_howpassrequest(QString mode);
+    QString howpassrequest(void)const;
+    void howpassrequest(QString mode);
 
-    bool get_runinminimizedwindow(void)const;
-    void set_runinminimizedwindow(bool flag);
+    bool run_in_minimized_window(void)const;
+    void run_in_minimized_window(bool flag);
 
-    bool get_autoClosePasswordEnable(void)const;
-    void set_autoClosePasswordEnable(bool flag);
+    bool auto_close_password_enable(void)const;
+    void auto_close_password_enable(bool flag);
 
-    int  get_autoClosePasswordDelay(void)const;
-    void set_autoClosePasswordDelay(int delay);
+    int  auto_close_password_delay(void)const;
+    void auto_close_password_delay(int delay);
 
-    QString get_synchrocommand(void)const;
-    void set_synchrocommand(QString command);
+    QString synchro_command(void)const;
+    void synchro_command(QString command);
 
-    bool get_synchroonstartup(void)const;
-    void set_synchroonstartup(bool flag);
+    bool synchro_on_startup(void)const;
+    void synchro_on_startup(bool flag);
 
-    bool get_synchroonexit(void)const;
-    void set_synchroonexit(bool flag);
+    bool synchro_on_exit(void)const;
+    void synchro_on_exit(bool flag);
 
-    bool getSyncroConsoleDetails(void)const;
-    void setSyncroConsoleDetails(bool flag);
+    bool synchro_console_details(void)const;
+    void synchro_console_details(bool flag);
 
-    int  getEditorCursorPosition(void)const;
-    void setEditorCursorPosition(int n);
+    int  editor_cursor_position(void)const;
+    void editor_cursor_position(int n);
 
-    int  getEditorScrollBarPosition(void)const;
-    void setEditorScrollBarPosition(int n);
+    int  editor_scroll_bar_position(void)const;
+    void editor_scroll_bar_position(int n);
 
-    QString getPasswordMiddleHash(void)const;
-    void setPasswordMiddleHash(QString hash);
+    QString password_middle_hash(void)const;
+    void password_middle_hash(QString hash);
 
-    bool getPasswordSaveFlag(void)const;
-    void setPasswordSaveFlag(bool flag);
+    bool password_save_flag(void)const;
+    void password_save_flag(bool flag);
 
 
-    bool getRememberCursorAtHistoryNavigation(void)const;
-    void setRememberCursorAtHistoryNavigation(bool flag);
+    bool remember_cursor_at_history_navigation(void)const;
+    void remember_cursor_at_history_navigation(bool flag);
 
-    bool getRememberCursorAtOrdinarySelection(void)const;
-    void setRememberCursorAtOrdinarySelection(bool flag);
+    bool remember_cursor_at_ordinary_selection(void)const;
+    void remember_cursor_at_ordinary_selection(bool flag);
 
-    int  getUglyQssReplaceHeightForTableView(void)const;
-    void setUglyQssReplaceHeightForTableView(int n);
+    int  ugly_qss_replace_height_for_table_view(void)const;
+    void ugly_qss_replace_height_for_table_view(int n);
 
 
     // Перечень полей, отображаемых в таблице конечных записей
-    QStringList getRecordTableShowFields(void)const;
-    void setRecordTableShowFields(QStringList fields);
+    QStringList record_table_show_fields(void)const;
+    void record_table_show_fields(QStringList fields);
 
     // Нужно ли отображать горизонтальные заголовки в таблице конечных записей
-    bool getRecordTableShowHorizontalHeaders(void)const;
-    void setRecordTableShowHorizontalHeaders(bool flag);
+    bool record_table_show_horizontal_headers(void)const;
+    void record_table_show_horizontal_headers(bool flag);
 
     // Whether to show vertical headers in the final table of records   // Нужно ли отображать вертикальные заголовки в таблице конечных записей
-    bool getRecordTableShowVerticalHeaders(void)const;
-    void setRecordTableShowVerticalHeaders(bool flag);
+    bool record_table_show_vertical_headers(void)const;
+    void record_table_show_vertical_headers(bool flag);
 
     // Ширина полей, отображаемых в таблице конечных записей
-    QStringList getRecordTableFieldsWidth(void)const;
-    void setRecordTableFieldsWidth(QStringList fieldsWidth);
+    QStringList record_table_fields_width(void)const;
+    void record_table_fields_width(QStringList fieldsWidth);
 
     // Показывать ли сплешскрин при старте программы
-    bool getShowSplashScreen(void)const;
-    void setShowSplashScreen(bool isShow);
+    bool show_splash_screen(void)const;
+    void show_splash_screen(bool isShow);
 
     // Режим интерфейса, возможные значения "desktop" и "mobile"
-    QString getInterfaceMode(void)const;
-    void setInterfaceMode(QString mode);
+    QString interface_mode(void)const;
+    void interface_mode(QString mode);
 
-    QString getFocusWidget(void)const;
-    void setFocusWidget(QString widgetName);
+    QString focus_widget(void)const;
+    void focus_widget(QString widgetName);
 
-    QStringList getHideEditorTools(void)const;
-    void setHideEditorTools(QStringList toolsNames);
+    QStringList hide_editor_tools(void)const;
+    void hide_editor_tools(QStringList toolsNames);
 
     // Флаг, показывающий распахнуты ли все инструметы управления в окне поиска по базе
-    bool getFindInBaseExpand(void)const;
-    void setFindInBaseExpand(bool state);
+    bool find_in_base_expand(void)const;
+    void find_in_base_expand(bool state);
 
     // Разрешено ли использовать собственный формат вывода даты и времени
-    bool getEnableCustomDateTimeFormat(void)const;
-    void setEnableCustomDateTimeFormat(bool state);
+    bool enable_custom_datetime_format(void)const;
+    void enable_custom_datetime_format(bool state);
 
     // Строка собственного формата вывода даты и времени
-    QString getCustomDateTimeFormat(void)const;
-    void setCustomDateTimeFormat(QString format);
+    QString custom_datetime_format(void)const;
+    void custom_datetime_format(QString format);
 
     // Путь на диске по которому пользователь открывал файлы чтобы приаттачить их к записи
-    QString getAttachAppendDir(void)const;
-    void setAttachAppendDir(QString dir);
+    QString attach_append_dir(void)const;
+    void attach_append_dir(QString dir);
 
     // Путь на диске по которому пользователь сохранял (Сохранить как...) приаттаченные файлы
-    QString getAttachSaveAsDir(void)const;
-    void setAttachSaveAsDir(QString dir);
+    QString attach_save_as_dir(void)const;
+    void attach_save_as_dir(QString dir);
 
     // Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины MyTetra
-    bool getEnableDecryptFileToTrashDirectory(void)const;
-    void setEnableDecryptFileToTrashDirectory(bool state);
+    bool enable_decrypt_file_to_trash_directory(void)const;
+    void enable_decrypt_file_to_trash_directory(bool state);
 
 
 private:
@@ -215,10 +215,10 @@ private:
     QSettings *conf; // было static
     QString get_parameter(QString name)const;
 
-    QStringList removeParameterFromTable(QString removeName, QStringList table);
-    QString getParameterTypeFromTable(QString parameterName, QStringList table)const;
-    QString getParameterValueFromTable(QString parameterName, QStringList table)const;
-    QStringList replaceParameterInTable(QString replaceName, QString replaceType, QString replaceValue, QStringList table);
+    QStringList remove_parameter_from_table(QString removeName, QStringList table);
+    QString parameter_type_from_table(QString parameterName, QStringList table)const;
+    QString parameter_value_from_table(QString parameterName, QStringList table)const;
+    QStringList replace_parameter_in_table(QString replaceName, QString replaceType, QString replaceValue, QStringList table);
 
 
     void update_version_process(void);

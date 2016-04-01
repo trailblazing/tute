@@ -39,6 +39,7 @@
 **
 ****************************************************************************/
 
+#include <functional>
 #include <cassert>
 #include "toolbarsearch.h"
 #include "autosaver.h"
@@ -183,7 +184,10 @@ namespace browser {
                 //                if(globalparameters.entrance()->activiated_browser()) {
                 Browser *browser = globalparameters.entrance()->activated_browser();
                 //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-                auto r = browser->tabmanager()->item_request_from_tree(url);
+                auto r = browser->tabmanager()->item_request_from_tree(
+                             url
+                             , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                         );
 
                 r->activate();
                 //                } else {
@@ -235,12 +239,12 @@ namespace browser {
                 url.setQuery(url_query);
                 url.setFragment("q=" + searchText);
                 // QString u = url.toString();
-                emit search(url);
+                emit search(url, std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             }
         } else {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->view_paste_sibling(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->current_index(), result_item);
+            _tree_screen->view_paste_as_sibling(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->current_index(), result_item);
             //            _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
             auto _index = _tree_screen->tree_view()->select_and_current(result_item->item_direct(0));

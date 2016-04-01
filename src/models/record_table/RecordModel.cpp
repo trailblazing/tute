@@ -301,7 +301,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается текст строки для отрисовки или для редактирования
     if(role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE) {
-        QStringList showFields = appconfig.getRecordTableShowFields();
+        QStringList showFields = appconfig.record_table_show_fields();
 
         // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
         if(index.column() < showFields.size()) {
@@ -317,10 +317,10 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
                 // Преобразование временного штампа в дату и время
                 QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
 
-                if(appconfig.getEnableCustomDateTimeFormat() == false)
+                if(appconfig.enable_custom_datetime_format() == false)
                     return fieldDateTime.toString(Qt::SystemLocaleDate);
                 else
-                    return fieldDateTime.toString(appconfig.getCustomDateTimeFormat());
+                    return fieldDateTime.toString(appconfig.custom_datetime_format());
             } else if(role == Qt::DisplayRole && fieldName == "hasAttach") { // Наличие аттачей
                 if(field == "0")
                     return ""; // Если аттачей нет, выводится пустая строка. Это повышает читабельность
@@ -374,7 +374,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
     // Если происходит редактирование
     if(role == Qt::EditRole) {
         // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-        QStringList showFields = appconfig.getRecordTableShowFields();
+        QStringList showFields = appconfig.record_table_show_fields();
 
         // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
         if(index.column() < showFields.size()) {
@@ -419,7 +419,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-    QStringList showFields = appconfig.getRecordTableShowFields();
+    QStringList showFields = appconfig.record_table_show_fields();
 
     QMap<QString, QString> descriptionFields = fixedparameters.record_field_description(showFields);
 
@@ -467,7 +467,7 @@ int RecordModel::columnCount(const QModelIndex &parent) const
 
     static int previousColumnCount = 0;
 
-    int currentColumnCount = appconfig.getRecordTableShowFields().size();
+    int currentColumnCount = appconfig.record_table_show_fields().size();
 
     if(currentColumnCount != previousColumnCount) {
         qDebug() << "Column count change. New column count: " << currentColumnCount;
@@ -645,7 +645,8 @@ QString RecordModel::field(int pos, QString name)
 void RecordModel::fields(int pos, QMap<QString, QString> data)
 {
     if(pos >= 0 && pos < count()) {
-        for(QMap<QString, QString>::iterator i = data.begin(); i != data.end(); i++) {
+        for(    // QMap<QString, QString>::iterator
+            auto i = data.begin(); i != data.end(); i++) {
             item(pos)->field(i.key(), i.value());
         }
     }

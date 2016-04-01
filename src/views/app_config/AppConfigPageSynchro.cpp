@@ -13,17 +13,17 @@ AppConfigPageSynchro::AppConfigPageSynchro(QWidget *parent) : ConfigPage(parent)
     qDebug() << "Create synchro config page";
 
     synchroCommand=new QLineEdit(this);
-    synchroCommand->setText(appconfig.get_synchrocommand());
+    synchroCommand->setText(appconfig.synchro_command());
     synchroCommand->setCursorPosition(0);
 
 
     synchroOnStartup=new QCheckBox(this);
     synchroOnStartup->setText(tr("Synchronize at MyTetra startup"));
-    synchroOnStartup->setChecked(appconfig.get_synchroonstartup());
+    synchroOnStartup->setChecked(appconfig.synchro_on_startup());
 
     synchroOnExit=new QCheckBox(this);
     synchroOnExit->setText(tr("Synchronize when exit from MyTetra"));
-    synchroOnExit->setChecked(appconfig.get_synchroonexit());
+    synchroOnExit->setChecked(appconfig.synchro_on_exit());
 
 
     // Собирается основной слой
@@ -70,16 +70,16 @@ int AppConfigPageSynchro::apply_changes(void)
     qDebug() << "Apply changes synchro";
 
 // Сохраняется строка с командой синхронизации
-    if(appconfig.get_synchrocommand()!=synchroCommand->text())
-        appconfig.set_synchrocommand(synchroCommand->text());
+    if(appconfig.synchro_command()!=synchroCommand->text())
+        appconfig.synchro_command(synchroCommand->text());
 
 // Сохраняется настройка запуска синхронизации при старте
-    if(appconfig.get_synchroonstartup()!=synchroOnStartup->isChecked())
-        appconfig.set_synchroonstartup(synchroOnStartup->isChecked());
+    if(appconfig.synchro_on_startup()!=synchroOnStartup->isChecked())
+        appconfig.synchro_on_startup(synchroOnStartup->isChecked());
 
 // Сохраняется настройка запуска синхронизации при выходе
-    if(appconfig.get_synchroonexit()!=synchroOnExit->isChecked())
-        appconfig.set_synchroonexit(synchroOnExit->isChecked());
+    if(appconfig.synchro_on_exit()!=synchroOnExit->isChecked())
+        appconfig.synchro_on_exit(synchroOnExit->isChecked());
 
     return 0;
 }

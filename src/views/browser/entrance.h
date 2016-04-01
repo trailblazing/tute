@@ -1,6 +1,7 @@
 #ifndef _BROWSERMANAGER_H_
 #define _BROWSERMANAGER_H_
 
+#include <vector>
 #include <QWidget>
 #include <QList>
 #include <QUrl>
@@ -118,7 +119,7 @@ namespace browser {
         //        };
 
         Browser *activated_browser();
-        std::vector<Browser * > browsers()const;  //        QList<DockedWindow*> window_raw_list();
+        std::vector<Browser *> &browsers();  //        QList<DockedWindow*> window_raw_list();
 
         //        void clean();
 
@@ -127,8 +128,15 @@ namespace browser {
         WebView *item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
 
         //        template<typename url_type>
-        void activate(const QUrl &_find_url, equal_type _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();});
-        void activate(boost::intrusive_ptr<TreeItem> item, equal_type _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();});
+        void activate(const QUrl &_find_url
+            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        );
+
+        void activate(boost::intrusive_ptr<TreeItem> item
+            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                    , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        );
 
         bool restore_state(const QByteArray &state);
         //        std::pair<Browser *, WebView *>
@@ -187,7 +195,7 @@ namespace browser {
         void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
-        std::vector<Browser *>       _browsers;
+        std::vector<Browser *>          _browsers;
         //        ItemsFlat                       *_shadow_branch;
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;

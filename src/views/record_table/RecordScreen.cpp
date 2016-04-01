@@ -46,7 +46,7 @@ RecordScreen::RecordScreen(//TreeScreen           *_tree_screen    //,
     , _addnew_to_end(new QAction(tr("Add note"), this))
     , _addnew_before(new QAction(tr("Add note before"), this))
     , _addnew_after(new QAction(tr("Add note after"), this))
-    , _edit_field(new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this))
+    , _edit_field(new QAction(tr("Edit properties (name, url, tags...)"), this))
     , _delete(new QAction(tr("Delete note(s)"), this))
     , _cut(new QAction(tr("&Cut note(s)"), this))
     , _copy(new QAction(tr("&Copy note(s)"), this))
@@ -110,7 +110,7 @@ RecordScreen::~RecordScreen()
 {
     //    delete _recordtree_search;
     //    delete _record_controller;
-    delete _tabmanager;
+    //    delete _tabmanager;
     delete _vertical_scrollarea;
 }
 
@@ -171,7 +171,7 @@ void RecordScreen::save_in_new_branch(bool checked)
             auto source_model = this->record_controller()->source_model();  // ->record_table();
 
             for(int i = 0; i < source_model->size(); i++) {
-                if(!_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == source_model->item(i)->field("id");})) {   // source_model->item(i)->field("id")
+                if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == source_model->item(i)->field("id");})) { // source_model->item(i)->field("id")
                     if(source_model->item(i)->is_lite())source_model->item(i)->to_fat();
 
                     source_model->item(i)->parent(_result_item);
@@ -223,13 +223,13 @@ void RecordScreen::setup_actions(void)
 
                 bool modified = false;
 
-                for(size_t w = 0; w < _entrance->browsers().size(); w++) {
-                    auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+                for(auto &browser : _entrance->browsers()) {
+                    auto tabmanager = browser->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                     for(int i = 0; i < tabmanager->count(); i++) {
                         auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                        if(!_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {    // item->field("id")
+                        if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {  // item->field("id")
 
                             if(item->is_lite())item->to_fat();
 
@@ -251,7 +251,7 @@ void RecordScreen::setup_actions(void)
                     //                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
-                    _tree_screen->view_paste_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
+                    _tree_screen->view_paste_as_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
                         source_model             // _tree_screen->know_branch()
                         , _tree_screen->tree_view()->current_index() //,
                         , new_branch_root
@@ -405,7 +405,7 @@ void RecordScreen::setup_ui(void)
     toolsLine->setIconSize(toolBarIconSize);
     */
 
-    if(appconfig.getInterfaceMode() == "mobile") {
+    if(appconfig.interface_mode() == "mobile") {
         insert_action_as_button<QToolButton>(_toolsline, _back);
         _toolsline->addSeparator();
     }
@@ -416,7 +416,7 @@ void RecordScreen::setup_ui(void)
 
 
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         insert_action_as_button<QToolButton>(_toolsline, _edit_field);
         insert_action_as_button<QToolButton>(_toolsline, _delete);
     }
@@ -440,7 +440,7 @@ void RecordScreen::setup_ui(void)
 
     //    _extra_toolsline = new QToolBar(this);
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         insert_action_as_button<QToolButton>(_extra_toolsline, _action_syncro);
         //        insertActionAsButton(extraToolsLine, actionWalkHistoryPrevious);
         //        insertActionAsButton(extraToolsLine, actionWalkHistoryNext);
@@ -460,7 +460,7 @@ void RecordScreen::setup_ui(void)
     //    int width = recordTableController->getView()->contentsRect().width();
     //    treePathLabel->setMaximumWidth(contentsRect().width());
     //    treePathLabel->setMinimumWidth(contentsRect().width());
-    if(appconfig.getInterfaceMode() == "desktop")
+    if(appconfig.interface_mode() == "desktop")
         _treepathlabel->hide();
 
     //    _vertical_scrollarea = new VerticalScrollArea(

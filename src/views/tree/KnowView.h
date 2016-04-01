@@ -36,8 +36,9 @@ public:
     void source_model(boost::intrusive_ptr<TreeItem> _item);
 
     KnowModel *source_model()const; // {return _know_root;}
+    KnowModel *source_model();
     //    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
-    boost::intrusive_ptr<TreeItem> current_item()const;
+    boost::intrusive_ptr<TreeItem> current_item();
 
     //    QModelIndex current_index(void)const;
     QModelIndex current_index(void);

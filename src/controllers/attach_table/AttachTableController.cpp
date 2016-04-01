@@ -179,7 +179,7 @@ QStringList AttachTableController::select_files_for_adding(QString attach_type)
     fileSelectDialog.setDirectory(QDir::homePath());
 
     // Если существует каталог, открытый при предыдущем выборе файла
-    QDir appendDir(appconfig.getAttachAppendDir());
+    QDir appendDir(appconfig.attach_append_dir());
 
     if(appendDir.exists())
         fileSelectDialog.setDirectory(appendDir);
@@ -196,7 +196,7 @@ QStringList AttachTableController::select_files_for_adding(QString attach_type)
 
     // Запоминается директория, в которой был сделан выбор
     if(files.size() > 0)
-        appconfig.setAttachAppendDir(fileSelectDialog.directory().absolutePath());
+        appconfig.attach_append_dir(fileSelectDialog.directory().absolutePath());
 
     return files;
 }
@@ -224,7 +224,7 @@ void AttachTableController::on_save_as_attach(void)
         fileSelectDialog.setFileMode(QFileDialog::AnyFile); // Чтобы кнопка "Сохранить" была активной
 
         // Если существует каталог, открытый при предыдущем сохранении
-        QDir saveAsDir(appconfig.getAttachSaveAsDir());
+        QDir saveAsDir(appconfig.attach_save_as_dir());
 
         if(saveAsDir.exists())
             fileSelectDialog.setDirectory(saveAsDir);
@@ -245,7 +245,7 @@ void AttachTableController::on_save_as_attach(void)
 
 
         // Запоминается директория, в которой был сделан выбор
-        appconfig.setAttachSaveAsDir(fileSelectDialog.directory().absolutePath());
+        appconfig.attach_save_as_dir(fileSelectDialog.directory().absolutePath());
 
 
         // Выясняется список выбранных файлов
@@ -270,7 +270,7 @@ void AttachTableController::on_save_as_attach(void)
         fileSelectDialog.setDirectory(QDir::homePath());
 
         // Если существует каталог, открытый при предыдущем сохранении
-        QDir saveAsDir(appconfig.getAttachSaveAsDir());
+        QDir saveAsDir(appconfig.attach_save_as_dir());
 
         if(saveAsDir.exists())
             fileSelectDialog.setDirectory(saveAsDir);
@@ -283,7 +283,7 @@ void AttachTableController::on_save_as_attach(void)
 
 
         // Запоминается директория, в которой был сделан выбор
-        appconfig.setAttachSaveAsDir(fileSelectDialog.directory().absolutePath());
+        appconfig.attach_save_as_dir(fileSelectDialog.directory().absolutePath());
 
 
         // Выбранная директория
@@ -430,7 +430,7 @@ void AttachTableController::on_open_attach(void)
 
         // Если запись зашифрована и открывается файл (не линк), аттач надо скопировать в директорию корзины и расшифровать
         if(attachTableData->is_record_crypt() && attachTableData->attach(id).getField("type") == "file") {
-            if(appconfig.getEnableDecryptFileToTrashDirectory()) {
+            if(appconfig.enable_decrypt_file_to_trash_directory()) {
                 fullFileName = DiskHelper::copy_file_to_trash(fullFileName); // Копирование
                 CryptService::decryptFile(globalparameters.crypt_key(), fullFileName); // Расшифровка
             } else {

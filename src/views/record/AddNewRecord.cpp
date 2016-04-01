@@ -49,7 +49,7 @@ void AddNewRecord::setupUI(void)
 
     // Редактор текста записи
     recordTextEditor = new Editor();
-    recordTextEditor->disable_tool_list(appconfig.getHideEditorTools() + (QStringList() << "save" << "show_text" << "attach"));
+    recordTextEditor->disable_tool_list(appconfig.hide_editor_tools() + (QStringList() << "save" << "show_text" << "attach"));
     recordTextEditor->init_enable_assembly(true);
     recordTextEditor->init_config_file_name(globalparameters.work_directory() + "/editorconf.ini");
     recordTextEditor->init_enable_random_seed(false);

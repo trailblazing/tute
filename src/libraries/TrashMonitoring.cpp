@@ -24,7 +24,7 @@ TrashMonitoring::~TrashMonitoring(void)
 void TrashMonitoring::recover_from_trash()
 {
     auto file_data = _files_table.first();
-    DiskHelper::copy_file_to_data(appconfig.get_trashdir() + '/' + file_data._file_name);
+    DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._file_name);
 }
 
 void TrashMonitoring::init(QString _trash_path)
@@ -100,8 +100,8 @@ void TrashMonitoring::update(void)
     // Исключается наиболее старый файл пока выполняется
     // условие что количество файлов слишком велико или
     // суммарный размер файлов превышает предельно допустимый размер корзины
-    while(_files_table.size() > appconfig.get_trashmaxfilecount() ||
-          _dir_size > appconfig.get_trashsize() * 1000000
+    while(_files_table.size() > appconfig.trash_max_file_count() ||
+          _dir_size > appconfig.trash_size() * 1000000
          ) {
         if(_files_table.size() <= 1) { // Оставляется последний файл, какого бы размера он не был
             break;

@@ -148,18 +148,21 @@ MainWindow::~MainWindow()
 {
     save_all_state();
 
-    delete  _entrance;
+    //    delete  _entrance; _entrance = nullptr;
     delete  _switcher;
     delete  _statusbar;
     delete  _editor_screen;
     delete  _find_screen;
-    delete  _download;
+
+    //    delete  _download;
 
     //    if(_page_screen)delete  _page_screen;
 
     //    delete  _table_screen;
-    delete  _tree_screen;
-    delete  _vtabwidget;
+
+    //    if(_tree_screen) {delete  _tree_screen; _tree_screen = nullptr;}
+
+    //    delete  _vtabwidget;
 
     delete  _v_right_splitter;
     delete  _find_splitter;
@@ -222,7 +225,7 @@ void MainWindow::setup_ui(void)
 
 
 
-    if(!_appconfig.get_editor_show())
+    if(!_appconfig.editor_show())
         _editor_screen->hide();
 
     //    _statusbar = new QStatusBar(this);
@@ -279,10 +282,9 @@ void MainWindow::assembly(void)
 {
     //    v_right_splitter = new QSplitter(Qt::Vertical);
     _v_right_splitter->addWidget(_entrance);
-    _v_right_splitter->addWidget(_editor_screen);             // Text entries // Текст записи
-    _v_right_splitter->setCollapsible(0
-                                      , false        // if true, make editor can overload it
-                                     );              // The list of final entries can not link up    // Список конечных записей не может смыкаться
+    _v_right_splitter->addWidget(_editor_screen);           // Text entries // Текст записи
+    _v_right_splitter->setCollapsible(0, false              // if true, make editor can overload it
+                                     );                     // The list of final entries can not link up    // Список конечных записей не может смыкаться
     _v_right_splitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
     _v_right_splitter->setObjectName("v_right_splitter");
 
@@ -296,7 +298,15 @@ void MainWindow::assembly(void)
     //    _qtabwidget = new QTabWidget(this);
 
     _vtabwidget->setTabPosition(QTabWidget::West);  // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
-    _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
+
+
+
+
+
+    //    _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
+
+
+
 
     //    _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
 
@@ -322,16 +332,16 @@ void MainWindow::assembly(void)
 
     connect(_vtabwidget, &HidableTabWidget::currentChanged, _vtabwidget, hide_others);
 
-    _appconfig.setFindScreenTreeSearchArea(0);  // force to root_item of global tree
+    _appconfig.find_screen_tree_search_area(0);  // force to root_item of global tree
 
     // deprecated: ignoring Tree Search Area
     connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
     , [this](int index) {
         if(-1 != index) {
             if(_vtabwidget->widget(index)->objectName() == tree_screen_singleton_name) {
-                _appconfig.setFindScreenTreeSearchArea(0);
+                _appconfig.find_screen_tree_search_area(0);
             } else if(_vtabwidget->widget(index)->objectName() == record_screen_multi_instance_name) {
-                _appconfig.setFindScreenTreeSearchArea(1);
+                _appconfig.find_screen_tree_search_area(1);
             }
         }
     }   // &AppConfig::setFindScreenTreeSearchArea
@@ -341,7 +351,13 @@ void MainWindow::assembly(void)
     //    v_left_splitter = new QSplitter(
     //        Qt::Horizontal  // Qt::Vertical
     //    );
+
+
     _v_left_splitter->addWidget(_vtabwidget);
+    _v_left_splitter->addWidget(_find_splitter);
+
+
+
     //    v_left_splitter->addWidget(treeScreen);
     //    v_left_splitter->addWidget(recordTableScreen);
     _v_left_splitter->setCollapsible(0, false);
@@ -352,13 +368,25 @@ void MainWindow::assembly(void)
     globalparameters.v_left_splitter(_v_left_splitter);
     globalparameters.v_right_splitter(_v_right_splitter);
 
+
+
+
+    _h_splitter->addWidget(_tree_screen);
+
+
+
     //    hSplitter = new QSplitter(Qt::Horizontal);
-    _h_splitter->addWidget(
-        _v_left_splitter
-    );
+    _h_splitter->addWidget(_v_left_splitter);
     //hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
     //hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
-    _h_splitter->addWidget(_find_splitter);             //hSplitter->addWidget(vSplitter);
+
+
+
+    //    _h_splitter->addWidget(_find_splitter);             //hSplitter->addWidget(vSplitter);
+
+
+
+
     _h_splitter->setCollapsible(0, false);            // Дерево веток не может смыкаться
     _h_splitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
     _h_splitter->setObjectName("hsplitter");
@@ -419,6 +447,7 @@ void MainWindow::restore_geometry(void)
     // move(rect.topLeft());
     // resize(rect.size());
 
+
     _v_right_splitter->setSizes(appconfig.vspl_sizelist());
     _h_splitter->setSizes(appconfig.hspl_sizelist());
     _v_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
@@ -450,7 +479,7 @@ void MainWindow::save_geometry(void)
     // данный метод вызывается из декструктора главного окна, и к этому моменту
     // виджет уже невиден
 
-    if(appconfig.get_findscreen_show())
+    if(appconfig.findscreen_show())
         appconfig.findsplitter_sizelist(_find_splitter->sizes());
 }
 
@@ -459,41 +488,44 @@ void MainWindow::restore_tree_position(void)
 {
     // Путь к последнему выбранному в дереве элементу
     auto pair = appconfig.tree_position();
-    QString view_root_id = pair.first;
+    QString current_root_id = pair.first;
     QStringList current_item_absolute_path = pair.second;//appconfig.get_tree_position();
 
     qDebug() << "MainWindow::restoreTreePosition() : " << current_item_absolute_path;
 
-    set_tree_position(view_root_id, current_item_absolute_path);
+    set_tree_position(current_root_id, current_item_absolute_path);
 }
 
 // save
 void MainWindow::save_tree_position(void)
 {
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
+    auto item = _tree_screen->tree_view()->source_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});
+    //    // Получение QModelIndex выделенного в дереве элемента
+    //    const QModelIndex index = _tree_screen->tree_view()->current_index();
 
-    // Получение QModelIndex выделенного в дереве элемента
-    const QModelIndex index = _tree_screen->tree_view()->current_index();
+    if(item) { //if(index.isValid()) {
 
-    if(index.isValid()) {
-
-        //    if(index.isValid()) {   // this line is to be remove
-        // Получаем указатель вида TreeItem
-        auto item = _tree_screen->tree_view()->source_model()->item(index);
+        //        //    if(index.isValid()) {   // this line is to be remove
+        //        // Получаем указатель вида TreeItem
+        //        auto item = _tree_screen->tree_view()->source_model()->item(index);
 
         // Сохраняем путь к элементу item
         appconfig.tree_position(
             _tree_screen->tree_view()->source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
-            , item->path_absolute());
+            , item->path_absolute()
+        );
         //    }
     }
 }
 
 // set
-void MainWindow::set_tree_position(QString view_root_id, QStringList current_item_absolute_path)
+void MainWindow::set_tree_position(QString current_root_id, QStringList current_item_absolute_path)
 {
-    if(_tree_screen->tree_view()->source_model()->root_item()->id() != view_root_id) {
-        _tree_screen->intercept(view_root_id);
+    _tree_screen->session_root(current_item_absolute_path.last());
+
+    if(_tree_screen->tree_view()->source_model()->root_item()->id() != current_root_id) {
+        _tree_screen->intercept(current_root_id);
     }
 
     //    if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
@@ -569,13 +601,13 @@ void MainWindow::save_editor_cursor_position(void)
 {
     int n = _editor_screen->cursor_position();
 
-    appconfig.setEditorCursorPosition(n);
+    appconfig.editor_cursor_position(n);
 }
 
 
 void MainWindow::restore_editor_cursor_position(void)
 {
-    int n = appconfig.getEditorCursorPosition();
+    int n = appconfig.editor_cursor_position();
 
     _editor_screen->cursor_position(n);
 }
@@ -585,13 +617,13 @@ void MainWindow::save_editor_scrollbar_position(void)
 {
     int n = _editor_screen->scrollbar_position();
 
-    appconfig.setEditorScrollBarPosition(n);
+    appconfig.editor_scroll_bar_position(n);
 }
 
 
 void MainWindow::restore_editor_scrollbar_position(void)
 {
-    int n = appconfig.getEditorScrollBarPosition();
+    int n = appconfig.editor_scroll_bar_position();
 
     _editor_screen->scrollbar_position(n);
 }
@@ -599,7 +631,7 @@ void MainWindow::restore_editor_scrollbar_position(void)
 
 void MainWindow::restore_find_on_base_visible(void)
 {
-    bool n = appconfig.get_findscreen_show();
+    bool n = appconfig.findscreen_show();
 
     // Определяется ссылка на виджет поиска
     FindScreen *findScreenRel = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
@@ -703,7 +735,7 @@ void MainWindow::init_tools_menu(void)
     _toolsmenu->addSeparator();
 
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         a = new QAction(tr("Main &preferences"), this);
         connect(a, &QAction::triggered, this, &MainWindow::tools_preferences);
         _toolsmenu->addAction(a);
@@ -843,8 +875,8 @@ void MainWindow::application_exit(void)
 
     // Если в конфиге настроено, что нужно синхронизироваться при выходе
     // И задана команда синхронизации
-    if(appconfig.get_synchroonexit())
-        if(appconfig.get_synchrocommand().trimmed().length() > 0)
+    if(appconfig.synchro_on_exit())
+        if(appconfig.synchro_command().trimmed().length() > 0)
             synchronization();
 
     // Запуск выхода из программы
@@ -882,10 +914,10 @@ void MainWindow::editor_switch(void)
 
     if(!(editorScreen->isVisible())) {
         editorScreen->show();
-        appconfig.set_editor_show(true);
+        appconfig.editor_show(true);
     } else {
         editorScreen->hide();
-        appconfig.set_editor_show(false);
+        appconfig.editor_show(false);
     }
 }
 
@@ -1034,7 +1066,7 @@ void MainWindow::synchronization(void)
     save_editor_scrollbar_position();
 
     // Считывается команда синхронизации
-    QString command = appconfig.get_synchrocommand();
+    QString command = appconfig.synchro_command();
 
     // Если команда синхронизации пуста
     if(command.trimmed().length() == 0) {
@@ -1048,7 +1080,7 @@ void MainWindow::synchronization(void)
 
     // Макрос %a заменяется на путь к директории базы данных
     // QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
-    QDir databaseDir(appconfig.get_tetradir());
+    QDir databaseDir(appconfig.tetra_dir());
     QString databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
@@ -1245,7 +1277,7 @@ void MainWindow::go_walk_history(void)
                 set_tree_position(global_root_id, absolute_path);
                 //    select_id(id);
 
-                if(appconfig.getRememberCursorAtHistoryNavigation()) {
+                if(appconfig.remember_cursor_at_history_navigation()) {
                     _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
                     _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
                 }

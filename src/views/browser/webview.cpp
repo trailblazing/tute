@@ -499,7 +499,10 @@ namespace browser {
 
         //        //        _record->active_immediately(true);
 
-        auto it = item_request_from_tree(item);
+        auto it = item_request_from_tree(
+                      item
+                      , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                  );
 
         if(checked)it->activate();
 
@@ -563,9 +566,9 @@ namespace browser {
 
                     //}
 
-                    //                    if(_record_controller->view()->selection_first_id() != _record_binder->bounded_item()->field("id")) {
-                    //                        _record_controller->select_id(_record_binder->bounded_item()->field("id"));
-                    //                    }
+                    if(_record_controller->view()->selection_first_id() != _record_binder->bounded_item()->field("id")) {
+                        _record_controller->select_id(_record_binder->bounded_item()->field("id"));
+                    }
                 }
             }
 
@@ -666,7 +669,7 @@ namespace browser {
         //        else
         if(type == QWebEnginePage::WebBrowserWindow) {
 
-            Browser * browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                // QtSingleApplication::instance()->newMainWindow();
+            Browser *browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                 // QtSingleApplication::instance()->newMainWindow();
             //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
@@ -705,7 +708,10 @@ namespace browser {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
 
-                    auto record = view->page()->item_request_from_tree(QUrl(Browser::_defaulthome));   // QUrl(Browser::_defaulthome)
+                    auto record = view->page()->item_request_from_tree(
+                                      QUrl(Browser::_defaulthome)
+                                      , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                  );
                     //                record->generate();
                     record->activate();
                     page = view->page();
@@ -717,7 +723,10 @@ namespace browser {
 
                     // already create window, why do this? -- refer to demo browser
                     //                    auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
-                    boost::intrusive_ptr<TreeItem> r = _browser->tabWidget()->item_request_from_tree(QUrl(Browser::_defaulthome));
+                    boost::intrusive_ptr<TreeItem> r = _browser->tabWidget()->item_request_from_tree(
+                                                           QUrl(Browser::_defaulthome)
+                                                           , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                                       );
                     //                return //_record->page();
                     // globalparameters.entrance()->invoke_view(new_record).second->page();
                     //                    this->dockedwindow()->tabWidget()->newTab(blank_record, true)->page();
@@ -863,7 +872,7 @@ namespace browser {
         //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser * browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = globalparameters.entrance()->activated_browser();     //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
@@ -899,7 +908,7 @@ namespace browser {
         //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser * browser = globalparameters.entrance()->activated_browser();    //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = globalparameters.entrance()->activated_browser();     //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
@@ -928,10 +937,14 @@ namespace browser {
         }
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(boost::intrusive_ptr<TreeItem> item)
+    boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
+        boost::intrusive_ptr<TreeItem> item
+        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , equal_t _equal
+    )
     {
         boost::intrusive_ptr<TreeItem> re;
-        auto it = _tabmanager->item_request_from_tree_impl(item);
+        auto it = _tabmanager->item_request_from_tree_impl(item, _view_paste_strategy, _equal);
 
         //        if(// !it->is_registered_to_browser() &&
         //            !it->record_binder())
@@ -950,6 +963,8 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         const QUrl &_url
+        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , equal_url_t _equal
     )
     {
         //        auto ar = boost::make_shared<WebPage::Coupler>(this);
@@ -958,7 +973,7 @@ namespace browser {
         //        //                             >>("", &WebPage::RecordBinder::binder, ar);
         //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
         boost::intrusive_ptr<TreeItem> re;
-        auto it = _tabmanager->item_request_from_tree_impl(_url);   // [&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == _url.toString();}
+        auto it = _tabmanager->item_request_from_tree_impl(_url, _view_paste_strategy, _equal);   // [&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == _url.toString();}
 
         //        if(// !it->is_registered_to_browser() &&
         //            !it->record_binder())
@@ -1511,6 +1526,10 @@ namespace browser {
 
                     _record_binder->bounded_item()->field("name", title);
 
+                    auto _mainwindow = globalparameters.mainwindow();
+
+                    if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
+
                     if(_view == _tabmanager->currentWebView()) {
                         if(metaeditor->item() != _record_binder->bounded_item())sychronize_metaeditor_to_item(_record_binder->bounded_item());  // metaeditor->bind(_record);
 
@@ -1712,7 +1731,9 @@ namespace browser {
 
                 _record_binder->bounded_item()->field("name", title);
                 //metaeditor->setName(title);
+                auto _mainwindow = globalparameters.mainwindow();
 
+                if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
 
                 //                table->setWorkPos(pos);
                 if(is_current)metaeditor->name(title);
@@ -1869,7 +1890,7 @@ namespace browser {
 
         QString current_dir = current_item->field("dir");  // table->field(pos, "dir");
         QString current_file = current_item->field("file");  // table->field(pos, "file");
-        QString full_dir = appconfig.get_tetradir() + "/base/" + current_dir;
+        QString full_dir = appconfig.tetra_dir() + "/base/" + current_dir;
         QString full_file_name = full_dir + "/" + current_file;
         qDebug() << " File " << full_file_name << "\n";
 
@@ -1953,7 +1974,7 @@ namespace browser {
         //            meta_editor->setTreePath(path);
 
         // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
-        if(appconfig.getRememberCursorAtOrdinarySelection()) {
+        if(appconfig.remember_cursor_at_ordinary_selection()) {
             meta_editor->cursor_position(walkhistory.cursor_position(id));
             meta_editor->scrollbar_position(walkhistory.scrollbar_position(id));
         }

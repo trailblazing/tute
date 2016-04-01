@@ -233,8 +233,18 @@ namespace browser {
 
     private:
         void init();
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url);
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(
+            QUrl const &url
+            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        );
+
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(
+            boost::intrusive_ptr<TreeItem> item
+            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        );
+
         void run_script(const QString &style_source);
         void load_default_state();
         void append_to_file_menu();

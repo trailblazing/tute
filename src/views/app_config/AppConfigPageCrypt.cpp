@@ -70,7 +70,7 @@ void AppConfigPageCrypt::setup_ui(void)
     howPassRequestRadio2 = new QRadioButton(tr("Ask the password at MyTetra startup"));
 
     // Точка устанавливается возле того пункта, который настроен в конфиге
-    if(appconfig.get_howpassrequest() == "atClickOnCryptBranch")
+    if(appconfig.howpassrequest() == "atClickOnCryptBranch")
         howPassRequestRadio1->setChecked(true);
     else
         howPassRequestRadio2->setChecked(true);
@@ -83,7 +83,7 @@ void AppConfigPageCrypt::setup_ui(void)
 
     passwordSaveAnnotation = new QLabel(tr("Password will be saved at first next entered.<br>Stored password will be cleared if uncheck this checkbox."));
 
-    if(appconfig.getPasswordSaveFlag()) {
+    if(appconfig.password_save_flag()) {
         howPassRequestRadio1->setEnabled(false);
         howPassRequestRadio2->setEnabled(false);
         passwordSaveEnable->setChecked(true);
@@ -116,11 +116,11 @@ void AppConfigPageCrypt::setup_ui(void)
     autoClosePasswordEnable = new QCheckBox(tr("Enable auto closing password window, sec"), this);
 
     autoClosePasswordDelay = new QSpinBox(this);
-    autoClosePasswordDelay->setValue(appconfig.get_autoClosePasswordDelay());
+    autoClosePasswordDelay->setValue(appconfig.auto_close_password_delay());
     autoClosePasswordDelay->setRange(1, 999);
 
     // Устанавливается галка и активность виджета выбора задержки
-    onAutoClosePasswordEnableToggle(appconfig.get_autoClosePasswordEnable());
+    onAutoClosePasswordEnableToggle(appconfig.auto_close_password_enable());
 
     // Виджеты вставляются в группировщик
     QHBoxLayout *autoClosePasswordLayout = new QHBoxLayout;
@@ -137,7 +137,7 @@ void AppConfigPageCrypt::setup_ui(void)
     decryptFileToTrashDirectoryEnable = new QCheckBox(tr("Enable temporary decrypt attach file to trash directory"));
 
     // Устанавливается галка согласно настройке из файла конфигурации
-    decryptFileToTrashDirectoryEnable->setChecked(appconfig.getEnableDecryptFileToTrashDirectory());
+    decryptFileToTrashDirectoryEnable->setChecked(appconfig.enable_decrypt_file_to_trash_directory());
 
     // Виджеты вставляются в группировщик
     QHBoxLayout *decryptFileToTrashDirectoryLayout = new QHBoxLayout;
@@ -199,8 +199,8 @@ QString AppConfigPageCrypt::getRetrieveStatusText(void)
         status = status + tr("Password is set. ");
 
     // Если пароль (точнее хеш пароля) хранится локально
-    if(appconfig.getPasswordSaveFlag() &&
-       appconfig.getPasswordMiddleHash().length() > 0)
+    if(appconfig.password_save_flag() &&
+       appconfig.password_middle_hash().length() > 0)
         status = status + tr("Password is saved locally. ");
 
     return status;
@@ -284,31 +284,31 @@ int AppConfigPageCrypt::apply_changes(void)
     qDebug() << "Apply changes crypt";
 
     if(howPassRequestRadio1->isChecked() &&
-       appconfig.get_howpassrequest() == "atStartProgram")
-        appconfig.set_howpassrequest("atClickOnCryptBranch");
+       appconfig.howpassrequest() == "atStartProgram")
+        appconfig.howpassrequest("atClickOnCryptBranch");
 
     if(howPassRequestRadio2->isChecked() &&
-       appconfig.get_howpassrequest() == "atClickOnCryptBranch")
-        appconfig.set_howpassrequest("atStartProgram");
+       appconfig.howpassrequest() == "atClickOnCryptBranch")
+        appconfig.howpassrequest("atStartProgram");
 
-    if(autoClosePasswordEnable->isChecked() != appconfig.get_autoClosePasswordEnable())
-        appconfig.set_autoClosePasswordEnable(autoClosePasswordEnable->isChecked());
+    if(autoClosePasswordEnable->isChecked() != appconfig.auto_close_password_enable())
+        appconfig.auto_close_password_enable(autoClosePasswordEnable->isChecked());
 
-    if(autoClosePasswordDelay->value() != appconfig.get_autoClosePasswordDelay())
-        appconfig.set_autoClosePasswordDelay(autoClosePasswordDelay->value());
+    if(autoClosePasswordDelay->value() != appconfig.auto_close_password_delay())
+        appconfig.auto_close_password_delay(autoClosePasswordDelay->value());
 
-    if(passwordSaveEnable->isChecked() != appconfig.getPasswordSaveFlag()) {
-        appconfig.setPasswordSaveFlag(passwordSaveEnable->isChecked());
+    if(passwordSaveEnable->isChecked() != appconfig.password_save_flag()) {
+        appconfig.password_save_flag(passwordSaveEnable->isChecked());
 
         // Если галка установлена что хранить локально пароль ненужно
         if(!passwordSaveEnable->isChecked()) {
             // Промежуточный хеш пароля удаляется
-            appconfig.setPasswordMiddleHash("");
+            appconfig.password_middle_hash("");
         }
     }
 
-    if(decryptFileToTrashDirectoryEnable->isChecked() != appconfig.getEnableDecryptFileToTrashDirectory())
-        appconfig.setEnableDecryptFileToTrashDirectory(decryptFileToTrashDirectoryEnable->isChecked());
+    if(decryptFileToTrashDirectoryEnable->isChecked() != appconfig.enable_decrypt_file_to_trash_directory())
+        appconfig.enable_decrypt_file_to_trash_directory(decryptFileToTrashDirectoryEnable->isChecked());
 
     return 0;
 }

@@ -247,25 +247,25 @@ void FindScreen::setup_combooption(void)
     _word_regard = new FlatComboBox();
     _word_regard->addItem(QIcon(":/resource/pic/find_in_base_any.svg"), tr("Any word"));
     _word_regard->addItem(QIcon(":/resource/pic/find_in_base_all.svg"), tr("All words"));
-    _word_regard->setCurrentIndex(appconfig.get_findscreen_wordregard());
+    _word_regard->setCurrentIndex(appconfig.findscreen_wordregard());
 
     // Выбор "Только целые слова" - "Подстрока"
     _how_extract = new FlatComboBox();
     _how_extract->addItem(QIcon(":/resource/pic/find_in_base_separate.svg"), tr("Whole words"));
     _how_extract->addItem(QIcon(":/resource/pic/find_in_base_substring.svg"), tr("Substring"));
-    _how_extract->setCurrentIndex(appconfig.get_findscreen_howextract());
+    _how_extract->setCurrentIndex(appconfig.findscreen_howextract());
 
     // Выбор "Во всей базе" - "В текущей ветке"
     _tree_search_area = new FlatComboBox();
     _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_all.svg"), tr("Entire base")); // Вся база
     _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch")); // Текущая ветка
-    _tree_search_area->setCurrentIndex(appconfig.getFindScreenTreeSearchArea());
+    _tree_search_area->setCurrentIndex(appconfig.find_screen_tree_search_area());
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         _tree_search_area->hide();
     }
 
-    if(appconfig.getInterfaceMode() == "mobile") {
+    if(appconfig.interface_mode() == "mobile") {
         // wordRegard->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
         // howExtract->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
         // treeSearchArea->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
@@ -311,7 +311,7 @@ void FindScreen::setup_closebutton(void)
     _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton SP_DialogCloseButton
     _close_button->setAutoRaise(true);
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         int w = _close_button->geometry().width();
         int h = _close_button->geometry().height();
         int x = min(w, h) / 2; // imin(w, h) / 2;
@@ -339,28 +339,28 @@ void FindScreen::setup_wherefind_line(void)
     _where_find_label = new QLabel(tr("Find in: "));
 
     _find_in_pin = new QCheckBox(tr("Pin"));
-    _find_in_pin->setChecked(appconfig.get_findscreen_find_in_field("pin"));
+    _find_in_pin->setChecked(appconfig.findscreen_find_in_field("pin"));
 
     _find_in_name = new QCheckBox(tr("Title"));
-    _find_in_name->setChecked(appconfig.get_findscreen_find_in_field("name"));
+    _find_in_name->setChecked(appconfig.findscreen_find_in_field("name"));
 
     _find_in_author = new QCheckBox(tr("Author(s)"));
-    _find_in_author->setChecked(appconfig.get_findscreen_find_in_field("author"));
+    _find_in_author->setChecked(appconfig.findscreen_find_in_field("author"));
 
     _find_in_author = new QCheckBox(tr("Author(s)"));
-    _find_in_author->setChecked(appconfig.get_findscreen_find_in_field("author"));
+    _find_in_author->setChecked(appconfig.findscreen_find_in_field("author"));
 
     _find_in_home = new QCheckBox(tr("Home"));
-    _find_in_home->setChecked(appconfig.get_findscreen_find_in_field("home"));
+    _find_in_home->setChecked(appconfig.findscreen_find_in_field("home"));
 
     _find_in_url = new QCheckBox(tr("Url"));
-    _find_in_url->setChecked(appconfig.get_findscreen_find_in_field("url"));
+    _find_in_url->setChecked(appconfig.findscreen_find_in_field("url"));
 
     _find_in_tags = new QCheckBox(tr("Tags"));
-    _find_in_tags->setChecked(appconfig.get_findscreen_find_in_field("tags"));
+    _find_in_tags->setChecked(appconfig.findscreen_find_in_field("tags"));
 
     _find_in_text = new QCheckBox(tr("Text"));
-    _find_in_text->setChecked(appconfig.get_findscreen_find_in_field("text"));
+    _find_in_text->setChecked(appconfig.findscreen_find_in_field("text"));
 }
 
 
@@ -369,16 +369,16 @@ void FindScreen::assembly_wherefind_line(void)
     _where_find_line = new QHBoxLayout();
     _where_find_line->setEnabled(false);
 
-    if(appconfig.getInterfaceMode() == "desktop")
+    if(appconfig.interface_mode() == "desktop")
         _where_find_line->addWidget(_where_find_label);
 
-    if(appconfig.getInterfaceMode() == "mobile")
+    if(appconfig.interface_mode() == "mobile")
         _where_find_label->hide();
 
     _where_find_line->addWidget(_word_regard);
     _where_find_line->addWidget(_how_extract);
 
-    if(appconfig.getInterfaceMode() == "mobile") _where_find_line->addWidget(_tree_search_area);
+    if(appconfig.interface_mode() == "mobile") _where_find_line->addWidget(_tree_search_area);
 
     _where_find_line->addWidget(_find_in_pin);
     _where_find_line->addWidget(_find_in_name);
@@ -473,7 +473,7 @@ void FindScreen::assembly(void)
 {
     _central_desktop_layout = new QVBoxLayout(this);
 
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         _tools_line = new QHBoxLayout();
         _tools_line->setEnabled(true);
         _tools_line->addLayout(_find_text_and_button_tools_area);
@@ -483,7 +483,7 @@ void FindScreen::assembly(void)
         _central_desktop_layout->addLayout(_tools_line);
     }
 
-    if(appconfig.getInterfaceMode() == "mobile") {
+    if(appconfig.interface_mode() == "mobile") {
         _tools_grid = new QGridLayout();
         _tools_grid->setEnabled(true);
         _tools_grid->addLayout(_find_text_and_button_tools_area, 0, 0);
@@ -508,7 +508,7 @@ void FindScreen::assembly(void)
 
     this->setLayout(_central_desktop_layout);
 
-    switch_tools_expand(appconfig.getFindInBaseExpand());
+    switch_tools_expand(appconfig.find_in_base_expand());
 }
 
 void FindScreen::adjust_size()
@@ -600,7 +600,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     if(globalparameters.vtab()->currentWidget()->objectName() == record_screen_multi_instance_name
        && !_tree_screen->tree_view()->current_index().isValid()
       ) {
-        appconfig.setFindScreenTreeSearchArea(2);
+        appconfig.find_screen_tree_search_area(2);
     }
 
     // Сохраняется текущая редактируемая запись, чтобы и в ней
@@ -715,8 +715,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         // resultset_item;
         browser::Entrance *_entrance = globalparameters.entrance();
 
-        for(size_t w = 0; w < _entrance->browsers().size(); w++) {
-            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();
+        for(auto &browser : _entrance->browsers()) {
+            auto tabmanager = browser->tabmanager();
 
             for(int i = 0; i < tabmanager->count(); i++) {
                 auto item = tabmanager->webView(i)->page()->bounded_item();
@@ -1075,19 +1075,19 @@ bool FindScreen::find_in_text_process(const QString &text)
 
 void FindScreen::word_regard(int pos)
 {
-    appconfig.set_findscreen_wordregard(pos);
+    appconfig.findscreen_wordregard(pos);
 }
 
 
 void FindScreen::how_extract(int pos)
 {
-    appconfig.set_findscreen_howextract(pos);
+    appconfig.findscreen_howextract(pos);
 }
 
 
 void FindScreen::tree_search_area(int pos)
 {
-    appconfig.setFindScreenTreeSearchArea(pos);
+    appconfig.find_screen_tree_search_area(pos);
 }
 
 void FindScreen::if_find_in_pin(int state)
@@ -1136,13 +1136,13 @@ void FindScreen::if_find_in_field(QString fieldname, int state)
     if(state == Qt::Checked) i = true;
     else i = false;
 
-    appconfig.set_findscreen_find_in_field(fieldname, i);
+    appconfig.findscreen_find_in_field(fieldname, i);
 }
 
 
 void FindScreen::widget_show(void)
 {
-    appconfig.set_findscreen_show(true);
+    appconfig.findscreen_show(true);
     this->show();
 
     // При появлении виджета курсор должен сразу стоять на поле ввода
@@ -1159,7 +1159,7 @@ void FindScreen::widget_hide(void)
     appconfig.findsplitter_sizelist(findSplitterRel->sizes());
 
     // Виджет скрывается
-    appconfig.set_findscreen_show(false);
+    appconfig.findscreen_show(false);
     this->close();
 }
 
@@ -1170,10 +1170,10 @@ void FindScreen::tools_expand_clicked(void)
     // Если нужно сомкнуть инструменты
     if(_find_in_name->isVisible()) {
         switch_tools_expand(false);
-        appconfig.setFindInBaseExpand(false);
+        appconfig.find_in_base_expand(false);
     } else {
         switch_tools_expand(true);
-        appconfig.setFindInBaseExpand(true);
+        appconfig.find_in_base_expand(true);
     }
 }
 
@@ -1184,7 +1184,7 @@ void FindScreen::switch_tools_expand(bool flag)
     // whereFindLine->setVisible(flag);
 
     // Выпадающие списки скрываются в мобильном интерфейсе, так как они на отдельной строке
-    if(appconfig.getInterfaceMode() == "mobile") {
+    if(appconfig.interface_mode() == "mobile") {
         _find_in_pin->setVisible(flag);
         _word_regard->setVisible(flag);
         _how_extract->setVisible(flag);
@@ -1192,7 +1192,7 @@ void FindScreen::switch_tools_expand(bool flag)
     }
 
     // Надпись Find in видна и управляется только в desktop режиме интерфейса
-    if(appconfig.getInterfaceMode() == "desktop") {
+    if(appconfig.interface_mode() == "desktop") {
         _where_find_label->setVisible(flag);
     }
 

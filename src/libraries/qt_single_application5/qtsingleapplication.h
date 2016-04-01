@@ -83,6 +83,7 @@ class QNetworkReply;
 class QWebEngineProfile;
 QT_END_NAMESPACE
 
+extern const char *application_name;
 
 namespace browser {
     class BookmarksManager;
@@ -154,9 +155,10 @@ private:
     void main_window();
     void browser_init();
     QtLocalPeer *_peer;
-    QWidget     *act_window;
+    QWidget     *_act_window;
     bool        _gui_enabled;
-    std::shared_ptr<MainWindow> _window;
+    //    std::shared_ptr<MainWindow>
+    MainWindow *_window;
     //private slots:
     //    void newLocalSocketConnection();
 

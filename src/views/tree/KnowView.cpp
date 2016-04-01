@@ -23,7 +23,7 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
-enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;   //    Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
+enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::ClearAndSelect;   //Select    Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
 enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemSelectionModel::SelectionFlag::SelectCurrent;    // Select   // SelectCurrent
 
 const char *knowtreeview_singleton_name = "knowtreeview";
@@ -137,13 +137,13 @@ void KnowView::sychronize()
 
             bool modified = false;
 
-            for(size_t w = 0; w < _entrance->browsers().size(); w++) {
-                auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+            for(auto &browser : _entrance->browsers()) {
+                auto tabmanager = browser->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                 for(int i = 0; i < tabmanager->count(); i++) {
                     auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                    if(!_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {
+                    if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {
 
                         if(item->is_lite())item->to_fat();
 
@@ -158,7 +158,7 @@ void KnowView::sychronize()
             if(modified) {
                 //                new_branch_item->field("id", _know_root->root_item()->id());
                 //                new_branch_item->field("name", _know_root->root_item()->name());
-                assert(_tree_screen->know_model_board()->item([&](boost::intrusive_ptr<TreeItem> t) {return t->id() == _know_root->root_item()->id();}));  //_know_root->root_item()->id()
+                assert(_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _know_root->root_item()->id();})); //_know_root->root_item()->id()
 
                 // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
 
@@ -182,6 +182,7 @@ void KnowView::sychronize()
 }
 
 KnowModel *KnowView::source_model()const {return _know_root;}
+KnowModel *KnowView::source_model() {return _know_root;}
 
 void KnowView::source_model(boost::intrusive_ptr<TreeItem> _item)
 {
@@ -446,9 +447,11 @@ void KnowView::dropEvent(QDropEvent *event)
     }
 }
 
-boost::intrusive_ptr<TreeItem> KnowView::current_item()const
+boost::intrusive_ptr<TreeItem> KnowView::current_item()
 {
-    return _know_root->item(selectionModel()->currentIndex());
+    return _know_root->item(
+               current_index() // selectionModel()->currentIndex()
+           );
 }
 
 
@@ -574,7 +577,10 @@ QModelIndex KnowView::current_index(void)
 
                     //                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
                 } else if(_know_root->root_item()->count_direct() == 0) {
-                    globalparameters.entrance()->activate(QUrl(browser::Browser::_defaulthome));
+                    globalparameters.entrance()->activate(
+                        QUrl(browser::Browser::_defaulthome)
+                        , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    );
                 }
 
                 //            new_item = _know_root->root_item()->item_direct(0); // _know_root->root_item()->count_direct() - 1
@@ -682,7 +688,7 @@ QModelIndex KnowView::select_and_current(const QModelIndex &_index, std::functio
     // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
     // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
     // Therefore, the recording must be made a virtual click to fill the final table of records
-    if(appconfig.getInterfaceMode() == "mobile")
+    if(appconfig.interface_mode() == "mobile")
         emit this->clicked(_result); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
 #endif
@@ -692,7 +698,7 @@ QModelIndex KnowView::select_and_current(const QModelIndex &_index, std::functio
 
     scrollTo(_result);   // QAbstractItemView::PositionAtCenter
 
-    this->setFocus();   // ?
+    //    this->setFocus();   // ?
 
     //    }
     return _result;
@@ -711,7 +717,7 @@ QModelIndex KnowView::select_and_current(boost::intrusive_ptr<TreeItem> _item, s
     while(!_index.isValid()
           && _know_root->root_item() != _tree_screen->know_model_board()->root_item()
          ) {
-        _tree_screen->cursor_up_one_level();
+        _tree_screen->cursor_follow_up_one_level();
         _index = _know_root->index(_item);
         //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
     }

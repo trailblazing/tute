@@ -25,7 +25,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
     QDir dirfrom(nameDirFrom);
     QStringList fileList = dirfrom.entryList();
 
-    QString nameDirTo = appconfig.get_trashdir();
+    QString nameDirTo = appconfig.trash_dir();
 
     // Перебор всех файлов в удаляемой директории
     for(int i = 0; i < fileList.size(); i++) {
@@ -88,7 +88,7 @@ void DiskHelper::remove_file_to_trash(QString fileNameFrom)
 
     // Получение имени файла для сохранения в корзине
     QString fileNameToShort = get_unical_id() + "_" + fileNameFromShort;
-    QString fileNameTo     = appconfig.get_trashdir() + "/" + fileNameToShort;
+    QString fileNameTo     = appconfig.trash_dir() + "/" + fileNameToShort;
 
     qDebug() << "Move file from " << fileNameFrom << " to " << fileNameTo;
 
@@ -113,7 +113,7 @@ QString DiskHelper::copy_file_to_data(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     //    QString file_name_to_short = file_name_from_short.remove(0, file_name_from_short.lastIndexOf('_') + 1);
-    QString file_name_to = appconfig.get_tetradir() + "/" + globalparameters.main_program_file() + ".xml"; //appconfig.get_tetradir() + "/" + file_name_to_short;
+    QString file_name_to = appconfig.tetra_dir() + "/" + globalparameters.main_program_file() + ".xml"; //appconfig.get_tetradir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
 
@@ -139,7 +139,7 @@ QString DiskHelper::copy_file_to_trash(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     QString file_name_to_short = get_unical_id() + "_" + file_name_from_short;
-    QString file_name_to     = appconfig.get_trashdir() + "/" + file_name_to_short;
+    QString file_name_to     = appconfig.trash_dir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
 

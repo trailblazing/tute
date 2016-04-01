@@ -647,7 +647,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
     boost::intrusive_ptr<TreeItem> item;
     int found = 0;
 
-    for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
+    for(auto it = _child_items.begin(); it != _child_items.end(); it++) {
         if(it->get()->id() == record->field("id")) {
             found++;
 
@@ -680,7 +680,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
         //        }
         //    }
 
-        //        for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
+        //        for(auto it = _child_items.begin(); it != _child_items.end(); it++) {
         //            if(it->get()->id() == item->id()) {
         //                _child_items.erase(it);
         //            }
@@ -706,7 +706,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_duplicate(boost::intrusive_ptr<Tr
         // int pos = -1;
         int found = 0;
 
-        for(QList<boost::intrusive_ptr<TreeItem>>::iterator it = _child_items.begin(); it != _child_items.end(); it++) {
+        for(auto it = _child_items.begin(); it != _child_items.end(); it++) {
             if(it->get() == _item.get()) {
                 found++;
 
@@ -790,24 +790,27 @@ boost::intrusive_ptr<TreeItem> TreeItem::item_merge(boost::intrusive_ptr<TreeIte
     return boost::intrusive_ptr<TreeItem>(this);
 }
 
-bool TreeItem::self_remove()
+boost::intrusive_ptr<TreeItem> TreeItem::self_remove()
 {
-    bool result = false;
+    //    bool result = false;
+    boost::intrusive_ptr<TreeItem> _result(nullptr);
 
     //    if(is_empty()) {
     if(_parent_item) {
-        if(_parent_item->child_remove(boost::intrusive_ptr<TreeItem>(this)))
-            result = true;
+        //        if(
+        _result = _parent_item->child_remove(boost::intrusive_ptr<TreeItem>(this));
+        //        )
+        //        result = true;
     }
 
     //    }
 
-    return result;
+    return _result;
 }
 
-bool TreeItem::self_empty_remove()
+boost::intrusive_ptr<TreeItem> TreeItem::self_empty_remove()
 {
-    bool result = false;
+    boost::intrusive_ptr<TreeItem> result(nullptr); // = false;
 
     if(is_empty()) {
         result = self_remove();
@@ -1630,6 +1633,11 @@ bool TreeItem::is_holder()
         is_holder_ = (_record_binder->bounded_item().get() == this);
 
     return is_holder_;
+}
+
+bool TreeItem::is_ancestor_of(boost::intrusive_ptr<TreeItem> it)
+{
+    return it->path_absolute().contains(this->id());
 }
 
 //void TreeItem::binder(TreeItem::bind_helper g) {_binder = g;}

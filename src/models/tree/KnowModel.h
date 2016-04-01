@@ -83,8 +83,13 @@ public:
     //    bool is_global_root() {return _is_global_root;}
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
-    boost::intrusive_ptr<TreeItem> duplicated_remove(boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
-    void record_remove(boost::intrusive_ptr<TreeItem> _item);
+
+    boost::intrusive_ptr<TreeItem> model_duplicated_remove(
+        std::function<QList<boost::intrusive_ptr<TreeItem>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
+        , std::function<KnowModel *()> _source_model
+        , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
+
+    boost::intrusive_ptr<TreeItem> record_remove(boost::intrusive_ptr<TreeItem> _item);
 
 
 
@@ -107,6 +112,9 @@ private:
     QModelIndex model_move_up_dn(const QModelIndex &_index
                                  , int(TreeItem::*_move)()   //int direction
                                 );
+
+    boost::intrusive_ptr<TreeItem> model_delete_item(boost::intrusive_ptr<TreeItem> _item_delete);
+    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
