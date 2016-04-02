@@ -113,6 +113,7 @@ private:
                                  , int(TreeItem::*_move)()   //int direction
                                 );
 
+    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
     boost::intrusive_ptr<TreeItem> model_delete_item(boost::intrusive_ptr<TreeItem> _item_delete);
     boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
@@ -125,7 +126,7 @@ private:
     //    bool is_contains_crypt_branches_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
 
     // Добавление подветки из буфера обмена относительно указанного элемента
-    QString model_paste_child_impl(boost::intrusive_ptr<TreeItem> _target_item, int _sibling_order, ClipboardBranch *subbranch);
+    QString model_paste_child_impl(boost::intrusive_ptr<TreeItem> _target_item, ClipboardBranch *subbranch, int _sibling_order);
 
     //    QStringList record_path_recurse(boost::intrusive_ptr<TreeItem> item, QStringList currentPath, QString recordId, int mode);
 
@@ -139,11 +140,11 @@ private:
 
     // Добавление новой ветки после указанной ветки
     boost::intrusive_ptr<TreeItem> model_add_sibling(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> model_move_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item);
+    boost::intrusive_ptr<TreeItem> model_move_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item);
 
     // Добавление новой подветки к указанной ветке
     boost::intrusive_ptr<TreeItem> model_add_child_new(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> model_move_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> model_move_as_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к Item элементу
     boost::intrusive_ptr<TreeItem> model_add_child_new(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
@@ -152,7 +153,7 @@ private:
     boost::intrusive_ptr<TreeItem> lock_child_add(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
 #endif
 
-    boost::intrusive_ptr<TreeItem> model_move_child(boost::intrusive_ptr<TreeItem> parent, int pos, boost::intrusive_ptr<TreeItem> _source_item, int _mode = ADD_NEW_RECORD_AFTER);
+    boost::intrusive_ptr<TreeItem> model_move_as_child_impl(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> _source_item, int pos, int _mode = ADD_NEW_RECORD_AFTER);
     //    boost::intrusive_ptr<TreeItem> add_new_branch(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> item);
 
     // Перемещение ветки вверх и вниз

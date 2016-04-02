@@ -71,7 +71,7 @@ void    print_object_tree(void);
 //bool    compare_qstringlist_length(const QStringList &list1, const QStringList &list2);
 
 template<typename ToolButton>
-void    insert_action_as_button(QToolBar *tools_line, QAction *action)  // void    insert_action_as_button(QToolBar *tools_line, QAction *action);
+void insert_action_as_button(QToolBar *tools_line, QAction *action)  // void    insert_action_as_button(QToolBar *tools_line, QAction *action);
 {
     tools_line->addAction(action);
     qobject_cast<ToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(true);    // false

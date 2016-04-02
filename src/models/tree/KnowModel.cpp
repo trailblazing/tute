@@ -629,7 +629,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(boost::intrusive_p
 
 
 // Добавление новой ветки после указанной ветки
-boost::intrusive_ptr<TreeItem> KnowModel::model_move_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item)
+boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(_index);
@@ -648,7 +648,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_sibling(const QModelIndex &
         //                        , _index  // parent->count_direct()
         //                        , _index  // parent->count_direct()
         //                       );
-        _result = model_move_child(parent, _index.row(), _source_item);
+        _result = model_move_as_child_impl(parent, _source_item, _index.row());
         //        endInsertRows();
     }
 
@@ -658,7 +658,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_sibling(const QModelIndex &
 
 
 // Добавление новой подветки к указанной ветке
-boost::intrusive_ptr<TreeItem> KnowModel::model_move_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it)
+boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item)
 {
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(_index);
@@ -668,16 +668,17 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_child(const QModelIndex &_i
     //                    , _index.row()  // parent->count_direct()
     //                    , _index.row()  // parent->count_direct()
     //                   );
-    _result = model_move_child(current
-                               , 0  // _index.row()
-                               , it);
+    _result = model_move_as_child_impl(current
+                                       , _source_item
+                                       , 0  // _index.row()
+                                      );
     //    endInsertRows();
     return _result;
 }
 
 
 // Add a new highlight to the Item element  // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> KnowModel::model_move_child(boost::intrusive_ptr<TreeItem> parent, int pos, boost::intrusive_ptr<TreeItem> _source_item, int _mode) //    , QString id, QString name
+boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrusive_ptr<TreeItem> parent, boost::intrusive_ptr<TreeItem> _source_item, int pos, int _mode) //    , QString id, QString name
 {
     auto _index_parent = index(parent);
 
@@ -811,7 +812,7 @@ QString KnowModel::model_paste_sibling(const QModelIndex &_index, ClipboardBranc
     if(parent) {
         assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == parent->id();}));
         //        beginInsertRows(_index.parent(), parent->count_direct(), parent->count_direct());
-        pasted_branch_id = model_paste_child_impl(parent, current->sibling_order(), (ClipboardBranch *)subbranch);
+        pasted_branch_id = model_paste_child_impl(parent, (ClipboardBranch *)subbranch, current->sibling_order());
         //        endInsertRows();
     }
 
@@ -827,7 +828,7 @@ QString KnowModel::model_paste_child(const QModelIndex &_index, ClipboardBranch 
     boost::intrusive_ptr<TreeItem> parent = item(_index);
     assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == parent->id();}));
     //    beginInsertRows(_index, parent->count_direct(), parent->count_direct());
-    pasted_branch_id = model_paste_child_impl(parent, parent->count_direct(), (ClipboardBranch *)subbranch);
+    pasted_branch_id = model_paste_child_impl(parent, (ClipboardBranch *)subbranch, parent->count_direct());
     //    endInsertRows();
 
     return pasted_branch_id;
@@ -838,128 +839,53 @@ QString KnowModel::model_paste_child(const QModelIndex &_index, ClipboardBranch 
 
 // Добавление подветки из буфера обмена относительно указанного элемента
 // Функция возвращает новый идентификатор стартовой добавленной подветки
-QString KnowModel::model_paste_child_impl(boost::intrusive_ptr<TreeItem> _target_item, int _sibling_order, ClipboardBranch *_sub_branch)
+QString KnowModel::model_paste_child_impl(boost::intrusive_ptr<TreeItem> _target_item, ClipboardBranch *_sub_branch, int _sibling_order)
 {
     qDebug() << "In paste_subbranch()";
 
     assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == _target_item->id();}));
 
-    std::function<QString(boost::intrusive_ptr<TreeItem>, int, QString, ClipboardBranch *)>
+    std::function<QString(boost::intrusive_ptr<TreeItem>, const QString &, ClipboardBranch *, const int)>
     child_paste_recursive
         = [&](boost::intrusive_ptr<TreeItem>    _clip_parent
-              , int                             _sibling_order
-              , QString                         _clip_root_items_parent_id
+              , const QString                   & _clip_root_items_parent_id
               , ClipboardBranch *               _sub_branch
+              , const int                       _sibling_order
     ) {
         QString id = _clip_parent->id();
 
         //        if(_clip_parent->parent()) {
         qDebug() << "In paste_subbranch_recurse()";
 
-        //        QModelIndex _index = index(_clip_parent);
-
-        //        beginInsertRows(_index  // .parent()
-        //                        , _sibling_order    // _index.row()  // item->sibling_order() //item->parent()->position_current(item->id())
-        //                        , _sibling_order    // _index.row()  // item->sibling_order() //item->parent()->position_current(item->id())
-        //                       );
-
-
-
-
-        //            // ---------------------------
-        //            // Добавляется стартовая ветка
-        //            // ---------------------------
-
-        //            // Выясняются поля стартовой ветки
-        //            QMap<QString, QString> subbranch_fields = _sub_branch->branch_fields_by_id(_start_branch_id);
-
-        //            // Выясняется имя ветки
-        //            QString subbranch_name = subbranch_fields["name"];
-
-        //            // Получение уникального идентификатора, под которым будет добавляться ветка
-        //            id = get_unical_id();
-
-        //            // Стартовая ветка добавляется
-        //            auto _new_item = lock_child_add_new(_item, _item->parent()->count_direct(), id, subbranch_name);
-
-        //            //        // Выясняется указатель на эту добавленную ветку
-        //            //        auto newitem = item_by_id(id);
-
-        //            qDebug() << "KnowTreeModel::branch_paste_sub_recurse() : create branch with field" << _new_item->fields_all();
-
-
-        // -----------------------------------------------
-        // Для стартовой ветки добавляются конечные записи
-        // -----------------------------------------------
-
         // Выясняются данные конечных записей
         QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_parent_id(_clip_root_items_parent_id);
 
-        foreach(boost::intrusive_ptr<TreeItem> record, records) {
+        for(int i = 0; i < records.size(); i++) { //foreach(boost::intrusive_ptr<TreeItem> record, records) {
+            auto record = records.at(i);
             qDebug() << "Add table record " + record->field("name");
 
-            if(_clip_parent != record) {
+            if(record && _clip_parent != record) {
                 // _new_item
-                auto result = model_move_child(_clip_parent, _sibling_order, record);  // _clip_parent->count_direct()
+                auto record_shadow = model_move_as_child_impl(_clip_parent, record, _sibling_order + i); // _clip_parent->count_direct()
+                assert(record_shadow == record);
                 // _clip_parent->child_move(_clip_parent->count_direct(), record, ADD_NEW_RECORD_TO_END);    // _new_item
 
-                //                // --------------------
-                //                // Добавляются подветки
-                //                // --------------------
+                assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == record_shadow->id();}));
 
-                //                // Выясняется линейная структура добавляемого дерева
-                //                QList<CLIPB_TREE_ONE_LINE> tree = _sub_branch->id_tree_get();
+                if(record_shadow) {    // you can not use result->count_direct() because there are no children there
+                    //                    QList< boost::intrusive_ptr<TreeItem> > record_children = _sub_branch->records_by_parent_id(record_shadow->id());
 
-                //                // Выясняется список подветок для стартовой ветки
-                //                QStringList subbranch_id_list;
+                    //                    for(int i = 0; i < record_children.size(); i++) { //foreach(QString current_subbranch_id, subbranch_id_list) {
 
-                //                foreach(CLIPB_TREE_ONE_LINE one_line, tree) {
-                //                    if(one_line._branch_id == _start_branch_id) {
-                //                        subbranch_id_list = one_line._subbranches_id;
-                //                    }
-                //                }
-                assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == result->id();}));
+                    //                    assert(record_children[i]->parent_id() == record_shadow->id());
 
-                if(result) {
-                    for(int i; i < result->count_direct(); i++) { //foreach(QString current_subbranch_id, subbranch_id_list) {
-                        // QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(current_subbranch_id);
-                        assert(result->item_fat(i)->parent_id() == result->id());
-                        // foreach(boost::intrusive_ptr<TreeItem> record, records) {
-                        child_paste_recursive(result, i, result->item_fat(i)->parent_id(), _sub_branch);
-                        // }
-                    }
+                    assert(0 == record_shadow->count_direct());
+                    child_paste_recursive(record_shadow, record_shadow->id(), _sub_branch, 0);
+
+                    //                    }
                 }
             }
         }
-
-        //        endInsertRows();
-
-
-
-        //            // --------------------
-        //            // Добавляются подветки
-        //            // --------------------
-
-        //            // Выясняется линейная структура добавляемого дерева
-        //            QList<CLIPB_TREE_ONE_LINE> tree = _sub_branch->id_tree_get();
-
-        //            // Выясняется список подветок для стартовой ветки
-        //            QStringList subbranch_id_list;
-
-        //            foreach(CLIPB_TREE_ONE_LINE one_line, tree) {
-        //                if(one_line._branch_id == _start_branch_id) {
-        //                    subbranch_id_list = one_line._subbranches_id;
-        //                }
-        //            }
-
-        //            foreach(QString current_subbranch_id, subbranch_id_list) {
-        //                QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_branch_id(current_subbranch_id);
-
-        //                foreach(boost::intrusive_ptr<TreeItem> record, records) {
-        //                    child_paste_recurse(record, current_subbranch_id, _sub_branch);
-        //                }
-        //            }
-
 
         //        }
 
@@ -974,9 +900,17 @@ QString KnowModel::model_paste_child_impl(boost::intrusive_ptr<TreeItem> _target
     //    QString start_branch_id = tree[0]._branch_id;
 
     //    auto _clip_root_items_parent_id_list = subbranch->clip_root_items_parent_id_list();
+    auto id_list = _sub_branch->clip_root_items_parent_id_list();
+    //    int offset = 0;
 
-    for(auto id : _sub_branch->clip_root_items_parent_id_list()) {
-        child_paste_recursive(_target_item, _sibling_order, id, _sub_branch);
+    for(auto it = id_list.begin(); it != id_list.end(); it++) {
+
+        child_paste_recursive(_target_item
+                              , *it
+                              , _sub_branch
+                              , _sibling_order  // + offset
+                             );
+        //        offset++;
     }
 
     return _target_item->id();
@@ -1053,6 +987,27 @@ QModelIndex KnowModel::model_move_up_dn(const QModelIndex &_index
 
     return _new_index;
 }
+
+
+boost::intrusive_ptr<TreeItem> KnowModel::model_child_remove(// boost::intrusive_ptr<TreeItem> parent_item,
+    boost::intrusive_ptr<TreeItem> target
+    // , int position, int rows, const QModelIndex &parent
+)
+{
+    boost::intrusive_ptr<TreeItem> _result(nullptr);
+    boost::intrusive_ptr<TreeItem> parent_item = target->parent();  // item(parent);
+    QModelIndex parent_index = index(parent_item);
+    //    bool success = false;
+    int position = target->sibling_order();
+    beginRemoveRows(parent_index, position, position);    // + rows - 1
+
+    //    success
+    _result = parent_item->child_remove(target);
+    endRemoveRows();
+
+    return _result;
+}
+
 
 // Удаление одной ветки и её подветок
 // Delete one branch and its podvetok / garter
@@ -1139,9 +1094,9 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
 
 
         //        _source_model->beginRemoveRows(_index_to_be_delete.parent(), _index_to_be_delete.row(), _index_to_be_delete.row());
-        if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
-            _item_deleted = _item_delete;
+        _item_deleted = model_child_remove(_item_delete); // if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
 
+        assert(_item_deleted);
         //        _source_model->endRemoveRows();
 
         //        items_update_selected();
@@ -1215,7 +1170,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
         if(_parent && _parent->count_direct() == 0 && root_item()->count_direct() > 0) { // (index.row() > 0) == index.isValid()
 
             // if(_parent)
-            _parent->child_remove(_item_deleted);
+            //            _parent->child_remove(_item_deleted);
 
             while(_parent->self_empty_remove()) {
                 _parent = _parent->parent();
@@ -1314,9 +1269,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_index(QModelIndex _index_
 
 
         //        _source_model->beginRemoveRows(_index_to_be_delete.parent(), _index_to_be_delete.row(), _index_to_be_delete.row());
-        if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
-            _item_deleted = _item_delete;
+        //        if(
+        _item_deleted = model_child_remove(_item_delete); // , _index_delete.row(), 1, _index_delete.parent());
+        //        )
+        //        {
+        //            _item_deleted = _item_delete;
+        //        }
 
+        assert(_item_deleted);
         //        _source_model->endRemoveRows();
 
         //        items_update_selected();
@@ -1389,7 +1349,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_index(QModelIndex _index_
         if(_parent && _parent->count_direct() == 0 && root_item()->count_direct() > 0) { // (index.row() > 0) == index.isValid()
 
             // if(_parent)
-            _parent->child_remove(_item_deleted);
+            //            _parent->child_remove(_item_deleted);
 
             while(_parent->self_empty_remove()) {
                 _parent = _parent->parent();

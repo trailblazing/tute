@@ -244,7 +244,7 @@ namespace browser {
         } else {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->view_paste_as_sibling(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->current_index(), result_item);
+            _tree_screen->view_paste_as_sibling([&](){return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index(), result_item);
             //            _tree_screen->tree_view()->reset();
             _tree_screen->setup_model(result_item);
             auto _index = _tree_screen->tree_view()->select_and_current(result_item->item_direct(0));

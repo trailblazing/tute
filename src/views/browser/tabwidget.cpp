@@ -550,9 +550,11 @@ namespace browser {
                             _record_controller->select_id(it->field("id"));
                         }
                     }
+
                     auto _mainwindow = globalparameters.mainwindow();
 
                     if(!_mainwindow->windowTitle().contains(webView->page()->title())) {_mainwindow->setWindowTitle(QString(application_name) + " : " + webView->page()->title());}
+
                     //                    webView->setFocus();
                     MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
                     assert(metaeditor);
@@ -1683,25 +1685,24 @@ namespace browser {
     }
 
     boost::intrusive_ptr<TreeItem> TabWidget::view_paste_strategy(
-        KnowModel *_current_view_model
+        std::function<KnowModel *()> _current_view_model
         , boost::intrusive_ptr<TreeItem> _result
         , bool item_is_brand_new
         , const QUrl &_find_url
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
         , std::function<bool(boost::intrusive_ptr<TreeItem>)> _check_url)
     {
 
         auto _tree_screen = globalparameters.tree_screen();
         //                    auto _index = _tree_screen->tree_view()->current_index();
-
         // if(idx.isValid()) {
-        _current_view_model = _tree_screen->tree_view()->source_model();
+        //        _current_view_model = _tree_screen->tree_view()->source_model();
 
-        auto session_root_item = _current_view_model->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();}); // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
+        auto session_root_item = _current_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();}); // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
         auto session_root_index = _tree_screen->tree_view()->source_model()->index(session_root_item); //current_index();
         assert(session_root_index.isValid());
         assert(session_root_item);
-        assert(_current_view_model->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == session_root_item->id();}));
+        assert(_current_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == session_root_item->id();}));
 
         //        if(_item->is_lite())_item->to_fat();
 
@@ -1754,14 +1755,18 @@ namespace browser {
     //    template<typename url_type = url_full>
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_impl(//        std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal  //
         const QUrl &_find_url
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
         , equal_url_t _equal
     )
     {
         TreeScreen *_tree_screen    = globalparameters.tree_screen();
         //    auto _know_model_root = tree_screen->know_root();
         auto _know_model_board      = _tree_screen->know_model_board();
-        auto _current_view_model    = _tree_screen->tree_view()->source_model();
+
+        KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
+        auto _current_view_model = std::bind(_source_model_func, _tree_screen->tree_view());
+
+        //        auto _current_view_model    = _tree_screen->tree_view()->source_model();
 
         boost::intrusive_ptr<TreeItem> _result(nullptr);    // =  _know_model_board->root_item();
 
@@ -2036,7 +2041,7 @@ namespace browser {
     //    template<typename url_type = url_full>
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree(
         const QUrl &_find_url
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
         , equal_url_t _equal
     )
     {
@@ -2052,7 +2057,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_impl(
         boost::intrusive_ptr<TreeItem> target
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
         , equal_t _equal
     )
     {
@@ -2066,7 +2071,11 @@ namespace browser {
         TreeScreen *_tree_screen    = globalparameters.tree_screen();
         //    auto _know_model_root = tree_screen->know_root();
         auto _know_model_board      = _tree_screen->know_model_board();
-        auto _current_view_model    = _tree_screen->tree_view()->source_model();
+
+        KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
+        auto _current_view_model = std::bind(_source_model_func, _tree_screen->tree_view());
+
+        //        auto _current_view_model    = _tree_screen->tree_view()->source_model();
 
         if(target->is_lite())target->to_fat();
 
@@ -2316,7 +2325,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree(
         boost::intrusive_ptr<TreeItem> target
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
         , equal_t _equal
     )
     {

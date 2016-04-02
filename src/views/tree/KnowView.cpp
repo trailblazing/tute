@@ -23,7 +23,7 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
-enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::ClearAndSelect;   //Select    Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
+enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;   // ClearAndSelect   Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
 enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemSelectionModel::SelectionFlag::SelectCurrent;    // Select   // SelectCurrent
 
 const char *knowtreeview_singleton_name = "knowtreeview";
@@ -165,8 +165,8 @@ void KnowView::sychronize()
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
                 _tree_screen->view_paste_children(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
-                    _know_root    // _tree_screen->know_branch()
-                    , current_index()
+                    [&]()->KnowModel * {return _know_root;}   // _tree_screen->know_branch()
+                    , _know_root->index(_know_root->item([&](boost::intrusive_ptr<TreeItem> it)->bool {return it->id() == _tree_screen->session_root();}))   // current_index()
                     , new_branch_item
                 );
 

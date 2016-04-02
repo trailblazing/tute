@@ -680,6 +680,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
 }
 
 
+
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
     boost::intrusive_ptr<TreeItem> parent_item = item(parent);
@@ -691,6 +692,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 
     return success;
 }
+
 
 
 int TreeModel::rowCount(const QModelIndex &_index) const

@@ -8,10 +8,10 @@ HidableTabWidget::HidableTabWidget(QWidget *parent) :
 {
     hideAction.setCheckable(true);
     hideAction.setToolTip("Hide Panels");
-    QToolButton *hideButton = new QToolButton();
-    hideButton->setDefaultAction(&hideAction);
-    hideButton->setAutoRaise(true);
-    this->setCornerWidget(hideButton);
+    QToolButton *hide_button = new QToolButton();
+    hide_button->setDefaultAction(&hideAction);
+    hide_button->setAutoRaise(true);
+    this->setCornerWidget(hide_button);
 
 
     setTabPosition(TabPosition::West); // South

@@ -122,7 +122,7 @@ void RecordScreen::save_in_new_branch(bool checked)
     assert(_tree_screen);
     auto _entrance = globalparameters.entrance();
     assert(_entrance);
-    auto _tree_source_model = _tree_screen->tree_view()->source_model();  // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
+    auto _tree_source_model = [&]() {return  _tree_screen->tree_view()->source_model();}; // static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
 
     auto _index = _tree_screen->tree_view()->current_index();
 
@@ -213,8 +213,8 @@ void RecordScreen::setup_actions(void)
             if(_tree_screen && _entrance) {
 
                 QMap<QString, QString> data;
-                auto source_model = _tree_screen->tree_view()->source_model();
-                auto current_root_item = source_model->item(_index);
+                auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                auto current_root_item = _source_model()->item(_index);
 
                 data["id"]      =  get_unical_id(); //current_root_item->id();     // source_model->root_item()->id();     //
                 data["name"]    =  this->tabmanager()->webView(0)->page()->bounded_item()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
@@ -252,13 +252,13 @@ void RecordScreen::setup_actions(void)
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
                     _tree_screen->view_paste_as_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
-                        source_model             // _tree_screen->know_branch()
-                        , _tree_screen->tree_view()->current_index() //,
+                        _source_model             // _tree_screen->know_branch()
+                        , _source_model()->index(_source_model()->item([&](boost::intrusive_ptr<TreeItem> it)->bool {return it->id() == _tree_screen->session_root();})) // _tree_screen->tree_view()->current_index() //,
                         , new_branch_root
                     );
 
 
-                    _tree_screen->setup_model(source_model->root_item());
+                    _tree_screen->setup_model(_source_model()->root_item());
                     //                _tree_screen->know_branch()->synchronized(false);
                     //                _tree_screen->save_knowtree();
                     //                // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
@@ -598,6 +598,7 @@ void RecordScreen::resizeEvent(QResizeEvent *e)
 // (но не всех действий на панели инструментов, так как на панели инструментов есть действия, не оказывающие воздействия на записи)
 void RecordScreen::disable_all_actions(void)
 {
+    //    _save_in_new_branch->setEnabled(false);
     _pin->setEnabled(false);
     _addnew_to_end->setEnabled(false);
     _addnew_before->setEnabled(false);

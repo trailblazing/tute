@@ -58,6 +58,7 @@ public:
     bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 
 
+
     //    bool is_item_valid(QStringList path) const;
     QModelIndex index(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;
     QModelIndex index(delegater _del) const;

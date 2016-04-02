@@ -797,7 +797,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         // После вставки всех данных подгоняется ширина колонок
         //        _findtable->updateColumnsWidth();
-        _tree_screen->view_paste_from_search(_tree_screen->tree_view()->source_model(), _tree_screen->tree_view()->current_index(), _result_item);  // dump to table screen
+        _tree_screen->view_paste_from_search([&]() {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index(), _result_item); // dump to table screen
     };
 
 
