@@ -1291,7 +1291,7 @@ std::vector<boost::intrusive_ptr<TreeItem>> TreeScreen::view_paste_from_children
                 if(!_know_model_board->item([ = ](boost::intrusive_ptr<TreeItem> t)->bool {return t->id() == candidate->id();})) { // candidate->id()
                     // Вставка новых данных в модель дерева записей
                     results.push_back(
-                        view_paste_as_sibling(_modelindex
+                        view_paste_as_child(_modelindex
                                               , candidate
                                               , _substitute_condition   // [&](boost::intrusive_ptr<TreeItem> it)->bool {return it->id() == candidate->id();}
                                              )  // _current_model->add_child_item(_current_model->root_item(), new_branch_root->child(index))
@@ -1572,7 +1572,9 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_as_sibling(
 
         //        result = _current_model()->item(setto);
         _tree_view->select_and_current(result);
-        assert((_source_item == result) || (_source_item->name() == result->name()));
+        assert(
+            (_source_item == result) || (_source_item->name() == result->name())
+        );
         //    } else if(_current_model->root_item()->id() == it->id()) {
 
         //        assert(new_branch_root == result);  // not must, if you already have it
