@@ -3,6 +3,9 @@
 #include "main.h"
 #include "models/record_table/ItemsFlat.h"
 #include "libraries/GlobalParameters.h"
+#include "models/tree/KnowModel.h"
+
+
 
 extern GlobalParameters globalparameters;
 
@@ -157,121 +160,143 @@ QModelIndex TreeModel::index(std::function<bool(boost::intrusive_ptr<const TreeI
     return index_recursive(QModelIndex(), _equal);;
 }
 
-// does not must be succeeded
-QModelIndex TreeModel::index(delegater _del) const
-{
-    QModelIndex result;
-    //    assert(!result.isValid());
-
-    std::function<QModelIndex(QModelIndex, delegater)>            // , int
-    index_recursive = [&](QModelIndex _index, delegater _del    // , int mode
-    ) {
-        //static
-        QModelIndex find_index;
-        // static
-        //        bool is_find = false;
-
-        //        if(!is_find) { //return find_index;
-
-        //            if(mode == 0) {
-        //                is_find = false;    // return QModelIndex();
-        //            } else  //        assert(_index.isValid());
-        //                if(mode == 1) { // is the _index valid?
-        //            // If the node pointer coincides with the given item    // Если указатель узла совпадает с заданным item
-        //            TreeItem *index_item = static_cast<TreeItem *>(_index.internalPointer());
-
-        //            if(_del._equal(index_item)  //_del.get() == index_item
-        //              ) {
-        //                is_find = true;
-        //                find_index = _index;
-        //                return find_index;
-        //            } else if(_index.isValid()) {
-        // Иначе указатель узла не совпадает с заданным
-        // и нужно рекурсивно искать далее
-        // Otherwise, the node pointer does not match with the specified
-        // Need to recursively search for and further
 
 
 
-        //                    int rows = _index.row();
 
-        //                    for(int i = 0; i < _index.row(); i++) {
-        //                        index_recursive(_index.child(i, 0), item, 1);
-        //                    }
+//// does not must be succeeded
+//QModelIndex TreeModel::index(delegater _del) const
+//{
+//    QModelIndex result;
+//    //    assert(!result.isValid());
 
-        //                QModelIndex first_child = index(0, 0, _index);  // _index may be invalid
+//    std::function<QModelIndex(QModelIndex, delegater)>            // , int
+//    index_recursive = [&](QModelIndex _index, delegater _del    // , int mode
+//    ) {
+//        //static
+//        QModelIndex find_index;
+//        // static
+//        //        bool is_find = false;
 
-        //                //                if(first_child.isValid()) {
-        //                for(int i = 0; i < item->child_count(); i++) {
-        //                    index_recursive(
-        //                        index(i, 0, _index) // first_child.sibling(i, 0)
-        //                        , item
-        //                        , 1
-        //                    );
-        //                }
+//        //        if(!is_find) { //return find_index;
+
+//        //            if(mode == 0) {
+//        //                is_find = false;    // return QModelIndex();
+//        //            } else  //        assert(_index.isValid());
+//        //                if(mode == 1) { // is the _index valid?
+//        //            // If the node pointer coincides with the given item    // Если указатель узла совпадает с заданным item
+//        //            TreeItem *index_item = static_cast<TreeItem *>(_index.internalPointer());
+
+//        //            if(_del._equal(index_item)  //_del.get() == index_item
+//        //              ) {
+//        //                is_find = true;
+//        //                find_index = _index;
+//        //                return find_index;
+//        //            } else if(_index.isValid()) {
+//        // Иначе указатель узла не совпадает с заданным
+//        // и нужно рекурсивно искать далее
+//        // Otherwise, the node pointer does not match with the specified
+//        // Need to recursively search for and further
 
 
-        auto it = this->item(_index);   // how about _index itself?
 
-        for(int i = 0; i < it->count_direct(); i++) {
-            auto _index_child = index(i, 0, _index);    // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
+//        //                    int rows = _index.row();
 
-            if(_del._equal(it->item_direct(i).get())) {       //_del.get() == it->child(i).get()
-                // is_find = true;
-                find_index = _index_child;
-                break;  //return find_index;
-            } else {
-                find_index = index_recursive(_index_child, _del);    // , 1
+//        //                    for(int i = 0; i < _index.row(); i++) {
+//        //                        index_recursive(_index.child(i, 0), item, 1);
+//        //                    }
 
-                // is_find = _del._equal(item(find_index).get());    // find_index.isValid();
+//        //                QModelIndex first_child = index(0, 0, _index);  // _index may be invalid
 
-                if(_del._equal(item(find_index).get())) {
-                    break;
-                }
-            }
-        }
+//        //                //                if(first_child.isValid()) {
+//        //                for(int i = 0; i < item->child_count(); i++) {
+//        //                    index_recursive(
+//        //                        index(i, 0, _index) // first_child.sibling(i, 0)
+//        //                        , item
+//        //                        , 1
+//        //                    );
+//        //                }
 
-        //                for(int i = 0; i < _index.row(); i++) {
-        //                    index_recursive(_index.child(i, 0), _item, 1);
-        //                }
-        //            }
 
-        //                }
-        //        }
+//        auto it = this->item(_index);   // how about _index itself?
 
-        return find_index;  // QModelIndex();
-    };
+//        for(int i = 0; i < it->count_direct(); i++) {
+//            auto _index_child = index(i, 0, _index);    // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
 
-    assert(_root_item);
-    //    //    // Initialize a recursive function  // Инициализация рекурсивной функции
-    //    //    index_recursive(QModelIndex(), _del, 0);
+//            if(_del._equal(it->item_direct(i).get())) {       //_del.get() == it->child(i).get()
+//                // is_find = true;
+//                find_index = _index_child;
+//                break;  //return find_index;
+//            } else {
+//                find_index = index_recursive(_index_child, _del);    // , 1
 
-    //    //    QModelIndex _index_root;
+//                // is_find = _del._equal(item(find_index).get());    // find_index.isValid();
 
-    //    //    _index_root = index(0, 0, QModelIndex());
+//                if(_del._equal(item(find_index).get())) {
+//                    break;
+//                }
+//            }
+//        }
 
-    //    for(int i = 0; i < _root_item->current_count(); i++) {
-    //        auto _index_child = index(i, 0, QModelIndex());  // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get())); //        index_recursive(_idx, item, 1);
+//        //                for(int i = 0; i < _index.row(); i++) {
+//        //                    index_recursive(_index.child(i, 0), _item, 1);
+//        //                }
+//        //            }
 
-    //        assert(_index_child.isValid());
+//        //                }
+//        //        }
 
-    //        if(_del._equal(_root_item->child(i).get())) {  //_del.get() == _root_item->child(j).get()
-    //            // index_recursive(_idx, _item, 1);
-    //            result = _index_child;
-    //            break;
-    //        } else {
-    //            result = index_recursive(_index_child, _del, 1);
+//        return find_index;  // QModelIndex();
+//    };
 
-    //            if(_del._equal(item(result).get())) { //result.isValid()
-    //                break;
-    //            }
-    //        }
-    //    }
+//    assert(_root_item);
+//    //    //    // Initialize a recursive function  // Инициализация рекурсивной функции
+//    //    //    index_recursive(QModelIndex(), _del, 0);
 
-    result = index_recursive(QModelIndex(), _del);
+//    //    //    QModelIndex _index_root;
 
-    return result;
-}
+//    //    //    _index_root = index(0, 0, QModelIndex());
+
+//    //    for(int i = 0; i < _root_item->current_count(); i++) {
+//    //        auto _index_child = index(i, 0, QModelIndex());  // createIndex(j, 0, static_cast<void *>(_root_item->child(j).get())); //        index_recursive(_idx, item, 1);
+
+//    //        assert(_index_child.isValid());
+
+//    //        if(_del._equal(_root_item->child(i).get())) {  //_del.get() == _root_item->child(j).get()
+//    //            // index_recursive(_idx, _item, 1);
+//    //            result = _index_child;
+//    //            break;
+//    //        } else {
+//    //            result = index_recursive(_index_child, _del, 1);
+
+//    //            if(_del._equal(item(result).get())) { //result.isValid()
+//    //                break;
+//    //            }
+//    //        }
+//    //    }
+
+//    result = index_recursive(QModelIndex(), _del);
+
+//    return result;
+//}
+
+//boost::intrusive_ptr<TreeItem> TreeModel::item(const delegater &_del)const
+//{
+//    //    boost::intrusive_ptr<TreeItem> result = _root_item; // (nullptr);
+//    //    QModelIndex idx = index(_del);
+
+//    //    if(idx.isValid()) {
+//    //        result = item(idx);
+//    //    }
+
+//    return item(index(_del));  // result;
+//}
+
+
+
+
+
+
 
 QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 {
@@ -398,7 +423,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 }
 
 // Обновление на экране ветки и подветок
-void TreeModel::index_update(const QModelIndex &_index)
+void TreeModel::update_index(const QModelIndex &_index)
 {
     //    auto _source_model = _tree_view->source_model();
     // Для корневой ветки дается команда чтобы модель сообщила о своем изменении
@@ -550,17 +575,7 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(std::function<bool(boost::intrusi
 
 }
 
-boost::intrusive_ptr<TreeItem> TreeModel::item(const delegater &_del)const
-{
-    //    boost::intrusive_ptr<TreeItem> result = _root_item; // (nullptr);
-    //    QModelIndex idx = index(_del);
 
-    //    if(idx.isValid()) {
-    //        result = item(idx);
-    //    }
-
-    return item(index(_del));  // result;
-}
 
 //boost::intrusive_ptr<TreeItem> TreeModel::find_recursive(const QUrl &find_url)const
 //{
@@ -680,6 +695,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
 }
 
 
+
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
     boost::intrusive_ptr<TreeItem> parent_item = item(parent);
@@ -691,6 +707,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 
     return success;
 }
+
 
 
 int TreeModel::rowCount(const QModelIndex &_index) const
@@ -756,4 +773,10 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QV
     Q_UNUSED(section);
     _root_item->field(QString("name"), value.toString());
     return true;
+}
+
+TreeModel::ModelIndex::ModelIndex(std::function<KnowModel *()> _current_model,
+                                  const QModelIndex &_current_index): _current_model(_current_model), _current_index(_current_index)
+{
+    assert(_current_model()->item(_current_index));
 }

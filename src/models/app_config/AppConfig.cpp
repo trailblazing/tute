@@ -268,15 +268,26 @@ void AppConfig::mainwin_geometry(int x, int y, int w, int h)
     conf->setValue("mainwingeometry", result);
 }
 
-void AppConfig::v_leftsplitter_sizelist(QList<int> list)
+void AppConfig::v_left_splitter_sizelist(QList<int> list)
 {
-    splitter_sizelist("v_leftsplitter", list);
+    splitter_sizelist("v_left_splitter", list);
 }
 
-QList<int> AppConfig::v_leftsplitter_sizelist()
+QList<int> AppConfig::v_left_splitter_sizelist()
 {
-    return splitter_sizelist("v_leftsplitter");
+    return splitter_sizelist("v_left_splitter");
 }
+
+void AppConfig::v_right_splitter_sizelist(QList<int> list)
+{
+    splitter_sizelist("v_right_splitter", list);
+}
+
+QList<int> AppConfig::v_right_splitter_sizelist()
+{
+    return splitter_sizelist("v_right_splitter");
+}
+
 
 QList<int> AppConfig::vspl_sizelist(void) const
 {
@@ -1018,8 +1029,8 @@ QStringList AppConfig::get_parameter_table_1(bool withEndSignature)const
     table << "findscreen_show"          << "bool" << "false";
     table << "findscreen_wordregard"    << "int" << "1";
     table << "editor_show"              << "bool" << "false";
-    table << "findsplitter_size_list"   << "QString" << "517,141";
-    table << "hspl_size_list"           << "QString" << "237,621";
+    table << "find_splitter_sizelist"   << "QString" << "517,141";
+    table << "hspl_sizelist"            << "QString" << "237,621";
     table << "lastidnum"                << "int" << "3537";
     table << "lastnotenum"              << "int" << "3119";
     table << "lastprefixnum"            << "int" << "7540";
@@ -1030,7 +1041,7 @@ QStringList AppConfig::get_parameter_table_1(bool withEndSignature)const
     table << "trashmaxfilecount"        << "int" << "200";
     table << "trashsize"                << "int" << "5";
     table << "tree_position"            << "QString" << "0,1818,1819";
-    table << "vspl_size_list"           << "QString" << "171,487";
+    table << "vspl_sizelist"            << "QString" << "171,487";
     table << "findscreen_find_inauthor" << "bool" << "true";
     table << "findscreen_find_inurl"    << "bool" << "false";
 
@@ -1548,6 +1559,7 @@ QStringList AppConfig::get_parameter_table_27(bool withEndSignature)
     // Старые параметры, аналогичные версии 26
     table << get_parameter_table_26(false);
 
+    table << "v_right_splitter_sizelist"            << "QString" << "959";
     //    table << "enableDecryptFileToTrashDirectory" << "bool" << "false";
 
     if(withEndSignature)

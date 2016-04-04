@@ -280,7 +280,7 @@ public:
     boost::intrusive_ptr<TreeItem> active_subset() const;
 
 
-    boost::intrusive_ptr<TreeItem> child_move(int pos, boost::intrusive_ptr<TreeItem> _source_item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
+    boost::intrusive_ptr<TreeItem> move_as_child(int pos, boost::intrusive_ptr<TreeItem> _source_item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
     //    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
 
 

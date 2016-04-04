@@ -58,9 +58,10 @@ MainWindow::MainWindow(
     , _appconfig(_appconfig)
     , _databaseconfig(_databaseconfig)
     , _v_right_splitter(new QSplitter(Qt::Vertical))
-    , _find_splitter(new QSplitter(Qt::Vertical))
+    , _v_find_splitter(new QSplitter(Qt::Vertical))
     , _vtabwidget(new HidableTabWidget(this))
-    , _v_left_splitter(new QSplitter(Qt::Horizontal))      // Qt::Vertical
+    , _h_right_splitter(new QSplitter(Qt::Horizontal))
+    , _h_left_splitter(new QSplitter(Qt::Horizontal))      // Qt::Vertical
     , _h_splitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
     , _editmenu(new QMenu(tr("&Edit"), this))
@@ -92,6 +93,23 @@ MainWindow::MainWindow(
     //    _page_screen->hide();
 
     _globalparameters.mainwindow(this);
+
+
+
+    //    int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
+    //    int vtab_g_width = _vtabwidget->geometry().width();         // 100
+    //    int this_width = geometry().width();                        // 640
+    //    int download_width = _download->geometry().width();         // 1089
+    //    int tree_screen_width = _tree_screen->geometry().width();   // 100
+    //    int find_splitter_width = _v_find_splitter->geometry().width(); // 640
+    //    int left_splitter_width = _h_left_splitter->geometry().width(); // 640
+
+    //    if(_vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()) {
+    //        _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
+    //    }
+
+
+
     _globalparameters.vtab(_vtabwidget);
 
     extern QObject *mainwindow;
@@ -165,9 +183,10 @@ MainWindow::~MainWindow()
     //    delete  _vtabwidget;
 
     delete  _v_right_splitter;
-    delete  _find_splitter;
+    delete  _v_find_splitter;
     //    delete  _vtabwidget;
-    delete  _v_left_splitter;
+    delete  _h_right_splitter;
+    delete  _h_left_splitter;
     delete  _h_splitter;
 
     delete  _filemenu;
@@ -289,11 +308,11 @@ void MainWindow::assembly(void)
     _v_right_splitter->setObjectName("v_right_splitter");
 
     //    find_splitter = new QSplitter(Qt::Vertical);
-    _find_splitter->addWidget(_v_right_splitter);             //findSplitter->addWidget(hSplitter);
-    _find_splitter->addWidget(_find_screen);
-    _find_splitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
-    _find_splitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
-    _find_splitter->setObjectName("find_splitter");
+    _v_find_splitter->addWidget(_v_right_splitter);             //findSplitter->addWidget(hSplitter);
+    _v_find_splitter->addWidget(_find_screen);
+    _v_find_splitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
+    _v_find_splitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
+    _v_find_splitter->setObjectName("find_splitter");
 
     //    _qtabwidget = new QTabWidget(this);
 
@@ -353,19 +372,35 @@ void MainWindow::assembly(void)
     //    );
 
 
-    _v_left_splitter->addWidget(_vtabwidget);
-    _v_left_splitter->addWidget(_find_splitter);
+
+
+    //    int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
+    //    int vtab_g_width = _vtabwidget->geometry().width();         // 100
+    //    int this_width = geometry().width();                        // 640
+    //    int download_width = _download->geometry().width();         // 1089
+    //    int tree_screen_width = _tree_screen->geometry().width();   // 100
+    //    int find_splitter_width = _v_find_splitter->geometry().width(); // 640
+    //    int left_splitter_width = _h_left_splitter->geometry().width(); // 640
+
+    //    if(_vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()) {
+    //        _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
+    //    }
+
+    _h_right_splitter->addWidget(_v_find_splitter);
+
+    _h_left_splitter->addWidget(_vtabwidget);
+    _h_left_splitter->addWidget(_h_right_splitter);
 
 
 
     //    v_left_splitter->addWidget(treeScreen);
     //    v_left_splitter->addWidget(recordTableScreen);
-    _v_left_splitter->setCollapsible(0, false);
+    _h_left_splitter->setCollapsible(0, false);
     //    v_left_splitter->setCollapsible(1, false);
-    _v_left_splitter->setObjectName("v_left_splitter");
+    _h_left_splitter->setObjectName("v_left_splitter");
 
-    globalparameters.find_splitter(_find_splitter);
-    globalparameters.v_left_splitter(_v_left_splitter);
+    globalparameters.find_splitter(_v_find_splitter);
+    globalparameters.v_left_splitter(_h_left_splitter);
     globalparameters.v_right_splitter(_v_right_splitter);
 
 
@@ -376,7 +411,7 @@ void MainWindow::assembly(void)
 
 
     //    hSplitter = new QSplitter(Qt::Horizontal);
-    _h_splitter->addWidget(_v_left_splitter);
+    _h_splitter->addWidget(_h_left_splitter);
     //hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
     //hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
 
@@ -450,8 +485,63 @@ void MainWindow::restore_geometry(void)
 
     _v_right_splitter->setSizes(appconfig.vspl_sizelist());
     _h_splitter->setSizes(appconfig.hspl_sizelist());
-    _v_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
-    _find_splitter->setSizes(appconfig.findsplitter_sizelist());
+    _h_right_splitter->setSizes(appconfig.v_right_splitter_sizelist());
+    _h_left_splitter->setSizes(appconfig.v_left_splitter_sizelist());
+    _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
+
+    //    int vtab_base = _vtabwidget->baseSize().width();            // 0
+    //    int vtab_frame = _vtabwidget->frameSize().width();          // 1118
+    //    int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 1118
+    int vtab_g_width = _vtabwidget->geometry().width();         // 1118
+    //    int this_width = geometry().width();                        // 1366
+    //    int download_width = _download->geometry().width();         // 1089
+    //    int tree_screen_width = _tree_screen->geometry().width();   // 236
+    //    int find_splitter_width = _v_find_splitter->geometry().width(); // 0
+    //    int left_splitter_size_width = _h_left_splitter->size().width();            // 1124
+    //    int left_splitter_geometry_width = _h_left_splitter->geometry().width();    // 1124
+    //    int right_splitter_width = _h_right_splitter->geometry().width();           // 0
+
+    //    if(0 == find_splitter_width // _vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()
+    //      ) {
+    //        _download->resize(vtab_g_width * 15 / 100, _vtabwidget->geometry().height());
+    //        _vtabwidget->resize(vtab_g_width * 15 / 100, _vtabwidget->geometry().height());
+    //        _entrance->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
+    //        _editor_screen->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
+    //        _find_screen->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
+    //        _v_find_splitter->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());   //
+    //        _h_right_splitter->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());   //
+
+    //    }
+
+    //    download_width = _download->geometry().width();         // 1089
+    //    vtab_g_width = _vtabwidget->geometry().width();                 // 167
+    //    find_splitter_width = _v_find_splitter->geometry().width();     // 950
+    //    right_splitter_width = _h_right_splitter->geometry().width();   // 950
+    //    _h_right_splitter->move(_h_right_splitter->x() - vtab_g_width * 85 / 100, _h_right_splitter->y());
+
+
+    //    _h_right_splitter->repaint();
+    //    _h_left_splitter->repaint();
+    auto sizes = _h_left_splitter->sizes();
+    QList<int> new_sizes;
+
+    for(auto sz : sizes) {
+        if(sz == 0) {
+            sz = vtab_g_width * 85 / 100;
+        } else if(sz == vtab_g_width) {
+            sz = vtab_g_width * 15 / 100;
+        }
+
+        new_sizes << sz;
+    }
+
+    _h_left_splitter->setSizes(new_sizes);
+
+    //    _v_right_splitter->setSizes(appconfig.vspl_sizelist());
+    //    _h_splitter->setSizes(appconfig.hspl_sizelist());
+    //    _h_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
+    //    _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
+    //    this->repaint();
 }
 
 
@@ -470,7 +560,8 @@ void MainWindow::save_geometry(void)
 
     appconfig.vspl_sizelist(_v_right_splitter->sizes());
     appconfig.hspl_sizelist(_h_splitter->sizes());
-    appconfig.v_leftsplitter_sizelist(_v_left_splitter->sizes());
+    appconfig.v_right_splitter_sizelist(_h_right_splitter->sizes());
+    appconfig.v_left_splitter_sizelist(_h_left_splitter->sizes());
 
     // Запоминается размер сплиттера только при видимом виджете поиска,
     // т.к. если виджета поиска невидно, будет запомнен нуливой размер
@@ -480,7 +571,7 @@ void MainWindow::save_geometry(void)
     // виджет уже невиден
 
     if(appconfig.findscreen_show())
-        appconfig.findsplitter_sizelist(_find_splitter->sizes());
+        appconfig.findsplitter_sizelist(_v_find_splitter->sizes());
 }
 
 
@@ -499,8 +590,9 @@ void MainWindow::restore_tree_position(void)
 // save
 void MainWindow::save_tree_position(void)
 {
+    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _tree_screen->tree_view()->source_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});
+    auto item = _current_source_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});
     //    // Получение QModelIndex выделенного в дереве элемента
     //    const QModelIndex index = _tree_screen->tree_view()->current_index();
 
@@ -508,11 +600,11 @@ void MainWindow::save_tree_position(void)
 
         //        //    if(index.isValid()) {   // this line is to be remove
         //        // Получаем указатель вида TreeItem
-        //        auto item = _tree_screen->tree_view()->source_model()->item(index);
+        //        auto item = _current_source_model()->item(index);
 
         // Сохраняем путь к элементу item
         appconfig.tree_position(
-            _tree_screen->tree_view()->source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
+            _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
             , item->path_absolute()
         );
         //    }
@@ -524,7 +616,9 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 {
     _tree_screen->session_root(current_item_absolute_path.last());
 
-    if(_tree_screen->tree_view()->source_model()->root_item()->id() != current_root_id) {
+    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+
+    if(_current_source_model()->root_item()->id() != current_root_id) {
         _tree_screen->intercept(current_root_id);
     }
 
@@ -538,7 +632,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
         qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
         // Из указателя на элемент TreeItem получаем QModelIndex
-        QModelIndex setto = _tree_screen->tree_view()->source_model()->index(item);
+        QModelIndex setto = _current_source_model()->index(item);
 
         // Курсор устанавливается в нужную позицию
         _tree_screen->tree_view()->select_and_current(setto);

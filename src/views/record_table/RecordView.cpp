@@ -192,25 +192,25 @@ void RecordView::restore_header_state(void)
 
 void RecordView::on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    QModelIndex selectRecord;
-    QModelIndex deselectRecord;
+    QModelIndex select_record_index;
+    QModelIndex deselect_record_index;
 
     if(!selected.indexes().isEmpty())
-        selectRecord = selected.indexes().at(0);
+        select_record_index = selected.indexes().at(0);
 
     if(!deselected.indexes().isEmpty())
-        deselectRecord = deselected.indexes().at(0);
+        deselect_record_index = deselected.indexes().at(0);
 
-    /*
-    qDebug() << "RecordTableView::onSelectionChanged()";
-    qDebug() << "Current index. row() " << selectRecord.row() << " isValid() " << selectRecord.isValid();
-    qDebug() << "Previous index. row() " << deselectRecord.row() << " isValid() " << deselectRecord.isValid();
-    */
+
+    //    qDebug() << "RecordTableView::onSelectionChanged()";
+    //    qDebug() << "Current index. row() " << selectRecord.row() << " isValid() " << selectRecord.isValid();
+    //    qDebug() << "Previous index. row() " << deselectRecord.row() << " isValid() " << deselectRecord.isValid();
+
 
     // return;
 
-    if(selectRecord.isValid())
-        click_record(selectRecord);
+    //    if(select_record_index.isValid())
+    //        click_record(select_record_index);    // this lead RecordScreen::disable_all_actions does not work correctly
 }
 
 

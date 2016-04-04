@@ -916,7 +916,7 @@ namespace browser {
 
 
     void Entrance::activate(const QUrl &_find_url
-                            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
                             , equal_url_t _equal
                            )
     {
@@ -954,7 +954,7 @@ namespace browser {
     }
 
     void Entrance::activate(boost::intrusive_ptr<TreeItem> item
-                            , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+                            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
                             , equal_t _equal
                            )
     {
@@ -987,7 +987,7 @@ namespace browser {
     void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
     {
         //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        void(Entrance::*_activate)(const QUrl &, std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)>, equal_url_t) = &Entrance::activate;  // <url_fragment>;
+        void(Entrance::*_activate)(const QUrl &, std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)>, equal_url_t) = &Entrance::activate;  // <url_fragment>;
         connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
         //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 

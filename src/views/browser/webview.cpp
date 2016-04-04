@@ -710,7 +710,7 @@ namespace browser {
 
                     auto record = view->page()->item_request_from_tree(
                                       QUrl(Browser::_defaulthome)
-                                      , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                      , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                                   );
                     //                record->generate();
                     record->activate();
@@ -725,7 +725,7 @@ namespace browser {
                     //                    auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
                     boost::intrusive_ptr<TreeItem> r = _browser->tabWidget()->item_request_from_tree(
                                                            QUrl(Browser::_defaulthome)
-                                                           , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                                           , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                                                        );
                     //                return //_record->page();
                     // globalparameters.entrance()->invoke_view(new_record).second->page();
@@ -939,7 +939,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         boost::intrusive_ptr<TreeItem> item
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
         , equal_t _equal
     )
     {
@@ -963,7 +963,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         const QUrl &_url
-        , std::function<boost::intrusive_ptr<TreeItem> (KnowModel *, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
         , equal_url_t _equal
     )
     {

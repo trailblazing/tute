@@ -897,7 +897,7 @@ void RecordController::paste(void)
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->tree_view()->selected_indexes_update();
+    globalparameters.tree_screen()->tree_view()->update_selected_indexes();
 }
 
 
@@ -1412,23 +1412,23 @@ void RecordController::edit_field(int pos
 
 
 // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
-void RecordController::context_delete(void)
+void RecordController::close_context(void)
 {
-    // Создается окно с вопросом нужно удалять запись (записи) или нет
-    QMessageBox messageBox(_view);
-    messageBox.setWindowTitle("Delete");
-    messageBox.setText(tr("Are you sure to delete this record(s)?"));
-    QAbstractButton *cancelButton = messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
-    QAbstractButton *deleteButton = messageBox.addButton(tr("Delete"), QMessageBox::AcceptRole);
+    //    // Создается окно с вопросом нужно удалять запись (записи) или нет
+    //    QMessageBox messageBox(_view);
+    //    messageBox.setWindowTitle("Delete");
+    //    messageBox.setText(tr("Are you sure to delete this record(s)?"));
+    //    QAbstractButton *cancelButton = messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+    //    QAbstractButton *deleteButton = messageBox.addButton(tr("Delete"), QMessageBox::AcceptRole);
 
-    Q_UNUSED(cancelButton);
+    //    Q_UNUSED(cancelButton);
 
-    messageBox.exec();
+    //    messageBox.exec();
 
-    if(messageBox.clickedButton() == deleteButton) {
-        // Выбранные данные удаляются
-        pages_remove();
-    }
+    //    if(messageBox.clickedButton() == deleteButton) {
+    //        // Выбранные данные удаляются
+    pages_remove();
+    //    }
 
 }
 

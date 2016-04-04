@@ -23,7 +23,7 @@
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
-enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::ClearAndSelect;   //Select    Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
+enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;   // ClearAndSelect   Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
 enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemSelectionModel::SelectionFlag::SelectCurrent;    // Select   // SelectCurrent
 
 const char *knowtreeview_singleton_name = "knowtreeview";
@@ -148,7 +148,7 @@ void KnowView::sychronize()
                         if(item->is_lite())item->to_fat();
 
                         item->parent(new_branch_item);
-                        new_branch_item->child_move(new_branch_item->work_pos(), item);
+                        new_branch_item->move_as_child(new_branch_item->work_pos(), item);
                         modified = true;
                     }
                 }
@@ -164,10 +164,11 @@ void KnowView::sychronize()
 
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
-                _tree_screen->view_paste_children(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
-                    _know_root    // _tree_screen->know_branch()
-                    , current_index()
+                _tree_screen->view_paste_from_children(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
+                    TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}   // _tree_screen->know_branch()
+                                          , _know_root->index(_know_root->item([&](boost::intrusive_ptr<TreeItem> it)->bool {return it->id() == _tree_screen->session_root();})))   // current_index()
                     , new_branch_item
+                    , [&](boost::intrusive_ptr<TreeItem> it) ->bool{return it->field("url") == new_branch_item->field("url") && it->field("name") == new_branch_item->field("name");}
                 );
 
                 _tree_screen->synchronized(false);
@@ -175,7 +176,7 @@ void KnowView::sychronize()
                 // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
             }
 
-            _know_root->index_update(current_index());  // selectionModel()->currentIndex()    // _tree_screen->view_index()
+            _know_root->update_index(current_index());  // selectionModel()->currentIndex()    // _tree_screen->view_index()
 
         }
     }
@@ -312,7 +313,7 @@ void KnowView::dragMoveEvent(QDragMoveEvent *event)
         TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
 
         // В модели данных отмечается элемент дерева, над которым находится курсор
-        _tree_screen->tree_view()->source_model()->setData(index, QVariant(true), Qt::UserRole);
+        _know_root->setData(index, QVariant(true), Qt::UserRole);
 
         _tree_screen->synchronized(false);
 
@@ -370,7 +371,7 @@ void KnowView::dropEvent(QDropEvent *event)
         TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto tree_item_drop = _tree_screen->tree_view()->source_model()->item(index);
+        auto tree_item_drop = _know_root->item(index);
 
         //        // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
         //        auto tree_item_drop = tree_item_drop;    // ->record_table();
@@ -380,7 +381,7 @@ void KnowView::dropEvent(QDropEvent *event)
         // static_cast<TreeScreen *>(this->parent())->view_index();
 
         // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = _tree_screen->tree_view()->source_model()->item(indexFrom);
+        auto treeItemDrag = _know_root->item(indexFrom);
 
         // Если перенос происходит в ту же самую ветку
         if(indexFrom == index)
@@ -427,7 +428,7 @@ void KnowView::dropEvent(QDropEvent *event)
             _record_controller->record_screen()->tools_update();
 
             // Добавление записи в базу
-            tree_item_drop->child_move(0, record, ADD_NEW_RECORD_TO_END);
+            tree_item_drop->move_as_child(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
             //            find_object<TreeScreen>(tree_screen_singleton_name)
@@ -435,10 +436,10 @@ void KnowView::dropEvent(QDropEvent *event)
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось
-        _know_root->index_update(indexFrom);
+        _know_root->update_index(indexFrom);
 
         // Обновлении конечной ветки чтобы было видно что записей прибавилось
-        _know_root->index_update(index);
+        _know_root->update_index(index);
 
         // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
         _know_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
@@ -783,7 +784,7 @@ QModelIndex KnowView::select_and_current(boost::intrusive_ptr<TreeItem> _item, s
 //}
 
 
-void KnowView::selected_indexes_update(void)
+void KnowView::update_selected_indexes(void)
 {
     // Получение списка выделенных Item-элементов
     QModelIndexList selectitems = selectionModel()->selectedIndexes();

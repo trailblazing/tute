@@ -114,7 +114,7 @@ public:
     QMenu *window_menu() {return _windowmenu;}
     QMenu *tools_menu() {return _toolsmenu;}
     QMenu *help_menu() {return _helpmenu;}
-    QSplitter *find_splitter() {return _find_splitter;}
+    QSplitter *find_splitter() {return _v_find_splitter;}
 
 public slots:
     void application_exit(void);
@@ -183,9 +183,10 @@ private:
     QMenu               *_tray_icon_menu;
 
     QSplitter           *_v_right_splitter;
-    QSplitter           *_find_splitter;
+    QSplitter           *_v_find_splitter;
     HidableTabWidget    *_vtabwidget;
-    QSplitter           *_v_left_splitter;
+    QSplitter           *_h_right_splitter;
+    QSplitter           *_h_left_splitter;
     QSplitter           *_h_splitter;
 
 

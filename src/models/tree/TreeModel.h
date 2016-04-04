@@ -15,25 +15,42 @@
 // TreeModel - Это вспомогательный класс! От него наследуется KnowTreeModel
 
 class TreeItem;
+class KnowModel;
 
 class TreeModel : public QAbstractItemModel {
     Q_OBJECT
 
 public:
-    struct  delegater {
-    private:
-        boost::intrusive_ptr<TreeItem> _item;
-        QUrl _find_url;
-        QString _id = "";
+
+    struct ModelIndex {
     public:
-        explicit delegater(boost::intrusive_ptr<TreeItem> _item): _item(_item) {_equal = [&](TreeItem * it) {return _item.get() == it;};}
-        explicit delegater(const QUrl &_find_url):  _find_url(_find_url) {_equal = [&](TreeItem * it) {return _find_url.toString() == it->field("url");};}
-        explicit delegater(const QString &_id): _id(_id) {_equal = [&](TreeItem * it) {return _id == it->field("id");};}
-
-        //        bool (*equal)(TreeItem * it);
-        std::function<bool(TreeItem *)> _equal;
-
+        ModelIndex(std::function<KnowModel *()> _current_model, const QModelIndex &_current_index);
+        std::function<KnowModel *()> current_model()const {return _current_model;}
+        QModelIndex current_index()const {return _current_index;}
+    private:
+        std::function<KnowModel *()> _current_model;
+        QModelIndex _current_index;
     };
+
+    //    struct  delegater {
+    //    private:
+    //        boost::intrusive_ptr<TreeItem> _item;
+    //        QUrl _find_url;
+    //        QString _id = "";
+    //    public:
+    //        explicit delegater(boost::intrusive_ptr<TreeItem> _item): _item(_item) {_equal = [&](TreeItem * it) {return _item.get() == it;};}
+    //        explicit delegater(const QUrl &_find_url):  _find_url(_find_url) {_equal = [&](TreeItem * it) {return _find_url.toString() == it->field("url");};}
+    //        explicit delegater(const QString &_id): _id(_id) {_equal = [&](TreeItem * it) {return _id == it->field("id");};}
+
+    //        //        bool (*equal)(TreeItem * it);
+    //        std::function<bool(TreeItem *)> _equal;
+
+    //    };
+
+    //    QModelIndex index(delegater _del) const;
+    //    boost::intrusive_ptr<TreeItem> item(const delegater &_del)const;
+
+
 
 
     TreeModel(QObject *parent = 0);
@@ -58,11 +75,12 @@ public:
     bool removeRows(int position, int rows, const QModelIndex &parent = QModelIndex());
 
 
+
     //    bool is_item_valid(QStringList path) const;
     QModelIndex index(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;
-    QModelIndex index(delegater _del) const;
+
     QModelIndex index(boost::intrusive_ptr<TreeItem> _item) const;
-    void index_update(const QModelIndex &_index);
+    void update_index(const QModelIndex &_index);
     //    QModelIndex index(const QUrl &find_url)const;
     //    QModelIndex index(const QString &id)const;
 
@@ -74,7 +92,8 @@ public:
     boost::intrusive_ptr<TreeItem> item(QStringList path) const;
 
     boost::intrusive_ptr<TreeItem> item(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal)const;
-    boost::intrusive_ptr<TreeItem> item(const delegater &_del)const;
+
+
     //    boost::intrusive_ptr<TreeItem> find_recursive(const QUrl &find_url) const;
     //    boost::intrusive_ptr<TreeItem> find_recursive(const QString &id)const;
 

@@ -48,7 +48,7 @@ public:
     //    QModelIndex selection_to_pos(int _index);
     QModelIndex select_and_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
     QModelIndex select_and_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
-    void selected_indexes_update(void);
+    void update_selected_indexes(void);
 
 signals:
     void tapAndHoldGestureFinished(const QPoint &);

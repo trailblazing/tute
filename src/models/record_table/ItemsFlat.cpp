@@ -176,8 +176,20 @@ QString ItemsFlat::field(int pos, QString name) const
     return _child_items.at(pos)->field(name);
 }
 
+QList<boost::intrusive_ptr<TreeItem>> ItemsFlat::items_direct(std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition)const
+{
+    QList<boost::intrusive_ptr<TreeItem>> results;
 
-QList<boost::intrusive_ptr<TreeItem>> ItemsFlat::items_direct_with_the_same_name(const QString &name)const
+    for(auto i : _child_items) {
+        if(_substitute_condition(i)) {
+            results.push_back(i);    //return i;
+        }
+    }
+
+    return results; // -1;
+}
+
+QList<boost::intrusive_ptr<TreeItem>> ItemsFlat::items_direct(const QString &name)const
 {
     QList<boost::intrusive_ptr<TreeItem>> results;
 
@@ -272,13 +284,27 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QUrl &url)const
 //    return pos;
 //}
 
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition)const
+{
+    boost::intrusive_ptr<TreeItem> result;
+
+    for(auto i : _child_items) {
+        if(_substitute_condition(i)) {   // if(i->field("id") == item->field("id")) {
+            // assert(i->is_registered());
+            result = i;
+            break;
+        }
+    }
+
+    return result;
+}
 
 
 boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(boost::intrusive_ptr<TreeItem> item)const
 {
     boost::intrusive_ptr<TreeItem> result;
 
-    for(auto &i : _child_items) {
+    for(auto i : _child_items) {
         if(i == item) {   // if(i->field("id") == item->field("id")) {
             // assert(i->is_registered());
             result = i;
@@ -293,7 +319,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QString &id)const
 {
     boost::intrusive_ptr<TreeItem> result;
 
-    for(auto &i : _child_items) {
+    for(auto i : _child_items) {
         if(i->id() == id) {   // if(i->field("id") == item->field("id")) {
             // assert(i->is_registered());
             result = i;

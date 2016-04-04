@@ -240,9 +240,10 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeItem> current_item)  
         branch_fields_add_parent_id(it->parent_id(), it->fields_all());
         record_duplicate_to_parent_id(it->parent_id(), it);
 
-        for(int i = 0; i < it->count_direct(); i++) {
-            assert(it->item_fat(i)->parent_id() == it->id());
-            branch_copy_recursive(it->item_fat(i));
+        for(int i = it->count_direct() - 1; i >= 0 ; i--) {
+            auto child_it = it->item_fat(i);
+            assert(child_it->parent_id() == it->id());
+            branch_copy_recursive(child_it);
         }
     };
 
