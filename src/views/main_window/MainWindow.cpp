@@ -590,8 +590,9 @@ void MainWindow::restore_tree_position(void)
 // save
 void MainWindow::save_tree_position(void)
 {
+    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _tree_screen->tree_view()->source_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});
+    auto item = _current_source_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});
     //    // Получение QModelIndex выделенного в дереве элемента
     //    const QModelIndex index = _tree_screen->tree_view()->current_index();
 
@@ -599,11 +600,11 @@ void MainWindow::save_tree_position(void)
 
         //        //    if(index.isValid()) {   // this line is to be remove
         //        // Получаем указатель вида TreeItem
-        //        auto item = _tree_screen->tree_view()->source_model()->item(index);
+        //        auto item = _current_source_model()->item(index);
 
         // Сохраняем путь к элементу item
         appconfig.tree_position(
-            _tree_screen->tree_view()->source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
+            _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
             , item->path_absolute()
         );
         //    }
@@ -615,7 +616,9 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 {
     _tree_screen->session_root(current_item_absolute_path.last());
 
-    if(_tree_screen->tree_view()->source_model()->root_item()->id() != current_root_id) {
+    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+
+    if(_current_source_model()->root_item()->id() != current_root_id) {
         _tree_screen->intercept(current_root_id);
     }
 
@@ -629,7 +632,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
         qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
         // Из указателя на элемент TreeItem получаем QModelIndex
-        QModelIndex setto = _tree_screen->tree_view()->source_model()->index(item);
+        QModelIndex setto = _current_source_model()->index(item);
 
         // Курсор устанавливается в нужную позицию
         _tree_screen->tree_view()->select_and_current(setto);

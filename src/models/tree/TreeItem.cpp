@@ -611,8 +611,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_add_new(int pos)
 
     //    _child_items << item; // Добавление item в конец массива childItems
     // int pos
-    auto _item = child_move(pos                      // _child_items.count() - 1
-                            , item, ADD_NEW_RECORD_AFTER);
+    auto _item = move_as_child(pos                      // _child_items.count() - 1
+                               , item, ADD_NEW_RECORD_AFTER);
     // auto _item = child(pos);
     return _item;
 }
@@ -634,7 +634,7 @@ bool TreeItem::children_insert_new(int position, int count, int columns)
         boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(this));
         // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
         // );    // Создается объект item
-        child_move(position, item, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
+        move_as_child(position, item, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
     }
 
     return true;
@@ -833,11 +833,11 @@ boost::intrusive_ptr<TreeItem> TreeItem::self_empty_remove()
 // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 // Метод принимает "тяжелый" объект записи
 // Объект для вставки приходит как незашифрованным, так и зашифрованным
-boost::intrusive_ptr<TreeItem> TreeItem::child_move(int pos, boost::intrusive_ptr<TreeItem> _source_item, int mode)  // does not set parent pointer?
+boost::intrusive_ptr<TreeItem> TreeItem::move_as_child(int pos, boost::intrusive_ptr<TreeItem> _source_item, int mode)  // does not set parent pointer?
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    //    assert(_source_item != this);
+    assert(_source_item != this);
 
     if(_source_item != this) {
         // Запись добавляется в таблицу конечных записей
@@ -973,6 +973,10 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_move(int pos, boost::intrusive_pt
 
         assert(_child_items.contains(result));
     }
+
+    //    else {
+    //        result = boost::intrusive_ptr<TreeItem>(this);
+    //    }
 
     return result;    // insert_position;
 
@@ -1759,7 +1763,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::active_subset()const
     //    //    QList<boost::intrusive_ptr<TreeItem>> result;
 
     for(int i = 0; i < count_direct(); i++) {
-        if(_child_items.at(i)->page_valid())result->child_move(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
+        if(_child_items.at(i)->page_valid())result->move_as_child(i, _child_items.at(i), ADD_NEW_RECORD_TO_END);
     }
 
     //    _child_items.clear();

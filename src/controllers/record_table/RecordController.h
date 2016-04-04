@@ -143,7 +143,7 @@ public slots:
     //void autoAddNewAfterContext(void);
 
     // Вызов действий из контекстного меню для удаления конечной записи
-    void context_delete(void);
+    void close_context(void);
 
     void move_up(void);
     void move_dn(void);

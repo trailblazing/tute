@@ -129,14 +129,14 @@ namespace browser {
 
         //        template<typename url_type>
         void activate(const QUrl &_find_url
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
-                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-        );
+                      , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+                      , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+                     );
 
         void activate(boost::intrusive_ptr<TreeItem> item
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
-                    , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-        );
+                      , std::function<boost::intrusive_ptr<TreeItem>(TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+                      , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+                     );
 
         bool restore_state(const QByteArray &state);
         //        std::pair<Browser *, WebView *>

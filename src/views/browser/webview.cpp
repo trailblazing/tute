@@ -939,7 +939,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         boost::intrusive_ptr<TreeItem> item
-        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
         , equal_t _equal
     )
     {
@@ -963,7 +963,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         const QUrl &_url
-        , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
         , equal_url_t _equal
     )
     {

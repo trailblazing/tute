@@ -642,6 +642,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_sibling(const QModelInde
     //    assert(is_id_exists(current->id()));
     assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == parent->id();}));
     boost::intrusive_ptr<TreeItem> _result(nullptr);
+    assert(parent != _source_item);
 
     if(parent) {
         //        beginInsertRows(_index.parent()
@@ -682,27 +683,32 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
 {
     auto _index_parent = index(parent);
 
-    beginInsertRows(_index_parent, pos   // parent->count_direct()
+    beginInsertRows(_index_parent
+                    , pos   // parent->count_direct()
                     , pos   // (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
                    );
 
     auto _index_origin = index(_source_item);
 
-    boost::intrusive_ptr<TreeItem> result = parent->child_move(pos, _source_item, _mode);      // add_new_branch(parent, id, name);  // parent->count_direct()
+    boost::intrusive_ptr<TreeItem> result = parent->move_as_child(pos, _source_item, _mode);      // add_new_branch(parent, id, name);  // parent->count_direct()
 
-    if(_index_origin.isValid())index_update(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
+    if(_index_origin.isValid())update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
 
-    emit_datachanged_signal(index(result->sibling_order(), 0, _index_parent));
+    if(result)
+        emit_datachanged_signal(index(result->sibling_order(), 0, _index_parent));
 
     endInsertRows();
 
-    if(parent->field("crypt") == "1") {
+
+    if(parent->field("crypt") == "1" && result) {
         // Новая ветка превращается в зашифрованную
         result->to_encrypt();
     }
 
     assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == parent->id();}));
-    assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == result->id();})); // may be parent is not exist?
+
+    if(result)
+        assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == result->id();})); // may be parent is not exist?
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
     //    boost::intrusive_ptr<TreeItem> current =
@@ -2312,7 +2318,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_duplicated_remove(
     result = target->item_merge(source);
     assert(source->count_direct() == 0);
 
-    if(_index_origin.isValid())index_update(_index_origin.parent());
+    if(_index_origin.isValid())update_index(_index_origin.parent());
 
     emit_datachanged_signal(index(result->sibling_order(), 0, _index_parent));
     endInsertColumns();
@@ -2367,7 +2373,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::record_remove(boost::intrusive_ptr<Tre
     assert(_result == _item);
     auto _index_origin = index(_item);
 
-    if(_index_origin.isValid())index_update(_index_origin.parent());
+    if(_index_origin.isValid())update_index(_index_origin.parent());
 
     endRemoveRows();
     return _result;

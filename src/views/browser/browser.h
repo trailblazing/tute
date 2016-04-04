@@ -53,7 +53,7 @@
 #include "controllers/record_table/RecordController.h"
 //#include "tabmanager.h"
 #include "models/tree/TreeItem.h"
-
+#include "models/tree/TreeModel.h"
 
 QT_BEGIN_NAMESPACE
 class QWebEngineFrame;
@@ -63,6 +63,8 @@ QT_END_NAMESPACE
 class HidableTabWidget;
 //extern Record *default_record;
 class FingScreen;
+class TreeModel;
+
 
 QT_BEGIN_NAMESPACE
 
@@ -235,13 +237,13 @@ namespace browser {
         void init();
         boost::intrusive_ptr<TreeItem> item_request_from_tree(
             QUrl const &url
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
             , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
         );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree(
             boost::intrusive_ptr<TreeItem> item
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
         );
 

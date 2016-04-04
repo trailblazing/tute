@@ -59,11 +59,13 @@ public:
     boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
 
-    QList<boost::intrusive_ptr<TreeItem> > items_direct_with_the_same_name(const QString &name)const;
+    QList<boost::intrusive_ptr<TreeItem>> items_direct(const QString &name)const;
+    QList<boost::intrusive_ptr<TreeItem>> items_direct(std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition)const;
     boost::intrusive_ptr<TreeItem> item_direct(const QString &id) const;
     boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
     boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem> item) const;
+    boost::intrusive_ptr<TreeItem> item_direct(std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition)const;
     //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id)const;
     int index_direct(boost::intrusive_ptr<TreeItem> item)const;

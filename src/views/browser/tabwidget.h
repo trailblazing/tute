@@ -59,6 +59,7 @@
 #include "views/browser/webview.h"
 #include "utility/delegate.h"
 #include "models/tree/TreeItem.h"
+#include "models/tree/TreeModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/tree/KnowView.h"
 #include "models/tree/KnowModel.h"
@@ -97,6 +98,7 @@ class QLineEdit;
 class QMenu;
 class QStackedWidget;
 class TreeItem;
+class TreeModel;
 class RecordModel;
 class RecordView;
 struct CouplerDelegation;
@@ -332,34 +334,38 @@ namespace browser {
         TabBar *tabbar() {return _tabbar;}
         RecordController *record_controller() {return _record_controller;}
 
-        boost::intrusive_ptr<TreeItem> view_paste_strategy(std::function<KnowModel *()> _current_view_model
-                                                          , boost::intrusive_ptr<TreeItem> _result
-                                                          , bool item_is_brand_new
-                                                          , const QUrl &_find_url
-                                                          , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
-                                                          , std::function<bool(boost::intrusive_ptr<TreeItem>)> _check_url);
+        boost::intrusive_ptr<TreeItem> view_paste_strategy(TreeModel::ModelIndex                                   _modelindex
+                                                           //        , std::function<KnowModel *()>                      _session_view_model
+                                                           //        , std::function<boost::intrusive_ptr<TreeItem>()>   _session_root_item
+                                                           , boost::intrusive_ptr<TreeItem>                        _result
+                                                           , std::function<bool(boost::intrusive_ptr<TreeItem>)>   _substitute_condition
+                                                           , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+                                                           , const bool                                            _item_is_brand_new
+                                                           , const QUrl                                            &_find_url
+                                                           , std::function<bool(boost::intrusive_ptr<TreeItem>)>   _check_url
+                                                          );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(
             const QUrl &_find_url
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
             , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
         );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree(
             const QUrl &_find_url
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
             , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
         );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(
             boost::intrusive_ptr<TreeItem> target
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
         );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree(
             boost::intrusive_ptr<TreeItem> target
-            , std::function<boost::intrusive_ptr<TreeItem> (std::function<KnowModel *()>, QModelIndex, boost::intrusive_ptr<TreeItem>)> _view_paste_strategy
+            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
         );
 
@@ -381,7 +387,7 @@ namespace browser {
         void on_edit_fieldcontext(void);
 
         // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
-        void delete_context(void);
+        void close_context(void);
 
         // Копирование отмеченных записей в буфер обмена с удалением
         // из таблицы конечных записей
