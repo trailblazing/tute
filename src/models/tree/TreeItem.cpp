@@ -1147,6 +1147,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::child_remove(boost::intrusive_ptr<TreeI
         if(_child_items.at(row) == item) { //_child_items.removeAt(position);    // _child_items.takeAt(position).reset(); // delete _child_items.takeAt(position);
             _child_items.removeOne(item);
             item->page_break();
+            item->parent(nullptr);
             result = item;
         }
     }
