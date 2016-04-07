@@ -245,62 +245,66 @@ namespace browser {
         } else if(result_item != _tree_screen->tree_view()->current_item()) {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             //            TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->view_paste_as_child(TreeModel::ModelIndex([&]() {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index()), result_item, [&](boost::intrusive_ptr<TreeItem> it)->bool{return it->field("url") == result_item->field("url");});
+            _tree_screen->view_paste_as_child(
+                TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index())
+                , result_item
+                , std::bind([&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool{return target->field("url") == source->field("url");}, std::placeholders::_1, result_item)
+            );
 
-        //                //            _tree_screen->tree_view()->reset();
-        //                _tree_screen->setup_model(result_item);
-        auto _index = _tree_screen->tree_view()->select_and_current(result_item->item_direct(0));
-        //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
-        //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+            //                //            _tree_screen->tree_view()->reset();
+            //                _tree_screen->setup_model(result_item);
+            auto _index = _tree_screen->tree_view()->select_as_current(result_item->item_direct(0));
+            //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
+            //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 
-        _tree_screen->index_invoke(_index);
+            _tree_screen->index_invoke(_index);
 
-    }
-}
-
-void ToolbarSearch::aboutToShowMenu()
-{
-    lineEdit()->selectAll();
-    QMenu *m = menu();
-    m->clear();
-    QStringList list = _stringlistmodel->stringList();
-
-    if(list.isEmpty()) {
-        m->addAction(tr("No Recent Searches"));
-        return;
+        }
     }
 
-    QAction *recent = m->addAction(tr("Recent Searches"));
-    recent->setEnabled(false);
+    void ToolbarSearch::aboutToShowMenu()
+    {
+        lineEdit()->selectAll();
+        QMenu *m = menu();
+        m->clear();
+        QStringList list = _stringlistmodel->stringList();
 
-    for(int i = 0; i < list.count(); ++i) {
-        QString text = list.at(i);
-        m->addAction(text)->setData(text);
+        if(list.isEmpty()) {
+            m->addAction(tr("No Recent Searches"));
+            return;
+        }
+
+        QAction *recent = m->addAction(tr("Recent Searches"));
+        recent->setEnabled(false);
+
+        for(int i = 0; i < list.count(); ++i) {
+            QString text = list.at(i);
+            m->addAction(text)->setData(text);
+        }
+
+        m->addSeparator();
+        m->addAction(tr("Clear Recent Searches"), this, SLOT(clear()));
     }
 
-    m->addSeparator();
-    m->addAction(tr("Clear Recent Searches"), this, SLOT(clear()));
-}
+    void ToolbarSearch::triggeredMenuAction(QAction *action)
+    {
+        QVariant v = action->data();
 
-void ToolbarSearch::triggeredMenuAction(QAction *action)
-{
-    QVariant v = action->data();
-
-    if(v.canConvert<QString>()) {
-        QString text = v.toString();
-        lineEdit()->setText(text);
-        searchNow();
+        if(v.canConvert<QString>()) {
+            QString text = v.toString();
+            lineEdit()->setText(text);
+            searchNow();
+        }
     }
-}
 
-void ToolbarSearch::clear()
-{
-    _stringlistmodel->setStringList(QStringList());
-    _autosaver->changeOccurred();;
-}
+    void ToolbarSearch::clear()
+    {
+        _stringlistmodel->setStringList(QStringList());
+        _autosaver->changeOccurred();;
+    }
 
-void ToolbarSearch::text(const QString &text) {_findtext->setText(text);}
-QString ToolbarSearch::text() const {return _findtext->text();}
+    void ToolbarSearch::text(const QString &text) {_findtext->setText(text);}
+    QString ToolbarSearch::text() const {return _findtext->text();}
 
 }
 

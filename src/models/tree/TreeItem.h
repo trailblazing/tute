@@ -21,6 +21,7 @@
 class Record;
 class ItemsFlat;
 class TreeItem;
+class KnowModel;
 
 //// url_type
 
@@ -172,8 +173,9 @@ public:
     // в конец списка подчиненных элементов
     boost::intrusive_ptr<TreeItem> child_add_new(int pos);
 
+    boost::intrusive_ptr<TreeItem> contains_direct(boost::intrusive_ptr<TreeItem> _item)const;
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
-    boost::intrusive_ptr<TreeItem> child_duplicate(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> child_rent(boost::intrusive_ptr<TreeItem> item);
 
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
@@ -183,17 +185,17 @@ public:
 
 
     void page_break();
-    boost::intrusive_ptr<TreeItem> child_remove(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> remove(boost::intrusive_ptr<TreeItem> _source_item);
 
-    void parent(boost::intrusive_ptr<TreeItem> it);
+    boost::intrusive_ptr<TreeItem> parent(boost::intrusive_ptr<TreeItem> it, int _pos = 0, int _mode = ADD_NEW_RECORD_BEFORE);
     // Возвращение ссылки на родительский элемент
-    boost::intrusive_ptr<TreeItem> parent();
+    boost::intrusive_ptr<TreeItem> parent()const;
 
     // Удаление потомков, начиная с позиции position массива childItems
-    bool children_remove(int position, int count);
+    bool remove(int position, int count);
 
     // Удаление всех потомков элемента
-    void children_remove_all();
+    void remove_all();
 
     // Возвращает номер, под которым данный объект хранится
     // в массиве childItems своего родителя
@@ -261,7 +263,7 @@ public:
     void records_to_children();
 #endif
 
-    void children_clear(void);
+    //    void children_clear(void);
 
     browser::WebPage *bounded_page();   // const; // {return _page;}
     browser::WebView *bind();
@@ -277,23 +279,27 @@ public:
     void active_request(int pos, int openLinkIn);
     bool page_valid()const;// {return _page_valid;}
     //    operator ItemsFlat() {return *this;}
-    boost::intrusive_ptr<TreeItem> active_subset() const;
+
+    // deprecated
+    //    boost::intrusive_ptr<TreeItem> active_subset() const;
 
 
-    boost::intrusive_ptr<TreeItem> move_as_child(int pos, boost::intrusive_ptr<TreeItem> _source_item, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
+
     //    int shadow_item_lite(int pos, boost::intrusive_ptr<TreeItem> it, int mode = ADD_NEW_RECORD_AFTER);
 
 
     bool is_empty() const;
-    bool is_ancestor_of(boost::intrusive_ptr<TreeItem> it);
-    boost::intrusive_ptr<TreeItem> self_remove();
-    boost::intrusive_ptr<TreeItem> self_empty_remove();
-    boost::intrusive_ptr<TreeItem> item_merge(boost::intrusive_ptr<TreeItem> cut);
-    int count_records_all();
+    bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it)const;
+    boost::intrusive_ptr<TreeItem> self_remove_from_parent();
+    boost::intrusive_ptr<TreeItem> self_remove_from_parent_as_empty();
+    boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeItem> cut);
+    int count_children_all();
 
     //    template<typename T = url_full>
     //    inline QString url() const;
 
+    // deprecated because of conflicting with parent(boost::intrusive_ptr<TreeItem>)
+    //    boost::intrusive_ptr<TreeItem> child_move_unique(boost::intrusive_ptr<TreeItem> _source_item, int pos, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
 
 
 protected:
@@ -333,10 +339,11 @@ private:
     //    friend void boost::sp_adl_block::intrusive_ptr_release< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;
 
     //    void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
-    bool is_holder();
+    bool is_holder() const;
 
-    friend class browser::WebPage;
-
+    //    friend class browser::WebPage;
+    //    friend class KnowModel;
+    //    friend class TreeScreen;
 };
 
 //inline void intrusive_ptr_add_ref(TreeItem *px){boost::sp_adl_block::intrusive_ptr_add_ref(px);}

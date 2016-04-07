@@ -263,7 +263,7 @@
 ****************************************************************************/
 
 #include "bookmarks.h"
-#include "views/browser/browser.h"
+//#include "views/browser/browser.h"
 #include "views/browser/entrance.h"
 #include "libraries/GlobalParameters.h"
 

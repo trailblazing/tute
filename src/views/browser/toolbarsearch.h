@@ -54,7 +54,7 @@
 
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
-
+#include "views/tree/TreeScreen.h"
 
 QT_BEGIN_NAMESPACE
 class QUrl;
@@ -97,7 +97,7 @@ namespace browser {
 
     signals:
         void search(const QUrl &url
-                    , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+                    , TreeScreen::paste_strategy _view_paste_strategy
                     , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return QUrl(it->field("url")).fragment() == _url.fragment();}
                    );
 

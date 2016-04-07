@@ -334,38 +334,32 @@ namespace browser {
         TabBar *tabbar() {return _tabbar;}
         RecordController *record_controller() {return _record_controller;}
 
-        boost::intrusive_ptr<TreeItem> view_paste_strategy(TreeModel::ModelIndex                                   _modelindex
-                                                           //        , std::function<KnowModel *()>                      _session_view_model
-                                                           //        , std::function<boost::intrusive_ptr<TreeItem>()>   _session_root_item
-                                                           , boost::intrusive_ptr<TreeItem>                        _result
-                                                           , std::function<bool(boost::intrusive_ptr<TreeItem>)>   _substitute_condition
-                                                           , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
-                                                           , const bool                                            _item_is_brand_new
-                                                           , const QUrl                                            &_find_url
-                                                           , std::function<bool(boost::intrusive_ptr<TreeItem>)>   _check_url
+        boost::intrusive_ptr<TreeItem> view_paste_strategy(TreeModel::ModelIndex                                    _modelindex
+                                                           , boost::intrusive_ptr<TreeItem>                         _result
+                                                           , TreeScreen::substitute_condition                       _substitute_condition
+                                                           , TreeScreen::paste_strategy                             _view_paste_strategy
+                                                           , const bool                                             _item_is_brand_new
+                                                           , const QUrl                                             &_find_url
+                                                           , std::function<bool(boost::intrusive_ptr<TreeItem>)>    _check_url
                                                           );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(
-            const QUrl &_find_url
-            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(const QUrl &_find_url
+            , TreeScreen::paste_strategy _view_paste_strategy
             , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
         );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(
-            const QUrl &_find_url
-            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_find_url
+            , TreeScreen::paste_strategy _view_paste_strategy
             , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
         );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(
-            boost::intrusive_ptr<TreeItem> target
-            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(boost::intrusive_ptr<TreeItem> target
+            , TreeScreen::paste_strategy _view_paste_strategy
             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
         );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(
-            boost::intrusive_ptr<TreeItem> target
-            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> target
+            , TreeScreen::paste_strategy _view_paste_strategy
             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
         );
 

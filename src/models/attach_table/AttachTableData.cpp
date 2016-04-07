@@ -410,7 +410,13 @@ std::shared_ptr<AttachTableData> AttachTableData::merge(std::shared_ptr<AttachTa
     std::shared_ptr<AttachTableData> result;
 
     for(auto i : cut->_attach_table) {
-        _attach_table.append(i);
+        bool found = false;
+
+        for(auto j : _attach_table) {
+            if(j == i) {found = true; break;}
+        }
+
+        if(!found)_attach_table.append(i);
     }
 
     return result;

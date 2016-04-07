@@ -46,9 +46,11 @@ public:
 
     //    QModelIndex view_index_last(void)const;
     //    QModelIndex selection_to_pos(int _index);
-    QModelIndex select_and_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
-    QModelIndex select_and_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
+    QModelIndex select_as_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
+    QModelIndex select_as_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
     void update_selected_indexes(void);
+    QModelIndexList index_localize(const QModelIndexList _origin_index_list);
+    bool is_index_localized(const QModelIndexList _origin_index_list)const;
 
 signals:
     void tapAndHoldGestureFinished(const QPoint &);
@@ -64,6 +66,8 @@ protected:
     void dragEnterEvent(QDragEnterEvent *event);
     void dragMoveEvent(QDragMoveEvent *event);
     void dropEvent(QDropEvent *event);
+
+    void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
     template <class X> bool isDragableData(X *event)
     {

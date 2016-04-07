@@ -119,7 +119,7 @@ void RecordView::init(void)
     if(appconfig.interface_mode() == "mobile")
         verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
 
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //ScrollBarAlwaysOff
 
     restore_column_width();
 

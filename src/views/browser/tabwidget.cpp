@@ -543,7 +543,7 @@ namespace browser {
 
                     if(_tree_view->current_index() != _i) {
                         //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
-                        _tree_view->select_and_current(it);
+                        _tree_view->select_as_current(it);
 
                         //                    //                    globalparameters.mainwindow()
                         if(_record_controller->view()->selection_first_id() != it->field("id")) {
@@ -1689,8 +1689,8 @@ namespace browser {
         //        , std::function<KnowModel *()>                      _session_view_model
         //        , std::function<boost::intrusive_ptr<TreeItem>()>   _session_root_item
         , boost::intrusive_ptr<TreeItem>                        _result
-        , std::function<bool(boost::intrusive_ptr<TreeItem>)>   _substitute_condition
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::substitute_condition                      _substitute_condition
+        , TreeScreen::paste_strategy                            _view_paste_strategy
         , const bool                                            _item_is_brand_new
         , const QUrl                                            &_find_url
         , std::function<bool(boost::intrusive_ptr<TreeItem>)>   _check_url
@@ -1761,7 +1761,7 @@ namespace browser {
         }
 
 
-        _tree_screen->knowtree_save();
+        _tree_screen->know_model_save();
         // }
         return _result;
     }
@@ -1770,7 +1770,7 @@ namespace browser {
     //    template<typename url_type = url_full>
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_impl(//        std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal  //
         const QUrl &_find_url
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::paste_strategy _view_paste_strategy
         , equal_url_t _equal
     )
     {
@@ -1783,13 +1783,13 @@ namespace browser {
         auto _session_view_model = [&]() {return _tree_screen->tree_view()->source_model();}; // std::bind(_source_model_func, _tree_screen->tree_view());
 
         auto _session_root_item = [&]() {
-            auto internal_session_root_item = [&]() {return _session_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});};
+            auto internal_session_root_item = [&]() {return _session_view_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root();});};
 
             while(!internal_session_root_item() && _session_view_model()->root_item() != _know_model_board->root_item()) {
                 _tree_screen->cursor_follow_up_one_level();
             }
 
-            if(!_know_model_board->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();})) {
+            if(!_know_model_board->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root();})) {
                 _tree_screen->session_root(_tree_screen->tree_view()->current_item()->id());
             }
             assert(internal_session_root_item());
@@ -2030,7 +2030,7 @@ namespace browser {
 
         _result = view_paste_strategy(TreeModel::ModelIndex(_session_view_model, _session_view_model()->index(_session_root_item()))
                                       , _result
-                                      , [&](boost::intrusive_ptr<TreeItem> it)->bool {return it->field("url") == _result->field("url");}
+                                      , std::bind([&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url");}, std::placeholders::_1, _result)
                                       , _view_paste_strategy, item_is_brand_new, _find_url, _check_euqal
                                      );
 
@@ -2074,7 +2074,7 @@ namespace browser {
     //    template<typename url_type = url_full>
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree(
         const QUrl &_find_url
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::paste_strategy _view_paste_strategy
         , equal_url_t _equal
     )
     {
@@ -2090,7 +2090,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_impl(
         boost::intrusive_ptr<TreeItem> target
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::paste_strategy _view_paste_strategy
         , equal_t _equal
     )
     {
@@ -2111,13 +2111,13 @@ namespace browser {
 
         auto _session_root_item = [&]() {
 
-            auto internal_session_root_item  = [&]() {return _session_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});};
+            auto internal_session_root_item  = [&]() {return _session_view_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root();});};
 
             while(!internal_session_root_item() && _session_view_model()->root_item() != _know_model_board->root_item()) {
                 _tree_screen->cursor_follow_up_one_level();
             }
 
-            if(!_know_model_board->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();})) {
+            if(!_know_model_board->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root();})) {
                 _tree_screen->session_root(_tree_screen->tree_view()->current_item()->id());
             }
             assert(internal_session_root_item());
@@ -2329,7 +2329,7 @@ namespace browser {
 
             _result = view_paste_strategy(TreeModel::ModelIndex(_session_view_model, _session_view_model()->index(_session_root_item()))
                                           , _result
-                                          , [&](boost::intrusive_ptr<TreeItem> it)->bool {return it->field("url") == _result->field("url");}
+                                          , std::bind([&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url");}, std::placeholders::_1, _result)
                                           , _view_paste_strategy, item_is_brand_new, _find_url, _check_euqal
                                          );
 
@@ -2379,7 +2379,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree(
         boost::intrusive_ptr<TreeItem> target
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::paste_strategy _view_paste_strategy
         , equal_t _equal
     )
     {

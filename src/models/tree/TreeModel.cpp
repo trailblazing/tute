@@ -298,13 +298,13 @@ QModelIndex TreeModel::index(std::function<bool(boost::intrusive_ptr<const TreeI
 
 
 
-QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
+QModelIndex TreeModel::index(boost::intrusive_ptr<const TreeItem> _item)const
 {
     QModelIndex result;
     //    assert(!result.isValid());
 
-    std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<TreeItem>)>           // , int
-    index_recursive = [&](QModelIndex _index, boost::intrusive_ptr<TreeItem> _item  // , int mode
+    std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<const TreeItem>)>           // , int
+    index_recursive = [&](QModelIndex _index, boost::intrusive_ptr<const TreeItem> _item  // , int mode
     ) {
         // static
         QModelIndex find_index;
@@ -425,23 +425,25 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<TreeItem> _item)const
 // Обновление на экране ветки и подветок
 void TreeModel::update_index(const QModelIndex &_index)
 {
-    //    auto _source_model = _tree_view->source_model();
-    // Для корневой ветки дается команда чтобы модель сообщила о своем изменении
-    emit_datachanged_signal(_index);
+    if(_index.isValid()) {
+        //    auto _source_model = _tree_view->source_model();
+        // Для корневой ветки дается команда чтобы модель сообщила о своем изменении
+        emit_datachanged_signal(_index);
 
-    // По модельному индексу выясняется указатель на ветку
-    auto _item = item(_index);
+        // По модельному индексу выясняется указатель на ветку
+        auto _item = item(_index);
 
-    // Перебираются подветки
-    QList<QStringList> updatePathts = _item->path_children_all();
+        // Перебираются подветки
+        QList<QStringList> updatePathts = _item->path_children_all();
 
-    foreach(QStringList currentPath, updatePathts) {
-        auto current_item = item(currentPath);
+        foreach(QStringList currentPath, updatePathts) {
+            auto current_item = item(currentPath);
 
-        QModelIndex _current_index = index(current_item);
+            QModelIndex _current_index = index(current_item);
 
-        // Для подветки дается команда чтобы модель сообщила о своем изменении
-        emit_datachanged_signal(_current_index);
+            // Для подветки дается команда чтобы модель сообщила о своем изменении
+            emit_datachanged_signal(_current_index);
+        }
     }
 }
 
@@ -539,12 +541,12 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(QStringList path) const
         curritem;
 }
 
-boost::intrusive_ptr<TreeItem> TreeModel::item(std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal)const
+boost::intrusive_ptr<TreeItem> TreeModel::item(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal)const
 {
-    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>, int)>
+    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<const TreeItem>)>, int)>
     item_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
         = [&](boost::intrusive_ptr<TreeItem> _it
-              , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
+              , std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal
               , int mode
     ) {
         static boost::intrusive_ptr<TreeItem> find_item;
@@ -702,7 +704,7 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     bool success = false;
 
     beginRemoveRows(parent, position, position + rows - 1);
-    success = parent_item->children_remove(position, rows);
+    success = parent_item->remove(position, rows);
     endRemoveRows();
 
     return success;

@@ -188,7 +188,7 @@ private:
 
 
 
-    friend class browser::WebPage;
+    //    friend class browser::WebPage;
     friend class ItemsFlat;
 };
 

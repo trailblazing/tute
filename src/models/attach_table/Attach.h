@@ -75,6 +75,25 @@ protected:
     QMap<QString, QString>  _fields;
 
     QByteArray              _file_content; // Содержимое файла, используется в режиме полных данных
+    friend inline bool operator ==(const Attach &left, const Attach &right);
 };
+
+inline bool operator ==(const Attach &left, const Attach &right)
+{
+    //    bool fields_has_defferences = false;
+
+    //    for(auto i : right._fields.keys()) {
+    //        //        for(auto j : left._fields.keys()) {
+    //        if(left._fields[i].isEmpty()) {fields_has_defferences = true; break;}
+
+    //        //        }
+    //    }
+
+    return left._parent_table == right._parent_table
+           && left._lite_flag == right._lite_flag
+           && left._fields == right._fields // !fields_has_defferences
+           && left._file_content == right._file_content
+           ;
+}
 
 #endif // __ATTACH_H__
