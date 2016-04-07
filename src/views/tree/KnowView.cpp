@@ -127,7 +127,7 @@ void KnowView::sychronize()
         if(_tree_screen && _entrance && _know_root->root_item()->count_direct() > 0) {
 
             QMap<QString, QString> data;
-
+            auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
             data["id"]      =  get_unical_id(); //_know_root->root_item()->id();
             data["name"]    =  _know_root->root_item()->item_direct(0)->name();
 
@@ -143,12 +143,12 @@ void KnowView::sychronize()
                 for(int i = 0; i < tabmanager->count(); i++) {
                     auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                    if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == item->field("id");})) {
+                    if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == item->field("id");})) {
 
                         if(item->is_lite())item->to_fat();
 
                         item->parent(new_branch_item);
-                        new_branch_item->move_as_child(new_branch_item->work_pos(), item);
+                        _source_model()->model_move_as_child_impl(new_branch_item, item, new_branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
                         modified = true;
                     }
                 }
@@ -158,17 +158,17 @@ void KnowView::sychronize()
             if(modified) {
                 //                new_branch_item->field("id", _know_root->root_item()->id());
                 //                new_branch_item->field("name", _know_root->root_item()->name());
-                assert(_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _know_root->root_item()->id();})); //_know_root->root_item()->id()
+                assert(_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _know_root->root_item()->id();})); //_know_root->root_item()->id()
 
                 // || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
 
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
-                _tree_screen->view_paste_from_children(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
+                _tree_screen->view_paste_as_children_from_children_move(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
                     TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}   // _tree_screen->know_branch()
-                                          , _know_root->index(_know_root->item([&](boost::intrusive_ptr<TreeItem> it)->bool {return it->id() == _tree_screen->session_root();})))   // current_index()
+                                          , _know_root->index(_know_root->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root();})))   // current_index()
                     , new_branch_item
-                    , [&](boost::intrusive_ptr<TreeItem> it) ->bool{return it->field("url") == new_branch_item->field("url") && it->field("name") == new_branch_item->field("name");}
+                    , [&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url") && target->field("name") == source->field("name");}
                 );
 
                 _tree_screen->synchronized(false);
@@ -243,7 +243,7 @@ void KnowView::source_model(boost::intrusive_ptr<TreeItem> _item)
     //        }
     //    }
 
-    static_cast<TreeScreen *>(this->parent())->knowtree_save();
+    static_cast<TreeScreen *>(this->parent())->know_model_save();
 
     if(_know_root && is_owner()) {
         delete _know_root;  // dangerous!
@@ -420,19 +420,20 @@ void KnowView::dropEvent(QDropEvent *event)
             _tabmanager->closeTab(_tabmanager->indexOf(record->bounded_page()->view()));    // _record_controller->remove_child(record->field("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
-            if(_record_controller->row_count() == 0)
+            if(_record_controller->row_count() == 0) {
                 //                find_object<MetaEditor>(meta_editor_singleton_name)
                 globalparameters.meta_editor()->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+            }
 
             //            find_object<RecordScreen>(table_screen_singleton_name)
             _record_controller->record_screen()->tools_update();
 
             // Добавление записи в базу
-            tree_item_drop->move_as_child(0, record, ADD_NEW_RECORD_TO_END);
+            _know_root->model_move_as_child_impl(tree_item_drop, record, 0);  // tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
             //            find_object<TreeScreen>(tree_screen_singleton_name)
-            static_cast<TreeScreen *>(this->parent())->knowtree_save();
+            static_cast<TreeScreen *>(this->parent())->know_model_save();
         }
 
         // Обновление исходной ветки чтобы было видно что записей убавилось
@@ -450,9 +451,8 @@ void KnowView::dropEvent(QDropEvent *event)
 
 boost::intrusive_ptr<TreeItem> KnowView::current_item()
 {
-    return _know_root->item(
-               current_index() // selectionModel()->currentIndex()
-           );
+    return _know_root->item(current_index());   // selectionModel()->currentIndex()
+
 }
 
 
@@ -592,7 +592,7 @@ QModelIndex KnowView::current_index(void)
             //            }
         }
 
-        select_and_current(new_item);
+        select_as_current(new_item);
 
         result = selectionModel()->currentIndex();
         //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
@@ -650,7 +650,7 @@ QModelIndex KnowView::current_index(void)
 //    return selectionModel()->currentIndex();
 //}
 
-QModelIndex KnowView::select_and_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
+QModelIndex KnowView::select_as_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
 {
     QModelIndex _result;
     //    int pos = index.row();
@@ -706,7 +706,7 @@ QModelIndex KnowView::select_and_current(const QModelIndex &_index, std::functio
 }
 
 
-QModelIndex KnowView::select_and_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
+QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
 {
 
     TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
@@ -725,7 +725,7 @@ QModelIndex KnowView::select_and_current(boost::intrusive_ptr<TreeItem> _item, s
 
     if(_index.isValid() && _index != selectionModel()->currentIndex()) {
         //                _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, QItemSelectionModel::SelectionFlag::SelectCurrent);
-        _index = select_and_current(_index, _strategy);
+        _index = select_as_current(_index, _strategy);
 
     }
 
@@ -794,4 +794,136 @@ void KnowView::update_selected_indexes(void)
         update(selectitems.at(i));
     }
 }
+
+void KnowView::mousePressEvent(QMouseEvent *event)  // Q_DECL_OVERRIDE
+{
+    // get the buttons type
+    Qt::MouseButtons mouse_button = event->buttons();
+
+    // only the right mouse buton
+    if(mouse_button == Qt::RightButton) {
+        //        TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
+        //select item at cursor position
+        //        QPersistentModelIndex
+        QModelIndex next_index = indexAt(event->pos());
+        //        selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
+        select_as_current(next_index);
+
+        //        // start the context menu
+        //        QModelIndexList select_indexes(selectedIndexes());
+
+        //        if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
+        //            _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
+        //        }
+
+    } else {
+        //call the parents function
+        QTreeView::mousePressEvent(event);
+    }
+}
+
+
+
+QModelIndexList KnowView::index_localize(const QModelIndexList _origin_index_list)
+{
+    QModelIndexList _selectitems;
+
+    if(_origin_index_list.size() > 0) {
+        //        auto _source_model = _tree_view->source_model();
+        // На время удаления блокируется главное окно
+        //        //    find_object<MainWindow>("mainwindow")
+        //        globalparameters.mainwindow()->setDisabled(true);
+        //        //    find_object<MainWindow>("mainwindow")
+        //        globalparameters.mainwindow()->blockSignals(true);
+
+        //        assert(_origin_index_list.first() == _tree_view->current_index());
+
+        if(!_origin_index_list.contains(current_index())) {
+
+            //            KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
+            auto _source_model = [&]() {return _know_root;}; // std::bind(_source_model_func, _tree_view);
+
+            //            QModelIndex _current_index;
+            boost::intrusive_ptr<TreeItem> duplicated_item = current_item();
+            boost::intrusive_ptr<TreeItem> found;
+
+            for(int i = 0; i < _origin_index_list.size(); ++i) {
+                auto _index = _origin_index_list.at(i);
+
+                if(duplicated_item->id() == _source_model()->item(_index)->id()) {
+                    //                    _current_index = _index;
+                    found = _source_model()->item(_index);
+                    break;
+                }
+            }
+
+            TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
+
+            if(found && duplicated_item && found != duplicated_item) {
+                found = _source_model()->model_duplicated_merge_to_left(
+                            std::bind(&TreeScreen::view_delete_items, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+                            , found, duplicated_item
+                        );
+            }
+        }
+
+
+        //preparations
+        auto _index_current         = current_index();    //_origin_index_list.first();
+        auto _index_common_parent   = _index_current.parent();
+        //    auto index_to_be_delete_last = _index_list.last();
+        //        auto _item_to_be_deleted_first = _source_model->item(index_to_be_delete_first);
+        //        auto deleted_position_first = _item_to_be_deleted_first->sibling_order(); // items_update_selected();
+        //            auto deleted_position_last = _source_model->item(index_to_be_delete_last)->sibling_order();
+        //        auto _item_parent = _item_to_be_deleted_first->parent();
+
+
+
+        //        // Список имен веток, которые нужно удалить
+        //        QStringList branches_name;
+
+        for(int i = 0; i < _origin_index_list.size(); ++i) {
+            QModelIndex index = _origin_index_list.at(i);
+
+            if(index.isValid() && index.parent() == _index_common_parent) {
+                //                auto it = _source_model->item(index);
+                //                branches_name << it->field("name");
+                _selectitems.push_back(index);
+            }
+        }
+    }
+
+    return _selectitems;
+}
+
+
+bool KnowView::is_index_localized(const QModelIndexList _origin_index_list)const
+{
+    bool result = true;
+
+    if(_origin_index_list.size() > 0) {
+        //        assert(_origin_index_list.last() == _tree_view->current_index()); // means duplicated item found
+        //preparations
+        auto _index_current = _origin_index_list.last();    // _tree_view->current_index();    //
+
+        auto _index_common_parent = _index_current.parent();
+
+
+        for(int i = 0; i < _origin_index_list.size(); ++i) {
+            QModelIndex index = _origin_index_list.at(i);
+
+            if(index.isValid() && index.parent() != _index_common_parent) {
+                result = false; break;
+            }
+        }
+    }
+
+    return result;
+}
+
+
+
+
+
+
 

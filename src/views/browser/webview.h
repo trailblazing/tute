@@ -195,17 +195,15 @@ namespace browser {
         void items_break();
         void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> bounded_item);
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(
-            const QUrl &_url
-            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
-            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-        );
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url
+                                                              , TreeScreen::paste_strategy _view_paste_strategy
+                                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+                                                             );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(
-            boost::intrusive_ptr<TreeItem> item
-            , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
-            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-        );
+        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item
+                                                              , TreeScreen::paste_strategy _view_paste_strategy
+                                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+                                                             );
 
         boost::intrusive_ptr<TreeItem> item_registered_imperative_equip(
             boost::intrusive_ptr<TreeItem> item
@@ -262,17 +260,23 @@ namespace browser {
 
         boost::intrusive_ptr<CouplerDelegation>   _record_binder;
 
-        friend class Record;
-        friend class TreeItem;
+        //        friend class Record;
+        //        friend class TreeItem;
+
         //        friend void TreeItem::page_to_nullptr();
         //        friend Record::Record(const Record &obj);
-        friend Record::~Record();
+
+        //        friend Record::~Record();
+
         //        friend Record *TreeItem::bind(WebPage *page);
         //        friend WebPage *TreeItem::unique_page();
         //        friend bool TreeItem::is_holder();
-        friend TreeItem::~TreeItem();
+
+        //        friend TreeItem::~TreeItem();
+
         //        friend boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page);
-        friend bool TreeItem::is_holder();
+
+        //        friend bool TreeItem::is_holder();
     };
 
 #ifdef USE_POPUP_WINDOW

@@ -613,7 +613,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
     const KnowModel *_global_source_model = _tree_screen->know_model_board();
     // Выясняется ссылка на модель дерева данных
-    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};   // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
+    auto _current_model = [&]() {return _tree_screen->tree_view()->source_model();};   // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
 
 
     QMap<QString, QString> data;
@@ -686,10 +686,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         //        if(current_item_index.isValid()) {
         //            // Текущая ветка
-        _start_item = _current_source_model()->root_item();   //item(current_item_index);
+        _start_item = _current_model()->root_item();   //item(current_item_index);
 
         // Количество элементов (веток) в текущей ветке и всех подветках
-        _candidate_records = _current_source_model()->size_of(_start_item);
+        _candidate_records = _current_model()->size_of(_start_item);
         //            _result_item = _result_item->active_subset();
         //        }
     };
@@ -721,7 +721,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
             for(int i = 0; i < tabmanager->count(); i++) {
                 auto item = tabmanager->webView(i)->page()->bounded_item();
 
-                _start_item->child_duplicate(item);
+                _start_item->child_rent(item);
             }
         }
 
@@ -732,7 +732,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         //        // resultset_item
         //        // resultset_record_source->active_subset(_tree_screen->insert_branch_process(_tree_screen->last_index(), "buffer", true));  //
         //        //            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
-        _candidate_records = _start_item->count_records_all();
+        _candidate_records = _start_item->count_children_all();
 
     };
 
@@ -793,14 +793,16 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         return find_recursive(_start_item, _result_item);   // candidate_root->tabledata();
     };
 
-    auto output = [&](boost::intrusive_ptr<TreeItem> &_result_item) { // , std::shared_ptr<RecordTable> &resultset_data
 
-        // После вставки всех данных подгоняется ширина колонок
-        //        _findtable->updateColumnsWidth();
-        _tree_screen->view_paste_from_search(TreeModel::ModelIndex(_current_source_model, _tree_screen->tree_view()->current_index())
-                                             , _result_item, [&](boost::intrusive_ptr<TreeItem> it)->bool {return it->field("name") == _result_item->field("name");}
-                                            ); // dump to table screen
-    };
+    // deprecated by KnowModel::model_move_as_child_impl in this->find_recursive
+    //    auto output = [&](boost::intrusive_ptr<TreeItem> &_result_item) { // , std::shared_ptr<RecordTable> &resultset_data
+
+    //        // После вставки всех данных подгоняется ширина колонок
+    //        //        _findtable->updateColumnsWidth();
+    //        _tree_screen->view_paste_from_search(TreeModel::ModelIndex(_current_source_model, _tree_screen->tree_view()->current_index())
+    //                                             , _result_item, [&](boost::intrusive_ptr<TreeItem> it)->bool {return it->field("name") == _result_item->field("name");}
+    //                                            ); // dump to table screen
+    //    };
 
 
     //__________________________________________________________________________________________________
@@ -884,7 +886,12 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     // else, open from search engine
     //    }
 
-    output(_result_item);
+
+
+
+    //    output(_result_item);
+
+
 
 
     return _result_item; // ->record_table();
@@ -907,7 +914,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
     // Если в ветке присутсвует таблица конечных записей
     if(_start_item->count_direct() > 0) {
 
-        //        auto _source_model = _tree_screen->tree_view()->source_model();
+        auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+
         auto _current_item = _tree_screen->tree_view()->current_item();
         //        boost::intrusive_ptr<TreeItem> _current_branch_root;
 
@@ -1002,7 +1010,15 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
 
                 if((candidate->parent() != _current_item->parent()) && !_result_item->item_direct(candidate)) {
                     //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
-                    _result_item->move_as_child(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+
+
+
+                    _source_model()->model_move_as_child_impl(candidate->parent(), candidate, _result_item->count_direct());   //
+                    //                    _result_item->child_insert(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+
+
+
+
 
                     //                assert(_recordtable->record(i)->is_lite());
                     //                result->shadow_record_lite(result->size(), _recordtable->record(i));

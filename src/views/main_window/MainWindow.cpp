@@ -592,7 +592,7 @@ void MainWindow::save_tree_position(void)
 {
     auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _current_source_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();});
+    auto item = _current_source_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root();});
     //    // Получение QModelIndex выделенного в дереве элемента
     //    const QModelIndex index = _tree_screen->tree_view()->current_index();
 
@@ -635,7 +635,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
         QModelIndex setto = _current_source_model()->index(item);
 
         // Курсор устанавливается в нужную позицию
-        _tree_screen->tree_view()->select_and_current(setto);
+        _tree_screen->tree_view()->select_as_current(setto);
     }
 }
 
@@ -1191,7 +1191,7 @@ void MainWindow::synchronization(void)
     walkhistory.set_drop(true);
 
     // Заново считываются данные в дерево
-    _tree_screen->knowtree_reload();
+    _tree_screen->know_model_reload();
     restore_tree_position();
     //    restore_recordtable_position();
     restore_editor_cursor_position();

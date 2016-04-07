@@ -10,6 +10,10 @@
 #include <QList>
 
 #include "libraries/ClipboardRecords.h"
+#include "models/tree/TreeModel.h"
+
+class TreeModel;
+
 
 // Определяется структура данных
 // которая будет передаваться через буфер обмена
@@ -48,8 +52,8 @@ public:
 
     void init(void);
 
-    void branch_push(boost::intrusive_ptr<TreeItem> it);
-    void branch_push(QList<boost::intrusive_ptr<TreeItem>> current_items);
+    void branch_push(const QString &_clip_parent_id, boost::intrusive_ptr<TreeItem> it);
+    void branch_push(TreeModel::ModelIndex _modelindex, QList<boost::intrusive_ptr<TreeItem>> current_items);
 
     void print(void) const;
 
@@ -65,16 +69,16 @@ public:
     // Получение списка записей для указанной ветки
     QList<boost::intrusive_ptr<TreeItem> > records_by_parent_id(QString id) const;
     //    QList< boost::intrusive_ptr<TreeItem>> records_by_parent_id_list(std::set<QString> id_list)const;
-    std::set<QString> clip_root_items_parent_id_list() const {return _clip_root_items_parent_id_list;}
+    QString clip_blank_header_id() const {return _clip_blank_header_id;}
     //    QList<QString> clip_root_items_id_list() const {return _clip_root_items_id_list;}
 
 protected:
     // Этот метод QMimeData надо переопределить, так как он виртуальный
     QVariant retrieveData(const QString &format, QVariant::Type preferredType) const;
-    void branch_fields_add_parent_id(QString parent_id, QMap<QString, QString> _branch_fields);
-    void record_duplicate_to_parent_id(QString parent_id, boost::intrusive_ptr<TreeItem> record);
+    //    void branch_fields_add_parent_id(boost::intrusive_ptr<TreeItem> it);
+    //    void record_duplicate_to_parent_id(boost::intrusive_ptr<TreeItem> record);
 private:
-    std::set<QString>   _clip_root_items_parent_id_list;
+    QString             _clip_blank_header_id = "";
     //    QList<QString>      _clip_root_items_id_list;
     CLIPB_BRANCH_STRUCT _branch_data; // Данные, которые передаются через буфер обмена
     QStringList         _clipboard_branch_format; // Строка с идентификатором формата

@@ -92,7 +92,7 @@
 #include "views/record/MetaEditor.h"
 #include "models/tree/TreeItem.h"
 #include "views/tree/TreeScreen.h"
-#include "views/browser/browser.h"
+//#include "views/browser/browser.h"
 
 
 
@@ -534,9 +534,9 @@ namespace browser {
 
         if(_record_binder->bounded_item()) {  // ->_active_request
 
-            if(_record_binder->bounded_item()->_open_link_in_new_window == 1) {
+            //            if(_record_binder->bounded_item()->_open_link_in_new_window == 1) {
 
-            }
+            //            }
 
             //            Browser *_browser = browser();
             assert(_browser);
@@ -547,7 +547,7 @@ namespace browser {
             }
 
             auto _tree_screen = globalparameters.tree_screen();
-            _tree_screen->tree_view()->select_and_current(_record_binder->bounded_item());
+            _tree_screen->tree_view()->select_as_current(_record_binder->bounded_item());
 
             if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
 
@@ -703,6 +703,7 @@ namespace browser {
                 // return nullptr;
 
                 WebView *view = globalparameters.entrance()->find([](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;});
+                auto _tree_screen = globalparameters.tree_screen();
 
                 if(view) {
                     //                return view->page();
@@ -710,7 +711,9 @@ namespace browser {
 
                     auto record = view->page()->item_request_from_tree(
                                       QUrl(Browser::_defaulthome)
-                                      , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                      , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen()
+                                                  , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->record_binder()->bounded_item())) // std::placeholders::_1
+                                                  , std::placeholders::_2, std::placeholders::_3)
                                   );
                     //                record->generate();
                     record->activate();
@@ -725,7 +728,9 @@ namespace browser {
                     //                    auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
                     boost::intrusive_ptr<TreeItem> r = _browser->tabWidget()->item_request_from_tree(
                                                            QUrl(Browser::_defaulthome)
-                                                           , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                                           , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen()
+                                                                       , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->record_binder()->bounded_item())) // std::placeholders::_1
+                                                                       , std::placeholders::_2, std::placeholders::_3)
                                                        );
                     //                return //_record->page();
                     // globalparameters.entrance()->invoke_view(new_record).second->page();
@@ -939,7 +944,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         boost::intrusive_ptr<TreeItem> item
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::paste_strategy _view_paste_strategy
         , equal_t _equal
     )
     {
@@ -963,7 +968,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
         const QUrl &_url
-        , std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>)> _view_paste_strategy
+        , TreeScreen::paste_strategy _view_paste_strategy
         , equal_url_t _equal
     )
     {
@@ -1770,7 +1775,7 @@ namespace browser {
 
 
             auto _tree_screen = globalparameters.tree_screen();
-            _tree_screen->tree_view()->select_and_current(_record_binder->bounded_item());
+            _tree_screen->tree_view()->select_as_current(_record_binder->bounded_item());
 
             if(is_current) {// globalparameters.mainwindow()
                 if(_record_controller->view()->selection_first_id() != _record_binder->bounded_item()->field("id"))
