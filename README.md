@@ -79,7 +79,7 @@ After installation, you'll get a "MaintenanceTool" under the installation root d
 
 1.3 clone the repo to your workbench
 
-git clone https://github.com/BeImprovised/mytetra_webengine.wiki.git
+git clone https://github.com/BeImprovised/mytetra_webengine.git
 
 1.4 Compile the Qt project file with QtCreator which comes with Qt5.6
 
