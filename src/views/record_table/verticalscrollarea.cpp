@@ -7,7 +7,7 @@
 #include "views/record_table/RecordView.h"
 
 VerticalScrollArea::VerticalScrollArea(
-    std::shared_ptr<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>> interface
+    std::shared_ptr<sd::_interface<sd::meta_info<void *>, void(QResizeEvent *)>> interface
     , QWidget *parent
 ) :
     QScrollArea(parent)

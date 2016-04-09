@@ -48,10 +48,10 @@ struct CouplerDelegation;
 struct CouplerDelegation : public boost::intrusive_ref_counter<CouplerDelegation, boost::thread_safe_counter> { //    : public std::enable_shared_from_this<CouplerDelegation>
 public:
 
-    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>>    bounded_item_interface;
-    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebPage *>                bounded_page_interface;
-    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *>                bind_interface;   // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
-    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *>                activate_interface;
+    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>()>    bounded_item_interface;
+    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebPage *()>                bounded_page_interface;
+    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *()>                bind_interface;   // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
+    typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *()>                activate_interface;
 
     typedef std::shared_ptr<bounded_item_interface> bounded_item_helper;
     typedef std::shared_ptr<bounded_page_interface> bounded_page_helper;

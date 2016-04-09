@@ -1462,7 +1462,7 @@ void TreeScreen::view_paste_as_children_from_clipboard(TreeModel::ModelIndex _mo
             //        assert(!_index_origin.isValid());
             if(!(_source_item->parent() == _parent && _parent->contains_direct(_source_item)))
             {
-                _source_item->self_remove_from_parent();    //
+                //                _source_item->self_remove_from_parent();    //
                 _parent->remove(_source_item);    // -> this content is not must a logic error  1-2?
 
                 //        assert(!_index_parent.isValid());

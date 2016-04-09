@@ -80,7 +80,7 @@ RecordScreen::RecordScreen(//TreeScreen           *_tree_screen    //,
       //                                              , this))
 
     , _vertical_scrollarea(new VerticalScrollArea(
-                               std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent * >>("", &RecordView::resizeEvent, _tabmanager->record_controller()->view())
+                               std::make_shared<sd::_interface<sd::meta_info<void *>, void(QResizeEvent *) >>("", &RecordView::resizeEvent, _tabmanager->record_controller()->view())
                                , this
                            ))
     , _records_toolslayout(new QHBoxLayout())
