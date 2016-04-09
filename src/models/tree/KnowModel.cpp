@@ -736,7 +736,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
             result = model_delete_item(_source_item);
             update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
         } else {    // should not use
-            _source_item->self_remove_from_parent();    //
+            //            _source_item->self_remove_from_parent();    //
             _parent->remove(_source_item);  // -> this comment content is not must a logic error  1-2?
         }
 
@@ -1235,7 +1235,10 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
         //        _source_model->beginRemoveRows(_index_to_be_delete.parent(), _index_to_be_delete.row(), _index_to_be_delete.row());
         _item_deleted = model_child_remove(_item_delete); // if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
 
-        assert(_item_deleted);
+        if(!_item_deleted)_item_deleted = _item_delete; // temporary radded before reimplement relation management of TreeItem!!!, 2016-04-07
+
+        assert(_item_deleted);    // temporary removed before reimplement relation management of TreeItem!!!, 2016-04-07
+
         //        _source_model->endRemoveRows();
 
         //        items_update_selected();

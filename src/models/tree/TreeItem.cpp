@@ -907,6 +907,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(boost::intrusive_ptr<Tr
 
 boost::intrusive_ptr<TreeItem> TreeItem::remove(boost::intrusive_ptr<TreeItem> _source_item)
 {
+
+    if(_source_item->parent() != this)_source_item->self_remove_from_parent();
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
     for(auto it : _child_items) { // for(int row = 0; row < _child_items.size(); ++row) {
