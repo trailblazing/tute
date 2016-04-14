@@ -719,7 +719,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
             auto tabmanager = browser->tabmanager();
 
             for(int i = 0; i < tabmanager->count(); i++) {
-                auto item = tabmanager->webView(i)->page()->bounded_item();
+                auto item = tabmanager->webView(i)->page()->item_link();
 
                 _start_item->child_rent(item);
             }
@@ -929,7 +929,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
 
         // Перебираются записи таблицы
         for(int i = 0; i < _start_item->count_direct(); i++) {
-            auto candidate = _start_item->item_direct(i);
+            auto candidate = _start_item->item_direct(i)->host();
             // Обновляется линейка наполняемости
             _progress->setValue(++ _total_progress_counter);
             qApp->processEvents();
@@ -964,11 +964,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
                 if(_search_area[key] == true) {
                     if(key != "text") {
                         // Поиск в обычном поле
-                        inspect_text = _start_item->item_direct(i)->field(key);
+                        inspect_text = _start_item->item_direct(i)->host()->field(key);
                         iteration_search_result[key] = find_in_text_process(inspect_text);
                     } else {
                         // Поиск в тексте записи
-                        if(_start_item->item_direct(i)->file_exists()) inspect_text = _start_item->text(i);
+                        if(_start_item->item_direct(i)->host()->file_exists()) inspect_text = _start_item->text(i);
                         else inspect_text = QString();
 
                         QTextDocument textdoc;
@@ -1008,7 +1008,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<T
 
                 if(candidate->is_lite())candidate->to_fat();
 
-                if((candidate->parent() != _current_item->parent()) && !_result_item->item_direct(candidate)) {
+                if((candidate->parent() != _current_item->parent()) && !_result_item->item_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il == candidate->up_linker();})) {
                     //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
 
 

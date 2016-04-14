@@ -101,7 +101,7 @@ class TreeItem;
 class TreeModel;
 class RecordModel;
 class RecordView;
-struct CouplerDelegation;
+
 
 
 
@@ -254,15 +254,16 @@ namespace browser {
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-        typedef typename CouplerDelegation::bind_interface          bind_interface;
-        typedef typename CouplerDelegation::activate_interface      activate_interface;
-        typedef typename CouplerDelegation::bounded_item_interface  bounded_item_interface;
-        typedef typename CouplerDelegation::bounded_page_interface  bounded_page_interface;
+        typedef TreeItem::coupler_delegation CouplerDelegation;
+        typedef typename TreeItem::coupler_delegation::bind_interface          bind_interface;
+        typedef typename TreeItem::coupler_delegation::activate_interface      activate_interface;
+        typedef typename TreeItem::coupler_delegation::item_interface  bounded_item_interface;
+        typedef typename TreeItem::coupler_delegation::page_interface  bounded_page_interface;
 
-        typedef typename CouplerDelegation::bind_helper         bind_helper;
-        typedef typename CouplerDelegation::activate_helper     activate_helper;
-        typedef typename CouplerDelegation::bounded_item_helper bounded_item_helper;
-        typedef typename CouplerDelegation::bounded_page_helper bounded_page_helper;
+        typedef typename TreeItem::coupler_delegation::bind_helper         bind_helper;
+        typedef typename TreeItem::coupler_delegation::activate_helper     activate_helper;
+        typedef typename TreeItem::coupler_delegation::bounded_item_helper bounded_item_helper;
+        typedef typename TreeItem::coupler_delegation::bounded_page_helper bounded_page_helper;
 
         ~TabWidget();
         void clear();
@@ -293,17 +294,17 @@ namespace browser {
         WebView *find_nopin()const;
         Browser *browser() {return _browser;}
 
-        struct Coupler : public std::enable_shared_from_this<Coupler> {
+        struct Coupler : public std::enable_shared_from_this<Coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
+
             TabWidget                       *_tabmanager;
-            boost::intrusive_ptr<TreeItem>  _bounded_item;
-            WebPage                         *_bounded_page;
+            boost::intrusive_ptr<TreeItem>  _item_link;
+            WebPage                         *_page_link;
             bool                            _make_current;
 
-            Coupler(
-                TabWidget                           *_tabmanager
-                , boost::intrusive_ptr<TreeItem>    _bounded_item
-                , bool                              _make_current = true
-            );
+            Coupler(TabWidget                           *_tabmanager
+                    , boost::intrusive_ptr<TreeItem>    item_link_
+                    , bool                              make_current_ = true
+                   );
 
             //                : _tabmanager(_tabmanager), _bounded_item(_bounded_item), _bounded_page(nullptr), _make_current(_make_current)
             //            {
@@ -315,12 +316,11 @@ namespace browser {
             //                                             ));
             //            }
 
+            boost::intrusive_ptr<TreeItem> &item_link() {return _item_link;}
+            WebPage *&page_link() {return _page_link;}
 
             WebView *binder();   // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
-            boost::intrusive_ptr<TreeItem> bounded_item() {return _bounded_item;}
-            WebPage *bounded_page() {return _bounded_page;}
             WebView *activator();
-
 
         };
 
@@ -344,29 +344,29 @@ namespace browser {
                                                           );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(const QUrl &_find_url
-            , TreeScreen::paste_strategy _view_paste_strategy
-            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-        );
+                                                                   , TreeScreen::paste_strategy _view_paste_strategy
+                                                                   , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+                                                                  );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_find_url
-            , TreeScreen::paste_strategy _view_paste_strategy
-            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-        );
+                                                              , TreeScreen::paste_strategy _view_paste_strategy
+                                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+                                                             );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(boost::intrusive_ptr<TreeItem> target
-            , TreeScreen::paste_strategy _view_paste_strategy
-            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-        );
+                                                                   , TreeScreen::paste_strategy _view_paste_strategy
+                                                                   , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+                                                                  );
 
         boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> target
-            , TreeScreen::paste_strategy _view_paste_strategy
-            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-        );
+                                                              , TreeScreen::paste_strategy _view_paste_strategy
+                                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+                                                             );
 
 
         //        boost::intrusive_ptr<TreeItem> item_request_from_tree_fragment(const QUrl &_url);
 
-        boost::intrusive_ptr<TreeItem> item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item);
 
         RecordModel *source_model() {return _record_controller->source_model();}
         RecordView *view() {return _record_controller->view();}

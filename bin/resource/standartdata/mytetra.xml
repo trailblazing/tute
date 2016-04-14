@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mytetradoc>
 <root>
- <format version="1" subversion="1" />
+ <format version="1" subversion="2" />
  <content>
-  <node id="1" name="Rename me" >
+  <record crypt="0" id="0" name="Rename me" >
    <recordtable>
-    <record dir="0000000001" url="http://www.google.com" tags="MyTetra, Qt" author="" ctime="20081210124656" id="1" name="Welcome to MyTetra!" file="text.html" />
+    <record dir="0000000001" url="https://www.google.com" tags="MyTetra, Qt" author="" ctime="20081210124656" id="1" name="Welcome to MyTetra!" file="text.html" />
    </recordtable>
-  </node>
+  </record>
  </content>
 </root>

@@ -57,8 +57,12 @@ using boost::static_pointer_cast;
 namespace sd {
 
 
-    template <typename A, typename B>struct STATIC_SAME { enum { value = false }; };
-    template <typename A>struct STATIC_SAME<A, A> { enum { value = true }; };
+    template <typename A, typename B>struct STATIC_SAME {
+        enum { value = false };
+    };
+    template <typename A>struct STATIC_SAME<A, A> {
+        enum { value = true };
+    };
 
     template <bool, typename T, typename F> struct static_if {
         // static const bool value = false;
@@ -90,47 +94,54 @@ namespace sd {
         typedef boost::shared_ptr<T> type;
     };
 
-    //    template<typename T>
-    //    struct static_if_shared <T, boost::intrusive_ptr<void>> {
-    //        typedef boost::intrusive_ptr<T> type;
-    //    };
-
     template<typename T>
     struct static_if_shared <T, std::shared_ptr<void>> {
         typedef std::shared_ptr<T> type;
     };
 
+    //    template<typename T>
+    //    struct static_if_shared <T, boost::intrusive_ptr<void>> {
+    //        typedef boost::intrusive_ptr<T> type;
+    //    };
+
+    //    template<typename T>
+    //    struct static_if_shared <T, boost::intrusive_ptr<void *>> {
+    //        typedef boost::intrusive_ptr<T> type;
+    //    };
+
     template<typename T, typename shared_type>
     typename static_if_shared<T, shared_type>::type static_if_shared_pointer_cast(shared_type obj);
 
     template<typename T>
-    typename static_if_shared<T, void *>::type static_if_shared_pointer_cast/* <T, void *>*/(void *obj)
+    typename static_if_shared<T, void *>::type static_if_shared_pointer_cast(void *obj)    // <T, void *>
     {
-        //        typedef typename static_if_shared<T, void *>::type type;   // object "this" pointer
         return static_cast<T *>(obj);
     }
 
     template<typename T>
-    typename static_if_shared<T, boost::shared_ptr<void>>::type static_if_shared_pointer_cast /*<T, boost::shared_ptr<void>>*/ (boost::shared_ptr<void> obj)
+    typename static_if_shared<T, boost::shared_ptr<void>>::type static_if_shared_pointer_cast(boost::shared_ptr<void> obj)          // <T, boost::shared_ptr<void>>
     {
-        //        typedef typename static_if_shared<T, boost::shared_ptr<void>>::type type;
         return boost::static_pointer_cast<T>(obj);
     }
 
-    //    template<typename T>
-    //    typename static_if_shared<T, boost::intrusive_ptr<void>>::type static_if_shared_pointer_cast /*<T, boost::shared_ptr<void>>*/ (boost::intrusive_ptr<void> obj)
-    //    {
-    //        //        typedef typename static_if_shared<T, boost::shared_ptr<void>>::type type;
-    //        return boost::intrusive_ptr<T>(static_cast<typename static_if<std::is_pointer<T>::value, T, T *>::type>(obj));
-    //    }
-
     template<typename T>
-    typename static_if_shared<T, std::shared_ptr<void>>::type static_if_shared_pointer_cast /*<T, std::shared_ptr<void>>*/ (std::shared_ptr<void> obj)
+    typename static_if_shared<T, std::shared_ptr<void>>::type static_if_shared_pointer_cast(std::shared_ptr<void> obj)              // <T, std::shared_ptr<void>>
     {
-        //        typedef typename static_if_shared<T, std::shared_ptr<void>>::type type;
         return std::static_pointer_cast<T>(obj);
     }
 
+    // you need boost::intrusive_ref_counter<typename, boost::thread_safe_counter> act as the target class rather than void*
+    //    template<typename T>
+    //    typename static_if_shared<T, boost::intrusive_ptr<void>>::type &static_if_shared_pointer_cast(boost::intrusive_ptr<void> &obj)    // <T, boost::shared_ptr<void>>
+    //    {
+    //        return boost::static_pointer_cast<T>(obj);  // boost::intrusive_ptr<T>(static_cast<T *>(obj.get()));    // static_cast<typename static_if<std::is_pointer<T>::value, T, T *>::type>(obj)
+    //    }
+
+    //    template<typename T>
+    //    typename static_if_shared<T, boost::intrusive_ptr<void*>>::type &static_if_shared_pointer_cast(boost::intrusive_ptr<void*> &obj)    // <T, boost::shared_ptr<void>>
+    //    {
+    //        return boost::static_pointer_cast<T>(obj);  // boost::intrusive_ptr<T>(static_cast<T *>(obj.get()));    // static_cast<typename static_if<std::is_pointer<T>::value, T, T *>::type>(obj)
+    //    }
 
     template<typename bailee, typename bailee_return, typename bailee_require>
     struct _invoke_functor {
@@ -805,8 +816,14 @@ namespace sd {
         {
             return _object_name;
         }
-        T object() { return _object; }
-        T object()const { return _object; }
+        T object()
+        {
+            return _object;
+        }
+        T object()const
+        {
+            return _object;
+        }
     };
 
 
@@ -995,19 +1012,18 @@ namespace sd {
         typename _meta_info // = meta_info
         , typename return_type
         , typename... Arg
-        >
-struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
-        typedef _meta_info meta_info;
-        typedef typename _meta_info::object_pointer_type object_pointer_type;
-        protected:
-        std::string _method_name;
-        std::string _return_type_name;
+    > struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
+            typedef _meta_info meta_info;
+            typedef typename _meta_info::object_pointer_type object_pointer_type;
+            protected:
+            std::string _method_name;
+            std::string _return_type_name;
 
-        boost::shared_ptr<void> _transmitter;
-        return_type(*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
+            boost::shared_ptr<void> _transmitter;
+            return_type(*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
 
-        public:
-        std::string method_name()
+            public:
+            std::string method_name()
     {
         return _method_name;
     }
@@ -1021,8 +1037,7 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
         std::string _method_name
         , return_type(object_type::*f)(Arg...)
         , typename static_if_shared<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
-    ) :
-    meta_info(o, "")
+    ) : meta_info(o, "")
     , _method_name(_method_name)
     , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
     , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter_interface<object_pointer_type, object_type, return_type, Arg...> >(f)))
@@ -1030,10 +1045,9 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
     {
     }
 
-    _interface &operator = (const _interface &m) = delete; // because of deep copy
+    _interface &operator = (const _interface &m) = delete;  // because of deep copy
 
-                                                   return_type operator()(Arg... arg) // const // for serialize()
-    {
+    auto operator()(Arg... arg) ->return_type {             // const // for serialize()
         return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg)...);
     }
              };
@@ -1079,10 +1093,9 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
     {
     }
 
-    _interface_const &operator=(const _interface_const &m) = delete; // because of deep copy
+    _interface_const &operator=(const _interface_const &m) = delete;    // because of deep copy
 
-                                                             return_type operator()(Arg... arg) // const // for serialize()
-    {
+    auto operator()(Arg... arg)->return_type {                          // const // for serialize()
         return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg)...);
     }
              };
@@ -1126,10 +1139,9 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
     {
     }
 
-    _interface &operator=(const _interface &m) = delete; // because of deep copy
+    _interface &operator=(const _interface &m) = delete;    // because of deep copy
 
-                                                 void operator()(Arg... arg) // const // for serialize()
-    {
+    auto operator()(Arg... arg)->void {                     // const // for serialize()
         _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg)...);
     }
              };
@@ -1174,10 +1186,9 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
     {
     }
 
-    _interface_const &operator=(const _interface_const &m) = delete; // because of deep copy
+    _interface_const &operator=(const _interface_const &m) = delete;    // because of deep copy
 
-                                                             void operator()(Arg... arg) // const // for serialize()
-    {
+    auto operator()(Arg... arg)->void {                                 // const // for serialize()
         _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg)...);
     }
              };
@@ -1213,10 +1224,9 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
     {
     }
 
-    static_interface &operator=(const static_interface &m) = delete; // because of deep copy
+    static_interface &operator=(const static_interface &m) = delete;    // because of deep copy
 
-                                                             return_type operator()(Arg... arg) // const // for serialize()
-    {
+    auto operator()(Arg... arg)->return_type {                          // const // for serialize()
         return static_transmit(static_transmitter, std::forward<Arg>(arg)...);
     }
     };
@@ -1251,10 +1261,9 @@ struct _interface<_meta_info, return_type(Arg ...)> : public _meta_info {
     {
     }
 
-    static_interface &operator=(const static_interface &m) = delete; // because of deep copy
+    static_interface &operator=(const static_interface &m) = delete;    // because of deep copy
 
-                                                             void operator()(Arg... arg) // const // for serialize()
-    {
+    auto operator()(Arg... arg)->void {                                 // const // for serialize()
         static_transmit(static_transmitter, std::forward<Arg>(arg)...);
     }
     };

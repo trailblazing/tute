@@ -19,6 +19,7 @@
 #include "views/browser/entrance.h"
 #include "views/browser/downloadmanager.h"
 
+extern const char *index_xml_file_name;
 
 GlobalParameters::GlobalParameters(QObject *pobj)
 {
@@ -227,8 +228,8 @@ void GlobalParameters::create_first_programfiles(QString dirName)
     create_stylesheet_file(dirName);
 
     // Создается файл базы данных
-    QFile::copy(":/resource/standartdata/mytetra.xml", dirName + "/data/mytetra.xml");
-    QFile::setPermissions(dirName + "/data/mytetra.xml", QFile::ReadUser | QFile::WriteUser);
+    QFile::copy(":/resource/standartdata/mytetra.xml", dirName + "/data/" + index_xml_file_name);
+    QFile::setPermissions(dirName + "/data/" + index_xml_file_name, QFile::ReadUser | QFile::WriteUser);
 
     // Создается файл первой записи
     QFile::copy(":/resource/standartdata/base/0000000001/text.html", dirName + "/data/base/0000000001/text.html");

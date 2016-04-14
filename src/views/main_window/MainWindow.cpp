@@ -71,7 +71,7 @@ MainWindow::MainWindow(
     , _windowmenu(new QMenu(tr("&Window"), this))
     , _toolsmenu(new QMenu(tr("&Tools"), this))
     , _helpmenu(new QMenu(tr("&Help"), this))
-    , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, _vtabwidget))
+    , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this))    // _vtabwidget
     , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
     , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))    // _find_screen -> for find_text
     , _entrance(new browser::Entrance(entrance_singleton_name
@@ -1056,7 +1056,7 @@ void MainWindow::on_expand_edit_area(bool flag)
         //            _recordtable_hidden = true;
         //        }
 
-        emit _vtabwidget->hideAction.setChecked(true);
+        emit _vtabwidget->_hide_action->setChecked(true);
         //        QTabWidget *tab = globalparameters.vtab();
         //        tab->currentWidget()->hide();
 
@@ -1081,7 +1081,7 @@ void MainWindow::on_expand_edit_area(bool flag)
         //        }
 
         //        emit _vtabwidget->hideAction.toggle();
-        emit _vtabwidget->hideAction.setChecked(false);
+        emit _vtabwidget->_hide_action->setChecked(false);
         //        globalparameters.vtab()->resize(vtab_size); // show();
     }
 }

@@ -28,8 +28,45 @@ class MetaEditor;
 class ItemsFlat {
 
 public:
+
+
+    struct linker : public boost::intrusive_ref_counter<linker, boost::thread_safe_counter> {
+    public:
+
+        linker(boost::intrusive_ptr<TreeItem>  new_host_parent, boost::intrusive_ptr<TreeItem>  new_host, int pos = 0, int mode = ADD_NEW_RECORD_BEFORE);        //        boost::intrusive_ptr<TreeItem> parent(boost::intrusive_ptr<TreeItem> it, int _pos = 0, int _mode = ADD_NEW_RECORD_BEFORE);
+
+        ~linker();  //        boost::intrusive_ptr<TreeItem> remove(boost::intrusive_ptr<TreeItem> _source_item);
+
+        // Возвращение ссылки на родительский элемент
+        boost::intrusive_ptr<TreeItem> host_parent()const;  // {return _parent_item;}
+        boost::intrusive_ptr<TreeItem> host()const;   // {return _child_item;}
+
+        boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem>  new_host_parent, int pos = 0, int mode = ADD_NEW_RECORD_BEFORE);
+        //        // Удаление потомков, начиная с позиции position массива childItems
+        //        bool remove(int position, int count);
+
+        //        // Удаление всех потомков элемента
+        //        void remove_all();
+
+        // Возвращает номер, под которым данный объект хранится
+        // в массиве childItems своего родителя
+        int sibling_order() const;
+
+        int move_up(void);
+        int move_dn(void);
+        void break_linker();
+    private:
+        std::function<boost::intrusive_ptr<linker> (boost::intrusive_ptr<TreeItem>     _parent
+                                                    , boost::intrusive_ptr<TreeItem>   _self_host
+                                                    , int pos, int mode
+                                                   )> child_move_unique;
+
+        boost::intrusive_ptr<TreeItem>  _parent_item;
+        boost::intrusive_ptr<TreeItem>  _host;
+    };
+
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
-    ItemsFlat(const QDomElement &_dom_element, boost::intrusive_ptr<TreeItem> _parent_item, const bool _is_crypt = false);
+    ItemsFlat(const QDomElement &_dom_element, const bool _is_crypt = false);
     ItemsFlat(const bool _is_crypt = false);
 
 #ifdef _with_record_table
@@ -47,45 +84,51 @@ public:
                                const QString &text,
                                const QMap<QString, QByteArray> &picturesFiles = (QMap<QString, QByteArray>()));
 
-    // Получение значения указанного поля для указанного элемента
-    QString field(int pos, QString name) const;
+    //    // Получение значения указанного поля для указанного элемента
+    //    QString field(int pos, QString name) const;
 
-    // Установка значения указанного поля для указанного элемента
-    void field(int pos, QString name, QString value);
+    //    // Установка значения указанного поля для указанного элемента
+    //    void field(int pos, QString name, QString value);
 
     // Получение образа записи
     boost::intrusive_ptr<TreeItem> item_lite(int pos) const;
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
-    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
-    //    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
 
-    QList<boost::intrusive_ptr<TreeItem>> items_direct(const QString &name)const;
-    QList<boost::intrusive_ptr<TreeItem>> items_direct(std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition)const;
-    boost::intrusive_ptr<TreeItem> item_direct(const QString &id) const;
-    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
+
+    QList<boost::intrusive_ptr<linker>> items_direct(const QString &name)const;
+    QList<boost::intrusive_ptr<linker>> items_direct(std::function<bool(boost::intrusive_ptr<const linker>)> _substitute_condition)const;
+
+
+
+    boost::intrusive_ptr<linker> item_direct(int pos) const;
+    //    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
+    //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id) const;
+    boost::intrusive_ptr<linker> item_direct(const QUrl &url) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
-    boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem> item) const;
-    boost::intrusive_ptr<TreeItem> item_direct(std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition)const;
+    //    boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem> item) const;
+    boost::intrusive_ptr<linker> item_direct(std::function<bool(boost::intrusive_ptr<const linker>)> _substitute_condition)const;
     //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id)const;
+
+
     int index_direct(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
 
-    // Удаление всех элементов таблицы конечных записей
-    void delete_list_items(void);
+    //    // Удаление всех элементов таблицы конечных записей
+    //    void delete_list_items(void);
 
     // Количество записей в таблице данных
     int count_direct(void) const;
 
     //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
-    void dom_to_items(const QDomElement &dom_model, boost::intrusive_ptr<TreeItem> _parent_item);
+    void dom_to_records(const QDomElement &dom_model);
 
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
-    QDomElement dom_from_activated_itemsflat(std::shared_ptr<QDomDocument> doc) const;
+    QDomElement dom_from_activated_itemsflat() const;
 
     QDomElement dom_from_itemsflat() const;
-    QDomElement dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const;
+    //    QDomElement dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const;
 
     //    // Получение ссылки на объект ветки, которой принадлежит таблица
     //    boost::intrusive_ptr<TreeItem> tree_item(void);
@@ -94,14 +137,15 @@ public:
 
 
     void fields(int pos, QMap<QString, QString> edit_fields);
+    boost::intrusive_ptr<TreeItem> contains_direct(boost::intrusive_ptr<TreeItem> _item)const;
+    //    bool remove(int i);
+    //    bool remove(QString id);
+    boost::intrusive_ptr<linker> remove(boost::intrusive_ptr<linker> _to_be_removed_linker);
 
-    bool child_remove(int i);
-    bool child_remove(QString id);
-    bool child_remove(boost::intrusive_ptr<TreeItem> item);
 
-
-    int sibling_order(QString id) const;
-    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
+    //    int sibling_order(QString id) const;
+    //    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
+    int sibling_order(std::function<bool(boost::intrusive_ptr<const linker>)> _equal)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -119,7 +163,7 @@ public:
     void work_pos(int pos);
 
     void check_and_create_textfile(int pos, QString fullFileName);
-    QList< boost::intrusive_ptr<TreeItem> > &items() {return _child_items;}
+    //    QList< boost::intrusive_ptr<TreeItem> > &items() {return _child_items;}
 
     bool crypt() {return _is_crypt;}
     void crypt(const bool _is_crypt);   // {this->_is_crypt = _is_crypt;}
@@ -128,13 +172,17 @@ public:
 
 
     //    int direct_count()const {return _child_items.size();}
-    void parent(boost::intrusive_ptr<TreeItem> parent_item);
+    void parent();
     void duplicate_remove();
     bool is_empty() const;
+    QList<boost::intrusive_ptr<linker> > remove(int position, int count);
+
+
 protected:
 
     // Initialize the data table based on the transmitted item DOM- // Первичное заполнение таблицы конечных записей
     //    void init(QDomElement domModel);
+    std::function<QDomElement(std::shared_ptr<QDomDocument> doc)> dom_from_itemsflat_impl;
 
 private:
 
@@ -146,7 +194,8 @@ private:
     //    // Table entries (in the normal form contains only "light" objects records) // Таблица записей (в нормальном виде содержит только "легкие" объекты записей)
     //    QList<boost::intrusive_ptr<Record>>      _child_items;
 
-    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
+    //    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
+    QList<boost::intrusive_ptr<linker>>     _child_linkers;
     //    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
     //    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
     //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();

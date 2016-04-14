@@ -70,9 +70,9 @@ namespace browser {
 
     ExLineEdit::ExLineEdit(QWidget *parent)
         : QWidget(parent)
-        , _leftwidget(0)
+        , _leftwidget(nullptr)
         , _lineedit(new QLineEdit(this))
-        , _clearbutton(0)
+        , _clearbutton(new ClearButton(this))
     {
         setFocusPolicy(_lineedit->focusPolicy());
         setAttribute(Qt::WA_InputMethodEnabled);
@@ -93,7 +93,7 @@ namespace browser {
         _lineedit->setPalette(clearPalette);
 
         // clearButton
-        _clearbutton = new ClearButton(this);
+        //        _clearbutton = new ClearButton(this);
         connect(_clearbutton, &ClearButton::clicked, _lineedit, &QLineEdit::clear);
         connect(_lineedit, &QLineEdit::textChanged, _clearbutton, &ClearButton::textChanged);
     }
@@ -174,7 +174,7 @@ namespace browser {
     {
         _lineedit->event(event);
 
-        void (QCompleter::*_activated)(const QString &text) = &QCompleter::activated;
+        void (QCompleter::*_activated)(const QString & text) = &QCompleter::activated;
 
         if(_lineedit->completer()) {
             connect(_lineedit->completer(), _activated,  _lineedit, &QLineEdit::setText);
@@ -267,21 +267,22 @@ namespace browser {
         }
     }
 
-    UrlLineEdit::UrlLineEdit(QWidget *parent)
+    UrlLineEdit::UrlLineEdit(WebView *view, QWidget *parent)
         : ExLineEdit(parent)
-        , _webview(0)
-        , _iconlabel(0)
+        , _webview(view)
+        , _iconlabel(new UrlIconLabel(this))
     {
         // icon
-        _iconlabel = new UrlIconLabel(this);
+        //        _iconlabel = new UrlIconLabel(this);
         _iconlabel->resize(16, 16);
         setLeftWidget(_iconlabel);
         _defaultbasecolor = palette().color(QPalette::Base);
+        setWebView(view);
     }
 
     void UrlLineEdit::setWebView(WebView *webView)
     {
-        Q_ASSERT(!_webview);
+        //        Q_ASSERT(!_webview);
         _webview = webView;
         _iconlabel->_browserview = webView;
         connect(webView, &WebView::urlChanged, this, &UrlLineEdit::webViewUrlChanged);

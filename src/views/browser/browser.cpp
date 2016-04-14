@@ -282,7 +282,7 @@ namespace browser {
         QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item)
+    boost::intrusive_ptr<TreeItem> Browser::item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item)
     {
         //        auto binder = [](boost::shared_ptr<TabWidget::Coupler> ar) {
         //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>>("", &TabWidget::Coupler::binder, ar);   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
@@ -314,7 +314,7 @@ namespace browser {
         //                            ));
         //        //        _tabmanager->newTab(record);
         //        //        assert(record->binded_only_page());
-        return _tabmanager->item_registered_imperative_equip(item);
+        return _tabmanager->item_registered_setup_binder(item);
     }
 
     boost::intrusive_ptr<TreeItem> Browser::item_request_from_tree(
@@ -544,7 +544,7 @@ namespace browser {
         item->activate();
         //        }
 
-        assert(item->page_valid() && item->bounded_page());
+        assert(item->page_valid() && item->page_link());
 
         run_script(style_source);       //        assert(record->linkpage());
 
@@ -1676,12 +1676,12 @@ namespace browser {
 
             if(blankview != nullptr) {
                 view = blankview;
-                view->page()->item_registered_imperative_equip(_it)->activate();//                view->page()->load(record);
+                view->page()->item_registered_setup_binder(_it)->activate();//                view->page()->load(record);
             } else if(nopin_view != nullptr) {   // no_pin
                 view = nopin_view;
 
                 if(view->page()->url().toString() != _it->field("url")) {
-                    view->page()->item_registered_imperative_equip(_it)->activate(); // view->page()->load(record);
+                    view->page()->item_registered_setup_binder(_it)->activate(); // view->page()->load(record);
                 }
             } else {
                 view = tab->newTab(_it);  // , false

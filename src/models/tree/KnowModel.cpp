@@ -41,9 +41,12 @@ KnowModel::KnowModel(QObject *parent)
     root_data["name"] = "";
 
     // Создание корневого Item объекта
-    if(_root_item) _root_item.reset();
+    if(_root_item) {_root_item.reset();}
 
     _root_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, root_data)); // ?
+
+    assert(_root_item->up_linker()->host().get() == _root_item.get());
+    assert(_root_item->up_linker()->host_parent().get() != _root_item.get());
 }
 
 
@@ -108,15 +111,17 @@ void KnowModel::init(QDomDocument *dom_model)
     //    // Динамическое создание дерева из Item объектов на основе DOM модели
     //    setup_modeldata(dom_model, _root_item);
     assert(dom_model);
-    QDomElement content_root_record = dom_model->documentElement().firstChildElement("content").firstChildElement("record");   // "node"
+    QDomElement dom_content_root_as_record = dom_model->documentElement().firstChildElement("content").firstChildElement("record");   // "node"
 
 
-    if(content_root_record.isNull()) {
+    if(dom_content_root_as_record.isNull()) {
         qDebug() << "Unable load xml tree, first content node not found.";
         return;
     }
 
-    dom_to_records(content_root_record, _root_item);
+    assert(_root_item->up_linker()->host().get() == _root_item.get());
+    assert(_root_item->up_linker()->host_parent().get() != _root_item.get());
+    _root_item->dom_to_records(dom_content_root_as_record);
 
     endResetModel();
     //    save(); // temporary
@@ -142,231 +147,248 @@ void KnowModel::init(QDomDocument *dom_model)
 //}
 
 
-// Рекурсивный обход DOM дерева и извлечение из него узлов
-void KnowModel::dom_to_records(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> self)
-{
+//// Рекурсивный обход DOM дерева и извлечение из него узлов
+//void KnowModel::dom_to_records(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> _parent_item)
+//{
+//    assert(_parent_item->up_linker()->host().get() == _parent_item.get());
+//    assert(_parent_item->up_linker()->host_parent().get() != _parent_item.get());
 
-    std::function<void(const QDomElement &, boost::intrusive_ptr<TreeItem>)>
-    assembly_record_and_table_to_parent = [&](const QDomElement & _dom_record, boost::intrusive_ptr<TreeItem> current_parent) {
-
-
-        // Определяются атрибуты узла дерева разделов
-        QDomNamedNodeMap attribute_map = _dom_record.attributes();
-
-        //        // Перебираются атрибуты узла дерева разделов
-        //        for(int i = 0; i < attribute_map.count(); ++i) {
-        //            QDomNode attribute = attribute_map.item(i);
-
-        //            QString name = attribute.nodeName();
-        //            QString value = attribute.nodeValue();
-
-        //            if(name == "id") {
-        //                id = value;
-        //                break;
-        //            }
-
-        //            //                        // В дерево разделов устанавливаются считанные атрибуты
-        //            //                        // parent->child(parent->current_count() - 1)
-        //            //                        parent->field(name , value);
-        //            //                        //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
-        //        }
-
-        QString id = attribute_map.namedItem("id").nodeValue();
-
-        assert(id != "");
-
-        int index = current_parent->item_direct(id)->sibling_order();
-
-        boost::intrusive_ptr<TreeItem> item = nullptr;
-
-        if(index != -1) {
-            item = current_parent->item_direct(index);
-        } else {
-            item = current_parent->child_add_new(current_parent->count_direct());
-        }
-
-        dom_to_records(_dom_record, item);   // item->self_equipment_from_dom(record);
-
-        //        QDomElement recordtable = record.firstChildElement();
-        //        assert(recordtable.tagName() == "recordtable" || recordtable.isNull());
+//    auto // std::function<void(const QDomElement &, boost::intrusive_ptr<TreeItem>)>
+//    assembly_record_and_table_to_parent = [&](const QDomElement & _dom_record, boost::intrusive_ptr<TreeItem> current_parent)->void {
 
 
-        //        if(recordtable.tagName() == "recordtable") {
-        //            //                    auto record = recordtable.firstChildElement();
-        //            //                    assert(record.tagName() == "record" || record.isNull());
-        //            //                    if(record.tagName() == "record")model_from_dom(record, parent);    // get recordtable == ItemsFlat
-        //            model_from_dom(recordtable, item);
-        //        }
-    };
-    //    boost::intrusive_ptr<TreeItem> parent = iParent;
+//        // Определяются атрибуты узла дерева разделов
+//        QDomNamedNodeMap attribute_map = _dom_record.attributes();
 
-    if(!_record_dom_element.isNull()) {
-        assert(_record_dom_element.tagName() != "recordtable");
-        assert(_record_dom_element.tagName() == "record");
-        // У данного Dom-элемента ищется таблица конечных записей
-        // и данные заполняются в Item-таблицу конечных записей
-        // At this Dom-end table element is searched for records and the data filled in the Item-end table entries
-        self->dom_to_direct(_record_dom_element);    // take ground from the nearest level children
+//        //        // Перебираются атрибуты узла дерева разделов
+//        //        for(int i = 0; i < attribute_map.count(); ++i) {
+//        //            QDomNode attribute = attribute_map.item(i);
 
-        QDomElement _child = _record_dom_element.firstChildElement();
+//        //            QString name = attribute.nodeName();
+//        //            QString value = attribute.nodeValue();
 
-        assert(_child.tagName() == "recordtable" || _child.isNull());
+//        //            if(name == "id") {
+//        //                id = value;
+//        //                break;
+//        //            }
 
-        if(_child.tagName() == "recordtable") {
+//        //            //                        // В дерево разделов устанавливаются считанные атрибуты
+//        //            //                        // parent->child(parent->current_count() - 1)
+//        //            //                        parent->field(name , value);
+//        //            //                        //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
+//        //        }
 
-            QDomElement _record_child = _child.firstChildElement();
-            assert(_record_child.tagName() == "record");
+//        QString id = attribute_map.namedItem("id").nodeValue();
 
-            // Пробегаются все DOM элементы текущего уровня
-            // и рекурсивно вызывается обработка подуровней
-            while(!_record_child.isNull()) { // traverse brothers
+//        assert(id != "");
 
+//        int index = current_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == id;}); // int index = current_parent->item_direct(id)->sibling_order();
 
+//        boost::intrusive_ptr<TreeItem> child_item(nullptr);
 
-                //            if(_dom_element.tagName() == "node") { // "node"
-                //                assert(_dom_element.firstChildElement().tagName() == "record");
-                //                QDomElement record = _dom_element.firstChildElement("record");
+//        if(index != -1)
+//        {
+//            child_item = current_parent->item_direct(index)->host();
+//        } else {
+//            child_item = current_parent->child_add_new(current_parent->count_direct(), id, "");
+//            //            child_item->field("id", id);
+//        }
 
-                //                if(!record.isNull()) {
+//        child_item->dom_to_records(_dom_record);   // item->self_equipment_from_dom(record);
 
-                //                    //                    //                // Обнаруженый подузел прикрепляется к текущему элементу
-                //                    //                    //                auto item = parent->add_child();  // insert_children(parent->current_count(), 1, 1);
-
-                //                    //                    //                if(!_dom_element.firstChildElement("record").isNull())
-                //                    //                    //                    boost::static_pointer_cast<Record>(item)->record_from_dom(_dom_element.firstChildElement("record"));
-
-                //                    //                    //                //            QString line1, line_name, line_id;
-                //                    //                    //                //            line1 = n.tagName();
-                //                    //                    //                //            line_name = n.attribute("name");
-                //                    //                    //                //            line_id = n.attribute("id");
-                //                    //                    //                //            qDebug() << "Read node " << line1 << " " << line_id << " " << line_name;
-
-                //                    //                    QString id = "";
-
-                //                    //                    // Определяются атрибуты узла дерева разделов
-                //                    //                    QDomNamedNodeMap attributeMap = record.attributes();
-
-                //                    //                    // Перебираются атрибуты узла дерева разделов
-                //                    //                    for(int i = 0; i < attributeMap.count(); ++i) {
-                //                    //                        QDomNode attribute = attributeMap.item(i);
-
-                //                    //                        QString name = attribute.nodeName();
-                //                    //                        QString value = attribute.nodeValue();
-
-                //                    //                        if(name == "id") {
-                //                    //                            id = value;
-                //                    //                            break;
-                //                    //                        }
-
-                //                    //                        //                    // В дерево разделов устанавливаются считанные атрибуты
-                //                    //                        //                    // parent->child(parent->current_count() - 1)
-                //                    //                        //                    item->field(name , value);
-                //                    //                        //                    //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
-                //                    //                    }
-
-                //                    //                    assert(id != "");
-                //                    //                    int index = parent->is_item_exists(id);
-
-                //                    //                    boost::intrusive_ptr<TreeItem> item = nullptr;
-
-                //                    //                    if(index != -1) {
-                //                    //                        item = parent->child(index);
-
-                //                    //                        item->record_from_dom(record);
-                //                    //                    } else {
-                //                    //                        item = parent->add_child();
-                //                    //                        item->record_from_dom(record);
-                //                    //                    }
-
-                //                    //                    // Вызов перебора оставшегося DOM дерева с прикреплением обнаруженных объектов
-                //                    //                    // к только что созданному элементу
-                //                    //                    model_from_dom(record.firstChildElement(), item);    //
-                //                    record_and_recordtable(record);
-                //                }
-
-                //            } else
-
-                if(_record_child.tagName() == "record") {
-
-                    //                if(!_dom_element.isNull()) {
-                    //                    // boost::static_pointer_cast<Record>(parent)->record_from_dom(_dom_element);
-                    //                    //                    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), parent));
-                    //                    //                    item->record_from_dom(_dom_element);
-                    //                    //                    parent->find(item->id())->record_from_dom(_dom_element);
-
-                    //                    QString id = "";
-                    //                    // Определяются атрибуты узла дерева разделов
-                    //                    QDomNamedNodeMap attributeMap = _dom_element.attributes();
-
-                    //                    // Перебираются атрибуты узла дерева разделов
-                    //                    for(int i = 0; i < attributeMap.count(); ++i) {
-                    //                        QDomNode attribute = attributeMap.item(i);
-
-                    //                        QString name = attribute.nodeName();
-                    //                        QString value = attribute.nodeValue();
-
-                    //                        if(name == "id") {
-                    //                            id = value;
-                    //                            break;
-                    //                        }
-
-                    //                        //                        // В дерево разделов устанавливаются считанные атрибуты
-                    //                        //                        // parent->child(parent->current_count() - 1)
-                    //                        //                        parent->field(name , value);
-                    //                        //                        //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
-                    //                    }
-
-                    //                    assert(id != "");
-                    //                    int index = parent->is_item_exists(id);
-                    //                    boost::intrusive_ptr<TreeItem> item = nullptr;
-
-                    //                    if(index != -1) {
-                    //                        item = parent->child(index);
-                    //                        item->record_from_dom(_dom_element);
-                    //                    } else {
-                    //                        item = parent->add_child();
-                    //                        item->record_from_dom(_dom_element);
-                    //                    }
-
-                    //                    QDomElement recordtable = _dom_element.firstChildElement();
-                    //                    assert(recordtable.tagName() == "recordtable" || recordtable.isNull());
+//        //        QDomElement recordtable = record.firstChildElement();
+//        //        assert(recordtable.tagName() == "recordtable" || recordtable.isNull());
 
 
-                    //                    if(recordtable.tagName() == "recordtable") {
-                    //                        //                    auto record = recordtable.firstChildElement();
-                    //                        //                    assert(record.tagName() == "record" || record.isNull());
+//        //        if(recordtable.tagName() == "recordtable") {
+//        //            //                    auto record = recordtable.firstChildElement();
+//        //            //                    assert(record.tagName() == "record" || record.isNull());
+//        //            //                    if(record.tagName() == "record")model_from_dom(record, parent);    // get recordtable == ItemsFlat
+//        //            model_from_dom(recordtable, item);
+//        //        }
+//    };
+//    //    boost::intrusive_ptr<TreeItem> parent = iParent;
 
-                    //                        //                    if(record.tagName() == "record")model_from_dom(record, parent);    // get recordtable == ItemsFlat
-                    //                        model_from_dom(recordtable, item);
-                    //                    }
+//    if(!_record_dom_element.isNull()) {
+//        assert(_record_dom_element.tagName() != "recordtable");
+//        assert(_record_dom_element.tagName() == "record");
 
-                    // model_from_dom(_child, self); //
-                    assembly_record_and_table_to_parent(_record_child, self);
-                    //            }
+//        assert(_parent_item->up_linker()->host().get() == _parent_item.get());
+//        assert(_parent_item->up_linker()->host_parent().get() != _parent_item.get());
+//        // У данного Dom-элемента ищется таблица конечных записей
+//        // и данные заполняются в Item-таблицу конечных записей
+//        // At this Dom-end table element is searched for records and the data filled in the Item-end table entries
+//        _parent_item->dom_to_direct(_record_dom_element);    // take ground from the nearest level children
+//        // up line duplicated with below!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-                }
+//        assert(_parent_item->up_linker()->host().get() == _parent_item.get());
+//        assert(_parent_item->up_linker()->host_parent().get() != _parent_item.get());
 
-                //                else {
+//        QDomElement _dom_record_table = _record_dom_element.firstChildElement();
 
-                //                    assert(_child.tagName() == "recordtable");
+//        assert(_dom_record_table.tagName() == "recordtable" || _dom_record_table.isNull());
 
-                //                    //                if(!_dom_element.isNull())static_cast<ItemsFlat *>(parent.get())->items_from_dom(_dom_element, parent->parent());
+//        if(_dom_record_table.tagName() == "recordtable") {
 
-                //                    QDomElement record = _child.firstChildElement();
-                //                    assert(record.tagName() == "record" || record.isNull());
+//            QDomElement _dom_record = _dom_record_table.firstChildElement();
+//            assert(_dom_record.tagName() == "record");
 
-                //                    if(record.tagName() == "record") {
-                //                        assembly_record_and_table_to_parent(record, self);  // model_from_dom(record, parent);    // get recordtable == ItemsFlat
-                //                    }
-                //                }
 
-                _record_child = _record_child.nextSiblingElement();   // brother record
-                assert(_record_child.tagName() == "record" || _record_child.isNull());
-            }
-        }
-    }
+//            assert(_parent_item->up_linker()->host().get() == _parent_item.get());
+//            assert(_parent_item->up_linker()->host_parent().get() != _parent_item.get());
 
-}
+//            // Пробегаются все DOM элементы текущего уровня
+//            // и рекурсивно вызывается обработка подуровней
+//            while(!_dom_record.isNull()) { // traverse brothers
+
+
+
+//                //            if(_dom_element.tagName() == "node") { // "node"
+//                //                assert(_dom_element.firstChildElement().tagName() == "record");
+//                //                QDomElement record = _dom_element.firstChildElement("record");
+
+//                //                if(!record.isNull()) {
+
+//                //                    //                    //                // Обнаруженый подузел прикрепляется к текущему элементу
+//                //                    //                    //                auto item = parent->add_child();  // insert_children(parent->current_count(), 1, 1);
+
+//                //                    //                    //                if(!_dom_element.firstChildElement("record").isNull())
+//                //                    //                    //                    boost::static_pointer_cast<Record>(item)->record_from_dom(_dom_element.firstChildElement("record"));
+
+//                //                    //                    //                //            QString line1, line_name, line_id;
+//                //                    //                    //                //            line1 = n.tagName();
+//                //                    //                    //                //            line_name = n.attribute("name");
+//                //                    //                    //                //            line_id = n.attribute("id");
+//                //                    //                    //                //            qDebug() << "Read node " << line1 << " " << line_id << " " << line_name;
+
+//                //                    //                    QString id = "";
+
+//                //                    //                    // Определяются атрибуты узла дерева разделов
+//                //                    //                    QDomNamedNodeMap attributeMap = record.attributes();
+
+//                //                    //                    // Перебираются атрибуты узла дерева разделов
+//                //                    //                    for(int i = 0; i < attributeMap.count(); ++i) {
+//                //                    //                        QDomNode attribute = attributeMap.item(i);
+
+//                //                    //                        QString name = attribute.nodeName();
+//                //                    //                        QString value = attribute.nodeValue();
+
+//                //                    //                        if(name == "id") {
+//                //                    //                            id = value;
+//                //                    //                            break;
+//                //                    //                        }
+
+//                //                    //                        //                    // В дерево разделов устанавливаются считанные атрибуты
+//                //                    //                        //                    // parent->child(parent->current_count() - 1)
+//                //                    //                        //                    item->field(name , value);
+//                //                    //                        //                    //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
+//                //                    //                    }
+
+//                //                    //                    assert(id != "");
+//                //                    //                    int index = parent->is_item_exists(id);
+
+//                //                    //                    boost::intrusive_ptr<TreeItem> item = nullptr;
+
+//                //                    //                    if(index != -1) {
+//                //                    //                        item = parent->child(index);
+
+//                //                    //                        item->record_from_dom(record);
+//                //                    //                    } else {
+//                //                    //                        item = parent->add_child();
+//                //                    //                        item->record_from_dom(record);
+//                //                    //                    }
+
+//                //                    //                    // Вызов перебора оставшегося DOM дерева с прикреплением обнаруженных объектов
+//                //                    //                    // к только что созданному элементу
+//                //                    //                    model_from_dom(record.firstChildElement(), item);    //
+//                //                    record_and_recordtable(record);
+//                //                }
+
+//                //            } else
+
+//                if(_dom_record.tagName() == "record") {
+
+//                    //                if(!_dom_element.isNull()) {
+//                    //                    // boost::static_pointer_cast<Record>(parent)->record_from_dom(_dom_element);
+//                    //                    //                    boost::intrusive_ptr<TreeItem> item = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), parent));
+//                    //                    //                    item->record_from_dom(_dom_element);
+//                    //                    //                    parent->find(item->id())->record_from_dom(_dom_element);
+
+//                    //                    QString id = "";
+//                    //                    // Определяются атрибуты узла дерева разделов
+//                    //                    QDomNamedNodeMap attributeMap = _dom_element.attributes();
+
+//                    //                    // Перебираются атрибуты узла дерева разделов
+//                    //                    for(int i = 0; i < attributeMap.count(); ++i) {
+//                    //                        QDomNode attribute = attributeMap.item(i);
+
+//                    //                        QString name = attribute.nodeName();
+//                    //                        QString value = attribute.nodeValue();
+
+//                    //                        if(name == "id") {
+//                    //                            id = value;
+//                    //                            break;
+//                    //                        }
+
+//                    //                        //                        // В дерево разделов устанавливаются считанные атрибуты
+//                    //                        //                        // parent->child(parent->current_count() - 1)
+//                    //                        //                        parent->field(name , value);
+//                    //                        //                        //                parent->child(parent->child_count() - 1)->record_to_item(); // temporary
+//                    //                    }
+
+//                    //                    assert(id != "");
+//                    //                    int index = parent->is_item_exists(id);
+//                    //                    boost::intrusive_ptr<TreeItem> item = nullptr;
+
+//                    //                    if(index != -1) {
+//                    //                        item = parent->child(index);
+//                    //                        item->record_from_dom(_dom_element);
+//                    //                    } else {
+//                    //                        item = parent->add_child();
+//                    //                        item->record_from_dom(_dom_element);
+//                    //                    }
+
+//                    //                    QDomElement recordtable = _dom_element.firstChildElement();
+//                    //                    assert(recordtable.tagName() == "recordtable" || recordtable.isNull());
+
+
+//                    //                    if(recordtable.tagName() == "recordtable") {
+//                    //                        //                    auto record = recordtable.firstChildElement();
+//                    //                        //                    assert(record.tagName() == "record" || record.isNull());
+
+//                    //                        //                    if(record.tagName() == "record")model_from_dom(record, parent);    // get recordtable == ItemsFlat
+//                    //                        model_from_dom(recordtable, item);
+//                    //                    }
+
+//                    // model_from_dom(_child, self); //
+//                    assert(_parent_item->up_linker()->host().get() == _parent_item.get());
+//                    assert(_parent_item->up_linker()->host_parent().get() != _parent_item.get());
+//                    assembly_record_and_table_to_parent(_dom_record, _parent_item);
+//                    //            }
+
+//                }
+
+//                //                else {
+
+//                //                    assert(_child.tagName() == "recordtable");
+
+//                //                    //                if(!_dom_element.isNull())static_cast<ItemsFlat *>(parent.get())->items_from_dom(_dom_element, parent->parent());
+
+//                //                    QDomElement record = _child.firstChildElement();
+//                //                    assert(record.tagName() == "record" || record.isNull());
+
+//                //                    if(record.tagName() == "record") {
+//                //                        assembly_record_and_table_to_parent(record, self);  // model_from_dom(record, parent);    // get recordtable == ItemsFlat
+//                //                    }
+//                //                }
+
+//                _dom_record = _dom_record.nextSiblingElement();   // brother record
+//                assert(_dom_record.tagName() == "record" || _dom_record.isNull());
+//            }
+//        }
+//    }
+
+//}
 
 
 bool KnowModel::format_check(QDomElement elementFormat)
@@ -446,7 +468,7 @@ void KnowModel::save()
     QDomElement content = doc.createElement("content");
 
     // Получение полного DOM дерева хранимых данных
-    QDomElement elmdomtree = dom_from_treeitem(_root_item);
+    QDomElement elmdomtree = _root_item->dom_from_treeitem();
 
     content.appendChild(elmdomtree);
 
@@ -478,79 +500,86 @@ void KnowModel::save()
 }
 
 
-// Генерирование полного DOM дерева хранимых данных
-QDomElement KnowModel::dom_from_treeitem(boost::intrusive_ptr<TreeItem> root)   // full modeldata to dom
-{
-    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    //    QDomElement elm = doc->createElement("content");
+//// Генерирование полного DOM дерева хранимых данных
+//QDomElement KnowModel::dom_from_treeitem(boost::intrusive_ptr<TreeItem> root)   // full modeldata to dom
+//{
+//    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+//    //    QDomElement elm = doc->createElement("content");
 
-    // qDebug() << "New element for export" << xmlNodeToString(elm);
-    QDomElement records_all_in_root = root->dom_from_treeitem(doc);
-    //    dom_from_record(doc, elm, root);
+//    // qDebug() << "New element for export" << xmlNodeToString(elm);
+//    QDomElement records_all_in_root = root->dom_from_treeitem(doc);
+//    //    dom_from_record(doc, elm, root);
 
-    // qDebug() << "In export_fullmodeldata_to_dom stop element " << xmlNodeToString(elm);
-    //    elm.appendChild(record);
+//    // qDebug() << "In export_fullmodeldata_to_dom stop element " << xmlNodeToString(elm);
+//    //    elm.appendChild(record);
 
-    return records_all_in_root;  // elm;
-}
+//    return records_all_in_root;  // elm;
+//}
 
 
-// Рекурсивное преобразование Item-элементов в Dom дерево
-void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item)
+// Recursive conversion Item-elements in the Dom tree   // Рекурсивное преобразование Item-элементов в Dom дерево
+void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc,
+                                  QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item)
 {
 
 
     // Если в ветке присутсвует таблица конечных записей
     // В первую очередь добавляется она
-    if(curr_item->count_direct() > 0) {
-        // Обработка таблицы конечных записей
+    // If there is a branch in the final table of records // First of all, she added
+    //    if(curr_item->count_direct() > 0) {
+    // Обработка таблицы конечных записей
 
-        // Получение Dom дерева таблицы конечных записей
-        // В метод передается QDomDocument, на основе кторого будут создаваться элементы
-        QDomElement item_flat_dom = curr_item->dom_from_treeitem(doc);
+    // Получение Dom дерева таблицы конечных записей
+    // В метод передается QDomDocument, на основе кторого будут создаваться элементы
+    QDomElement item_flat_dom = curr_item->dom_from_treeitem_impl(doc); //
 
-        // Dom дерево таблицы конечных записей добавляется
-        // как подчиненный элемент к текущему элементу
-        if(!item_flat_dom.isNull()) {
-            xml_data.appendChild(item_flat_dom);  // .cloneNode()
-        }
+    // Dom дерево таблицы конечных записей добавляется
+    // как подчиненный элемент к текущему элементу
+    if(!item_flat_dom.isNull()) {
+        xml_data.appendChild(item_flat_dom);  // .cloneNode()
     }
 
-    //    // Обработка каждой подчиненной ветки
-    //    int i;
+    //    }
 
-    for(int i = 0; i < curr_item->count_direct(); i++) {
-        //        assert(curr_item->child(i).get() != curr_item);
 
-        if(curr_item->item_direct(i) != curr_item) {
-            //            // Временный элемент, куда будет внесена текущая перебираемая ветка
-            //            QDomElement  tempElement = doc->createElement("node");
+    // I don't think these codes is needed:
 
-            //            // Получение всех полей для данной ветки
-            //            QMap<QString, QString> fields = curr_item->child(i)->all_fields_direct();
+    //    //    // Обработка каждой подчиненной ветки
+    //    //    int i;
 
-            //            // Перебираются поля элемента ветки
-            //            QMapIterator<QString, QString> fields_iterator(fields);
+    //    for(int i = 0; i < curr_item->count_direct(); i++) {
+    //        //        assert(curr_item->child(i).get() != curr_item);
 
-            //            while(fields_iterator.hasNext()) {
-            //                fields_iterator.next();
+    //        if(curr_item->item_direct(i)->host() != curr_item) {
+    //            //            // Временный элемент, куда будет внесена текущая перебираемая ветка
+    //            //            QDomElement  tempElement = doc->createElement("node");
 
-            //                // Установка для временного элемента значения перебираемого поля как атрибута
-            //                tempElement.setAttribute(fields_iterator.key(), fields_iterator.value());
-            //            }
+    //            //            // Получение всех полей для данной ветки
+    //            //            QMap<QString, QString> fields = curr_item->child(i)->all_fields_direct();
 
-            //            // tempElement.appendChild(curr_item->export_local_to_dom(doc));
+    //            //            // Перебираются поля элемента ветки
+    //            //            QMapIterator<QString, QString> fields_iterator(fields);
 
-            //            // Добавление временного элемента к основному документу
-            //            xml_data.appendChild(tempElement);
+    //            //            while(fields_iterator.hasNext()) {
+    //            //                fields_iterator.next();
 
-            //            // qDebug() << "In parsetreetodom() current construct doc " << xmlNodeToString(*xmldata);
+    //            //                // Установка для временного элемента значения перебираемого поля как атрибута
+    //            //                tempElement.setAttribute(fields_iterator.key(), fields_iterator.value());
+    //            //            }
 
-            // Рекурсивная обработка
-            QDomElement workElement = xml_data.lastChildElement();
-            dom_from_treeitem(doc, workElement, curr_item->item_direct(i));
-        }
-    }
+    //            //            // tempElement.appendChild(curr_item->export_local_to_dom(doc));
+
+    //            //            // Добавление временного элемента к основному документу
+    //            //            xml_data.appendChild(tempElement);
+
+    //            //            // qDebug() << "In parsetreetodom() current construct doc " << xmlNodeToString(*xmldata);
+
+    //            // Рекурсивная обработка
+    //            QDomElement workElement = xml_data.lastChildElement();
+    //            dom_from_treeitem(doc,
+    //                              workElement, curr_item->item_direct(i)->host());
+    //        }
+    //    }
 
 }
 
@@ -603,19 +632,19 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(boost::intrusive_p
                    );
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
-    boost::intrusive_ptr<TreeItem> current = parent->child_add_new(pos);
+    boost::intrusive_ptr<TreeItem> current = parent->child_add_new(pos, id, name);
 
-    //    // Определяется ссылка на только что созданную ветку
-    //    boost::intrusive_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
+    //    //    // Определяется ссылка на только что созданную ветку
+    //    //    boost::intrusive_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
 
-    // Устанавливается идентификатор узла
-    current->field("id", id);
+    //    // Устанавливается идентификатор узла
+    //    current->field("id", id);
 
-    // Устанавливается навание узла
-    current->field("name", name);
+    //    // Устанавливается навание узла
+    //    current->field("name", name);
 
-    //    // Инициализируется таблица конечных записей
-    //    current->tabledata(std::make_shared<RecordTable>(current));
+    //    //    // Инициализируется таблица конечных записей
+    //    //    current->tabledata(std::make_shared<RecordTable>(current));
 
     // Определяется, является ли родительская ветка зашифрованной
     if(parent->field("crypt") == "1") {
@@ -732,12 +761,20 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
 
         auto _index_origin = index(_source_item);
 
-        if(_index_origin.isValid()) {
-            result = model_delete_item(_source_item);
-            update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
-        } else {    // should not use
-            //            _source_item->self_remove_from_parent();    //
-            _parent->remove(_source_item);  // -> this comment content is not must a logic error  1-2?
+
+        if(_source_item->parent() != _parent) {
+            boost::intrusive_ptr<TreeItem::linker> deleted_linker;
+
+            if(_index_origin.isValid()) {
+                deleted_linker = model_delete_item(_source_item->up_linker());
+
+                update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
+            } else {    // should not use
+                //            _source_item->self_remove_from_parent();    //
+                deleted_linker = _source_item->parent()->remove(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
+            }
+
+            assert(!deleted_linker);
         }
 
         //    endRemoveRows();
@@ -748,14 +785,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
                             , _pos   // (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
                            );
 
-            result = result->parent(_parent, _pos, _mode);     // add_new_branch(parent, id, name);  // parent->count_direct()
+            result = _source_item->parent(_parent, _pos, _mode)->host();     // add_new_branch(parent, id, name);  // parent->count_direct()
 
             if(result && item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == result->id();}))
-                emit_datachanged_signal(index(result->sibling_order(), 0, _index_parent));
+                emit_datachanged_signal(index(_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_parent));
 
             endInsertRows();
         } else {    // should not use
-            result = result->parent(_parent, _pos, _mode);  // 1-3
+            result = _source_item->parent(_parent, _pos, _mode)->host();  // 1-3
         }
 
         if(_parent->field("crypt") == "1" && result) {
@@ -1131,42 +1168,49 @@ QModelIndex KnowModel::model_move_up_dn(const QModelIndex &_index
 
 // Удаление одной ветки и её подветок
 // Delete one branch and its podvetok / garter
-boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr<TreeItem> _item_delete)
+boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intrusive_ptr<TreeItem::linker> delete_linker)
 {
-
-    boost::intrusive_ptr<TreeItem> _item_deleted(nullptr);
+    auto parent = delete_linker->host_parent();
+    auto host = delete_linker->host();
+    boost::intrusive_ptr<TreeItem::linker> deleted_linker;
 
     auto model_child_remove = [&](   // boost::intrusive_ptr<TreeItem> parent_item,
-                                  boost::intrusive_ptr<TreeItem> remove_target  // , int position, int rows, const QModelIndex &parent
-    )->boost::intrusive_ptr<TreeItem> {
-        boost::intrusive_ptr<TreeItem> _result(nullptr);
-        boost::intrusive_ptr<TreeItem> parent_item = remove_target->parent();  // item(parent);
-        QModelIndex parent_index = index(parent_item);
-        //    bool success = false;
-        int position = remove_target->sibling_order();
-        beginRemoveRows(parent_index, position, position);    // + rows - 1
-        remove_target->self_remove_from_parent();
-        //    success
-        _result = parent_item->remove(remove_target);
-        endRemoveRows();
+                                  boost::intrusive_ptr<TreeItem::linker> remove_target_linker  // , int position, int rows, const QModelIndex &parent
+    )->boost::intrusive_ptr<TreeItem::linker> {
+        boost::intrusive_ptr<TreeItem::linker> result(nullptr);
+        boost::intrusive_ptr<TreeItem> host_parent = remove_target_linker->host_parent();  // item(parent);
 
-        return _result;
+        if(host_parent)
+        {
+            QModelIndex parent_index = index(host_parent);
+            //    bool success = false;
+            int position = host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == remove_target_linker->host()->id();});
+            beginRemoveRows(parent_index, position, position);    // + rows - 1
+            //            remove_target->self_remove_from_parent();
+            //    success
+            result = host_parent->remove(remove_target_linker);
+            endRemoveRows();
+        }
+
+        return result;
     };
 
     std::function<void(boost::intrusive_ptr<TreeItem>)>
     close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
         if(it->is_registered_to_browser())   // item_to_be_deleted->unique_page()
-            it->bounded_page()->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+            it->page_link()->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
         if(it->count_direct() > 0)
         {
             for(int i = 0; i < it->count_direct(); i++) {
-                close_tab_recursive(it->item_direct(i));
+                close_tab_recursive(it->item_direct(i)->host());
             }
         }
     };
 
-    if(_item_delete && index(_item_delete).isValid()) {
+
+
+    if(host && index(host).isValid()) {
 
         qDebug() << "Label 1";
 
@@ -1176,15 +1220,15 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
 
         //        int deleted_position = _item_to_be_deleted->sibling_order(); //item_to_be_deleted->parent()->sibling_order(item_to_be_deleted);
 
-        qDebug() << "Label 2, branch id:" << _item_delete->field("id") << "name:" << _item_delete->field("name");
+        qDebug() << "Label 2, branch id:" << host->field("id") << "name:" << host->field("name");
 
         // Получение пути к элементу
-        QStringList _delete_path = _item_delete->path_absolute();
+        QStringList _delete_path = host->path_absolute();
 
         qDebug() << "Label 3";
 
         // Получение путей ко всем подветкам
-        QList<QStringList> sub_branches_path = _item_delete->path_children_all();
+        QList<QStringList> sub_branches_path = host->path_children_all();
 
         qDebug() << "Label 4";
 
@@ -1201,7 +1245,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
         for(int i = sub_branches_path.size() - 1; i >= 0; i--) {
             qDebug() << "Delete subbranch, id:" << item(sub_branches_path.at(i))->field("id") << "name:" << item(sub_branches_path.at(i))->field("name");
 
-            item(sub_branches_path.at(i))->remove_all();
+            item(sub_branches_path.at(i))->clear();
             // ( knowTreeModel->getItem(subbranchespath.at(i)) )->removeAllChildren();
         }
 
@@ -1211,14 +1255,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
         // Удаление подчиненных элементов для самой удаляемой ветки
         qDebug() << "Delete rootbranch, id:" << item(_delete_path)->field("id") << "name:" << item(_delete_path)->field("name");
 
-        item(_delete_path)->remove_all();
+        item(_delete_path)->clear();
         // ( knowTreeModel->getItem(path) )->removeAllChildren();
 
         qDebug() << "Label 7";
 
         // Удаление ветки на экране, при этом удалятся все подветки
-        qDebug() << "This branch have row() as" << _item_delete->count_direct();
-        auto _index_delete = index(_item_delete);
+        qDebug() << "This branch have row() as" << host->count_direct();
+        auto _index_delete = index(host);
 
         if(_index_delete.isValid()) qDebug() << "Index valid";
         else qDebug() << "Index non valid";
@@ -1233,11 +1277,20 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
 
 
         //        _source_model->beginRemoveRows(_index_to_be_delete.parent(), _index_to_be_delete.row(), _index_to_be_delete.row());
-        _item_deleted = model_child_remove(_item_delete); // if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
+        deleted_linker = model_child_remove(delete_linker); // if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
 
-        if(!_item_deleted)_item_deleted = _item_delete; // temporary radded before reimplement relation management of TreeItem!!!, 2016-04-07
 
-        assert(_item_deleted);    // temporary removed before reimplement relation management of TreeItem!!!, 2016-04-07
+
+
+
+
+        //        if(!_item_deleted)_item_deleted = _item_delete; // temporary radded before reimplement relation management of TreeItem!!!, 2016-04-07
+
+        //        assert(_item_deleted);    // temporary removed before reimplement relation management of TreeItem!!!, 2016-04-07
+
+
+
+
 
         //        _source_model->endRemoveRows();
 
@@ -1258,7 +1311,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
         //        if(item_to_be_deleted->is_registered_to_browser())   // item_to_be_deleted->unique_page()
         //            item_to_be_deleted->unique_page()->record_controller()->remove_child(item_to_be_deleted->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
-        close_tab_recursive(_item_deleted);
+        close_tab_recursive(host);
 
         qDebug() << "Label 8";
 
@@ -1306,31 +1359,29 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_item(boost::intrusive_ptr
         //        assert(item_to_be_deleted == _current_know_branch->item(setto));
 
 
-        auto _parent = _item_deleted->parent();
-
         // try to rewrite, but below is just memory operation which is not we want, but but, the original code is also a memory ooperation too? why?
-        if(_parent && _parent->count_direct() == 0 && root_item()->count_direct() > 0) { // (index.row() > 0) == index.isValid()
+        if(parent && parent->count_direct() == 0 && root_item()->count_direct() > 0) { // (index.row() > 0) == index.isValid()
 
             // if(_parent)
             //            _parent->child_remove(_item_deleted);
 
-            while(_parent->self_remove_from_parent_as_empty()) {
-                _parent = _parent->parent();
+            while(parent->self_remove_from_parent_as_empty()) {
+                parent = parent->parent();
 
-                if(!_parent)break;
+                if(!parent)break;
             }
 
         }
 
     }
 
-    return _item_deleted;
+    return deleted_linker;
 }
 
 
 
 boost::intrusive_ptr<TreeItem> KnowModel::model_duplicated_merge_to_left(
-    std::function<QList<boost::intrusive_ptr<TreeItem>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
+    std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
     //    , std::function<KnowModel *()> _source_model
     , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source)
 {
@@ -1359,7 +1410,10 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_duplicated_merge_to_left(
 
     if(_index_origin.isValid())update_index(_index_origin.parent());
 
-    emit_datachanged_signal(index(result->sibling_order(), 0, _index_target));
+    if(target->parent()) {
+        emit_datachanged_signal(index(target->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_target));
+    }
+
     endInsertColumns();
     assert(source->count_direct() == 0);
     //    auto _index = index(source);
@@ -1367,7 +1421,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_duplicated_merge_to_left(
     //    beginRemoveRows(_index.parent(), _index.row(), _index.row());
 
     if(index(source).isValid()) {
-        QList<boost::intrusive_ptr<TreeItem>> delete_list = _view_delete_items([&]()->KnowModel* {return this;}, QList<boost::intrusive_ptr<TreeItem>>() << source, "cut", false); //
+        QList<boost::intrusive_ptr<TreeItem::linker>> delete_list = _view_delete_items([&]()->KnowModel* {return this;}, QList<boost::intrusive_ptr<TreeItem>>() << source, "cut", false); //
 
         //    auto removed = record_remove(source);
         //    assert(removed == source);
@@ -1590,7 +1644,7 @@ QModelIndex KnowModel::index_direct(const QModelIndex &_parent_index, int n) con
     }
 
     // Выясняется указатель на подчиненный Item элемент
-    boost::intrusive_ptr<TreeItem> child_item = it->item_direct(n);
+    boost::intrusive_ptr<TreeItem> child_item = it->item_direct(n)->host();
 
     // Если указатель на подчиненный Item элемент непустой
     if(child_item) {
@@ -1642,7 +1696,7 @@ int KnowModel::size_of(boost::intrusive_ptr<const TreeItem> it)const
         n = n + _it->count_direct();
 
         for(int i = 0; i < _it->count_direct(); i++)
-            get_all_record_count_recurse(_it->item_direct(i), 1);
+            get_all_record_count_recurse(_it->item_direct(i)->host(), 1);
 
         return n;
     };
@@ -2033,7 +2087,7 @@ QModelIndexList KnowModel::indexes(std::function<bool(boost::intrusive_ptr<const
             // return _index_list;
         } else {
             for(int i = 0; i < item->count_direct(); i++)
-                item_by_equal_recurse(item->item_direct(i), 1);
+                item_by_equal_recurse(item->item_direct(i)->host(), 1);
 
             // return _index_list;
         }
@@ -2226,7 +2280,7 @@ QStringList KnowModel::record_path(QString recordId)const
         } else {
             // Иначе перебираются подветки
             for(int i = 0; i < _it->count_direct(); i++)
-                record_path_recurse(_it->item_direct(i), currentPath, recordId, 1);
+                record_path_recurse(_it->item_direct(i)->host(), currentPath, recordId, 1);
         }
 
         return findPath;
@@ -2294,7 +2348,7 @@ bool KnowModel::is_contains_crypt_branches(void)const
         }
 
         for(int i = 0; i < _it->count_direct(); i++)
-            is_contains_crypt_branches_recurse(_it->item_direct(i), 1);
+            is_contains_crypt_branches_recurse(_it->item_direct(i)->host(), 1);
 
         return isCrypt;
     };
@@ -2404,7 +2458,9 @@ bool KnowModel::is_contains_crypt_branches(void)const
 
 void KnowModel::clear()
 {
-    this->_root_item->delete_list_items();   // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
+    beginResetModel();
+    this->_root_item->clear(); //delete_list_items();   // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
+    endResetModel();
 }
 // if succeeded, id and name changed, deprecated, replaced by KnowView::setup_model(boost::intrusive_ptr<TreeItem> _item)
 boost::intrusive_ptr<TreeItem> KnowModel::intercept_self(boost::intrusive_ptr<TreeItem> _item)
@@ -2442,7 +2498,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::intercept_self(boost::intrusive_ptr<Tr
 
     //    //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
 
-    auto content_root_record_dom = _item->dom_from_treeitem(std::make_shared<QDomDocument>());
+    auto content_root_record_dom = _item->dom_from_treeitem();  // std::make_shared<QDomDocument>()
 
     if(content_root_record_dom.isNull()) {
         qDebug() << "Unable load xml tree, first content node not found.";
@@ -2451,13 +2507,13 @@ boost::intrusive_ptr<TreeItem> KnowModel::intercept_self(boost::intrusive_ptr<Tr
         result = _root_item;
     }
 
-    dom_to_records(content_root_record_dom, _root_item);
+    _root_item->dom_to_records(content_root_record_dom);
 
     endResetModel();
     //    save(); // temporary
     _synchronized = false;
 
-    return _root_item;
+    return result;
 
 }
 
@@ -2478,7 +2534,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::synchronize(boost::intrusive_ptr<TreeI
 
     assert(!result->is_lite());
     assert(!result->attach_table()->is_lite());
-    dom_to_records(source->dom_from_treeitem(std::make_shared<QDomDocument>()), result);
+    result->dom_to_records(source->dom_from_treeitem());    // std::make_shared<QDomDocument>()
     assert(result);
     assert(!result->is_lite());
     assert(!result->attach_table()->is_lite());
@@ -2492,10 +2548,10 @@ boost::intrusive_ptr<TreeItem> KnowModel::synchronize(boost::intrusive_ptr<TreeI
 
 
 
-boost::intrusive_ptr<TreeItem> KnowModel::record_remove(boost::intrusive_ptr<TreeItem> _item)
+boost::intrusive_ptr<TreeItem::linker> KnowModel::record_remove(boost::intrusive_ptr<TreeItem> _item)
 {
     assert(_item->count_direct() == 0);
-    boost::intrusive_ptr<TreeItem> _result(nullptr);
+    boost::intrusive_ptr<TreeItem::linker> result(nullptr);
     //    if(_item->count_direct() > 0) {
     //        auto p = _item->parent();
     //        int pos = _item->sibling_order();   // p->sibling_order(_item);
@@ -2512,12 +2568,12 @@ boost::intrusive_ptr<TreeItem> KnowModel::record_remove(boost::intrusive_ptr<Tre
 
     beginRemoveRows(parent(_index), _index.row(), _index.row());
 
-    _result = _item->self_remove_from_parent();
-    assert(_result == _item);
+    result = _item->self_remove_from_parent();
+    assert(result == _item->up_linker());
     auto _index_origin = index(_item);
 
     if(_index_origin.isValid())update_index(_index_origin.parent());
 
     endRemoveRows();
-    return _result;
+    return result;
 }

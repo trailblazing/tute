@@ -174,13 +174,13 @@ void RecordScreen::save_in_new_branch(bool checked)
                 if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _record_model->item(i)->field("id");})) { // source_model->item(i)->field("id")
                     if(_record_model->item(i)->is_lite())_record_model->item(i)->to_fat();
 
-                    _record_model->item(i)->parent(_result_item);
-                    _result_item->child_rent(_record_model->item(i));  // _result_item->work_pos(),
+                    // _record_model->item(i)->parent(_result_item);    // inside child_rent?
+                    _result_item->child_rent(_record_model->item(i));   // _result_item->work_pos(),
 
                 }
             }
 
-            _tree_screen->view_paste_as_children_from_children_move(TreeModel::ModelIndex(_tree_source_model, _index), _result_item, [&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url") && target->field("name") == source->field("name");});
+            _tree_screen->view_paste_as_children_from_children_move(TreeModel::ModelIndex(_tree_source_model, _index), _result_item, [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
             //            new_tree_item_in_treeknow_root = target;
             _tree_screen->synchronized(false);
             _tree_screen->know_model_save();
@@ -217,7 +217,7 @@ void RecordScreen::setup_actions(void)
                 auto current_root_item = _source_model()->item(_index);
 
                 data["id"]      =  get_unical_id(); //current_root_item->id();     // source_model->root_item()->id();     //
-                data["name"]    =  this->tabmanager()->webView(0)->page()->bounded_item()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
+                data["name"]    =  this->tabmanager()->webView(0)->page()->item_link()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
 
                 boost::intrusive_ptr<TreeItem> new_branch_item = boost::intrusive_ptr<TreeItem>(new TreeItem(current_root_item, data));
 
@@ -227,14 +227,14 @@ void RecordScreen::setup_actions(void)
                     auto tabmanager = browser->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                     for(int i = 0; i < tabmanager->count(); i++) {
-                        auto item = tabmanager->webView(i)->page()->bounded_item();
+                        auto il = tabmanager->webView(i)->page()->item_link();
 
-                        if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == item->field("id");})) {  // item->field("id")
+                        if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == il->field("id");})) {  // item->field("id")
 
-                            if(item->is_lite())item->to_fat();
+                            if(il->is_lite())il->to_fat();
 
-                            item->parent(new_branch_item);
-                            _source_model()->model_move_as_child_impl(new_branch_item, item, new_branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
+                            il->parent(new_branch_item);
+                            _source_model()->model_move_as_child_impl(new_branch_item, il, new_branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
                             modified = true;
                         }
                     }
@@ -255,7 +255,7 @@ void RecordScreen::setup_actions(void)
                         TreeModel::ModelIndex(_source_model             // _tree_screen->know_branch()
                                               , _source_model()->index(_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root();}))) // _tree_screen->tree_view()->current_index() //,
                         , new_branch_item
-                        , [&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url") && target->field("name") == source->field("name");}
+                        , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                     );
 
 

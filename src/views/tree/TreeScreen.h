@@ -65,7 +65,7 @@ class TreeScreen
     Q_OBJECT
 
 public:
-    typedef std::function<bool(boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)> substitute_condition;
+    typedef std::function<bool(boost::intrusive_ptr<const TreeItem::linker>, boost::intrusive_ptr<const TreeItem::linker>)> substitute_condition;
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, substitute_condition)> paste_strategy;
 
     TreeScreen(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *_parent = 0);
@@ -125,7 +125,7 @@ public:
 
     void enable_up_action();
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
-    boost::intrusive_ptr<TreeItem> view_cut(boost::intrusive_ptr<TreeItem> target);
+    boost::intrusive_ptr<ItemsFlat::linker> view_cut(boost::intrusive_ptr<TreeItem> target);
     //    boost::intrusive_ptr<TreeItem> branch_paste(boost::intrusive_ptr<TreeItem> item, KnowModel *_current_know_branch);
 
 
@@ -169,13 +169,13 @@ private slots:
     //                                                              , bool                       _cut_branch_confirm = false
     //                                                             );
 
-    QList<boost::intrusive_ptr<TreeItem>> view_delete_items(std::function<KnowModel *()>             _current_model
+    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_delete_items(std::function<KnowModel *()>             _current_model
                                                             , QList<boost::intrusive_ptr<TreeItem>>  _items
                                                             , QString                                _mode
                                                             , bool                                   _cut_branch_confirm = false
                                                            );
 
-    QList<boost::intrusive_ptr<TreeItem>> view_delete(QModelIndexList index_list, QString mode = "delete", bool _cut_branch_confirm = false);
+    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_delete(QModelIndexList index_list, QString mode = "delete", bool _cut_branch_confirm = false);
 
     //    boost::intrusive_ptr<TreeItem> model_delete_one(std::function<KnowModel *()> _current_model, QModelIndex _index_delete);
 

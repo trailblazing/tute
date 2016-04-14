@@ -529,7 +529,7 @@ namespace browser {
                 webView->setFocus();
 
                 //                auto controller = webView->recordtablecontroller();
-                auto it = webView->page()->bounded_item();
+                auto it = webView->page()->item_link();
 
                 if(it) { // controller != nullptr &&
                     //                    QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
@@ -686,7 +686,7 @@ namespace browser {
             WebPage *p = v->page();
 
             if(p) {
-                auto it = p->bounded_item();
+                auto it = p->item_link();
 
                 if(it && it->field("pin") == _string_from_check_state[Qt::Unchecked]) {
                     found++;
@@ -714,7 +714,7 @@ namespace browser {
                                , bool make_current
                               )
     {
-        boost::intrusive_ptr<TreeItem> result;
+        boost::intrusive_ptr<TreeItem> result(nullptr);
         assert(target);
         assert(!target->is_lite());
 
@@ -733,26 +733,33 @@ namespace browser {
 
             if(view == nullptr) {
                 //        if(view == nullptr) {
-                // line edit
-                UrlLineEdit *urlLineEdit = new UrlLineEdit;
-                QLineEdit *lineEdit = urlLineEdit->lineEdit();
 
-                if(!_lineeditcompleter && count() > 0) {
-                    HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
-                    completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
-                    _lineeditcompleter = new QCompleter(completionModel, this);
-                    // Should this be in Qt by default?
-                    QAbstractItemView *popup = _lineeditcompleter->popup();
-                    QListView *listView = qobject_cast<QListView *>(popup);
 
-                    if(listView)
-                        listView->setUniformItemSizes(true);
-                }
 
-                lineEdit->setCompleter(_lineeditcompleter);
-                connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
-                _lineedits->addWidget(urlLineEdit);
-                _lineedits->setSizePolicy(lineEdit->sizePolicy());
+
+                //                // line edit, move after new WebView!!!
+                //                UrlLineEdit *urlLineEdit = new UrlLineEdit;
+                //                QLineEdit *lineEdit = urlLineEdit->lineEdit();
+
+                //                if(!_lineeditcompleter && count() > 0) {
+                //                    HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
+                //                    completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
+                //                    _lineeditcompleter = new QCompleter(completionModel, this);
+                //                    // Should this be in Qt by default?
+                //                    QAbstractItemView *popup = _lineeditcompleter->popup();
+                //                    QListView *listView = qobject_cast<QListView *>(popup);
+
+                //                    if(listView)
+                //                        listView->setUniformItemSizes(true);
+                //                }
+
+                //                lineEdit->setCompleter(_lineeditcompleter);
+                //                connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
+                //                _lineedits->addWidget(urlLineEdit);
+                //                _lineedits->setSizePolicy(lineEdit->sizePolicy());
+
+
+
 
                 // optimization to delay creating the more expensive WebView, history, etc
                 //        if(count() == 0) {return new_dummy();}
@@ -777,7 +784,37 @@ namespace browser {
 
                 //        assert(item->page_valid() && item->unique_page());
                 assert(view);
-                urlLineEdit->setWebView(view);
+                //                assert(view->page()->binder()->page_link());
+
+
+
+                // line edit
+                UrlLineEdit *urlLineEdit = new UrlLineEdit(view);
+                QLineEdit *lineEdit = urlLineEdit->lineEdit();
+
+                if(!_lineeditcompleter && count() > 0) {
+                    HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
+                    completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
+                    _lineeditcompleter = new QCompleter(completionModel, this);
+                    // Should this be in Qt by default?
+                    QAbstractItemView *popup = _lineeditcompleter->popup();
+                    QListView *listView = qobject_cast<QListView *>(popup);
+
+                    if(listView)
+                        listView->setUniformItemSizes(true);
+                }
+
+                lineEdit->setCompleter(_lineeditcompleter);
+                connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
+                _lineedits->addWidget(urlLineEdit);
+                _lineedits->setSizePolicy(lineEdit->sizePolicy());
+
+
+
+
+
+                //                urlLineEdit->setWebView(view);    // move inside UrlLineEdit::UrlLineEdit
+
                 connect(view, &WebView::loadStarted, this, &TabWidget::webViewLoadStarted);
                 connect(view, &WebView::iconChanged, this, &TabWidget::webViewIconChanged);
                 connect(view, &WebView::titleChanged, this, &TabWidget::webViewTitleChanged);
@@ -818,31 +855,45 @@ namespace browser {
                     mapper->addChild(view->page()->action(mapper->webAction()));
                 }
 
+                result = view->page()->item_link();
                 //else {
-
+                assert(result->binder());
 
             } else {
-                auto _record_binder = view->page()->record_binder();
+                auto _record_binder = view->page()->binder();
 
-                if(_record_binder && _record_binder->bounded_item() != target) {
-                    view->page()->item_break(_record_binder->bounded_item());
-                    _record_binder.reset();
+                if(_record_binder && _record_binder->item_link() != target) {
+                    _record_binder->break_coupler();    // view->page()->item_break(_record_binder->item_link());
+                    // view->page()->binder(nullptr);   // _record_binder.reset();
+                    //                    _record_binder->item_link() = target;
+                    //                    _record_binder->page_link() = view->page();
+                    //                    result = target;
+                    result = view->page()->item_registered_setup_binder(target);
                 }
+
+                assert(result->binder());
             }
 
+            assert(result->binder());
         } else {
+            assert(view->page()->item_link() == target);
             result = target;
+            assert(result->binder());
         }
 
-        result = view->page()->item_registered_imperative_equip(target);
-        assert(result == view->page()->record_binder()->bounded_item());  // old one choosed
-        assert(result == target);
-        result->bind();
 
-        assert(result->record_binder()->bounded_item());
-        assert(result->record_binder()->bounded_page());
-        assert(view->page()->record_binder());
-        assert(result->record_binder() == view->page()->record_binder());
+        assert(result == view->page()->binder()->item_link());  // old one choosed
+        assert(result == target);
+        //        assert(result->record_binder()->bounded_page());
+
+        if(!result->binder()->page_link()) {
+            result->binder()->page_link() = view->page(); //            result->bind();   // this is recursively call
+        }
+
+        assert(result->binder()->item_link());
+        assert(result->binder()->page_link());
+        assert(view->page()->binder());
+        assert(result->binder() == view->page()->binder());
 
         //            result->record_binder()->binder(result);
         //}
@@ -853,7 +904,7 @@ namespace browser {
         if(make_current) {
             setCurrentWidget(view);
             auto _tree_view = globalparameters.tree_screen()->tree_view();
-            QModelIndex _i = _tree_view->source_model()->index(result->record_binder()->bounded_item());
+            QModelIndex _i = _tree_view->source_model()->index(result->binder()->item_link());
             _tree_view->selectionModel()->select(_i, QItemSelectionModel::SelectionFlag::Select); // _tree_view->selectionModel()->select(_i, QItemSelectionModel::SelectionFlag::Deselect);
 
             //                    _tree_view->select_and_current(_record_binder->bounded_item());
@@ -939,10 +990,10 @@ namespace browser {
         if(index < 0 || index >= count())
             return;
 
-        assert(webView(index)->page()->bounded_item()->page_valid() && webView(index)->page()->bounded_item()->bounded_page());
-        assert(webView(index)->page()->bounded_item()->is_registered_to_browser() || webView(index)->page()->bounded_item()->field("url") == browser::Browser::_defaulthome);
+        assert(webView(index)->page()->item_link()->page_valid() && webView(index)->page()->item_link()->page_link());
+        assert(webView(index)->page()->item_link()->is_registered_to_browser() || webView(index)->page()->item_link()->field("url") == browser::Browser::_defaulthome);
         //WebView *tab =
-        newTab(webView(index)->page()->bounded_item(), true //, view(index)->recordtablecontroller()
+        newTab(webView(index)->page()->item_link(), true //, view(index)->recordtablecontroller()
               );
         //tab->setUrl(webView(index)->url());
     }
@@ -1020,8 +1071,8 @@ namespace browser {
                     lineEdit->deleteLater();    //delete lineEdit;
                 }
 
-                auto it = _view_to_close->page()->bounded_item();
-                assert(it->bounded_page() == _view_to_close->page());
+                auto it = _view_to_close->page()->item_link();
+                assert(it->page_link() == _view_to_close->page());
 
                 auto _tree_screen = globalparameters.tree_screen();
                 _tree_screen->tree_view()->selectionModel()->select(_tree_screen->tree_view()->source_model()->index(it), QItemSelectionModel::SelectionFlag::Deselect);
@@ -1089,10 +1140,10 @@ namespace browser {
 
                 if(view != nullptr && view != webView(index)) {
                     view->setFocus();
-                    boost::intrusive_ptr<TreeItem> item = view->page()->bounded_item();
+                    boost::intrusive_ptr<TreeItem> item = view->page()->item_link();
 
                     if(item) {
-                        assert((item->page_valid() && item->bounded_page()) || (item->field("url") == Browser::_defaulthome));
+                        assert((item->page_valid() && item->page_link()) || (item->field("url") == Browser::_defaulthome));
 
                         //                    QModelIndex proxyindex = view->recordtablecontroller()->convertIdToProxyIndex(record->getField("id"));
                         //                    int position = view->recordtablecontroller()->convertProxyIndexToPos(proxyindex);
@@ -1293,9 +1344,9 @@ namespace browser {
 
         if(webView) {
             //            Record *record;
-            boost::intrusive_ptr<TreeItem> _item = webView->page()->bounded_item();
+            boost::intrusive_ptr<TreeItem> _item = webView->page()->item_link();
 
-            if(_item->page_valid() && _item->bounded_page()->url() != _url) {
+            if(_item->page_valid() && _item->page_link()->url() != _url) {
                 //                //                record = record_;
                 //                //            } else {
                 //                record = request_record(url);
@@ -1525,8 +1576,8 @@ namespace browser {
             auto vi = webView(i);
 
             if(vi != nullptr) {
-                if(vi->page()->bounded_item()) {
-                    if(vi->page()->bounded_item()->field("pin") == _string_from_check_state[Qt::Unchecked]) {
+                if(vi->page()->item_link()) {
+                    if(vi->page()->item_link()->field("pin") == _string_from_check_state[Qt::Unchecked]) {
                         bv = vi; break;
                     }
                 }
@@ -1619,7 +1670,7 @@ namespace browser {
             auto current_view = webView(i);
 
             if(current_view != nullptr) {
-                auto it = current_view->page()->bounded_item();
+                auto it = current_view->page()->item_link();
 
                 if(it) {
                     if(_equal(it)) { //it->url<url_type>() == url_type()(find_url)
@@ -1823,7 +1874,7 @@ namespace browser {
         auto v = find(_check_euqal);
 
         if(v) {
-            _result = v->page()->record_binder()->bounded_item();
+            _result = v->page()->binder()->item_link();
             assert(_check_euqal(_result));   // assert(_result->url<url_type>() == url_type()(_find_url));
         }
 
@@ -2030,7 +2081,7 @@ namespace browser {
 
         _result = view_paste_strategy(TreeModel::ModelIndex(_session_view_model, _session_view_model()->index(_session_root_item()))
                                       , _result
-                                      , std::bind([&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url");}, std::placeholders::_1, _result)
+                                      , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, _result->up_linker())
                                       , _view_paste_strategy, item_is_brand_new, _find_url, _check_euqal
                                      );
 
@@ -2081,7 +2132,7 @@ namespace browser {
         boost::intrusive_ptr<TreeItem> re;
         auto it = item_request_from_tree_impl(_find_url, _view_paste_strategy, _equal);
 
-        re = item_registered_imperative_equip(it);
+        re = item_registered_setup_binder(it);
 
         return re;
 
@@ -2135,7 +2186,7 @@ namespace browser {
 
         //    //    item->is_registered_to_record_controller_and_tabmanager(false);
 
-        if(!target->record_binder()) {
+        if(!target->binder()) {
 
             //        if(item->is_lite())item->to_fat();
 
@@ -2174,7 +2225,7 @@ namespace browser {
             auto v = find(_check_euqal);
 
             if(v) {
-                _result = v->page()->record_binder()->bounded_item();
+                _result = v->page()->binder()->item_link();
                 assert(_check_euqal(_result));   // assert(_result->url() == item->url());
                 // assert(_result->fragment() == item->fragment());
             }
@@ -2329,7 +2380,7 @@ namespace browser {
 
             _result = view_paste_strategy(TreeModel::ModelIndex(_session_view_model, _session_view_model()->index(_session_root_item()))
                                           , _result
-                                          , std::bind([&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool {return target->field("url") == source->field("url");}, std::placeholders::_1, _result)
+                                          , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, _result->up_linker())
                                           , _view_paste_strategy, item_is_brand_new, _find_url, _check_euqal
                                          );
 
@@ -2388,7 +2439,7 @@ namespace browser {
         assert(it->field("url") == target->field("url"));
         //        if( // !it->is_registered_to_browser() &&
         //            !it->record_binder())
-        re = item_registered_imperative_equip(it);
+        re = item_registered_setup_binder(it);
         assert(re->field("url") == it->field("url"));
         //        else
         //            re = it;
@@ -2661,7 +2712,7 @@ namespace browser {
     //        boost::intrusive_ptr<TreeItem> re;
     //        auto it = item_request_from_tree_impl<url_fragment>(_url);
 
-    //        re = item_registered_imperative_equip(it);
+    //        re = item_registered_resetup_record_binder(it);
 
     //        return re;
     //    }
@@ -2671,7 +2722,7 @@ namespace browser {
     //        boost::intrusive_ptr<TreeItem> re;
     //        auto it = item_request_from_tree_impl<url_full>(_url);
 
-    //        re = item_registered_imperative_equip(it);
+    //        re = item_registered_resetup_record_binder(it);
 
     //        return re;
     //        //        auto ar = boost::make_shared<TabWidget::Coupler>(this, true);
@@ -2689,7 +2740,7 @@ namespace browser {
     //        //                                                          ));
     //    }
 
-    boost::intrusive_ptr<TreeItem> TabWidget::item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item)
+    boost::intrusive_ptr<TreeItem> TabWidget::item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item)
     {
         //        auto binder = [](boost::shared_ptr<TabWidget::RecordBinder> ar) {
         //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
@@ -2703,8 +2754,9 @@ namespace browser {
         //        boost::shared_ptr<TabWidget::Coupler> ar =
 
 
-        item->record_binder(boost::intrusive_ptr<CouplerDelegation>(new CouplerDelegation(std::make_shared<TabWidget::Coupler>(this, item))));
+        item->binder(new TreeItem::coupler_delegation(std::make_shared<TabWidget::Coupler>(this, item)));
 
+        //        std::make_shared<TabWidget::Coupler>(this, item);
 
         //        //        record->binder(
         //        //            binder(ar)
@@ -2720,6 +2772,7 @@ namespace browser {
         //                                , std::make_shared<bind_interface>("", &Coupler::binder, ar)
         //                                , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
         //                            ));
+        assert(item->binder());
         return  item;
     }
 
@@ -3009,21 +3062,24 @@ namespace browser {
     }
 
     TabWidget::Coupler::Coupler(
-        TabWidget *_tabmanager
-        , boost::intrusive_ptr<TreeItem>  _bounded_item
-        , bool _make_current
-    ): std::enable_shared_from_this<Coupler>()
-        , _tabmanager(_tabmanager)
-        , _bounded_item(_bounded_item)
-        , _bounded_page(nullptr)
-        , _make_current(_make_current)
+        TabWidget                           *_tabmanager
+        , boost::intrusive_ptr<TreeItem>    item_link_
+        , bool                              make_current_
+    )
+        : // std::enable_shared_from_this<Coupler>()
+          _tabmanager(_tabmanager)
+        , _item_link(item_link_)
+        , _page_link(nullptr)
+        , _make_current(make_current_)
     {
-        //        _bounded_item->record_binder(boost::intrusive_ptr<CouplerDelegation>(new CouplerDelegation(shared_from_this())));
+        //        //        _bounded_item->record_binder(boost::intrusive_ptr<CouplerDelegation>(new CouplerDelegation(shared_from_this())));
+        //        _bounded_page->record_binder(new TreeItem::coupler_delegation(std::const_pointer_cast<Coupler>(shared_from_this())));
+        //        _bounded_item->record_binder(_bounded_page->record_binder());
     }
 
     WebView *TabWidget::Coupler::binder(/*boost::intrusive_ptr<TreeItem> item*/)
     {
-
+        WebView *view = nullptr;
         // assert(item);
 
         //        boost::intrusive_ptr<TreeItem> result = _tabmanager->_record_controller->source_model()->find(QUrl(Browser::_defaulthome));
@@ -3031,7 +3087,13 @@ namespace browser {
 
         //        if(!result) {
         // assert(!item->is_registered_to_browser());
-        WebView *view = _tabmanager->newTab(_bounded_item, _make_current);
+        if(!_page_link) {
+            view = _tabmanager->newTab(_item_link, _make_current); //
+
+            //            if(!_page_link) _page_link = view->page();
+        }
+
+
         //        view->page()->record_binder()->binder(item);  // included in newTab()
 
         //        (item.get()->*_bind)(view->page());
@@ -3048,10 +3110,10 @@ namespace browser {
 
         //        assert(_bounded_page == view->page());    // we can give it up now
         //        assert(_bounded_page->record_binder());
-        assert(_bounded_item->record_binder());
+        assert(_item_link->binder());
         //        _bounded_page->record_binder(_bounded_item->record_binder());
 
-        assert(_bounded_item->is_registered_to_browser() || (_bounded_item->field("url") == Browser::_defaulthome));
+        assert(_item_link->is_registered_to_browser() || (_item_link->field("url") == Browser::_defaulthome));
 
         return view;
     }
@@ -3060,12 +3122,12 @@ namespace browser {
         // boost::intrusive_ptr<TreeItem> item
     )
     {
-        assert(_bounded_item->bounded_page() == _bounded_page);
-        assert(_bounded_item == _bounded_page->bounded_item());
+        assert(_item_link->page_link() == _page_link);
+        assert(_item_link == _page_link->item_link());
 
-        assert(_bounded_item);
-        assert(_bounded_item->page_valid());
-        return _bounded_item->bounded_page()->activate();
+        assert(_item_link);
+        assert(_item_link->page_valid());
+        return _item_link->page_link()->activate();
     }
 
 

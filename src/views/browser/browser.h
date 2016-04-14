@@ -69,6 +69,7 @@ class FingScreen;
 class TreeModel;
 class TreeScreen;
 
+
 QT_BEGIN_NAMESPACE
 
 namespace browser {
@@ -145,15 +146,16 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
-        typedef CouplerDelegation::bind_interface          bind_interface;
-        typedef CouplerDelegation::activate_interface      activate_interface;
-        typedef CouplerDelegation::bounded_item_interface  bounded_item_interface;
-        typedef CouplerDelegation::bounded_page_interface  bounded_page_interface;
+        typedef TreeItem::coupler_delegation coupler_delegation;
+        typedef TreeItem::coupler_delegation::bind_interface          bind_interface;
+        typedef TreeItem::coupler_delegation::activate_interface      activate_interface;
+        typedef TreeItem::coupler_delegation::item_interface  bounded_item_interface;
+        typedef TreeItem::coupler_delegation::page_interface  bounded_page_interface;
 
-        typedef CouplerDelegation::bind_helper         bind_helper;
-        typedef CouplerDelegation::activate_helper     activate_helper;
-        typedef CouplerDelegation::bounded_item_helper bounded_item_helper;
-        typedef CouplerDelegation::bounded_page_helper bounded_page_helper;
+        typedef TreeItem::coupler_delegation::bind_helper         bind_helper;
+        typedef TreeItem::coupler_delegation::activate_helper     activate_helper;
+        typedef TreeItem::coupler_delegation::bounded_item_helper bounded_item_helper;
+        typedef TreeItem::coupler_delegation::bounded_page_helper bounded_page_helper;
 
         TabWidget   *tabWidget() {return _tabmanager;}
         TabWidget   *tabWidget() const {return _tabmanager;}
@@ -175,7 +177,7 @@ namespace browser {
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
         WebView     *invoke_registered_page(boost::intrusive_ptr<TreeItem> _it);
-        boost::intrusive_ptr<TreeItem> item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item);
         RecordScreen *record_screen() {return _record_screen;}
         Entrance    *entrance() {return _entrance;}
     public slots:

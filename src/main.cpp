@@ -73,6 +73,11 @@ WalkHistory         walkhistory;
 // Указатель на основное окно программы
 QObject             *mainwindow;
 
+#ifdef QT_DEBUG
+const char *index_xml_file_name = "mytetra_debug.xml";
+#else
+const char *index_xml_file_name = "mytetra.xml";
+#endif
 
 std::string difference(const std::string &url_compare_stored, const std::string &url_compare_get)
 {

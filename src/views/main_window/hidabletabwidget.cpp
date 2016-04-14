@@ -4,12 +4,12 @@
 
 HidableTabWidget::HidableTabWidget(QWidget *parent) :
     QTabWidget(parent),
-    hideAction("▾", this)
+    _hide_action(new QAction(tr("▾"), this))
 {
-    hideAction.setCheckable(true);
-    hideAction.setToolTip("Hide Panels");
+    _hide_action->setCheckable(true);
+    _hide_action->setToolTip("Hide Panels");
     QToolButton *hide_button = new QToolButton();
-    hide_button->setDefaultAction(&hideAction);
+    hide_button->setDefaultAction(_hide_action);
     hide_button->setAutoRaise(true);
     this->setCornerWidget(hide_button);
 
@@ -19,7 +19,7 @@ HidableTabWidget::HidableTabWidget(QWidget *parent) :
     //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
     setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; } QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");
 
-    connect(&hideAction, &QAction::toggled, this, &HidableTabWidget::onHideAction);
+    connect(_hide_action, &QAction::toggled, this, &HidableTabWidget::onHideAction);
     connect(this, &HidableTabWidget::tabBarClicked, this, &HidableTabWidget::onTabBarClicked);
 }
 
@@ -52,5 +52,5 @@ void HidableTabWidget::onHideAction(bool checked)
 
 void HidableTabWidget::onTabBarClicked()
 {
-    hideAction.setChecked(false);
+    _hide_action->setChecked(false);
 }

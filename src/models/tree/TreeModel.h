@@ -77,7 +77,7 @@ public:
 
 
     //    bool is_item_valid(QStringList path) const;
-    QModelIndex index(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;
+    QModelIndex index(std::function<bool(boost::intrusive_ptr<const ItemsFlat::linker>)> _equal) const;
 
     QModelIndex index(boost::intrusive_ptr<const TreeItem> _item) const;
     void update_index(const QModelIndex &_index);

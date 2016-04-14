@@ -11,7 +11,7 @@
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 extern TrashMonitoring trashmonitoring;
-
+extern const char *index_xml_file_name;
 
 DiskHelper::DiskHelper()
 {
@@ -113,7 +113,10 @@ QString DiskHelper::copy_file_to_data(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     //    QString file_name_to_short = file_name_from_short.remove(0, file_name_from_short.lastIndexOf('_') + 1);
-    QString file_name_to = appconfig.tetra_dir() + "/" + globalparameters.main_program_file() + ".xml"; //appconfig.get_tetradir() + "/" + file_name_to_short;
+    QString file_name_to = appconfig.tetra_dir()    //
+                           + "/"
+                           + index_xml_file_name  // + globalparameters.main_program_file() + ".xml"
+                           ; //appconfig.get_tetradir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
 

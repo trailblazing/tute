@@ -59,6 +59,9 @@ namespace browser {
 
     class TabWidget;
     class ClearButton;
+    class WebView;
+
+
 
     // addressbar
     class ExLineEdit : public QWidget {
@@ -100,7 +103,7 @@ namespace browser {
         Q_OBJECT
 
     public:
-        UrlLineEdit(QWidget *parent = 0);
+        UrlLineEdit(WebView *view, QWidget *parent = 0);
         void setWebView(WebView *webView);
 
     protected:

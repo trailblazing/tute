@@ -174,8 +174,9 @@ namespace browser {
         - When there is no text and doesn't have focus an "inactive text" is displayed
         - When there is text a clear button is displayed on the right hand side
      */
-    SearchLineEdit::SearchLineEdit(QWidget *parent) : ExLineEdit(parent),
-        _searchbutton(new SearchButton(this))
+    SearchLineEdit::SearchLineEdit(QWidget *parent)
+        : ExLineEdit(parent)
+        , _searchbutton(new SearchButton(this))
     {
         connect(lineEdit(), &QLineEdit::textChanged, this, &SearchLineEdit::textChanged);
         setLeftWidget(_searchbutton);

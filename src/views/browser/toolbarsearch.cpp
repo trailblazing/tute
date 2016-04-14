@@ -74,8 +74,7 @@ namespace browser {
         ToolbarSearch is a very basic search widget that also contains a small history.
         Searches are turned into urls that use Google to perform search
      */
-    ToolbarSearch::ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,
-        QWidget *parent)
+    ToolbarSearch::ToolbarSearch(QWidget *parent)   //QStackedWidget *lineedits, QLineEdit *findtext,
         : SearchLineEdit(parent)
         , _autosaver(new AutoSaver(this))
         , _maxsavedsearches(10)
@@ -248,12 +247,12 @@ namespace browser {
             _tree_screen->view_paste_as_child(
                 TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index())
                 , result_item
-                , std::bind([&](boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> source)->bool{return target->field("url") == source->field("url");}, std::placeholders::_1, result_item)
+                , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool{return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, result_item->up_linker())
             );
 
             //                //            _tree_screen->tree_view()->reset();
             //                _tree_screen->setup_model(result_item);
-            auto _index = _tree_screen->tree_view()->select_as_current(result_item->item_direct(0));
+            auto _index = _tree_screen->tree_view()->select_as_current(result_item->item_direct(0)->host());
             //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
             //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 

@@ -943,7 +943,8 @@ QtSingleApplication::~QtSingleApplication()
 
     delete _networkaccessmanager;
     delete _bookmarksmanager;
-    delete _window;
+
+    if(_window) {delete _window; _window = nullptr;}
 }
 
 //#if defined(Q_OS_OSX)

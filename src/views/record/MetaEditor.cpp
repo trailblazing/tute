@@ -183,7 +183,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
         assert(_item);
-        assert(_item->page_valid() && _item->bounded_page());
+        assert(_item->page_valid() && _item->page_link());
         _item->activate();
     });
 
@@ -195,14 +195,14 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         //            Q_UNUSED(home)
         assert(_item);
         assert(_item->page_valid());
-        browser::WebPage *page = _item->bounded_page();
+        browser::WebPage *page = _item->page_link();
         assert(page);
         QString home = _item->natural_field_source("home");
 
         if(_item->natural_field_source("url") != home)
             _item->natural_field_source("url", home);
 
-        page->item_registered_imperative_equip(_item)->activate(); // page->load(_record, true);
+        page->item_registered_setup_binder(_item)->activate(); // page->load(_record, true);
         //        _record->active();
     });
 

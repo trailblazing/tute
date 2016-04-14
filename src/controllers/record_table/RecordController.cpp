@@ -276,16 +276,16 @@ void RecordController::browser_update(const int source_pos)
 
         if(entrance && !item->page_valid()    // unique_page()
           ) {    // !record->binder() || !record->activator())) {
-            entrance->item_registered_imperative_equip(item);
+            entrance->item_registered_setup_binder(item);
 
 
             //        assert(record->unique_page());    // not sure
-            assert(item->record_binder());
+            assert(item->binder());
             //            assert(item->activator());
 
             //        if(record->binder() && !record->unique_page())record->bind();
             //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
-            if(item->record_binder())item->activate();
+            if(item->binder())item->activate();
 
             //        else if(entrance)
         } else {
@@ -354,10 +354,10 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->save_text_area();
 
-
+    auto it = item->item_direct(_index)->host();
     // Для новой выбраной записи выясняется директория и основной файл
-    QString currentDir = item->item_direct(_index)->field("dir");
-    QString currentFile = item->item_direct(_index)->field("file");
+    QString currentDir = it->field("dir");
+    QString currentFile = it->field("file");
     QString fullDir = appconfig.tetra_dir() + "/base/" + currentDir;
     QString fullFileName = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
@@ -385,16 +385,16 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     // И если имя директории или имя файла пусты, то это означает что
     // запись не была расшифрована, и редактор должен просто показывать пустой текст
     // ничего не сохранять и не считывать
-    qDebug() << "RecordTableView::onClickToRecord() : id " << item->item_direct(_index)->field("id");
-    qDebug() << "RecordTableView::onClickToRecord() : name " << item->item_direct(_index)->field("name");
-    qDebug() << "RecordTableView::onClickToRecord() : crypt " << item->item_direct(_index)->field("crypt");
+    qDebug() << "RecordTableView::onClickToRecord() : id " << it->field("id");
+    qDebug() << "RecordTableView::onClickToRecord() : name " << it->field("name");
+    qDebug() << "RecordTableView::onClickToRecord() : crypt " << it->field("crypt");
 
-    if(item->item_direct(_index)->field("crypt") == "1")
+    if(it->field("crypt") == "1")
         if(fullDir.length() == 0 || currentFile.length() == 0)
             meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
     // В редактор заносится информация, идет ли работа с зашифрованным текстом
-    meta_editor->misc_field("crypt", item->item_direct(_index)->field("crypt"));
+    meta_editor->misc_field("crypt", it->field("crypt"));
 
     // В редакторе устанавливается функция обратного вызова для чтения данных
     meta_editor->load_callback(item->editor_load_callback);
@@ -403,17 +403,17 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     // edView->set_textarea(table->get_text(index.row()));
 
     // Заполняются прочие инфо-поля
-    meta_editor->pin(item->item_direct(_index)->field("pin"));
-    meta_editor->name(item->item_direct(_index)->field("name"));
-    meta_editor->author(item->item_direct(_index)->field("author"));
-    meta_editor->home(item->item_direct(_index)->field("home"));
-    meta_editor->url(item->item_direct(_index)->field("url"));
-    meta_editor->tags(item->item_direct(_index)->field("tags"));
+    meta_editor->pin(it->field("pin"));
+    meta_editor->name(it->field("name"));
+    meta_editor->author(it->field("author"));
+    meta_editor->home(it->field("home"));
+    meta_editor->url(it->field("url"));
+    meta_editor->tags(it->field("tags"));
 
-    QString id = item->item_direct(_index)->field("id");
+    QString id = it->field("id");
     meta_editor->misc_field("id", id);
 
-    meta_editor->misc_field("title", item->item_direct(_index)->field("name"));
+    meta_editor->misc_field("title", it->field("name"));
 
     // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
     QString path = qobject_cast<RecordScreen *>(parent())->tree_path();
@@ -429,7 +429,7 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     }
 
     // Обновление иконки аттачей
-    if(item->item_direct(_index)->attach_table()->size() == 0)
+    if(it->attach_table()->size() == 0)
         meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_not_exists);   // Если нет приаттаченных файлов
     else
         meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_exists);   // Есть приаттаченные файлы
@@ -1626,7 +1626,9 @@ void RecordController::pages_remove_from_browser(QVector<QString> del_ids)
                 //                //            if(index != -1)_tabmanager->closeTab(index);
 
                 //                _source_model->remove_child(item);  // doing nothing
-                _tabmanager->closeTab(_tabmanager->indexOf(item->bounded_page()->view()));
+                _tabmanager->closeTab(
+                    _tabmanager->webViewIndex(item->page_link()->view())  // _tabmanager->indexOf(item->bounded_page()->view())
+                );
 
                 changed = true;
             }

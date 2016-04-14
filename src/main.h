@@ -110,7 +110,7 @@ extern const char *entrance_singleton_name;
 extern const char *record_controller_multi_instance_name;
 extern const char *knowtreeview_singleton_name;
 extern const char *global_root_id;
-
+extern const char *index_xml_file_name;
 // template <class X> inline X *find_object(QString n);
 
 // Поиск объекта от корня по имени

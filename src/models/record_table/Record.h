@@ -5,7 +5,8 @@
 #include <QString>
 #include <QMap>
 #include <QByteArray>
-#include <QDomElement>
+//#include <QDomElement>
+//#include <QDomDocument>
 
 #include "utility/delegate.h"
 
@@ -36,12 +37,12 @@ namespace browser {
 
 class TreeItem;
 class AttachTableData;
+class QDomElement;
+class QDomDocument;
 
 
-
-
-class Record :
-    public boost::intrusive_ref_counter<Record, boost::thread_safe_counter>
+class Record
+    : public boost::intrusive_ref_counter<Record, boost::thread_safe_counter>
 //        std::enable_shared_from_this<Record>
 {
 
@@ -65,7 +66,7 @@ public:
     void dom_to_record(const QDomElement &_dom_element);
     //    QDomElement export_to_dom(QDomDocument *doc) const;
     QDomElement dom_from_record() const;
-    QDomElement dom_from_record(std::shared_ptr<QDomDocument> doc) const;
+    //    QDomElement dom_from_record(std::shared_ptr<QDomDocument> doc) const;
 
 
     QString text_from_fat() const;
@@ -90,6 +91,7 @@ public:
     std::shared_ptr<AttachTableData> attach_table();
     void attach_table(std::shared_ptr<AttachTableData> _attach_table_data);
 
+    bool is_crypt() const;
     bool is_empty() const;
     bool is_lite() const;
     void to_lite();
@@ -185,11 +187,12 @@ protected:
 
 private:
 
-
+    std::function<QDomElement(std::shared_ptr<QDomDocument> doc) > dom_from_record_impl;
 
 
     //    friend class browser::WebPage;
     friend class ItemsFlat;
+    friend class TreeItem;
 };
 
 #endif // __RECORD_H__

@@ -29,7 +29,7 @@ public:
     std::shared_ptr<XmlTree> init_from_xml(std::shared_ptr<XmlTree> xmlt);
     void reload(void);
 
-    QDomElement dom_from_treeitem(boost::intrusive_ptr<TreeItem> root_item);
+    //    QDomElement dom_from_treeitem(boost::intrusive_ptr<TreeItem> root_item);
 
     void save(void);
 
@@ -84,10 +84,10 @@ public:
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
 
-    boost::intrusive_ptr<TreeItem> model_duplicated_merge_to_left(std::function<QList<boost::intrusive_ptr<TreeItem>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
+    boost::intrusive_ptr<TreeItem> model_duplicated_merge_to_left(std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
             , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
 
-    boost::intrusive_ptr<TreeItem> record_remove(boost::intrusive_ptr<TreeItem> _item);
+    boost::intrusive_ptr<ItemsFlat::linker> record_remove(boost::intrusive_ptr<TreeItem> _item);
 
     boost::intrusive_ptr<TreeItem> model_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
     //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
@@ -100,8 +100,8 @@ private:
     //    // Функция заполнения дерева из DOM-документа
     //    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self);
 
-    // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
-    void dom_to_records(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> self);
+    //    // Преобразование DOM в Item модель. Функция рекурсивного обхода элементов DOM-документа
+    //    void dom_to_records(QDomElement _record_dom_element, boost::intrusive_ptr<TreeItem> _parent_item);
 
     // Преобразование Item в DOM модель
     void dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
@@ -112,7 +112,7 @@ private:
                                 );
 
     //    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
-    boost::intrusive_ptr<TreeItem> model_delete_item(boost::intrusive_ptr<TreeItem> _item_delete);
+    boost::intrusive_ptr<ItemsFlat::linker> model_delete_item(boost::intrusive_ptr<ItemsFlat::linker> delete_linker);
     //    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);

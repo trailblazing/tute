@@ -346,30 +346,32 @@ namespace browser {
 
         QObject::disconnect(_home_connection);
 
-        _home_connection = QObject::connect(
+        _home_connection = QObject::connect
+                           (
                                findscreen->historyhome()
                                , &QAction::triggered
                                , this
-        , [this](bool checked = true) {
+        , [this](bool checked = true)->void {
             Q_UNUSED(checked)
             assert(activated_browser());
             auto view = activated_browser()->tabmanager()->currentWebView();
             assert(view);
 
-            if(view) {
+            if(view)
+            {
                 WebPage *page = view->page();
 
                 if(page) {
-                    boost::intrusive_ptr<TreeItem> record = page->bounded_item();
+                    boost::intrusive_ptr<TreeItem> record = page->item_link();
                     assert(record);
                     QString home = record->field("home");
                     QUrl homeurl = QUrl(home);
 
                     if(homeurl.isValid()
-                       && homeurl != page->url()
+                    && homeurl != page->url()
                       ) {
                         record->field("url", home);
-                        page->item_registered_imperative_equip(record)->activate(); // page->load(record, true);
+                        page->item_registered_setup_binder(record)->activate(); // page->load(record, true);
                     }
                 }
             }
@@ -963,7 +965,7 @@ namespace browser {
 
         if(item->page_valid() && _browsers.size() > 0) {
             for(auto browser : _browsers) {
-                if(browser->tabmanager()->indexOf(item->bounded_page()->view()) != -1) {
+                if(browser->tabmanager()->indexOf(item->page_link()->view()) != -1) {
                     _current_browser = browser;
                     item->activate();
                 }
@@ -1188,7 +1190,7 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    WebView *Entrance::item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it)
+    WebView *Entrance::item_registered_setup_binder(boost::intrusive_ptr<TreeItem> _it)
     {
         assert(_it);
         assert(!_it->is_lite());
@@ -1230,7 +1232,7 @@ namespace browser {
 
                     if(_view == nullptr && _browser) {
                         //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                        _view = _browser->tabmanager()->item_registered_imperative_equip(_it)->bind(); // _browser->invoke_registered_page(_it);
+                        _view = _browser->tabmanager()->item_registered_setup_binder(_it)->bind(); // _browser->invoke_registered_page(_it);
                     } else {
 
                         //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
@@ -1252,7 +1254,7 @@ namespace browser {
                         //                        activator(ar)
                         //                    );
 
-                        _view->page()->item_registered_imperative_equip(_it);
+                        _view->page()->item_registered_setup_binder(_it);
 
 
                         //                    }

@@ -125,7 +125,7 @@ namespace browser {
 
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
-        WebView *item_registered_imperative_equip(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
+        WebView *item_registered_setup_binder(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
 
         //        template<typename url_type>
         void activate(const QUrl &_find_url

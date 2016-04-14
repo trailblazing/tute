@@ -73,7 +73,7 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
         auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
 
         if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
-            RecordScreen *record_screen = item->bounded_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+            RecordScreen *record_screen = item->page_link()->view()->record_controller()->tabmanager()->browser()->record_screen();
             QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
             // temporary setting
             object->show();
@@ -117,7 +117,7 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
         auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
 
         if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
-            RecordScreen *record_screen = item->bounded_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+            RecordScreen *record_screen = item->page_link()->view()->record_controller()->tabmanager()->browser()->record_screen();
             QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                                     ); // temporary setting
             object->show();
@@ -246,7 +246,7 @@ void WindowSwitcher::restoreFocusWidget()
             auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
 
             if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
-                RecordScreen *_record_screen = item->bounded_page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+                RecordScreen *_record_screen = item->page_link()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 
                 QWidget *object = static_cast<QWidget *>(_record_screen);              // globalparameters.record_screens()[0]

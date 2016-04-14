@@ -1,6 +1,9 @@
 #include <QObject>
 #include <QMessageBox>
 #include <QDomElement>
+
+//#include <QDomDocument>
+
 #include <map>
 
 #include "main.h"
@@ -23,22 +26,66 @@ extern GlobalParameters globalparameters;
 
 
 Record::Record()
-    : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
-    , _lite_flag(true)
+    : // boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
+      _lite_flag(true)
     , _text("")
     , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
+    dom_from_record_impl = [&](std::shared_ptr<QDomDocument> doc) ->QDomElement  {
+        QDomElement elem = doc->createElement("record");
+
+        // Перебираются допустимые имена полей, доступных для сохранения
+        QStringList available_field_list = fixedparameters._record_natural_field;
+        // int available_field_list_size = available_field_list.size();
+
+        for(int j = 0; j <  available_field_list.size(); ++j)
+        {
+            QString field_name = available_field_list.at(j);
+
+            // Устанавливается значение поля как атрибут DOM-узла
+            if(is_natural_field_exists(field_name))
+                elem.setAttribute(field_name, natural_field_source(field_name));
+        }
+
+        // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
+        if(_attach_table_data->size() > 0)
+            elem.appendChild(_attach_table_data->dom_from_data(doc));
+
+        return elem;
+    };
 }
 
 Record::Record(QMap<QString, QString> _field_data)
-    : boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
-    , _lite_flag(true)
+    : // boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
+      _lite_flag(true)
     , _field_data(_field_data)
     , _text("")
     , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))
 {
     //    liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
+    dom_from_record_impl = [&](std::shared_ptr<QDomDocument> doc) ->QDomElement  {
+        QDomElement elem = doc->createElement("record");
+
+        // Перебираются допустимые имена полей, доступных для сохранения
+        QStringList available_field_list = fixedparameters._record_natural_field;
+        // int available_field_list_size = available_field_list.size();
+
+        for(int j = 0; j <  available_field_list.size(); ++j)
+        {
+            QString field_name = available_field_list.at(j);
+
+            // Устанавливается значение поля как атрибут DOM-узла
+            if(is_natural_field_exists(field_name))
+                elem.setAttribute(field_name, natural_field_source(field_name));
+        }
+
+        // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
+        if(_attach_table_data->size() > 0)
+            elem.appendChild(_attach_table_data->dom_from_data(doc));
+
+        return elem;
+    };
 }
 
 #ifdef _with_record_table
@@ -304,33 +351,55 @@ void Record::dom_to_record(const QDomElement &_dom_element)
 
 QDomElement Record::dom_from_record() const
 {
+    //    dom_from_record = [&](std::shared_ptr<QDomDocument> doc) ->QDomElement const {
+    //        QDomElement elem = doc->createElement("record");
+
+    //        // Перебираются допустимые имена полей, доступных для сохранения
+    //        QStringList available_field_list = fixedparameters._record_natural_field;
+    //        // int available_field_list_size = available_field_list.size();
+
+    //        for(int j = 0; j <  available_field_list.size(); ++j) {
+    //            QString field_name = available_field_list.at(j);
+
+    //            // Устанавливается значение поля как атрибут DOM-узла
+    //            if(is_natural_field_exists(field_name))
+    //                elem.setAttribute(field_name, natural_field_source(field_name));
+    //        }
+
+    //        // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
+    //        if(_attach_table_data->size() > 0)
+    //            elem.appendChild(_attach_table_data->dom_from_data(doc));
+
+    //        return elem;
+    //    };
+
     std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-    return dom_from_record(doc);
+    return dom_from_record_impl(doc);
 }
 
 
-QDomElement Record::dom_from_record(std::shared_ptr<QDomDocument> doc) const
-{
-    QDomElement elem = doc->createElement("record");
+//QDomElement Record::dom_from_record(std::shared_ptr<QDomDocument> doc) const
+//{
+//    QDomElement elem = doc->createElement("record");
 
-    // Перебираются допустимые имена полей, доступных для сохранения
-    QStringList available_field_list = fixedparameters._record_natural_field;
-    // int available_field_list_size = available_field_list.size();
+//    // Перебираются допустимые имена полей, доступных для сохранения
+//    QStringList available_field_list = fixedparameters._record_natural_field;
+//    // int available_field_list_size = available_field_list.size();
 
-    for(int j = 0; j <  available_field_list.size(); ++j) {
-        QString field_name = available_field_list.at(j);
+//    for(int j = 0; j <  available_field_list.size(); ++j) {
+//        QString field_name = available_field_list.at(j);
 
-        // Устанавливается значение поля как атрибут DOM-узла
-        if(is_natural_field_exists(field_name))
-            elem.setAttribute(field_name, natural_field_source(field_name));
-    }
+//        // Устанавливается значение поля как атрибут DOM-узла
+//        if(is_natural_field_exists(field_name))
+//            elem.setAttribute(field_name, natural_field_source(field_name));
+//    }
 
-    // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
-    if(_attach_table_data->size() > 0)
-        elem.appendChild(_attach_table_data->dom_from_data(doc));
+//    // К элементу записи прикрепляется элемент таблицы приаттаченных файлов, если таковые есть
+//    if(_attach_table_data->size() > 0)
+//        elem.appendChild(_attach_table_data->dom_from_data(doc));
 
-    return elem;
-}
+//    return elem;
+//}
 
 
 //QDomElement Record::export_to_dom(QDomDocument *doc) const
@@ -356,6 +425,11 @@ QDomElement Record::dom_from_record(std::shared_ptr<QDomDocument> doc) const
 //    return elem;
 //}
 
+
+bool Record::is_crypt() const
+{
+    return field("crypt") == "1";
+}
 
 bool Record::is_empty() const
 {
