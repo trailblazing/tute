@@ -56,13 +56,13 @@ public:
         int move_dn(void);
         void break_linker();
     private:
+
+        boost::intrusive_ptr<TreeItem>  _parent_item;
+        boost::intrusive_ptr<TreeItem>  _host;
         std::function<boost::intrusive_ptr<linker> (boost::intrusive_ptr<TreeItem>     _parent
                                                     , boost::intrusive_ptr<TreeItem>   _self_host
                                                     , int pos, int mode
                                                    )> child_move_unique;
-
-        boost::intrusive_ptr<TreeItem>  _parent_item;
-        boost::intrusive_ptr<TreeItem>  _host;
     };
 
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor

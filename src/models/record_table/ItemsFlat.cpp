@@ -1398,6 +1398,214 @@ ItemsFlat::linker::linker(boost::intrusive_ptr<TreeItem>  new_host_parent, boost
 
     return new_host;
 }())
+, child_move_unique(
+    // Добавление новой записи
+    // Метод только добавляет во внутреннее представление новые данные,
+    // сохраняет текст файла и обновляет данные на экране.
+    // Сохранения дерева XML-данных на диск в этом методе нет.
+    // Допустимые режимы:
+    // ADD_NEW_RECORD_TO_END - в конец списка, pos игнорируется
+    // ADD_NEW_RECORD_BEFORE - перед указанной позицией, pos - номер позиции
+    // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
+    // Метод принимает "тяжелый" объект записи
+    // Объект для вставки приходит как незашифрованным, так и зашифрованным
+    [&](boost::intrusive_ptr<TreeItem>     _parent
+        , boost::intrusive_ptr<TreeItem>   _self_host
+        , int pos, int mode
+)->boost::intrusive_ptr<TreeItem::linker> { // child_insert? does not set parent pointer?
+    boost::intrusive_ptr<TreeItem::linker> result(nullptr);
+
+    //        boost::intrusive_ptr<TreeItem> _child_item(this);
+
+    //            assert(_self != _parent);
+
+    if(_self_host != _parent)
+    {
+
+        int found = 0;
+
+        for(auto it : _parent->_child_linkers) { //= _parent->_child_linkers.begin(); it != _parent->_child_linkers.end(); it++) {
+            if(it->host() == _self_host) {
+                found++;
+
+                if(found == 1)
+                    result = it;
+                else
+                    _parent->_child_linkers.removeOne(it);
+            }
+        }
+
+        //        if(0 == found) {
+        // Запись добавляется в таблицу конечных записей
+        int insert_position = -1;
+
+
+        // get shadow_branch
+        //    TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
+
+        if(
+            0 == found  // !item_direct(_source_item)
+        ) {  //       && !shadow_branch->is_record_id_exists(item->field("id"))
+
+            //                // deprecated by _parent_target->remove
+            //                auto _origin_parent = _source_item->parent();
+
+            //                if(_origin_parent && _origin_parent != _parent_target) {
+            //                    //                    if(_parent != this) {
+            //                    _origin_parent->remove(_source_item);
+
+            //                    //                    while(_origin_parent->remove_self_as_empty()) {
+            //                    //                        _origin_parent = _origin_parent->parent();
+
+            //                    //                        if(!_origin_parent)break;
+            //                    //                    }
+
+            //                    //                    }
+            //                }
+
+            // !!!, this make item move to new branch, remember to remove orignal one
+            //                    _child_item->_parent_item = _parent_target; // _source_item->parent(boost::intrusive_ptr<TreeItem>(_parent_target));    //_item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));
+
+
+
+
+
+
+
+
+            //                    if(_host->up_linker() != this)_host->up_linker(this);
+
+
+
+
+
+
+
+
+
+            //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
+
+
+
+            // Выясняется, есть ли в дереве запись с указанным ID
+            // Если есть, то генерируются новые ID для записи и новая директория хранения
+            // Если нет, то это значит что запись была вырезана, но хранится в буфере,
+            // и ее желательно вставить с прежним ID и прежним именем директории
+            // It turns out, is there a record of a tree with specified ID
+            // If there is, then the generated ID for the new record and the new storage directory
+            // If not, then it means that the recording was cut out, but stored in a buffer
+            // And it is desirable to stick with the same ID and the same name directory
+            //        KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
+
+            if(0 == _self_host->field("id").length()) { //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
+                // Создается новая запись (ID был пустой) или
+                // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
+                // Create a new record (ID was empty) or
+                // Record with ID in a tree there, so stand the new ID and a new storage directory (not to overwrite existing)
+
+                QString id = get_unical_id();
+
+                // Store directory entries and files    // Директория хранения записи и файл
+                if(_self_host->field("dir") == "")_self_host->field("dir", id); // get_unical_id()
+
+                if(_self_host->field("file") == "")_self_host->field("file", "text.html");
+
+                // Unique ID of XML records             // Уникальный идентификатор XML записи
+                //            QString id = get_unical_id();
+                _self_host->field("id", id);
+            } else {
+                if(_self_host->field("dir") == "")_self_host->field("dir", _self_host->field("id")); // get_unical_id()
+
+                if(_self_host->field("file") == "")_self_host->field("file", "text.html");
+            }
+
+            // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
+            if(_self_host->is_lite()) {
+                _self_host->to_fat();
+                //            critical_error("ItemsFlat::insert_new_item() can't insert lite record");
+            }
+
+            // В список переданных полей добавляются вычислимые в данном месте поля
+            if(_self_host->field("ctime") == "") {
+                // Время создания данной записи
+                QDateTime ctime_dt = QDateTime::currentDateTime();
+                QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
+                _self_host->field("ctime", ctime);
+
+            }
+
+            // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
+            bool is_crypt = false;
+
+            //        if(_tree_item) {
+            //                if(_is_crypt) { //
+            if(_parent->field("crypt") == "1") {
+                if(globalparameters.crypt_key().length() > 0)
+                    is_crypt = true;
+                else
+                    critical_error("ItemsFlat::insert_new_item() : Can not insert data to crypt branch. Password not setted.");
+            }
+
+            //        }
+
+            // Запись полновесных данных с учетом шифрации
+            if(is_crypt && _self_host->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
+                _self_host->to_encrypt_and_save_fat();
+            } else if(!is_crypt && _self_host->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
+                _self_host->to_decrypt_and_save_fat();
+            } else {
+                _self_host->push_fat_attributes();
+            }
+
+            // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
+            _self_host->to_lite();
+
+            //        //        // Запись добавляется в таблицу конечных записей
+            //        //        int insertPos = -1;
+
+            //        item->is_registered_to_record_controller_and_tabmanager(true);
+
+            if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
+                _parent->_child_linkers << this;    //  _self;
+                //            insert_position = _child_items.size() - 1;
+            } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
+                _parent->_child_linkers.insert(pos, this);
+                //            insert_position = pos;
+            } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
+                _parent->_child_linkers.insert(pos + 1, this);
+                //            insert_position = pos + 1;
+            }
+
+            //                    insert_position =  _parent->sibling_order(_self);  //_child_item->record_linker()->sibling_order();   // ItemsFlat::
+            //                    _parent_target->sibling_order(_source_item);
+            //                    qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
+
+            // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
+
+        }
+
+        //                else {
+        //                    insert_position = _parent->sibling_order(_self);  // _child_item->sibling_order();    // ItemsFlat::
+        //                    //                    _parent_target->sibling_order(_source_item);
+        //                }
+
+        insert_position = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == _self_host->id();});
+        qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
+        assert(_parent->_child_linkers[insert_position] == this);
+
+        if(_parent->_child_linkers.contains(this))result = this;
+
+        //        }
+    }
+
+    //    else {
+    //        result = boost::intrusive_ptr<TreeItem>(this);
+    //    }
+
+    return result;    // insert_position;
+
+}
+)
 {
     //    [ & ]()->boost::intrusive_ptr<TreeItem> {
     //        this->_parent_item = _parent;
@@ -1415,212 +1623,9 @@ ItemsFlat::linker::linker(boost::intrusive_ptr<TreeItem>  new_host_parent, boost
 
 
 
-        // Добавление новой записи
-        // Метод только добавляет во внутреннее представление новые данные,
-        // сохраняет текст файла и обновляет данные на экране.
-        // Сохранения дерева XML-данных на диск в этом методе нет.
-        // Допустимые режимы:
-        // ADD_NEW_RECORD_TO_END - в конец списка, pos игнорируется
-        // ADD_NEW_RECORD_BEFORE - перед указанной позицией, pos - номер позиции
-        // ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
-        // Метод принимает "тяжелый" объект записи
-        // Объект для вставки приходит как незашифрованным, так и зашифрованным
-        this->child_move_unique = [&](boost::intrusive_ptr<TreeItem>     _parent
-                                      , boost::intrusive_ptr<TreeItem>   _self_host
-                                      , int pos, int mode
-        )->boost::intrusive_ptr<TreeItem::linker> { // child_insert? does not set parent pointer?
-            boost::intrusive_ptr<TreeItem::linker> result(nullptr);
 
-            //        boost::intrusive_ptr<TreeItem> _child_item(this);
+        //        this->child_move_unique =
 
-            //            assert(_self != _parent);
-
-            if(_self_host != _parent)
-            {
-
-                int found = 0;
-
-                for(auto it : _parent->_child_linkers) { //= _parent->_child_linkers.begin(); it != _parent->_child_linkers.end(); it++) {
-                    if(it->host() == _self_host) {
-                        found++;
-
-                        if(found == 1)
-                            result = it;
-                        else
-                            _parent->_child_linkers.removeOne(it);
-                    }
-                }
-
-                //        if(0 == found) {
-                // Запись добавляется в таблицу конечных записей
-                int insert_position = -1;
-
-
-                // get shadow_branch
-                //    TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
-
-                if(
-                    0 == found  // !item_direct(_source_item)
-                ) {  //       && !shadow_branch->is_record_id_exists(item->field("id"))
-
-                    //                // deprecated by _parent_target->remove
-                    //                auto _origin_parent = _source_item->parent();
-
-                    //                if(_origin_parent && _origin_parent != _parent_target) {
-                    //                    //                    if(_parent != this) {
-                    //                    _origin_parent->remove(_source_item);
-
-                    //                    //                    while(_origin_parent->remove_self_as_empty()) {
-                    //                    //                        _origin_parent = _origin_parent->parent();
-
-                    //                    //                        if(!_origin_parent)break;
-                    //                    //                    }
-
-                    //                    //                    }
-                    //                }
-
-                    // !!!, this make item move to new branch, remember to remove orignal one
-                    //                    _child_item->_parent_item = _parent_target; // _source_item->parent(boost::intrusive_ptr<TreeItem>(_parent_target));    //_item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));
-
-
-
-
-
-
-
-
-                    //                    if(_host->up_linker() != this)_host->up_linker(this);
-
-
-
-
-
-
-
-
-
-                    //        if(_tree_item) qDebug() << "RecordTable::insert_new_record() : Insert new record to branch " << _tree_item->all_fields();
-
-
-
-                    // Выясняется, есть ли в дереве запись с указанным ID
-                    // Если есть, то генерируются новые ID для записи и новая директория хранения
-                    // Если нет, то это значит что запись была вырезана, но хранится в буфере,
-                    // и ее желательно вставить с прежним ID и прежним именем директории
-                    // It turns out, is there a record of a tree with specified ID
-                    // If there is, then the generated ID for the new record and the new storage directory
-                    // If not, then it means that the recording was cut out, but stored in a buffer
-                    // And it is desirable to stick with the same ID and the same name directory
-                    //        KnowTreeModel *dataModel = static_cast<KnowTreeModel *>(find_object<KnowTreeView>(knowtreeview_singleton_name)->model());
-
-                    if(0 == _self_host->field("id").length()) { //           || dataModel->isRecordIdExists(record->getField("id"))  // ? Is this a correct policy? can we only create a pure view?
-                        // Создается новая запись (ID был пустой) или
-                        // Запись с таким ID в дереве есть, поэтому выделяются новый ID и новая директория хранения (чтобы не затереть существующие)
-                        // Create a new record (ID was empty) or
-                        // Record with ID in a tree there, so stand the new ID and a new storage directory (not to overwrite existing)
-
-                        QString id = get_unical_id();
-
-                        // Store directory entries and files    // Директория хранения записи и файл
-                        if(_self_host->field("dir") == "")_self_host->field("dir", id); // get_unical_id()
-
-                        if(_self_host->field("file") == "")_self_host->field("file", "text.html");
-
-                        // Unique ID of XML records             // Уникальный идентификатор XML записи
-                        //            QString id = get_unical_id();
-                        _self_host->field("id", id);
-                    } else {
-                        if(_self_host->field("dir") == "")_self_host->field("dir", _self_host->field("id")); // get_unical_id()
-
-                        if(_self_host->field("file") == "")_self_host->field("file", "text.html");
-                    }
-
-                    // The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
-                    if(_self_host->is_lite()) {
-                        _self_host->to_fat();
-                        //            critical_error("ItemsFlat::insert_new_item() can't insert lite record");
-                    }
-
-                    // В список переданных полей добавляются вычислимые в данном месте поля
-                    if(_self_host->field("ctime") == "") {
-                        // Время создания данной записи
-                        QDateTime ctime_dt = QDateTime::currentDateTime();
-                        QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
-                        _self_host->field("ctime", ctime);
-
-                    }
-
-                    // Выясняется в какой ветке вставляется запись - в зашифрованной или нет
-                    bool is_crypt = false;
-
-                    //        if(_tree_item) {
-                    //                if(_is_crypt) { //
-                    if(_parent->field("crypt") == "1") {
-                        if(globalparameters.crypt_key().length() > 0)
-                            is_crypt = true;
-                        else
-                            critical_error("ItemsFlat::insert_new_item() : Can not insert data to crypt branch. Password not setted.");
-                    }
-
-                    //        }
-
-                    // Запись полновесных данных с учетом шифрации
-                    if(is_crypt && _self_host->field("crypt") != "1") {       // В зашифрованную ветку незашифрованную запись
-                        _self_host->to_encrypt_and_save_fat();
-                    } else if(!is_crypt && _self_host->field("crypt") == "1") { // В незашифрованную ветку зашифрованную запись
-                        _self_host->to_decrypt_and_save_fat();
-                    } else {
-                        _self_host->push_fat_attributes();
-                    }
-
-                    // Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
-                    _self_host->to_lite();
-
-                    //        //        // Запись добавляется в таблицу конечных записей
-                    //        //        int insertPos = -1;
-
-                    //        item->is_registered_to_record_controller_and_tabmanager(true);
-
-                    if(mode == ADD_NEW_RECORD_TO_END) {         // В конец списка
-                        _parent->_child_linkers << this;    //  _self;
-                        //            insert_position = _child_items.size() - 1;
-                    } else if(mode == ADD_NEW_RECORD_BEFORE) {  // Перед указанной позицией
-                        _parent->_child_linkers.insert(pos, this);
-                        //            insert_position = pos;
-                    } else if(mode == ADD_NEW_RECORD_AFTER) {   // После указанной позиции
-                        _parent->_child_linkers.insert(pos + 1, this);
-                        //            insert_position = pos + 1;
-                    }
-
-                    //                    insert_position =  _parent->sibling_order(_self);  //_child_item->record_linker()->sibling_order();   // ItemsFlat::
-                    //                    _parent_target->sibling_order(_source_item);
-                    //                    qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
-
-                    // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
-
-                }
-
-                //                else {
-                //                    insert_position = _parent->sibling_order(_self);  // _child_item->sibling_order();    // ItemsFlat::
-                //                    //                    _parent_target->sibling_order(_source_item);
-                //                }
-
-                insert_position = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == _self_host->id();});
-                qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
-                assert(_parent->_child_linkers[insert_position] == this);
-
-                if(_parent->_child_linkers.contains(this))result = this;
-
-                //        }
-            }
-
-            //    else {
-            //        result = boost::intrusive_ptr<TreeItem>(this);
-            //    }
-
-            return result;    // insert_position;
-
-        };
 
 
         //    if(_parent_item && _parent_item != _new_parent) {

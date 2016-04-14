@@ -769,7 +769,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
                 deleted_linker = model_delete_item(_source_item->up_linker());
 
                 update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
-            } else {    // should not use
+            } else if(_source_item->parent()) {   // should not use
                 //            _source_item->self_remove_from_parent();    //
                 deleted_linker = _source_item->parent()->remove(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
             }
