@@ -415,7 +415,9 @@ DISTFILES   +=          \
     src/views/browser/browser.icns \
     src/views/browser/browser.rc \
     src/views/browser/Info_mac.plist \
-    README.md
+    README.md \
+    doc/binder_02.png \
+    doc/up_linker.png
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
