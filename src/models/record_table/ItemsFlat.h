@@ -20,10 +20,13 @@ class MetaEditor;
 
 //extern const int add_new_record_to_end;
 
-#define ADD_NEW_RECORD_TO_END 0
-#define ADD_NEW_RECORD_BEFORE 1
-#define ADD_NEW_RECORD_AFTER 2
+//#define ADD_NEW_RECORD_TO_END 0
+//#define ADD_NEW_RECORD_BEFORE 1
+//#define ADD_NEW_RECORD_AFTER 2
 
+extern const int add_new_record_to_end;
+extern const int add_new_record_before;
+extern const int add_new_record_after;
 
 class ItemsFlat {
 
@@ -33,7 +36,24 @@ public:
     struct linker : public boost::intrusive_ref_counter<linker, boost::thread_safe_counter> {
     public:
 
-        linker(boost::intrusive_ptr<TreeItem>  new_host_parent, boost::intrusive_ptr<TreeItem>  new_host, int pos = 0, int mode = ADD_NEW_RECORD_BEFORE);        //        boost::intrusive_ptr<TreeItem> parent(boost::intrusive_ptr<TreeItem> it, int _pos = 0, int _mode = ADD_NEW_RECORD_BEFORE);
+        typedef std::function<boost::intrusive_ptr<TreeItem>()>     item_exist;
+        typedef std::function<const boost::intrusive_ptr<linker>()> linker_exist;
+        typedef std::function<bool()>                               linker_self_reference;
+        typedef std::function<bool(boost::intrusive_ptr<TreeItem>)> item_consistency;
+
+
+        typedef std::tuple <
+        item_exist
+        , item_exist
+        , linker_exist
+        , linker_exist
+        , linker_self_reference
+        , linker_self_reference
+        , item_consistency
+        , item_consistency
+        > status_type;
+
+        linker(boost::intrusive_ptr<TreeItem> host_parent_item, boost::intrusive_ptr<TreeItem> host_item);         // , int pos = 0, int mode = ADD_NEW_RECORD_BEFORE       boost::intrusive_ptr<TreeItem> parent(boost::intrusive_ptr<TreeItem> it, int _pos = 0, int _mode = ADD_NEW_RECORD_BEFORE);
 
         ~linker();  //        boost::intrusive_ptr<TreeItem> remove(boost::intrusive_ptr<TreeItem> _source_item);
 
@@ -41,7 +61,11 @@ public:
         boost::intrusive_ptr<TreeItem> host_parent()const;  // {return _parent_item;}
         boost::intrusive_ptr<TreeItem> host()const;   // {return _child_item;}
 
-        boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem>  new_host_parent, int pos = 0, int mode = ADD_NEW_RECORD_BEFORE);
+
+        void host_parent(boost::intrusive_ptr<TreeItem> &&p);
+        void host(boost::intrusive_ptr<TreeItem> &&h);
+
+        boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem> parent_item, int pos = 0, int mode = add_new_record_before);    //
         //        // Удаление потомков, начиная с позиции position массива childItems
         //        bool remove(int position, int count);
 
@@ -55,14 +79,28 @@ public:
         int move_up(void);
         int move_dn(void);
         void break_linker();
+
+        bool integrity_internal()const;
+        bool integrity_external(boost::intrusive_ptr<TreeItem> host_, boost::intrusive_ptr<TreeItem> host_parent_)const;
+        status_type state()const {return _status;}
+
+
     private:
 
-        boost::intrusive_ptr<TreeItem>  _parent_item;
+
+
+
+
+        boost::intrusive_ptr<TreeItem>  _host_parent;
         boost::intrusive_ptr<TreeItem>  _host;
-        std::function<boost::intrusive_ptr<linker> (boost::intrusive_ptr<TreeItem>     _parent
-                                                    , boost::intrusive_ptr<TreeItem>   _self_host
-                                                    , int pos, int mode
-                                                   )> child_move_unique;
+
+        std::function<boost::intrusive_ptr<linker> (boost::intrusive_ptr<TreeItem>, int, int)> child_move_unique;  // , boost::intrusive_ptr<TreeItem>   _self_host
+
+        //        status_type state_impl();   // is_closure
+        std::function<bool()> integrity; //        bool integrity();
+
+        status_type                     _status;
+        friend class TreeItem;
     };
 
     //    RecordTable(boost::intrusive_ptr<TreeItem> _tree_item); // a kind of copy constructor
@@ -94,19 +132,20 @@ public:
     boost::intrusive_ptr<TreeItem> item_lite(int pos) const;
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
 
+    boost::intrusive_ptr<linker> linker_direct(int pos)const;
 
-    QList<boost::intrusive_ptr<linker>> items_direct(const QString &name)const;
-    QList<boost::intrusive_ptr<linker>> items_direct(std::function<bool(boost::intrusive_ptr<const linker>)> _substitute_condition)const;
+    QList<boost::intrusive_ptr<TreeItem>> items_direct(const QString &name)const;
+    QList<boost::intrusive_ptr<TreeItem>> items_direct(const std::function<bool(boost::intrusive_ptr<const linker>)> &_substitute_condition)const;
 
 
 
-    boost::intrusive_ptr<linker> item_direct(int pos) const;
+    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(int pos) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id) const;
-    boost::intrusive_ptr<linker> item_direct(const QUrl &url) const;
+    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem> item) const;
-    boost::intrusive_ptr<linker> item_direct(std::function<bool(boost::intrusive_ptr<const linker>)> _substitute_condition)const;
+    boost::intrusive_ptr<TreeItem> item_direct(const std::function<bool(boost::intrusive_ptr<const linker>)> &_substitute_condition)const;
     //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id)const;
 
@@ -121,7 +160,7 @@ public:
     int count_direct(void) const;
 
     //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
-    void dom_to_records(const QDomElement &dom_model);
+    void dom_to_itemsflat(const QDomElement &dom_model);
 
     // Функция создания DOM-документа из данных таблицы конечных записей
     //    QDomElement export_to_dom(QDomDocument *doc) const;
@@ -137,15 +176,15 @@ public:
 
 
     void fields(int pos, QMap<QString, QString> edit_fields);
-    boost::intrusive_ptr<TreeItem> contains_direct(boost::intrusive_ptr<TreeItem> _item)const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const;
     //    bool remove(int i);
     //    bool remove(QString id);
-    boost::intrusive_ptr<linker> remove(boost::intrusive_ptr<linker> _to_be_removed_linker);
+    boost::intrusive_ptr<linker> delete_permanent_recursive(boost::intrusive_ptr<linker> _to_be_removed_linker);
 
 
     //    int sibling_order(QString id) const;
     //    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
-    int sibling_order(std::function<bool(boost::intrusive_ptr<const linker>)> _equal)const;
+    int sibling_order(const std::function<bool(boost::intrusive_ptr<const linker>)> &_equal)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -172,11 +211,11 @@ public:
 
 
     //    int direct_count()const {return _child_items.size();}
-    void parent();
-    void duplicate_remove();
+    //    void parent();
+    void remove_duplicated();
     bool is_empty() const;
-    QList<boost::intrusive_ptr<linker> > remove(int position, int count);
-
+    QList<boost::intrusive_ptr<linker> > delete_permanent_recursive(int position, int count);
+    void traverse(const std::function< void(boost::intrusive_ptr<linker>)> &operation);
 
 protected:
 

@@ -19,17 +19,14 @@ class QGridLayout;
 class QLabel;
 class QCheckBox;
 class QProgressDialog;
-
-class KnowModel;
+class ItemsFlat;
 class TreeItem;
-
+class KnowModel;
 class FindTableWidget;
-
 class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
-class ItemsFlat;
-class TreeItem;
+
 class RecordController;
 class TreeScreen;
 
@@ -108,6 +105,36 @@ signals:
 
 private:
 
+    void setup_navigate(void);
+    void assembly_navigate(void);
+
+    void setup_findtext_and_button(void);
+    void assembly_findtext_and_button(void);
+
+    void setup_combooption(void);
+    void assembly_combooption(void);
+
+    void setup_closebutton(void);
+    void assembly_closebutton(void);
+
+    void setup_wherefind_line(void);
+    void assembly_wherefind_line(void);
+
+    void setup_ui(void);
+    void assembly(void);
+
+    void setup_signals(void);
+
+    void if_find_in_field(QString fieldname, int state);
+
+    boost::intrusive_ptr<TreeItem> find_start(void);
+
+    QList<boost::intrusive_ptr<ItemsFlat::linker>> &find_recursive(QList<boost::intrusive_ptr<ItemsFlat::linker>> &_result_list, boost::intrusive_ptr<TreeItem> _candidate_pages, boost::intrusive_ptr<TreeItem> curritem);
+
+    bool find_in_text_process(const QString &text);
+
+    void switch_tools_expand(bool flag);
+
     //    QIcon _reloadicon;
     //    QIcon _stopicon;
     TreeScreen      *_tree_screen;
@@ -158,43 +185,15 @@ private:
     //    std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
     browser::ToolbarSearch  *_toolbarsearch;    //    QLineEdit *_findtext;     //    QStackedWidget *_lineedits;
 
-    void setup_navigate(void);
-    void assembly_navigate(void);
-
-    void setup_findtext_and_button(void);
-    void assembly_findtext_and_button(void);
-
-    void setup_combooption(void);
-    void assembly_combooption(void);
-
-    void setup_closebutton(void);
-    void assembly_closebutton(void);
-
-    void setup_wherefind_line(void);
-    void assembly_wherefind_line(void);
-
-    void setup_ui(void);
-    void assembly(void);
-
-    void setup_signals(void);
-
-    void if_find_in_field(QString fieldname, int state);
-
-    boost::intrusive_ptr<TreeItem> find_start(void);
-    boost::intrusive_ptr<TreeItem> find_recursive(boost::intrusive_ptr<TreeItem> curritem, boost::intrusive_ptr<TreeItem> _candidate_pages);
-    bool find_in_text_process(const QString &text);
-
-    void switch_tools_expand(bool flag);
-
     // Поля, где нужно искать (Заголовок, текст, теги...)
     QMap<QString, bool> _search_area;
 
     // Список слов, которые нужно искать
-    QStringList _search_word_list;
+    QStringList         _search_word_list;
 
-    int         _total_progress_counter;
+    int                 _total_progress_counter;
 
-    int         _cancel_flag;
+    int                 _cancel_flag;
 
 };
 

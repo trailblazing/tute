@@ -52,7 +52,7 @@
 #include <QWebEngineSettings>
 #include "controllers/record_table/RecordController.h"
 //#include "tabmanager.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "views/tree/TreeScreen.h"
 
@@ -106,39 +106,39 @@ namespace browser {
                 , Qt::WindowFlags   flags
                );
 
-        Browser(QUrl const &url         // Record *const record
-                , TreeScreen        *_tree_screen
-                , FindScreen        *_find_screen
-                , MetaEditor        *_editor_screen
-                , HidableTabWidget  *_vtabwidget
-                , MainWindow        *_main_window
-                , Entrance          *_entrance   //, QDockWidget *parent
-                , const QString     &style_source
-                , Qt::WindowFlags   flags = 0
-               );
+        //        Browser(QUrl const &url         // Record *const record
+        //                , TreeScreen        *_tree_screen
+        //                , FindScreen        *_find_screen
+        //                , MetaEditor        *_editor_screen
+        //                , HidableTabWidget  *_vtabwidget
+        //                , MainWindow        *_main_window
+        //                , Entrance          *_entrance   //, QDockWidget *parent
+        //                , const QString     &style_source
+        //                , Qt::WindowFlags   flags = 0
+        //               );
 
 
-        Browser(const QByteArray    &state
-                , TreeScreen        *_tree_screen
-                , FindScreen        *_find_screen
-                , MetaEditor        *_editor_screen
-                , HidableTabWidget  *_vtabwidget
-                , MainWindow        *_main_window
-                , Entrance          *_entrance   //, QDockWidget *parent
-                , const QString     &style_source
-                , Qt::WindowFlags   flags = 0
-               );
+        //        Browser(const QByteArray    &state
+        //                , TreeScreen        *_tree_screen
+        //                , FindScreen        *_find_screen
+        //                , MetaEditor        *_editor_screen
+        //                , HidableTabWidget  *_vtabwidget
+        //                , MainWindow        *_main_window
+        //                , Entrance          *_entrance   //, QDockWidget *parent
+        //                , const QString     &style_source
+        //                , Qt::WindowFlags   flags = 0
+        //               );
 
-        Browser(boost::intrusive_ptr<TreeItem> item
-                , TreeScreen        *_tree_screen
-                , FindScreen        *_find_screen
-                , MetaEditor        *_editor_screen  //, RecordController *record_controller
-                , HidableTabWidget  *_vtabwidget
-                , MainWindow        *_main_window
-                , Entrance          *_entrance   //, QDockWidget *parent
-                , const QString     &style_source
-                , Qt::WindowFlags   flags = 0
-               );
+        //        Browser(boost::intrusive_ptr<TreeItem> item
+        //                , TreeScreen        *_tree_screen
+        //                , FindScreen        *_find_screen
+        //                , MetaEditor        *_editor_screen  //, RecordController *record_controller
+        //                , HidableTabWidget  *_vtabwidget
+        //                , MainWindow        *_main_window
+        //                , Entrance          *_entrance   //, QDockWidget *parent
+        //                , const QString     &style_source
+        //                , Qt::WindowFlags   flags = 0
+        //               );
 
         ~Browser();
         QSize sizeHint() const;
@@ -146,16 +146,16 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
-        typedef TreeItem::coupler_delegation coupler_delegation;
-        typedef TreeItem::coupler_delegation::bind_interface          bind_interface;
-        typedef TreeItem::coupler_delegation::activate_interface      activate_interface;
-        typedef TreeItem::coupler_delegation::item_interface  bounded_item_interface;
-        typedef TreeItem::coupler_delegation::page_interface  bounded_page_interface;
+        typedef TreeItem::coupler coupler_delegation;
+        typedef TreeItem::coupler::bind_interface          bind_interface;
+        typedef TreeItem::coupler::activate_interface      activate_interface;
+        typedef TreeItem::coupler::item_interface  bounded_item_interface;
+        typedef TreeItem::coupler::page_interface  bounded_page_interface;
 
-        typedef TreeItem::coupler_delegation::bind_helper         bind_helper;
-        typedef TreeItem::coupler_delegation::activate_helper     activate_helper;
-        typedef TreeItem::coupler_delegation::bounded_item_helper bounded_item_helper;
-        typedef TreeItem::coupler_delegation::bounded_page_helper bounded_page_helper;
+        typedef TreeItem::coupler::bind_helper         bind_helper;
+        typedef TreeItem::coupler::activate_helper     activate_helper;
+        typedef TreeItem::coupler::item_helper bounded_item_helper;
+        typedef TreeItem::coupler::page_helper bounded_page_helper;
 
         TabWidget   *tabWidget() {return _tabmanager;}
         TabWidget   *tabWidget() const {return _tabmanager;}
@@ -176,8 +176,8 @@ namespace browser {
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
-        WebView     *invoke_registered_page(boost::intrusive_ptr<TreeItem> _it);
-        boost::intrusive_ptr<TreeItem> item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> _it);
+        //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
         RecordScreen *record_screen() {return _record_screen;}
         Entrance    *entrance() {return _entrance;}
     public slots:
@@ -240,15 +240,15 @@ namespace browser {
 
     private:
         void init();
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url
-            , TreeScreen::paste_strategy _view_paste_strategy
-            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-        );
+        //        boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url
+        //            , const TreeScreen::paste_strategy &_view_paste_strategy
+        //            , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        //        );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item
-            , TreeScreen::paste_strategy _view_paste_strategy
-            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-        );
+        //        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item
+        //            , const TreeScreen::paste_strategy &_view_paste_strategy
+        //            , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        //        );
 
         void run_script(const QString &style_source);
         void load_default_state();

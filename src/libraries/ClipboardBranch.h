@@ -24,14 +24,15 @@ struct CLIPB_BRANCH_STRUCT {
     // "branch_id" => "125"
     // "parent_id" => "100"
     // "name" => "Название ветки" и т.д.
-    QList< QMap<QString, QString> >                         _branch;
+    QList<QMap<QString, QString>>   _branch;
 
     // Список записей
     //          +----------------------------- Membership of a branch (branch id)   // Принадлежность ветке (branch_id)
     //          |        +-------------------- record   // Запись
     //          |        |
     //          V        V
-    QMultiMap< QString, boost::intrusive_ptr<TreeItem> >    _records;
+    QMultiMap<QString, QDomElement> _records; // boost::intrusive_ptr<TreeItem>
+
 };
 
 Q_DECLARE_METATYPE(CLIPB_BRANCH_STRUCT);
@@ -67,7 +68,7 @@ public:
     QMap<QString, QString> fields_by_parent_id(QString id) const;
 
     // Получение списка записей для указанной ветки
-    QList<boost::intrusive_ptr<TreeItem> > records_by_parent_id(QString id) const;
+    QList<boost::intrusive_ptr<TreeItem>> records_by_parent_id(QString id) const;
     //    QList< boost::intrusive_ptr<TreeItem>> records_by_parent_id_list(std::set<QString> id_list)const;
     QString clip_blank_header_id() const {return _clip_blank_header_id;}
     //    QList<QString> clip_root_items_id_list() const {return _clip_root_items_id_list;}

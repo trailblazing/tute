@@ -8,13 +8,21 @@
 #include <QObject>
 #include <QtXml>
 
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
 
-#include "models/tree/TreeItem.h"
+
+//#include "models/tree/TreeItem.h"
 
 #define TABLE_DATA_ROLE Qt::UserRole+10
 #define ONE_RECORD_ROLE Qt::UserRole+11
 #define RECORD_ID_ROLE  Qt::UserRole+12
 #define SORT_ROLE       Qt::UserRole+13
+
+
+extern const int add_new_record_to_end;
+extern const int add_new_record_before;
+extern const int add_new_record_after;
 
 class Record;
 class ItemsFlat;
@@ -57,7 +65,7 @@ class RecordModel : public QAbstractTableModel
     friend class RecordController;
     friend class browser::Entrance;
 public:
-    RecordModel(RecordController      *_record_controller
+    RecordModel(RecordController        *_record_controller
                 , RecordScreen          *_record_screen
                 , browser::TabWidget    *_tabmanager
                );
@@ -152,7 +160,7 @@ private:
     void on_table_config_changed(void);
 
     // Добавление записей
-    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = ADD_NEW_RECORD_AFTER);
+    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     void remove_child(boost::intrusive_ptr<TreeItem> it);
 

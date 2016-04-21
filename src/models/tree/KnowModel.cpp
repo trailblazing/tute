@@ -21,7 +21,7 @@
 
 
 extern GlobalParameters globalparameters;
-
+extern const char *clipboard_items_root;
 extern AppConfig appconfig;
 const char *global_root_id = "0";
 
@@ -630,9 +630,13 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(boost::intrusive_p
                     , pos   // parent->count_direct()
                     , pos   // parent->count_direct()
                    );
+
+    QMap<QString, QString> data;
+    data["id"] = id;
+    data["name"] = name;
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
-    boost::intrusive_ptr<TreeItem> current = parent->child_add_new(pos, id, name);
+    boost::intrusive_ptr<TreeItem> current = new TreeItem(parent, data, QDomElement(), pos); // parent->child_add_new(pos, id, name);
 
     //    //    // Определяется ссылка на только что созданную ветку
     //    //    boost::intrusive_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
@@ -661,24 +665,36 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(boost::intrusive_p
 boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
-    boost::intrusive_ptr<TreeItem> current = item(_index);
-    boost::intrusive_ptr<TreeItem> parent = current->parent();
-    assert(parent);
+    auto current_item       = item(_index);
+    auto _current_parent    = item(_index.parent());  // current->parent();
+    auto current_parent_    = current_item->parent();
+    assert(_current_parent == current_parent_);
+    assert(_current_parent->id() != "");
+    bool current_parent_valid = [&]() {
+        if(!item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _current_parent->id();}) && _current_parent->id() != "") {
+            intercept_self(_current_parent);
+        }
+        return (index(_current_parent).isValid())
+        && (item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _current_parent->id();}));
+    }();
+
+
+    assert(current_parent_valid);
     //    assert(globalparameters.tree_screen()->know_model_board()->item_by_id(current->id()));
     //    assert(globalparameters.tree_screen()->know_model_board()->item_by_id(parent->id()));
     //    assert(item_by_id(current->id()));
     //    assert(item_by_id(parent->id()));
     //    assert(is_id_exists(current->id()));
-    assert(item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent->id();}));
+    assert(item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _current_parent->id();}));    // what if parent_id is _know_model_board but current model is not?
     boost::intrusive_ptr<TreeItem> _result(nullptr);
-    assert(parent != _source_item);
+    assert(_current_parent != _source_item);
 
-    if(parent) {
+    if(current_parent_valid) {
         //        beginInsertRows(_index.parent()
         //                        , _index  // parent->count_direct()
         //                        , _index  // parent->count_direct()
         //                       );
-        _result = model_move_as_child_impl(parent, _source_item, _index.row());
+        _result = model_move_as_child_impl(_current_parent, _source_item, _index.row());
         //        endInsertRows();
     }
 
@@ -698,10 +714,8 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(const QModelIndex 
     //                    , _index.row()  // parent->count_direct()
     //                    , _index.row()  // parent->count_direct()
     //                   );
-    _result = model_move_as_child_impl(current
-                                       , _source_item
-                                       , 0  // _index.row()
-                                      );
+    _result = model_move_as_child_impl(current, _source_item, 0);  // _index.row()
+
     //    endInsertRows();
     return _result;
 }
@@ -753,42 +767,52 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(const QModelIndex 
 boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode) //    , QString id, QString name
 {
     boost::intrusive_ptr<TreeItem> result(_source_item);    // 1-1
+    auto old_source_parent = _source_item->parent();
 
-    if(!(_source_item->parent() == _parent && _parent->contains_direct(_source_item))) {
+    auto old_source_parent_index = index(old_source_parent);
+
+    if(!(_source_item->parent() == _parent && _parent->contains_direct(_source_item->up_linker()))) {
         auto _index_parent = index(_parent);
 
-        //    beginRemoveRows(_index_parent, _source_item->sibling_order(), _source_item->sibling_order());
+        //        //    beginRemoveRows(_index_parent, _source_item->sibling_order(), _source_item->sibling_order());
 
-        auto _index_origin = index(_source_item);
+        //        auto _index_origin = index(_source_item);
 
 
-        if(_source_item->parent() != _parent) {
-            boost::intrusive_ptr<TreeItem::linker> deleted_linker;
+        //        if(_source_item->parent() != _parent) {
+        //            boost::intrusive_ptr<TreeItem::linker> deleted_linker;
 
-            if(_index_origin.isValid()) {
-                deleted_linker = model_delete_item(_source_item->up_linker());
+        //            if(_index_origin.isValid()) {
+        //                deleted_linker = model_remove(_source_item->up_linker());
 
-                update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
-            } else if(_source_item->parent()) {   // should not use
-                //            _source_item->self_remove_from_parent();    //
-                deleted_linker = _source_item->parent()->remove(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
-            }
+        //                update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
+        //            } else if(_source_item->parent()) {   // should not use
+        //                //            _source_item->self_remove_from_parent();    //
+        //                deleted_linker = _source_item->parent()->delete_permanent(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
+        //            }
 
-            assert(!deleted_linker);
-        }
+        //            //            assert(!deleted_linker);  // means always doed not work!? no, eg. _source_item->parent() == nullptr, so some time it is nullptr, not always
+        //        }
 
-        //    endRemoveRows();
+        //        //    endRemoveRows();
 
-        if(_index_parent.isValid()) {
+        if(_index_parent.isValid() || _parent == _root_item) {
             beginInsertRows(_index_parent
                             , _pos   // parent->count_direct()
                             , _pos   // (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
                            );
 
             result = _source_item->parent(_parent, _pos, _mode)->host();     // add_new_branch(parent, id, name);  // parent->count_direct()
+            assert(index(result).isValid());
 
-            if(result && item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == result->id();}))
+            if(result && item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == result->id();})) {
                 emit_datachanged_signal(index(_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_parent));
+            }
+
+            update_index(_index_parent);
+
+            if(old_source_parent_index.isValid())
+                update_index(old_source_parent_index);
 
             endInsertRows();
         } else {    // should not use
@@ -1168,27 +1192,27 @@ QModelIndex KnowModel::model_move_up_dn(const QModelIndex &_index
 
 // Удаление одной ветки и её подветок
 // Delete one branch and its podvetok / garter
-boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intrusive_ptr<TreeItem::linker> delete_linker)
+boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_permantent(boost::intrusive_ptr<TreeItem::linker> delete_linker)
 {
     auto parent = delete_linker->host_parent();
     auto host = delete_linker->host();
     boost::intrusive_ptr<TreeItem::linker> deleted_linker;
 
-    auto model_child_remove = [&](   // boost::intrusive_ptr<TreeItem> parent_item,
-                                  boost::intrusive_ptr<TreeItem::linker> remove_target_linker  // , int position, int rows, const QModelIndex &parent
+    auto model_delete_permantent_impl = [&](   // boost::intrusive_ptr<TreeItem> parent_item,
+                                            boost::intrusive_ptr<TreeItem::linker> delete_target_linker  // , int position, int rows, const QModelIndex &parent
     )->boost::intrusive_ptr<TreeItem::linker> {
         boost::intrusive_ptr<TreeItem::linker> result(nullptr);
-        boost::intrusive_ptr<TreeItem> host_parent = remove_target_linker->host_parent();  // item(parent);
+        boost::intrusive_ptr<TreeItem> host_parent = delete_target_linker->host_parent();  // item(parent);
 
         if(host_parent)
         {
             QModelIndex parent_index = index(host_parent);
             //    bool success = false;
-            int position = host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == remove_target_linker->host()->id();});
+            int position = host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == delete_target_linker->host()->id();});
             beginRemoveRows(parent_index, position, position);    // + rows - 1
             //            remove_target->self_remove_from_parent();
             //    success
-            result = host_parent->remove(remove_target_linker);
+            result = host_parent->delete_permanent_recursive(delete_target_linker);
             endRemoveRows();
         }
 
@@ -1203,7 +1227,7 @@ boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intru
         if(it->count_direct() > 0)
         {
             for(int i = 0; i < it->count_direct(); i++) {
-                close_tab_recursive(it->item_direct(i)->host());
+                close_tab_recursive(it->item_direct(i));
             }
         }
     };
@@ -1212,60 +1236,60 @@ boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intru
 
     if(host && index(host).isValid()) {
 
-        qDebug() << "Label 1";
+        //        qDebug() << "Label 1";
 
-        //        // Получение узла, который соответствует обрабатываемому индексу
-        //        _item_deleted = _item_delete;
+        //        //        // Получение узла, который соответствует обрабатываемому индексу
+        //        //        _item_deleted = _item_delete;
 
 
-        //        int deleted_position = _item_to_be_deleted->sibling_order(); //item_to_be_deleted->parent()->sibling_order(item_to_be_deleted);
+        //        //        int deleted_position = _item_to_be_deleted->sibling_order(); //item_to_be_deleted->parent()->sibling_order(item_to_be_deleted);
 
-        qDebug() << "Label 2, branch id:" << host->field("id") << "name:" << host->field("name");
+        //        qDebug() << "Label 2, branch id:" << host->field("id") << "name:" << host->field("name");
 
-        // Получение пути к элементу
-        QStringList _delete_path = host->path_absolute();
+        //        // Получение пути к элементу
+        //        QStringList _delete_path = host->path_absolute();
 
-        qDebug() << "Label 3";
+        //        qDebug() << "Label 3";
 
-        // Получение путей ко всем подветкам
-        QList<QStringList> sub_branches_path = host->path_children_all();
+        //        // Получение путей ко всем подветкам
+        //        QList<QStringList> sub_branches_path = host->path_children_all();
 
-        qDebug() << "Label 4";
+        //        qDebug() << "Label 4";
 
-        // Сортировка массива веток по длине пути
-        qSort(sub_branches_path.begin(), sub_branches_path.end()
-        , [](const QStringList & list1, const QStringList & list2) {return list1.size() < list2.size();}    // compare_qstringlist_length
-             );
+        //        // Сортировка массива веток по длине пути
+        //        qSort(sub_branches_path.begin(), sub_branches_path.end()
+        //        , [](const QStringList & list1, const QStringList & list2) {return list1.size() < list2.size();}    // compare_qstringlist_length
+        //             );
 
-        qDebug() << "Label 5";
+        //        qDebug() << "Label 5";
 
-        // Удаление всех таблиц конечных записей для нужных подветок
-        // Удаление всех подчиненных элементов для нужных подветок
-        // Вначале пробегаются самые длинные ветки а потом более короткие
-        for(int i = sub_branches_path.size() - 1; i >= 0; i--) {
-            qDebug() << "Delete subbranch, id:" << item(sub_branches_path.at(i))->field("id") << "name:" << item(sub_branches_path.at(i))->field("name");
+        //        // Удаление всех таблиц конечных записей для нужных подветок
+        //        // Удаление всех подчиненных элементов для нужных подветок
+        //        // Вначале пробегаются самые длинные ветки а потом более короткие
+        //        for(int i = sub_branches_path.size() - 1; i >= 0; i--) {
+        //            qDebug() << "Delete subbranch, id:" << item(sub_branches_path.at(i))->field("id") << "name:" << item(sub_branches_path.at(i))->field("name");
 
-            item(sub_branches_path.at(i))->clear();
-            // ( knowTreeModel->getItem(subbranchespath.at(i)) )->removeAllChildren();
-        }
+        //            item(sub_branches_path.at(i))->clear();
+        //            // ( knowTreeModel->getItem(subbranchespath.at(i)) )->removeAllChildren();
+        //        }
 
-        qDebug() << "Label 6";
+        //        qDebug() << "Label 6";
 
-        // Удаление таблицы конечных записей для самой удаляемой ветки
-        // Удаление подчиненных элементов для самой удаляемой ветки
-        qDebug() << "Delete rootbranch, id:" << item(_delete_path)->field("id") << "name:" << item(_delete_path)->field("name");
+        //        // Удаление таблицы конечных записей для самой удаляемой ветки
+        //        // Удаление подчиненных элементов для самой удаляемой ветки
+        //        qDebug() << "Delete rootbranch, id:" << item(_delete_path)->field("id") << "name:" << item(_delete_path)->field("name");
 
-        item(_delete_path)->clear();
-        // ( knowTreeModel->getItem(path) )->removeAllChildren();
+        //        item(_delete_path)->clear();
+        //        // ( knowTreeModel->getItem(path) )->removeAllChildren();
 
-        qDebug() << "Label 7";
+        //        qDebug() << "Label 7";
 
-        // Удаление ветки на экране, при этом удалятся все подветки
-        qDebug() << "This branch have row() as" << host->count_direct();
-        auto _index_delete = index(host);
+        //        // Удаление ветки на экране, при этом удалятся все подветки
+        //        qDebug() << "This branch have row() as" << host->count_direct();
+        //        auto _index_delete = index(host);
 
-        if(_index_delete.isValid()) qDebug() << "Index valid";
-        else qDebug() << "Index non valid";
+        //        if(_index_delete.isValid()) qDebug() << "Index valid";
+        //        else qDebug() << "Index non valid";
 
 
 
@@ -1277,7 +1301,7 @@ boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intru
 
 
         //        _source_model->beginRemoveRows(_index_to_be_delete.parent(), _index_to_be_delete.row(), _index_to_be_delete.row());
-        deleted_linker = model_child_remove(delete_linker); // if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
+        deleted_linker = model_delete_permantent_impl(delete_linker); // if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
 
 
 
@@ -1365,7 +1389,7 @@ boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intru
             // if(_parent)
             //            _parent->child_remove(_item_deleted);
 
-            while(parent->self_remove_from_parent_as_empty()) {
+            while(deleted_linker = parent->delete_permanent_empty_recursive()) {
                 parent = parent->parent();
 
                 if(!parent)break;
@@ -1380,63 +1404,79 @@ boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_item(boost::intru
 
 
 
-boost::intrusive_ptr<TreeItem> KnowModel::model_duplicated_merge_to_left(
-    std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
-    //    , std::function<KnowModel *()> _source_model
+boost::intrusive_ptr<TreeItem> KnowModel::model_merge_to_left(
+    const std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &, const QString &, const bool)> &_view_delete_permantent
     , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source)
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
+    auto target_on_tree = item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == target->id();});
 
-    //    boost::intrusive_ptr<TreeItem> keep;
-    //    boost::intrusive_ptr<TreeItem> cut;
+    if(target != source
+       && target_on_tree
+      ) {
+        auto old_source_parent = source->parent();
 
-    //    if(target->field("ctime").toULong() > source->field("ctime").toULong()) {
-    //        keep = source;
-    //        cut = target;
-    //    } else {
-    //        keep = target;
-    //        cut = source;
-    //    }
+        auto _index_origin_source = index(source);
 
-    auto _index_target = index(target);
-    auto _index_origin = index(source);
-    beginInsertColumns(_index_target    //.parent()
-                       , target->count_direct() - 1 // target->sibling_order()    // 0
-                       , target->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
-                      );
+        auto _index_target = index(target);
+        //    auto _index_origin = index(source);
 
-    result = target->merge(source);
-    assert(source->count_direct() == 0);
 
-    if(_index_origin.isValid())update_index(_index_origin.parent());
+        beginInsertColumns(_index_target    //.parent()
+                           , 0  // target->count_direct() - 1 // target->sibling_order()    // 0
+                           , target->count_direct() - 1 // target->sibling_order()    // target->count_direct() - 1
+                          );
 
-    if(target->parent()) {
-        emit_datachanged_signal(index(target->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_target));
-    }
+        result = target->merge(source); // not a pure insertion, move removerows to below: _view_delete_permantent
+        assert(item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
+        assert(source->count_direct() == 0);
 
-    endInsertColumns();
-    assert(source->count_direct() == 0);
-    //    auto _index = index(source);
+        //    if(_index_origin.isValid())update_index(_index_origin.parent());
+        auto old_source_parent_index = index(old_source_parent);
 
-    //    beginRemoveRows(_index.parent(), _index.row(), _index.row());
+        if(old_source_parent_index.isValid())update_index(old_source_parent_index);
 
-    if(index(source).isValid()) {
-        QList<boost::intrusive_ptr<TreeItem::linker>> delete_list = _view_delete_items([&]()->KnowModel* {return this;}, QList<boost::intrusive_ptr<TreeItem>>() << source, "cut", false); //
+        auto _index_result = index(result);
 
-        //    auto removed = record_remove(source);
-        //    assert(removed == source);
-        //    assert(removed->count_direct() == 0);
+        if(_index_result.isValid())update_index(_index_result);
 
-        assert(delete_list.size() == 1);
+        //    if(_index_result.parent().isValid())update_index(_index_result.parent());
 
-        //    endRemoveRows();
+        if(result->parent()) {
+            //        emit_datachanged_signal(index(result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_result.parent()));
+            emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_result));
+        }
 
-        //    auto model = globalparameters.tree_screen()->tree_view()->source_model();
 
-        //    if(model->index(source).isValid() || model->index(target).isValid()) {
-        //        globalparameters.tree_screen()->tree_view()->reset();
-        //        globalparameters.tree_screen()->tree_view()->source_model(model->root_item());
-        //    }
+
+        endInsertColumns();
+        assert(source->count_direct() == 0);
+
+        if(_index_origin_source.isValid()) {
+            if(source->parent()->field("name") != clipboard_items_root && source->count_direct() == 0) {
+                //    beginRemoveRows(_index.parent(), _index.row(), _index.row());
+                QList<boost::intrusive_ptr<TreeItem::linker>> delete_list = _view_delete_permantent([&]()->KnowModel* {return this;}, QList<boost::intrusive_ptr<TreeItem>>() << source, "cut", false); //
+
+                //    auto removed = record_remove(source);
+                //    assert(removed == source);
+                //    assert(removed->count_direct() == 0);
+
+                assert(delete_list.size() == 1);
+
+                //    endRemoveRows();
+
+                //    auto model = globalparameters.tree_screen()->tree_view()->source_model();
+
+                //    if(model->index(source).isValid() || model->index(target).isValid()) {
+                //        globalparameters.tree_screen()->tree_view()->reset();
+                //        globalparameters.tree_screen()->tree_view()->source_model(model->root_item());
+                //    }
+            } else {
+                source->dangle();
+            }
+        }
+    } else if(target_on_tree) {
+        result = target_on_tree;
     }
 
     return result;  // keep;
@@ -1644,7 +1684,7 @@ QModelIndex KnowModel::index_direct(const QModelIndex &_parent_index, int n) con
     }
 
     // Выясняется указатель на подчиненный Item элемент
-    boost::intrusive_ptr<TreeItem> child_item = it->item_direct(n)->host();
+    boost::intrusive_ptr<TreeItem> child_item = it->item_direct(n);
 
     // Если указатель на подчиненный Item элемент непустой
     if(child_item) {
@@ -1696,7 +1736,7 @@ int KnowModel::size_of(boost::intrusive_ptr<const TreeItem> it)const
         n = n + _it->count_direct();
 
         for(int i = 0; i < _it->count_direct(); i++)
-            get_all_record_count_recurse(_it->item_direct(i)->host(), 1);
+            get_all_record_count_recurse(_it->item_direct(i), 1);
 
         return n;
     };
@@ -2064,7 +2104,44 @@ void KnowModel::re_encrypt(QString previousPassword, QString currentPassword)
 //    return item_by_url_recurse(_root_item, find_url, 1);
 //}
 
-QModelIndexList KnowModel::indexes(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal)
+QList<boost::intrusive_ptr<TreeItem>> KnowModel::items(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal)
+{
+    std::function<QList<boost::intrusive_ptr<TreeItem>>(boost::intrusive_ptr<TreeItem>, int)>  // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
+                                                     item_by_equal_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
+    = [&](boost::intrusive_ptr<TreeItem> item, int mode) ->QList<boost::intrusive_ptr<TreeItem>> { // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
+
+        static QList<boost::intrusive_ptr<TreeItem>> _items_list; // static boost::intrusive_ptr<TreeItem> _index_list;
+
+        if(mode == 0)
+        {
+            _items_list.clear();    // find_item = nullptr;
+            return _items_list;     // nullptr;
+        }
+
+        //        if(_index_list.size() > 0) return _index_list;
+
+        if(_equal(item))
+        {
+            _items_list.push_back(item);
+            // return _index_list;
+        } else {
+            for(int i = 0; i < item->count_direct(); i++)
+                item_by_equal_recurse(item->item_direct(i), 1);
+
+            // return _index_list;
+        }
+
+        return _items_list;
+    };
+
+    // Инициализация поиска
+    item_by_equal_recurse(_root_item, 0);
+
+    // Запуск поиска и возврат результата
+    return item_by_equal_recurse(_root_item, 1);
+}
+
+QModelIndexList KnowModel::indexes(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal)
 {
     std::function<QModelIndexList(boost::intrusive_ptr<TreeItem>
                                   // , std::function<bool(boost::intrusive_ptr<TreeItem>)> _equal
@@ -2087,7 +2164,7 @@ QModelIndexList KnowModel::indexes(std::function<bool(boost::intrusive_ptr<const
             // return _index_list;
         } else {
             for(int i = 0; i < item->count_direct(); i++)
-                item_by_equal_recurse(item->item_direct(i)->host(), 1);
+                item_by_equal_recurse(item->item_direct(i), 1);
 
             // return _index_list;
         }
@@ -2102,7 +2179,7 @@ QModelIndexList KnowModel::indexes(std::function<bool(boost::intrusive_ptr<const
     return item_by_equal_recurse(_root_item, 1);
 }
 
-boost::intrusive_ptr<TreeItem> KnowModel::item(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal)const      //const QUrl &_find_url, equal_type _equal
+boost::intrusive_ptr<TreeItem> KnowModel::item(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal)const      //const QUrl &_find_url, equal_type _equal
 {
     //    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, std::function<bool(boost::intrusive_ptr<TreeItem>)>, int)>
     //    item_by_url_recurse    //    boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
@@ -2280,7 +2357,7 @@ QStringList KnowModel::record_path(QString recordId)const
         } else {
             // Иначе перебираются подветки
             for(int i = 0; i < _it->count_direct(); i++)
-                record_path_recurse(_it->item_direct(i)->host(), currentPath, recordId, 1);
+                record_path_recurse(_it->item_direct(i), currentPath, recordId, 1);
         }
 
         return findPath;
@@ -2348,7 +2425,7 @@ bool KnowModel::is_contains_crypt_branches(void)const
         }
 
         for(int i = 0; i < _it->count_direct(); i++)
-            is_contains_crypt_branches_recurse(_it->item_direct(i)->host(), 1);
+            is_contains_crypt_branches_recurse(_it->item_direct(i), 1);
 
         return isCrypt;
     };
@@ -2547,33 +2624,33 @@ boost::intrusive_ptr<TreeItem> KnowModel::synchronize(boost::intrusive_ptr<TreeI
 }
 
 
+//// deprecated? for whitout recursive
+//boost::intrusive_ptr<TreeItem::linker> KnowModel::record_remove(boost::intrusive_ptr<TreeItem> _item)
+//{
+//    assert(_item->count_direct() == 0);
+//    boost::intrusive_ptr<TreeItem::linker> result(nullptr);
+//    //    if(_item->count_direct() > 0) {
+//    //        auto p = _item->parent();
+//    //        int pos = _item->sibling_order();   // p->sibling_order(_item);
+//    //        beginInsertRows(index(p), pos, _item->count_direct() - 1);
 
-boost::intrusive_ptr<TreeItem::linker> KnowModel::record_remove(boost::intrusive_ptr<TreeItem> _item)
-{
-    assert(_item->count_direct() == 0);
-    boost::intrusive_ptr<TreeItem::linker> result(nullptr);
-    //    if(_item->count_direct() > 0) {
-    //        auto p = _item->parent();
-    //        int pos = _item->sibling_order();   // p->sibling_order(_item);
-    //        beginInsertRows(index(p), pos, _item->count_direct() - 1);
+//    //        for(int i = 0; i < _item->count_direct(); i++) {
+//    //            p->child_move(pos, _item->item_direct(i));  // ?
+//    //        }
 
-    //        for(int i = 0; i < _item->count_direct(); i++) {
-    //            p->child_move(pos, _item->item_direct(i));  // ?
-    //        }
+//    //        endInsertRows();
+//    //    }
 
-    //        endInsertRows();
-    //    }
+//    QModelIndex _index = index(_item);
 
-    QModelIndex _index = index(_item);
+//    beginRemoveRows(parent(_index), _index.row(), _index.row());
 
-    beginRemoveRows(parent(_index), _index.row(), _index.row());
+//    result = _item->delete_permanent();
+//    assert(result == _item->up_linker());
+//    auto _index_origin = index(_item);
 
-    result = _item->self_remove_from_parent();
-    assert(result == _item->up_linker());
-    auto _index_origin = index(_item);
+//    if(_index_origin.isValid())update_index(_index_origin.parent());
 
-    if(_index_origin.isValid())update_index(_index_origin.parent());
-
-    endRemoveRows();
-    return result;
-}
+//    endRemoveRows();
+//    return result;
+//}

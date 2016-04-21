@@ -14,7 +14,7 @@
 #include "models/tree/KnowModel.h"
 
 extern GlobalParameters globalparameters;
-
+const char *clipboard_items_root = "clipboard_items_root";
 
 ClipboardBranch::ClipboardBranch(void) : QMimeData()
 {
@@ -57,10 +57,12 @@ void ClipboardBranch::print(void) const
         QString branch_id = current_branch.value("id");
 
         // Находятся все записи, принадлежащие текущей ветке
-        foreach(boost::intrusive_ptr<TreeItem> current_record, _branch_data._records.values(branch_id)) {
+        foreach(    // boost::intrusive_ptr<TreeItem>
+            QDomElement current_record_dom, _branch_data._records.values(branch_id)) {
             qDebug() << "Record:";
-
-            QMap<QString, QString> current_record_fields = current_record->natural_field_list();
+            boost::intrusive_ptr<Record> record = new Record();
+            record->dom_to_record(current_record_dom);
+            QMap<QString, QString> current_record_fields = record->natural_field_list();
 
             foreach(QString field_name, current_record_fields.keys()) {
                 if(field_name == "id" || field_name == "name") {
@@ -160,17 +162,24 @@ QMap<QString, QString> ClipboardBranch::fields_by_parent_id(QString id)const
 
 
 // Получение списка записей для указанной ветки
-QList< boost::intrusive_ptr<TreeItem>> ClipboardBranch::records_by_parent_id(QString id)const
+QList<boost::intrusive_ptr<TreeItem>> ClipboardBranch::records_by_parent_id(QString id)const
 {
-    //    QList< boost::intrusive_ptr<TreeItem> > records;
+    QList< boost::intrusive_ptr<TreeItem> > records;
 
     //    // Находятся записи с нужным идентификатором
     //    // Записи добавляются в records в последовательности задом-наперёд
     //    // из-за особенностей реализации foreach для QMultiMap
     //    foreach(boost::intrusive_ptr<TreeItem> current_record, _branch_data._records.values(id))
     //        records.insert(0, current_record);
+    auto dom_list = _branch_data._records.values(id);
 
-    return _branch_data._records.values(id);    // records;
+    for(auto dom : dom_list) {
+        boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
+        it->dom_to_record(dom);
+        records << it;
+    }
+
+    return records;
 }
 
 //// Получение списка записей для указанной ветки
@@ -258,7 +267,7 @@ void ClipboardBranch::branch_push(TreeModel::ModelIndex _modelindex
             // Флаги на основе состояния подветок
             for(int i = 0; i < item->count_direct(); i++) { //foreach(QStringList curr_absolute_path, sub_branches_absolute_path)
                 if( //_know_model_board->item(curr_absolute_path)
-                    item->item_direct(i)->host()->field("crypt") == "1") {
+                    item->item_direct(i)->field("crypt") == "1") {
                     encrypt_presence = true;
                 } else {
                     nocrypt_presence = true;
@@ -344,7 +353,7 @@ void ClipboardBranch::branch_push(const QString &_clip_parent_id, boost::intrusi
     // Добавление конечной записи
     auto record_duplicate_to_parent_id = [&](const QString & _clip_parent_id, boost::intrusive_ptr<TreeItem> record)->void {
         // todo: Сделать проверку, есть ли ветка с указанным id
-        _branch_data._records.insert(_clip_parent_id, record);    // record->parent_id()
+        _branch_data._records.insert(_clip_parent_id, record->dom_from_record());    // record->parent_id()
 
     };
 

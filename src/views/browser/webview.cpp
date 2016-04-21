@@ -133,7 +133,7 @@ namespace browser {
             w = w->parent();
         }
 
-        return globalparameters.entrance()->equip_registered().first;   // BrowserApplication::instance()->mainWindow();
+        return _entrance->equip_registered().first;   // BrowserApplication::instance()->mainWindow();
     }
 
     bool PopupPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame)
@@ -259,7 +259,7 @@ namespace browser {
 
     void PopupPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
     {
-        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;
+        Browser *mainWindow = _entrance->activiated_registered().first;
 
         QDialog dialog(mainWindow);
         dialog.setWindowFlags(Qt::Sheet);
@@ -290,7 +290,7 @@ namespace browser {
     void PopupPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost)
     {
         Q_UNUSED(requestUrl);
-        Browser *mainWindow = globalparameters.entrance()->activiated_registered().first;
+        Browser *mainWindow = _entrance->activiated_registered().first;
 
         QDialog dialog(mainWindow);
         dialog.setWindowFlags(Qt::Sheet);
@@ -323,82 +323,199 @@ namespace browser {
 
 
 
-    WebPage::WebPage(QWebEngineProfile      *profile_
-                     , const boost::intrusive_ptr<TreeItem> _item
-                     , Browser              *browser_
-                     , TabWidget            *tabmanager_
-                     , RecordController     *record_controller_
-                     , WebView              *parent_
+    WebPage::WebPage(QWebEngineProfile      *profile
+                     , boost::intrusive_ptr<TreeItem> item
+                     , TreeScreen           *tree_screen
+                     , MetaEditor           *editor_screen
+                     , Entrance             *entrance
+                     , Browser              *browser
+                     , TabWidget            *tabmanager
+                     , RecordController     *record_controller
+                     , WebView              *parent
                     )
-        : QWebEnginePage(profile_, parent_)
-        , _browser(browser_)
-        , _tabmanager(tabmanager_)
-        , _record_controller(record_controller_)
-        , _view(parent_)
+        : QWebEnginePage(profile, parent)
+        , _tree_screen(tree_screen)
+        , _editor_screen(editor_screen)
+        , _entrance(entrance)
+        , _browser(browser)
+        , _tabmanager(tabmanager)
+        , _record_controller(record_controller)
+        , _view(parent)
         , _keyboardmodifiers(Qt::NoModifier)
         , _pressedbuttons(Qt::NoButton)
-          // , _openinnewtab(openinnewtab)  //false
-          // , _create_window_generated(false)
-        , _binder([ & ]()->boost::intrusive_ptr<TreeItem::coupler_delegation>
+          //          // , _openinnewtab(openinnewtab)  //false
+          //          // , _create_window_generated(false)
+          //        , _binder([ & ]()->boost::intrusive_ptr<TreeItem::coupler>
+          //    {
+          //        if(item->is_lite())item->to_fat();
+
+          //        if(item->binder() && !item->binder()->integrity_internal()) { // !_item->binder() ||
+          //            // 6
+
+
+          //            //            //            //            auto state = _item->binder()->state();
+
+          //            //            //            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
+
+          //            //            //                assert(!_item->binder()->page_link()->binder());
+          //            //            //                _item->binder()->page_link()->item_break(_item->binder()->item_link());
+
+          //            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+          //            //            //                //                assert(_item->record_binder());
+          //            //            //                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
+          //            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+          //            //            //                //                assert(!_item->record_binder());
+
+          //            //            //                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+          //            //            //                assert(_item->binder()->page_link()->binder());
+          //            //            //                assert(_item->binder());
+          //            //            //            }
+          //            //        } else {
+
+
+
+
+          //            item->binder()->break_linked_items();
+
+
+
+
+
+          //            //            if(!_item->binder()->page_link()) {
+          //            //                _item->binder()->page_link() = this;
+          //            //                _item->binder()->item_link() = _item;
+          //            //                assert(_item->binder()->page_link());
+          //            //                assert(_item->binder()->item_link());
+
+          //            //                //                if(!_binder)  { // 0x0000000000009?
+          //            //                //                _binder = _item->binder();
+          //            //                //                }
+          //            //            }
+
+
+
+
+
+          //            //            item_registered_setup_binder(_item);
+
+          //            //            _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+          //            //            _binder = _item->binder();    // from return
+          //        }
+
+          //        //        else {
+          //        //            item_bind(_item);
+          //        //        }
+
+          //        //        item_bind(item);  // you can't modify _binder before it's initialize time!!!
+          //        auto ar = std::make_shared<WebPage::coupler>(item, this);
+          //        new TreeItem::coupler(
+          //            std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+          //            , std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+          //            , std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+          //            , std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+          //        );
+          //        assert(item->binder()->integrity_external(item, this));   // item->binder() = new TreeItem::coupler(std::make_shared<WebPage::coupler>(item, this));
+          //        assert(_binder->integrity_external(item, this));
+
+          //        //        assert(_record_binder);     // 8
+          //        //        assert(_item->binder());    // 6
+          //        //        assert(_item->binder()->item_link());   // 0
+          //        //        assert(_item->binder()->page_link());   // 1
+          //        //        assert(_item->binder()->page_link() == this);    // 9
+          //        //        assert(_item->binder()->item_link() == _item);   // 7
+          //        //        assert(_item->binder() == _binder);
+
+          //        //        assert(_item->binder()->external_integrity(_item, this));
+
+          //        return std::forward<boost::intrusive_ptr<TreeItem::coupler>>(item->binder());
+          //    }())
     {
-        if(_item->is_lite())_item->to_fat();
 
-        if(!_item->binder()
-           || (_item->binder() && !_item->binder()->internal_integrity())) { // 6
+        _binder = [ & ]()->boost::intrusive_ptr<TreeItem::coupler> {
+            if(item->is_lite())item->to_fat();
+
+            if(item->binder() && !item->binder()->integrity_internal())   // !_item->binder() ||
+            {
+                // 6
 
 
-            //            //            //            auto state = _item->binder()->state();
+                //            //            //            auto state = _item->binder()->state();
 
-            //            //            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
+                //            //            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
 
-            //            //                assert(!_item->binder()->page_link()->binder());
-            //            //                _item->binder()->page_link()->item_break(_item->binder()->item_link());
+                //            //                assert(!_item->binder()->page_link()->binder());
+                //            //                _item->binder()->page_link()->item_break(_item->binder()->item_link());
 
-            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-            //            //                //                assert(_item->record_binder());
-            //            //                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
-            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-            //            //                //                assert(!_item->record_binder());
+                //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+                //            //                //                assert(_item->record_binder());
+                //            //                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
+                //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+                //            //                //                assert(!_item->record_binder());
 
-            //            //                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-            //            //                assert(_item->binder()->page_link()->binder());
-            //            //                assert(_item->binder());
-            //            //            }
-            //        } else {
-            _item->binder()->break_coupler();
+                //            //                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+                //            //                assert(_item->binder()->page_link()->binder());
+                //            //                assert(_item->binder());
+                //            //            }
+                //        } else {
 
-            if(!_item->binder()->page_link()) {
-                _item->binder()->page_link() = this;
-                _item->binder()->item_link() = _item;
-                assert(_item->binder()->page_link());
-                assert(_item->binder()->item_link());
 
-                //                if(!_binder)  { // 0x0000000000009?
-                //                _binder = _item->binder();
-                //                }
+
+
+                item->binder()->break_linked_items();
+
+
+
+
+
+                //            if(!_item->binder()->page_link()) {
+                //                _item->binder()->page_link() = this;
+                //                _item->binder()->item_link() = _item;
+                //                assert(_item->binder()->page_link());
+                //                assert(_item->binder()->item_link());
+
+                //                //                if(!_binder)  { // 0x0000000000009?
+                //                //                _binder = _item->binder();
+                //                //                }
+                //            }
+
+
+
+
+
+                //            item_registered_setup_binder(_item);
+
+                //            _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+                //            _binder = _item->binder();    // from return
             }
 
-            //            item_registered_setup_binder(_item);
+            //        else {
+            //            item_bind(_item);
+            //        }
 
-            //            _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-            //            _binder = _item->binder();    // from return
-        } else {
-            item_registered_setup_binder(_item);
-        }
+            //        item_bind(item);  // you can't modify _binder before it's initialize time!!!
+            auto ar = std::make_shared<WebPage::coupler>(item, this);
+            new TreeItem::coupler(
+                std::move(TreeItem::coupler::item_interface("", &WebPage::coupler::item_link, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                , std::move(TreeItem::coupler::page_interface("", &WebPage::coupler::page_link, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                , std::move(TreeItem::coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                , std::move(TreeItem::coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+            );
+            assert(item->binder()->integrity_external(item, this));   // item->binder() = new TreeItem::coupler(std::make_shared<WebPage::coupler>(item, this));
+            assert(_binder->integrity_external(item, this));
 
-        //        assert(_record_binder);     // 8
-        //        assert(_item->binder());    // 6
-        //        assert(_item->binder()->item_link());   // 0
-        //        assert(_item->binder()->page_link());   // 1
-        //        assert(_item->binder()->page_link() == this);    // 9
-        //        assert(_item->binder()->item_link() == _item);   // 7
-        //        assert(_item->binder() == _binder);
+            //        assert(_record_binder);     // 8
+            //        assert(_item->binder());    // 6
+            //        assert(_item->binder()->item_link());   // 0
+            //        assert(_item->binder()->page_link());   // 1
+            //        assert(_item->binder()->page_link() == this);    // 9
+            //        assert(_item->binder()->item_link() == _item);   // 7
+            //        assert(_item->binder() == _binder);
 
-        //        assert(_item->binder()->external_integrity(_item, this));
+            //        assert(_item->binder()->external_integrity(_item, this));
 
-        return _item->binder();
-    }())
-    {
+            return std::forward<boost::intrusive_ptr<TreeItem::coupler>>(item->binder());
+        }();
+
         settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
         settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
         settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
@@ -468,7 +585,7 @@ namespace browser {
         //            w = w->parent();
         //        }
         return _browser;
-        //        return globalparameters.entrance()->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
+        //        return _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
     }
 
 
@@ -533,10 +650,11 @@ namespace browser {
 
         //        //        _record->active_immediately(true);
 
-        auto it = item_request_from_tree(
-                      item
-                      , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                  );
+        auto it = _tree_screen->item_register(item, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        it = item_bind(it);
+        //                      item
+        //                      , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+        //                  );
 
         if(checked)it->activate();
 
@@ -545,7 +663,7 @@ namespace browser {
 
     WebView *WebPage::activate()
     {
-        QString _url_str = _binder->item_link()->field("url");
+        QString _url_str = _binder->item()->field("url");
         QUrl _url = QUrl(_url_str);
 
         if(_view    // && _loadingurl.isValid()  // && url().isValid()    // && url().toString() != _url_str
@@ -566,7 +684,7 @@ namespace browser {
 
         }
 
-        if(_binder->item_link()) {  // ->_active_request
+        if(_binder->item()) {  // ->_active_request
 
             //            if(_record_binder->bounded_item()->_open_link_in_new_window == 1) {
 
@@ -580,12 +698,11 @@ namespace browser {
                 _browser->activateWindow();
             }
 
-            auto _tree_screen = globalparameters.tree_screen();
-            _tree_screen->tree_view()->select_as_current(_binder->item_link());
+            _tree_screen->tree_view()->select_as_current(_binder->item());
 
             if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
 
-                if(_record_controller->first_selectionid() != _binder->item_link()->field("id") || _view->tabmanager()->currentWebView() != _view) {
+                if(_record_controller->first_selectionid() != _binder->item()->field("id") || _view->tabmanager()->currentWebView() != _view) {
                     _tabmanager->setCurrentWidget(_view);
                     _view->show();
                     //        if(checked) // globalparameters.mainwindow()
@@ -600,8 +717,8 @@ namespace browser {
 
                     //}
 
-                    if(_record_controller->view()->selection_first_id() != _binder->item_link()->field("id")) {
-                        _record_controller->select_id(_binder->item_link()->field("id"));
+                    if(_record_controller->view()->selection_first_id() != _binder->item()->field("id")) {
+                        _record_controller->select_id(_binder->item()->field("id"));
                     }
                 }
             }
@@ -698,16 +815,24 @@ namespace browser {
 
         //        QWebEnginePage
         WebPage *page = nullptr;
+        //        auto _tree_screen = globalparameters.tree_screen();
 
 
         //        else
         if(type == QWebEnginePage::WebBrowserWindow) {
 
-            Browser *browser = globalparameters.entrance()->new_browser(QUrl(Browser::_defaulthome));                 // QtSingleApplication::instance()->newMainWindow();
-            //            DockedWindow *mainWindow = globalparameters.entrance()->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
+            Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
+
+            auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_child, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())), std::placeholders::_2, std::placeholders::_3));
+            _browser->item_bind(it)->activate();
+            //            _browser->tabmanager()->newTab(it);
+            //            _browser->raise();
+            //            _browser->activateWindow();
+
+            //            DockedWindow *mainWindow = _entrance->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
-            page = browser->tabmanager()->currentWebView()->page();  // mainWindow->currentTab()->page();
+            page = it->binder()->page();   // _browser->tabmanager()->currentWebView()->page();  // mainWindow->currentTab()->page();
 
         } else
 
@@ -717,65 +842,54 @@ namespace browser {
 #endif  // USE_POPUP_WINDOW
 
             {
-                // always open new window in new tab
+                //                // always open new window in new tab
 
-                // _openinnewtab = false;  // true
+                //                // _openinnewtab = false;  // true
 
 
-                // assert(_record);
+                //                // assert(_record);
 
-                QUrl current = url();
-                QUrl requestedurl = requestedUrl(); //requestedUrl
-                //            QString previous_url = _record->getNaturalFieldSource("url");    // the parent page that host the new link
+                //                QUrl current = url();
+                //                QUrl requestedurl = requestedUrl(); //equal to current page url
 
-                //            return globalparameters.entrance()->activebrowser()->tabWidget()->newTab()->page();
+                //                //            QString previous_url = _record->getNaturalFieldSource("url");    // the parent page that host the new link
 
-                //assert(url == DockedWindow::_defaulthome);
-                //Record *new_record = register_record(QUrl(DockedWindow::_defaulthome));    // do not modify current this->_record!
-                //assert(_record->page() == this); //_record->page(this);
+                //                //            return _entrance->activebrowser()->tabWidget()->newTab()->page();
 
-                // return nullptr;
+                //                //assert(url == DockedWindow::_defaulthome);
+                //                //Record *new_record = register_record(QUrl(DockedWindow::_defaulthome));    // do not modify current this->_record!
+                //                //assert(_record->page() == this); //_record->page(this);
 
-                WebView *view = globalparameters.entrance()->find([](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;});
-                auto _tree_screen = globalparameters.tree_screen();
+                //                // return nullptr;
+
+                WebView *view = _entrance->find([](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;});
 
                 if(view) {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
+                    auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_sibling, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())), std::placeholders::_2, std::placeholders::_3));
+                    it = view->page()->item_bind(it);
+                    //                                      QUrl(Browser::_defaulthome)
+                    //                                      , std::bind(&TreeScreen::view_paste_as_sibling, _tree_screen
+                    //                                                  , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item_link())) // std::placeholders::_1
+                    //                                                  , std::placeholders::_2, std::placeholders::_3)
 
-                    auto record = view->page()->item_request_from_tree(
-                                      QUrl(Browser::_defaulthome)
-                                      , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen()
-                                                  , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item_link())) // std::placeholders::_1
-                                                  , std::placeholders::_2, std::placeholders::_3)
-                                  );
                     //                record->generate();
-                    record->activate();
+                    it->activate();
                     page = view->page();
                 } else {
 
                     // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
-                    // page->bind_record(new_record);  //Record *record = request_record(page->url());
-                    // page->update_record(page->url(), page->title());
-
                     // already create window, why do this? -- refer to demo browser
-                    //                    auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(browser()->tabWidget(), true);
-                    boost::intrusive_ptr<TreeItem> r = _browser->tabWidget()->item_request_from_tree(
-                                                           QUrl(Browser::_defaulthome)
-                                                           , std::bind(&TreeScreen::view_paste_as_sibling, globalparameters.tree_screen()
-                                                                       , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item_link())) // std::placeholders::_1
-                                                                       , std::placeholders::_2, std::placeholders::_3)
-                                                       );
-                    //                return //_record->page();
-                    // globalparameters.entrance()->invoke_view(new_record).second->page();
-                    //                    this->dockedwindow()->tabWidget()->newTab(blank_record, true)->page();
 
-                    //                if(!r->generator())browser()->equip_registered(r);
-                    assert(r->binder());
-                    //                r->generate();
-                    r->activate();
+                    page = _tree_screen->item_bind(
+                               QUrl(Browser::_defaulthome)
+                               , std::bind(&TreeScreen::view_paste_sibling, _tree_screen
+                                           , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())) // std::placeholders::_1
+                                           , std::placeholders::_2, std::placeholders::_3)
+                           )->activate()->page();
 
-                    page = r->page_link();
+                    // page = r->page_link();
 
                 }
 
@@ -817,14 +931,14 @@ namespace browser {
 
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
-            boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item_link();
+            boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
             _current_item->field("url", url.toString());
             page->load(_current_item); // record->generate();
             // page->activate();     // record->active();
         });
 
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::load, [&](const QUrl & url) {
-            boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item_link();
+            boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
             _current_item->field("url", url.toString());
             page->load(_current_item); // record->generate();
             // page->activate();     // record->active();
@@ -907,11 +1021,11 @@ namespace browser {
     void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth)
     {
 
-        //        if(globalparameters.entrance()->browsers().count() == 0) {
-        //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+        //        if(_entrance->browsers().count() == 0) {
+        //            _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser *browser = globalparameters.entrance()->activated_browser();     //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = _entrance->activated_browser();     //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
@@ -943,11 +1057,11 @@ namespace browser {
     {
         Q_UNUSED(requestUrl);
 
-        //        if(globalparameters.entrance()->browsers().count() == 0) {
-        //            globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
+        //        if(_entrance->browsers().count() == 0) {
+        //            _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
         //        }
 
-        Browser *browser = globalparameters.entrance()->activated_browser();     //QtSingleApplication::instance()->mainWindow();
+        Browser *browser = _entrance->activated_browser();     //QtSingleApplication::instance()->mainWindow();
 
         QDialog dialog(browser);
         dialog.setWindowFlags(Qt::Sheet);
@@ -976,55 +1090,60 @@ namespace browser {
         }
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
-        boost::intrusive_ptr<TreeItem> item
-        , TreeScreen::paste_strategy _view_paste_strategy
-        , equal_t _equal
-    )
+    //    boost::intrusive_ptr<TreeItem> WebPage::item_bind(
+    //        boost::intrusive_ptr<TreeItem> item
+    //        , const TreeScreen::paste_strategy &_view_paste_strategy
+    //        , equal_t _equal
+    //    )
+    //    {
+    //        boost::intrusive_ptr<TreeItem> re;
+
+    //        if(!_tree_screen->tree_view()->source_model()->index(item).isValid()) {
+    //            re = _tree_screen->item_request_from_tree_impl(item, _view_paste_strategy, _equal);
+    //        } else
+    //            re = item;
+
+    //        //        if(// !it->is_registered_to_browser() &&
+    //        //            !it->record_binder())
+    //        re = item_bind(re);
+    //        //        else
+    //        //            re = it;
+
+    //        //        auto ar = boost::make_shared<WebPage::Coupler>(this, item);
+    //        //        assert(_record_binder);
+    //        //        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+    //        //        //                             >>("", &WebPage::RecordBinder::binder, ar);
+    //        //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+
+    //        return re;
+    //    }
+
+    //    boost::intrusive_ptr<TreeItem> WebPage::item_bind(
+    //        const QUrl &_url
+    //        , const TreeScreen::paste_strategy &_view_paste_strategy
+    //        , equal_url_t _equal
+    //    )
+    //    {
+    //        //        auto ar = boost::make_shared<WebPage::Coupler>(this);
+
+    //        //        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+    //        //        //                             >>("", &WebPage::RecordBinder::binder, ar);
+    //        //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+    //        boost::intrusive_ptr<TreeItem> re;
+    //        auto it = _tree_screen->item_request_from_tree_impl(_url, _view_paste_strategy, _equal);   // [&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == _url.toString();}
+
+    //        //        if(// !it->is_registered_to_browser() &&
+    //        //            !it->record_binder())
+    //        re = item_bind(it);
+    //        //        else
+    //        //            re = it;
+
+    //        return re;
+    //    }
+
+    boost::intrusive_ptr<TreeItem> WebPage::item_bind(boost::intrusive_ptr<TreeItem> item)  // , browser::WebPage *page
     {
-        boost::intrusive_ptr<TreeItem> re;
-        auto it = _tabmanager->item_request_from_tree_impl(item, _view_paste_strategy, _equal);
-
-        //        if(// !it->is_registered_to_browser() &&
-        //            !it->record_binder())
-        re = item_registered_setup_binder(it);
-        //        else
-        //            re = it;
-
-        //        auto ar = boost::make_shared<WebPage::Coupler>(this, item);
-        //        assert(_record_binder);
-        //        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-        //        //                             >>("", &WebPage::RecordBinder::binder, ar);
-        //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
-
-        return re;
-    }
-
-    boost::intrusive_ptr<TreeItem> WebPage::item_request_from_tree(
-        const QUrl &_url
-        , TreeScreen::paste_strategy _view_paste_strategy
-        , equal_url_t _equal
-    )
-    {
-        //        auto ar = boost::make_shared<WebPage::Coupler>(this);
-
-        //        //        bind_helper binder = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem> // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-        //        //                             >>("", &WebPage::RecordBinder::binder, ar);
-        //        //        active_helper activator = std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
-        boost::intrusive_ptr<TreeItem> re;
-        auto it = _tabmanager->item_request_from_tree_impl(_url, _view_paste_strategy, _equal);   // [&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == _url.toString();}
-
-        //        if(// !it->is_registered_to_browser() &&
-        //            !it->record_binder())
-        re = item_registered_setup_binder(it);
-        //        else
-        //            re = it;
-
-        return re;
-    }
-
-    boost::intrusive_ptr<TreeItem> WebPage::item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item)  // , browser::WebPage *page
-    {
+        boost::intrusive_ptr<TreeItem> result(nullptr);
         //        auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
         //            return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
         //                   >>("", &WebPage::RecordBinder::binder, ar);
@@ -1035,13 +1154,27 @@ namespace browser {
 
         // registered record, but have no generator:
         //        auto ar =
+        //        auto _tree_screen = globalparameters.tree_screen();
 
         //        if(!item->is_registered_to_browser() && !item->record_binder()) {
+        if(!_tree_screen->tree_view()->source_model()->index(item).isValid())
+            result = _tree_screen->item_register(item, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        else
+            result = item;
 
 
-
-        _binder = new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, item));
-        item->binder(_binder);
+        if(!result->binder()->integrity_external(result, this)) {
+            auto ar = std::make_shared<WebPage::coupler>(result, this);
+            new TreeItem::coupler(
+                std::move(TreeItem::coupler::item_interface("", &WebPage::coupler::item_link, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                , std::move(TreeItem::coupler::page_interface("", &WebPage::coupler::page_link, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                , std::move(TreeItem::coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                , std::move(TreeItem::coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+            );
+            //            new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this));
+            assert(_binder->integrity_external(result, this));   // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
+            assert(result->binder()->integrity_external(result, this));  // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
+        }
 
         //        std::make_shared<WebPage::Coupler>(this, item);
 
@@ -1067,8 +1200,8 @@ namespace browser {
         //                              , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
         //                          ));
 
-        assert(item->binder());
-        return item;
+        assert(result->binder());
+        return result;
     }
 
 #ifdef USE_POPUP_WINDOW
@@ -1512,7 +1645,7 @@ namespace browser {
 
     //            //            update_record_view(_item);
 
-    //            MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+    //            MetaEditor *metaeditor = _editor_screen;    // find_object<MetaEditor>(meta_editor_singleton_name);
     //            assert(metaeditor);
 
     //            // add_item_to_source_model(_item);    // may lead to recursive call?   // inside record_controller::register_item...
@@ -1549,13 +1682,13 @@ namespace browser {
         //        record = request_record(url());
 
         //        bind_record(record);
-        if(_binder->item_link()) {
+        if(_binder->item()) {
             if(url() != QUrl()
                && !url().host().isEmpty()
                && !url().scheme().isEmpty()
                && url() != QUrl(Browser::_defaulthome)
                && url() == _loadingurl
-               && url().toString() == _binder->item_link()->field("url")
+               && url().toString() == _binder->item()->field("url")
               ) {
 
                 //                if(//_state_check[_record->getNaturalFieldSource("pin")] == Qt::Unchecked &&
@@ -1567,23 +1700,23 @@ namespace browser {
 
                 //                update_record(url(), title, true);
 
-                MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-                assert(metaeditor);
+                //                MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+                assert(_editor_screen);
 
                 if(title != ""
-                   && title != _binder->item_link()->field("name") // && !QUrl(title).isValid()
+                   && title != _binder->item()->field("name") // && !QUrl(title).isValid()
                   ) {
 
-                    _binder->item_link()->field("name", title);
+                    _binder->item()->field("name", title);
 
                     auto _mainwindow = globalparameters.mainwindow();
 
                     if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
 
                     if(_view == _tabmanager->currentWebView()) {
-                        if(metaeditor->item() != _binder->item_link())sychronize_metaeditor_to_item(_binder->item_link());  // metaeditor->bind(_record);
+                        if(_editor_screen->item() != _binder->item())sychronize_metaeditor_to_item(_binder->item());  // metaeditor->bind(_record);
 
-                        metaeditor->name(title);
+                        _editor_screen->name(title);
                     }
 
                     int index = _tabmanager->webViewIndex(_view);
@@ -1603,7 +1736,7 @@ namespace browser {
     {
         //        assert(_page->url() != QUrl());
         //        assert(url != QUrl());
-        if(_binder->item_link()) {
+        if(_binder->item()) {
             //            //        assert(_page->url() == url);
             //            if(_record_binder->bounded_item()->field("pin") != _string_from_check_state[Qt::Checked]
             //               || url.toString() == _record_binder->bounded_item()->field("home")
@@ -1612,7 +1745,7 @@ namespace browser {
             if(url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty()
                && url != QUrl(Browser::_defaulthome)
                && url != _loadingurl
-               && url.toString() != _binder->item_link()->field("url")
+               && url.toString() != _binder->item()->field("url")
               ) {
 
                 //            if(!_record) {
@@ -1638,7 +1771,7 @@ namespace browser {
                 //                    //                    treescreen->insBranchProcess(index, title(), false);
                 //                    //                    treescreen->move_dn_branch();
                 //                    //                    //load(request_record(url));  //
-                //                    //                    globalparameters.entrance()->invoke(request_record(url));
+                //                    //                    _entrance->invoke(request_record(url));
                 //                    //                    // return;
                 //                    //                }
 
@@ -1665,7 +1798,7 @@ namespace browser {
 
                 //                //            // when Ctrl + hyperlink generated page load new url:
                 //                //            if(_page->url() != url && url != QUrl(DockedWindow::_defaulthome)) {
-                //                //                //auto dp = globalparameters.entrance()->invoke_view(r);
+                //                //                //auto dp = _entrance->invoke_view(r);
                 //                //                //if(dp.second == this) {
                 //                //                _page->setUrl(url);
                 //                //                //}
@@ -1677,16 +1810,16 @@ namespace browser {
 
                 //                //if(this->record())
                 // setUrl(url); // recursive
-                MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-                assert(metaeditor);
+                //                MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+                assert(_editor_screen);
 
                 if(url.toString() != "") {
-                    _binder->item_link()->field("url", url.toString());
+                    _binder->item()->field("url", url.toString());
 
                     if(_view == _tabmanager->currentWebView()) {
-                        if(metaeditor->item() != _binder->item_link())sychronize_metaeditor_to_item(_binder->item_link());  // metaeditor->bind(_record);
+                        if(_editor_screen->item() != _binder->item())sychronize_metaeditor_to_item(_binder->item());  // metaeditor->bind(_record);
 
-                        metaeditor->url(url.toString());
+                        _editor_screen->url(url.toString());
                     }
                 }
 
@@ -1729,7 +1862,11 @@ namespace browser {
         _record_controller->on_recordtable_configchange();
         //        _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
 
-        _binder->break_coupler();   // item_break(_binder->item_link());  // break_items();
+        if(_binder) {
+            _binder->item()->binder() = nullptr;
+            _binder->break_linked_items();   // item_break(_binder->item_link());  // break_items();
+            _binder.reset();
+        }
     }
 
     void WebPage::update_record(const QUrl &url, const QString &title)
@@ -1753,7 +1890,7 @@ namespace browser {
 
         //        //        Record *record = this->record();
 
-        if(_binder->item_link()) {
+        if(_binder->item()) {
             //            _record->active_immediately(true);
 
             //            //            WebView *view = record->page()->view();
@@ -1768,7 +1905,7 @@ namespace browser {
 
 
             // Выясняется указатель на объект редактирования текста записи
-            MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+            //            MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
 
             // Выясняется ссылка на таблицу конечных данных
             //                RecordTableData *table = recordSourceModel->getTableData();
@@ -1776,28 +1913,28 @@ namespace browser {
             bool is_current = (_view == _tabmanager->currentWebView()) ;
 
             if(title != ""
-               && title != _binder->item_link()->field("name")
+               && title != _binder->item()->field("name")
                //                   && !QUrl(title).isValid()
               ) {
 
-                _binder->item_link()->field("name", title);
+                _binder->item()->field("name", title);
                 //metaeditor->setName(title);
                 auto _mainwindow = globalparameters.mainwindow();
 
                 if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
 
                 //                table->setWorkPos(pos);
-                if(is_current)metaeditor->name(title);
+                if(is_current)_editor_screen->name(title);
             }
 
             if(url.toString() != "") {
-                _binder->item_link()->field("url", url.toString());
+                _binder->item()->field("url", url.toString());
 
-                if(is_current)metaeditor->url(url.toString());
+                if(is_current)_editor_screen->url(url.toString());
 
             }
 
-            if(metaeditor->item() != _binder->item_link() && is_current)sychronize_metaeditor_to_item(_binder->item_link());  // metaeditor->bind(_record);
+            if(_editor_screen->item() != _binder->item() && is_current)sychronize_metaeditor_to_item(_binder->item());  // metaeditor->bind(_record);
 
             //metaeditor->setUrl(url.toString());
 
@@ -1820,12 +1957,12 @@ namespace browser {
             _view->setFocus();   // make upate validate
 
 
-            auto _tree_screen = globalparameters.tree_screen();
-            _tree_screen->tree_view()->select_as_current(_binder->item_link());
+            //            auto _tree_screen = globalparameters.tree_screen();
+            _tree_screen->tree_view()->select_as_current(_binder->item());
 
             if(is_current) {// globalparameters.mainwindow()
-                if(_record_controller->view()->selection_first_id() != _binder->item_link()->field("id"))
-                    _record_controller->select_id(_binder->item_link()->field("id"));
+                if(_record_controller->view()->selection_first_id() != _binder->item()->field("id"))
+                    _record_controller->select_id(_binder->item()->field("id"));
 
                 // _page_controller->select_id(_record->getNaturalFieldSource("id"));
             }
@@ -1904,9 +2041,9 @@ namespace browser {
         // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
         // Выясняется указатель на объект редактирования текста записи
-        MetaEditor *meta_editor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-        assert(meta_editor);
-        meta_editor->bind(current_item);
+        //        MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+        assert(_editor_screen);
+        _editor_screen->bind(current_item);
 
         //        int pos = indexOf(currentWebView());
         // Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
@@ -1923,8 +2060,8 @@ namespace browser {
 
 
         // Устанавливается функция обратного вызова для записи данных
-        meta_editor->save_callback( // table
-            meta_editor->editor_save_callback);
+        _editor_screen->save_callback( // table
+            _editor_screen->editor_save_callback);
 
         // Сохраняется текст и картинки в окне редактирования
         //        find_object<MainWindow>("mainwindow")
@@ -1946,8 +2083,8 @@ namespace browser {
         qDebug() << " File " << full_file_name << "\n";
 
         // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
-        if(meta_editor->work_directory() == full_dir
-           && meta_editor->file_name() == current_file
+        if(_editor_screen->work_directory() == full_dir
+           && _editor_screen->file_name() == current_file
           ) {
             globalparameters.window_switcher()->switchFromRecordtableToRecord();
             return;
@@ -1957,12 +2094,12 @@ namespace browser {
         // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
         // Before the opening of the editor it attempts to get the text records
         // This call will create a text file with the record if it is not already created (think remake)
-        meta_editor->save_textarea();   // table->text(pos);    // ?
+        _editor_screen->save_textarea();   // table->text(pos);    // ?
 
         // Редактору задаются имя файла и директории
         // И дается команда загрузки файла
-        meta_editor->work_directory(full_dir);
-        meta_editor->file_name(current_file);
+        _editor_screen->work_directory(full_dir);
+        _editor_screen->file_name(current_file);
 
         // Если идет работа с зашифрованной записью
         // И если имя директории или имя файла пусты, то это означает что
@@ -1975,46 +2112,46 @@ namespace browser {
         if(current_item->field("crypt")    // table->field(pos, "crypt")
            == "1")
             if(full_dir.length() == 0 || current_file.length() == 0)
-                meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+                _editor_screen->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
         // В редактор заносится информация, идет ли работа с зашифрованным текстом
-        meta_editor->misc_field("crypt"
-                                , current_item->field("crypt") // table->field(pos, "crypt")
-                               );
+        _editor_screen->misc_field("crypt"
+                                   , current_item->field("crypt") // table->field(pos, "crypt")
+                                  );
 
         // В редакторе устанавливается функция обратного вызова для чтения данных
-        meta_editor->load_callback( // table
-            meta_editor->editor_load_callback);
+        _editor_screen->load_callback( // table
+            _editor_screen->editor_load_callback);
 
-        meta_editor->load_textarea();
+        _editor_screen->load_textarea();
         // edView->set_textarea(table->get_text(index.row()));
 
         // Заполняются прочие инфо-поля
-        meta_editor->pin(
+        _editor_screen->pin(
             current_item->field("pin")   // table->field(pos, "pin")
         );
-        meta_editor->name(
+        _editor_screen->name(
             current_item->field("name")   // table->field(pos, "name")
         );
-        meta_editor->author(
+        _editor_screen->author(
             current_item->field("author")   // table->field(pos, "author")
         );
-        meta_editor->home(
+        _editor_screen->home(
             current_item->field("home")   // table->field(pos, "home")
         );
-        meta_editor->url(
+        _editor_screen->url(
             current_item->field("url")   // table->field(pos, "url")
         );
-        meta_editor->tags(
+        _editor_screen->tags(
             current_item->field("tags")   // table->field(pos, "tags")
         );
 
         QString id = current_item->field("id"); // table->field(pos, "id");
-        meta_editor->misc_field("id", id);
+        _editor_screen->misc_field("id", id);
 
-        meta_editor->misc_field("title"
-                                , current_item->field("name") // table->field(pos, "name")
-                               );
+        _editor_screen->misc_field("title"
+                                   , current_item->field("name") // table->field(pos, "name")
+                                  );
 
         // should each record carry it's tree path?
         //        // Set the path to the branch in which lies the record (in the form of the names of the branches)   // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
@@ -2026,16 +2163,16 @@ namespace browser {
 
         // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
         if(appconfig.remember_cursor_at_ordinary_selection()) {
-            meta_editor->cursor_position(walkhistory.cursor_position(id));
-            meta_editor->scrollbar_position(walkhistory.scrollbar_position(id));
+            _editor_screen->cursor_position(walkhistory.cursor_position(id));
+            _editor_screen->scrollbar_position(walkhistory.scrollbar_position(id));
         }
 
         // Обновление иконки аттачей
         if(current_item->attach_table()->size()  // table->record(pos)->getAttachTablePointer()->size()
            == 0)
-            meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_not_exists);   // Если нет приаттаченных файлов
+            _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_not_exists);   // Если нет приаттаченных файлов
         else
-            meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_exists);   // Есть приаттаченные файлы
+            _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_exists);   // Есть приаттаченные файлы
     }
 
 
@@ -2196,19 +2333,26 @@ namespace browser {
     //        //    _record_controller->addnew_item_fat(requested_item);
     //    }
 
-    WebView::WebView(const boost::intrusive_ptr<TreeItem> _item
-                     , QWebEngineProfile *profile   // , bool openinnewtab
-                     , Browser *_browser, TabWidget *_tabmanager
-                     , RecordController *table_controller
+    WebView::WebView(boost::intrusive_ptr<TreeItem> item
+                     , QWebEngineProfile            *profile   // , bool openinnewtab
+                     , TreeScreen                   *tree_screen
+                     , MetaEditor                   *editor_screen
+                     , Entrance                     *entrance
+                     , Browser                      *browser
+                     , TabWidget                    *tabmanager
+                     , RecordController             *table_controller
                     )
-        : QWebEngineView(static_cast<QWidget *>(_tabmanager))    // ->parent()
-        , _browser(_browser)
-        , _tabmanager(_tabmanager)                               //        , _record(record)
+        : QWebEngineView(static_cast<QWidget *>(tabmanager))    // ->parent()
+        , _browser(browser)
+        , _tabmanager(tabmanager)                               //        , _record(record)
         , _record_controller(table_controller)
         , _page(new WebPage(profile
-                            , _item // , openinnewtab
-                            , _browser
-                            , _tabmanager
+                            , item // , openinnewtab
+                            , tree_screen
+                            , editor_screen
+                            , entrance
+                            , browser
+                            , tabmanager
                             , table_controller
                             , this)
                )
@@ -2557,7 +2701,7 @@ namespace browser {
     WebView *WebView::load(boost::intrusive_ptr<TreeItem> record)
     {
         //        _page->record(record);
-        return _page->item_registered_setup_binder(record)->activate();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
+        return _page->item_bind(record)->activate();  //        loadUrl(QUrl(record->getNaturalFieldSource("url")));
 
     }
 
@@ -2569,20 +2713,22 @@ namespace browser {
     //        show();
     //    }
 
-    WebPage::Coupler::Coupler(WebPage *page_link_, boost::intrusive_ptr<TreeItem> item_link_)  // , bool make_current = true
+    WebPage::coupler::coupler(boost::intrusive_ptr<TreeItem> item_link_, WebPage *page_link_)  // , bool make_current = true
         : // std::enable_shared_from_this<Coupler>()
-          _page_link(page_link_)                     // , _make_current(make_current)
-        , _item_link(item_link_)
+          _item_link(item_link_)
+        , _page_link(page_link_)                     // , _make_current(make_current)
     {
         //        _bounded_page->record_binder(new TreeItem::coupler_delegation(shared_from_this()));
         //        _bounded_item->record_binder(_bounded_page->record_binder());
     }
 
-    WebView *WebPage::Coupler::binder(/*boost::intrusive_ptr<TreeItem> item*/)
+    WebView *WebPage::coupler::bind(/*boost::intrusive_ptr<TreeItem> item*/)
     {
-
+        assert(_page_link);
         //        //                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
-        WebView *view = _page_link->view();;
+        WebView *view = nullptr;
+
+        if(_page_link)view = _page_link->view();;
 
         //        //                if(result) {
         //        //                    view = item->bind();    //
@@ -2603,7 +2749,10 @@ namespace browser {
 
             if(_item_link->binder() != _page_link->binder()) {
                 assert(_item_link->binder());
-                _page_link->binder(_item_link->binder());
+                _page_link->binder() = // std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(
+                    _item_link->binder()
+                    // )
+                    ;
             }
 
             if(_page_link->url().toString() != _item_link->field("url")) {
@@ -2611,16 +2760,16 @@ namespace browser {
             }
 
             //        _bounded_page = view->page();
-            MetaEditor *metaeditor = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-            assert(metaeditor);
+            //            MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+            assert(_page_link->_editor_screen);
 
-            if(metaeditor->item() != _item_link)_page_link->sychronize_metaeditor_to_item(_item_link);
+            if(_page_link->_editor_screen->item() != _item_link)_page_link->sychronize_metaeditor_to_item(_item_link);
         }
 
         return view;  // _the->load(record, _make_current);
     }
 
-    WebPage::Coupler::~Coupler()
+    WebPage::coupler::~coupler()
     {
         //        if(_bounded_item && _bounded_page) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
         //            if(_bounded_page->record_binder() && _bounded_item->record_binder())
@@ -2631,18 +2780,19 @@ namespace browser {
         //        _bounded_item->record_binder().reset();
     }
 
-    WebView *WebPage::Coupler::activator(
+    WebView *WebPage::coupler::activator(
         // boost::intrusive_ptr<TreeItem> item
     )
     {
-        assert(_item_link->binder());
-        assert(_item_link->binder() == _page_link->binder());
-        assert(_item_link->page_link() == _page_link);
-        assert(_item_link == _page_link->item_link());
-        //        WebView *view = nullptr;
+        //        assert(_item_link->binder());
+        //        assert(_item_link->binder() == _page_link->binder());
+        //        assert(_item_link->page_link() == _page_link);
+        //        assert(_item_link == _page_link->item_link());
+        //        //        WebView *view = nullptr;
 
-        assert(_item_link);
-        assert(_item_link->page_valid());
+        //        assert(_item_link);
+        //        assert(_item_link->page_valid());
+        assert(_item_link->binder()->integrity_external(_item_link, _page_link));
         //        return _bounded_item->unique_page()->activate();
 
         //        //        if(_page->view() != _page->_tabmanager->currentWebView()) {
@@ -2657,17 +2807,25 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_link()const
     {
-        return _binder ? _binder->item_link() : nullptr;
+        return _binder ? _binder->item() : nullptr;
     }
 
     WebPage *WebPage::page_link()const
     {
-        return _binder ? _binder->page_link() : nullptr;
+        return _binder ? _binder->page() : nullptr;
     }
 
-    boost::intrusive_ptr<TreeItem::coupler_delegation> WebPage::binder() {return _binder;}
+    boost::intrusive_ptr<TreeItem::coupler> WebPage::binder() {return _binder;}
 
-    void WebPage::binder(boost::intrusive_ptr<TreeItem::coupler_delegation> binder_) {if(binder_ != _binder)this->_binder = binder_;}
+    const boost::intrusive_ptr<TreeItem::coupler> &&WebPage::binder() const
+    {
+        return std::forward<const boost::intrusive_ptr<TreeItem::coupler>>(_binder);
+    }
+
+    void WebPage::binder(boost::intrusive_ptr<TreeItem::coupler> &&binder_)
+    {
+        if(binder_ != _binder)this->_binder = binder_;
+    }
 
     WebView *WebPage::view()
     {

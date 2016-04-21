@@ -33,9 +33,11 @@ extern AppConfig appconfig;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
-RecordScreen::RecordScreen(//TreeScreen           *_tree_screen    //,
-    FindScreen          *_find_screen
+RecordScreen::RecordScreen(
+    TreeScreen          *_tree_screen
+    , FindScreen        *_find_screen
     , MetaEditor        *_editor_screen
+    , browser::Entrance *_entrance
     , browser::Browser  *_browser
     , HidableTabWidget  *_vtabwidget
     , MainWindow        *_main_window
@@ -64,9 +66,11 @@ RecordScreen::RecordScreen(//TreeScreen           *_tree_screen    //,
     , _toolsline(new QToolBar(this))
     , _extra_toolsline(new QToolBar(this))
     , _treepathlabel(new QLabel(this))
-    , _tabmanager(new browser::TabWidget(_find_screen          // _tree_screen,
+    , _tabmanager(new browser::TabWidget(_tree_screen
+                                         , _find_screen         //
                                          , _editor_screen
                                          , this
+                                         , _entrance
                                          , _browser
                                          , _main_window
                                         ))
@@ -109,9 +113,11 @@ RecordScreen::RecordScreen(//TreeScreen           *_tree_screen    //,
 RecordScreen::~RecordScreen()
 {
     //    delete _recordtree_search;
-    //    delete _record_controller;
+    // delete
+    _record_controller->deleteLater();
     //    delete _tabmanager;
-    delete _vertical_scrollarea;
+    // delete
+    _vertical_scrollarea->deleteLater();
 }
 
 void RecordScreen::save_in_new_branch(bool checked)
@@ -142,7 +148,7 @@ void RecordScreen::save_in_new_branch(bool checked)
             data["dir"]     = data["id"];
             data["file"]    = "text.html";
 
-            boost::intrusive_ptr<TreeItem> _result_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+            boost::intrusive_ptr<TreeItem> _blank_header = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
             //                = tree_screen->branch_add(tree_source_model, _index
             //                                          , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
             //            , [&](KnowModel * _current_model, QModelIndex _current_index, QString _id, QString _name) {
@@ -168,19 +174,19 @@ void RecordScreen::save_in_new_branch(bool checked)
             //            //            into_know_branch->field("name", objectName());
 
             //            //            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
-            auto _record_model = this->record_controller()->source_model();  // ->record_table();
+            auto _record_model = [&](){return this->record_controller()->source_model();};  // ->record_table();
 
-            for(int i = 0; i < _record_model->size(); i++) {
-                if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _record_model->item(i)->field("id");})) { // source_model->item(i)->field("id")
-                    if(_record_model->item(i)->is_lite())_record_model->item(i)->to_fat();
+            for(int i = 0; i < _record_model()->size(); i++) {
+                if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _record_model()->item(i)->field("id");})) { // source_model->item(i)->field("id")
+                    if(_record_model()->item(i)->is_lite())_record_model()->item(i)->to_fat();
 
                     // _record_model->item(i)->parent(_result_item);    // inside child_rent?
-                    _result_item->child_rent(_record_model->item(i));   // _result_item->work_pos(),
+                    _blank_header->child_rent(_record_model()->item(i));   // _result_item->work_pos(),
 
                 }
             }
 
-            _tree_screen->view_paste_as_children_from_children_move(TreeModel::ModelIndex(_tree_source_model, _index), _result_item, [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
+            _tree_screen->view_paste_children_from_children(TreeModel::ModelIndex(_tree_source_model, _index), _blank_header, [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
             //            new_tree_item_in_treeknow_root = target;
             _tree_screen->synchronized(false);
             _tree_screen->know_model_save();
@@ -251,9 +257,9 @@ void RecordScreen::setup_actions(void)
                     //                    assert( // source_model->root_item()->id() == new_branch_root->id() ||
                     //                        source_model->is_item_id_exists(new_branch_root->id()));
 
-                    _tree_screen->view_paste_as_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
+                    _tree_screen->view_paste_sibling(//_tree_screen->view_index() // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())
                         TreeModel::ModelIndex(_source_model             // _tree_screen->know_branch()
-                                              , _source_model()->index(_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root();}))) // _tree_screen->tree_view()->current_index() //,
+                                              , _source_model()->index(_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root_item()->id();}))) // _tree_screen->tree_view()->current_index() //,
                         , new_branch_item
                         , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                     );

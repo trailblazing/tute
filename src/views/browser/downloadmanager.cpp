@@ -332,12 +332,14 @@ namespace browser {
 
     DownloadManager::~DownloadManager()
     {
-        delete _model;
+        // delete
+        _model->deleteLater();
         _autosaver->changeOccurred();
         _autosaver->saveIfNeccessary();
 
-        if(_iconprovider)
+        if(_iconprovider) {
             delete _iconprovider;
+        }
     }
 
     int DownloadManager::activeDownloads() const

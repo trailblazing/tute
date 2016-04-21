@@ -94,9 +94,12 @@ RecordController::RecordController(
 
 RecordController::~RecordController()
 {
-    delete _view;
-    delete _proxy_model;
-    delete _source_model;
+    // delete
+    _view->deleteLater();
+    // delete
+    _proxy_model->deleteLater();
+    // delete
+    _source_model->deleteLater();
 }
 
 
@@ -276,7 +279,7 @@ void RecordController::browser_update(const int source_pos)
 
         if(entrance && !item->page_valid()    // unique_page()
           ) {    // !record->binder() || !record->activator())) {
-            entrance->item_registered_setup_binder(item);
+            entrance->item_bind(item);
 
 
             //        assert(record->unique_page());    // not sure
@@ -354,7 +357,7 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->save_text_area();
 
-    auto it = item->item_direct(_index)->host();
+    auto it = item->item_direct(_index);
     // Для новой выбраной записи выясняется директория и основной файл
     QString currentDir = it->field("dir");
     QString currentFile = it->field("file");
@@ -892,7 +895,7 @@ void RecordController::paste(void)
 
     // Пробегаются все записи в буфере
     for(int i = 0; i < nList; i++)
-        addnew_item(clipboardRecords->record(i), ADD_NEW_RECORD_TO_END);
+        addnew_item(clipboardRecords->record(i), add_new_record_to_end);
 
     // Обновление на экране ветки, на которой стоит засветка,
     // так как количество хранимых в ветке записей поменялось
@@ -906,7 +909,7 @@ void RecordController::addnew_to_end(void)
 {
     qDebug() << "In slot add_new_toend_context()";
 
-    addnew_blank(ADD_NEW_RECORD_TO_END);
+    addnew_blank(add_new_record_to_end);
 }
 
 
@@ -915,7 +918,7 @@ void RecordController::addnew_before(void)
 {
     qDebug() << "In slot add_new_before_context()";
 
-    addnew_blank(ADD_NEW_RECORD_BEFORE);
+    addnew_blank(add_new_record_before);
 }
 
 
@@ -925,7 +928,7 @@ void RecordController::addnew_after(void)
 {
     qDebug() << "In slot add_new_after_context()";
 
-    addnew_blank(ADD_NEW_RECORD_AFTER);
+    addnew_blank(add_new_record_after);
 }
 
 //// Слот для добавления новой записи после выделенной строки
@@ -1821,7 +1824,7 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
         if(item->is_lite())item->to_fat();
 
         //    item->is_registered_to_record_controller_and_tabmanager(true);
-        source_position = this->addnew_item_fat(item, ADD_NEW_RECORD_AFTER); //recordTableController->autoAddNewAfterContext();
+        source_position = this->addnew_item_fat(item, add_new_record_after); //recordTableController->autoAddNewAfterContext();
         assert(source_position != -1);
         _item = _source_model->item(source_position);
         //        //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);

@@ -14,6 +14,7 @@
 
 // TreeModel - Это вспомогательный класс! От него наследуется KnowTreeModel
 
+class ItemsFlat;
 class TreeItem;
 class KnowModel;
 
@@ -22,9 +23,10 @@ class TreeModel : public QAbstractItemModel {
 
 public:
 
+
     struct ModelIndex {
     public:
-        ModelIndex(std::function<KnowModel *()> _current_model, const QModelIndex &_current_index);
+        ModelIndex(const std::function<KnowModel *()> &_current_model, const QModelIndex &_current_index);
         std::function<KnowModel *()> current_model()const {return _current_model;}
         QModelIndex current_index()const {return _current_index;}
     private:
@@ -64,7 +66,7 @@ public:
     QModelIndex parent(const QModelIndex &_index) const;
 
     int rowCount(const QModelIndex &_index = QModelIndex()) const;
-    int columnCount(const QModelIndex &itemIndex = QModelIndex()) const;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
 
     Qt::ItemFlags flags(const QModelIndex &_index) const;
@@ -77,7 +79,7 @@ public:
 
 
     //    bool is_item_valid(QStringList path) const;
-    QModelIndex index(std::function<bool(boost::intrusive_ptr<const ItemsFlat::linker>)> _equal) const;
+    QModelIndex index(const std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> &_equal) const;
 
     QModelIndex index(boost::intrusive_ptr<const TreeItem> _item) const;
     void update_index(const QModelIndex &_index);
@@ -91,7 +93,7 @@ public:
     // в виде последовательности идентификаторов
     boost::intrusive_ptr<TreeItem> item(QStringList path) const;
 
-    boost::intrusive_ptr<TreeItem> item(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal)const;
+    boost::intrusive_ptr<TreeItem> item(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal)const;
 
 
     //    boost::intrusive_ptr<TreeItem> find_recursive(const QUrl &find_url) const;

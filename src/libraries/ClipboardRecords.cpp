@@ -46,14 +46,58 @@ void ClipboardRecords::clear(void)
 
 void ClipboardRecords::add_record(boost::intrusive_ptr<TreeItem> record)
 {
-    if(!_records._child_items.contains(record)) _records._child_items << record;
+    auto get_id = [](QDomElement _dom_element) {
+        QString id = "";
+        // Получение списка всех атрибутов текущего элемента
+        QDomNamedNodeMap attList;
+        attList = _dom_element.attributes();
+
+        // Перебор атрибутов в списке и добавление их в запись
+        int i;
+
+        for(i = 0; i < attList.count(); i++) {
+            QDomAttr attcurr = attList.item(i).toAttr();
+
+            QString name = attcurr.name();
+            QString value = attcurr.value();
+
+            if(name == "id") {id = value; break;}
+
+            //            this->natural_field_source(name, value);
+
+            // Распечатка считанных данных в консоль
+            // qDebug() << "Read record attr " << name << value;
+        }
+
+        return id;
+    };
+
+    bool found = false;
+
+    for(auto el : _records._child_items) {
+        auto id = get_id(el);
+
+        if(id == record->id()) {found = true; break;}
+    }
+
+    if(!found) { // if(!_records._child_items.contains(record))
+        _records._child_items << record->dom_from_record();
+    }
 }
 
 
 // Печать информации о содержимом записи
 void ClipboardRecords::print(void) const
 {
-    QListIterator< boost::intrusive_ptr<TreeItem> > list(_records._child_items);
+    QList<boost::intrusive_ptr<TreeItem>> source_list;
+
+    for(auto el : _records._child_items) {
+        boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
+        it->dom_to_record(el);
+        source_list << it;
+    }
+
+    QListIterator< boost::intrusive_ptr<TreeItem> > list(source_list);
 
     // Перебор записей
     while(list.hasNext()) {
@@ -86,9 +130,11 @@ int ClipboardRecords::size(void) const
 
 boost::intrusive_ptr<TreeItem> ClipboardRecords::record(int n) const
 {
-    if(n < _records._child_items.size())
-        return _records._child_items.at(n);
-    else {
+    if(n < _records._child_items.size()) {
+        boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
+        it->dom_to_record(_records._child_items.at(n));
+        return it;
+    } else {
         critical_error("In ClipboardRecords::getRecord() unavailable number " + QString::number(n));
         return boost::intrusive_ptr<TreeItem>(nullptr);
     }
@@ -98,9 +144,11 @@ boost::intrusive_ptr<TreeItem> ClipboardRecords::record(int n) const
 // Получение текста записи с указанным номером
 QString ClipboardRecords::record_text(int n) const
 {
-    if(n < _records._child_items.size())
-        return _records._child_items.at(n)->text_from_fat();
-    else {
+    if(n < _records._child_items.size()) {
+        boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
+        it->dom_to_record(_records._child_items.at(n));
+        return it->text_from_fat();
+    } else {
         critical_error("In ClipboardRecords::getRecordText() unavailable number " + QString::number(n));
         return QString();
     }
@@ -110,9 +158,11 @@ QString ClipboardRecords::record_text(int n) const
 // Получение полей записи с указанным номером
 QMap<QString, QString> ClipboardRecords::record_field_list(int n) const
 {
-    if(n < _records._child_items.size())
-        return _records._child_items.at(n)->natural_field_list();
-    else {
+    if(n < _records._child_items.size()) {
+        boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
+        it->dom_to_record(_records._child_items.at(n));
+        return it->natural_field_list();
+    } else {
         critical_error("In ClipboardRecords::getRecordFieldTable() unavailable number " + QString::number(n));
         return QMap<QString, QString>();
     }
@@ -122,9 +172,9 @@ QMap<QString, QString> ClipboardRecords::record_field_list(int n) const
 // Получение информации о приаттаченных файлах для записи с указанным номером
 AttachTableData ClipboardRecords::record_attach_table(int n) const
 {
-    if(n < _records._child_items.size())
+    if(n < _records._child_items.size()) {
         return *record(n)->attach_table();
-    else {
+    } else {
         critical_error("In ClipboardRecords::getRecordAttachTable() unavailable number " + QString::number(n));
         return AttachTableData();
     }
@@ -134,9 +184,11 @@ AttachTableData ClipboardRecords::record_attach_table(int n) const
 // Получение файлов картинок
 QMap<QString, QByteArray> ClipboardRecords::record_picture_files(int n) const
 {
-    if(n < _records._child_items.size())
-        return _records._child_items.at(n)->picture_files();
-    else {
+    if(n < _records._child_items.size()) {
+        boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
+        it->dom_to_record(_records._child_items.at(n));
+        return it->picture_files();
+    } else {
         critical_error("In ClipboardRecords::getRecordPictureFiles() unavailable number " + QString::number(n));
         return QMap<QString, QByteArray>();
     }

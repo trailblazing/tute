@@ -12,7 +12,7 @@
 //#include "browser.h"
 //#include "webview.h"
 //#include "views/record/MetaEditor.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
@@ -125,24 +125,24 @@ namespace browser {
 
         //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
-        WebView *item_registered_setup_binder(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
+        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
 
-        //        template<typename url_type>
-        void activate(const QUrl &_find_url
-                      , TreeScreen::paste_strategy _view_paste_strategy
-                      , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-                     );
+        //        //        template<typename url_type>
+        //        void activate(const QUrl &_find_url
+        //                      , const TreeScreen::paste_strategy &_view_paste_strategy
+        //                      , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        //                     );
 
-        void activate(boost::intrusive_ptr<TreeItem> item
-                      , TreeScreen::paste_strategy _view_paste_strategy
-                      , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                     );
+        //        void activate(boost::intrusive_ptr<TreeItem> item
+        //                      , const TreeScreen::paste_strategy &_view_paste_strategy
+        //                      , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        //                     );
 
         bool restore_state(const QByteArray &state);
         //        std::pair<Browser *, WebView *>
         //        WebView *find(boost::intrusive_ptr<const TreeItem> item) const;
         //        std::pair<Browser *, WebView *>
-        WebView *find(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;
+        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
@@ -163,13 +163,13 @@ namespace browser {
         void setup_actions(void);
 
         //        WebView *new_dockedwindow(Record *const record);
-        WebView *new_view(QUrl const &_url);
+        //        WebView *new_view(QUrl const &_url);
 
         Browser *new_browser();
-        Browser *new_browser(QUrl const &url);
+        //        Browser *new_browser(QUrl const &url);
 
-        Browser *new_browser(boost::intrusive_ptr<TreeItem> record);
-        Browser *new_browser(const QByteArray &state);
+        //        Browser *new_browser(boost::intrusive_ptr<TreeItem> record);
+        //        Browser *new_browser(const QByteArray &state);
         //        Browser *activate_browser(boost::intrusive_ptr<TreeItem> item);
 
         Entrance *prepend(Browser *);
@@ -192,7 +192,7 @@ namespace browser {
         //        void(Entrance::*invoke_ptr)(const QUrl &url);
 
         void setup_ui(void);
-        void setup_signals(ToolbarSearch *toolbarsearch);
+        //        void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
         std::vector<Browser *>          _browsers;

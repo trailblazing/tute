@@ -109,26 +109,26 @@ private:
     void create_portable_programfiles(void);
     void create_first_programfiles(QString dirName);
 
-    TreeScreen          *_tree_screen;
-    browser::Entrance   *_browsermanager;
+    TreeScreen                  *_tree_screen;
+    browser::Entrance           *_browsermanager;
     std::vector<RecordScreen *> _table_screens;
-    EditorConfig        *_editor_config;
-    FindScreen          *_find_screen;
-    MetaEditor          *_meta_editor;
-    QStatusBar          *_statusbar;
-    WindowSwitcher      *_window_switcher;
-    QSplitter           *_find_splitter;
-    QSplitter           *_v_left_splitter;
-    QSplitter           *_v_right_splitter;
-    QTabWidget          *_vtab;
-    MainWindow          *_mainwindow;
-    browser::DownloadManager *_download_manager;
-    QString             _main_program_file;
-    QString             _work_directory;
-    AttachTableController *_attachtable_controller;
+    EditorConfig                *_editor_config;
+    FindScreen                  *_find_screen;
+    MetaEditor                  *_meta_editor;
+    QStatusBar                  *_statusbar;
+    WindowSwitcher              *_window_switcher;
+    QSplitter                   *_find_splitter;
+    QSplitter                   *_v_left_splitter;
+    QSplitter                   *_v_right_splitter;
+    QTabWidget                  *_vtab;
+    MainWindow                  *_mainwindow;
+    browser::DownloadManager    *_download_manager;
+    QString                     _main_program_file;
+    QString                     _work_directory;
+    AttachTableController       *_attachtable_controller;
 
-    QByteArray          _password_hash;
-    QString             _style_source;
+    QByteArray                  _password_hash;
+    QString                     _style_source;
 };
 
 #endif  /* __GLOBALPARAMETERS_H__ */

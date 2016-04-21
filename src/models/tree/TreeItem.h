@@ -55,105 +55,129 @@ class TreeItem  //        : public std::enable_shared_from_this<TreeItem>
 public:
 
 
-    struct coupler_delegation;
+    struct coupler;
 
-    struct coupler_delegation : public boost::intrusive_ref_counter<coupler_delegation, boost::thread_safe_counter> { //    : public std::enable_shared_from_this<CouplerDelegation>
+    struct coupler : public boost::intrusive_ref_counter<coupler, boost::thread_safe_counter> { // : public std::enable_shared_from_this<coupler>
     public:
 
-        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>&()>     item_interface;
-        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebPage *&()>                 page_interface;
-        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *()>                  bind_interface;  // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
-        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *()>                  activate_interface;
+        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>&()> item_interface;
+        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebPage *&()>             page_interface;
+        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *()>              bind_interface;  // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
+        typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, browser::WebView *()>              activate_interface;
 
-        typedef std::shared_ptr<item_interface> bounded_item_helper;
-        typedef std::shared_ptr<page_interface> bounded_page_helper;
-        typedef std::shared_ptr<bind_interface>         bind_helper;   // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
-        typedef std::shared_ptr<activate_interface>     activate_helper;
+        typedef std::shared_ptr<item_interface>     item_helper;
+        typedef std::shared_ptr<page_interface>     page_helper;
+        typedef std::shared_ptr<bind_interface>     bind_helper;   // , boost::intrusive_ptr<TreeItem> (TreeItem::*)(browser::WebPage *)
+        typedef std::shared_ptr<activate_interface> activate_helper;
 
-        typedef std::function<boost::intrusive_ptr<TreeItem>()> item_link_exist;
-        typedef std::function<browser::WebPage*()> page_link_exist;
-        typedef std::function<boost::intrusive_ptr<coupler_delegation>()> binder_exist;
-        typedef std::function<bool()> binder_self_reference;
-        typedef std::function<boost::intrusive_ptr<coupler_delegation>(boost::intrusive_ptr<TreeItem> host)> item_binder_exist;
-        typedef std::function<boost::intrusive_ptr<coupler_delegation>(browser::WebPage *page)> page_binder_exist;
-        typedef std::function<bool(boost::intrusive_ptr<TreeItem> host)> item_link_coincident;
-        typedef std::function<bool(browser::WebPage *page)> page_link_coincident;
+        typedef std::function<boost::intrusive_ptr<TreeItem>()>                                         item_exist;
+        typedef std::function<browser::WebPage*()>                                                      page_exist;
+        typedef std::function<const boost::intrusive_ptr<coupler>()>                                    binder_exist;
+        typedef std::function<bool()>                                                                   binder_self_reference;
+        //        typedef std::function<const boost::intrusive_ptr<coupler>(boost::intrusive_ptr<TreeItem> host)> item_binder_exist;
+        //        typedef std::function<const boost::intrusive_ptr<coupler>(browser::WebPage *page)>              page_binder_exist;
+        typedef std::function<bool(boost::intrusive_ptr<TreeItem> host)>                                item_consistency;
+        typedef std::function<bool(browser::WebPage *page)>                                             page_consistency;
 
         typedef std::tuple <
-        item_link_exist         // std::shared_ptr<item_link_exist>
-        , page_link_exist       // std::shared_ptr<page_link_exist>
-        , binder_exist          // std::shared_ptr<binder_exist>
-        , binder_exist          // std::shared_ptr<binder_exist>
-        , binder_self_reference // std::shared_ptr<binder_self_reference>
-        , binder_self_reference // std::shared_ptr<binder_self_reference>
-        , item_binder_exist     // std::shared_ptr<item_binder_exist>
-        , page_binder_exist     // std::shared_ptr<page_binder_exist>
-        , item_link_coincident  // std::shared_ptr<item_link_coincident>
-        , page_link_coincident  // std::shared_ptr<page_link_coincident>
-        > state_type;
-        //        //    template<typename T>
-        //        inline coupler_delegation(bounded_item_helper      _bounded_item
-        //                                  , bounded_page_helper    _bounded_page
-        //                                  , bind_helper            _bind_helper
-        //                                  , activate_helper        _active_helper
-        //                                 ): _bounded_item(_bounded_item), _bounded_page(_bounded_page), _bind_helper(_bind_helper), _activate_helper(_active_helper)
-        //        {}
+        item_exist
+        , page_exist
+        , binder_exist
+        , binder_exist
+        , binder_self_reference
+        , binder_self_reference
+        //        , item_binder_exist     // std::shared_ptr<item_binder_exist>
+        //        , page_binder_exist     // std::shared_ptr<page_binder_exist>
+        , item_consistency
+        , page_consistency
+        > status_type;
 
-        template<typename T>
-        inline coupler_delegation(std::shared_ptr<T> ar)    //: std::enable_shared_from_this<CouplerDelegation>()
-            : _item_linker(std::make_shared<item_interface>("", &T::item_link, ar))
-            , _page_linker(std::make_shared<page_interface>("", &T::page_link, ar))
-            , _bind_helper(std::make_shared<bind_interface>("", &T::binder, ar))
-            , _activate_helper(std::make_shared<activate_interface>("", &T::activator, ar))
-            , _state(state_impl())
-        {
 
-            //            if(ar->page_link())ar->page_link()->binder(this);
+        typedef std::tuple <
+        std::shared_ptr<item_exist>
+        , std::shared_ptr<page_exist>
+        , std::shared_ptr<binder_exist>
+        , std::shared_ptr<binder_exist>
+        , std::shared_ptr<binder_self_reference>
+        , std::shared_ptr<binder_self_reference>
+        //        , std::shared_ptr<item_binder_exist>
+        //        , std::shared_ptr<page_binder_exist>
+        , std::shared_ptr<item_consistency>
+        , std::shared_ptr<page_consistency>
+        > shared_status_type;
 
-            //            if(ar->item_link())ar->item_link()->binder(this);
+        coupler(item_interface          _item_linker
+                , page_interface        _page_linker
+                , bind_interface        _bind_helper
+                , activate_interface    _activate_helper
+               );
 
-            //        (*_bounded_item)()->record_binder(this);
-            //        (*_bounded_page)()->record_binder(this);
-        }
+        //        // this design make a long time compiling!!!
+        //        template<typename T>
+        //        inline coupler(std::shared_ptr<T> ar)    //: std::enable_shared_from_this<CouplerDelegation>()
+        //            : _item_linker(std::make_shared<item_interface>("", &T::item_link, ar))
+        //            , _page_linker(std::make_shared<page_interface>("", &T::page_link, ar))
+        //            , _bind_helper(std::make_shared<bind_interface>("", &T::binder, ar))
+        //            , _activate_helper(std::make_shared<activate_interface>("", &T::activator, ar))
+        //            , _state(state_impl())
+        //        {
+        //            auto is_integratied = integrity();
+        //            assert(is_integratied);
+        //            assert([&]() {return item_link()->binder();}());
+        //            _state = state_impl();
+        //            assert(std::get<2>(_state)());
+        //            assert(std::get<3>(_state)());
+        //            //            if(ar->page_link())ar->page_link()->binder(this);
+        //            //            if(ar->item_link())ar->item_link()->binder(this);
 
-        ~coupler_delegation();
+        //            //        (*_bounded_item)()->record_binder(this);
+        //            //        (*_bounded_page)()->record_binder(this);
+        //        }
+
+        ~coupler();
 
     public:
-        boost::intrusive_ptr<TreeItem> &item_link()const {return (*_item_linker)();}
+        boost::intrusive_ptr<TreeItem> &item() {return _item_linker();}   // (*_item_linker)();
 
-        browser::WebPage *&page_link()const {return (*_page_linker)();}
+        browser::WebPage *&page() {return _page_linker();}                // (*_page_linker)();
 
-        browser::WebView *binder()      // boost::intrusive_ptr<TreeItem> item    // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(browser::WebPage *)
-        {
-            return (*_bind_helper)();   // , _bind
-        }
+        browser::WebView *bind() {return _bind_helper();}  // , _bind  // (*_bind_helper)();
 
-        browser::WebView *activator() {return (*_activate_helper)();}
-        bool internal_integrity()const;
-        bool external_integrity(boost::intrusive_ptr<TreeItem> host, browser::WebPage *page)const;
-        state_type state()const {return _state;}
-        void break_coupler();
+        browser::WebView *activator() {return _activate_helper();}   // (*_activate_helper)();
+
+        bool integrity_internal()const;
+
+        bool integrity_external(boost::intrusive_ptr<TreeItem> host, browser::WebPage *page)const;
+        status_type state()const {return _status;}
+        void break_linked_items();
     private:
-        state_type state_impl();   // is_closure
+        status_type state_impl();   // is_closure
+        //        bool integrity();
 
-        bounded_item_helper _item_linker;
-        bounded_page_helper _page_linker;
-        bind_helper         _bind_helper;
-        activate_helper     _activate_helper;
-        state_type          _state;
+        //        item_helper     _item_linker;
+        //        page_helper     _page_linker;
+        //        bind_helper     _bind_helper;
+        //        activate_helper _activate_helper;
+
+        item_interface      _item_linker;
+        page_interface      _page_linker;
+        bind_interface      _bind_helper;
+        activate_interface  _activate_helper;
+
+        status_type         _status;
 
     };
 
 
-    typedef typename coupler_delegation::bind_interface          bind_interface;
-    typedef typename coupler_delegation::activate_interface      activate_interface;
-    typedef typename coupler_delegation::item_interface  bounded_item_interface;
-    typedef typename coupler_delegation::page_interface  bounded_page_interface;
+    typedef typename coupler::bind_interface        bind_interface;
+    typedef typename coupler::activate_interface    activate_interface;
+    typedef typename coupler::item_interface        item_interface;
+    typedef typename coupler::page_interface        page_interface;
 
-    typedef typename coupler_delegation::bind_helper         bind_helper;
-    typedef typename coupler_delegation::activate_helper     activate_helper;
-    typedef typename coupler_delegation::bounded_item_helper bounded_item_helper;
-    typedef typename coupler_delegation::bounded_page_helper bounded_page_helper;
+    typedef typename coupler::bind_helper           bind_helper;
+    typedef typename coupler::activate_helper       activate_helper;
+    typedef typename coupler::item_helper           item_helper;
+    typedef typename coupler::page_helper           page_helper;
 
     typedef boost::sp_adl_block::thread_safe_counter counter_type; // boost::intrusive_ref_counter<TreeItem>::counter_type
 
@@ -232,10 +256,10 @@ public:
     //             , boost::intrusive_ptr<TreeItem>   _child_items_root // copy semantic, not good
     //            );
 
-    TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item    // = nullptr
+    TreeItem(boost::intrusive_ptr<TreeItem>     _host_parent    // = nullptr
              , QMap<QString, QString>           _field_data     = QMap<QString, QString>()
              , const QDomElement                &_dom_element   = QDomElement()
-                     , int pos = 0, int mode = ADD_NEW_RECORD_BEFORE
+                     , int pos = 0, int mode = add_new_record_before
             );
 
 #ifdef _with_record_table
@@ -277,12 +301,13 @@ public:
     // Заполнение указанного поля данными напрямую, без преобразований
     //    void field_direct(QString name, QString value);
 
-    // Добавление нового подчиненного элемента
-    // в конец списка подчиненных элементов
-    boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
+    //    // Добавление нового подчиненного элемента
+    //    // в конец списка подчиненных элементов
+    //    boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
 
-    boost::intrusive_ptr<TreeItem> contains_direct(boost::intrusive_ptr<TreeItem> _item)const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const;
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
+    boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> _item);
     boost::intrusive_ptr<linker> child_rent(boost::intrusive_ptr<TreeItem> item);
 
     // Добавление потомка (потомков) к текущему элементу
@@ -293,20 +318,22 @@ public:
 
 
     void page_break();
-    boost::intrusive_ptr<linker> remove(boost::intrusive_ptr<linker> _to_be_removed_linker);
+    boost::intrusive_ptr<linker> delete_permanent_recursive(boost::intrusive_ptr<linker> _to_be_removed_linker);
 
-    boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = ADD_NEW_RECORD_BEFORE);
+    boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);
     // Возвращение ссылки на родительский элемент
     boost::intrusive_ptr<TreeItem> parent()const;
 
     // Удаление потомков, начиная с позиции position массива childItems
-    QList<boost::intrusive_ptr<linker> > remove(int position, int count);
+    QList<boost::intrusive_ptr<linker> > delete_permanent_recursive(int position, int count);
 
+
+    boost::intrusive_ptr<TreeItem::linker> dangle();
     // Удаление всех потомков элемента
     void clear();
 
     //    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
-    int sibling_order(std::function<bool(boost::intrusive_ptr<const linker>)> _equal)const;
+    int sibling_order(const std::function<bool(boost::intrusive_ptr<const linker>)> &_equal)const;
     //    // Возвращает номер, под которым данный объект хранится
     //    // в массиве childItems своего родителя
     //    int sibling_order() const;
@@ -356,18 +383,20 @@ public:
 
     //    QDomElement dom_from_treeitem(std::shared_ptr<QDomDocument> doc);
     QDomElement dom_from_treeitem();
-    void dom_to_direct(const QDomElement &_dom_element);
+    //    void dom_to_direct(const QDomElement &_dom_element);
     void dom_to_records(const QDomElement &_record_dom_element);
 
     boost::intrusive_ptr<const TreeItem> is_activated() const;
     boost::intrusive_ptr<const TreeItem> is_registered_to_browser() const;
 
-    boost::intrusive_ptr<coupler_delegation> binder() const;
-    void binder(boost::intrusive_ptr<coupler_delegation> binder_);
+    boost::intrusive_ptr<coupler> binder();
+    const boost::intrusive_ptr<coupler> &&binder()const;
+    void binder(boost::intrusive_ptr<coupler> &&binder_);
 
 
-    boost::intrusive_ptr<linker> up_linker() const;
-    void up_linker(boost::intrusive_ptr<linker> up_linker_);
+    boost::intrusive_ptr<linker> up_linker();
+    const boost::intrusive_ptr<linker> &&up_linker()const;
+    void up_linker(boost::intrusive_ptr<linker> &&up_linker_);
 
     //    // Взятие ссылки на данные конечных записей
     //    std::shared_ptr<RecordTable> record_table(void);
@@ -407,8 +436,8 @@ public:
 
     bool is_empty() const;
     bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it)const;
-    boost::intrusive_ptr<linker> self_remove_from_parent();
-    boost::intrusive_ptr<linker> self_remove_from_parent_as_empty();
+    boost::intrusive_ptr<linker> delete_permanent_recursive();
+    boost::intrusive_ptr<linker> delete_permanent_empty_recursive();
     boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeItem> cut);
     int count_children_all();
 
@@ -417,7 +446,7 @@ public:
 
     // deprecated because of conflicting with parent(boost::intrusive_ptr<TreeItem>)
     //    boost::intrusive_ptr<TreeItem> child_move_unique(boost::intrusive_ptr<TreeItem> _source_item, int pos, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
-
+    void traverse_direct(const std::function< void(boost::intrusive_ptr<linker>)> &operation);
 
 protected:
 
@@ -425,6 +454,7 @@ protected:
     //    activate_helper   _activator;
     //    coupler         _coupler;
     std::function<QDomElement(std::shared_ptr<QDomDocument> doc)> dom_from_treeitem_impl;
+    std::function<void()> children_parent_as_this;
 private:
     //    bool children_remove_link(int position, int count);
 
@@ -448,7 +478,7 @@ private:
     //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
 
     //    browser::WebPage    *_page;
-    boost::intrusive_ptr<coupler_delegation>   _binder;
+    boost::intrusive_ptr<coupler>   _binder;
     //    bool                _page_valid = false;
     int                 _position = -1;
     int                 _open_link_in_new_window = 0;

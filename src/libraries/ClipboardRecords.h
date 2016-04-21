@@ -12,7 +12,7 @@
 
 // class Record;
 #include "models/record_table/Record.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 #include "models/attach_table/AttachTableData.h"
 
 
@@ -21,7 +21,7 @@ class TreeItem;
 // Определяется структура данных набора записей
 // которая будет передаваться через буфер обмена
 struct CLIPB_RECORDS_STRUCT {
-    QList< boost::intrusive_ptr<TreeItem> > _child_items;
+    QList<QDomElement> _child_items;   //  boost::intrusive_ptr<TreeItem>
 };
 
 Q_DECLARE_METATYPE(CLIPB_RECORDS_STRUCT);

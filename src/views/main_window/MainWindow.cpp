@@ -167,10 +167,14 @@ MainWindow::~MainWindow()
     save_all_state();
 
     //    delete  _entrance; _entrance = nullptr;
-    delete  _switcher;
-    delete  _statusbar;
-    delete  _editor_screen;
-    delete  _find_screen;
+    // delete
+    _switcher->deleteLater();
+    // delete
+    _statusbar->deleteLater();
+    // delete
+    _editor_screen->deleteLater();
+    // delete
+    _find_screen->deleteLater();
 
     //    delete  _download;
 
@@ -178,25 +182,42 @@ MainWindow::~MainWindow()
 
     //    delete  _table_screen;
 
-    //    if(_tree_screen) {delete  _tree_screen; _tree_screen = nullptr;}
+    if(_tree_screen) {
+        // delete
+        _tree_screen->deleteLater();
+        _tree_screen = nullptr;
+    }
 
     //    delete  _vtabwidget;
 
-    delete  _v_right_splitter;
-    delete  _v_find_splitter;
+    // delete
+    _v_right_splitter->deleteLater();
+    // delete
+    _v_find_splitter->deleteLater();
     //    delete  _vtabwidget;
-    delete  _h_right_splitter;
-    delete  _h_left_splitter;
-    delete  _h_splitter;
+    // delete
+    _h_right_splitter->deleteLater();
+    // delete
+    _h_left_splitter->deleteLater();
+    // delete
+    _h_splitter->deleteLater();
 
-    delete  _filemenu;
-    delete  _editmenu;
-    delete  _viewmenu;
-    delete  _histrymenu;
-    delete  _bookmarkmenu;
-    delete  _windowmenu;
-    delete  _toolsmenu;
-    delete  _helpmenu;
+    // delete
+    _filemenu->deleteLater();
+    // delete
+    _editmenu->deleteLater();
+    // delete
+    _viewmenu->deleteLater();
+    // delete
+    _histrymenu->deleteLater();
+    // delete
+    _bookmarkmenu->deleteLater();
+    // delete
+    _windowmenu->deleteLater();
+    // delete
+    _toolsmenu->deleteLater();
+    // delete
+    _helpmenu->deleteLater();
 
 }
 
@@ -592,9 +613,10 @@ void MainWindow::save_tree_position(void)
 {
     auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _current_source_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root();});
+    auto item = _tree_screen->session_root_item();   //item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
     //    // Получение QModelIndex выделенного в дереве элемента
     //    const QModelIndex index = _tree_screen->tree_view()->current_index();
+    auto current_item = _tree_screen->tree_view()->current_item();
 
     if(item) { //if(index.isValid()) {
 
@@ -608,13 +630,18 @@ void MainWindow::save_tree_position(void)
             , item->path_absolute()
         );
         //    }
+    } else if(current_item) {
+        appconfig.tree_position(
+            _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
+            , current_item->path_absolute()
+        );
     }
 }
 
 // set
 void MainWindow::set_tree_position(QString current_root_id, QStringList current_item_absolute_path)
 {
-    _tree_screen->session_root(current_item_absolute_path.last());
+    //    _tree_screen->session_root_id(current_item_absolute_path.last());
 
     auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
 
@@ -636,6 +663,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 
         // Курсор устанавливается в нужную позицию
         _tree_screen->tree_view()->select_as_current(setto);
+        _tree_screen->session_root_id();
     }
 }
 

@@ -48,7 +48,7 @@
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QShortcut>
 #include "models/record_table/Record.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordScreen.h"
 #include "libraries/GlobalParameters.h"
@@ -58,7 +58,7 @@
 #include "views/browser/browser.h"
 #include "views/browser/webview.h"
 #include "utility/delegate.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/tree/KnowView.h"
@@ -245,25 +245,27 @@ namespace browser {
 #endif
 
     public:
-        TabWidget(FindScreen *_find_screen
-                  , MetaEditor *_editor_screen
-                  , RecordScreen *_record_screen
-                  , Browser *_browser
-                  , MainWindow *_main_window
+        TabWidget(TreeScreen        *_tree_screen
+                  , FindScreen      *_find_screen
+                  , MetaEditor      *_editor_screen
+                  , RecordScreen    *_record_screen
+                  , Entrance        *_entrance
+                  , Browser         *_browser
+                  , MainWindow      *_main_window
                  );
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-        typedef TreeItem::coupler_delegation CouplerDelegation;
-        typedef typename TreeItem::coupler_delegation::bind_interface          bind_interface;
-        typedef typename TreeItem::coupler_delegation::activate_interface      activate_interface;
-        typedef typename TreeItem::coupler_delegation::item_interface  bounded_item_interface;
-        typedef typename TreeItem::coupler_delegation::page_interface  bounded_page_interface;
+        typedef TreeItem::coupler CouplerDelegation;
+        typedef typename TreeItem::coupler::bind_interface      bind_interface;
+        typedef typename TreeItem::coupler::activate_interface  activate_interface;
+        typedef typename TreeItem::coupler::item_interface      item_interface;
+        typedef typename TreeItem::coupler::page_interface      page_interface;
 
-        typedef typename TreeItem::coupler_delegation::bind_helper         bind_helper;
-        typedef typename TreeItem::coupler_delegation::activate_helper     activate_helper;
-        typedef typename TreeItem::coupler_delegation::bounded_item_helper bounded_item_helper;
-        typedef typename TreeItem::coupler_delegation::bounded_page_helper bounded_page_helper;
+        typedef typename TreeItem::coupler::bind_helper     bind_helper;
+        typedef typename TreeItem::coupler::activate_helper activate_helper;
+        typedef typename TreeItem::coupler::item_helper     item_helper;
+        typedef typename TreeItem::coupler::page_helper     page_helper;
 
         ~TabWidget();
         void clear();
@@ -288,41 +290,55 @@ namespace browser {
         bool restoreState(const QByteArray &state);
 
         void setProfile(QWebEngineProfile *setProfile);
-        WebView *find(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
+        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
         //        WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
         WebView *find_nopin()const;
         Browser *browser() {return _browser;}
 
-        struct Coupler : public std::enable_shared_from_this<Coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
 
-            TabWidget                       *_tabmanager;
-            boost::intrusive_ptr<TreeItem>  _item_link;
-            WebPage                         *_page_link;
-            bool                            _make_current;
 
-            Coupler(TabWidget                           *_tabmanager
-                    , boost::intrusive_ptr<TreeItem>    item_link_
-                    , bool                              make_current_ = true
-                   );
 
-            //                : _tabmanager(_tabmanager), _bounded_item(_bounded_item), _bounded_page(nullptr), _make_current(_make_current)
-            //            {
-            //                _bounded_item->record_binder(std::make_shared<CouplerDelegation>(
-            //                                                 std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, shared_from_this())
-            //                                                 , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, shared_from_this())
-            //                                                 , std::make_shared<bind_interface>("", &Coupler::binder, shared_from_this())
-            //                                                 , std::make_shared<activate_interface> ("", &Coupler::activator, shared_from_this())
-            //                                             ));
-            //            }
 
-            boost::intrusive_ptr<TreeItem> &item_link() {return _item_link;}
-            WebPage *&page_link() {return _page_link;}
 
-            WebView *binder();   // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
-            WebView *activator();
 
-        };
+        //        struct coupler : public std::enable_shared_from_this<coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
+
+        //            TabWidget                       *_tabmanager;
+        //            boost::intrusive_ptr<TreeItem>  _item_link;
+        //            WebPage                         *_page_link;
+        //            bool                            _make_current;
+
+        //            coupler(TabWidget                           *_tabmanager
+        //                    , boost::intrusive_ptr<TreeItem>    item_link_
+        //                    , bool                              make_current_ = true
+        //                   );
+
+        //            //                : _tabmanager(_tabmanager), _bounded_item(_bounded_item), _bounded_page(nullptr), _make_current(_make_current)
+        //            //            {
+        //            //                _bounded_item->record_binder(std::make_shared<CouplerDelegation>(
+        //            //                                                 std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, shared_from_this())
+        //            //                                                 , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, shared_from_this())
+        //            //                                                 , std::make_shared<bind_interface>("", &Coupler::binder, shared_from_this())
+        //            //                                                 , std::make_shared<activate_interface> ("", &Coupler::activator, shared_from_this())
+        //            //                                             ));
+        //            //            }
+
+        //            boost::intrusive_ptr<TreeItem> &item_link() {return _item_link;}
+        //            WebPage *&page_link() {return _page_link;}
+
+        //            WebView *binder();   // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
+        //            WebView *activator();
+
+        //        };
+
+
+
+
+
+
+
+
 
         //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
         //        RecordModel *source_model() {return _record_controller->source_model();}
@@ -334,39 +350,12 @@ namespace browser {
         TabBar *tabbar() {return _tabbar;}
         RecordController *record_controller() {return _record_controller;}
 
-        boost::intrusive_ptr<TreeItem> view_paste_strategy(TreeModel::ModelIndex                                    _modelindex
-                                                           , boost::intrusive_ptr<TreeItem>                         _result
-                                                           , TreeScreen::substitute_condition                       _substitute_condition
-                                                           , TreeScreen::paste_strategy                             _view_paste_strategy
-                                                           , const bool                                             _item_is_brand_new
-                                                           , const QUrl                                             &_find_url
-                                                           , std::function<bool(boost::intrusive_ptr<TreeItem>)>    _check_url
-                                                          );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(const QUrl &_find_url
-                                                                   , TreeScreen::paste_strategy _view_paste_strategy
-                                                                   , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-                                                                  );
-
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_find_url
-                                                              , TreeScreen::paste_strategy _view_paste_strategy
-                                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-                                                             );
-
-        boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(boost::intrusive_ptr<TreeItem> target
-                                                                   , TreeScreen::paste_strategy _view_paste_strategy
-                                                                   , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                                                                  );
-
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> target
-                                                              , TreeScreen::paste_strategy _view_paste_strategy
-                                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                                                             );
 
 
         //        boost::intrusive_ptr<TreeItem> item_request_from_tree_fragment(const QUrl &_url);
 
-        boost::intrusive_ptr<TreeItem> item_registered_setup_binder(boost::intrusive_ptr<TreeItem> item);
+        //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 
         RecordModel *source_model() {return _record_controller->source_model();}
         RecordView *view() {return _record_controller->view();}
@@ -422,6 +411,9 @@ namespace browser {
         //BrowserView *new_dummy();
 
         WebView *newTab(boost::intrusive_ptr<TreeItem> target
+                        // , const TreeScreen::paste_strategy &_view_paste_strategy
+                        // , equal_t _equal
+                        // = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                         , bool make_current
                         = true
                        );
@@ -454,6 +446,9 @@ namespace browser {
         void fullScreenRequested(QWebEngineFullScreenRequest request);
         WebView *view_no_pinned();
     private:
+        TreeScreen          *_tree_screen;
+        MetaEditor          *_editor_screen;
+        Entrance            *_entrance;
         Browser             *_browser;
         // RecordScreen        *_record_screen;
         RecordController    *_record_controller;

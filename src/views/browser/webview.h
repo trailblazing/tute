@@ -51,8 +51,8 @@
 
 #include <boost/smart_ptr/shared_ptr.hpp>
 
-#include "models/record_table/Record.h"
-#include "models/tree/TreeItem.h"
+//#include "models/record_table/Record.h"
+//#include "models/tree/TreeItem.h"
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordScreen.h"
 #include "libraries/GlobalParameters.h"
@@ -60,7 +60,7 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/record_table/RecordView.h"
 #include "models/record_table/RecordModel.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 
 QT_BEGIN_NAMESPACE
 class QAuthenticator;
@@ -138,23 +138,26 @@ namespace browser {
         void close_requested();
     public:
 
-        typedef TreeItem::coupler_delegation coupler_delegation;
-        typedef typename TreeItem::coupler_delegation::bind_interface          bind_interface;
-        typedef typename TreeItem::coupler_delegation::activate_interface      activate_interface;
-        typedef typename TreeItem::coupler_delegation::item_interface  bounded_item_interface;
-        typedef typename TreeItem::coupler_delegation::page_interface  bounded_page_interface;
+        typedef TreeItem::coupler coupler_delegation;
+        typedef typename TreeItem::coupler::bind_interface      bind_interface;
+        typedef typename TreeItem::coupler::activate_interface  activate_interface;
+        typedef typename TreeItem::coupler::item_interface      item_interface;
+        typedef typename TreeItem::coupler::page_interface      page_interface;
 
-        typedef typename TreeItem::coupler_delegation::bind_helper         bind_helper;
-        typedef typename TreeItem::coupler_delegation::activate_helper     activate_helper;
-        typedef typename TreeItem::coupler_delegation::bounded_item_helper bounded_item_helper;
-        typedef typename TreeItem::coupler_delegation::bounded_page_helper bounded_page_helper;
+        typedef typename TreeItem::coupler::bind_helper     bind_helper;
+        typedef typename TreeItem::coupler::activate_helper activate_helper;
+        typedef typename TreeItem::coupler::item_helper     item_helper;
+        typedef typename TreeItem::coupler::page_helper     page_helper;
 
-        WebPage(QWebEngineProfile                       *profile_
-                , const boost::intrusive_ptr<TreeItem>  _item
-                , Browser                               *browser_
-                , TabWidget                             *tabmanager_
-                , RecordController                      *record_controller_
-                , WebView                               *parent_ = 0
+        WebPage(QWebEngineProfile                   *profile
+                , boost::intrusive_ptr<TreeItem>    item
+                , TreeScreen                        *tree_screen
+                , MetaEditor                        *editor_screen
+                , Entrance                          *entrance
+                , Browser                           *browser
+                , TabWidget                         *tabmanager
+                , RecordController                  *record_controller
+                , WebView                           *parent = 0
                );
 
         ~WebPage();
@@ -173,21 +176,22 @@ namespace browser {
         boost::intrusive_ptr<TreeItem> item_link()const; // {return _record_binder->bounded_item();}
         WebPage *page_link()const;
 
-        struct Coupler : public std::enable_shared_from_this<Coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>    //
+        struct coupler : public std::enable_shared_from_this<coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>    //
         private:
             //            WebPage *_bounded_page;
-            WebPage                         *_page_link;
+
             boost::intrusive_ptr<TreeItem>  _item_link;
+            WebPage                         *_page_link;
 
             //            bool _make_current;
         public:
-            Coupler(WebPage *page_link_, boost::intrusive_ptr<TreeItem>  item_link_);  // , bool make_current = true
+            coupler(boost::intrusive_ptr<TreeItem>  item_link_, WebPage *page_link_);  // , bool make_current = true
             // : _bounded_page(_page);            // , _make_current(make_current)
             // {}
-            ~Coupler();
+            ~coupler();
             boost::intrusive_ptr<TreeItem> &item_link() {return _item_link;}
             WebPage *&page_link() {return _page_link;}
-            WebView *binder(); // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
+            WebView *bind(); // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
             WebView *activator();
 
         };
@@ -198,22 +202,21 @@ namespace browser {
         //        void items_break();
         void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> item_link);
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(const QUrl &_url
-                                                              , TreeScreen::paste_strategy _view_paste_strategy
-                                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-                                                             );
+        //        boost::intrusive_ptr<TreeItem> item_bind(const QUrl &_url
+        //                                                              , const TreeScreen::paste_strategy &_view_paste_strategy
+        //                                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        //                                                             );
 
-        boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item
-                                                              , TreeScreen::paste_strategy _view_paste_strategy
-                                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                                                             );
+        //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item
+        //                                                 , const TreeScreen::paste_strategy &_view_paste_strategy
+        //                                                 , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        //                                                );
 
-        boost::intrusive_ptr<TreeItem> item_registered_setup_binder(
-            boost::intrusive_ptr<TreeItem> item
-        );
+        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 
-        boost::intrusive_ptr<TreeItem::coupler_delegation> binder();
-        void binder(boost::intrusive_ptr<TreeItem::coupler_delegation> binder_);
+        boost::intrusive_ptr<TreeItem::coupler> binder();
+        const boost::intrusive_ptr<TreeItem::coupler> &&binder()const;
+        void binder(boost::intrusive_ptr<TreeItem::coupler> &&binder_);
 
     protected:
         //        void setUrl(const QUrl &url);
@@ -244,6 +247,9 @@ namespace browser {
     private:
         friend class WebView;
         friend class Record;
+        TreeScreen              *_tree_screen;
+        MetaEditor              *_editor_screen;
+        Entrance                *_entrance;
         Browser                 *_browser;
         TabWidget               *_tabmanager;
         RecordController        *_record_controller;
@@ -261,7 +267,7 @@ namespace browser {
         //        boost::intrusive_ptr<TreeItem>  _item;
         //        void item(boost::intrusive_ptr<TreeItem> it) {_item = it;}
 
-        boost::intrusive_ptr<TreeItem::coupler_delegation>   _binder;
+        boost::intrusive_ptr<TreeItem::coupler>   _binder;
 
         //        friend class Record;
         //        friend class TreeItem;
@@ -338,11 +344,14 @@ namespace browser {
         Q_OBJECT
 
     public:
-        WebView(boost::intrusive_ptr<TreeItem> _item
-                , QWebEngineProfile *profile    // , bool openinnewtab
-                , Browser           *_browser
-                , TabWidget         *_tabmanager
-                , RecordController  *record_controller
+        WebView(boost::intrusive_ptr<TreeItem>  item
+                , QWebEngineProfile             *profile    // , bool openinnewtab
+                , TreeScreen                    *tree_screen
+                , MetaEditor                    *editor_screen
+                , Entrance                      *entrance
+                , Browser                       *browser
+                , TabWidget                     *tabmanager
+                , RecordController              *record_controller
                );
 
         //        WebView(const boost::intrusive_ptr<TreeItem> requested_item

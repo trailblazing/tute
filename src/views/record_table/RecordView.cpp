@@ -63,8 +63,10 @@ RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_c
 
 RecordView::~RecordView()
 {
-    delete _context_menu;
-    delete _layout;
+    // delete
+    _context_menu->deleteLater();
+    // delete
+    _layout->deleteLater();
 }
 
 
@@ -466,8 +468,8 @@ void RecordView::move_cursor_to_new_record(int mode, int _index)
     // Прокрутка к только что созданной строке через selectRow() показывает только
     // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
     // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-    if(mode == ADD_NEW_RECORD_TO_END
-       || (mode == ADD_NEW_RECORD_AFTER && _index >= (model()->rowCount() - 1))
+    if(mode == add_new_record_to_end
+       || (mode == add_new_record_after && _index >= (model()->rowCount() - 1))
       ) {
         scrollToBottom();
     }

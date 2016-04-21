@@ -896,27 +896,30 @@ void QtSingleApplication::newLocalSocketConnection()
     int openLinksIn = settings.value(QLatin1String("openLinksIn"), 0).toInt();
     settings.endGroup();
 
-    auto browser_entrance = globalparameters.entrance();
+    auto entrance = globalparameters.entrance();
+    auto tree_screen = globalparameters.tree_screen();
     //    Record *record = request_record(url);
 
-    std::pair<browser::Browser *, browser::WebView *> dp;
+    //    std::pair<browser::Browser *, browser::WebView *> dp;
 
-    if(browser_entrance) {
+    if(entrance && tree_screen) {
         if(openLinksIn == 1) {
 
-            browser_entrance->new_browser(url);
+            auto browser = entrance->new_browser();
+            auto it = tree_screen->item_register(url, std::bind(&TreeScreen::view_paste_child, tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            browser->tabmanager()->newTab(it);
+            browser->raise();
+            browser->activateWindow();
             //bw->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
         } else {
 
 
-            browser::Browser *browser = globalparameters.entrance()->activated_browser();
+            //            browser::Browser *browser = globalparameters.entrance()->activated_browser();
             //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-            auto record = browser->tabmanager()->item_request_from_tree(
-                              url
-                              , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                          );
-            //            record->generate();
-            record->activate();
+            tree_screen->item_bind(
+                url
+                , std::bind(&TreeScreen::view_paste_child, tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+            )->activate();
 
         }
 
@@ -934,17 +937,23 @@ void QtSingleApplication::newLocalSocketConnection()
 
 QtSingleApplication::~QtSingleApplication()
 {
-    delete _downloadmanager;
+    // delete
+    _downloadmanager->deleteLater();
 
     //    for(int i = 0; i < _mainWindows.size(); ++i) {
     //        BrowserWindow *window = _mainWindows.at(i);
     //        delete window;
     //    }
 
-    delete _networkaccessmanager;
-    delete _bookmarksmanager;
+    // delete
+    _networkaccessmanager->deleteLater();
+    // delete
+    _bookmarksmanager->deleteLater();
 
-    if(_window) {delete _window; _window = nullptr;}
+    if(_window) {
+        _window->deleteLater(); // delete _window;
+        _window = nullptr;
+    }
 }
 
 //#if defined(Q_OS_OSX)
@@ -1200,9 +1209,7 @@ void QtSingleApplication::restoreLastSession()
             globalparameters.entrance()->restore_state(historywindows.at(i));
         } else {
             // newWindow =
-            globalparameters.entrance()->new_browser(
-                historywindows.at(i)   // register_record(QUrl(browser::DockedWindow::_defaulthome))
-            );
+            globalparameters.entrance()->new_browser()->restore_state(historywindows.at(i));
         }
 
 

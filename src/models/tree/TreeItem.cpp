@@ -70,51 +70,149 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _parent_item
 //    //    record_to_item();
 //}
 
-TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _parent_item
+TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _host_parent
                    , QMap<QString, QString>         _field_data
                    , const QDomElement              &_dom_element
                    , int pos, int mode
                   )
     : Record(_field_data)
-    , ItemsFlat(_dom_element, _parent_item ? _parent_item->is_crypt() : false)
-      //    , _parent_item([ & ]()
-      //{
-      //    if(_parent_item) {
-      //        assert(_parent_item->id() != _field_data.value("id"));
-      //        //        assert(_parent_item->name() != _field_data.value("name"));
+    , ItemsFlat(_dom_element, _host_parent ? _host_parent->is_crypt() : false)
+    , dom_from_treeitem_impl([ & ](std::shared_ptr<QDomDocument> doc)->QDomElement {
+    //    QDomElement node = doc->createElement("node");
+    QDomElement record = Record::dom_from_record_impl(doc);
 
-      //        // _parent_item->add_child(boost::intrusive_ptr<TreeItem>(this));
+    if(ItemsFlat::count_direct() > 0)
+    {
+        QDomElement children = ItemsFlat::dom_from_itemsflat_impl(doc);
+        record.appendChild(children);
+    }
 
-      //        if(_parent_item->_field_data["crypt"] == "1") {
-      //            this->to_encrypt();
-      //        } else {
-      //            this->to_decrypt();
-      //        }
-      //    }
+    //    node.appendChild(record);
+    return record;  // node;    //
 
-      //    return _parent_item;
-      //}())
-    , _up_linker([ & ]() {/*_up_linker = nullptr;*/ return new TreeItem::linker(_parent_item, this, pos, mode);}())
+})
+, children_parent_as_this([&]()->void {  // boost::intrusive_ptr<TreeItem> parent_item
+    //        //    assert(static_cast<ItemsFlat *>(parent_item.get()) == this);
+    //        auto _this = static_cast<TreeItem *const>(this);
+    //        assert(_this);
+    //        //    QList<boost::intrusive_ptr<TreeItem>> candidates;
+
+    //        //    for(auto il : _child_linkers) {
+    //        //        if(!il->parent_item() || il->parent_item() != _this) {
+    //        //            candidates << il->host(); // il->host()->parent(parent_item);   // this operation will remove il from _child_linkers and try to insert new one
+    //        //        }
+    //        //    }
+
+    //        //    for(auto it : candidates) {
+    //        //        it->parent(_this);
+    //        //    }
+    for(int i = 0; i < _child_linkers.size(); i++)
+    {
+        auto il = _child_linkers.at(i);
+
+        if(!il->host_parent() || il->host_parent() != this) {
+            // candidates << il->host(); //
+            il->parent(this, i);   // this operation will remove il from _child_linkers and try to insert new one
+        }
+    }
+})
+, _up_linker([ & ]() {/*_up_linker = nullptr;*/ return new TreeItem::linker(_host_parent, this);}())    // , pos, mode
 {
     assert(_up_linker->host().get() == this);
     assert(_up_linker->host_parent().get() != this);
     //    record_to_item();
     //    if(_parent_item->_record_linker != _record_linker)_parent_item->_record_linker = _record_linker;
 
-    dom_from_treeitem_impl = [&](std::shared_ptr<QDomDocument> doc)->QDomElement {
-        //    QDomElement node = doc->createElement("node");
-        QDomElement record = Record::dom_from_record_impl(doc);
 
-        if(ItemsFlat::count_direct() > 0)
-        {
-            QDomElement children = ItemsFlat::dom_from_itemsflat_impl(doc);
-            record.appendChild(children);
-        }
 
-        //    node.appendChild(record);
-        return record;  // node;    //
 
-    };
+
+
+
+    //    boost::intrusive_ptr<TreeItem::linker> _result(nullptr);
+
+    //    if(_host_parent) {
+    //        if(!_host_parent->contains_direct(std::forward < const boost::intrusive_ptr<TreeItem::linker> > (_up_linker)) // _host->up_linker()   // _host is under contruction at this time
+    //           && _host_parent->id() != this->_field_data.value("id")) {
+
+
+
+
+
+
+
+    //            //        this->child_move_unique =
+
+
+
+    //            //    if(_parent_item && _parent_item != _new_parent) {
+    //            //        _parent_item->remove(_child_item);
+    //            //    }
+
+
+
+
+    //            //    if(_parent_item && _parent_item != _parent) {
+    //            //        _parent_item->remove(_child_item);
+    //            //    }
+
+    //            //        auto _child_item_parent = _child_item->parent();  // form ItemsFlat, incomplete
+
+    //            //        if(_child_item_parent && _child_item_parent != _parent_item) {
+    //            //            _child_item_parent->remove(_child_item);
+    //            //        }
+
+
+    //            //        if(_parent) {
+
+    //            //        assert(_parent_item->id() != _child_item->_field_data.value("id"));   //        assert(_parent_item->name() != _field_data.value("name"));
+
+    //            // _parent_item->add_child(boost::intrusive_ptr<TreeItem>(this));
+
+
+
+    //            //            //        }
+
+    //            //            //    _parent_item = _new_parent;
+
+    //            //            //            if(_parent) {    //  && _parent_item != it
+    //            //            //        _parent_item = it;
+    //            //            bool found = false;
+
+    //            //            for(auto i : _parent_item->_child_items) {
+    //            //                if(_child_item->id() == i->id()) {found = true; break;}
+    //            //            }
+
+    //            //            if(!found) {
+    //            //                //            _result = _parent_item->child_move_unique(this
+    //            //                //                                                      , _pos  // _parent_item->count_direct() > 0 ? _parent_item->count_direct() - 1 : 0
+    //            //                //                                                      , _mode
+    //            //                //                                                     ); // _parent_item->_child_items << boost::intrusive_ptr<TreeItem>(this);
+
+    //            _result = _up_linker->child_move_unique(_host_parent, pos, mode);    // , _host
+
+    //            // _parent_item->count_direct() > 0 ? _parent_item->count_direct() - 1 : 0
+    //            // _parent_item->_child_items << boost::intrusive_ptr<TreeItem>(this);
+    //            //            }
+
+    //            if(_host_parent->_field_data["crypt"] == "1") {
+    //                this->to_encrypt();
+    //            } else {
+    //                this->to_decrypt();
+    //            }
+
+    //            //        }
+
+
+    //            //        }
+
+    //            //        if(_parent_item && _parent_item->up_linker() != this)_parent_item->up_linker(this); // deprecated ItemsFlat::_child_items move to ItemsFlat::_child_linkers
+    //            assert(_up_linker->integrity());
+    //            assert(_up_linker->integrity_external(this, _host_parent));
+    //        }
+    //    }
+
+    _up_linker->parent(_host_parent, pos, mode);
 }
 
 
@@ -344,7 +442,7 @@ TreeItem::~TreeItem()
 //    return ItemsFlat::sibling_order(it);
 //}
 
-int TreeItem::sibling_order(std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> _equal)const
+int TreeItem::sibling_order(const std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> &_equal)const
 {
     return ItemsFlat::sibling_order(_equal);
 }
@@ -384,17 +482,17 @@ void TreeItem::isolate(void)
     //    _record_table->
     ItemsFlat::clear();
 
-    //    // Удаляются все подветки
-    //    qDeleteAll(_child_items);
-    clear();
-    //    //    if(_parent_item) {
-    //    //        _parent_item->remove_child(boost::intrusive_ptr<TreeItem>(this));
+    //    //    // Удаляются все подветки
+    //    //    qDeleteAll(_child_items);
+    //    clear();
+    //    //    //    if(_parent_item) {
+    //    //    //        _parent_item->remove_child(boost::intrusive_ptr<TreeItem>(this));
 
 
-    //    _parent_item.reset();
+    //    //    _parent_item.reset();
 
 
-    //    //    }
+    //    //    //    }
 
     if(_up_linker)_up_linker->break_linker();
 }
@@ -1170,7 +1268,8 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::parent(boost::intrusive_ptr<Tre
 
     //    if(!_up_linker || _up_linker->host_parent() != it) {
     if(!_up_linker) {
-        _up_linker = boost::intrusive_ptr<TreeItem::linker>(new TreeItem::linker(it, this, pos, mode));
+        _up_linker = boost::intrusive_ptr<TreeItem::linker>(new TreeItem::linker(it, this));    // , pos, mode
+        _up_linker->parent(it, pos, mode);
     } else if(_up_linker && _up_linker->host_parent() != it) {
         _up_linker->parent(it, pos, mode);
     }
@@ -1288,19 +1387,65 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 
 #endif
 
-boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(boost::intrusive_ptr<TreeItem> _item)const
+boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const
 {
 
-    boost::intrusive_ptr<TreeItem> result(nullptr);
+    //    boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    result = ItemsFlat::contains_direct(_item);
+    //    result = ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));
+
+    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));    // result;
+}
+
+
+
+
+boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_recursive()
+{
+    boost::intrusive_ptr<TreeItem::linker> _result(nullptr);
+
+    if(_up_linker) {    // _parent_item
+        if(_up_linker->host_parent())
+            _result = _up_linker->host_parent()->delete_permanent_recursive(_up_linker);  // boost::intrusive_ptr<TreeItem>(this)
+    }
+
+    //    if(_up_linker) {
+    //        _result = _up_linker->host();
+    //        _up_linker.reset();
+    //    }
+
+    return _result;
+}
+
+boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_empty_recursive()
+{
+    boost::intrusive_ptr<TreeItem::linker> result(nullptr); // = false;
+
+    if(_up_linker   // _parent_item
+       && is_empty()) {
+        auto parent = _up_linker->host_parent();
+
+        if(parent) {
+            result = delete_permanent_recursive();
+
+            //        if(_parent_item->parent() && _parent_item->is_empty()) {
+            //        _parent_item
+
+            parent->delete_permanent_empty_recursive();
+        }
+
+        //            if(_parent_item->remove(boost::intrusive_ptr<TreeItem>(this)))
+        //                result = true;
+        //        }
+
+    }
 
     return result;
 }
 
 
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::remove(boost::intrusive_ptr<TreeItem::linker> _to_be_removed_linker)
+boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_recursive(boost::intrusive_ptr<TreeItem::linker> _to_be_removed_linker)
 {
 
     //    if(_source_item->parent() != this)_source_item->self_remove_from_parent();
@@ -1324,48 +1469,10 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::remove(boost::intrusive_ptr<Tre
     //    //    self_remove_from_parent_as_empty();
 
     //    return result;
-    return ItemsFlat::remove(_to_be_removed_linker);
+    return ItemsFlat::delete_permanent_recursive(_to_be_removed_linker);
 }
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::self_remove_from_parent()
-{
-    boost::intrusive_ptr<TreeItem::linker> _result(nullptr);
-
-    if(_up_linker) {    // _parent_item
-        _result = _up_linker->host_parent()->remove(_up_linker);  // boost::intrusive_ptr<TreeItem>(this)
-    }
-
-    //    if(_up_linker) {
-    //        _result = _up_linker->host();
-    //        _up_linker.reset();
-    //    }
-
-    return _result;
-}
-
-boost::intrusive_ptr<TreeItem::linker> TreeItem::self_remove_from_parent_as_empty()
-{
-    boost::intrusive_ptr<TreeItem::linker> result(nullptr); // = false;
-
-    if(_up_linker   // _parent_item
-       && is_empty()) {
-        auto parent = _up_linker->host_parent();
-        result = self_remove_from_parent();
-
-        //        if(_parent_item->parent() && _parent_item->is_empty()) {
-        //        _parent_item
-
-        parent->self_remove_from_parent_as_empty();
-        //            if(_parent_item->remove(boost::intrusive_ptr<TreeItem>(this)))
-        //                result = true;
-        //        }
-
-    }
-
-    return result;
-}
-
-QList<boost::intrusive_ptr<TreeItem::linker>> TreeItem::remove(int position, int count)
+QList<boost::intrusive_ptr<TreeItem::linker>> TreeItem::delete_permanent_recursive(int position, int count)
 {
     //    //    bool result = false;
     //    boost::intrusive_ptr<TreeItem> _result(nullptr);
@@ -1384,7 +1491,26 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeItem::remove(int position, int
     //    }
 
     //    return _result;  //true;
-    return ItemsFlat::remove(position, count);
+    return ItemsFlat::delete_permanent_recursive(position, count);
+}
+
+
+void TreeItem::traverse_direct(const std::function< void(boost::intrusive_ptr<TreeItem::linker>)> &operation)
+{
+    return ItemsFlat::traverse(operation);
+}
+
+boost::intrusive_ptr<TreeItem::linker> TreeItem::dangle()
+{
+    auto p = _up_linker->host_parent();
+
+    if(p) {
+        p->_child_linkers.removeOne(_up_linker);
+    }
+
+    _up_linker->host_parent().reset();
+
+    return _up_linker;
 }
 
 
@@ -1398,6 +1524,18 @@ void TreeItem::clear()
 //    ItemsFlat::clear();
 //}
 
+boost::intrusive_ptr<TreeItem> TreeItem::operator <<(boost::intrusive_ptr<TreeItem> _item)
+{
+    boost::intrusive_ptr<TreeItem> r;
+
+    if(_child_linkers.indexOf(_item->up_linker()) == -1) {
+        _child_linkers << _item->up_linker();
+        r = _item;
+    }
+
+    return r;
+}
+
 // copy introduce duplicated item
 boost::intrusive_ptr<TreeItem::linker> TreeItem::child_rent(boost::intrusive_ptr<TreeItem> _item)
 {
@@ -1409,12 +1547,13 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::child_rent(boost::intrusive_ptr
         int found = 0;
 
         for(auto it : _child_linkers) {
-            if(it->host() == _item && static_cast<ItemsFlat *>(_item->up_linker()->host_parent().get()) == this) {
+            if(it->host() == _item && _item->up_linker()->host_parent().get() == this) {
                 found++;
 
                 if(found == 1) {
                     result = it;
                 } else {
+                    result->host()->merge(it->host());
                     _child_linkers.removeOne(it);
                 }
             }
@@ -1630,25 +1769,25 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::child_rent(boost::intrusive_ptr
 
 
 
-// Добавление нового подчиненного элемента
-// в конец списка подчиненных элементов
-boost::intrusive_ptr<TreeItem> TreeItem::child_add_new(int pos, QString id, QString name)
-{
-    //    QMap<QString, QString> data;
-    QMap<QString, QString> data;
-    data["id"] = id;
-    data["name"] = name;
-    boost::intrusive_ptr<TreeItem> item(new TreeItem(this, data, QDomElement(), pos));
-    //    // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
-    //    // ); // Создается объект item
+//// Добавление нового подчиненного элемента
+//// в конец списка подчиненных элементов
+//boost::intrusive_ptr<TreeItem> TreeItem::child_add_new(int pos, QString id, QString name)
+//{
+//    //    QMap<QString, QString> data;
+//    QMap<QString, QString> data;
+//    data["id"] = id;
+//    data["name"] = name;
+//    boost::intrusive_ptr<TreeItem> item(new TreeItem(this, data, QDomElement(), pos));
+//    //    // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
+//    //    // ); // Создается объект item
 
-    //    //    _child_items << item; // Добавление item в конец массива childItems
-    //    // int pos
-    //    auto _item = item->parent(this, pos, ADD_NEW_RECORD_AFTER);                      // _child_items.count() - 1
+//    //    //    _child_items << item; // Добавление item в конец массива childItems
+//    //    // int pos
+//    //    auto _item = item->parent(this, pos, ADD_NEW_RECORD_AFTER);                      // _child_items.count() - 1
 
-    //    // auto _item = child(pos);
-    return item;
-}
+//    //    // auto _item = child(pos);
+//    return item;
+//}
 
 
 // Добавление новых подчиненных элементов
@@ -1697,83 +1836,91 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
         }
     }
 
-    if(0 != field_operation_count) {
+    //    if(0 != field_operation_count) {
 
-        QString text = cut->is_lite() ? cut->text_from_lite_direct() : cut->text_from_fat();
+    QString text = cut->is_lite() ? cut->text_from_lite_direct() : cut->text_from_fat();
 
-        if(is_lite()) {
-            if(!text_from_lite_direct() .contains(text))
-                text_to_direct(text_from_lite_direct() + text);
-        } else {
-            if(!text_from_fat() .contains(text))
-                text_to_fat(text_from_fat() + text);
-        }
-
-        auto attach = cut->attach_table();
-        auto this_attach = attach_table();
-
-        if(!attach->is_empty()) {
-            auto new_attach = this_attach->merge(attach);
-            attach_table(new_attach);
-        }
-
-
-        if(!cut->is_lite() && !is_lite()) {
-            auto pic = cut->picture_files();
-            auto this_pic = picture_files();
-
-            if(pic.size() > 0) {
-
-                for(auto i : pic.keys()) { // auto new_pic = this_pic.merge(pic);
-                    if(this_pic[i].isEmpty())this_pic[i] = pic[i];
-                }
-
-                picture_files(this_pic);
-            }
-        }
-
-        int count = 0;
-
-        for(auto cut_child_linker : cut->_child_linkers) {
-            //        if(!_child_items.contains(i)) {
-            bool found = false;
-            boost::intrusive_ptr<TreeItem> found_item_keep(nullptr);
-            boost::intrusive_ptr<TreeItem> found_item_remove(nullptr);
-
-            for(auto keep_child_linker : _child_linkers) {
-                if(keep_child_linker->host()->id() == cut_child_linker->host()->id()) {
-                    found_item_keep = keep_child_linker->host();
-                    found_item_remove = cut_child_linker->host();
-                    found = true;
-
-                    break;
-                }
-            }
-
-            if(!found) {
-                cut_child_linker->parent(this);  //_child_items << i;
-                count++;
-            } else {
-                found_item_keep->merge(found_item_remove);
-                count++;
-            }
-
-            //            for(auto j : _child_items) {
-            //                if(i->id() == j->id()) {
-            //                    j->merge(i);
-            //                    count++;
-            //                } else {
-
-            //                }
-            //            }
-
-            assert(count <= cut->count_direct());
-            //        }
-        }
-
-        cut->clear();
-        assert(cut->count_direct() == 0);
+    if(is_lite()) {
+        if(!text_from_lite_direct() .contains(text))
+            text_to_direct(text_from_lite_direct() + text);
+    } else {
+        if(!text_from_fat() .contains(text))
+            text_to_fat(text_from_fat() + text);
     }
+
+    auto attach = cut->attach_table();
+    auto this_attach = attach_table();
+
+    if(!attach->is_empty()) {
+        auto new_attach = this_attach->merge(attach);
+        attach_table(new_attach);
+    }
+
+
+    if(!cut->is_lite() && !is_lite()) {
+        auto pic = cut->picture_files();
+        auto this_pic = picture_files();
+
+        if(pic.size() > 0) {
+
+            for(auto i : pic.keys()) { // auto new_pic = this_pic.merge(pic);
+                if(this_pic[i].isEmpty())this_pic[i] = pic[i];
+            }
+
+            picture_files(this_pic);
+        }
+    }
+
+    int merge_count = 0;
+    int linkers_count = cut->count_direct();
+    int origin_child_linkers_size = _child_linkers.size();
+    int new_count = 0;
+
+    for(auto cut_child : cut->_child_linkers) {
+        //        if(!_child_items.contains(i)) {
+        bool found = false;
+        boost::intrusive_ptr<TreeItem> found_item_keep(nullptr);
+        boost::intrusive_ptr<TreeItem> found_item_remove(nullptr);
+
+        for(auto keep_child : _child_linkers) {
+            if(keep_child->host()->id() == cut_child->host()->id()) {
+                found_item_keep     = keep_child->host();
+                found_item_remove   = cut_child->host();
+                found = true;
+
+                break;
+            }
+        }
+
+        if(!found) {
+            cut_child->parent(this);  //_child_items << i;
+            merge_count++;
+            new_count++;
+        } else {
+            found_item_keep->merge(found_item_remove);
+            merge_count++;
+        }
+
+        //            for(auto j : _child_items) {
+        //                if(i->id() == j->id()) {
+        //                    j->merge(i);
+        //                    count++;
+        //                } else {
+
+        //                }
+        //            }
+
+        assert(merge_count <= linkers_count);  // ?
+        //        }
+    }
+
+    assert(_child_linkers.size() == origin_child_linkers_size + new_count);
+    cut->clear();
+
+    //    if(cut->parent()) cut->delete_permanent();  // need udate model::beginRemoveRows & endRemoveRows
+
+    assert(cut->count_direct() == 0);
+    //    }
 
     return boost::intrusive_ptr<TreeItem>(this);
 }
@@ -1895,123 +2042,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
 //}
 
 
-void TreeItem::page_break()
-{
-    if(_binder) {    // _page != nullptr
 
-        //        std::function<void(boost::intrusive_ptr<TreeItem>)>
-        //        close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
-        //            if(it->is_registered_to_browser())   // item_to_be_deleted->unique_page()
-        //                it->bounded_page()->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
-
-        //            if(it->count_direct() > 0)
-        //            {
-        //                for(int i = 0; i < it->count_direct(); i++) {
-        //                    close_tab_recursive(it->item_direct(i)->host());
-        //                }
-        //            }
-        //        };
-
-        //        //
-        //        browser::WebView *view = _record_binder->bounded_page()->view();    //_page->view();
-        //        browser::TabWidget *tabmanager = nullptr;
-
-        //        if(view) {
-        //            tabmanager = view->tabmanager();
-        //        }
-
-        //        if(_record_binder->bounded_item()) {
-
-
-        //            // multi record to one page:
-        //            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
-        //            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
-        //            // assert(_page->record().get() == this);
-
-        //            bool is_holder = (_record_binder->bounded_item().get() == this);     // _page->record() may mean some other record
-
-        //            //            page_to_nullptr();
-
-        //            //        _page->record(nullptr);
-        //            //        _page = nullptr;
-
-        //            if(view && tabmanager && is_holder) {
-        //                // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
-
-        //                //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
-
-        //                close_tab_recursive(this);  // if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
-
-        //            }
-
-        //        }
-
-        //        if(_binder->page_link()) {
-        //            _binder->page_link() = nullptr;
-        //        }
-
-        _binder->break_coupler();
-        //        _activator.reset();
-
-        //        page_to_nullptr();
-    }
-}
-
-TreeItem::coupler_delegation::~coupler_delegation()
-{
-    std::function<void(boost::intrusive_ptr<TreeItem>)>
-    close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
-        if(it->is_registered_to_browser())    // item_to_be_deleted->unique_page()
-        {
-            auto page = it->page_link();
-
-            if(page)
-                page->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
-        }
-
-        if(it->count_direct() > 0)
-        {
-            for(int i = 0; i < it->count_direct(); i++) {
-                close_tab_recursive(it->item_direct(i)->host());
-            }
-        }
-    };
-
-    //    //
-    //    browser::WebView *view = bounded_page()->view();    //_page->view();
-    //    browser::TabWidget *tabmanager = nullptr;
-
-    //    if(view) {
-    //        tabmanager = view->tabmanager();
-    //    }
-
-    if(item_link()) {
-
-
-        // multi record to one page:
-        // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
-        // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
-        // assert(_page->record().get() == this);
-
-        //        bool is_holder = (_bounded_item.get() == this);     // _page->record() may mean some other record
-
-        //            page_to_nullptr();
-
-        //        _page->record(nullptr);
-        //        _page = nullptr;
-
-        //        if(view && tabmanager // && is_holder
-        //          ) {
-        // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
-
-        //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
-
-        close_tab_recursive(item_link());  // if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
-
-        //        }
-
-    }
-}
 
 //bool TreeItem::children_remove_link(int position, int count)
 //{
@@ -2209,7 +2240,7 @@ QList<QStringList> TreeItem::path_children_all_as_field(boost::intrusive_ptr<Tre
     }
 
     for(int i = 0; i < (item->count_direct()); i++) {
-        auto it = item->item_direct(i)->host();
+        auto it = item->item_direct(i);
         QStringList path = it->path_absolute_as_field(fieldName);
         pathList << path;
         path_children_all_as_field(it, fieldName, 2);
@@ -2247,7 +2278,7 @@ void TreeItem::to_encrypt(void)
 
     // Шифрация подветок
     for(int i = 0; i < count_direct(); i++)
-        item_direct(i)->host()->to_encrypt();
+        item_direct(i)->to_encrypt();
 
     if(is_lite())
         Record::to_encrypt_and_save_lite();
@@ -2286,7 +2317,7 @@ void TreeItem::to_decrypt(void)
 
     // Дешифрация подветок
     for(int i = 0; i < count_direct(); i++) {
-        item_direct(i)->host()->to_decrypt();
+        item_direct(i)->to_decrypt();
     }
 
 
@@ -2303,108 +2334,213 @@ void TreeItem::to_decrypt(void)
 //}
 
 
-void TreeItem::dom_to_direct(const QDomElement &_dom_element)
-{
-    QDomElement dom_record;
+//void TreeItem::dom_to_direct(const QDomElement &_dom_element)
+//{
+//    QDomElement dom_record;
 
-    QDomElement dom_records;
+//    QDomElement dom_records;
 
-    if(_up_linker) {
-        assert(_up_linker->host().get() == this);
-        assert(_up_linker->host_parent().get() != this);
-    }
+//    if(_up_linker) {
+//        assert(_up_linker->host().get() == this);
+//        assert(_up_linker->host_parent().get() != this);
+//    }
 
-    //    QString content = _dom_element.text();
+//    //    QString content = _dom_element.text();
 
-    //    if(_dom_element.tagName() == "node") {
-    //        record = _dom_element.firstChildElement("record");
-    //        records = _dom_element.firstChildElement("record").firstChildElement("recordtable");
-    //    } else
+//    //    if(_dom_element.tagName() == "node") {
+//    //        record = _dom_element.firstChildElement("record");
+//    //        records = _dom_element.firstChildElement("record").firstChildElement("recordtable");
+//    //    } else
 
-    if(_dom_element.tagName() == "record") {
-        dom_record = _dom_element;
-        dom_records = _dom_element.firstChildElement("recordtable");
-    } else {    // _dom_element.tagName() == "recordtable"
-        assert(_dom_element.tagName() == "recordtable");
-        dom_records = _dom_element;
-    }
+//    if(_dom_element.tagName() == "record") {
+//        dom_record = _dom_element;
+//        dom_records = _dom_element.firstChildElement("recordtable");
+//    } else {    // _dom_element.tagName() == "recordtable"
+//        assert(_dom_element.tagName() == "recordtable");
+//        dom_records = _dom_element;
+//    }
 
-    if(!dom_record.isNull() && dom_record.tagName() == "record") {
-        if(_up_linker) {
-            assert(_up_linker->host().get() == this);
-            assert(_up_linker->host_parent().get() != this);
-        }
+//    if(!dom_record.isNull() && dom_record.tagName() == "record") {
+//        if(_up_linker) {
+//            assert(_up_linker->host().get() == this);
+//            assert(_up_linker->host_parent().get() != this);
+//        }
 
-        Record::dom_to_record(_dom_element);
+//        Record::dom_to_record(_dom_element);
 
-        if(_up_linker) {
-            assert(_up_linker->host().get() == this);
-            assert(_up_linker->host_parent().get() != this);
-        }
-    }
+//        if(_up_linker) {
+//            assert(_up_linker->host().get() == this);
+//            assert(_up_linker->host_parent().get() != this);
+//        }
+//    }
 
-    if(!dom_records.isNull() && dom_records.tagName() == "recordtable") {   // assert(records.tagName() == "recordtable");
-        if(_up_linker) {
-            assert(_up_linker->host().get() == this);
-            assert(_up_linker->host_parent().get() != this);
-        }
+//    if(!dom_records.isNull() && dom_records.tagName() == "recordtable") {   // assert(records.tagName() == "recordtable");
+//        if(_up_linker) {
+//            assert(_up_linker->host().get() == this);
+//            assert(_up_linker->host_parent().get() != this);
+//        }
 
-        ItemsFlat::dom_to_records(dom_records  // dom_model.firstChildElement("recordtable")
-                                  // , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
-                                 );
+//        ItemsFlat::dom_to_records(dom_records  // dom_model.firstChildElement("recordtable")
+//                                  // , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
+//                                 );
 
-        if(_up_linker) {
-            assert(_up_linker->host().get() == this);
-            assert(_up_linker->host_parent().get() != this);
-        }
-    }
+//        if(_up_linker) {
+//            assert(_up_linker->host().get() == this);
+//            assert(_up_linker->host_parent().get() != this);
+//        }
+//    }
 
-    //    // QDomElement n = dommodel.documentElement();
-    //    // QDomElement n = dommodel;
+//    //    // QDomElement n = dommodel.documentElement();
+//    //    // QDomElement n = dommodel;
 
-    //    // qDebug() << "In recordtabledata setup_data_from_dom() start";
+//    //    // qDebug() << "In recordtabledata setup_data_from_dom() start";
 
-    //    // Если принятый элемент не является таблицей
-    //    if(dom_model.tagName() != "recordtable")
-    //        return;
+//    //    // Если принятый элемент не является таблицей
+//    //    if(dom_model.tagName() != "recordtable")
+//    //        return;
 
-    //    // Определяется указатель на первый элемент с записью
-    //    // Define a pointer to the first element of the recording
-    //    QDomElement current_record_dom = dom_model.firstChildElement("record");
+//    //    // Определяется указатель на первый элемент с записью
+//    //    // Define a pointer to the first element of the recording
+//    //    QDomElement current_record_dom = dom_model.firstChildElement("record");
 
-    //    while(!current_record_dom.isNull()) {
-    //        QMap<QString, QString> data;
-    //        // Структура, куда будет помещена текущая запись
-    //        // The structure, which will put the current record
-    //        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
-    //                                                          new TreeItem(data
-    //                                                                  , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
-    //                                                                      )
-    //                                                      );
+//    //    while(!current_record_dom.isNull()) {
+//    //        QMap<QString, QString> data;
+//    //        // Структура, куда будет помещена текущая запись
+//    //        // The structure, which will put the current record
+//    //        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
+//    //                                                          new TreeItem(data
+//    //                                                                  , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
+//    //                                                                      )
+//    //                                                      );
 
-    //        current_item->is_registered_to_record_controller(true);
+//    //        current_item->is_registered_to_record_controller(true);
 
-    //        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
-    //        // The current record is added to the final table of records (and located at a certain address in memory)
-    //        _child_items << current_item;
+//    //        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
+//    //        // The current record is added to the final table of records (and located at a certain address in memory)
+//    //        _child_items << current_item;
 
-    //        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
-    //        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
-    //        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
-    //        // Order in subordinate objects have registered a valid pointer to this entry
-    //        (_child_items.last())->import_local_from_dom(current_record_dom);
+//    //        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
+//    //        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
+//    //        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
+//    //        // Order in subordinate objects have registered a valid pointer to this entry
+//    //        (_child_items.last())->import_local_from_dom(current_record_dom);
 
-    //        current_record_dom = current_record_dom.nextSiblingElement("record");
-    //    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
+//    //        current_record_dom = current_record_dom.nextSiblingElement("record");
+//    //    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
 
 
 
-    //    return;
+//    //    return;
 
-}
+//}
 
 void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
 {
+
+
+
+    auto dom_to_direct = [&](const QDomElement & _dom_element)->void {
+        QDomElement dom_record;
+
+        QDomElement dom_records;
+
+        if(_up_linker)
+        {
+            assert(_up_linker->host().get() == this);
+            assert(_up_linker->host_parent().get() != this);
+        }
+
+        //    QString content = _dom_element.text();
+
+        //    if(_dom_element.tagName() == "node") {
+        //        record = _dom_element.firstChildElement("record");
+        //        records = _dom_element.firstChildElement("record").firstChildElement("recordtable");
+        //    } else
+
+        if(_dom_element.tagName() == "record")
+        {
+            dom_record = _dom_element;
+            dom_records = _dom_element.firstChildElement("recordtable");
+        } else {    // _dom_element.tagName() == "recordtable"
+            assert(_dom_element.tagName() == "recordtable");
+            dom_records = _dom_element;
+        }
+
+        if(!dom_record.isNull() && dom_record.tagName() == "record")
+        {
+            if(_up_linker) {
+                assert(_up_linker->host().get() == this);
+                assert(_up_linker->host_parent().get() != this);
+            }
+
+            Record::dom_to_record(_dom_element);
+
+            if(_up_linker) {
+                assert(_up_linker->host().get() == this);
+                assert(_up_linker->host_parent().get() != this);
+            }
+        }
+
+        if(!dom_records.isNull() && dom_records.tagName() == "recordtable")     // assert(records.tagName() == "recordtable");
+        {
+            if(_up_linker) {
+                assert(_up_linker->host().get() == this);
+                assert(_up_linker->host_parent().get() != this);
+            }
+
+            ItemsFlat::dom_to_itemsflat(dom_records);  // dom_model.firstChildElement("recordtable")
+            // , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
+
+
+            if(_up_linker) {
+                assert(_up_linker->host().get() == this);
+                assert(_up_linker->host_parent().get() != this);
+            }
+        }
+
+        //    // QDomElement n = dommodel.documentElement();
+        //    // QDomElement n = dommodel;
+
+        //    // qDebug() << "In recordtabledata setup_data_from_dom() start";
+
+        //    // Если принятый элемент не является таблицей
+        //    if(dom_model.tagName() != "recordtable")
+        //        return;
+
+        //    // Определяется указатель на первый элемент с записью
+        //    // Define a pointer to the first element of the recording
+        //    QDomElement current_record_dom = dom_model.firstChildElement("record");
+
+        //    while(!current_record_dom.isNull()) {
+        //        QMap<QString, QString> data;
+        //        // Структура, куда будет помещена текущая запись
+        //        // The structure, which will put the current record
+        //        boost::intrusive_ptr<TreeItem> current_item = boost::intrusive_ptr<TreeItem>(
+        //                                                          new TreeItem(data
+        //                                                                  , boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)) // boost::intrusive_ptr<TreeItem>(reinterpret_cast<TreeItem *>(const_cast<ItemsFlat *>(this)))  // _parent_item
+        //                                                                      )
+        //                                                      );
+
+        //        current_item->is_registered_to_record_controller(true);
+
+        //        // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
+        //        // The current record is added to the final table of records (and located at a certain address in memory)
+        //        _child_items << current_item;
+
+        //        // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
+        //        // чтобы в подчиненных объектах прописались правильные указатели на данную запись
+        //        // Write initialized data. It should initsializirovatsya after placement in the list tableData,
+        //        // Order in subordinate objects have registered a valid pointer to this entry
+        //        (_child_items.last())->import_local_from_dom(current_record_dom);
+
+        //        current_record_dom = current_record_dom.nextSiblingElement("record");
+        //    } // Close the loop iterate tag <record ...>    // Закрылся цикл перебора тегов <record ...>
+
+
+
+        //    return;
+
+    };
 
     assert(this->up_linker()->host().get() == this);
     assert(this->up_linker()->host_parent().get() != this);
@@ -2477,7 +2613,7 @@ void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
         // У данного Dom-элемента ищется таблица конечных записей
         // и данные заполняются в Item-таблицу конечных записей
         // At this Dom-end table element is searched for records and the data filled in the Item-end table entries
-        this->dom_to_direct(_record_dom_element);    // take ground from the nearest level children
+        dom_to_direct(_record_dom_element);    // take ground from the nearest level children
 
 
         assert(this->up_linker()->host().get() == this);
@@ -2717,7 +2853,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::item_link() const
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
     if(_binder) {
-        result = _binder->item_link();
+        result = _binder->item();
     }
 
     return result;
@@ -2729,7 +2865,7 @@ browser::WebPage *TreeItem::page_link() const
     browser::WebPage *page = nullptr;
 
     if(_binder) {
-        page = _binder->page_link();
+        page = _binder->page();
     }
 
     //    //    if(_page) {
@@ -2755,8 +2891,8 @@ bool TreeItem::is_holder()const
 {
     bool is_holder_ = false;
 
-    if(_binder->page_link())    // _page
-        is_holder_ = (_binder->item_link().get() == this);
+    if(_binder->page())    // _page
+        is_holder_ = (_binder->item().get() == this);
 
     return is_holder_;
 }
@@ -2810,14 +2946,14 @@ browser::WebView *TreeItem::bind()
 
     if(_binder) {
         if( // !_record_binder
-            !_binder->page_link()
-            || !_binder->item_link()
-            || (_binder->item_link() && _binder->item_link().get() != this)
-            || (_binder->page_link() && _binder->page_link()->binder() != _binder)
+            !_binder->page()
+            || !_binder->item()
+            || (_binder->item() && _binder->item().get() != this)
+            || (_binder->page() && _binder->page()->binder() != _binder)
         ) {
-            view = _binder->binder();    // boost::intrusive_ptr<TreeItem>(this)
+            view = _binder->bind();    // boost::intrusive_ptr<TreeItem>(this)
         } else {
-            view = _binder->page_link()->view();
+            view = _binder->page()->view();
         }
     }
 
@@ -2927,11 +3063,11 @@ boost::intrusive_ptr<const TreeItem> TreeItem::is_registered_to_browser()const
             auto page_binder = view->page()->binder();
 
             if(page_binder) {
-                auto page = page_binder->page_link();
+                auto page = page_binder->page();
 
                 if(page) {
                     if(page_binder == _binder
-                       && page_binder->item_link().get() == this // boost::intrusive_ptr<const TreeItem>(this)
+                       && page_binder->item().get() == this // boost::intrusive_ptr<const TreeItem>(this)
                        && _binder
                       ) {
                         found = this;   // page_binder->bounded_item();
@@ -2999,19 +3135,40 @@ bool TreeItem::is_empty() const
 
 
 
-boost::intrusive_ptr<TreeItem::coupler_delegation> TreeItem::binder() const {return _binder;}
-void TreeItem::binder(boost::intrusive_ptr<coupler_delegation> binder_) {if(binder_ != _binder)this->_binder = binder_;}
+boost::intrusive_ptr<TreeItem::coupler> TreeItem::binder() {return _binder;}
+
+const boost::intrusive_ptr<TreeItem::coupler> &&TreeItem::binder() const
+{
+    return std::forward<const boost::intrusive_ptr<TreeItem::coupler>>(_binder);
+}
+
+void TreeItem::binder(boost::intrusive_ptr<TreeItem::coupler> &&binder_)
+{
+    if(binder_ != _binder)this->_binder = binder_;
+}
 
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::up_linker() const {return _up_linker;}
-void TreeItem::up_linker(boost::intrusive_ptr<TreeItem::linker> up_linker_) {this->_up_linker = up_linker_;}
+boost::intrusive_ptr<ItemsFlat::linker> TreeItem::up_linker() {return _up_linker;}
+
+const boost::intrusive_ptr<ItemsFlat::linker> &&TreeItem::up_linker()const {return std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_up_linker);}
+
+void TreeItem::up_linker(boost::intrusive_ptr<linker> &&up_linker_)
+{
+    if(up_linker_) {
+        up_linker_->host(this);
+    } else {
+        _up_linker->host_parent(nullptr);
+    }
+
+    this->_up_linker = up_linker_;
+}
 
 bool TreeItem::page_valid()const
 {
     bool result = false;
 
     if(_binder) {
-        result = (_binder->page_link() != nullptr);
+        result = (_binder->page() != nullptr);
     }
 
     return result;
@@ -3041,52 +3198,352 @@ int TreeItem::count_children_all()
     return count_all_recursive(boost::intrusive_ptr<const TreeItem> (this), 1);
 }
 
-TreeItem::coupler_delegation::state_type TreeItem::coupler_delegation::state_impl()
+void TreeItem::page_break()
 {
-    state_type          _state;
+    if(_binder) {    // _page != nullptr
+
+        //        std::function<void(boost::intrusive_ptr<TreeItem>)>
+        //        close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
+        //            if(it->is_registered_to_browser())   // item_to_be_deleted->unique_page()
+        //                it->bounded_page()->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+
+        //            if(it->count_direct() > 0)
+        //            {
+        //                for(int i = 0; i < it->count_direct(); i++) {
+        //                    close_tab_recursive(it->item_direct(i)->host());
+        //                }
+        //            }
+        //        };
+
+        //        //
+        //        browser::WebView *view = _record_binder->bounded_page()->view();    //_page->view();
+        //        browser::TabWidget *tabmanager = nullptr;
+
+        //        if(view) {
+        //            tabmanager = view->tabmanager();
+        //        }
+
+        //        if(_record_binder->bounded_item()) {
+
+
+        //            // multi record to one page:
+        //            // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
+        //            // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
+        //            // assert(_page->record().get() == this);
+
+        //            bool is_holder = (_record_binder->bounded_item().get() == this);     // _page->record() may mean some other record
+
+        //            //            page_to_nullptr();
+
+        //            //        _page->record(nullptr);
+        //            //        _page = nullptr;
+
+        //            if(view && tabmanager && is_holder) {
+        //                // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+
+        //                //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
+
+        //                close_tab_recursive(this);  // if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
+
+        //            }
+
+        //        }
+
+        //        if(_binder->page_link()) {
+        //            _binder->page_link() = nullptr;
+        //        }
+        _binder->page()->binder() = std::move(boost::intrusive_ptr<TreeItem::coupler> (nullptr));
+        _binder->break_linked_items();
+        _binder.reset();
+        //        _activator.reset();
+
+        //        page_to_nullptr();
+    }
+}
+
+TreeItem::coupler::coupler(item_interface          _item_linker
+                           , page_interface        _page_linker
+                           , bind_interface        _bind_helper
+                           , activate_interface    _activate_helper
+                          ): _item_linker(_item_linker), _page_linker(_page_linker), _bind_helper(_bind_helper), _activate_helper(_activate_helper), _status(state_impl())
+{
+
+    auto integrity = [&]()->bool {
+
+        bool result = true;
+
+        //    auto il = [&]() {return item_link();}; // 0
+        //    auto pl = [&]() {return page_link();}; // 1
+
+        //    assert((*std::get<0>(*_state))());  //  = [&]() {return item_link();};  // std::make_shared<item_link_exist>([&]() {return item_link();});
+        //    assert((*std::get<1>(*_state))());  // = [&]() {return page_link();};  // std::make_shared<page_link_exist>([&]() {return page_link();});
+
+        if(!std::get<0>(_status)())result = false;
+
+        if(!std::get<1>(_status)())result = false;
+
+        //    //    if(il() && pl()) {
+
+        //    auto ilb = [&]() {return item_link()->binder();};   // 2
+        //    auto plb = [&]() {return page_link()->binder();};   // 3
+
+        //    assert(!(*_item_linker)()->binder());
+        //    assert(!item_link()->binder());
+        //    //    if(!std::get<2>(_state)()) {
+        //    (*_item_linker)()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
+
+        _item_linker()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
+
+        //    //    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
+        //    assert(item_link()->binder());
+
+        if(!std::get<2>(_status)())result = false;
+
+
+
+        //    //    if(!std::get<3>(_state)()) {
+        //    (*_page_linker)()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
+
+        _page_linker()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
+
+        //    //    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
+        //    assert(page_link()->binder());
+
+        if(!std::get<3>(_status)())result = false;
+
+
+        //    //    //        if(ilb() && plb()) {
+        //    //    auto ib = [&]() {return item_link()->binder() == this;};    // 4
+        //    //    auto pb = [&]() {return page_link()->binder() == this;};    // 5
+        //    assert((*std::get<4>(*_state))());  // = [&]() {return item_link()->binder().get() == this;};    // std::make_shared<binder_self_reference>([&]() {return item_link()->binder() == this;});
+
+        if(!std::get<4>(_status)())result = false;
+
+        //    assert((*std::get<5>(*_state))());  // = [&]() {return page_link()->binder().get() == this;};    // std::make_shared<binder_self_reference>([&]() {return page_link()->binder() == this;});    //            if(ib() && pb()) {result = true;}
+
+        if(!std::get<5>(_status)())result = false;
+
+        //    //        }
+        //    //    }
+        //    std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    // std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
+
+        //    std::get<7>(_state) = [&](browser::WebPage * page) {return page->binder();};;               // std::make_shared<page_binder_exist>([&](browser::WebPage * page) {return page->binder();});
+
+        //    std::get<8>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();};   // std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
+
+        //    std::get<9>(_state) = [&](browser::WebPage * page) {return page == page_link();};               // std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page = page_link();});
+
+        return result;    // integrity_internal();
+
+    };
+
+
+    //    _state = state_impl();
+
+    auto is_integratied = integrity();
+    assert(is_integratied);
+
+    //    assert([&]() {return item_link()->binder();}());            // always work
+    //    assert([&]() {
+    //        auto ilbg = item_link()->binder().get();
+    //        auto plbg = page_link()->binder().get();
+    //        return item_link()->binder().get() == page_link()->binder().get();
+    //    }());
+
+    //    auto ilb      = item_link()->binder();
+    //    auto ilbg     = item_link()->binder().get();
+    //    auto plb_0    = page_link()->binder();
+    //    auto plb_1    = page_link()->binder();
+    //    //    plb_1->integrity(); // empty pointer error! for && return version of binder()    // change rvalue to lvalue!!!
+    //    auto plbg     = page_link()->binder().get();
+    //    int dumy      = 65535;
+    //    assert(plbg);
+    //    auto test = [&]() {
+    //        auto ilbg = item_link()->binder().get();
+    //        auto plbg = page_link()->binder().get();
+    //        return item_link()->binder();
+    //    };    // auto const test = [&]() {return item_link()->binder();};
+
+    //    assert(test());    // assert(!test());
+
+
+    //    assert((*std::get<0>(*_state))());
+    //    assert((*std::get<1>(*_state))());
+    //    assert((*std::get<2>(*_state))());
+    //    assert((*std::get<3>(*_state))());
+
+
+    //            if(ar->page_link())ar->page_link()->binder(this);
+    //            if(ar->item_link())ar->item_link()->binder(this);
+
+    //        (*_bounded_item)()->record_binder(this);
+    //        (*_bounded_page)()->record_binder(this);
+
+}
+
+TreeItem::coupler::~coupler()
+{
+    std::function<void(boost::intrusive_ptr<TreeItem>)>
+    close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
+        if(it->is_registered_to_browser())    // item_to_be_deleted->unique_page()
+        {
+            auto page = it->page_link();
+
+            if(page)
+                page->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+        }
+
+        if(it->count_direct() > 0)
+        {
+            for(int i = 0; i < it->count_direct(); i++) {
+                close_tab_recursive(it->item_direct(i));
+            }
+        }
+    };
+
+    //    //
+    //    browser::WebView *view = bounded_page()->view();    //_page->view();
+    //    browser::TabWidget *tabmanager = nullptr;
+
+    //    if(view) {
+    //        tabmanager = view->tabmanager();
+    //    }
+
+    if(item()) {
+
+
+        // multi record to one page:
+        // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
+        // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
+        // assert(_page->record().get() == this);
+
+        //        bool is_holder = (_bounded_item.get() == this);     // _page->record() may mean some other record
+
+        //            page_to_nullptr();
+
+        //        _page->record(nullptr);
+        //        _page = nullptr;
+
+        //        if(view && tabmanager // && is_holder
+        //          ) {
+        // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+
+        //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
+
+        // I want to reuse it // close_tab_recursive(item_link());  // if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
+        item().reset();
+
+        //        }
+
+    }
+}
+
+
+
+
+TreeItem::coupler::status_type TreeItem::coupler::state_impl()
+{
+    //    std::shared_ptr<shared_state_type> _state = std::make_shared<shared_state_type>();
+    status_type status;
+
     //    auto il = [&]() {return item_link();}; // 0
     //    auto pl = [&]() {return page_link();}; // 1
 
-    std::get<0>(_state) = [&]() {return item_link();};  // std::make_shared<item_link_exist>([&]() {return item_link();});
-    std::get<1>(_state) = [&]() {return page_link();};  // std::make_shared<page_link_exist>([&]() {return page_link();});
+    std::get<0>(status) = [&]() {return item();};  //
+    //    std::get<0>(*_state) = std::make_shared<item_link_exist>([&]() {return item_link();});
+    std::get<1>(status) = [&]() {return page();};  //
+    //    std::get<1>(*_state) = std::make_shared<page_link_exist>([&]() {return page_link();});
 
     //    //    if(il() && pl()) {
 
     //    auto ilb = [&]() {return item_link()->binder();};   // 2
     //    auto plb = [&]() {return page_link()->binder();};   // 3
 
-    std::get<2>(_state) = [&]() {return item_link()->binder();};    // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
-    std::get<3>(_state) = [&]() {return page_link()->binder();};    // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
+    std::get<2>(status) = [&]() {return item()->binder();};    //
+    //    std::get<2>(*_state) = std::make_shared<binder_exist>([&]() mutable{
+    //        //        auto ilb    = item_link()->binder();
+    //        //        auto ilbg   = item_link()->binder().get();
+    //        //        auto plb_0  = page_link()->binder();
+    //        //        auto plb_1  = page_link()->binder();
+    //        //        //    plb_1->integrity(); // empty pointer error! for && return type of binder()
+    //        //        auto plbg   = page_link()->binder().get();
+    //        //        int dumy    = 65535;
+    //        return item_link()->binder();
+    //    });
+
+    std::get<3>(status) = [&]() {return page()->binder();};    //
+    //    std::get<3>(*_state) = std::make_shared<binder_exist>([&]() mutable{
+    //        return page_link()->binder();
+    //    });
 
     //    //        if(ilb() && plb()) {
     //    auto ib = [&]() {return item_link()->binder() == this;};    // 4
     //    auto pb = [&]() {return page_link()->binder() == this;};    // 5
-    std::get<4>(_state) = [&]() {return item_link()->binder() == this;};    // std::make_shared<binder_self_reference>([&]() {return item_link()->binder() == this;});
-    std::get<5>(_state) = [&]() {return page_link()->binder() == this;};    // std::make_shared<binder_self_reference>([&]() {return page_link()->binder() == this;});    //            if(ib() && pb()) {result = true;}
+    std::get<4>(status) = [&]() {return item()->binder().get() == this;};    //
+    //    std::get<4>(*_state) = std::make_shared<binder_self_reference>([&]() {return item_link()->binder() == this;});
+    std::get<5>(status) = [&]() {return page()->binder().get() == this;};    //
+    //    std::get<5>(*_state) = std::make_shared<binder_self_reference>([&]() {return page_link()->binder() == this;});    //            if(ib() && pb()) {result = true;}
 
     //        }
     //    }
-    std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    // std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
-    std::get<7>(_state) = [&](browser::WebPage * page) {return page->binder();};;   // std::make_shared<page_binder_exist>([&](browser::WebPage * page) {return page->binder();});
-    std::get<8>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();};   // std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
-    std::get<9>(_state) = [&](browser::WebPage * page) {return page = page_link();};    // std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page = page_link();});
 
-    return std::move(_state);
+
+    //    std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    //
+    //    //    std::get<6>(*_state) = std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
+    //    std::get<7>(_state) = [&](browser::WebPage * page) {return page->binder();};               //
+    //    //    std::get<7>(*_state) = std::make_shared<page_binder_exist>([&](browser::WebPage * page) {return page->binder();});
+
+
+    //    std::get<8>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();};   //
+    //    //    std::get<8>(*_state) = std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
+    //    std::get<9>(_state) = [&](browser::WebPage * page) {return page == page_link();};               //
+    //    //    std::get<9>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
+
+
+    std::get<6>(status) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item();};   //
+    //    std::get<6>(*_state) = std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
+    std::get<7>(status) = [&](browser::WebPage * page_) {return page_ == page();};               //
+    //    std::get<7>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
+
+
+    return std::move(status);
 
 }
 
 
-bool TreeItem::coupler_delegation::internal_integrity()const
+bool TreeItem::coupler::integrity_internal()const
 {
-    return std::get<0>(_state)() && std::get<1>(_state)() && std::get<2>(_state)() && std::get<3>(_state)() && std::get<4>(_state)() && std::get<5>(_state)();    // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))();
+    return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)();    //
+    // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))();
+    //        (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))();
 }
 
-
-bool TreeItem::coupler_delegation::external_integrity(boost::intrusive_ptr<TreeItem> host, browser::WebPage *page)const
+bool TreeItem::coupler::integrity_external(boost::intrusive_ptr<TreeItem> host, browser::WebPage *page)const
 {
-    return std::get<0>(_state)() && std::get<1>(_state)() && std::get<2>(_state)() && std::get<3>(_state)() && std::get<4>(_state)() && std::get<5>(_state)() && std::get<6>(_state)(host) && std::get<7>(_state)(page) && std::get<8>(_state)(host) && std::get<9>(_state)(page);  // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))() && (*std::get<6>(_state))(host) && (*std::get<7>(_state))(page) && (*std::get<8>(_state))(host) && (*std::get<9>(_state))(page);
+    return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)() && std::get<6>(_status)(host) && std::get<7>(_status)(page);    // && std::get<8>(_state)(host) && std::get<9>(_state)(page);  //
+    // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))() && (*std::get<6>(_state))(host) && (*std::get<7>(_state))(page) && (*std::get<8>(_state))(host) && (*std::get<9>(_state))(page);
+    //        (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))() && (*std::get<6>(*_state))(host) && (*std::get<7>(*_state))(page) && (*std::get<8>(*_state))(host) && (*std::get<9>(*_state))(page);
 }
 
-void TreeItem::coupler_delegation::break_coupler() {if(item_link() && item_link()->binder())item_link()->binder().reset(); if(page_link() && page_link()->binder())page_link()->binder().reset();}
+void TreeItem::coupler::break_linked_items()
+{
+    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it    // if(item_link())item_link().reset();  // if(item_link() && item_link()->binder())item_link()->binder().reset();
+
+    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it   // if(page_link())page_link() = nullptr; // if(page_link() && page_link()->binder())page_link()->binder().reset();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

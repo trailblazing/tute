@@ -56,6 +56,27 @@ using boost::static_pointer_cast;
 #include <exception>
 namespace sd {
 
+    // http://stackoverflow.com/questions/20616958/stdforward-without-perfect-forwarding
+    template<bool do_move, typename T>
+    struct helper {
+        auto operator()(T &&t) const
+        -> decltype(std::move(t))
+        {
+            return (std::move(t));
+        }
+    };
+
+    template<typename T>
+    struct helper<false, T> {
+        T &operator()(T &&t) const { return t; }
+    };
+
+    template<bool do_move, typename T>
+    auto conditional_move(T &&t)
+    ->decltype(helper<do_move, T>()(std::forward<T>(t)))
+    {
+        return (helper<do_move, T>()(std::forward<T>(t)));
+    }
 
     template <typename A, typename B>struct STATIC_SAME {
         enum { value = false };

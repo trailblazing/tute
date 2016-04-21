@@ -371,7 +371,7 @@ namespace browser {
                     && homeurl != page->url()
                       ) {
                         record->field("url", home);
-                        page->item_registered_setup_binder(record)->activate(); // page->load(record, true);
+                        page->item_bind(record)->activate(); // page->load(record, true);
                     }
                 }
             }
@@ -380,33 +380,34 @@ namespace browser {
 
     }
 
-    Browser *Entrance::new_browser(const QByteArray &state)
-    {
+    //    Browser *Entrance::new_browser(const QByteArray &state)
+    //    {
 
-        Browser *browser = new Browser(state
-                                       , _tree_screen
-                                       , _find_screen
-                                       , _editor_screen
-                                       , _vtabwidget
-                                       , _main_window
-                                       , this
-                                       , _style_source
-                                       , Qt::MaximizeUsingFullscreenGeometryHint
-                                      ); //, dock_widget
+    //        Browser *browser = new Browser(_tree_screen
+    //                                       , _find_screen
+    //                                       , _editor_screen
+    //                                       , _vtabwidget
+    //                                       , _main_window
+    //                                       , this
+    //                                       , _style_source
+    //                                       , Qt::MaximizeUsingFullscreenGeometryHint
+    //                                      ); //, dock_widget
 
-        //        _dockwidget->setWidget(browser);
-        //        browser->setParent(_dockwidget);
+    //        browser->restore_state(state);
+
+    //        //        _dockwidget->setWidget(browser);
+    //        //        browser->setParent(_dockwidget);
 
 
-        //        //        _dockwidget->adjustSize();
-        //        //        _dockwidget->setAutoFillBackground(true);
-        //        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
+    //        //        //        _dockwidget->adjustSize();
+    //        //        //        _dockwidget->setAutoFillBackground(true);
+    //        //        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);
 
-        //        browser->restore_state(state);
-        //        _mainWindows.prepend(browser);
+    //        //        browser->restore_state(state);
+    //        //        _mainWindows.prepend(browser);
 
-        return browser;     // BrowserView::QDockWidget::BrowserWindow*
-    }
+    //        return browser;     // BrowserView::QDockWidget::BrowserWindow*
+    //    }
 
     Browser *Entrance::new_browser()
     {
@@ -426,94 +427,94 @@ namespace browser {
         //        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
     }
 
-    Browser *Entrance::new_browser(QUrl const &url)
-    {
+    //    Browser *Entrance::new_browser(QUrl const &url)
+    //    {
 
-        //        DockedWindow *browser =
-        return new Browser(url
-                           , _tree_screen
-                           , _find_screen
-                           , _editor_screen
-                           , _vtabwidget
-                           , _main_window
-                           , this
-                           , _style_source
-                           , Qt::MaximizeUsingFullscreenGeometryHint
-                          ); //, dock_widget
-
-
-        //        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
-    }
+    //        //        DockedWindow *browser =
+    //        return new Browser(url
+    //                           , _tree_screen
+    //                           , _find_screen
+    //                           , _editor_screen
+    //                           , _vtabwidget
+    //                           , _main_window
+    //                           , this
+    //                           , _style_source
+    //                           , Qt::MaximizeUsingFullscreenGeometryHint
+    //                          ); //, dock_widget
 
 
-    Browser *Entrance::new_browser(boost::intrusive_ptr<TreeItem> item)
-    {
-
-        //        DockedWindow *browser =
-        return new Browser(item
-                           , _tree_screen
-                           , _find_screen
-                           , _editor_screen
-                           , _vtabwidget
-                           , _main_window
-                           , this
-                           , _style_source
-                           , Qt::MaximizeUsingFullscreenGeometryHint
-                          ); //, dock_widget
+    //        //        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+    //    }
 
 
-        //        return find(item);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
-    }
+    //    Browser *Entrance::new_browser(boost::intrusive_ptr<TreeItem> item)
+    //    {
 
-    WebView *Entrance::new_view(QUrl const &_url)
-    {
-        //BrowserView *browser_view = globalParameters.getBrowserView();
-        //BrowserWindow *browser = nullptr;
+    //        //        DockedWindow *browser =
+    //        return new Browser(item
+    //                           , _tree_screen
+    //                           , _find_screen
+    //                           , _editor_screen
+    //                           , _vtabwidget
+    //                           , _main_window
+    //                           , this
+    //                           , _style_source
+    //                           , Qt::MaximizeUsingFullscreenGeometryHint
+    //                          ); //, dock_widget
 
-        //if(browser_view) {
-        //        browser = browser_view->getBrowserWindow();     //
-        //auto dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
-        //dock_widget->setParent(this);
 
-        //        DockedWindow *browser =
-        new Browser(_url
-                    , _tree_screen
-                    , _find_screen
-                    , _editor_screen
-                    , _vtabwidget
-                    , _main_window
-                    , this
-                    , _style_source
-                    , Qt::MaximizeUsingFullscreenGeometryHint
-                   ); //, dock_widget
+    //        //        return find(item);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+    //    }
 
-        //        _dockwidget->setWidget(browser);
-        //        browser->setParent(_dockwidget);
+    //    WebView *Entrance::new_view(QUrl const &_url)
+    //    {
+    //        //BrowserView *browser_view = globalParameters.getBrowserView();
+    //        //BrowserWindow *browser = nullptr;
 
-        //        //    QVBoxLayout *layout = new QVBoxLayout(this);
-        //        //    //QDockWidget *dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
-        //        //    //when change dock_widget to member variable, you need rebuild the project! else the behavior will be weird.
-        //        //    layout->setMargin(0);
+    //        //if(browser_view) {
+    //        //        browser = browser_view->getBrowserWindow();     //
+    //        //auto dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
+    //        //dock_widget->setParent(this);
 
-        //        //        _dockwidget->adjustSize();
-        //        //        _dockwidget->setAutoFillBackground(true);
-        //        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);   // AllDockWidgetFeatures
+    //        //        DockedWindow *browser =
+    //        new Browser(_url
+    //                    , _tree_screen
+    //                    , _find_screen
+    //                    , _editor_screen
+    //                    , _vtabwidget
+    //                    , _main_window
+    //                    , this
+    //                    , _style_source
+    //                    , Qt::MaximizeUsingFullscreenGeometryHint
+    //                   ); //, dock_widget
 
-        //        //Qt::MaximizeUsingFullscreenGeometryHint
+    //        //        _dockwidget->setWidget(browser);
+    //        //        browser->setParent(_dockwidget);
 
-        //        //        if(!browser) {
-        //        //            browser = new BrowserWindow(browser_view);  //incomplete
-        //        //        }
-        //        _mainWindows.prepend(browser);
-        //        //browser->show();
-        //        //}
+    //        //        //    QVBoxLayout *layout = new QVBoxLayout(this);
+    //        //        //    //QDockWidget *dock_widget = new QDockWidget(this, Qt::MaximizeUsingFullscreenGeometryHint);
+    //        //        //    //when change dock_widget to member variable, you need rebuild the project! else the behavior will be weird.
+    //        //        //    layout->setMargin(0);
 
-        //        //this->exec();
-        //        assert(record->binded_only_page());
-        //        assert(record->binded_only_page()->view());
+    //        //        //        _dockwidget->adjustSize();
+    //        //        //        _dockwidget->setAutoFillBackground(true);
+    //        //        _dockwidget->setFeatures(QDockWidget::NoDockWidgetFeatures);   // AllDockWidgetFeatures
 
-        return find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _url.toString();});   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
-    }
+    //        //        //Qt::MaximizeUsingFullscreenGeometryHint
+
+    //        //        //        if(!browser) {
+    //        //        //            browser = new BrowserWindow(browser_view);  //incomplete
+    //        //        //        }
+    //        //        _mainWindows.prepend(browser);
+    //        //        //browser->show();
+    //        //        //}
+
+    //        //        //this->exec();
+    //        //        assert(record->binded_only_page());
+    //        //        assert(record->binded_only_page()->view());
+
+    //        return find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _url.toString();});   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+    //    }
 
     //    WebView *Entrance::new_dockedwindow(Record *const record)
     //    {
@@ -700,7 +701,7 @@ namespace browser {
 
         init_setting();
 
-        setup_signals(_find_screen->toolbarsearch());
+        //        setup_signals(_find_screen->toolbarsearch());
 
         //        new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));  // main_window() will never fail
 
@@ -917,83 +918,85 @@ namespace browser {
     }
 
 
-    void Entrance::activate(const QUrl &_find_url
-                            , TreeScreen::paste_strategy _view_paste_strategy
-                            , equal_url_t _equal
-                           )
-    {
-        //        clean();
-        Browser *_current_browser = nullptr;
-        WebView *v = nullptr;
+    //    void Entrance::activate(const QUrl &_find_url
+    //                            , const TreeScreen::paste_strategy &_view_paste_strategy
+    //                            , equal_url_t _equal
+    //                           )
+    //    {
+    //        //        clean();
+    //        Browser *_current_browser = nullptr;
+    //        WebView *v = nullptr;
 
-        if(_browsers.size() > 0) {
-            for(auto browser : _browsers) {
-                v = browser->tabmanager()->find([&](boost::intrusive_ptr<const TreeItem> it) { return _equal(it, _find_url);});
+    //        if(_browsers.size() > 0) {
+    //            for(auto browser : _browsers) {
+    //                v = browser->tabmanager()->find([&](boost::intrusive_ptr<const TreeItem> it) { return _equal(it, _find_url);});
 
-                if(v) {
-                    _current_browser = browser;
-                    v->page()->activate();
-                }
-            }
-        }
+    //                if(v) {
+    //                    _current_browser = browser;
+    //                    v->page()->activate();
+    //                }
+    //            }
+    //        }
 
-        if(v == nullptr) {
+    //        if(v == nullptr) {
 
-            _current_browser = activated_browser();
+    //            _current_browser = activated_browser();
 
-            auto r = _current_browser->tabmanager()->item_request_from_tree(_find_url, _view_paste_strategy, _equal);
+    //            auto r =    // _current_browser->tabmanager()
+    //                _tree_screen->item_bind(_find_url, _view_paste_strategy, _equal);
 
-            r->activate();
+    //            r->activate();
 
-        }
+    //        }
 
 
-        auto vtab = globalparameters.vtab();
+    //        auto vtab = globalparameters.vtab();
 
-        if(vtab->currentWidget() != _current_browser->record_screen()) {
-            vtab->setCurrentWidget(_current_browser->record_screen());
-        }
-    }
+    //        if(vtab->currentWidget() != _current_browser->record_screen()) {
+    //            vtab->setCurrentWidget(_current_browser->record_screen());
+    //        }
+    //    }
 
-    void Entrance::activate(boost::intrusive_ptr<TreeItem> item
-                            , TreeScreen::paste_strategy _view_paste_strategy
-                            , equal_t _equal
-                           )
-    {
-        //        clean();
-        Browser *_current_browser = nullptr;
+    //    void Entrance::activate(boost::intrusive_ptr<TreeItem> item
+    //                            , const TreeScreen::paste_strategy &_view_paste_strategy
+    //                            , equal_t _equal
+    //                           )
+    //    {
+    //        //        clean();
+    //        Browser *_current_browser = nullptr;
 
-        if(item->page_valid() && _browsers.size() > 0) {
-            for(auto browser : _browsers) {
-                if(browser->tabmanager()->indexOf(item->page_link()->view()) != -1) {
-                    _current_browser = browser;
-                    item->activate();
-                }
-            }
-        } else {
-            //        if(activiated_browser().first) {
-            _current_browser = activated_browser();
+    //        if(item->page_valid() && _browsers.size() > 0) {
+    //            for(auto browser : _browsers) {
+    //                if(browser->tabmanager()->indexOf(item->page_link()->view()) != -1) {
+    //                    _current_browser = browser;
+    //                    item->activate();
+    //                }
+    //            }
+    //        } else {
+    //            //        if(activiated_browser().first) {
+    //            _current_browser = activated_browser();
 
-            auto r = _current_browser->tabmanager()->item_request_from_tree(item, _view_paste_strategy, _equal);
+    //            auto r =    // _current_browser->tabmanager()
+    //                _tree_screen->item_bind(item, _view_paste_strategy, _equal);
 
-            r->activate();
-        }
+    //            r->activate();
+    //        }
 
-        auto vtab = globalparameters.vtab();
+    //        auto vtab = globalparameters.vtab();
 
-        if(vtab->currentWidget() != _current_browser->record_screen()) {
-            vtab->setCurrentWidget(_current_browser->record_screen());
-        }
-    }
+    //        if(vtab->currentWidget() != _current_browser->record_screen()) {
+    //            vtab->setCurrentWidget(_current_browser->record_screen());
+    //        }
+    //    }
 
-    void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
-    {
-        //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
-        void(Entrance::*_activate)(const QUrl &, TreeScreen::paste_strategy, equal_url_t) = &Entrance::activate;  // <url_fragment>;
-        connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
-        //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
+    //    void Entrance::setup_signals(browser::ToolbarSearch *toolbarsearch)
+    //    {
+    //        //        auto _toolbarsearch = globalparameters.getFindScreen()->toolbarsearch();
+    //        void(Entrance::*_activate)(const QUrl &, const TreeScreen::paste_strategy &, equal_url_t) = &Entrance::activate;  // <url_fragment>;
+    //        connect(toolbarsearch, &ToolbarSearch::search, this, _activate);
+    //        //        connect(this->_actionFreeze, &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 
-    }
+    //    }
 
     void Entrance::assembly(void)
     {
@@ -1190,10 +1193,13 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    WebView *Entrance::item_registered_setup_binder(boost::intrusive_ptr<TreeItem> _it)
+    boost::intrusive_ptr<TreeItem> Entrance::item_bind(boost::intrusive_ptr<TreeItem> _it)
     {
         assert(_it);
-        assert(!_it->is_lite());
+
+        if(_it->is_lite())_it->to_fat();
+
+        boost::intrusive_ptr<TreeItem> result(nullptr);
         //        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
 
         //        clean();
@@ -1211,7 +1217,13 @@ namespace browser {
                 //        QUrl url = QUrl(record->getNaturalFieldSource("url"));
                 if(_browsers.size() == 0) {
 
-                    _browser = new_browser(_it); // record ? QUrl(record->getNaturalFieldSource("url")).isValid() ? QUrl(record->getNaturalFieldSource("url")) : QUrl(DockedWindow::_defaulthome) : QUrl(DockedWindow::_defaulthome)
+                    _browser = new_browser(); // record ? QUrl(record->getNaturalFieldSource("url")).isValid() ? QUrl(record->getNaturalFieldSource("url")) : QUrl(DockedWindow::_defaulthome) : QUrl(DockedWindow::_defaulthome)
+                    result = _browser->item_bind(_it);  // _tree_screen->item_request_from_tree_impl(_it, std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    // _view = _browser->tabmanager()->newTab(result, false);
+                    _view = result->binder()->page()->view();
+
+                    // _browser->raise();
+                    // _browser->activateWindow();
 
                 } else {
 
@@ -1232,7 +1244,18 @@ namespace browser {
 
                     if(_view == nullptr && _browser) {
                         //            dp = invoke_page(record); //->tabWidget()->find_view(record);    // create_view(record, main_window(record));
-                        _view = _browser->tabmanager()->item_registered_setup_binder(_it)->bind(); // _browser->invoke_registered_page(_it);
+
+
+
+                        // _view = _browser->tabmanager()->newTab(_it, false); // need to be change a lot for without bind!
+                        // result = _view->page()->binder()->item_link();
+                        result = _browser->item_bind(_it);
+                        _view = result->binder()->page()->view();
+
+
+
+
+                        // _view->page()->binder()->item_link()->bind(); // _browser->invoke_registered_page(_it);
                     } else {
 
                         //            if(!dp.first->isActiveWindow() || !dp.first->isVisible()) {
@@ -1254,7 +1277,7 @@ namespace browser {
                         //                        activator(ar)
                         //                    );
 
-                        _view->page()->item_registered_setup_binder(_it);
+                        result = _view->page()->item_bind(_it);
 
 
                         //                    }
@@ -1280,13 +1303,24 @@ namespace browser {
 
                 assert(_browser);
                 assert(_view);
+                assert(result);
                 setWidget(_browser);
             }
         }
 
         assert(_browser);
         assert(_view);
-        return _view;  // qobject_cast<DockedWindow *>(widget()); //
+        assert(_view->page()->binder());
+        assert(_it->binder());
+        assert(_view->page()->binder() == _it->binder());
+
+        auto vtab = globalparameters.vtab();
+
+        if(vtab->currentWidget() != _browser->record_screen()) {
+            vtab->setCurrentWidget(_browser->record_screen());
+        }
+
+        return result; // _view;  // qobject_cast<DockedWindow *>(widget()); //
         // _mainWindows[0];
     }
 
@@ -1439,7 +1473,7 @@ namespace browser {
     //    }
 
     WebView *Entrance::find(
-        std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal  // const QUrl &url
+        const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal  // const QUrl &url
     )const
     {
         //        clean();

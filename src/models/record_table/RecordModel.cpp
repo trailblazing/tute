@@ -599,19 +599,25 @@ int RecordModel::insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<Tre
 
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
-    browser::WebView *view = _item->binder()->page_link()->view();    // activate();
-    // Вставка новых данных в таблицу конечных записей
+    browser::WebView *view = nullptr;
+    int selected_position = -1;
 
-    // accomplished by TabWidget::addTab in TabWidget::newTab?
-    int selected_position =
-        _tabmanager->indexOf(view); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+    if(_item->binder() && _item->binder()->page()) {
+        view = _item->binder()->page()->view();    // activate();
+        // Вставка новых данных в таблицу конечных записей
 
-    if(selected_position == -1) {
+        // accomplished by TabWidget::addTab in TabWidget::newTab?
+        selected_position = _tabmanager->indexOf(view); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+    } else {
+
+        //    if(selected_position == -1) {
+
         view = _tabmanager->newTab(_item); // , _item->field("name")
         //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
+        selected_position = _tabmanager->indexOf(view);
     }
 
-    selected_position = _tabmanager->indexOf(view);
+
     assert(item(selected_position) == _item);
 
     endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
@@ -757,19 +763,26 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const int _index)const
 
     if(_index >= 0 && _index < size()) {
         assert(_tabmanager->webView(_index)->page()->binder());
-        r = _tabmanager->webView(_index)->page()->binder()->item_link();
+        r = _tabmanager->webView(_index)->page()->binder()->item();
 
         //        if(!r) {
         //            //            _tabmanager->webView(pos)->page()->record_binder()->binder();
         //        }
 
-        assert(r);
+        assert(r);  // if find_recursive get noew item from tree, there will be no item_link? becuse I move it?
     }
 
     return r;
 }
 
+boost::intrusive_ptr<TreeItem> RecordModel::item_fat(int index)
+{
+    boost::intrusive_ptr<TreeItem> item = _tabmanager->webView(index)->page()->item_link();
 
+    if(item->is_lite())item->to_fat();
+
+    return item;
+}
 
 //bool RecordModel::remove_child(int index)
 //{
@@ -821,16 +834,9 @@ void RecordModel::index_current(int _index)
     _tabmanager->setCurrentIndex(_index);
 }
 
+int RecordModel::index_current()const {return _tabmanager->currentIndex();}
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::item_fat(int index)
-{
-    boost::intrusive_ptr<TreeItem> item = _tabmanager->webView(index)->page()->item_link();
-
-    if(item->is_lite())item->to_fat();
-
-    return item;
-}
 
 
 int RecordModel::position(QString id)
@@ -866,7 +872,7 @@ int RecordModel::count()const {return _tabmanager->count();}
 
 int RecordModel::size() const {return _tabmanager->count();}
 
-int RecordModel::index_current()const {return _tabmanager->currentIndex();}
+
 
 int RecordModel::move_up(const int pos)
 {

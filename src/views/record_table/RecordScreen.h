@@ -13,7 +13,7 @@
 #include <QByteArray>
 #include <QItemSelection>
 #include <QLabel>
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 
 
 class RecordController;
@@ -30,6 +30,7 @@ class HidableTabWidget;
 
 
 namespace browser {
+    class Entrance;
     class Browser;
     class ToolbarSearch;
     class TabWidget;
@@ -39,7 +40,7 @@ class RecordScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordScreen(FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Browser *_browser, HidableTabWidget *_vtabwidget, MainWindow *_main_window);
+    RecordScreen(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, browser::Browser *_browser, HidableTabWidget *_vtabwidget, MainWindow *_main_window);
 
     virtual ~RecordScreen();
 

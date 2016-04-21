@@ -136,7 +136,7 @@ namespace browser {
         auto result_item = globalparameters.find_screen()->find_clicked();
         TreeScreen *_tree_screen = globalparameters.tree_screen();
 
-        if(!result_item || 0 == result_item->count_direct()) {
+        if(!result_item) {  //  || 0 == result_item->count_direct()
 
             QUrl url = QUrl(searchText);
 
@@ -179,20 +179,10 @@ namespace browser {
               ) {
                 //QLineEdit *lineedit =
 
-                //            globalparameters.entrance()->active_record(request_record(url));
-
-                //                if(globalparameters.entrance()->activiated_browser()) {
-                Browser *browser = globalparameters.entrance()->activated_browser();
-                //                    auto ara = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-                auto r = browser->tabmanager()->item_request_from_tree(
-                             url
-                             , std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                         );
-
-                r->activate();
-                //                } else {
-                //                    globalparameters.entrance()->new_browser(url);
-                //                }
+                globalparameters.tree_screen()->item_bind(
+                    url
+                    , std::bind(&TreeScreen::view_paste_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                )->activate();
 
                 assert(_lineedits);
 
@@ -239,24 +229,33 @@ namespace browser {
                 url.setQuery(url_query);
                 url.setFragment("q=" + searchText);
                 // QString u = url.toString();
-                emit search(url, std::bind(&TreeScreen::view_paste_as_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                emit search(url, std::bind(&TreeScreen::view_paste_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             }
         } else if(result_item != _tree_screen->tree_view()->current_item()) {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             //            TreeScreen *_tree_screen = globalparameters.tree_screen();
-            _tree_screen->view_paste_as_child(
-                TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index())
-                , result_item
-                , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool{return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, result_item->up_linker())
-            );
+            auto index_result = _tree_screen->tree_view()->source_model()->index(result_item);
 
-            //                //            _tree_screen->tree_view()->reset();
-            //                _tree_screen->setup_model(result_item);
-            auto _index = _tree_screen->tree_view()->select_as_current(result_item->item_direct(0)->host());
-            //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
-            //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+            if(index_result.isValid()) {
+                _tree_screen->tree_view()->select_as_current(index_result);
 
-            _tree_screen->index_invoke(_index);
+
+                //                //            else {
+                //                //                _tree_screen->view_paste_as_child(
+                //                //                    TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index())
+                //                //                    , result_item
+                //                //                    , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool{return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, result_item->up_linker())
+                //                //                );
+                //                //            }
+
+                //                //                //            _tree_screen->tree_view()->reset();
+                //                //                _tree_screen->setup_model(result_item);
+                //                auto _index = _tree_screen->tree_view()->select_as_current(result_item->item_direct(0)->host());
+                //                //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
+                //                //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+
+                _tree_screen->index_invoke(index_result);
+            }
 
         }
     }

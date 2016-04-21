@@ -5,11 +5,17 @@
 #include <QModelIndexList>
 #include "utility/delegate.h"
 //#include "models/record_table/ItemsFlat.h"
-#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeItem.h"
 
 //#include <boost/serialization/strong_typedef.hpp>
 
 //extern const int add_new_record_after;
+
+
+extern const int add_new_record_to_end;
+extern const int add_new_record_before;
+extern const int add_new_record_after;
+
 
 class Record;
 class RecordView;
@@ -31,6 +37,7 @@ namespace browser {
     class Entrance;
     class Browser;
     class WebView;
+    class TabWidget;
     // extern constexpr const char * DockedWindow::_defaulthome;
 }
 
@@ -42,8 +49,8 @@ class RecordController : public QObject {
     Q_OBJECT
 public:
 
-    typedef TreeItem::bind_helper bind_helper;
-    typedef TreeItem::activate_helper active_helper;
+    //    typedef TreeItem::bind_helper       bind_helper;
+    //    typedef TreeItem::activate_helper   active_helper;
     RecordController(MetaEditor             *_editor_screen
                      , browser::TabWidget   *_tabmanager
                      , RecordScreen         *_record_screen
@@ -108,7 +115,7 @@ public:
 
     //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
-    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = ADD_NEW_RECORD_AFTER); // add_new_record_after
+    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after); // add_new_record_after
 
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
     //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
@@ -174,7 +181,7 @@ protected:
     MetaEditor          *_editor_screen;
     MainWindow          *_main_window;
 
-    int addnew_item(boost::intrusive_ptr<TreeItem> item, const int mode = ADD_NEW_RECORD_AFTER);
+    int addnew_item(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after);
 
     void edit_field(int pos
                     , QString pin

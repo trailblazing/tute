@@ -44,13 +44,14 @@ public:
     //    boost::intrusive_ptr<TreeItem> item(QString id) const;
     //    boost::intrusive_ptr<TreeItem> item_by_name(QString name) const;
 
-    QModelIndexList indexes(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal);
+    QModelIndexList indexes(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal);
+    QList<boost::intrusive_ptr<TreeItem>> items(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal);
     //    boost::intrusive_ptr<TreeItem> item_by_url(QUrl find_url)const;
     // Функция ищет ветку с указанным ID и возвращает ссылку не неё в виде TreeItem *
     // Если ветка с указанным ID не будет найдена, возвращается NULL
     //    template<typename url_type = url_full>
     // boost::intrusive_ptr<TreeItem> item_by_url(const QUrl &_find_url, equal_type _equal)const;
-    boost::intrusive_ptr<TreeItem> item(std::function<bool(boost::intrusive_ptr<const TreeItem>)> _equal)const;          //const QUrl &_find_url, equal_type _equal
+    boost::intrusive_ptr<TreeItem> item(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal)const;          //const QUrl &_find_url, equal_type _equal
 
 
     // Возвращает общее количество записей, хранимых в дереве
@@ -84,12 +85,12 @@ public:
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
 
-    boost::intrusive_ptr<TreeItem> model_duplicated_merge_to_left(std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (std::function<KnowModel *()>, QList<boost::intrusive_ptr<TreeItem>>, QString, bool)> _view_delete_items
-            , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
+    boost::intrusive_ptr<TreeItem> model_merge_to_left(const std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &, const QString &, const bool)> &_view_remove
+                                                       , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
 
-    boost::intrusive_ptr<ItemsFlat::linker> record_remove(boost::intrusive_ptr<TreeItem> _item);
+    //    boost::intrusive_ptr<ItemsFlat::linker> record_remove(boost::intrusive_ptr<TreeItem> _item);
 
-    boost::intrusive_ptr<TreeItem> model_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
+    boost::intrusive_ptr<TreeItem> model_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = add_new_record_after);
     //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
 
 private:
@@ -112,7 +113,7 @@ private:
                                 );
 
     //    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
-    boost::intrusive_ptr<ItemsFlat::linker> model_delete_item(boost::intrusive_ptr<ItemsFlat::linker> delete_linker);
+    boost::intrusive_ptr<ItemsFlat::linker> model_delete_permantent(boost::intrusive_ptr<ItemsFlat::linker> delete_linker);
     //    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);

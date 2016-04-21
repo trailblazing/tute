@@ -46,8 +46,10 @@ AttachTableController::AttachTableController(QObject *parent)
 
 AttachTableController::~AttachTableController()
 {
-    delete _view;
-    delete _model;
+    // delete
+    _view->deleteLater();
+    // delete
+    _model->deleteLater();
 }
 
 

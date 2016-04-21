@@ -457,6 +457,13 @@ void FindScreen::setup_signals(void)
     connect(_find_in_tags, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_tags);
 
     connect(_find_in_text, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
+
+    boost::intrusive_ptr<TreeItem> (TreeScreen::*_item_bind)(
+        const QUrl & _find_url
+        , const TreeScreen::paste_strategy & _view_paste_strategy
+        , equal_url_t _equal
+    ) = &TreeScreen::item_bind;
+    connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen, _item_bind);
 }
 
 
@@ -624,10 +631,16 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     data["ctime"]   = ctime;
     data["dir"]     = data["id"];
     data["file"]    = "text.html";
+
+    QList<boost::intrusive_ptr<TreeItem::linker>> _result_list;
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
-    boost::intrusive_ptr<TreeItem> _result_item(new TreeItem(nullptr, data));  // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
+    boost::intrusive_ptr<TreeItem> _result_item(_tree_screen->session_root_item()    // new TreeItem(nullptr, data)
+                                               );  // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
+
+    //    auto original_count = _result_item->count_direct();
+
     //    auto _entrance = globalparameters.entrance();
 
     //    for(auto i : _entrance->browsers()) {
@@ -775,9 +788,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         _progress->close();
     };
 
-    auto final_search = [&](boost::intrusive_ptr<TreeItem>      &_start_item
-                            , boost::intrusive_ptr<TreeItem>    &_result_item  // std::shared_ptr<RecordTable> &resultset_data
-    ) {
+    auto final_search = [&](QList<boost::intrusive_ptr<TreeItem::linker>>   &_result_list
+                            , boost::intrusive_ptr<TreeItem>                &_start_item
+                            , boost::intrusive_ptr<TreeItem>                &_result_item  // std::shared_ptr<RecordTable> &resultset_data
+
+    ) ->QList<boost::intrusive_ptr<TreeItem::linker>> & {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
 
@@ -790,7 +805,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         //        //            global_search_prepare(start_item, total_records, result);
         //        //        }
 
-        return find_recursive(_start_item, _result_item);   // candidate_root->tabledata();
+        return find_recursive(_result_list, _result_item, _start_item);   // candidate_root->tabledata();
     };
 
 
@@ -821,7 +836,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     if(!_start_item) {assert_start_item(); return nullptr;}
 
     if(0 != _candidate_records) {
-        _result_item = final_search(_start_item, _result_item);
+        _result_list = final_search(_result_list, _result_item, _start_item);
         _tree_screen->enable_up_action();   // !_is_search_global
         // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
     }
@@ -834,13 +849,14 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     if(!_start_item) {assert_start_item(); return nullptr;}
 
     if(0 != _candidate_records) {
-        _result_item = final_search(_start_item, _result_item);
+        _result_list = final_search(_result_list, _result_item, _start_item);
         _tree_screen->enable_up_action();   // !_is_search_global
         // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
     }
 
     // stage 3
-    if(0 == _result_item->count_direct()) {
+    if(0 == _result_list.size()) { // (_result_item->count_direct() - original_count)
+
         //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
         //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -861,7 +877,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         if(!_start_item) {assert_start_item(); return nullptr;}
 
         if(0 != _candidate_records) {
-            _result_item = final_search(_start_item, _result_item);
+            _result_list = final_search(_result_list, _result_item, _start_item);
             _tree_screen->enable_up_action();   // _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
             // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
         }
@@ -892,158 +908,182 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    output(_result_item);
 
 
+    boost::intrusive_ptr<TreeItem>  final_result(nullptr);
 
+    if(_result_list.size() > 0)final_result = _result_list.at(0)->host();
 
-    return _result_item; // ->record_table();
+    return final_result; // ->record_table();
 }
 
 
-boost::intrusive_ptr<TreeItem> FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> _start_item, boost::intrusive_ptr<TreeItem> _result_item)
+QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
+                                               QList<boost::intrusive_ptr<TreeItem::linker>> &_result_list
+                                               , boost::intrusive_ptr<TreeItem> _result_item
+                                               , boost::intrusive_ptr<TreeItem> _start_item
+                                           )
 {
     //    auto _result_item = _result_item;  // ->record_table();
 
-    // Если была нажата отмена поиска
-    if(_cancel_flag == 1)return _result_item;
+    //    // Если была нажата отмена поиска
+    //    if(_cancel_flag == 1)return _result_item;
 
-    // Если ветка зашифрована, и пароль не был введен
-    if(_start_item->field("crypt") == "1" &&
-       globalparameters.crypt_key().length() == 0) {
-        return _result_item;
+    if(_cancel_flag != 1) {
+        //        // Если ветка зашифрована, и пароль не был введен
+        //        if(_start_item->field("crypt") == "1" &&
+        //           globalparameters.crypt_key().length() == 0) {
+        //            return _result_item;
+        //        }
+
+        if(!(_start_item->field("crypt") == "1" &&
+             globalparameters.crypt_key().length() == 0)) {
+            // Если в ветке присутсвует таблица конечных записей
+            if(_start_item->count_direct() > 0) {
+
+                auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+
+                //        auto _current_item = _tree_screen->tree_view()->current_item();
+
+                //        boost::intrusive_ptr<TreeItem> _current_branch_root;
+
+                //        if(_current_item->is_registered_to_browser())_current_branch_root = _current_item->parent();
+                //        else _current_branch_root = _current_item;
+
+                // Обработка таблицы конечных записей
+
+                // Выясняется ссылка на таблицу конечных записей
+                //        auto _start_item = _start_item;   // ->record_table();
+
+                // Перебираются записи таблицы
+                for(int i = 0; i < _start_item->count_direct(); i++) {
+                    auto candidate = _start_item->item_direct(i);
+                    // Обновляется линейка наполняемости
+                    _progress->setValue(++ _total_progress_counter);
+                    qApp->processEvents();
+
+                    if(!_progress->wasCanceled()) {
+                        //                    if(_progress->wasCanceled()) {
+                        //                        _cancel_flag = 1;
+                        //                        return _result_item;
+                        //                    }
+
+                        // Результаты поиска в полях
+                        QMap<QString, bool> iteration_search_result;
+
+                        iteration_search_result["pin"]      = false;
+                        iteration_search_result["name"]     = false;
+                        iteration_search_result["author"]   = false;
+                        iteration_search_result["home"]     = false;
+                        iteration_search_result["url"]      = false;
+                        iteration_search_result["tags"]     = false;
+                        iteration_search_result["text"]     = false;
+
+                        // Текст в котором будет проводиться поиск
+                        QString inspect_text;
+
+                        // Цикл поиска в отмеченных пользователем полях
+                        QMapIterator<QString, bool> j(iteration_search_result);
+
+                        while(j.hasNext()) {
+                            j.next();
+                            QString key = j.key();
+
+                            // Если в данном поле нужно проводить поиск
+                            if(_search_area[key] == true) {
+                                if(key != "text") {
+                                    // Поиск в обычном поле
+                                    inspect_text = _start_item->item_direct(i)->field(key);
+                                    iteration_search_result[key] = find_in_text_process(inspect_text);
+                                } else {
+                                    // Поиск в тексте записи
+                                    if(_start_item->item_direct(i)->file_exists()) inspect_text = _start_item->text(i);
+                                    else inspect_text = QString();
+
+                                    QTextDocument textdoc;
+                                    textdoc.setHtml(inspect_text);
+                                    iteration_search_result[key] = find_in_text_process(textdoc.toPlainText());
+                                }
+                            }
+                        } // Закрылся цикл поиска в полях
+
+
+                        // Проверяется, есть ли поле, в котором поиск был успешен
+                        int found_flag = 0;
+
+                        foreach(bool value, iteration_search_result)
+                            if(value == true)found_flag = 1;
+
+                        // Если запись найдена
+                        if(found_flag == 1) {
+                            qDebug() << "Find succesfull in " << candidate->field("name");
+
+                            // QString pin0 = curritem->getField("pin");
+                            // QString pin1 = searchRecordTable->getField("pin", i);   // work
+
+                            //                // В таблицу результатов поиска добавляются данные
+                            //                // Имя записи
+                            //                // Имя ветки
+                            //                // Теги
+                            //                // Путь к ветке
+                            //                // ID записи в таблице конечных записей
+                            //                _findtable->addRow(searchRecordTable->field("name", i)
+                            //                                   , searchRecordTable->field("pin", i)  // curritem->getField("pin")
+                            //                                   , curritem->getField("name")
+                            //                                   , searchRecordTable->field("tags", i)
+                            //                                   , curritem->getPath()
+                            //                                   , searchRecordTable->field("id", i)
+                            //                                  );
+
+                            if(candidate->is_lite())candidate->to_fat();
+
+                            if((candidate->parent() != _result_item->parent())  // _current_item->parent())
+                            && !_result_item->item_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il == candidate->up_linker();})) {
+                                //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
+
+
+
+                                _result_list << _source_model()->model_move_as_child_impl(_result_item //_tree_screen->session_root_item() == _result_item  // candidate->parent()
+                                                                                          , candidate
+                                                                                          , _result_item->count_direct()
+                                                                                         )->up_linker();   //
+
+                                //                    _result_item->child_insert(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
+
+
+
+
+
+                                //                assert(_recordtable->record(i)->is_lite());
+                                //                result->shadow_record_lite(result->size(), _recordtable->record(i));
+
+                                //                if(_recordtable->record(i)->isLite()) {
+                                //                    result->shadow_record(result->work_pos(), _recordtable->record_lite(i), ADD_NEW_RECORD_TO_END);
+                                //                } else {
+                                //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
+                                //                }
+                            }
+
+                            //                else {
+                            //                    find_recursive(_start_item->child(i), _result_item);
+                            //                }
+                        }
+
+                        if(candidate) { if(candidate->count_direct() > 0) find_recursive(_result_list, _result_item, candidate);}
+                    } else {
+                        //                            if(_progress->wasCanceled()) {
+                        _cancel_flag = 1;
+                        //                                return _result_item;
+                        //                            }
+                    }
+                } // Закрылся цикл перебора записей в таблице конечных записей
+            } // Закрылось условие что в ветке есть таблица конечных записей
+
+
+            //    // Рекурсивная обработка каждой подчиненной ветки
+            //    for(int i = 0; i < _start_item->current_count(); i++) find_recursive(_start_item->child(i), _result_item);
+        }
     }
 
-    // Если в ветке присутсвует таблица конечных записей
-    if(_start_item->count_direct() > 0) {
-
-        auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
-
-        auto _current_item = _tree_screen->tree_view()->current_item();
-        //        boost::intrusive_ptr<TreeItem> _current_branch_root;
-
-        //        if(_current_item->is_registered_to_browser())_current_branch_root = _current_item->parent();
-        //        else _current_branch_root = _current_item;
-
-        // Обработка таблицы конечных записей
-
-        // Выясняется ссылка на таблицу конечных записей
-        //        auto _start_item = _start_item;   // ->record_table();
-
-        // Перебираются записи таблицы
-        for(int i = 0; i < _start_item->count_direct(); i++) {
-            auto candidate = _start_item->item_direct(i)->host();
-            // Обновляется линейка наполняемости
-            _progress->setValue(++ _total_progress_counter);
-            qApp->processEvents();
-
-            if(_progress->wasCanceled()) {
-                _cancel_flag = 1;
-                return _result_item;
-            }
-
-            // Результаты поиска в полях
-            QMap<QString, bool> iteration_search_result;
-
-            iteration_search_result["pin"]      = false;
-            iteration_search_result["name"]     = false;
-            iteration_search_result["author"]   = false;
-            iteration_search_result["home"]     = false;
-            iteration_search_result["url"]      = false;
-            iteration_search_result["tags"]     = false;
-            iteration_search_result["text"]     = false;
-
-            // Текст в котором будет проводиться поиск
-            QString inspect_text;
-
-            // Цикл поиска в отмеченных пользователем полях
-            QMapIterator<QString, bool> j(iteration_search_result);
-
-            while(j.hasNext()) {
-                j.next();
-                QString key = j.key();
-
-                // Если в данном поле нужно проводить поиск
-                if(_search_area[key] == true) {
-                    if(key != "text") {
-                        // Поиск в обычном поле
-                        inspect_text = _start_item->item_direct(i)->host()->field(key);
-                        iteration_search_result[key] = find_in_text_process(inspect_text);
-                    } else {
-                        // Поиск в тексте записи
-                        if(_start_item->item_direct(i)->host()->file_exists()) inspect_text = _start_item->text(i);
-                        else inspect_text = QString();
-
-                        QTextDocument textdoc;
-                        textdoc.setHtml(inspect_text);
-                        iteration_search_result[key] = find_in_text_process(textdoc.toPlainText());
-                    }
-                }
-            } // Закрылся цикл поиска в полях
-
-
-            // Проверяется, есть ли поле, в котором поиск был успешен
-            int found_flag = 0;
-
-            foreach(bool value, iteration_search_result)
-                if(value == true)found_flag = 1;
-
-            // Если запись найдена
-            if(found_flag == 1) {
-                qDebug() << "Find succesfull in " << candidate->field("name");
-
-                // QString pin0 = curritem->getField("pin");
-                // QString pin1 = searchRecordTable->getField("pin", i);   // work
-
-                //                // В таблицу результатов поиска добавляются данные
-                //                // Имя записи
-                //                // Имя ветки
-                //                // Теги
-                //                // Путь к ветке
-                //                // ID записи в таблице конечных записей
-                //                _findtable->addRow(searchRecordTable->field("name", i)
-                //                                   , searchRecordTable->field("pin", i)  // curritem->getField("pin")
-                //                                   , curritem->getField("name")
-                //                                   , searchRecordTable->field("tags", i)
-                //                                   , curritem->getPath()
-                //                                   , searchRecordTable->field("id", i)
-                //                                  );
-
-                if(candidate->is_lite())candidate->to_fat();
-
-                if((candidate->parent() != _current_item->parent()) && !_result_item->item_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il == candidate->up_linker();})) {
-                    //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
-
-
-
-                    _source_model()->model_move_as_child_impl(candidate->parent(), candidate, _result_item->count_direct());   //
-                    //                    _result_item->child_insert(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
-
-
-
-
-
-                    //                assert(_recordtable->record(i)->is_lite());
-                    //                result->shadow_record_lite(result->size(), _recordtable->record(i));
-
-                    //                if(_recordtable->record(i)->isLite()) {
-                    //                    result->shadow_record(result->work_pos(), _recordtable->record_lite(i), ADD_NEW_RECORD_TO_END);
-                    //                } else {
-                    //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
-                    //                }
-                }
-
-                //                else {
-                //                    find_recursive(_start_item->child(i), _result_item);
-                //                }
-            }
-
-            if(candidate) { if(candidate->count_direct() > 0) find_recursive(candidate, _result_item);}
-        } // Закрылся цикл перебора записей в таблице конечных записей
-    } // Закрылось условие что в ветке есть таблица конечных записей
-
-
-    //    // Рекурсивная обработка каждой подчиненной ветки
-    //    for(int i = 0; i < _start_item->current_count(); i++) find_recursive(_start_item->child(i), _result_item);
-
-    return _result_item;
+    return _result_list;    // _result_item;
 }
 
 

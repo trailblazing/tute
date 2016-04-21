@@ -197,12 +197,12 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         assert(_item->page_valid());
         browser::WebPage *page = _item->page_link();
         assert(page);
-        QString home = _item->natural_field_source("home");
+        QString home = _item->field("home");
 
-        if(_item->natural_field_source("url") != home)
-            _item->natural_field_source("url", home);
+        if(_item->field("url") != home)
+            _item->field("url", home);
 
-        page->item_registered_setup_binder(_item)->activate(); // page->load(_record, true);
+        page->item_bind(_item)->activate(); // page->load(_record, true);
         //        _record->active();
     });
 
