@@ -1016,7 +1016,8 @@ namespace browser {
 
         //_historyback = findscreen->historyback();
 
-        _historyback->setIcon(style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)); //this
+        _historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
+                              ); //this
 
         _historybackmenu = new QMenu(this);
         _historyback->setMenu(_historybackmenu);
@@ -1025,7 +1026,8 @@ namespace browser {
 
         //navigater->addAction(_historyback);
 
-        _historyforward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)); //this
+        _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
+                                 ); //this
 
         _historyforwardmenu = new QMenu(this);
         connect(_historyforwardmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowForwardMenu);
@@ -1036,7 +1038,7 @@ namespace browser {
 
         //_stopreload = new QAction(navigater); //this
 
-        _reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
+        _reloadicon = QIcon(":/resource/pic/mobile_reload.svg"); // style()->standardIcon(QStyle::SP_BrowserReload);
         _stopreload->setIcon(_reloadicon);
 
 
@@ -1479,7 +1481,7 @@ namespace browser {
             disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
 
             if(_stopicon.isNull())
-                _stopicon = style()->standardIcon(QStyle::SP_BrowserStop);
+                _stopicon = QIcon(":/resource/pic/mobile_stop.svg"); // style()->standardIcon(QStyle::SP_BrowserStop);
 
             _stopreload->setIcon(_stopicon);
             connect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);

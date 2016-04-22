@@ -26,8 +26,7 @@ extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
 pages_container::pages_container(browser::TabWidget *_tabmanager)
-    : _tabmanager(// new browser::TabWidget(_browser, _record_controller)
-          _tabmanager)
+    : _tabmanager(_tabmanager)  // new browser::TabWidget(_browser, _record_controller)
       //    , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
 {}
 
@@ -244,7 +243,8 @@ pages_container::~pages_container()
 //}
 
 // Конструктор модели
-RecordModel::RecordModel(//TreeScreen             *_tree_screen
+RecordModel::RecordModel(
+    //TreeScreen             *_tree_screen
     //, FindScreen           *_find_screen
     //,
     RecordController     *_record_controller
@@ -520,7 +520,7 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
     //    _record_controller->remove_children(ids); // recursive called
 
     //    view->reset();
-    //    view->setModel(this);   // wrong! this is not the proxy model
+    //    view->setModel(this);   // wrong operation! this is not the proxy model
     endRemoveRows();
 
     return true;
@@ -882,8 +882,7 @@ int RecordModel::move_up(const int pos)
 
     if(pos > 0) {
         new_pos = pos - 1;
-        _tabmanager->moveTab(pos, new_pos);
-
+        _tabmanager->tabbar()->moveTab(pos, new_pos);   // moveTab(pos, new_pos);
     }
 
     endResetModel();
@@ -898,8 +897,7 @@ int RecordModel::move_dn(const int pos)
 
     if(pos < count() - 1) {
         new_pos = pos + 1;
-        _tabmanager->moveTab(pos, new_pos);
-
+        _tabmanager->tabbar()->moveTab(pos, new_pos);   // moveTab(pos, new_pos);
     }
 
     endResetModel();

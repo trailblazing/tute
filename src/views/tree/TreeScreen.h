@@ -142,6 +142,12 @@ public:
     boost::intrusive_ptr<TreeItem> cursor_follow_up_to_root(void);
     boost::intrusive_ptr<TreeItem> view_merge_to_left(const std::function<KnowModel*()> &_current_model, boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
 
+    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_delete_permantent(
+        const std::function<KnowModel *()>      &_current_model
+        , QList<boost::intrusive_ptr<TreeItem>> _items
+        , const QString                         &_mode
+        , const bool                            _cut_branch_confirm = false
+    );
 
     boost::intrusive_ptr<TreeItem> view_paste_strategy(TreeModel::ModelIndex                                        _modelindex
                                                        , boost::intrusive_ptr<TreeItem>                             _result
@@ -202,12 +208,7 @@ private slots:
     //                                                              , bool                       _cut_branch_confirm = false
     //                                                             );
 
-    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_delete_permantent(
-        const std::function<KnowModel *()>      &_current_model
-        , QList<boost::intrusive_ptr<TreeItem>> _items
-        , const QString                         &_mode
-        , const bool                            _cut_branch_confirm = false
-    );
+
 
     //    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_remove(const QModelIndexList &index_list, const QString &mode = "delete", const bool _cut_branch_confirm = false);
 

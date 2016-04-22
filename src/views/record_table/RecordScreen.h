@@ -83,6 +83,7 @@ private:
     QAction             *_addnew_before;
     QAction             *_addnew_after;
     QAction             *_edit_field;
+    QAction             *_close;
     QAction             *_delete;
     QAction             *_cut;
     QAction             *_copy;
@@ -117,6 +118,7 @@ private:
     QVBoxLayout         *_records_screenlayout;
 
     browser::Browser    *_browser;
+    TreeScreen          *_tree_screen;
     MainWindow          *_main_window;
 
     void setup_ui(void);

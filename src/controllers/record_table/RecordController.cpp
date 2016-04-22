@@ -1699,6 +1699,7 @@ void RecordController::move_up(void)
     // Перемещение текущей записи вверх
     _source_model->move_up(pos);
 
+
     // Установка засветки на перемещенную запись
     _view->cursor_to_index(pos - 1);
 

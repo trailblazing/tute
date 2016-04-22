@@ -358,44 +358,39 @@ namespace browser {
         //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 
         RecordModel *source_model() {return _record_controller->source_model();}
-        RecordView *view() {return _record_controller->view();}
+        RecordView  *view() {return _record_controller->view();}
 
-        void addnew_to_end(void);
-        void addnew_before(void);
-
-
-        // Слот для добавления новой записи после выделенной строки
-        // Slot to add a new record after the highlighted row
-        void addnew_after(void);
-        void on_edit_fieldcontext(void);
-
-        // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
-        void close_context(void);
-
-        // Копирование отмеченных записей в буфер обмена с удалением
-        // из таблицы конечных записей
-        void cut(void);
-
-        // Копирование отмеченных записей в буфер обмена
-        void copy(void);
+        //        void addnew_to_end(void);
+        //        void addnew_before(void);
 
 
-        // Insert records from the clipboard    // Вставка записей из буфера обмена
-        void paste(void);
-        // Слот, срабатывающий при вызове настроек
-        void settings(void);
+        //        // Слот для добавления новой записи после выделенной строки
+        //        // Slot to add a new record after the highlighted row
+        //        void addnew_after(void);
+        //        void on_edit_fieldcontext(void);
 
-        // Перемещение записи вверх
-        void move_up(void);
+        //        // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
+        //        void close_context(void);
 
+        //        // Копирование отмеченных записей в буфер обмена с удалением
+        //        // из таблицы конечных записей
+        //        void cut(void);
+        //        // Копирование отмеченных записей в буфер обмена
+        //        void copy(void);
+        //        // Insert records from the clipboard    // Вставка записей из буфера обмена
+        //        void paste(void);
+        //        // Слот, срабатывающий при вызове настроек
+        //        void settings(void);
 
-        // Перемещение записи вниз
-        void move_dn(void);
+        //        // Перемещение записи вверх
+        //        void move_up(void);
+        //        // Перемещение записи вниз
+        //        void move_dn(void);
 
-        // Клик по пункту "Сортировка" в контекстном меню
-        void on_sort_click(void);
+        //        // Клик по пункту "Сортировка" в контекстном меню
+        //        void on_sort_click(void);
 
-        void on_print_click(void);
+        //        void on_print_click(void);
 
         TabWidget *tabmanager() {return this;}
     protected:

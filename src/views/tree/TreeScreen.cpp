@@ -195,9 +195,9 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("View up one level"));
     //    ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
 
-    ac->setIcon(    //        QIcon(":/resource/pic/up-arrow-circle.svg")    // ":/resource/pic/streamline_home.svg"
-        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
-    );
+    ac->setIcon(QIcon(":/resource/pic/mobile_up.svg")        // ":/resource/pic/streamline_home.svg"
+                //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
+               );
 
     connect(ac, &QAction::triggered, this, &TreeScreen::cursor_follow_up_one_level);
     _actionlist["view_up_one_level"] = ac;
@@ -221,7 +221,7 @@ void TreeScreen::setup_actions(void)
     // Перемещение ветки вверх
     ac = new QAction(tr("Move item up"), this);
     ac->setStatusTip(tr("Move item up"));
-    ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
+    ac->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
     connect(ac, &QAction::triggered, this
             , [&]()->void {item_move_up_dn_branch(&TreeItem::move_up);});   // &TreeScreen::item_move_up_branch
 
@@ -230,7 +230,7 @@ void TreeScreen::setup_actions(void)
     // Перемещение ветки вниз
     ac = new QAction(tr("Move item down"), this);
     ac->setStatusTip(tr("Move item down"));
-    ac->setIcon(QIcon(":/resource/pic/move_dn.svg"));
+    ac->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
     connect(ac, &QAction::triggered, this
             , [&]()->void {item_move_up_dn_branch(&TreeItem::move_dn);});   // &TreeScreen::item_move_dn_branch
 

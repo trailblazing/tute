@@ -132,10 +132,8 @@ void FindScreen::setup_navigate(void)
     //    _historyhome = new QAction(tr("Home"), _navigater);
 
     _historyhome->setIcon(
-        //        QIcon(
-        //            ":/resource/pic/up-arrow-circle.svg"    // ":/resource/pic/streamline_home.svg"
-        //        )  //
-        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
+        QIcon(":/resource/pic/mobile_up.svg")                // ":/resource/pic/streamline_home.svg"
+        //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
     );
 
     _historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
@@ -149,7 +147,7 @@ void FindScreen::setup_navigate(void)
     _historyback->setShortcuts(QKeySequence::Back);
     //    _historyback->setIconVisibleInMenu(false);
     _historyback->setIcon(  //QIcon(":/resource/pic/walk_history_next.svg")//
-        style()->standardIcon(QStyle::SP_ArrowBack, 0, this)
+        QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, this)
     );
     //    QMenu *_historybackmenu = new QMenu(this);
     //    _historyback->setMenu(_historybackmenu);
@@ -163,7 +161,8 @@ void FindScreen::setup_navigate(void)
     //    _historyforward = new QAction(tr("Forward"), _navigater);
 
     _historyforward->setShortcuts(QKeySequence::Forward);
-    _historyforward->setIcon(style()->standardIcon(QStyle::SP_ArrowForward, 0, this));
+    _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, this)
+                             );
     //    _historyforwardmenu = new QMenu(this);
     //    connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
     //    connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
@@ -176,7 +175,8 @@ void FindScreen::setup_navigate(void)
     //    _stopreload = new QAction(_navigater);
 
     //_reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
-    _stopreload->setIcon(style()->standardIcon(QStyle::SP_BrowserReload));
+    _stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg") // style()->standardIcon(QStyle::SP_BrowserReload)
+                         );
     insert_action_as_button<QToolButton>(_navigater, _stopreload); // _navigater->addAction(_stopreload);
 
 

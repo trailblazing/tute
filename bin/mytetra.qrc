@@ -125,5 +125,11 @@
         <file>resource/standartconfig/any/browserview.ini</file>
         <file>resource/pic/tangerine.svg</file>
         <file>resource/pic/apple.svg</file>
+        <file>resource/pic/mobile_down.svg</file>
+        <file>resource/pic/mobile_forward.svg</file>
+        <file>resource/pic/mobile_up.svg</file>
+        <file>resource/pic/note_close.svg</file>
+        <file>resource/pic/mobile_reload.svg</file>
+        <file>resource/pic/mobile_stop.svg</file>
     </qresource>
 </RCC>

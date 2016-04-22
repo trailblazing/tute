@@ -243,15 +243,16 @@ void RecordView::assembly_context_menu(void)
     _context_menu->addAction(_record_screen->_pin);
     _context_menu->addAction(_record_screen->_addnew_to_end);
     _context_menu->addAction(_record_screen->_edit_field);
+    _context_menu->addAction(_record_screen->_close);
     _context_menu->addAction(_record_screen->_delete);
 
     _context_menu->addSeparator();
 
     _context_menu->addAction(_record_screen->_addnew_before);
     _context_menu->addAction(_record_screen->_addnew_after);
-    //    contextMenu->addAction(parentPointer->actionMoveUp);
-    //    contextMenu->addAction(parentPointer->actionMoveDn);
-    //    contextMenu->addAction(parentPointer->actionSyncro);
+    _context_menu->addAction(_record_screen->_action_move_up);
+    _context_menu->addAction(_record_screen->_action_move_dn);
+    _context_menu->addAction(_record_screen->_action_syncro);
 
     _context_menu->addSeparator();
 

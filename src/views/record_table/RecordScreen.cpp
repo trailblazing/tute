@@ -49,7 +49,8 @@ RecordScreen::RecordScreen(
     , _addnew_before(new QAction(tr("Add note before"), this))
     , _addnew_after(new QAction(tr("Add note after"), this))
     , _edit_field(new QAction(tr("Edit properties (name, url, tags...)"), this))
-    , _delete(new QAction(tr("Close note(s)"), this))
+    , _close(new QAction(tr("Close note(s)"), this))
+    , _delete(new QAction(tr("Delete note(s)"), this))
     , _cut(new QAction(tr("&Cut note(s)"), this))
     , _copy(new QAction(tr("&Copy note(s)"), this))
     , _paste(new QAction(tr("&Paste note(s)"), this))
@@ -90,6 +91,7 @@ RecordScreen::RecordScreen(
     , _records_toolslayout(new QHBoxLayout())
     , _records_screenlayout(new QVBoxLayout())
     , _browser(_browser)
+    , _tree_screen(_tree_screen)
     , _main_window(_main_window)
       //    , _recordtree_search(new browser::ToolbarSearch(this))
 {
@@ -290,65 +292,116 @@ void RecordScreen::setup_actions(void)
     _addnew_to_end->setStatusTip(tr("Add a new note"));
     _addnew_to_end->setIcon(QIcon(":/resource/pic/note_add.svg"));
     //    setIcon(style()->standardIcon(QStyle::SP_FileIcon, 0, this));
-    connect(_addnew_to_end, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_to_end);
+    connect(_addnew_to_end, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::addnew_to_end  // &browser::TabWidget::addnew_to_end
+           );
 
     // Добавление записи до
     //    _addnew_before = new QAction(tr("Add note before"), this);
     _addnew_before->setStatusTip(tr("Add a note before selected"));
-    connect(_addnew_before, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_before);
+    connect(_addnew_before, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::addnew_before  // &browser::TabWidget::addnew_before
+           );
 
     // Добавление записи после
     //    _addnew_after = new QAction(tr("Add note after"), this);
     _addnew_after->setStatusTip(tr("Add a note after selected"));
-    connect(_addnew_after, &QAction::triggered, _tabmanager, &browser::TabWidget::addnew_after);
+    connect(_addnew_after, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::addnew_after   // &browser::TabWidget::addnew_after
+           );
 
     // Редактирование записи
     //    _edit_field = new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this);
     _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(_edit_field, &QAction::triggered, _tabmanager, &browser::TabWidget::on_edit_fieldcontext);
+    connect(_edit_field, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::on_edit_fieldcontext   // &browser::TabWidget::on_edit_fieldcontext
+           );
 
     // Удаление записи
     //    _delete = new QAction(tr("Delete note(s)"), this);
-    _delete->setStatusTip(tr("Close note(s)"));
+    _close->setStatusTip(tr("Close note(s)"));
+    _close->setIcon(QIcon(":/resource/pic/note_close.svg"));
+    connect(_close, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::close_context  // &browser::TabWidget::close_context
+           );
+
+
+
+    _delete->setStatusTip(tr("Delete note(s)"));
     _delete->setIcon(QIcon(":/resource/pic/note_delete.svg"));
-    connect(_delete, &QAction::triggered, _tabmanager, &browser::TabWidget::close_context);
+    connect(_delete, &QAction::triggered, _tree_screen
+    , [&](bool checked = false) {
+        Q_UNUSED(checked);
+        auto _tree_view = _tree_screen->tree_view();
+        auto _current_model = [&]() {return _tree_view->source_model();};
+        auto _item = _tabmanager->currentWebView()->page()->item_link();
+        _tree_screen->view_delete_permantent(
+            _current_model
+            , QList<boost::intrusive_ptr<TreeItem>>() << _item
+            , "cut"
+            , false
+        );
+    }
+           );
+
+
+
+
 
     // Удаление записи с копированием в буфер обмена
     //    _cut = new QAction(tr("&Cut note(s)"), this);
     _cut->setStatusTip(tr("Cut notes(s) to clipboard"));
     _cut->setIcon(QIcon(":/resource/pic/cb_cut.svg"));
-    connect(_cut, &QAction::triggered, _tabmanager, &browser::TabWidget::cut);
+    connect(_cut, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::cut    // &browser::TabWidget::cut
+           );
 
     // Копирование записи (записей) в буфер обмена
     //    _copy = new QAction(tr("&Copy note(s)"), this);
     _copy->setStatusTip(tr("Copy note(s) to clipboard"));
     _copy->setIcon(QIcon(":/resource/pic/cb_copy.svg"));
-    connect(_copy, &QAction::triggered, _tabmanager, &browser::TabWidget::copy);
+    connect(_copy, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::copy   // &browser::TabWidget::copy
+           );
 
     // Вставка записи из буфера обмена
     //    _paste = new QAction(tr("&Paste note(s)"), this);
     _paste->setStatusTip(tr("Paste note(s) from clipboard"));
     _paste->setIcon(QIcon(":/resource/pic/cb_paste.svg"));
-    connect(_paste, &QAction::triggered, _tabmanager, &browser::TabWidget::paste);
+    connect(_paste, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::paste  // &browser::TabWidget::paste
+           );
 
     // Настройка внешнего вида таблицы конечных записей
     //    _settings = new QAction(tr("&View settings"), this);
     _settings->setStatusTip(tr("Setup table view settins"));
     _settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
-    connect(_settings, &QAction::triggered, _tabmanager, &browser::TabWidget::settings);
+    connect(_settings, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::settings   // &browser::TabWidget::settings
+           );
 
+    assert(_record_controller);
     // Перемещение записи вверх
     //    _action_move_up = new QAction(tr("&Move Up"), this);
     _action_move_up->setStatusTip(tr("Move note up"));
-    _action_move_up->setIcon(QIcon(":/resource/pic/move_up.svg"));
-    connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
+    _action_move_up->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
+    connect(_action_move_up, &QAction::triggered, _record_controller, &RecordController::move_up);   // connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
 
     // Перемещение записи вниз
     //    _action_move_dn = new QAction(tr("&Move Down"), this);
     _action_move_dn->setStatusTip(tr("Move note down"));
-    _action_move_dn->setIcon(QIcon(":/resource/pic/move_dn.svg"));
-    connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
+    _action_move_dn->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
+    connect(_action_move_dn, &QAction::triggered, _record_controller, &RecordController::move_dn);   // connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
 
     // Поиск по базе (клик связывается с действием в MainWindow)
     //    _find_in_base = new QAction(tr("Find in base"), this);
@@ -385,13 +438,19 @@ void RecordScreen::setup_actions(void)
     //    _sort = new QAction(tr("Toggle sorting"), this);
     _sort->setStatusTip(tr("Enable/disable sorting by column"));
     _sort->setIcon(QIcon(":/resource/pic/sort.svg"));
-    connect(_sort, &QAction::triggered, _tabmanager,  &browser::TabWidget::on_sort_click);
+    connect(_sort, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::on_sort_click  // &browser::TabWidget::on_sort_click
+           );
 
     // Кнопка вызова печати таблицы конечных записей
     //    _print = new QAction(tr("Print table"), this);
     _print->setStatusTip(tr("Print current notes table"));
     _print->setIcon(QIcon(":/resource/pic/drops.svg"));   //actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
-    connect(_print, &QAction::triggered, _tabmanager,  &browser::TabWidget::on_print_click);
+    connect(_print, &QAction::triggered
+            , _record_controller    // _tabmanager
+            , &RecordController::on_print_click // &browser::TabWidget::on_print_click
+           );
 
     // Сразу после создания все действия запрещены
     disable_all_actions();
@@ -420,6 +479,7 @@ void RecordScreen::setup_ui(void)
 
     if(appconfig.interface_mode() == "desktop") {
         insert_action_as_button<QToolButton>(_toolsline, _edit_field);
+        insert_action_as_button<QToolButton>(_toolsline, _close);
         insert_action_as_button<QToolButton>(_toolsline, _delete);
     }
 
@@ -606,8 +666,8 @@ void RecordScreen::disable_all_actions(void)
     _addnew_before->setEnabled(false);
     _addnew_after->setEnabled(false);
     _edit_field->setEnabled(false);
+    _close->setEnabled(false);
     _delete->setEnabled(false);
-
     _cut->setEnabled(false);
     _copy->setEnabled(false);
     _paste->setEnabled(false);
@@ -676,6 +736,7 @@ void RecordScreen::tools_update(void)
     // Удаление записи
     // Пункт активен только если запись (или записи) выбраны в списке
     if(item_selection_model->hasSelection()) {
+        _close->setEnabled(true);
         _delete->setEnabled(true);
     }
 
