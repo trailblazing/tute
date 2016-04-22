@@ -585,7 +585,7 @@ void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc,
 
 
 // Добавление новой ветки после указанной ветки
-boost::intrusive_ptr<TreeItem> KnowModel::model_add_sibling(const QModelIndex &_index, QString id, QString name)
+boost::intrusive_ptr<TreeItem> KnowModel::model_new_sibling(const QModelIndex &_index, QString id, QString name)
 {
     // Получение ссылки на родительский Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> current = item(_index);
@@ -598,7 +598,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_sibling(const QModelIndex &_
         //                        , _index  // parent->count_direct()
         //                        , _index  // parent->count_direct()
         //                       );
-        _result = model_add_child_new(parent, _index.row(), id, name);
+        _result = model_new_child(parent, _index.row(), id, name);
         //        endInsertRows();
     }
 
@@ -608,7 +608,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_sibling(const QModelIndex &_
 
 
 // Добавление новой подветки к указанной ветке
-boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(const QModelIndex &_index, QString id, QString name)
+boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(const QModelIndex &_index, QString id, QString name)
 {
     // Получение ссылки на Item элемент по QModelIndex
     boost::intrusive_ptr<TreeItem> parent = item(_index);
@@ -617,14 +617,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(const QModelIndex 
     //                    , _index.row()  // parent->count_direct()
     //                    , _index.row()  // parent->count_direct()
     //                   );
-    _result = model_add_child_new(parent, _index.row(), id, name);
+    _result = model_new_child(parent, _index.row(), id, name);
     //    endInsertRows();
     return _result;
 }
 
 
 // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name)
+boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name)
 {
     beginInsertRows(index(parent)
                     , pos   // parent->count_direct()
@@ -632,8 +632,9 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_add_child_new(boost::intrusive_p
                    );
 
     QMap<QString, QString> data;
-    data["id"] = id;
-    data["name"] = name;
+    data["id"]      = id;
+    data["name"]    = name;
+    data["url"]     = browser::Browser::_defaulthome;
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
     boost::intrusive_ptr<TreeItem> current = new TreeItem(parent, data, QDomElement(), pos); // parent->child_add_new(pos, id, name);

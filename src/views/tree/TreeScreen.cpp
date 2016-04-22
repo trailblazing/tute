@@ -195,10 +195,7 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("View up one level"));
     //    ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
 
-    ac->setIcon(
-        //        QIcon(
-        //            ":/resource/pic/up-arrow-circle.svg"    // ":/resource/pic/streamline_home.svg"
-        //        )  //
+    ac->setIcon(    //        QIcon(":/resource/pic/up-arrow-circle.svg")    // ":/resource/pic/streamline_home.svg"
         style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
     );
 
@@ -247,7 +244,7 @@ void TreeScreen::setup_actions(void)
         view_insert_new(TreeModel::ModelIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_index())
         , std::bind(&TreeScreen::view_add_new, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
         , [&](TreeModel::ModelIndex _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
-            return _modelindex.current_model()()->model_add_child_new(_modelindex.current_index(), _id, _name);
+            return _modelindex.current_model()()->model_new_child(_modelindex.current_index(), _id, _name);
         });
     });
     _actionlist["insSubbranch"] = ac;
@@ -266,17 +263,31 @@ void TreeScreen::setup_actions(void)
             boost::intrusive_ptr<TreeItem> result;
             auto parent = _current_model()->item(_current_index)->parent();
             assert(parent);
-            auto _name_same_items = parent->items_direct(_name);
-            auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
+            QList<boost::intrusive_ptr<TreeItem>> _alternative_items;
 
-            if(_name_same_items.size() > 0 && _item_has_no_child_first)   //
+            if(parent)
             {
-                assert(_item_has_no_child_first->name() == _name);
-                result = _item_has_no_child_first;
+                _alternative_items = parent->items_direct(_name);
+            }
+            //            auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
+
+            if(_alternative_items.size() > 0)    // && _item_has_no_child_first
+            {
+                //                assert(_item_has_no_child_first->name() == _name);
+                //                result = _item_has_no_child_first;
+
+                QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
+                result = it.next();
+
+                while(it.hasNext()) {
+                    result = view_merge_to_left(_current_model, result, it.next());
+                }
+
+
                 //            children_transfer(_new_item, _current_model);
             } else {
                 // Вставка новых данных в модель дерева записей
-                result = _current_model()->model_add_sibling(_current_index, _id, _name);
+                result = _current_model()->model_new_sibling(_current_index, _id, _name);
             }
 
             return result;
@@ -3940,7 +3951,7 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
 
         // Получаем указатель на текущую выбранную ветку дерева
         auto result_item = _tree_view->source_model()->item(_index);
-        auto duplicated_items_list_on_board_by_url = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == result_item->field("url");});    // _tree_view->source_model()
+        auto duplicated_items_list_on_board_by_url = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it) {return (it->field("url") == result_item->field("url")) && (it->field("url") != browser::Browser::_defaulthome);}); // _tree_view->source_model()
 
 
         if(duplicated_items_list_on_board_by_url.size() > 1) {
@@ -4764,12 +4775,12 @@ void TreeScreen::tree_empty_controll(void)
         qDebug() << "treescreen::tree_empty_control() : Tree empty, create blank branch";
 
         //        std::function<KnowModel *()> _know_model_board_functor = [&]() {return _know_model_board;};
-        view_add_new(TreeModel::ModelIndex([&]()->KnowModel* { return _tree_view->source_model();  // _know_model_board;
-                                                             }, QModelIndex())
-        , tr("Rename me"), [&](TreeModel::ModelIndex _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
+        view_add_new(TreeModel::ModelIndex([&]()->KnowModel* { return _tree_view->source_model();}, QModelIndex())
+                     , tr("Rename me")
+        , [&](TreeModel::ModelIndex _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
             auto _current_model = _modelindex.current_model();
             auto _current_index = _modelindex.current_index();
-            return _current_model()->model_add_child_new(_current_index, _id, _name);
+            return _current_model()->model_new_child(_current_index, _id, _name);
         });
     }
 }
@@ -4892,7 +4903,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_strategy(
         assert(_result);
         assert(_check_url(_result) || _result->field("url") == browser::Browser::_defaulthome || _find_url.toString() == browser::Browser::_defaulthome);
 
-        if(_result->field("url") == browser::Browser::_defaulthome) {
+        if(_result->field("url") == browser::Browser::_defaulthome && _find_url.toString() != browser::Browser::_defaulthome) {
             _result->field("url", _find_url.toString());  // item->field("url")
         }
 
@@ -5147,7 +5158,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::item_register(//        std::function
 
             assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
 
-            if(_result->field("url") == browser::Browser::_defaulthome) {
+            if(_result->field("url") == browser::Browser::_defaulthome && _find_url.toString() != browser::Browser::_defaulthome) {
                 _result->field("url", _find_url.toString());
             }
 
@@ -5436,7 +5447,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::item_register(
 
                 assert(_result->is_registered_to_browser() || _result->field("url") == browser::Browser::_defaulthome);
 
-                if(_result->field("url") == browser::Browser::_defaulthome) {
+                if(_result->field("url") == browser::Browser::_defaulthome &&  target->field("url") != browser::Browser::_defaulthome) {
                     _result->field("url",  target->field("url"));
                 }
 

@@ -138,15 +138,15 @@ private:
     bool update_sub_version_from_1_to_2(void);
 
     // Добавление новой ветки после указанной ветки
-    boost::intrusive_ptr<TreeItem> model_add_sibling(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_new_sibling(const QModelIndex &_index, QString id, QString name);
     boost::intrusive_ptr<TreeItem> model_move_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item);
 
     // Добавление новой подветки к указанной ветке
-    boost::intrusive_ptr<TreeItem> model_add_child_new(const QModelIndex &_index, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_new_child(const QModelIndex &_index, QString id, QString name);
     boost::intrusive_ptr<TreeItem> model_move_as_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     // Добавление новой подветки к Item элементу
-    boost::intrusive_ptr<TreeItem> model_add_child_new(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
 
 #ifdef _with_record_table
     boost::intrusive_ptr<TreeItem> lock_child_add(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);

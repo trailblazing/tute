@@ -798,19 +798,20 @@ void RecordView::resizeEvent(QResizeEvent *e)
     //    auto rect0 =  viewport()->contentsRect();
     auto rect = contentsRect();
     auto real_width = rect.width();
+    int adjust_width = 60;
     //    auto size_width = size().width();
 
     if((columnWidth(0) + columnWidth(1)) >= real_width) {
         setColumnWidth(0, 30);
-        setColumnWidth(1, (real_width >= 30) ? real_width - 30 : columnWidth(1));
+        setColumnWidth(1, (real_width >= adjust_width) ? real_width - adjust_width : columnWidth(1));
     } else {
         setColumnWidth(0, 30);
         real_width = this->contentsRect().width();
 
         if(real_width >= 300) {
-            setColumnWidth(1, 300 - 30); // restoreColumnWidth();
+            setColumnWidth(1, 300 - adjust_width); // restoreColumnWidth();
         } else {
-            setColumnWidth(1, (real_width >= 30) ? real_width - 30 : columnWidth(1));
+            setColumnWidth(1, (real_width >= adjust_width) ? real_width - adjust_width : columnWidth(1));
         }
     }
 
