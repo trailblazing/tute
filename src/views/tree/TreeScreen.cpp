@@ -105,6 +105,7 @@ TreeScreen::TreeScreen(QString              object_name
     setup_actions();
     setup_ui(_filemenu, _toolsmenu);
     resetup_model(_know_model_board->root_item());
+
     setup_signals();
     assembly();
     assembly_context_menu();
@@ -1844,11 +1845,11 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_sibling(
     auto current_item = _current_model()->item(_current_index);
 
     assert(current_item); // make it automatically?
-    assert(current_item != _source_item);
-    auto _current_parent    = _current_model()->item(_current_index.parent());
-    auto current_parent_    = current_item->parent();
+    assert(current_item != _source_item);   // mayb be equal because integrity is false
+    auto _current_parent    = current_item->parent();
+    //    auto current_parent_    = _current_model()->item(_current_index.parent());
     assert(_current_parent);
-    assert(_current_parent == current_parent_);
+    //    assert(_current_parent == current_parent_);
 
     if(_current_parent && _current_parent->id() != "") {
 
@@ -2024,13 +2025,15 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_child(
 
     //    auto _current_index = _tree_view->index_current(); //selectionModel()->currentIndex(); //_current_model->index(it);
 
-    if(_current_index.isValid()) {
+    if(_current_index.isValid() && _source_item) {
 
         boost::intrusive_ptr<TreeItem> current_item = _current_model()->item(_current_index);
         assert(!current_item->contains_direct(_source_item->up_linker()));
+        assert(!current_item->contains_direct(std::forward<const boost::intrusive_ptr<TreeItem>>(_source_item)));
 
         if(!current_item->contains_direct(_source_item->up_linker())) {
             auto last_child = current_item->item_direct(current_item->count_direct() - 1);
+            assert(last_child != _source_item);    // may be equal because integrity is false
 
             if(current_item->count_direct() > 0) {
                 //                assert(current_item->item_direct(0) != _source_item);
@@ -2102,6 +2105,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_child(
             result = _source_item;
         }
 
+        assert(result);
     }
 
     return result;
@@ -2270,9 +2274,9 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permantent
 
                 if(it->parent() == _item_common_parent) { //if(index.isValid() && index.parent() == _index_common_parent) {
 
-                    if(it->id() == _session_id) {
+                    if(it->id() == _current_model()->session_id()) {
                         //        keep = source; remove = target;
-                        _session_id = _item_common_parent->id();
+                        _current_model()->session_id(_item_common_parent->id());
 
                     }
 
@@ -2351,8 +2355,8 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permantent
 
                     // Вызов удаления веток
                     for(auto it : items_candidate) { // for(int i = 0; i < _result.size(); ++i) {
-                        if(it->id() == _session_id) {
-                            _session_id = it->parent()->id();
+                        if(it->id() == static_cast<KnowModel *>(_current_model())->session_id()) {
+                            static_cast<KnowModel *>(_current_model())->session_id(it->parent()->id());
                         }
 
                         auto result = static_cast<KnowModel *>(_current_model())->model_delete_permantent(it->up_linker());
@@ -3449,12 +3453,12 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_merge_to_left(const std::functio
     if(target != source
        && target_on_tree
       ) {
-        if(source->id() == _session_id) {
+        if(source->id() == static_cast<KnowModel *>(_current_model())->session_id()) {
             //        keep = source; remove = target;
             if(target->parent())
-                _session_id = target->parent()->id();
+                static_cast<KnowModel *>(_current_model())->session_id(target->parent()->id());
             else
-                _session_id = target->id();
+                static_cast<KnowModel *>(_current_model())->session_id(target->id());
         }
 
         //    else {keep = target; remove = source;}
@@ -4132,15 +4136,15 @@ boost::intrusive_ptr<TreeItem> TreeScreen::session_root_item()
     auto view_source_model = [&]() {return this->tree_view()->source_model();}; // std::bind(_source_model_func, _tree_screen->tree_view());
 
     auto view_session_root_item  = [&]() {
-        return view_source_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == this->_session_id;});
+        return view_source_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == view_source_model()->session_id();});
     };
 
     auto board_session_root_item  = [&]() {
-        return _know_model_board->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == this->_session_id;});
+        return _know_model_board->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _know_model_board->session_id();});
     };
 
     if(!board_session_root_item()) {
-        _session_id = this->tree_view()->current_item()->id();
+        view_source_model()->session_id(this->tree_view()->current_item()->id());
         this->know_model_save();
         assert(view_session_root_item());
     }
@@ -4151,7 +4155,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::session_root_item()
 
     while(!view_session_root_item() && view_source_model()->root_item() != _know_model_board->root_item()) {
         this->cursor_follow_up_one_level();
-        this->_session_id = view_source_model()->root_item()->id();
+        view_source_model()->session_id(view_source_model()->root_item()->id());
     }
 
     //    if(!board_session_root_item()) {
@@ -4181,7 +4185,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::session_root_item()
 void TreeScreen::session_root_id(bool checked)
 {
     Q_UNUSED(checked);
-    _session_id = _tree_view->source_model()->item(_tree_view->current_index())->id();
+    _tree_view->source_model()->session_id(_tree_view->source_model()->item(_tree_view->current_index())->id());
 }
 
 
@@ -4885,7 +4889,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_strategy(
         // assert(_result->fragment() == item->fragment());
         // int pos
         _result = _view_paste_strategy_impl(_modelindex, _result, _substitute_condition); // it->insert_new_item(it->current_count() - 1, _result);
-
+        assert(_result);
         assert(_check_url(_result) || _result->field("url") == browser::Browser::_defaulthome || _find_url.toString() == browser::Browser::_defaulthome);
 
         if(_result->field("url") == browser::Browser::_defaulthome) {
@@ -4900,11 +4904,13 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_strategy(
 
             //                if(_result != _current_item->parent()) {
             _result = _tree_screen->cursor_follow_up(_result);
+            assert(_result);
             //                }
             _tree_screen->synchronized(false);
 
         } else if(session_root_item() != _result->parent()) { // if(session_root_item->is_ancestor_of(_result) && session_root_item != _result->parent())
             _result = _tree_screen->view_paste_child(_modelindex, _result, _substitute_condition);
+            assert(_result);
             _tree_screen->synchronized(false);
             // }
             // else {
@@ -4918,6 +4924,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_strategy(
 
     _tree_screen->know_model_save();
     // }
+    assert(_result);
     return _result;
 }
 
@@ -5198,6 +5205,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::item_register(//        std::function
                                   , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, _result->up_linker())
                                   , _view_paste_strategy, item_is_brand_new, _find_url, check_euqal
                                  );
+    assert(_result);
 
     if(_result->is_lite())_result->to_fat();
 

@@ -468,23 +468,24 @@ namespace browser {
                 disconnect(oldWebView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
                 disconnect(static_cast<QWebEnginePage *>(oldWebView->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
-                //                auto it = webView->page()->bounded_item();
+                auto it = webView->page()->item_link();
 
-                //                if(it) {
+                if(it) {
 
-                //                    auto _tree_view = _tree_screen->tree_view();
-                //                    QModelIndex _i = _tree_view->source_model()->index(it);
+                    auto _tree_view = _tree_screen->tree_view();
+                    QModelIndex _i = _tree_view->source_model()->index(it);
 
-                //                    if(_tree_view->current_index() != _i) {
-                //                        //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
-                //                        _tree_view->selectionModel()->select(_i, current_tree_selection_mode);  // _tree_view->select_and_current(it);
+                    if(_tree_view->current_index() != _i) {
+                        //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
+                        //                        _tree_view->selectionModel()->select(_i, current_tree_selection_mode);  //
+                        _tree_view->select_as_current(it);
 
-                //                        //                    //                    globalparameters.mainwindow()
-                //                        //                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
-                //                        //                        _record_controller->select_id(_record->field("id"));
-                //                        //                    }
-                //                    }
-                //                }
+                        //                    //                    globalparameters.mainwindow()
+                        //                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
+                        //                        _record_controller->select_id(_record->field("id"));
+                        //                    }
+                    }
+                }
             }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)

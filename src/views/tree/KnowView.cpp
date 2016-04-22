@@ -19,6 +19,10 @@
 #include "views/browser/webview.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
+#include "models/tree/TreeItem.h"
+
+
+
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
@@ -28,7 +32,11 @@ enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemS
 
 const char *knowtreeview_singleton_name = "knowtreeview";
 
-KnowView::KnowView(QString _name, QWidget *_parent) : QTreeView(_parent), _know_root(nullptr)
+KnowView::KnowView(QString _name, QWidget *_parent)
+    : QTreeView(_parent)
+    , _know_root(nullptr)
+      // create custom delegate
+    , _delegate(new HtmlDelegate(this))
 {
     // Разрешение принимать Drop-события
     setAcceptDrops(true);
@@ -72,6 +80,9 @@ KnowView::KnowView(QString _name, QWidget *_parent) : QTreeView(_parent), _know_
     setDragDropMode(QAbstractItemView::InternalMove);
     // Настройка области виджета для кинетической прокрутки
     set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));
+
+    setItemDelegate(_delegate);
+
     connect(static_cast<QTreeView *>(const_cast<KnowView *>(this)), &QTreeView::setModel, this, [&](QAbstractItemModel * model) {   // does not work
         _know_root = static_cast<KnowModel *>(model);
     });
@@ -131,13 +142,16 @@ void KnowView::sychronize()
         if(_tree_screen && _entrance && _know_root->root_item()->count_direct() > 0) {
 
             QMap<QString, QString> data;
-            auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+            //            auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
             data["id"]      =  get_unical_id(); //_know_root->root_item()->id();
-            data["name"]    =  _know_root->root_item()->item_direct(0)->name();
+            data["name"]    =  "current session branch item";  // _know_root->root_item()->item_direct(0)->name();
 
             assert(_know_root->root_item()->parent());
 
-            boost::intrusive_ptr<TreeItem> new_branch_item = boost::intrusive_ptr<TreeItem>(new TreeItem(_know_root->root_item(), data));
+            boost::intrusive_ptr<TreeItem> branch_item = boost::intrusive_ptr<TreeItem>(new TreeItem(
+                                                             nullptr // _know_root->root_item()
+                                                             , data
+                                                         ));
 
             bool modified = false;
 
@@ -145,14 +159,15 @@ void KnowView::sychronize()
                 auto tabmanager = browser->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                 for(int i = 0; i < tabmanager->count(); i++) {
-                    auto il = tabmanager->webView(i)->page()->item_link();
+                    auto page_item = tabmanager->webView(i)->page()->item_link();
 
-                    if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == il->field("id");})) {
+                    if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == page_item->field("id");})) {
 
-                        if(il->is_lite())il->to_fat();
+                        if(page_item->is_lite())page_item->to_fat();
 
-                        il->parent(new_branch_item);
-                        _source_model()->model_move_as_child_impl(new_branch_item, il, new_branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
+                        //                        page_item->parent(branch_item);
+                        //                        _source_model()->model_move_as_child_impl(branch_item, page_item, branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
+                        branch_item << page_item;
                         modified = true;
                     }
                 }
@@ -168,10 +183,9 @@ void KnowView::sychronize()
 
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
-                _tree_screen->view_paste_children_from_children(   // _tree_screen->know_branch()->index(0, _tree_screen->know_branch()->root_item()->current_count() - 1, QModelIndex())//,
-                    TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}   // _tree_screen->know_branch()
-                                          , _know_root->index(_know_root->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root_item()->id();})))   // current_index()
-                    , new_branch_item
+                _tree_screen->view_paste_children_from_children(
+                    TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}, _know_root->index(_know_root->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root_item()->id();})))   // current_index()
+                    , branch_item
                     , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );
 
@@ -940,8 +954,60 @@ bool KnowView::is_index_localized(const QModelIndexList _origin_index_list)const
     return result;
 }
 
+HtmlDelegate::HtmlDelegate(KnowView *_tree_view): _tree_view(_tree_view)
+{
 
+}
 
+// http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
+void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItemV4 optionV4 = option;
+    initStyleOption(&optionV4, index);
+
+    QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+
+    auto source_model = [&]() {return _tree_view->source_model();};
+    auto current_item = source_model()->item(index);
+    QTextDocument doc;
+
+    if(index == source_model()->index([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == source_model()->session_id();})) {
+        optionV4.text = "<b>" + optionV4.text + "</b>";
+    }
+    doc.setHtml(optionV4.text);
+
+    /// Painting item without text
+    optionV4.text = QString();
+    style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+
+    QAbstractTextDocumentLayout::PaintContext ctx;
+
+    // Highlighting text if item is selected
+    if(optionV4.state & QStyle::State_Selected)
+        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+
+    if(0 == current_item->count_direct() && !(optionV4.state & QStyle::State_Selected))
+        ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
+
+    QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+
+    painter->save();
+    painter->translate(textRect.topLeft());
+    painter->setClipRect(textRect.translated(-textRect.topLeft()));
+    doc.documentLayout()->draw(painter, ctx);
+    painter->restore();
+}
+
+QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    QStyleOptionViewItemV4 optionV4 = option;
+    initStyleOption(&optionV4, index);
+
+    QTextDocument doc;
+    doc.setHtml(optionV4.text);
+    doc.setTextWidth(optionV4.rect.width());
+    return QSize(doc.idealWidth(), doc.size().height());
+}
 
 
 

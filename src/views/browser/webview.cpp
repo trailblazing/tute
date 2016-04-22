@@ -698,6 +698,13 @@ namespace browser {
                 _browser->activateWindow();
             }
 
+            auto _vtabwidget = globalparameters.vtab();
+            auto record_screen = _browser->record_screen();
+
+            if(_vtabwidget->currentWidget() != record_screen) {
+                _vtabwidget->setCurrentWidget(record_screen);
+            }
+
             _tree_screen->tree_view()->select_as_current(_binder->item());
 
             if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
@@ -824,7 +831,7 @@ namespace browser {
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
 
             auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_child, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())), std::placeholders::_2, std::placeholders::_3));
-            _browser->item_bind(it)->activate();
+            auto view = _browser->item_bind(it)->activate();
             //            _browser->tabmanager()->newTab(it);
             //            _browser->raise();
             //            _browser->activateWindow();
@@ -832,7 +839,7 @@ namespace browser {
             //            DockedWindow *mainWindow = _entrance->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
             //            return
 
-            page = it->binder()->page();   // _browser->tabmanager()->currentWebView()->page();  // mainWindow->currentTab()->page();
+            page = view->page();   // _browser->tabmanager()->currentWebView()->page();  // mainWindow->currentTab()->page();
 
         } else
 
@@ -867,15 +874,17 @@ namespace browser {
                 if(view) {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
-                    auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_sibling, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())), std::placeholders::_2, std::placeholders::_3));
-                    it = view->page()->item_bind(it);
+                    auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_child, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())), std::placeholders::_2, std::placeholders::_3));
+                    auto _view = view->page()->item_bind(it)->activate();
+                    assert(_view == view);
+
                     //                                      QUrl(Browser::_defaulthome)
                     //                                      , std::bind(&TreeScreen::view_paste_as_sibling, _tree_screen
                     //                                                  , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item_link())) // std::placeholders::_1
                     //                                                  , std::placeholders::_2, std::placeholders::_3)
 
                     //                record->generate();
-                    it->activate();
+
                     page = view->page();
                 } else {
 
@@ -884,7 +893,7 @@ namespace browser {
 
                     page = _tree_screen->item_bind(
                                QUrl(Browser::_defaulthome)
-                               , std::bind(&TreeScreen::view_paste_sibling, _tree_screen
+                               , std::bind(&TreeScreen::view_paste_child, _tree_screen
                                            , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item())) // std::placeholders::_1
                                            , std::placeholders::_2, std::placeholders::_3)
                            )->activate()->page();
@@ -1162,18 +1171,26 @@ namespace browser {
         else
             result = item;
 
-
-        if(!result->binder()->integrity_external(result, this)) {
-            auto ar = std::make_shared<WebPage::coupler>(result, this);
-            new TreeItem::coupler(
+        auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item) {
+            auto ar = std::make_shared<WebPage::coupler>(result_item, this);
+            auto result_coupler = new TreeItem::coupler(
                 std::move(TreeItem::coupler::item_interface("", &WebPage::coupler::item_link, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
                 , std::move(TreeItem::coupler::page_interface("", &WebPage::coupler::page_link, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
                 , std::move(TreeItem::coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
                 , std::move(TreeItem::coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
             );
             //            new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this));
-            assert(_binder->integrity_external(result, this));   // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
-            assert(result->binder()->integrity_external(result, this));  // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
+            assert(_binder->integrity_external(result_item, this));   // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
+            assert(result_item->binder()->integrity_external(result_item, this));  // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
+            return result_coupler;
+        };
+
+        if(result->binder()) {
+            if(!result->binder()->integrity_external(result, this)) {
+                create_coupler(result);
+            }
+        } else {
+            create_coupler(result);
         }
 
         //        std::make_shared<WebPage::Coupler>(this, item);

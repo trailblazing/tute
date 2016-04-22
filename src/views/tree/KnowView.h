@@ -10,7 +10,7 @@
 #include <QEvent>
 #include <QGestureEvent>
 #include <QMimeData>
-
+#include <QStyledItemDelegate>
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -23,6 +23,20 @@ extern const char *record_view_multi_instance_name;
 
 class KnowModel;
 class TreeItem;
+class KnowView;
+
+
+// http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
+class HtmlDelegate : public QStyledItemDelegate {
+public:
+    HtmlDelegate(KnowView *_tree_view);
+protected:
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    KnowView *_tree_view;
+};
+
+
 
 class KnowView : public QTreeView {
     Q_OBJECT
@@ -91,7 +105,9 @@ protected:
     bool is_owner();
     void setModel(KnowModel *model);
 private:
-    KnowModel  *_know_root;
+    KnowModel       *_know_root;
+    // create custom delegate
+    HtmlDelegate    *_delegate;
 };
 
 #endif // __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__

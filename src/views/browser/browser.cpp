@@ -552,6 +552,25 @@ namespace browser {
 
         _find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
+
+        auto record_screen_tab = globalparameters.vtab();
+        int index = record_screen_tab->indexOf(_record_screen);
+
+        if(record_screen_tab->currentIndex() != index) {
+            auto previous_browser = static_cast<Browser *>(record_screen_tab->currentWidget());
+
+            if(previous_browser) {
+                previous_browser->lower();
+            }
+
+            record_screen_tab->setCurrentIndex(index);
+
+            //            if(// !_tabmanager->find([&](boost::intrusive_ptr<TreeItem> it) {return it->id() == _tree_screen->tree_view()->current_item()->page_link()->id();})
+            //              ) {
+
+            //            }
+        }
+
         QMainWindow::activateWindow();
     }
 

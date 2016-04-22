@@ -14,6 +14,8 @@
 
 // TreeModel - Это вспомогательный класс! От него наследуется KnowTreeModel
 
+extern const char *global_root_id;
+
 class ItemsFlat;
 class TreeItem;
 class KnowModel;
@@ -103,10 +105,12 @@ public:
 
     // void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
     boost::intrusive_ptr<TreeItem> root_item()const {return _root_item;}
-
+    QString session_id() {return _session_id;}
+    void session_id(const QString &id);
 
 
 protected:
+
     boost::intrusive_ptr<TreeItem>  _root_item; // Ссылка на первый (корневой) item-объект
 
 private:
@@ -115,6 +119,7 @@ private:
 
     // Element over which the cursor will carry. Used in the Drag And Drop.    // Элемент, над которым проносят курсор. Используется при Drag And Drop.
     QModelIndex                     _cursor_over_index;
+    QString                         _session_id = global_root_id;
 };
 
 #endif

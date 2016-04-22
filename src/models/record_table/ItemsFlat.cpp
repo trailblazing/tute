@@ -723,7 +723,7 @@ void ItemsFlat::dom_to_itemsflat(const QDomElement &dom_model)    // , boost::in
 
         // Текущая запись добавляется в таблицу конечных записей (и располагается по определенному адресу в памяти)
         // The current record is added to the final table of records (and located at a certain address in memory)
-        assert(this->contains_direct(child_item->up_linker()));  // _child_items << child_item;
+        assert(contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(child_item->up_linker())));  // _child_items << child_item;
 
         // Запись инициализируется данными. Она должна инициализироватся после размещения в списке tableData,
         // чтобы в подчиненных объектах прописались правильные указатели на данную запись
@@ -921,35 +921,45 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields)
 //    return result;
 //}
 
-
-boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive_ptr<TreeItem::linker> &&_item_linker)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const
 {
 
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    if(_item_linker) {
-        //        if(_item_linker) {
-        // int pos = -1;
-        //        bool found = false;
-
+    if(_item) {
         for(auto it : _child_linkers) {
             if(it
-               && it == _item_linker
-               && it->host().get() == _item_linker->host().get()
-               && static_cast<ItemsFlat *>(_item_linker->host_parent().get()) == this  // _item_linker->host_parent() == this
+               && it->host() == _item
+               //               && _item->up_linker()->integrity_external(_item, static_cast<const TreeItem *>(this))   // recursive call
+               && it == _item->up_linker()
+               && static_cast<ItemsFlat *>(_item->up_linker()->host_parent().get()) == this
               ) {
-                //                found = true;
-
-                //                if(found == 1)
+                //                assert(_item->up_linker()->integrity_external(_item, static_cast<const TreeItem *>(this)));
                 result = it->host();
-
-                //                else
-                //                    _child_items.erase(it);
                 break;
             }
         }
+    }
 
-        //        }
+    return result;
+}
+
+boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive_ptr<TreeItem::linker> &&_item_linker)const
+{
+    boost::intrusive_ptr<TreeItem> result(nullptr);
+
+    if(_item_linker) {
+        for(auto it : _child_linkers) {
+            if(it
+               && it == _item_linker
+               //               && _item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this))  // recursive call
+               && static_cast<ItemsFlat *>(_item_linker->host_parent().get()) == this  // _item_linker->host_parent() == this
+              ) {
+                //                assert(_item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this)));
+                result = it->host();
+                break;
+            }
+        }
     }
 
     return result;
@@ -1782,9 +1792,9 @@ ItemsFlat::linker::linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
 
         std::get<5>(_status) = [&]() {return std::get<3>(_status)() == this;}; //
 
-        std::get<6>(_status) = [&](boost::intrusive_ptr<TreeItem> host_) {return host_ == _host;};  //
+        std::get<6>(_status) = [&](boost::intrusive_ptr<const TreeItem> host_) {return host_ == _host;};  //
 
-        std::get<7>(_status) = [&](boost::intrusive_ptr<TreeItem> host_parent_) {return host_parent_ == _host_parent;};  //
+        std::get<7>(_status) = [&](boost::intrusive_ptr<const TreeItem> host_parent_) {return host_parent_ == _host_parent;};  //
 
         //    return std::move(status);
         //        return _status;
@@ -2029,7 +2039,7 @@ bool ItemsFlat::linker::integrity_internal()const
     return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)();
 }
 
-bool ItemsFlat::linker::integrity_external(boost::intrusive_ptr<TreeItem> host_, boost::intrusive_ptr<TreeItem> host_parent_)const
+bool ItemsFlat::linker::integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_)const
 {
     return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)() && std::get<6>(_status)(host_) && std::get<7>(_status)(host_parent_);
 }

@@ -179,9 +179,9 @@ namespace browser {
               ) {
                 //QLineEdit *lineedit =
 
-                globalparameters.tree_screen()->item_bind(
+                _tree_screen->item_bind(
                     url
-                    , std::bind(&TreeScreen::view_paste_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                 )->activate();
 
                 assert(_lineedits);
@@ -229,7 +229,10 @@ namespace browser {
                 url.setQuery(url_query);
                 url.setFragment("q=" + searchText);
                 // QString u = url.toString();
-                emit search(url, std::bind(&TreeScreen::view_paste_child, globalparameters.tree_screen(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+
+                //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                _tree_screen->item_bind(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();
+
             }
         } else if(result_item != _tree_screen->tree_view()->current_item()) {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
@@ -257,6 +260,8 @@ namespace browser {
                 _tree_screen->index_invoke(index_result);
             }
 
+        } else {
+            _tree_screen->index_invoke(_tree_screen->tree_view()->source_model()->index(result_item));
         }
     }
 

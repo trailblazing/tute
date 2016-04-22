@@ -76,8 +76,8 @@ public:
         typedef std::function<bool()>                                                                   binder_self_reference;
         //        typedef std::function<const boost::intrusive_ptr<coupler>(boost::intrusive_ptr<TreeItem> host)> item_binder_exist;
         //        typedef std::function<const boost::intrusive_ptr<coupler>(browser::WebPage *page)>              page_binder_exist;
-        typedef std::function<bool(boost::intrusive_ptr<TreeItem> host)>                                item_consistency;
-        typedef std::function<bool(browser::WebPage *page)>                                             page_consistency;
+        typedef std::function<bool(boost::intrusive_ptr<const TreeItem> host)>                                item_consistency;
+        typedef std::function<bool(const browser::WebPage *page)>                                             page_consistency;
 
         typedef std::tuple <
         item_exist
@@ -147,7 +147,7 @@ public:
 
         bool integrity_internal()const;
 
-        bool integrity_external(boost::intrusive_ptr<TreeItem> host, browser::WebPage *page)const;
+        bool integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page)const;
         status_type state()const {return _status;}
         void break_linked_items();
     private:
@@ -304,11 +304,12 @@ public:
     //    // Добавление нового подчиненного элемента
     //    // в конец списка подчиненных элементов
     //    boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
-
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const;
     boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const;
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> _item);
-    boost::intrusive_ptr<linker> child_rent(boost::intrusive_ptr<TreeItem> item);
+
+    //    boost::intrusive_ptr<linker> child_rent(boost::intrusive_ptr<TreeItem> item); // break parent contains semantic, make contians_direct does not work!!!
 
     // Добавление потомка (потомков) к текущему элементу
     // position - после какой позиции массива childItems вставить
@@ -494,6 +495,7 @@ private:
     friend class ItemsFlat;
     friend class KnowModel;
     //    friend class TreeScreen;
+    friend inline boost::intrusive_ptr<TreeItem> operator << (boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right) {return *it_left << it_right;}
 };
 
 //inline void intrusive_ptr_add_ref(TreeItem *px){boost::sp_adl_block::intrusive_ptr_add_ref(px);}

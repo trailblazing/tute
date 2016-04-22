@@ -346,11 +346,9 @@ namespace browser {
 
         QObject::disconnect(_home_connection);
 
-        _home_connection = QObject::connect
-                           (
-                               findscreen->historyhome()
-                               , &QAction::triggered
-                               , this
+        _home_connection = QObject::connect(findscreen->historyhome()
+                                            , &QAction::triggered
+                                            , this
         , [this](bool checked = true)->void {
             Q_UNUSED(checked)
             assert(activated_browser());
@@ -376,7 +374,7 @@ namespace browser {
                 }
             }
         }
-                           );
+                                           );
 
     }
 

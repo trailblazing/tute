@@ -39,7 +39,7 @@ public:
         typedef std::function<boost::intrusive_ptr<TreeItem>()>     item_exist;
         typedef std::function<const boost::intrusive_ptr<linker>()> linker_exist;
         typedef std::function<bool()>                               linker_self_reference;
-        typedef std::function<bool(boost::intrusive_ptr<TreeItem>)> item_consistency;
+        typedef std::function<bool(boost::intrusive_ptr<const TreeItem>)> item_consistency;
 
 
         typedef std::tuple <
@@ -81,7 +81,7 @@ public:
         void break_linker();
 
         bool integrity_internal()const;
-        bool integrity_external(boost::intrusive_ptr<TreeItem> host_, boost::intrusive_ptr<TreeItem> host_parent_)const;
+        bool integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_)const;
         status_type state()const {return _status;}
 
 
@@ -176,6 +176,7 @@ public:
 
 
     void fields(int pos, QMap<QString, QString> edit_fields);
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const;
     boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const;
     //    bool remove(int i);
     //    bool remove(QString id);

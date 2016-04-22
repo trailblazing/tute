@@ -49,12 +49,14 @@ public:
     void    select_pos(int pos);
     void    select_id(QString id);
 
-    void tree_path(QString path);
+    void    tree_path(QString path);
     QString tree_path(void);
 
     inline RecordController *record_controller() {return _record_controller;}
-    bool inited() {return _inited;}
-    browser::TabWidget *tabmanager() {return _tabmanager;}
+
+    bool                inited() {return _inited;}
+    browser::TabWidget  *tabmanager() {return _tabmanager;}
+    browser::Browser    *browser() {return _browser;}
 
 public slots:
 
@@ -114,7 +116,7 @@ private:
     //    QHBoxLayout             *_recordtree_searchlayout;
     QVBoxLayout         *_records_screenlayout;
 
-
+    browser::Browser    *_browser;
     MainWindow          *_main_window;
 
     void setup_ui(void);

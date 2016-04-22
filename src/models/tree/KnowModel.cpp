@@ -771,7 +771,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
 
     auto old_source_parent_index = index(old_source_parent);
 
-    if(!(_source_item->parent() == _parent && _parent->contains_direct(_source_item->up_linker()))) {
+    if(!(_source_item->parent() == _parent && _parent->contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_source_item->up_linker())))) {
         auto _index_parent = index(_parent);
 
         //        //    beginRemoveRows(_index_parent, _source_item->sibling_order(), _source_item->sibling_order());
@@ -804,6 +804,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
 
             result = _source_item->parent(_parent, _pos, _mode)->host();     // add_new_branch(parent, id, name);  // parent->count_direct()
             assert(index(result).isValid());
+            assert(result->up_linker()->integrity_external(result, _parent));
 
             if(result && item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == result->id();})) {
                 emit_datachanged_signal(index(_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_parent));
@@ -817,6 +818,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child_impl(boost::intrus
             endInsertRows();
         } else {    // should not use
             result = _source_item->parent(_parent, _pos, _mode)->host();  // 1-3
+            assert(result->up_linker()->integrity_external(result, _parent));
         }
 
         if(_parent->field("crypt") == "1" && result) {

@@ -262,7 +262,7 @@ private:
     QVBoxLayout     *_treescreenlayout;
 
     const AppConfig &_appconfig;
-    QString         _session_id = global_root_id;
+    //    QString         _session_id = global_root_id;
 
     void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
 

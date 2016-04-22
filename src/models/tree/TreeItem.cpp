@@ -1387,14 +1387,19 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 
 #endif
 
-boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const
+boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const
 {
 
     //    boost::intrusive_ptr<TreeItem> result(nullptr);
 
     //    result = ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));
 
-    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));    // result;
+    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem>>(_item));    // result;
+}
+
+boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const
+{
+    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));    //
 }
 
 
@@ -1524,66 +1529,68 @@ void TreeItem::clear()
 //    ItemsFlat::clear();
 //}
 
+
+
 boost::intrusive_ptr<TreeItem> TreeItem::operator <<(boost::intrusive_ptr<TreeItem> _item)
 {
-    boost::intrusive_ptr<TreeItem> r;
+    //    boost::intrusive_ptr<TreeItem> r;
 
     if(_child_linkers.indexOf(_item->up_linker()) == -1) {
         _child_linkers << _item->up_linker();
-        r = _item;
+        //        r = _item;
     }
 
-    return r;
+    return this;
 }
 
-// copy introduce duplicated item
-boost::intrusive_ptr<TreeItem::linker> TreeItem::child_rent(boost::intrusive_ptr<TreeItem> _item)
-{
+//// copy introduce duplicated item, does not remove from previous parent
+//boost::intrusive_ptr<TreeItem::linker> TreeItem::child_rent(boost::intrusive_ptr<TreeItem> _item)
+//{
 
-    boost::intrusive_ptr<TreeItem::linker> result(nullptr);
+//    boost::intrusive_ptr<TreeItem::linker> result(nullptr);
 
-    if(_item != this) {
-        // int pos = -1;
-        int found = 0;
+//    if(_item != this) {
+//        // int pos = -1;
+//        int found = 0;
 
-        for(auto it : _child_linkers) {
-            if(it->host() == _item && _item->up_linker()->host_parent().get() == this) {
-                found++;
+//        for(auto it : _child_linkers) {
+//            if(it->host() == _item && _item->up_linker()->host_parent().get() == this) {
+//                found++;
 
-                if(found == 1) {
-                    result = it;
-                } else {
-                    result->host()->merge(it->host());
-                    _child_linkers.removeOne(it);
-                }
-            }
-        }
+//                if(found == 1) {
+//                    result = it;
+//                } else {
+//                    result->host()->merge(it->host());
+//                    _child_linkers.removeOne(it);
+//                }
+//            }
+//        }
 
-        //        if(_item->parent()) {
-        //            if(_item->parent() != this) {
+//        //        if(_item->parent()) {
+//        //            if(_item->parent() != this) {
 
-        //                item->parent()->remove_child(item);
-        //                item->parent(boost::intrusive_ptr<TreeItem>(this));
+//        //                item->parent()->remove_child(item);
+//        //                item->parent(boost::intrusive_ptr<TreeItem>(this));
 
-        //                //            _item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch, but does not remove orignal one
-        //            }
-        //        }
+//        //                //            _item->parent(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)));   // no!!!, this make item move to new branch, but does not remove orignal one
+//        //            }
+//        //        }
 
-        if(0 == found) {
-            // _child_linkers << _item->up_linker();
-            // pos =
-            result = _item->parent(this); // get_transfer(_child_items.count() - 1, _item, ADD_NEW_RECORD_AFTER); // _child_items << item; // Добавление item в конец массива childItems
-            // result = item(pos);
-        }
-    }
+//        if(0 == found) {
+//            // _child_linkers << _item->up_linker();
+//            // pos =
+//            result = _item->parent(this); // get_transfer(_child_items.count() - 1, _item, ADD_NEW_RECORD_AFTER); // _child_items << item; // Добавление item в конец массива childItems
+//            // result = item(pos);
+//        }
+//    }
 
-    //    if(static_cast<ItemsFlat *>(result->up_linker()->parent_item().get()) != this) {
-    //        result->parent(this);
-    //    }
+//    //    if(static_cast<ItemsFlat *>(result->up_linker()->parent_item().get()) != this) {
+//    //        result->parent(this);
+//    //    }
 
-    return result;
+//    return result;
 
-}
+//}
 
 
 //// deprecated because of conflicting with parent(boost::intrusive_ptr<TreeItem>)
@@ -2963,7 +2970,7 @@ browser::WebView *TreeItem::bind()
 
 browser::WebView *TreeItem::activate()
 {
-    assert(_binder);
+    assert(_binder);    // auto result = globalparameters.entrance()->item_bind(this);  // may be not registered to tree model
     bind();
 
     //    assert(page_valid());
@@ -3500,9 +3507,9 @@ TreeItem::coupler::status_type TreeItem::coupler::state_impl()
     //    //    std::get<9>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
 
 
-    std::get<6>(status) = [&](boost::intrusive_ptr<TreeItem> host) {return host == item();};   //
+    std::get<6>(status) = [&](boost::intrusive_ptr<const TreeItem> host) {return host == item();};   //
     //    std::get<6>(*_state) = std::make_shared<item_link_coincident>([&](boost::intrusive_ptr<TreeItem> host) {return host == item_link();});
-    std::get<7>(status) = [&](browser::WebPage * page_) {return page_ == page();};               //
+    std::get<7>(status) = [&](const browser::WebPage * page_) {return page_ == page();};               //
     //    std::get<7>(*_state) = std::make_shared<page_link_coincident>([&](browser::WebPage * page) {return page == page_link();});
 
 
@@ -3518,7 +3525,7 @@ bool TreeItem::coupler::integrity_internal()const
     //        (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))();
 }
 
-bool TreeItem::coupler::integrity_external(boost::intrusive_ptr<TreeItem> host, browser::WebPage *page)const
+bool TreeItem::coupler::integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page)const
 {
     return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)() && std::get<6>(_status)(host) && std::get<7>(_status)(page);    // && std::get<8>(_state)(host) && std::get<9>(_state)(page);  //
     // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))() && (*std::get<6>(_state))(host) && (*std::get<7>(_state))(page) && (*std::get<8>(_state))(host) && (*std::get<9>(_state))(page);

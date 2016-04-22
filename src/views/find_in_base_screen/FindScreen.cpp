@@ -623,21 +623,21 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     auto _current_model = [&]() {return _tree_screen->tree_view()->source_model();};   // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
 
 
-    QMap<QString, QString> data;
-    QDateTime ctime_dt = QDateTime::currentDateTime();
-    QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
-    data["id"]      = get_unical_id();
-    data["name"]    = _toolbarsearch->text();
-    data["ctime"]   = ctime;
-    data["dir"]     = data["id"];
-    data["file"]    = "text.html";
+    //    QMap<QString, QString> data;
+    //    QDateTime ctime_dt = QDateTime::currentDateTime();
+    //    QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
+    //    data["id"]      = get_unical_id();
+    //    data["name"]    = _toolbarsearch->text();
+    //    data["ctime"]   = ctime;
+    //    data["dir"]     = data["id"];
+    //    data["file"]    = "text.html";
 
     QList<boost::intrusive_ptr<TreeItem::linker>> _result_list;
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
-    boost::intrusive_ptr<TreeItem> _result_item(_tree_screen->session_root_item()    // new TreeItem(nullptr, data)
-                                               );  // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
+    boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->session_root_item());    // new TreeItem(nullptr, data)
+    // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
 
     //    auto original_count = _result_item->count_direct();
 
@@ -734,7 +734,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
             for(int i = 0; i < tabmanager->count(); i++) {
                 auto item = tabmanager->webView(i)->page()->item_link();
 
-                _start_item->child_rent(item);
+                _start_item << item;    // _start_item->child_rent(item);
             }
         }
 
@@ -789,9 +789,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     };
 
     auto final_search = [&](QList<boost::intrusive_ptr<TreeItem::linker>>   &_result_list
+                            , boost::intrusive_ptr<TreeItem>                &_session_root_item  // std::shared_ptr<RecordTable> &resultset_data
                             , boost::intrusive_ptr<TreeItem>                &_start_item
-                            , boost::intrusive_ptr<TreeItem>                &_result_item  // std::shared_ptr<RecordTable> &resultset_data
-
     ) ->QList<boost::intrusive_ptr<TreeItem::linker>> & {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
@@ -805,7 +804,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         //        //            global_search_prepare(start_item, total_records, result);
         //        //        }
 
-        return find_recursive(_result_list, _result_item, _start_item);   // candidate_root->tabledata();
+        return find_recursive(_result_list, _session_root_item, _start_item);   // candidate_root->tabledata();
     };
 
 
@@ -831,61 +830,74 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //        _result_item->count_direct() > 0
     //    ) { // search in last search result
 
+
+    boost::intrusive_ptr<TreeItem>  final_result(nullptr);
+
     active_subset_search_prepare(_start_item, _candidate_records);  // , _result_item
 
-    if(!_start_item) {assert_start_item(); return nullptr;}
-
-    if(0 != _candidate_records) {
-        _result_list = final_search(_result_list, _result_item, _start_item);
-        _tree_screen->enable_up_action();   // !_is_search_global
-        // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
-    }
-
-    //    }
-
-    // stage 2
-    branch_search_prepare(_start_item, _candidate_records);
-
-    if(!_start_item) {assert_start_item(); return nullptr;}
-
-    if(0 != _candidate_records) {
-        _result_list = final_search(_result_list, _result_item, _start_item);
-        _tree_screen->enable_up_action();   // !_is_search_global
-        // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
-    }
-
-    // stage 3
-    if(0 == _result_list.size()) { // (_result_item->count_direct() - original_count)
-
-        //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
-        //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
-
-        //    if( // appconfig.getFindScreenTreeSearchArea() == 1
-        //        // globalparameters.vtab()->currentWidget()->objectName() == tree_screen_singleton_name
-        //        find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
-        //    ) { // If you want to search the current branch // Если нужен поиск в текущей ветке
-        //        branch_search_prepare(start_item, total_records, _result);
-        //    }
-
-        //    if( // appconfig.getFindScreenTreeSearchArea() == 0
-        //        globalparameters.vtab()->currentWidget()->objectName() == tree_screen_singleton_name
-        //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
-        //    ) { // Если нужен поиск во всем дереве
-
-        global_search_prepare(_start_item, _candidate_records);   // , _resultset_data
-
-        if(!_start_item) {assert_start_item(); return nullptr;}
+    if(_start_item) {
 
         if(0 != _candidate_records) {
-            _result_list = final_search(_result_list, _result_item, _start_item);
-            _tree_screen->enable_up_action();   // _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
+            _result_list = final_search(_result_list, _session_root_item, _start_item);
+            _tree_screen->enable_up_action();   // !_is_search_global
             // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
         }
 
         //    }
 
-    }
+        // stage 2
+        if(0 == _result_list.size()) {
+            branch_search_prepare(_start_item, _candidate_records);
 
+            if(_start_item) {
+
+                if(0 != _candidate_records) {
+                    _result_list = final_search(_result_list, _session_root_item, _start_item);
+                    _tree_screen->enable_up_action();   // !_is_search_global
+                    // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
+                }
+
+                // stage 3
+                if(0 == _result_list.size()) { // (_result_item->count_direct() - original_count)
+
+                    //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
+                    //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
+
+                    //    if( // appconfig.getFindScreenTreeSearchArea() == 1
+                    //        // globalparameters.vtab()->currentWidget()->objectName() == tree_screen_singleton_name
+                    //        find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
+                    //    ) { // If you want to search the current branch // Если нужен поиск в текущей ветке
+                    //        branch_search_prepare(start_item, total_records, _result);
+                    //    }
+
+                    //    if( // appconfig.getFindScreenTreeSearchArea() == 0
+                    //        globalparameters.vtab()->currentWidget()->objectName() == tree_screen_singleton_name
+                    //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
+                    //    ) { // Если нужен поиск во всем дереве
+
+                    global_search_prepare(_start_item, _candidate_records);   // , _resultset_data
+
+                    if(_start_item) {
+
+                        if(0 != _candidate_records) {
+                            _result_list = final_search(_result_list, _session_root_item, _start_item);
+                            _tree_screen->enable_up_action();   // _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
+                            // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
+                        }
+
+                        //    }
+                    } else {
+                        assert_start_item();    // return nullptr;
+                    }
+
+                }
+            } else {
+                assert_start_item();    // return nullptr;
+            }
+        }
+    } else {
+        assert_start_item();    // return nullptr;
+    }
 
 
 
@@ -908,7 +920,6 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    output(_result_item);
 
 
-    boost::intrusive_ptr<TreeItem>  final_result(nullptr);
 
     if(_result_list.size() > 0)final_result = _result_list.at(0)->host();
 
@@ -918,7 +929,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
 QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
                                                QList<boost::intrusive_ptr<TreeItem::linker>> &_result_list
-                                               , boost::intrusive_ptr<TreeItem> _result_item
+                                               , boost::intrusive_ptr<TreeItem> _session_root_item
                                                , boost::intrusive_ptr<TreeItem> _start_item
                                            )
 {
@@ -1035,16 +1046,24 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
 
                             if(candidate->is_lite())candidate->to_fat();
 
-                            if((candidate->parent() != _result_item->parent())  // _current_item->parent())
-                            && !_result_item->item_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il == candidate->up_linker();})) {
+                            if((candidate->parent() != _session_root_item->parent())  // _current_item->parent())
+                            && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il == candidate->up_linker();})) {
                                 //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
 
+                                //                                auto result = static_cast<KnowModel *>(_source_model())->model_move_as_child_impl(
+                                //                                                  _session_root_item //_tree_screen->session_root_item() == _result_item  // candidate->parent()
+                                //                                                  , candidate
+                                //                                                  , _session_root_item->count_direct()
+                                //                                              );
+                                auto result = _tree_screen->item_bind(candidate // result
+                                                                      , std::bind(&TreeScreen::view_paste_child, _tree_screen
+                                                                                  , TreeModel::ModelIndex(_source_model,  static_cast<KnowModel *>(_source_model())->index(_session_root_item)) // std::placeholders::_1
+                                                                                  , std::placeholders::_2
+                                                                                  , std::placeholders::_3));    // ->activate(); //
+                                result->activate();
+                                _result_list << result->up_linker();   //
 
 
-                                _result_list << _source_model()->model_move_as_child_impl(_result_item //_tree_screen->session_root_item() == _result_item  // candidate->parent()
-                                                                                          , candidate
-                                                                                          , _result_item->count_direct()
-                                                                                         )->up_linker();   //
 
                                 //                    _result_item->child_insert(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
 
@@ -1060,6 +1079,10 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
                                 //                } else {
                                 //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
                                 //                }
+                            } else {
+                                auto result = globalparameters.entrance()->item_bind(candidate);
+                                result->activate();
+                                _result_list << result->up_linker();   //
                             }
 
                             //                else {
@@ -1067,7 +1090,7 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
                             //                }
                         }
 
-                        if(candidate) { if(candidate->count_direct() > 0) find_recursive(_result_list, _result_item, candidate);}
+                        if(candidate) { if(candidate->count_direct() > 0) find_recursive(_result_list, _session_root_item, candidate);}
                     } else {
                         //                            if(_progress->wasCanceled()) {
                         _cancel_flag = 1;

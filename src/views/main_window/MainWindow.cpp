@@ -315,6 +315,63 @@ void MainWindow::setup_signals(void)
     // if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
     connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+
+    //    auto hide_others = [this](int index) {
+    //        if(-1 != index) {
+    //            auto count = _vtabwidget->count();
+
+    //            for(int i = 0; i < count; i++) {
+    //                if(i != index)_vtabwidget->widget(i)->hide();
+    //            }
+
+    //            _vtabwidget->widget(index)->show();
+    //        }
+    //    };
+
+    //    hide_others(_vtabwidget->currentIndex());
+
+    connect(_vtabwidget, &HidableTabWidget::currentChanged, _vtabwidget, [&](int index) {
+        if(-1 != index) {
+            auto count = _vtabwidget->count();
+
+            for(int i = 0; i < count; i++) {
+                if(i != index) {
+                    auto current_widget = _vtabwidget->widget(i);
+
+                    if(current_widget->objectName() == record_screen_multi_instance_name) {
+                        auto record_screen = static_cast<RecordScreen *>(current_widget);
+                        record_screen->browser()->lower();
+                    }
+
+                    current_widget->hide();
+                }
+            }
+
+            auto current_widget = static_cast<RecordScreen *>(_vtabwidget->widget(index));
+
+            if(current_widget->objectName() == record_screen_multi_instance_name) {
+                auto record_screen = static_cast<RecordScreen *>(current_widget);
+                auto current_brower = record_screen->browser();
+                current_brower->raise();
+                current_brower->activateWindow();
+            }
+
+            current_widget->show();
+
+        }
+    });
+    // deprecated: ignoring Tree Search Area
+    connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
+    , [this](int index) {
+        if(-1 != index) {
+            if(_vtabwidget->widget(index)->objectName() == tree_screen_singleton_name) {
+                _appconfig.find_screen_tree_search_area(0);
+            } else if(_vtabwidget->widget(index)->objectName() == record_screen_multi_instance_name) {
+                _appconfig.find_screen_tree_search_area(1);
+            }
+        }
+    }   // &AppConfig::setFindScreenTreeSearchArea
+           );   // , findScreenDisp, &FindScreen::changedTreeSearchArea
 }
 
 
@@ -356,36 +413,9 @@ void MainWindow::assembly(void)
                         , QIcon(":/resource/pic/apple.svg")    // QIcon(":/resource/pic/holly.svg")
                         , "Download");
 
-    auto hide_others = [this](int index) {
-        if(-1 != index) {
-            auto count = _vtabwidget->count();
-
-            for(int i = 0; i < count; i++) {
-                if(i != index)_vtabwidget->widget(i)->hide();
-            }
-
-            _vtabwidget->widget(index)->show();
-        }
-    };
-
-    hide_others(_vtabwidget->currentIndex());
-
-    connect(_vtabwidget, &HidableTabWidget::currentChanged, _vtabwidget, hide_others);
-
     _appconfig.find_screen_tree_search_area(0);  // force to root_item of global tree
 
-    // deprecated: ignoring Tree Search Area
-    connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
-    , [this](int index) {
-        if(-1 != index) {
-            if(_vtabwidget->widget(index)->objectName() == tree_screen_singleton_name) {
-                _appconfig.find_screen_tree_search_area(0);
-            } else if(_vtabwidget->widget(index)->objectName() == record_screen_multi_instance_name) {
-                _appconfig.find_screen_tree_search_area(1);
-            }
-        }
-    }   // &AppConfig::setFindScreenTreeSearchArea
-           );   // , findScreenDisp, &FindScreen::changedTreeSearchArea
+
 
 
     //    v_left_splitter = new QSplitter(

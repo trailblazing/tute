@@ -4,6 +4,8 @@
 #include "models/record_table/ItemsFlat.h"
 #include "libraries/GlobalParameters.h"
 #include "models/tree/KnowModel.h"
+#include "views/tree/TreeScreen.h"
+#include "views/tree/KnowView.h"
 
 
 
@@ -59,10 +61,14 @@ QVariant TreeModel::data(const QModelIndex &_index, int role) const
     if(role == Qt::ForegroundRole) {
         boost::intrusive_ptr<TreeItem> it = item(_index);
 
-        if(it->count_direct() > 0)
-            return QColor(Qt::black);// Если узел содержит таблицу конечных записей
+        if(it->id() == _session_id && _index != globalparameters.tree_screen()->tree_view()->current_index())
+            return QColor(Qt::red);
+        else if(it->id() == _session_id && _index == globalparameters.tree_screen()->tree_view()->current_index())
+            return QColor(Qt::cyan);
+        else if(it->count_direct() > 0)
+            return QColor(Qt::black);       // Если узел содержит таблицу конечных записей
         else
-            return QColor(Qt::darkGray); // Ветка без таблицы конечных записей
+            return QColor(Qt::darkGray);    // Ветка без таблицы конечных записей
     }
 
 
@@ -731,7 +737,8 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
                     if(parent_parent) {
                         _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it == parent_item->up_linker();}), 0, static_cast<void *>(parent_item.get()));
                     } else {
-                        _result = QModelIndex();
+                        _result = QModelIndex();  // index(0, 0, index(parent_item));
+
                     }
                 } else {
                     _result = QModelIndex();
@@ -829,4 +836,11 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &_current_m
 , const QModelIndex &_current_index): _current_model(_current_model), _current_index(_current_index)
 {
     assert(_current_model()->item(_current_index));
+}
+
+
+void TreeModel::session_id(const QString &id)
+{
+    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
+    _session_id = id;
 }
