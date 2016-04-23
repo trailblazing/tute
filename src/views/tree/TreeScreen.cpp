@@ -267,7 +267,7 @@ void TreeScreen::setup_actions(void)
 
             if(parent_parent)
             {
-                _alternative_items = parent_parent->items_direct(_name);
+                _alternative_items = parent_parent->items_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il->host()->name() == _name && il->host()->id() == _id;});
             }
             //            auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
 
@@ -1021,7 +1021,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_add_new(
     QList<boost::intrusive_ptr<TreeItem>> _alternative_items;
 
     if(current_parent) {
-        _alternative_items = current_parent->items_direct(_name);
+        _alternative_items = current_parent->items_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il->host()->name() == _name;});
     }
 
     //        auto _name_same_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _items_with_same_name) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
@@ -1036,7 +1036,11 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_add_new(
         result = it.next();
 
         while(it.hasNext()) {
-            result = view_merge_to_left(_current_model, result, it.next());
+            auto _it = it.next();
+
+            if(_it->id() == result->id()) { // prevent error merge
+                result = view_merge_to_left(_current_model, result, _it);
+            }
         }
 
         //            result = _name_same_no_child_first ? _name_same_no_child_first : _items_with_same_name[0];
@@ -1149,7 +1153,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_insert_new(
             QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
 
             if(current_parent)
-                _alternative_items = current_parent->items_direct(_name);
+                _alternative_items = current_parent->items_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il->host()->name() == _name;});
 
             //            auto _name_same_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _items_with_same_name) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
 
@@ -1161,7 +1165,11 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_insert_new(
                 result = it.next();
 
                 while(it.hasNext()) {
-                    view_merge_to_left(_current_model, result, it.next());
+                    auto _it = it.next();
+
+                    if(_it->id() == result->id()) { // prevent error merge
+                        result = view_merge_to_left(_current_model, result, _it);
+                    }
                 }
 
             } else {
@@ -1320,7 +1328,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_children_from_children(
 
                 if(candidate) {
                     auto found_item = // _know_model_board
-                        _current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t)->bool {return t->name() == candidate->name();});
+                        _current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t)->bool {return t->name() == candidate->name() && t->id() == candidate->id();});
 
                     // Подветка
                     if(found_item) { // candidate->id()
@@ -3937,18 +3945,23 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
 
         // Получаем указатель на текущую выбранную ветку дерева
         auto result_item = _tree_view->source_model()->item(_index);
-        auto duplicated_items_list_on_board_by_url = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it) {return (it->field("url") == result_item->field("url")) && (it->field("url") != browser::Browser::_defaulthome);}); // _tree_view->source_model()
+
+        auto merge_by_url = [&]() {
+            auto duplicated_items_list_on_board_by_url = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it) {return (it->field("url") == result_item->field("url")) && (it->field("url") != browser::Browser::_defaulthome);}); // _tree_view->source_model()
 
 
-        if(duplicated_items_list_on_board_by_url.size() > 1) {
-            for(auto _i : duplicated_items_list_on_board_by_url) {
-                auto duplicated_item = _i;
+            if(duplicated_items_list_on_board_by_url.size() > 1) {
+                for(auto _i : duplicated_items_list_on_board_by_url) {
+                    auto duplicated_item = _i;
 
-                if(duplicated_item != result_item) { // (duplicated_item->id() != result_item->id()) ||
-                    result_item = view_merge_to_left(_source_model, result_item, duplicated_item);
+                    if(duplicated_item != result_item) { // (duplicated_item->id() != result_item->id()) ||
+                        result_item = view_merge_to_left(_source_model, result_item, duplicated_item);
+                    }
                 }
             }
-        }
+        };
+
+        (void)merge_by_url;
 
         //        auto duplicated_item_index_list_on_view = _source_model()->indexes([&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == result_item->field("url");});
         auto duplicated_items_list_on_board_by_id = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == result_item->id();});
