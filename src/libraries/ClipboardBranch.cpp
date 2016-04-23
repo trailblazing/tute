@@ -229,8 +229,9 @@ void ClipboardBranch::branch_push(TreeModel::ModelIndex _modelindex
                                   , QList<boost::intrusive_ptr<TreeItem>> current_items)
 {
 
-    auto _current_model = _modelindex.current_model();
-    auto _current_index = _modelindex.current_index();
+    //    auto _current_model     = _modelindex.current_model();
+    auto _current_parent    = _modelindex.parent();
+    //    auto _current_index     = _modelindex.current_index();  // _current_model()->index(_modelindex.parent());
 
     this->_clip_blank_header_id = get_unical_id(); // _clip_blank_header_id;
 
@@ -258,7 +259,7 @@ void ClipboardBranch::branch_push(TreeModel::ModelIndex _modelindex
             bool encrypt_presence = false;
 
             // Флаги на основе состояния текущей ветки
-            if(_current_model()->item(_current_index)->field("crypt") == "1")   //_current_item_absolute_path
+            if(_current_parent->field("crypt") == "1")   //_current_item_absolute_path
 
                 encrypt_presence = true;
             else

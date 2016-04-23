@@ -189,7 +189,7 @@ void RecordScreen::save_in_new_branch(bool checked)
                 }
             }
 
-            _tree_screen->view_paste_children_from_children(TreeModel::ModelIndex(_tree_source_model, _index), _blank_header, [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
+            _tree_screen->view_paste_children_from_children(TreeModel::ModelIndex(_tree_source_model, _tree_screen->tree_view()->current_item()), _blank_header, [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
             //            new_tree_item_in_treeknow_root = target;
             _tree_screen->synchronized(false);
             _tree_screen->know_model_save();
@@ -255,7 +255,7 @@ void RecordScreen::setup_actions(void)
             if(modified) {
 
                 _tree_screen->view_paste_children_from_children(    // view_paste_sibling
-                    TreeModel::ModelIndex(_source_model, _source_model()->index(_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root_item()->id();}))) // _tree_screen->tree_view()->current_index() //,
+                    TreeModel::ModelIndex(_source_model, _tree_screen->session_root_item()) // _tree_screen->tree_view()->current_index() //,
                     , branch_item
                     , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );

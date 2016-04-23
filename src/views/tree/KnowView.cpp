@@ -184,7 +184,7 @@ void KnowView::sychronize()
                 // assert(_tree_screen->know_branch()->is_item_id_exists(_know_root->root_item()->parent()->id()));
 
                 _tree_screen->view_paste_children_from_children(
-                    TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}, _know_root->index(_know_root->item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == _tree_screen->session_root_item()->id();})))   // current_index()
+                    TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}, _tree_screen->session_root_item())   // current_index()
                     , branch_item
                     , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );

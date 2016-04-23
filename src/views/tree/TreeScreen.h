@@ -107,7 +107,7 @@ public:
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, KnowModel *_current_model);
-    boost::intrusive_ptr<TreeItem> view_paste_children_from_children(TreeModel::ModelIndex _modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition &_substitute_condition);
+    boost::intrusive_ptr<TreeItem> view_paste_children_from_children(TreeModel::ModelIndex _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition &_substitute_condition);
     boost::intrusive_ptr<TreeItem> view_paste_child(TreeModel::ModelIndex _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
     boost::intrusive_ptr<TreeItem> view_paste_sibling(TreeModel::ModelIndex _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 
@@ -287,7 +287,7 @@ private:
 
     //    void branch_add_to_clipboard(ClipboardBranch *branch_clipboard_data, QStringList path, bool is_root);
 
-    void view_paste_children_from_clipboard(TreeModel::ModelIndex _modelindex);
+    void view_paste_children_from_clipboard(TreeModel::ModelIndex _sibling_modelindex);
     //    void branch_paste_smart(bool is_branch);
 
     void tree_empty_controll(void);

@@ -832,12 +832,27 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QV
     return true;
 }
 
-TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &_current_model
-, const QModelIndex &_current_index): _current_model(_current_model), _current_index(_current_index)
+//TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &_current_model
+//, const QModelIndex &_current_index): _current_model(_current_model), _current_index(_current_index)
+//{
+//    assert(_current_model()->item(_current_index));
+//}
+
+
+//void TreeModel::session_id(const QString &id)
+//{
+//    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
+//    _session_id = id;
+//}
+
+TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> _parent, int _sibling_order)
+    : _current_model(_current_model), _parent(_parent), _sibling_order(_sibling_order)  // , _current_index(_current_index)
 {
-    assert(_current_model()->item(_current_index));
+
 }
 
+
+QModelIndex TreeModel::ModelIndex::current_index()const {return _current_model()->index(_parent);}
 
 void TreeModel::session_id(const QString &id)
 {

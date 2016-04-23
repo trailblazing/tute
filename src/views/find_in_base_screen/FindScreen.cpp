@@ -1058,7 +1058,7 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
 
                                 auto result = _tree_screen->item_bind(candidate // result
                                                                       , std::bind(&TreeScreen::view_paste_child, _tree_screen
-                                                                                  , TreeModel::ModelIndex(_source_model,  static_cast<KnowModel *>(_source_model())->index(_session_root_item)) // std::placeholders::_1
+                                                                                  , TreeModel::ModelIndex(_source_model,  _session_root_item) // std::placeholders::_1
                                                                                   , std::placeholders::_2
                                                                                   , std::placeholders::_3));    // ->activate(); //
                                 result->activate();

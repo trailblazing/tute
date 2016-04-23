@@ -28,12 +28,16 @@ public:
 
     struct ModelIndex {
     public:
-        ModelIndex(const std::function<KnowModel *()> &_current_model, const QModelIndex &_current_index);
+        ModelIndex(const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> _parent, int _sibling_order = 0);   // , const QModelIndex &_current_index
         std::function<KnowModel *()> current_model()const {return _current_model;}
-        QModelIndex current_index()const {return _current_index;}
+        QModelIndex current_index()const;   // {return _current_model()->index(_parent);}
+        boost::intrusive_ptr<TreeItem> parent() {return _parent;}
+        int sibling_order() {return _sibling_order;}
     private:
-        std::function<KnowModel *()> _current_model;
-        QModelIndex _current_index;
+        std::function<KnowModel *()>    _current_model;
+        boost::intrusive_ptr<TreeItem>  _parent;
+        int                             _sibling_order;
+        //        QModelIndex _current_index;
     };
 
     //    struct  delegater {
