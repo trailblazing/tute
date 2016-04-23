@@ -886,7 +886,7 @@ QModelIndexList KnowView::index_localize(const QModelIndexList _origin_index_lis
 
             if(found && duplicated_item && found != duplicated_item) {
                 found = static_cast<KnowModel *>(_source_model())->model_merge_to_left(
-                            std::bind(&TreeScreen::view_delete_permantent, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+                            std::bind(&TreeScreen::view_delete_permanent, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                             , found, duplicated_item
                         );
             }

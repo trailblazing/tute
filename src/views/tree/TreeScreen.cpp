@@ -43,19 +43,40 @@ extern const char *clipboard_items_root;
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
+const char *action_set_as_session_root      = "set_as_session_root";
+const char *action_find_in_base             = "find_in_base";
+const char *action_return_to_root           = "return_to_root";
+const char *action_view_up_one_level        = "view_up_one_level";
+const char *action_expand_all_subbranch     = "expand_all_subbranch";
+const char *action_collapse_all_subbranch   = "collapse_all_subbranch";
+const char *action_move_up_branch           = "move_up_branch";
+const char *action_move_dn_branch           = "move_dn_branch";
+const char *action_insert_sub_branch        = "insert_sub_branch";
+const char *action_insert_branch            = "insert_branch";
+const char *action_edit_branch              = "edit_branch";
+const char *action_delete_branch            = "delete_branch";
+const char *action_cut_branch               = "cut_branch";
+const char *action_copy_branch              = "copy_branch";
+const char *action_paste_branch             = "paste_branch";
+const char *action_paste_sub_branch         = "paste_sub_branch";
+const char *action_encrypt_branch           = "encrypt_branch";
+const char *action_decrypt_branch           = "decrypt_branch";
+const char *action_freeze_browser_view      = "freeze_browser_view";
+const char *action_edit_field               = "edit_field";
+const char *action_editor_switch            = "editor_switch";
 
-know_root_holder::know_root_holder(const AppConfig &_appconfig, TreeScreen *_this)
-    : _know_root(new KnowModel(_this))
-{
-    // Загрузка данных
-    // auto xml =
-    _know_root->init_from_xml(_appconfig.tetra_dir() + "/" + globalparameters.main_program_file() + ".xml");
-    int all_count = _know_root->count_records_all();
-    assert(all_count > 0);
+//know_root_holder::know_root_holder(const AppConfig &_appconfig, TreeScreen *_this)
+//    : _know_root(new KnowModel(_this))
+//{
+//    // Загрузка данных
+//    // auto xml =
+//    _know_root->init_from_xml(_appconfig.tetra_dir() + "/" + globalparameters.main_program_file() + ".xml");
+//    int all_count = _know_root->count_records_all();
+//    assert(all_count > 0);
 
-}
+//}
 
-know_root_holder::~know_root_holder() {delete _know_root;}
+//know_root_holder::~know_root_holder() {delete _know_root;}
 
 TreeScreen::TreeScreen(QString              object_name
                        , const AppConfig    &_appconfig
@@ -179,7 +200,7 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Set as session root"));
     ac->setIcon(QIcon(":/resource/pic/clover.svg"));
     connect(ac, &QAction::triggered, this, &TreeScreen::session_root_id);
-    _actionlist["set_as_session_root"] = ac;
+    _actionlist[action_set_as_session_root] = ac;
 
 
 
@@ -188,11 +209,11 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Return to root"));
     ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
     connect(ac, &QAction::triggered, this, &TreeScreen::cursor_follow_up_to_root);
-    _actionlist["return_to_root"] = ac;
+    _actionlist[action_return_to_root] = ac;
 
 
-    ac = new QAction(tr("View up one level"), this);
-    ac->setStatusTip(tr("View up one level"));
+    ac = new QAction(tr("View follow up one level"), this);
+    ac->setStatusTip(tr("View follow up one level when reach the root"));
     //    ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
 
     ac->setIcon(QIcon(":/resource/pic/mobile_up.svg")        // ":/resource/pic/streamline_home.svg"
@@ -200,7 +221,7 @@ void TreeScreen::setup_actions(void)
                );
 
     connect(ac, &QAction::triggered, this, &TreeScreen::cursor_follow_up_one_level);
-    _actionlist["view_up_one_level"] = ac;
+    _actionlist[action_view_up_one_level] = ac;
 
 
     // Разворачивание всех подветок
@@ -209,14 +230,14 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Expand all sub items"));
     ac->setIcon(QIcon(":/resource/pic/expand_all_subbranch.svg"));
     connect(ac, &QAction::triggered, std::bind(&TreeScreen::view_expand_selected, this, true));
-    _actionlist["expandAllSubbranch"] = ac;
+    _actionlist[action_expand_all_subbranch] = ac;
 
     // Сворачивание всех подветок
     ac = new QAction(tr("Collapse all sub items"), this);
     ac->setStatusTip(tr("Collapse all sub items"));
     ac->setIcon(QIcon(":/resource/pic/collapse_all_subbranch.svg"));
     connect(ac, &QAction::triggered, std::bind(&TreeScreen::view_expand_selected, this, false));   // view_collapse_all_sub
-    _actionlist["collapseAllSubbranch"] = ac;
+    _actionlist[action_collapse_all_subbranch] = ac;
 
     // Перемещение ветки вверх
     ac = new QAction(tr("Move item up"), this);
@@ -225,7 +246,7 @@ void TreeScreen::setup_actions(void)
     connect(ac, &QAction::triggered, this
             , [&]()->void {item_move_up_dn_branch(&TreeItem::move_up);});   // &TreeScreen::item_move_up_branch
 
-    _actionlist["moveUpBranch"] = ac;
+    _actionlist[action_move_up_branch] = ac;
 
     // Перемещение ветки вниз
     ac = new QAction(tr("Move item down"), this);
@@ -234,7 +255,7 @@ void TreeScreen::setup_actions(void)
     connect(ac, &QAction::triggered, this
             , [&]()->void {item_move_up_dn_branch(&TreeItem::move_dn);});   // &TreeScreen::item_move_dn_branch
 
-    _actionlist["moveDnBranch"] = ac;
+    _actionlist[action_move_dn_branch] = ac;
 
     // Вставка новой подветки
     ac = new QAction(tr("Insert a new sub item"), this);
@@ -247,7 +268,7 @@ void TreeScreen::setup_actions(void)
             return _modelindex.current_model()()->model_new_child(_modelindex, _id, _name);
         });
     });
-    _actionlist["insSubbranch"] = ac;
+    _actionlist[action_insert_sub_branch] = ac;
 
     // Вставка новой ветки
     ac = new QAction(tr("Insert a new sibling item"), this);
@@ -293,14 +314,14 @@ void TreeScreen::setup_actions(void)
             return result;
         });
     });
-    _actionlist["insBranch"] = ac;
+    _actionlist[action_insert_branch] = ac;
 
     // Редактирование ветки
     ac = new QAction(tr("Edit item name"), this);
     ac->setStatusTip(tr("Edit name of selected item"));
     ac->setIcon(QIcon(":/resource/pic/note_edit.svg"));
     connect(ac, &QAction::triggered, this, &TreeScreen::view_edit);
-    _actionlist["editBranch"] = ac;
+    _actionlist[action_edit_branch] = ac;
 
     // Удаление ветки
     ac = new QAction(tr("Delete item"), this);
@@ -312,10 +333,10 @@ void TreeScreen::setup_actions(void)
         QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
         QModelIndexList _selectitems = _tree_view->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
         // view_remove(_selectitems, "cut");
-        view_delete_permantent([&]() {return _tree_view->source_model();}, [&]() {QList<boost::intrusive_ptr<TreeItem>> r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r;}(), "cut", false);
+        view_delete_permanent([&]() {return _tree_view->source_model();}, [&]() {QList<boost::intrusive_ptr<TreeItem>> r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r;}(), "cut", false);
     }); //, &TreeScreen::del_branch
 
-    _actionlist["delBranch"] = ac;
+    _actionlist[action_delete_branch] = ac;
 
     void(TreeScreen::*_cut)(bool) = &TreeScreen::view_cut;
     // Удаление ветки с сохранением копии в буфер обмена
@@ -323,14 +344,14 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Cut item including sub items for paste"));
     ac->setIcon(QIcon(":/resource/pic/branch_cut.svg"));
     connect(ac, &QAction::triggered, this, _cut);
-    _actionlist["cutBranch"] = ac;
+    _actionlist[action_cut_branch] = ac;
 
     // Копирование ветки в буфер обмена
     ac = new QAction(tr("Copy / Move item"), this);
     ac->setStatusTip(tr("Copy item including sub items for move"));
     ac->setIcon(QIcon(":/resource/pic/branch_copy.svg"));
     connect(ac, &QAction::triggered, this, &TreeScreen::view_copy);
-    _actionlist["copyBranch"] = ac;
+    _actionlist[action_copy_branch] = ac;
 
     //    void(TreeScreen::*paste)() = &TreeScreen::branch_paste;
     // Вставка ветки из буфера обмена
@@ -366,7 +387,7 @@ void TreeScreen::setup_actions(void)
 
     });            //, paste
 
-    _actionlist["pasteBranch"] = ac;
+    _actionlist[action_paste_branch] = ac;
 
 
     //    QString(KnowModel::*_lock_child_paste)(const QModelIndex & _index, ClipboardBranch * subbranch) = &KnowModel::lock_child_paste;
@@ -382,21 +403,21 @@ void TreeScreen::setup_actions(void)
 
     });            // branch_paste_sub
 
-    _actionlist["pasteSubbranch"] = ac;
+    _actionlist[action_paste_sub_branch] = ac;
 
     // Шифрование ветки
     ac = new QAction(tr("Encrypt item"), this);
     ac->setStatusTip(tr("Encrypt item and all subitem"));
     // actionEncryptBranch->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
     connect(ac, &QAction::triggered, this, &TreeScreen::view_encrypt);
-    _actionlist["encryptBranch"] = ac;
+    _actionlist[action_encrypt_branch] = ac;
 
     // Расшифровка ветки (снятие пароля)
     ac = new QAction(tr("Decrypt item"), this);
     ac->setStatusTip(tr("Decrypt item and all subitem"));
     // actionDecryptBranch->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
     connect(ac, &QAction::triggered, this, &TreeScreen::view_decrypt);
-    _actionlist["decryptBranch"] = ac;
+    _actionlist[action_decrypt_branch] = ac;
 
     ac = new QAction(tr("Pin / freeze browser view"), this);
     ac->setStatusTip(tr("Pin / freeze browser view"));  // _pin->setStatusTip(tr("Pin a note"));
@@ -409,7 +430,7 @@ void TreeScreen::setup_actions(void)
 
         if(metaeditor)metaeditor->switch_pin();
     });
-    _actionlist["freeze_browser_view"] = ac;
+    _actionlist[action_freeze_browser_view] = ac;
 
 
 
@@ -420,7 +441,7 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Find in base"));
     ac->setIcon(QIcon(":/resource/pic/find_in_base.svg"));
     // connection in void MainWindow::setupSignals(void)
-    _actionlist["find_in_base"] = ac;
+    _actionlist[action_find_in_base] = ac;
 
 
     //    QAction             *_addnew_to_end = (new QAction(tr("Add note"), this));
@@ -435,7 +456,7 @@ void TreeScreen::setup_actions(void)
     _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
     connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) {Q_UNUSED(checked); edit_field_context(this->_tree_view->current_index());});
-    _actionlist["edit_field"] = _edit_field;
+    _actionlist[action_edit_field] = _edit_field;
 
 
 
@@ -445,7 +466,7 @@ void TreeScreen::setup_actions(void)
     _editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
     connect(_editor_switch, &QAction::triggered, []() {globalparameters.mainwindow()->editor_switch();});
     //    insert_action_as_button<QToolButton>(_toolsline, _settings);
-    _actionlist["editor_switch"] = _editor_switch;
+    _actionlist[action_editor_switch] = _editor_switch;
 
 
     //    QAction             *_action_syncro = (new QAction(tr("Synchronization"), this));
@@ -557,36 +578,36 @@ void TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
     //    toolsLine->setIconSize(tool_bar_icon_size);
 
 
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["set_as_session_root"]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_set_as_session_root]);
 
     //    _recordtree_searchlayout = new QHBoxLayout();
     //    _recordtree_searchlayout->addWidget(_recordtree_search);
 
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["return_to_root"]);
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["view_up_one_level"]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_return_to_root]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_view_up_one_level]);
 
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["insBranch"]);
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["insSubbranch"]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_insert_branch]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_insert_sub_branch]);
 
     if(appconfig.interface_mode() == "desktop") {
-        insert_action_as_button<QToolButton>(_tools_line, _actionlist["editBranch"]);
-        insert_action_as_button<QToolButton>(_tools_line, _actionlist["delBranch"]);
+        insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_edit_branch]);
+        insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_delete_branch]);
     }
 
     _tools_line->addSeparator();
 
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["expandAllSubbranch"]);
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["collapseAllSubbranch"]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_expand_all_subbranch]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_collapse_all_subbranch]);
 
     _tools_line->addSeparator();
 
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["moveUpBranch"]);
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist["moveDnBranch"]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_move_up_branch]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_move_dn_branch]);
 
     if(appconfig.interface_mode() == "mobile") {
         _tools_line->addSeparator();
-        insert_action_as_button<QToolButton>(_tools_line, _actionlist["freeze_browser_view"]);
-        insert_action_as_button<QToolButton>(_tools_line, _actionlist["find_in_base"]); // Клик по этой кнопке связывается с действием в MainWindow
+        insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
+        insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_find_in_base]); // Клик по этой кнопке связывается с действием в MainWindow
     }
 
     //_toolsline->addSeparator();
@@ -734,53 +755,53 @@ void TreeScreen::enable_up_action() //        bool enable
     auto enable = _tree_view->source_model()->root_item()->id() != _know_model_board->root_item()->id();
 
     if(enable) {
-        //        _actionlist["pasteBranch"]->setEnabled(true);
-        //        _actionlist["pasteSubbranch"]->setEnabled(true);
-        _actionlist["view_up_one_level"]->setEnabled(true);
-        _actionlist["return_to_root"]->setEnabled(true);
+        //        _actionlist[action_paste_branch]->setEnabled(true);
+        //        _actionlist[action_paste_sub_branch]->setEnabled(true);
+        _actionlist[action_view_up_one_level]->setEnabled(true);
+        _actionlist[action_return_to_root]->setEnabled(true);
     } else
         //        if(
         //        static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() == _know_branch->root_item()->id() // know_root()->root_item() == _know_branch->root_item()
         //        || !enable)
     {
-        //        _actionlist["pasteBranch"]->setEnabled(false);
-        //        _actionlist["pasteSubbranch"]->setEnabled(false);
-        _actionlist["view_up_one_level"]->setEnabled(false);
-        _actionlist["return_to_root"]->setEnabled(false);
+        //        _actionlist[action_paste_branch]->setEnabled(false);
+        //        _actionlist[action_paste_sub_branch]->setEnabled(false);
+        _actionlist[action_view_up_one_level]->setEnabled(false);
+        _actionlist[action_return_to_root]->setEnabled(false);
     }
 }
 
 void TreeScreen::assembly_context_menu()
 {
-    _context_menu->addAction(_actionlist["set_as_session_root"]);
+    _context_menu->addAction(_actionlist[action_set_as_session_root]);
 
-    _context_menu->addAction(_actionlist["freeze_browser_view"]);
-    _context_menu->addAction(_actionlist["find_in_base"]);
-    _context_menu->addAction(_actionlist["edit_field"]);
-    _context_menu->addAction(_actionlist["editor_switch"]);
+    _context_menu->addAction(_actionlist[action_freeze_browser_view]);
+    _context_menu->addAction(_actionlist[action_find_in_base]);
+    _context_menu->addAction(_actionlist[action_edit_field]);
+    _context_menu->addAction(_actionlist[action_editor_switch]);
 
 
-    _context_menu->addAction(_actionlist["return_to_root"]);
-    _context_menu->addAction(_actionlist["view_up_one_level"]);
+    _context_menu->addAction(_actionlist[action_return_to_root]);
+    _context_menu->addAction(_actionlist[action_view_up_one_level]);
 
-    _context_menu->addAction(_actionlist["insBranch"]);
-    _context_menu->addAction(_actionlist["insSubbranch"]);
-    _context_menu->addAction(_actionlist["editBranch"]);
-    _context_menu->addAction(_actionlist["delBranch"]);
+    _context_menu->addAction(_actionlist[action_insert_branch]);
+    _context_menu->addAction(_actionlist[action_insert_sub_branch]);
+    _context_menu->addAction(_actionlist[action_edit_branch]);
+    _context_menu->addAction(_actionlist[action_delete_branch]);
     _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist["expandAllSubbranch"]);
-    _context_menu->addAction(_actionlist["collapseAllSubbranch"]);
+    _context_menu->addAction(_actionlist[action_expand_all_subbranch]);
+    _context_menu->addAction(_actionlist[action_collapse_all_subbranch]);
     _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist["moveUpBranch"]);
-    _context_menu->addAction(_actionlist["moveDnBranch"]);
+    _context_menu->addAction(_actionlist[action_move_up_branch]);
+    _context_menu->addAction(_actionlist[action_move_dn_branch]);
     _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist["cutBranch"]);
-    _context_menu->addAction(_actionlist["copyBranch"]);
-    _context_menu->addAction(_actionlist["pasteBranch"]);
-    _context_menu->addAction(_actionlist["pasteSubbranch"]);
+    _context_menu->addAction(_actionlist[action_cut_branch]);
+    _context_menu->addAction(_actionlist[action_copy_branch]);
+    _context_menu->addAction(_actionlist[action_paste_branch]);
+    _context_menu->addAction(_actionlist[action_paste_sub_branch]);
     _context_menu->addSeparator();
-    _context_menu->addAction(_actionlist["encryptBranch"]);
-    _context_menu->addAction(_actionlist["decryptBranch"]);
+    _context_menu->addAction(_actionlist[action_encrypt_branch]);
+    _context_menu->addAction(_actionlist[action_decrypt_branch]);
 
 }
 
@@ -814,7 +835,7 @@ void TreeScreen::setup_signals(void)
         connect(_tree_view, &KnowView::clicked, this, &TreeScreen::cursor_step_into);
 
     // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
-    // connect(knowTreeView, SIGNAL(doubleClicked(const QModelIndex &)), actionList["editBranch"], SLOT(trigger(void)));
+    // connect(knowTreeView, SIGNAL(doubleClicked(const QModelIndex &)), actionList[action_edit_branch], SLOT(trigger(void)));
     if(appconfig.interface_mode() == "desktop") {
         connect(_tree_view, &KnowView::clicked, this, &TreeScreen::index_invoke);
         //                [&](const QModelIndex index) {
@@ -1423,7 +1444,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_children_from_children(
 
 //        //        //        setup_model(_know_branch);
 
-//        _actionlist["return_to_root"]->setEnabled(true);
+//        _actionlist[action_return_to_root]->setEnabled(true);
 
 //        //        //    assert(controller_source_model->tree_item() == _selected_branch->_root_item);
 
@@ -2181,7 +2202,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_child(
 
 
 
-QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permantent(
+QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permanent(
                                                const std::function<KnowModel *()>       &_current_model
                                                , QList<boost::intrusive_ptr<TreeItem>>  _items
                                                , const QString                          &_mode
@@ -2364,7 +2385,7 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permantent
                             static_cast<KnowModel *>(_current_model())->session_id(it->parent()->id());
                         }
 
-                        auto result = static_cast<KnowModel *>(_current_model())->model_delete_permantent(it->up_linker());
+                        auto result = static_cast<KnowModel *>(_current_model())->model_delete_permanent(it->up_linker());
 
                         // just for counting, 0 is fine
                         //                    if(result) { // if(!result)
@@ -2473,12 +2494,12 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permantent
                         //        reload_knowtree();
                         qDebug() << "Save new tree finish";
 
-                        //            _actionlist["pasteBranch"]->setEnabled(false);
-                        //            _actionlist["pasteSubbranch"]->setEnabled(false);
+                        //            _actionlist[action_paste_branch]->setEnabled(false);
+                        //            _actionlist[action_paste_sub_branch]->setEnabled(false);
                     }
                 } else {
-                    _actionlist["pasteBranch"]->setEnabled(true);
-                    _actionlist["pasteSubbranch"]->setEnabled(true);
+                    _actionlist[action_paste_branch]->setEnabled(true);
+                    _actionlist[action_paste_sub_branch]->setEnabled(true);
                 }
 
                 // Разблокируется главное окно
@@ -2738,11 +2759,11 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_delete_permantent
 //                //        reload_knowtree();
 //                qDebug() << "Save new tree finish";
 
-//                //            _actionlist["pasteBranch"]->setEnabled(false);
-//                //            _actionlist["pasteSubbranch"]->setEnabled(false);
+//                //            _actionlist[action_paste_branch]->setEnabled(false);
+//                //            _actionlist[action_paste_sub_branch]->setEnabled(false);
 //            } else {
-//                _actionlist["pasteBranch"]->setEnabled(true);
-//                _actionlist["pasteSubbranch"]->setEnabled(true);
+//                _actionlist[action_paste_branch]->setEnabled(true);
+//                _actionlist[action_paste_sub_branch]->setEnabled(true);
 //            }
 
 //            // Разблокируется главное окно
@@ -2997,10 +3018,10 @@ boost::intrusive_ptr<TreeItem::linker> TreeScreen::view_cut(boost::intrusive_ptr
         //    index_list.append(_index);
         QList<boost::intrusive_ptr<TreeItem>> delete_items;
         delete_items << target;
-        results = view_delete_permantent(_source_model, delete_items, "cut"); // , _know_branch // know_root_holder::know_root()
+        results = view_delete_permanent(_source_model, delete_items, "cut"); // , _know_branch // know_root_holder::know_root()
 
-        _actionlist["pasteBranch"]->setEnabled(true);
-        _actionlist["pasteSubbranch"]->setEnabled(true);
+        _actionlist[action_paste_branch]->setEnabled(true);
+        _actionlist[action_paste_sub_branch]->setEnabled(true);
 
         assert(results.size() == 1);
         assert(results.at(0) == target->up_linker());
@@ -3017,7 +3038,7 @@ void TreeScreen::view_cut(bool _cut_branch_confirm)
     auto index_list = view_copy();
 
     if(index_list.size() > 0) {// copy_result
-        view_delete_permantent([&]() {return _tree_view->source_model();}, [&]() {
+        view_delete_permanent([&]() {return _tree_view->source_model();}, [&]() {
             QList<boost::intrusive_ptr<TreeItem>> r;
 
             for(auto ix : index_list)r << _tree_view->source_model()->item(ix);
@@ -3027,8 +3048,8 @@ void TreeScreen::view_cut(bool _cut_branch_confirm)
         // view_remove(index_list, "cut", _cut_branch_confirm); //this->_know_branch,
     }
 
-    _actionlist["pasteBranch"]->setEnabled(true);
-    _actionlist["pasteSubbranch"]->setEnabled(true);
+    _actionlist[action_paste_branch]->setEnabled(true);
+    _actionlist[action_paste_sub_branch]->setEnabled(true);
 
 }
 
@@ -3242,8 +3263,8 @@ QModelIndexList TreeScreen::view_copy(void)    // const
         //            // Объект с ветками помещается в буфер обмена
         //            cbuf->setMimeData(branch_clipboard_data);
 
-        _actionlist["pasteBranch"]->setEnabled(true);
-        _actionlist["pasteSubbranch"]->setEnabled(true);
+        _actionlist[action_paste_branch]->setEnabled(true);
+        _actionlist[action_paste_sub_branch]->setEnabled(true);
 
 
         //        }
@@ -3252,8 +3273,8 @@ QModelIndexList TreeScreen::view_copy(void)    // const
         if(_sub_branch->clip_blank_header_id() != "") {cbuf->setMimeData(_sub_branch); copy_result = true;}
         else {delete _sub_branch;}
     } else {
-        _actionlist["pasteBranch"]->setEnabled(false);
-        _actionlist["pasteSubbranch"]->setEnabled(false);
+        _actionlist[action_paste_branch]->setEnabled(false);
+        _actionlist[action_paste_sub_branch]->setEnabled(false);
         //        copy_result = false;
     }
 
@@ -3474,7 +3495,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_merge_to_left(const std::functio
 
         globalparameters.mainwindow()->setDisabled(true);
         result = static_cast<KnowModel *>(_current_model())->model_merge_to_left(
-                     std::bind(&TreeScreen::view_delete_permantent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+                     std::bind(&TreeScreen::view_delete_permanent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                      , target   // keep
                      , source   // remove   // std::bind(_know_model_board, this)
                  );
@@ -3788,19 +3809,19 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &_position)
             if(cryptFlag != "1") {
                 // Шифровать можно
                 // Дешифровать нельзя
-                _actionlist["encryptBranch"]->setEnabled(true);
-                _actionlist["decryptBranch"]->setEnabled(false);
+                _actionlist[action_encrypt_branch]->setEnabled(true);
+                _actionlist[action_decrypt_branch]->setEnabled(false);
             } else {
                 // Ветка зашифрована
 
                 // Шифровать нельзя
-                _actionlist["encryptBranch"]->setEnabled(false);
+                _actionlist[action_encrypt_branch]->setEnabled(false);
 
                 // Дешифровать можно только если верхнележащая ветка незашифрована
                 if(parentCryptFlag != "1")
-                    _actionlist["decryptBranch"]->setEnabled(true);
+                    _actionlist[action_decrypt_branch]->setEnabled(true);
                 else
-                    _actionlist["decryptBranch"]->setEnabled(false);
+                    _actionlist[action_decrypt_branch]->setEnabled(false);
             }
         }
     }

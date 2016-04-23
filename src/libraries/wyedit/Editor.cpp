@@ -41,6 +41,8 @@
 #include "libraries/DiskHelper.h"
 
 extern AppConfig appconfig;
+extern const char *action_find_in_base;
+
 
 Editor::Editor(QWidget *parent) : QWidget(parent)
 {
@@ -154,9 +156,9 @@ void Editor::init(int mode)
     }
 
     // В мобильном режиме добавляется кнопка find_in_base (если ее нет)
-    if(_view_mode == WYEDIT_MOBILE_MODE && !_tools_list_in_line_0.contains("find_in_base")) {
+    if(_view_mode == WYEDIT_MOBILE_MODE && !_tools_list_in_line_0.contains(action_find_in_base)) {
         _tools_list_in_line_0.append("separator");
-        _tools_list_in_line_0.append("find_in_base");
+        _tools_list_in_line_0.append(action_find_in_base);
     }
 
     // Создается виджет поиска, обязательно нужно указать parent чтобы

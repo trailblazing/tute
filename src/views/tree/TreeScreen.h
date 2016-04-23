@@ -49,16 +49,16 @@ namespace  browser {
 }
 
 
-struct know_root_holder {
-protected:  //public:
-    know_root_holder(const AppConfig &_appconfig, TreeScreen *_this);
+//struct know_root_holder {
+//protected:  //public:
+//    know_root_holder(const AppConfig &_appconfig, TreeScreen *_this);
 
-    KnowModel *know_root() {return _know_root;}
-    KnowModel const *know_root()const {return _know_root;}
-    ~know_root_holder();
-private:
-    KnowModel   *_know_root;        // for tree screen
-};
+//    KnowModel *know_root() {return _know_root;}
+//    KnowModel const *know_root()const {return _know_root;}
+//    ~know_root_holder();
+//private:
+//    KnowModel   *_know_root;        // for tree screen
+//};
 
 class TreeScreen
     : public QWidget {  //    , public know_root_holder
@@ -142,7 +142,7 @@ public:
     boost::intrusive_ptr<TreeItem> cursor_follow_up_to_root(void);
     boost::intrusive_ptr<TreeItem> view_merge_to_left(const std::function<KnowModel*()> &_current_model, boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
 
-    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_delete_permantent(
+    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_delete_permanent(
         const std::function<KnowModel *()>      &_current_model
         , QList<boost::intrusive_ptr<TreeItem>> _items
         , const QString                         &_mode

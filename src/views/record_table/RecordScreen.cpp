@@ -341,7 +341,7 @@ void RecordScreen::setup_actions(void)
         auto _tree_view = _tree_screen->tree_view();
         auto _current_model = [&]() {return _tree_view->source_model();};
         auto _item = _tabmanager->currentWebView()->page()->item_link();
-        _tree_screen->view_delete_permantent(
+        _tree_screen->view_delete_permanent(
             _current_model
             , QList<boost::intrusive_ptr<TreeItem>>() << _item
             , "cut"

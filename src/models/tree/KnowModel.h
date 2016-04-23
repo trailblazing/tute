@@ -113,7 +113,7 @@ private:
                                 );
 
     //    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
-    boost::intrusive_ptr<ItemsFlat::linker> model_delete_permantent(boost::intrusive_ptr<ItemsFlat::linker> delete_linker);
+    boost::intrusive_ptr<ItemsFlat::linker> model_delete_permanent(boost::intrusive_ptr<ItemsFlat::linker> delete_linker);
     //    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);

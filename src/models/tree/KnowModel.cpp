@@ -1242,7 +1242,7 @@ QModelIndex KnowModel::model_move_up_dn(const QModelIndex &_index
 
 // Удаление одной ветки и её подветок
 // Delete one branch and its podvetok / garter
-boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_permantent(boost::intrusive_ptr<TreeItem::linker> delete_linker)
+boost::intrusive_ptr<TreeItem::linker> KnowModel::model_delete_permanent(boost::intrusive_ptr<TreeItem::linker> delete_linker)
 {
     auto parent = delete_linker->host_parent();
     auto host = delete_linker->host();

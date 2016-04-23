@@ -156,14 +156,14 @@ public:
     FlatToolButton      *_save = nullptr;
 
     FlatToolButton      *_back = nullptr;
-    FlatToolButton      *_freeze = nullptr;  // reserved for read only
+    FlatToolButton      *_freeze = nullptr;         // reserved for read only
     FlatToolButton      *_find_in_base = nullptr;
 
     FlatToolButton      *_show_text = nullptr;
 
     FlatToolButton      *_to_attach = nullptr;
-    QIcon               _icon_attach_exists; // Иконка, когда аттачи есть
-    QIcon               _icon_attach_not_exists; // Иконка, когда аттачей нет
+    QIcon               _icon_attach_exists;        // Иконка, когда аттачи есть
+    QIcon               _icon_attach_not_exists;    // Иконка, когда аттачей нет
 
     IndentSlider        *_indent_slider = nullptr;
 

@@ -48,6 +48,8 @@ const char *entrance_singleton_name             = "entrance";
 const char *record_controller_multi_instance_name   = "record_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
 const char *record_view_multi_instance_name     = "record_view";
 
+extern const char *action_find_in_base;
+
 MainWindow::MainWindow(
     GlobalParameters    &_globalparameters
     , AppConfig         &_appconfig
@@ -308,7 +310,7 @@ void MainWindow::setup_signals(void)
     connect(qApp, &QApplication::focusChanged, this, &MainWindow::on_focus_changed);
 
     // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
-    connect(_tree_screen->_actionlist["find_in_base"], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
     //    connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
     //    connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
