@@ -146,16 +146,16 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
-        typedef TreeItem::coupler coupler_delegation;
-        typedef TreeItem::coupler::bind_interface          bind_interface;
-        typedef TreeItem::coupler::activate_interface      activate_interface;
-        typedef TreeItem::coupler::item_interface  bounded_item_interface;
-        typedef TreeItem::coupler::page_interface  bounded_page_interface;
+        typedef TreeItem::Coupler coupler_delegation;
+        typedef TreeItem::Coupler::bind_interface          bind_interface;
+        typedef TreeItem::Coupler::activate_interface      activate_interface;
+        typedef TreeItem::Coupler::item_interface  bounded_item_interface;
+        typedef TreeItem::Coupler::page_interface  bounded_page_interface;
 
-        typedef TreeItem::coupler::bind_helper         bind_helper;
-        typedef TreeItem::coupler::activate_helper     activate_helper;
-        typedef TreeItem::coupler::item_helper bounded_item_helper;
-        typedef TreeItem::coupler::page_helper bounded_page_helper;
+        typedef TreeItem::Coupler::bind_helper         bind_helper;
+        typedef TreeItem::Coupler::activate_helper     activate_helper;
+        typedef TreeItem::Coupler::item_helper bounded_item_helper;
+        typedef TreeItem::Coupler::page_helper bounded_page_helper;
 
         TabWidget   *tabWidget() {return _tabmanager;}
         TabWidget   *tabWidget() const {return _tabmanager;}

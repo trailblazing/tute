@@ -19,6 +19,11 @@ extern const char *global_root_id;
 class ItemsFlat;
 class TreeItem;
 class KnowModel;
+class TreeScreen;
+class KnowView;
+
+
+
 
 class TreeModel : public QAbstractItemModel {
     Q_OBJECT
@@ -28,7 +33,7 @@ public:
 
     struct ModelIndex {
     public:
-        ModelIndex(const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> _parent, int _sibling_order = 0);   // , const QModelIndex &_current_index
+        ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order = 0);   // , const QModelIndex &_current_index
         std::function<KnowModel *()> current_model()const {return _current_model;}
         QModelIndex current_index()const;   // {return _current_model()->index(_parent);}
         boost::intrusive_ptr<TreeItem> parent() {return _parent;}
@@ -61,8 +66,8 @@ public:
 
 
 
-    TreeModel(QObject *parent = 0);
-    TreeModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent = 0);
+    TreeModel(KnowView *parent = 0);
+    TreeModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent = 0);
     ~TreeModel(void);
 
     QVariant data(const QModelIndex &_index, int role) const;
@@ -85,7 +90,7 @@ public:
 
 
     //    bool is_item_valid(QStringList path) const;
-    QModelIndex index(const std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> &_equal) const;
+    QModelIndex index(const std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> &_equal) const;
 
     QModelIndex index(boost::intrusive_ptr<const TreeItem> _item) const;
     void update_index(const QModelIndex &_index);
@@ -110,7 +115,7 @@ public:
     // void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
     boost::intrusive_ptr<TreeItem> root_item()const {return _root_item;}
     QString session_id() {return _session_id;}
-    void session_id(const QString &id);
+    void session_id(ModelIndex modelindex);
 
 
 protected:

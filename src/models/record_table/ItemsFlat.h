@@ -33,11 +33,11 @@ class ItemsFlat {
 public:
 
 
-    struct linker : public boost::intrusive_ref_counter<linker, boost::thread_safe_counter> {
+    struct Linker : public boost::intrusive_ref_counter<Linker, boost::thread_safe_counter> {
     public:
 
         typedef std::function<boost::intrusive_ptr<TreeItem>()>     item_exist;
-        typedef std::function<const boost::intrusive_ptr<linker>()> linker_exist;
+        typedef std::function<const boost::intrusive_ptr<Linker>()> linker_exist;
         typedef std::function<bool()>                               linker_self_reference;
         typedef std::function<bool(boost::intrusive_ptr<const TreeItem>)> item_consistency;
 
@@ -53,9 +53,9 @@ public:
         , item_consistency
         > status_type;
 
-        linker(boost::intrusive_ptr<TreeItem> host_parent_item, boost::intrusive_ptr<TreeItem> host_item);         // , int pos = 0, int mode = ADD_NEW_RECORD_BEFORE       boost::intrusive_ptr<TreeItem> parent(boost::intrusive_ptr<TreeItem> it, int _pos = 0, int _mode = ADD_NEW_RECORD_BEFORE);
+        Linker(boost::intrusive_ptr<TreeItem> host_parent_item, boost::intrusive_ptr<TreeItem> host_item);         // , int pos = 0, int mode = ADD_NEW_RECORD_BEFORE       boost::intrusive_ptr<TreeItem> parent(boost::intrusive_ptr<TreeItem> it, int _pos = 0, int _mode = ADD_NEW_RECORD_BEFORE);
 
-        ~linker();  //        boost::intrusive_ptr<TreeItem> remove(boost::intrusive_ptr<TreeItem> _source_item);
+        ~Linker();  //        boost::intrusive_ptr<TreeItem> remove(boost::intrusive_ptr<TreeItem> _source_item);
 
         // Возвращение ссылки на родительский элемент
         boost::intrusive_ptr<TreeItem> host_parent()const;  // {return _parent_item;}
@@ -65,7 +65,7 @@ public:
         void host_parent(boost::intrusive_ptr<TreeItem> &&p);
         void host(boost::intrusive_ptr<TreeItem> &&h);
 
-        boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem> parent_item, int pos = 0, int mode = add_new_record_before);    //
+        boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> parent_item, int pos = 0, int mode = add_new_record_before);    //
         //        // Удаление потомков, начиная с позиции position массива childItems
         //        bool remove(int position, int count);
 
@@ -94,7 +94,7 @@ public:
         boost::intrusive_ptr<TreeItem>  _host_parent;
         boost::intrusive_ptr<TreeItem>  _host;
 
-        std::function<boost::intrusive_ptr<linker> (boost::intrusive_ptr<TreeItem>, int, int)> child_move_unique;  // , boost::intrusive_ptr<TreeItem>   _self_host
+        std::function<boost::intrusive_ptr<Linker> (boost::intrusive_ptr<TreeItem>, int, int)> child_move_unique;  // , boost::intrusive_ptr<TreeItem>   _self_host
 
         //        status_type state_impl();   // is_closure
         std::function<bool()> integrity; //        bool integrity();
@@ -132,10 +132,10 @@ public:
     boost::intrusive_ptr<TreeItem> item_lite(int pos) const;
     boost::intrusive_ptr<TreeItem> item_fat(int pos);
 
-    boost::intrusive_ptr<linker> linker_direct(int pos)const;
+    boost::intrusive_ptr<Linker> linker_direct(int pos)const;
 
     QList<boost::intrusive_ptr<TreeItem>> items_direct(const QString &name)const;
-    QList<boost::intrusive_ptr<TreeItem>> items_direct(const std::function<bool(boost::intrusive_ptr<const linker>)> &_substitute_condition)const;
+    QList<boost::intrusive_ptr<TreeItem>> items_direct(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_substitute_condition)const;
 
 
 
@@ -145,12 +145,12 @@ public:
     boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QUrl &url) const;
     //    boost::intrusive_ptr<TreeItem> item_direct(boost::intrusive_ptr<TreeItem> item) const;
-    boost::intrusive_ptr<TreeItem> item_direct(const std::function<bool(boost::intrusive_ptr<const linker>)> &_substitute_condition)const;
+    boost::intrusive_ptr<TreeItem> item_direct(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_substitute_condition)const;
     //    int find_list(boost::intrusive_ptr<TreeItem> item)const;
     //    boost::intrusive_ptr<TreeItem> item_direct(const QString &id)const;
 
 
-    int index_direct(boost::intrusive_ptr<TreeItem> item)const;
+    //    int index_direct(boost::intrusive_ptr<TreeItem> item)const;
     //    void tree_item(boost::intrusive_ptr<TreeItem> tree_item);
 
     //    // Удаление всех элементов таблицы конечных записей
@@ -177,15 +177,16 @@ public:
 
     void fields(int pos, QMap<QString, QString> edit_fields);
     boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const;
-    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<Linker> &&_item_linker)const;
+
     //    bool remove(int i);
     //    bool remove(QString id);
-    boost::intrusive_ptr<linker> delete_permanent_recursive(boost::intrusive_ptr<linker> _to_be_removed_linker);
+    boost::intrusive_ptr<Linker> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker);
 
 
     //    int sibling_order(QString id) const;
     //    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
-    int sibling_order(const std::function<bool(boost::intrusive_ptr<const linker>)> &_equal)const;
+    int sibling_order(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal)const;
 
     void clear(void);
     //    boost::intrusive_ptr<TreeItem> active_subset();
@@ -213,10 +214,11 @@ public:
 
     //    int direct_count()const {return _child_items.size();}
     //    void parent();
+    bool remove(const std::function<bool(boost::intrusive_ptr<Linker>)> &_equal);
     void remove_duplicated();
     bool is_empty() const;
-    QList<boost::intrusive_ptr<linker> > delete_permanent_recursive(int position, int count);
-    void traverse(const std::function< void(boost::intrusive_ptr<linker>)> &operation);
+    QList<boost::intrusive_ptr<Linker> > delete_permanent_recursive(int position, int count);
+    void traverse(const std::function< void(boost::intrusive_ptr<Linker>)> &operation);
 
 protected:
 
@@ -235,7 +237,7 @@ private:
     //    QList<boost::intrusive_ptr<Record>>      _child_items;
 
     //    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
-    QList<boost::intrusive_ptr<linker>>     _child_linkers;
+    QList<boost::intrusive_ptr<Linker>>     _child_linkers;
     //    boost::intrusive_ptr<TreeItem>          _parent_item;   // Ссылка на родителя
     //    // Each branch can contain a table of final entries // Каждая ветка может содержать таблицу конечных записей
     //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();

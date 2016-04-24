@@ -675,10 +675,11 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 {
     //    _tree_screen->session_root_id(current_item_absolute_path.last());
 
-    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+    auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+    auto know_model_board = [&]() {return _tree_screen->know_model_board();};
 
-    if(_current_source_model()->root_item()->id() != current_root_id) {
-        _tree_screen->intercept(current_root_id);
+    if(source_model()->root_item()->id() != current_root_id) {
+        _tree_screen->intercept(TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == current_root_id;})));
     }
 
     //    if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
@@ -687,15 +688,19 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     // Получаем указатель на элемент вида TreeItem, используя путь
     auto item = _tree_screen->know_model_board()->item(current_item_absolute_path);            // on know_root semantic
 
+    if(!source_model()->index(item).isValid()) {
+        _tree_screen->intercept(TreeModel::ModelIndex(know_model_board, item));
+    }
+
     if(item) {
         qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
 
-        // Из указателя на элемент TreeItem получаем QModelIndex
-        QModelIndex setto = _current_source_model()->index(item);
+        //        // Из указателя на элемент TreeItem получаем QModelIndex
+        //        QModelIndex setto = source_model()->index(item);
 
         // Курсор устанавливается в нужную позицию
-        _tree_screen->tree_view()->select_as_current(setto);
-        _tree_screen->session_root_id();
+        _tree_screen->tree_view()->select_as_current(item);
+        _tree_screen->tree_view()->source_model()->session_id(TreeModel::ModelIndex(source_model, item));  //session_root_id();
     }
 }
 
@@ -707,8 +712,10 @@ bool MainWindow::is_tree_position_crypt()
     QString id = pair.first;
     QStringList path = pair.second;
 
+    auto know_model_board = [&]() {return _tree_screen->know_model_board();};
+
     if(_tree_screen->tree_view()->source_model()->root_item()->id() != id) {
-        _tree_screen->intercept(id);
+        _tree_screen->intercept(TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;})));
     }
 
     //    if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;

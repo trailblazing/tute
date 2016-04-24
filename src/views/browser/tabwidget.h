@@ -256,16 +256,16 @@ namespace browser {
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-        typedef TreeItem::coupler CouplerDelegation;
-        typedef typename TreeItem::coupler::bind_interface      bind_interface;
-        typedef typename TreeItem::coupler::activate_interface  activate_interface;
-        typedef typename TreeItem::coupler::item_interface      item_interface;
-        typedef typename TreeItem::coupler::page_interface      page_interface;
+        typedef TreeItem::Coupler CouplerDelegation;
+        typedef typename TreeItem::Coupler::bind_interface      bind_interface;
+        typedef typename TreeItem::Coupler::activate_interface  activate_interface;
+        typedef typename TreeItem::Coupler::item_interface      item_interface;
+        typedef typename TreeItem::Coupler::page_interface      page_interface;
 
-        typedef typename TreeItem::coupler::bind_helper     bind_helper;
-        typedef typename TreeItem::coupler::activate_helper activate_helper;
-        typedef typename TreeItem::coupler::item_helper     item_helper;
-        typedef typename TreeItem::coupler::page_helper     page_helper;
+        typedef typename TreeItem::Coupler::bind_helper     bind_helper;
+        typedef typename TreeItem::Coupler::activate_helper activate_helper;
+        typedef typename TreeItem::Coupler::item_helper     item_helper;
+        typedef typename TreeItem::Coupler::page_helper     page_helper;
 
         ~TabWidget();
         void clear();

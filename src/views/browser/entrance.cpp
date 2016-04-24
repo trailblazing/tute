@@ -360,7 +360,7 @@ namespace browser {
                 WebPage *page = view->page();
 
                 if(page) {
-                    boost::intrusive_ptr<TreeItem> record = page->item_link();
+                    boost::intrusive_ptr<TreeItem> record = page->item();
                     assert(record);
                     QString home = record->field("home");
                     QUrl homeurl = QUrl(home);

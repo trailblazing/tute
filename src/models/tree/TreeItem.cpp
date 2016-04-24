@@ -116,10 +116,10 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _host_parent
         }
     }
 })
-, _up_linker([ & ]() {/*_up_linker = nullptr;*/ return new TreeItem::linker(_host_parent, this);}())    // , pos, mode
+, _linker([ & ]() {/*_up_linker = nullptr;*/ return new TreeItem::Linker(_host_parent, this);}())    // , pos, mode
 {
-    assert(_up_linker->host().get() == this);
-    assert(_up_linker->host_parent().get() != this);
+    assert(_linker->host().get() == this);
+    assert(_linker->host_parent().get() != this);
     //    record_to_item();
     //    if(_parent_item->_record_linker != _record_linker)_parent_item->_record_linker = _record_linker;
 
@@ -212,7 +212,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _host_parent
     //        }
     //    }
 
-    _up_linker->parent(_host_parent, pos, mode);
+    _linker->parent(_host_parent, pos, mode);
 }
 
 
@@ -442,7 +442,7 @@ TreeItem::~TreeItem()
 //    return ItemsFlat::sibling_order(it);
 //}
 
-int TreeItem::sibling_order(const std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> &_equal)const
+int TreeItem::sibling_order(const std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> &_equal)const
 {
     return ItemsFlat::sibling_order(_equal);
 }
@@ -494,7 +494,7 @@ void TreeItem::isolate(void)
 
     //    //    //    }
 
-    if(_up_linker)_up_linker->break_linker();
+    if(_linker)_linker->break_linker();
 }
 
 
@@ -1041,7 +1041,7 @@ QStringList TreeItem::field_name_for_crypt_list(void) const
 //}
 
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::parent(boost::intrusive_ptr<TreeItem> it, int pos, int mode)   // we can use caller temmplate to get caller info
+boost::intrusive_ptr<TreeItem::Linker> TreeItem::parent(boost::intrusive_ptr<TreeItem> it, int pos, int mode)   // we can use caller temmplate to get caller info
 {
     //    boost::intrusive_ptr<TreeItem> _result(nullptr);
 
@@ -1267,11 +1267,11 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::parent(boost::intrusive_ptr<Tre
     //    }
 
     //    if(!_up_linker || _up_linker->host_parent() != it) {
-    if(!_up_linker) {
-        _up_linker = boost::intrusive_ptr<TreeItem::linker>(new TreeItem::linker(it, this));    // , pos, mode
-        _up_linker->parent(it, pos, mode);
-    } else if(_up_linker && _up_linker->host_parent() != it) {
-        _up_linker->parent(it, pos, mode);
+    if(!_linker) {
+        _linker = boost::intrusive_ptr<TreeItem::Linker>(new TreeItem::Linker(it, this));    // , pos, mode
+        _linker->parent(it, pos, mode);
+    } else if(_linker && _linker->host_parent() != it) {
+        _linker->parent(it, pos, mode);
     }
 
     //    }
@@ -1279,14 +1279,14 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::parent(boost::intrusive_ptr<Tre
     //    _result = _up_linker->host();
 
 
-    return _up_linker;
+    return _linker;
 }
 
 boost::intrusive_ptr<TreeItem> TreeItem::parent()const
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    if(_up_linker)result = _up_linker->host_parent();
+    if(_linker)result = _linker->host_parent();
 
     return result;  // _parent_item;
 }
@@ -1300,7 +1300,7 @@ QString TreeItem::parent_id()const
     //    } else
     //        return "";
 
-    if(_up_linker)id = _up_linker->host_parent()->id();
+    if(_linker)id = _linker->host_parent()->id();
 
     return id;
 }
@@ -1390,28 +1390,67 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const
 {
 
+    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem>>(_item));    // result;
+
+
     //    boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    //    result = ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));
+    //    if(_item) {
+    //        for(auto it : _child_linkers) {
+    //            if(it
+    //               && it->host() == _item
+    //               //               && _item->up_linker()->integrity_external(_item, static_cast<const TreeItem *>(this))   // recursive call
+    //               && it == _item->linker()
+    //               && _item->_linker->host_parent().get() == this
+    //              ) {
+    //                //                assert(_item->up_linker()->integrity_external(_item, static_cast<const TreeItem *>(this)));
+    //                result = it->host();
+    //                break;
+    //            }
+    //        }
+    //    }
 
-    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem>>(_item));    // result;
+    //    return result;
+
 }
 
-boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const
+boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<Linker> &&_item_linker)const
 {
-    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_item_linker));    //
+    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::Linker>>(_item_linker));    //
+
+    //    boost::intrusive_ptr<TreeItem> result(nullptr);
+
+    //    if(_item_linker) {
+    //        for(auto it : _child_linkers) {
+    //            if(it
+    //               && it == _item_linker
+    //               //               && _item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this))  // recursive call
+    //               && _item_linker->host_parent().get() == this  // _item_linker->host_parent() == this
+    //              ) {
+    //                //                assert(_item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this)));
+    //                result = it->host();
+    //                break;
+    //            }
+    //        }
+    //    }
+
+    //    return result;
 }
 
 
-
-
-boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_recursive()
+bool TreeItem::remove(const std::function<bool(boost::intrusive_ptr<TreeItem::Linker>)> &_equal)
 {
-    boost::intrusive_ptr<TreeItem::linker> _result(nullptr);
+    return ItemsFlat::remove(_equal);
+}
 
-    if(_up_linker) {    // _parent_item
-        if(_up_linker->host_parent())
-            _result = _up_linker->host_parent()->delete_permanent_recursive(_up_linker);  // boost::intrusive_ptr<TreeItem>(this)
+
+boost::intrusive_ptr<TreeItem::Linker> TreeItem::delete_permanent_recursive()
+{
+    boost::intrusive_ptr<TreeItem::Linker> _result(nullptr);
+
+    if(_linker) {    // _parent_item
+        if(_linker->host_parent())
+            _result = _linker->host_parent()->delete_permanent_recursive(_linker);  // boost::intrusive_ptr<TreeItem>(this)
     }
 
     //    if(_up_linker) {
@@ -1422,13 +1461,13 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_recursive()
     return _result;
 }
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_empty_recursive()
+boost::intrusive_ptr<TreeItem::Linker> TreeItem::delete_permanent_empty_recursive()
 {
-    boost::intrusive_ptr<TreeItem::linker> result(nullptr); // = false;
+    boost::intrusive_ptr<TreeItem::Linker> result(nullptr); // = false;
 
-    if(_up_linker   // _parent_item
+    if(_linker   // _parent_item
        && is_empty()) {
-        auto parent = _up_linker->host_parent();
+        auto parent = _linker->host_parent();
 
         if(parent) {
             result = delete_permanent_recursive();
@@ -1450,7 +1489,7 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_empty_recursiv
 
 
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_recursive(boost::intrusive_ptr<TreeItem::linker> _to_be_removed_linker)
+boost::intrusive_ptr<TreeItem::Linker> TreeItem::delete_permanent_recursive(boost::intrusive_ptr<TreeItem::Linker> _to_be_removed_linker)
 {
 
     //    if(_source_item->parent() != this)_source_item->self_remove_from_parent();
@@ -1477,7 +1516,7 @@ boost::intrusive_ptr<TreeItem::linker> TreeItem::delete_permanent_recursive(boos
     return ItemsFlat::delete_permanent_recursive(_to_be_removed_linker);
 }
 
-QList<boost::intrusive_ptr<TreeItem::linker>> TreeItem::delete_permanent_recursive(int position, int count)
+QList<boost::intrusive_ptr<TreeItem::Linker>> TreeItem::delete_permanent_recursive(int position, int count)
 {
     //    //    bool result = false;
     //    boost::intrusive_ptr<TreeItem> _result(nullptr);
@@ -1500,22 +1539,22 @@ QList<boost::intrusive_ptr<TreeItem::linker>> TreeItem::delete_permanent_recursi
 }
 
 
-void TreeItem::traverse_direct(const std::function< void(boost::intrusive_ptr<TreeItem::linker>)> &operation)
+void TreeItem::traverse_direct(const std::function< void(boost::intrusive_ptr<TreeItem::Linker>)> &operation)
 {
     return ItemsFlat::traverse(operation);
 }
 
-boost::intrusive_ptr<TreeItem::linker> TreeItem::dangle()
+boost::intrusive_ptr<TreeItem::Linker> TreeItem::dangle()
 {
-    auto p = _up_linker->host_parent();
+    auto p = _linker->host_parent();
 
     if(p) {
-        p->_child_linkers.removeOne(_up_linker);
+        p->_child_linkers.removeOne(_linker);
     }
 
-    _up_linker->host_parent().reset();
+    _linker->host_parent().reset();
 
-    return _up_linker;
+    return _linker;
 }
 
 
@@ -1535,8 +1574,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::operator <<(boost::intrusive_ptr<TreeIt
 {
     //    boost::intrusive_ptr<TreeItem> r;
 
-    if(_child_linkers.indexOf(_item->up_linker()) == -1) {
-        _child_linkers << _item->up_linker();
+    if(_child_linkers.indexOf(_item->linker()) == -1) {
+        _child_linkers << _item->linker();
         //        r = _item;
     }
 
@@ -1814,7 +1853,7 @@ bool TreeItem::children_insert_new(int position, int count, int columns)
             data["id"] = get_unical_id();
             boost::intrusive_ptr<TreeItem> item(new TreeItem(this, data));
 
-            assert(item->up_linker()->host_parent().get() == this);
+            assert(item->linker()->host_parent().get() == this);
             //        // new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
             //        // );    // Создается объект item
             //        item->parent(this, position, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
@@ -2077,7 +2116,7 @@ int TreeItem::move_up(void)
     //        (_parent_item->_child_items).swap(num, num + row);
     //    }
 
-    if(_up_linker)row = _up_linker->move_up();
+    if(_linker)row = _linker->move_up();
 
     return row;
 }
@@ -2097,7 +2136,7 @@ int TreeItem::move_dn(void)
     //        (_parent_item->_child_items).swap(num, num + row);
     //    }
 
-    if(_up_linker)row = _up_linker->move_dn();
+    if(_linker)row = _linker->move_dn();
 
     return row;
 }
@@ -2441,6 +2480,11 @@ void TreeItem::to_decrypt(void)
 
 //}
 
+
+
+
+
+
 void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
 {
 
@@ -2451,10 +2495,10 @@ void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
 
         QDomElement dom_records;
 
-        if(_up_linker)
+        if(_linker)
         {
-            assert(_up_linker->host().get() == this);
-            assert(_up_linker->host_parent().get() != this);
+            assert(_linker->host().get() == this);
+            assert(_linker->host_parent().get() != this);
         }
 
         //    QString content = _dom_element.text();
@@ -2475,33 +2519,34 @@ void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
 
         if(!dom_record.isNull() && dom_record.tagName() == "record")
         {
-            if(_up_linker) {
-                assert(_up_linker->host().get() == this);
-                assert(_up_linker->host_parent().get() != this);
+            if(_linker) {
+                assert(_linker->host().get() == this);
+                assert(_linker->host_parent().get() != this);
             }
 
             Record::dom_to_record(_dom_element);
 
-            if(_up_linker) {
-                assert(_up_linker->host().get() == this);
-                assert(_up_linker->host_parent().get() != this);
+            if(_linker) {
+                assert(_linker->host().get() == this);
+                assert(_linker->host_parent().get() != this);
             }
         }
 
         if(!dom_records.isNull() && dom_records.tagName() == "recordtable")     // assert(records.tagName() == "recordtable");
         {
-            if(_up_linker) {
-                assert(_up_linker->host().get() == this);
-                assert(_up_linker->host_parent().get() != this);
+            if(_linker) {
+                assert(_linker->host().get() == this);
+                assert(_linker->host_parent().get() != this);
             }
 
-            ItemsFlat::dom_to_itemsflat(dom_records);  // dom_model.firstChildElement("recordtable")
+            // ItemsFlat::
+            dom_to_itemsflat(dom_records);  // dom_model.firstChildElement("recordtable")
             // , boost::intrusive_ptr<TreeItem>(this)    // _parent_item
 
 
-            if(_up_linker) {
-                assert(_up_linker->host().get() == this);
-                assert(_up_linker->host_parent().get() != this);
+            if(_linker) {
+                assert(_linker->host().get() == this);
+                assert(_linker->host_parent().get() != this);
             }
         }
 
@@ -2549,8 +2594,8 @@ void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
 
     };
 
-    assert(this->up_linker()->host().get() == this);
-    assert(this->up_linker()->host_parent().get() != this);
+    assert(this->linker()->host().get() == this);
+    assert(this->linker()->host_parent().get() != this);
 
 
     // move to void ItemsFlat::dom_to_records
@@ -2615,16 +2660,16 @@ void TreeItem::dom_to_records(const QDomElement &_record_dom_element)
         assert(_record_dom_element.tagName() != "recordtable");
         assert(_record_dom_element.tagName() == "record");
 
-        assert(this->up_linker()->host().get() == this);
-        assert(this->up_linker()->host_parent().get() != this);
+        assert(this->linker()->host().get() == this);
+        assert(this->linker()->host_parent().get() != this);
         // У данного Dom-элемента ищется таблица конечных записей
         // и данные заполняются в Item-таблицу конечных записей
         // At this Dom-end table element is searched for records and the data filled in the Item-end table entries
         dom_to_direct(_record_dom_element);    // take ground from the nearest level children
 
 
-        assert(this->up_linker()->host().get() == this);
-        assert(this->up_linker()->host_parent().get() != this);
+        assert(this->linker()->host().get() == this);
+        assert(this->linker()->host_parent().get() != this);
 
         //        QDomElement _dom_record_table = _record_dom_element.firstChildElement();
 
@@ -2855,7 +2900,7 @@ QDomElement TreeItem::dom_from_treeitem()
 //}
 
 
-boost::intrusive_ptr<TreeItem> TreeItem::item_link() const
+boost::intrusive_ptr<TreeItem> TreeItem::item() const
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -2867,7 +2912,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::item_link() const
 }
 
 
-browser::WebPage *TreeItem::page_link() const
+browser::WebPage *TreeItem::page() const
 {
     browser::WebPage *page = nullptr;
 
@@ -3142,32 +3187,32 @@ bool TreeItem::is_empty() const
 
 
 
-boost::intrusive_ptr<TreeItem::coupler> TreeItem::binder() {return _binder;}
+boost::intrusive_ptr<TreeItem::Coupler> TreeItem::binder() {return _binder;}
 
-const boost::intrusive_ptr<TreeItem::coupler> &&TreeItem::binder() const
+const boost::intrusive_ptr<TreeItem::Coupler> &&TreeItem::binder() const
 {
-    return std::forward<const boost::intrusive_ptr<TreeItem::coupler>>(_binder);
+    return std::forward<const boost::intrusive_ptr<TreeItem::Coupler>>(_binder);
 }
 
-void TreeItem::binder(boost::intrusive_ptr<TreeItem::coupler> &&binder_)
+void TreeItem::binder(boost::intrusive_ptr<TreeItem::Coupler> &&binder_)
 {
     if(binder_ != _binder)this->_binder = binder_;
 }
 
 
-boost::intrusive_ptr<ItemsFlat::linker> TreeItem::up_linker() {return _up_linker;}
+boost::intrusive_ptr<ItemsFlat::Linker> TreeItem::linker() {return _linker;}
 
-const boost::intrusive_ptr<ItemsFlat::linker> &&TreeItem::up_linker()const {return std::forward<const boost::intrusive_ptr<TreeItem::linker>>(_up_linker);}
+const boost::intrusive_ptr<ItemsFlat::Linker> &&TreeItem::linker()const {return std::forward<const boost::intrusive_ptr<TreeItem::Linker>>(_linker);}
 
-void TreeItem::up_linker(boost::intrusive_ptr<linker> &&up_linker_)
+void TreeItem::linker(boost::intrusive_ptr<Linker> &&up_linker_)
 {
     if(up_linker_) {
         up_linker_->host(this);
     } else {
-        _up_linker->host_parent(nullptr);
+        _linker->host_parent(nullptr);
     }
 
-    this->_up_linker = up_linker_;
+    this->_linker = up_linker_;
 }
 
 bool TreeItem::page_valid()const
@@ -3259,7 +3304,7 @@ void TreeItem::page_break()
         //        if(_binder->page_link()) {
         //            _binder->page_link() = nullptr;
         //        }
-        _binder->page()->binder() = std::move(boost::intrusive_ptr<TreeItem::coupler> (nullptr));
+        _binder->page()->binder() = std::move(boost::intrusive_ptr<TreeItem::Coupler> (nullptr));
         _binder->break_linked_items();
         _binder.reset();
         //        _activator.reset();
@@ -3268,7 +3313,7 @@ void TreeItem::page_break()
     }
 }
 
-TreeItem::coupler::coupler(item_interface          _item_linker
+TreeItem::Coupler::Coupler(item_interface          _item_linker
                            , page_interface        _page_linker
                            , bind_interface        _bind_helper
                            , activate_interface    _activate_helper
@@ -3299,7 +3344,7 @@ TreeItem::coupler::coupler(item_interface          _item_linker
         //    //    if(!std::get<2>(_state)()) {
         //    (*_item_linker)()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
 
-        _item_linker()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
+        _item_linker()->binder(std::move(boost::intrusive_ptr<TreeItem::Coupler>(const_cast<TreeItem::Coupler *>(this))));
 
         //    //    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
         //    assert(item_link()->binder());
@@ -3311,7 +3356,7 @@ TreeItem::coupler::coupler(item_interface          _item_linker
         //    //    if(!std::get<3>(_state)()) {
         //    (*_page_linker)()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
 
-        _page_linker()->binder(std::move(boost::intrusive_ptr<TreeItem::coupler>(const_cast<TreeItem::coupler *>(this))));
+        _page_linker()->binder(std::move(boost::intrusive_ptr<TreeItem::Coupler>(const_cast<TreeItem::Coupler *>(this))));
 
         //    //    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
         //    assert(page_link()->binder());
@@ -3388,13 +3433,13 @@ TreeItem::coupler::coupler(item_interface          _item_linker
 
 }
 
-TreeItem::coupler::~coupler()
+TreeItem::Coupler::~Coupler()
 {
     std::function<void(boost::intrusive_ptr<TreeItem>)>
     close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
         if(it->is_registered_to_browser())    // item_to_be_deleted->unique_page()
         {
-            auto page = it->page_link();
+            auto page = it->page();
 
             if(page)
                 page->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
@@ -3448,7 +3493,7 @@ TreeItem::coupler::~coupler()
 
 
 
-TreeItem::coupler::status_type TreeItem::coupler::state_impl()
+TreeItem::Coupler::status_type TreeItem::Coupler::state_impl()
 {
     //    std::shared_ptr<shared_state_type> _state = std::make_shared<shared_state_type>();
     status_type status;
@@ -3518,21 +3563,21 @@ TreeItem::coupler::status_type TreeItem::coupler::state_impl()
 }
 
 
-bool TreeItem::coupler::integrity_internal()const
+bool TreeItem::Coupler::integrity_internal()const
 {
     return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)();    //
     // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))();
     //        (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))();
 }
 
-bool TreeItem::coupler::integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page)const
+bool TreeItem::Coupler::integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page)const
 {
     return std::get<0>(_status)() && std::get<1>(_status)() && std::get<2>(_status)() && std::get<3>(_status)() && std::get<4>(_status)() && std::get<5>(_status)() && std::get<6>(_status)(host) && std::get<7>(_status)(page);    // && std::get<8>(_state)(host) && std::get<9>(_state)(page);  //
     // (*std::get<0>(_state))() && (*std::get<1>(_state))() && (*std::get<2>(_state))() && (*std::get<3>(_state))() && (*std::get<4>(_state))() && (*std::get<5>(_state))() && (*std::get<6>(_state))(host) && (*std::get<7>(_state))(page) && (*std::get<8>(_state))(host) && (*std::get<9>(_state))(page);
     //        (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))() && (*std::get<6>(*_state))(host) && (*std::get<7>(*_state))(page) && (*std::get<8>(*_state))(host) && (*std::get<9>(*_state))(page);
 }
 
-void TreeItem::coupler::break_linked_items()
+void TreeItem::Coupler::break_linked_items()
 {
     // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it    // if(item_link())item_link().reset();  // if(item_link() && item_link()->binder())item_link()->binder().reset();
 

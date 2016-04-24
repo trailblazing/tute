@@ -15,13 +15,13 @@ extern GlobalParameters globalparameters;
 // TreeModel - Это модель данных, которая работает с видом TreeScreen
 // От него наследуется класс KnowTreeModel
 
-TreeModel::TreeModel(QObject *parent)
+TreeModel::TreeModel(KnowView *parent)
     : QAbstractItemModel(parent)
 {
     return;
 }
 
-TreeModel::TreeModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent)
+TreeModel::TreeModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent)
     : QAbstractItemModel(parent)
     , _root_item(_root_item)
 {}
@@ -149,12 +149,12 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
 }
 
 // does not must be succeeded
-QModelIndex TreeModel::index(const std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> &_equal) const
+QModelIndex TreeModel::index(const std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> &_equal) const
 {
     //    QModelIndex result;
 
-    std::function<QModelIndex(QModelIndex, std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)>)>
-    index_recursive = [&](QModelIndex _index, std::function<bool(boost::intrusive_ptr<const TreeItem::linker>)> _equal) {
+    std::function<QModelIndex(QModelIndex, std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)>)>
+    index_recursive = [&](QModelIndex _index, std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> _equal) {
 
         QModelIndex find_index;
 
@@ -171,7 +171,7 @@ QModelIndex TreeModel::index(const std::function<bool(boost::intrusive_ptr<const
                 find_index = index_recursive(_index_child, _equal);
 
                 if(find_index.isValid()) {
-                    if(_equal(item(find_index)->up_linker())) {
+                    if(_equal(item(find_index)->linker())) {
                         break;
                     }
                 }
@@ -735,7 +735,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
                     auto parent_parent = parent_item->parent();
 
                     if(parent_parent) {
-                        _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it == parent_item->up_linker();}), 0, static_cast<void *>(parent_item.get()));
+                        _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it == parent_item->linker();}), 0, static_cast<void *>(parent_item.get()));
                     } else {
                         _result = QModelIndex();  // index(0, 0, index(parent_item));
 
@@ -845,17 +845,31 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QV
 //    _session_id = id;
 //}
 
-TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> _parent, int _sibling_order)
-    : _current_model(_current_model), _parent(_parent), _sibling_order(_sibling_order)  // , _current_index(_current_index)
+TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order)
+    : _current_model(current_model), _parent(parent_item), _sibling_order(sibling_order)  // , _current_index(_current_index)
 {
-
+    bool current_parent_valid = [&]() {
+        if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "") {
+            if(parent_item->is_ancestor_of(static_cast<KnowModel *>(current_model())->root_item()))
+                static_cast<KnowModel *>(current_model())->intercept(TreeModel::ModelIndex([&]() {return globalparameters.tree_screen()->know_model_board();}, parent_item));
+        }
+        return (current_model()->index(parent_item).isValid())
+        && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
+    }();
+    assert(current_parent_valid);
+    assert(sibling_order >= 0);
+    auto count_direct = parent_item->count_direct();
+    count_direct = count_direct == 0 ? 1 : count_direct;
+    assert(sibling_order < count_direct);
 }
 
 
 QModelIndex TreeModel::ModelIndex::current_index()const {return _current_model()->index(_parent);}
 
-void TreeModel::session_id(const QString &id)
+void TreeModel::session_id(
+    TreeModel::ModelIndex modelindex    // const QString &id
+)
 {
-    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
-    _session_id = id;
+    //    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
+    _session_id = modelindex.parent()->id();
 }

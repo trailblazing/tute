@@ -55,9 +55,9 @@ class TreeItem  //        : public std::enable_shared_from_this<TreeItem>
 public:
 
 
-    struct coupler;
+    struct Coupler;
 
-    struct coupler : public boost::intrusive_ref_counter<coupler, boost::thread_safe_counter> { // : public std::enable_shared_from_this<coupler>
+    struct Coupler : public boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter> { // : public std::enable_shared_from_this<coupler>
     public:
 
         typedef sd::_interface<sd::meta_info<std::shared_ptr<void>>, boost::intrusive_ptr<TreeItem>&()> item_interface;
@@ -72,7 +72,7 @@ public:
 
         typedef std::function<boost::intrusive_ptr<TreeItem>()>                                         item_exist;
         typedef std::function<browser::WebPage*()>                                                      page_exist;
-        typedef std::function<const boost::intrusive_ptr<coupler>()>                                    binder_exist;
+        typedef std::function<const boost::intrusive_ptr<Coupler>()>                                    binder_exist;
         typedef std::function<bool()>                                                                   binder_self_reference;
         //        typedef std::function<const boost::intrusive_ptr<coupler>(boost::intrusive_ptr<TreeItem> host)> item_binder_exist;
         //        typedef std::function<const boost::intrusive_ptr<coupler>(browser::WebPage *page)>              page_binder_exist;
@@ -106,7 +106,7 @@ public:
         , std::shared_ptr<page_consistency>
         > shared_status_type;
 
-        coupler(item_interface          _item_linker
+        Coupler(item_interface          _item_linker
                 , page_interface        _page_linker
                 , bind_interface        _bind_helper
                 , activate_interface    _activate_helper
@@ -134,7 +134,7 @@ public:
         //            //        (*_bounded_page)()->record_binder(this);
         //        }
 
-        ~coupler();
+        ~Coupler();
 
     public:
         boost::intrusive_ptr<TreeItem> &item() {return _item_linker();}   // (*_item_linker)();
@@ -169,15 +169,15 @@ public:
     };
 
 
-    typedef typename coupler::bind_interface        bind_interface;
-    typedef typename coupler::activate_interface    activate_interface;
-    typedef typename coupler::item_interface        item_interface;
-    typedef typename coupler::page_interface        page_interface;
+    typedef typename Coupler::bind_interface        bind_interface;
+    typedef typename Coupler::activate_interface    activate_interface;
+    typedef typename Coupler::item_interface        item_interface;
+    typedef typename Coupler::page_interface        page_interface;
 
-    typedef typename coupler::bind_helper           bind_helper;
-    typedef typename coupler::activate_helper       activate_helper;
-    typedef typename coupler::item_helper           item_helper;
-    typedef typename coupler::page_helper           page_helper;
+    typedef typename Coupler::bind_helper           bind_helper;
+    typedef typename Coupler::activate_helper       activate_helper;
+    typedef typename Coupler::item_helper           item_helper;
+    typedef typename Coupler::page_helper           page_helper;
 
     typedef boost::sp_adl_block::thread_safe_counter counter_type; // boost::intrusive_ref_counter<TreeItem>::counter_type
 
@@ -305,7 +305,7 @@ public:
     //    // в конец списка подчиненных элементов
     //    boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
     boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const;
-    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<linker> &&_item_linker)const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<Linker> &&_item_linker)const;
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> _item);
 
@@ -319,22 +319,22 @@ public:
 
 
     void page_break();
-    boost::intrusive_ptr<linker> delete_permanent_recursive(boost::intrusive_ptr<linker> _to_be_removed_linker);
+    boost::intrusive_ptr<Linker> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker);
 
-    boost::intrusive_ptr<linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);
+    boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);
     // Возвращение ссылки на родительский элемент
     boost::intrusive_ptr<TreeItem> parent()const;
 
     // Удаление потомков, начиная с позиции position массива childItems
-    QList<boost::intrusive_ptr<linker> > delete_permanent_recursive(int position, int count);
+    QList<boost::intrusive_ptr<Linker> > delete_permanent_recursive(int position, int count);
 
 
-    boost::intrusive_ptr<TreeItem::linker> dangle();
+    boost::intrusive_ptr<TreeItem::Linker> dangle();
     // Удаление всех потомков элемента
     void clear();
 
     //    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
-    int sibling_order(const std::function<bool(boost::intrusive_ptr<const linker>)> &_equal)const;
+    int sibling_order(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal)const;
     //    // Возвращает номер, под которым данный объект хранится
     //    // в массиве childItems своего родителя
     //    int sibling_order() const;
@@ -390,14 +390,14 @@ public:
     boost::intrusive_ptr<const TreeItem> is_activated() const;
     boost::intrusive_ptr<const TreeItem> is_registered_to_browser() const;
 
-    boost::intrusive_ptr<coupler> binder();
-    const boost::intrusive_ptr<coupler> &&binder()const;
-    void binder(boost::intrusive_ptr<coupler> &&binder_);
+    boost::intrusive_ptr<Coupler> binder();
+    const boost::intrusive_ptr<Coupler> &&binder()const;
+    void binder(boost::intrusive_ptr<Coupler> &&binder_);
 
 
-    boost::intrusive_ptr<linker> up_linker();
-    const boost::intrusive_ptr<linker> &&up_linker()const;
-    void up_linker(boost::intrusive_ptr<linker> &&up_linker_);
+    boost::intrusive_ptr<Linker> linker();
+    const boost::intrusive_ptr<Linker> &&linker()const;
+    void linker(boost::intrusive_ptr<Linker> &&up_linker_);
 
     //    // Взятие ссылки на данные конечных записей
     //    std::shared_ptr<RecordTable> record_table(void);
@@ -411,8 +411,8 @@ public:
 
     //    void children_clear(void);
 
-    browser::WebPage *page_link()const;   // const; // {return _page;}
-    boost::intrusive_ptr<TreeItem> item_link()const;
+    browser::WebPage *page()const;   // const; // {return _page;}
+    boost::intrusive_ptr<TreeItem> item()const;
     browser::WebView *bind();
     //    boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
     browser::WebView *activate();
@@ -437,8 +437,9 @@ public:
 
     bool is_empty() const;
     bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it)const;
-    boost::intrusive_ptr<linker> delete_permanent_recursive();
-    boost::intrusive_ptr<linker> delete_permanent_empty_recursive();
+    bool remove(const std::function<bool(boost::intrusive_ptr<TreeItem::Linker>)> &_equal);
+    boost::intrusive_ptr<Linker> delete_permanent_recursive();
+    boost::intrusive_ptr<Linker> delete_permanent_empty_recursive();
     boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeItem> cut);
     int count_children_all();
 
@@ -447,8 +448,11 @@ public:
 
     // deprecated because of conflicting with parent(boost::intrusive_ptr<TreeItem>)
     //    boost::intrusive_ptr<TreeItem> child_move_unique(boost::intrusive_ptr<TreeItem> _source_item, int pos, int mode = ADD_NEW_RECORD_AFTER);    // ADD_NEW_RECORD_TO_END
-    void traverse_direct(const std::function< void(boost::intrusive_ptr<linker>)> &operation);
+    void traverse_direct(const std::function< void(boost::intrusive_ptr<Linker>)> &operation);
 
+
+    //    // Function to populate a table of DOM-document // Функция заполнения таблицы из DOM-документа
+    //    void dom_to_itemsflat(const QDomElement &dom_model);
 protected:
 
     //    bind_helper     _binder;
@@ -470,7 +474,7 @@ private:
 
     //    QList<boost::intrusive_ptr<TreeItem>>   _child_items;   // Список ссылок на потомков
     //    boost::intrusive_ptr<TreeItem>  _parent_item;   // Ссылка на родителя
-    boost::intrusive_ptr<linker>    _up_linker;
+    boost::intrusive_ptr<Linker>    _linker;
 
     //    // Таблица инфополей данной ветки
     //    QMap<QString, QString>                  _field_data;
@@ -479,7 +483,7 @@ private:
     //    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
 
     //    browser::WebPage    *_page;
-    boost::intrusive_ptr<coupler>   _binder;
+    boost::intrusive_ptr<Coupler>   _binder;
     //    bool                _page_valid = false;
     int                 _position = -1;
     int                 _open_link_in_new_window = 0;

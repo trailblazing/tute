@@ -664,7 +664,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_bound(boost::intrusive_ptr<Tree
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
     for(int i = 0; i < count(); i++) {
-        if(it->page_valid() && item(i)->page_link() == it->page_link()) {
+        if(it->page_valid() && item(i)->page() == it->page()) {
             result = it; break;
         }
     }
@@ -717,7 +717,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const QString &id)
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     for(int pos = 0; pos < _tabmanager->count(); pos++) {
-        auto it = _tabmanager->webView(pos)->page()->item_link();
+        auto it = _tabmanager->webView(pos)->page()->item();
 
         if(it->id() == id) {
             r = it;
@@ -734,7 +734,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const QString &id)const
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     for(int pos = 0; pos < _tabmanager->count(); pos++) {
-        auto it = _tabmanager->webView(pos)->page()->item_link();
+        auto it = _tabmanager->webView(pos)->page()->item();
 
         if(it->id() == id) {
             r = it;
@@ -750,7 +750,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const int _index)
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     if(_index >= 0 && _index < size()) {
-        r = _tabmanager->webView(_index)->page()->item_link();
+        r = _tabmanager->webView(_index)->page()->item();
     }
 
     return r;
@@ -777,7 +777,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const int _index)const
 
 boost::intrusive_ptr<TreeItem> RecordModel::item_fat(int index)
 {
-    boost::intrusive_ptr<TreeItem> item = _tabmanager->webView(index)->page()->item_link();
+    boost::intrusive_ptr<TreeItem> item = _tabmanager->webView(index)->page()->item();
 
     if(item->is_lite())item->to_fat();
 
@@ -844,7 +844,7 @@ int RecordModel::position(QString id)
     int result = -1;
 
     for(int i = 0; i < _tabmanager->count(); i++) {
-        if(_tabmanager->webView(i)->page()->item_link()->id() == id) {
+        if(_tabmanager->webView(i)->page()->item()->id() == id) {
             result = i;
             break;
         }
@@ -858,7 +858,7 @@ int RecordModel::position(boost::intrusive_ptr<TreeItem> item)
     int result = -1;
 
     for(int i = 0; i < _tabmanager->count(); i++) {
-        if(_tabmanager->webView(i)->page()->item_link() == item) {
+        if(_tabmanager->webView(i)->page()->item() == item) {
             result = i;
             break;
         }

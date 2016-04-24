@@ -189,7 +189,7 @@ void RecordScreen::save_in_new_branch(bool checked)
                 }
             }
 
-            _tree_screen->view_paste_children_from_children(TreeModel::ModelIndex(_tree_source_model, _tree_screen->tree_view()->current_item()), _blank_header, [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
+            _tree_screen->view_paste_children_from_children(TreeModel::ModelIndex(_tree_source_model, _tree_screen->tree_view()->current_item()), _blank_header, [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
             //            new_tree_item_in_treeknow_root = target;
             _tree_screen->synchronized(false);
             _tree_screen->know_model_save();
@@ -237,7 +237,7 @@ void RecordScreen::setup_actions(void)
                 auto tabmanager = browser->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                 for(int i = 0; i < tabmanager->count(); i++) {
-                    auto page_item = tabmanager->webView(i)->page()->item_link();
+                    auto page_item = tabmanager->webView(i)->page()->item();
 
                     if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == page_item->field("id");})) {  // item->field("id")
 
@@ -257,7 +257,7 @@ void RecordScreen::setup_actions(void)
                 _tree_screen->view_paste_children_from_children(    // view_paste_sibling
                     TreeModel::ModelIndex(_source_model, _tree_screen->session_root_item()) // _tree_screen->tree_view()->current_index() //,
                     , branch_item
-                    , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
+                    , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );
 
                 //                _tree_screen->resetup_model(_source_model()->root_item());
@@ -340,7 +340,7 @@ void RecordScreen::setup_actions(void)
         Q_UNUSED(checked);
         auto _tree_view = _tree_screen->tree_view();
         auto _current_model = [&]() {return _tree_view->source_model();};
-        auto _item = _tabmanager->currentWebView()->page()->item_link();
+        auto _item = _tabmanager->currentWebView()->page()->item();
         _tree_screen->view_delete_permanent(
             _current_model
             , QList<boost::intrusive_ptr<TreeItem>>() << _item

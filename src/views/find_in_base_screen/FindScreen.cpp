@@ -632,7 +632,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    data["dir"]     = data["id"];
     //    data["file"]    = "text.html";
 
-    QList<boost::intrusive_ptr<TreeItem::linker>> _result_list;
+    QList<boost::intrusive_ptr<TreeItem::Linker>> _result_list;
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
@@ -732,7 +732,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
             auto tabmanager = browser->tabmanager();
 
             for(int i = 0; i < tabmanager->count(); i++) {
-                auto item = tabmanager->webView(i)->page()->item_link();
+                auto item = tabmanager->webView(i)->page()->item();
 
                 _start_item << item;    // _start_item->child_rent(item);
             }
@@ -788,10 +788,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         _progress->close();
     };
 
-    auto final_search = [&](QList<boost::intrusive_ptr<TreeItem::linker>>   &_result_list
+    auto final_search = [&](QList<boost::intrusive_ptr<TreeItem::Linker>>   &_result_list
                             , boost::intrusive_ptr<TreeItem>                &_session_root_item  // std::shared_ptr<RecordTable> &resultset_data
                             , boost::intrusive_ptr<TreeItem>                &_start_item
-    ) ->QList<boost::intrusive_ptr<TreeItem::linker>> & {
+    ) ->QList<boost::intrusive_ptr<TreeItem::Linker>> & {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
 
@@ -927,8 +927,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 }
 
 
-QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
-                                               QList<boost::intrusive_ptr<TreeItem::linker>> &_result_list
+QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
+                                               QList<boost::intrusive_ptr<TreeItem::Linker>> &_result_list
                                                , boost::intrusive_ptr<TreeItem> _session_root_item
                                                , boost::intrusive_ptr<TreeItem> _start_item
                                            )
@@ -1047,7 +1047,7 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
                             if(candidate->is_lite())candidate->to_fat();
 
                             if((candidate->parent() != _session_root_item->parent())  // _current_item->parent())
-                            && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::linker> il) {return il == candidate->up_linker();})) {
+                            && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})) {
                                 //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
 
                                 //                                auto result = static_cast<KnowModel *>(_source_model())->model_move_as_child_impl(
@@ -1062,7 +1062,7 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
                                                                                   , std::placeholders::_2
                                                                                   , std::placeholders::_3));    // ->activate(); //
                                 result->activate();
-                                _result_list << result->up_linker();   //
+                                _result_list << result->linker();   //
 
 
 
@@ -1083,7 +1083,7 @@ QList<boost::intrusive_ptr<TreeItem::linker>> &FindScreen::find_recursive(
                             } else {
                                 auto result = globalparameters.entrance()->item_bind(candidate);
                                 result->activate();
-                                _result_list << result->up_linker();   //
+                                _result_list << result->linker();   //
                             }
 
                             //                else {

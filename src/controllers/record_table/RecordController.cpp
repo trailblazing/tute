@@ -1630,7 +1630,7 @@ void RecordController::pages_remove_from_browser(QVector<QString> del_ids)
 
                 //                _source_model->remove_child(item);  // doing nothing
                 _tabmanager->closeTab(
-                    _tabmanager->webViewIndex(item->page_link()->view())  // _tabmanager->indexOf(item->bounded_page()->view())
+                    _tabmanager->webViewIndex(item->page()->view())  // _tabmanager->indexOf(item->bounded_page()->view())
                 );
 
                 changed = true;

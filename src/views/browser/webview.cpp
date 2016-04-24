@@ -431,7 +431,7 @@ namespace browser {
           //    }())
     {
 
-        _binder = [ & ]()->boost::intrusive_ptr<TreeItem::coupler> {
+        _binder = [ & ]()->boost::intrusive_ptr<TreeItem::Coupler> {
             if(item->is_lite())item->to_fat();
 
             if(item->binder() && !item->binder()->integrity_internal())   // !_item->binder() ||
@@ -494,11 +494,11 @@ namespace browser {
 
             //        item_bind(item);  // you can't modify _binder before it's initialize time!!!
             auto ar = std::make_shared<WebPage::coupler>(item, this);
-            new TreeItem::coupler(
-                std::move(TreeItem::coupler::item_interface("", &WebPage::coupler::item_link, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-                , std::move(TreeItem::coupler::page_interface("", &WebPage::coupler::page_link, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-                , std::move(TreeItem::coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-                , std::move(TreeItem::coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+            new TreeItem::Coupler(
+                std::move(TreeItem::Coupler::item_interface("", &WebPage::coupler::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                , std::move(TreeItem::Coupler::page_interface("", &WebPage::coupler::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                , std::move(TreeItem::Coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                , std::move(TreeItem::Coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
             );
             assert(item->binder()->integrity_external(item, this));   // item->binder() = new TreeItem::coupler(std::make_shared<WebPage::coupler>(item, this));
             assert(_binder->integrity_external(item, this));
@@ -513,7 +513,7 @@ namespace browser {
 
             //        assert(_item->binder()->external_integrity(_item, this));
 
-            return std::forward<boost::intrusive_ptr<TreeItem::coupler>>(item->binder());
+            return std::forward<boost::intrusive_ptr<TreeItem::Coupler>>(item->binder());
         }();
 
         settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
@@ -1174,11 +1174,11 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
         auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item) {
             auto ar = std::make_shared<WebPage::coupler>(result_item, this);
-            auto result_coupler = new TreeItem::coupler(
-                std::move(TreeItem::coupler::item_interface("", &WebPage::coupler::item_link, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-                , std::move(TreeItem::coupler::page_interface("", &WebPage::coupler::page_link, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-                , std::move(TreeItem::coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-                , std::move(TreeItem::coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+            auto result_coupler = new TreeItem::Coupler(
+                std::move(TreeItem::Coupler::item_interface("", &WebPage::coupler::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                , std::move(TreeItem::Coupler::page_interface("", &WebPage::coupler::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                , std::move(TreeItem::Coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                , std::move(TreeItem::Coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
             );
             //            new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this));
             assert(_binder->integrity_external(result_item, this));   // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
@@ -2568,8 +2568,8 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
         setFocus();
 
         //        globalparameters.mainwindow()
-        if(_record_controller->view()->selection_first_id() != _page->item_link()->field("id"))
-            _record_controller->select_id(_page->item_link()->field("id"));
+        if(_record_controller->view()->selection_first_id() != _page->item()->field("id"))
+            _record_controller->select_id(_page->item()->field("id"));
 
         //}
 
@@ -2731,10 +2731,10 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
     //        show();
     //    }
 
-    WebPage::coupler::coupler(boost::intrusive_ptr<TreeItem> item_link_, WebPage *page_link_)  // , bool make_current = true
+    WebPage::coupler::coupler(boost::intrusive_ptr<TreeItem> item_, WebPage *page_)  // , bool make_current = true
         : // std::enable_shared_from_this<Coupler>()
-          _item_link(item_link_)
-        , _page_link(page_link_)                     // , _make_current(make_current)
+          _item(item_)
+        , _page(page_)                     // , _make_current(make_current)
     {
         //        _bounded_page->record_binder(new TreeItem::coupler_delegation(shared_from_this()));
         //        _bounded_item->record_binder(_bounded_page->record_binder());
@@ -2742,11 +2742,11 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
     WebView *WebPage::coupler::bind(/*boost::intrusive_ptr<TreeItem> item*/)
     {
-        assert(_page_link);
+        assert(_page);
         //        //                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
         WebView *view = nullptr;
 
-        if(_page_link)view = _page_link->view();;
+        if(_page)view = _page->view();;
 
         //        //                if(result) {
         //        //                    view = item->bind();    //
@@ -2757,7 +2757,7 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
         //        //        //                }
         //        _bounded_item = item;
 
-        if(_item_link) {
+        if(_item) {
 
             //            if((_bounded_item && _bounded_item.get() != item.get())) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
             //                _bounded_page->item_break(_bounded_item);
@@ -2765,23 +2765,23 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
             //            _bounded_item = item;
 
-            if(_item_link->binder() != _page_link->binder()) {
-                assert(_item_link->binder());
-                _page_link->binder() = // std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(
-                    _item_link->binder()
+            if(_item->binder() != _page->binder()) {
+                assert(_item->binder());
+                _page->binder() = // std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(
+                    _item->binder()
                     // )
                     ;
             }
 
-            if(_page_link->url().toString() != _item_link->field("url")) {
-                _page_link->setUrl(QUrl(_item_link->field("url")));
+            if(_page->url().toString() != _item->field("url")) {
+                _page->setUrl(QUrl(_item->field("url")));
             }
 
             //        _bounded_page = view->page();
             //            MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-            assert(_page_link->_editor_screen);
+            assert(_page->_editor_screen);
 
-            if(_page_link->_editor_screen->item() != _item_link)_page_link->sychronize_metaeditor_to_item(_item_link);
+            if(_page->_editor_screen->item() != _item)_page->sychronize_metaeditor_to_item(_item);
         }
 
         return view;  // _the->load(record, _make_current);
@@ -2810,7 +2810,7 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
         //        assert(_item_link);
         //        assert(_item_link->page_valid());
-        assert(_item_link->binder()->integrity_external(_item_link, _page_link));
+        assert(_item->binder()->integrity_external(_item, _page));
         //        return _bounded_item->unique_page()->activate();
 
         //        //        if(_page->view() != _page->_tabmanager->currentWebView()) {
@@ -2820,27 +2820,27 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
         //        //            view->show();
         //        //        }
 
-        return _page_link->activate();   // view;
+        return _page->activate();   // view;
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item_link()const
+    boost::intrusive_ptr<TreeItem> WebPage::item()const
     {
         return _binder ? _binder->item() : nullptr;
     }
 
-    WebPage *WebPage::page_link()const
+    WebPage *WebPage::page()const
     {
         return _binder ? _binder->page() : nullptr;
     }
 
-    boost::intrusive_ptr<TreeItem::coupler> WebPage::binder() {return _binder;}
+    boost::intrusive_ptr<TreeItem::Coupler> WebPage::binder() {return _binder;}
 
-    const boost::intrusive_ptr<TreeItem::coupler> &&WebPage::binder() const
+    const boost::intrusive_ptr<TreeItem::Coupler> &&WebPage::binder() const
     {
-        return std::forward<const boost::intrusive_ptr<TreeItem::coupler>>(_binder);
+        return std::forward<const boost::intrusive_ptr<TreeItem::Coupler>>(_binder);
     }
 
-    void WebPage::binder(boost::intrusive_ptr<TreeItem::coupler> &&binder_)
+    void WebPage::binder(boost::intrusive_ptr<TreeItem::Coupler> &&binder_)
     {
         if(binder_ != _binder)this->_binder = binder_;
     }

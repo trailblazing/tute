@@ -32,7 +32,7 @@ enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemS
 
 const char *knowtreeview_singleton_name = "knowtreeview";
 
-KnowView::KnowView(QString _name, QWidget *_parent)
+KnowView::KnowView(QString _name, TreeScreen *_parent)
     : QTreeView(_parent)
     , _know_root(nullptr)
       // create custom delegate
@@ -123,8 +123,9 @@ void KnowView::setModel(KnowModel *model)
 
 bool KnowView::is_owner()
 {
-    assert(static_cast<TreeScreen *>(this->parent())->know_model_board()->root_item()->parent() == nullptr);
-    return (_know_root != static_cast<TreeScreen *>(this->parent())->know_model_board())
+    auto tree_screen = static_cast<TreeScreen *>(this->parent());
+    assert(tree_screen->know_model_board()->root_item()->parent() == nullptr);
+    return (_know_root != tree_screen->know_model_board())
            && (_know_root->root_item()->parent() != nullptr);
 }
 
@@ -159,7 +160,7 @@ void KnowView::sychronize()
                 auto tabmanager = browser->tabmanager();  // record_controller()->source_model();  // ->record_table();
 
                 for(int i = 0; i < tabmanager->count(); i++) {
-                    auto page_item = tabmanager->webView(i)->page()->item_link();
+                    auto page_item = tabmanager->webView(i)->page()->item();
 
                     if(!_tree_screen->know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == page_item->field("id");})) {
 
@@ -186,7 +187,7 @@ void KnowView::sychronize()
                 _tree_screen->view_paste_children_from_children(
                     TreeModel::ModelIndex([&]()->KnowModel * {return _know_root;}, _tree_screen->session_root_item())   // current_index()
                     , branch_item
-                    , [&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
+                    , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );
 
                 _tree_screen->synchronized(false);
@@ -269,7 +270,7 @@ void KnowView::source_model(boost::intrusive_ptr<TreeItem> _item)
     }
 
     reset();
-    _know_root = new KnowModel(_item, this->parent());
+    _know_root = new KnowModel(_item, this);
     setModel(_know_root);
 }
 
@@ -426,8 +427,8 @@ void KnowView::dropEvent(QDropEvent *event)
         // В настоящий момент в MimeData попадает только одна запись,
         // но в дальнейшем планируется переносить несколько записей
         // и здесь код подготовлен для переноса нескольких записей
-        RecordController *_record_controller = treeItemDrag->page_link()->record_controller(); // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
-        browser::TabWidget *_tabmanager = treeItemDrag->page_link()->view()->tabmanager();
+        RecordController *_record_controller = treeItemDrag->page()->record_controller(); // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
+        browser::TabWidget *_tabmanager = treeItemDrag->page()->view()->tabmanager();
 
         for(int i = 0; i < clipboardRecords->size(); i++) {
             // Полные данные записи
@@ -437,7 +438,7 @@ void KnowView::dropEvent(QDropEvent *event)
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
             // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
 
-            _tabmanager->closeTab(_tabmanager->indexOf(record->page_link()->view()));    // _record_controller->remove_child(record->field("id"));
+            _tabmanager->closeTab(_tabmanager->indexOf(record->page()->view()));    // _record_controller->remove_child(record->field("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(_record_controller->row_count() == 0) {
@@ -449,7 +450,7 @@ void KnowView::dropEvent(QDropEvent *event)
             _record_controller->record_screen()->tools_update();
 
             // Добавление записи в базу
-            _know_root->model_move_as_child_impl(tree_item_drop, record, 0);  // tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
+            _know_root->model_move_as_child(TreeModel::ModelIndex([&]() {return _know_root;}, tree_item_drop, 0), record); // tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
 
             // Сохранение дерева веток
             //            find_object<TreeScreen>(tree_screen_singleton_name)
@@ -600,7 +601,9 @@ QModelIndex KnowView::current_index(void)
                 } else if(_know_root->root_item()->count_direct() == 0) {
                     _tree_screen->item_bind(
                         QUrl(browser::Browser::_defaulthome)
-                        , std::bind(&TreeScreen::view_paste_sibling, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                        , std::bind(&TreeScreen::view_paste_child, _tree_screen
+                                    , TreeModel::ModelIndex([&]()->KnowModel* {return _know_root;}, _know_root->root_item(), 0) // std::placeholders::_1
+                                    , std::placeholders::_2, std::placeholders::_3)
                     );
                 }
 
@@ -971,7 +974,7 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     auto current_item = source_model()->item(index);
     QTextDocument doc;
 
-    if(index == source_model()->index([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == source_model()->session_id();})) {
+    if(index == source_model()->index([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it->host()->id() == source_model()->session_id();})) {
         optionV4.text = "<b>" + optionV4.text + "</b>";
     }
     doc.setHtml(optionV4.text);

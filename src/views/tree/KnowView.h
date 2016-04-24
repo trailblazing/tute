@@ -24,7 +24,7 @@ extern const char *record_view_multi_instance_name;
 class KnowModel;
 class TreeItem;
 class KnowView;
-
+class TreeScreen;
 
 // http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 class HtmlDelegate : public QStyledItemDelegate {
@@ -42,7 +42,9 @@ class KnowView : public QTreeView {
     Q_OBJECT
 
 public:
-    explicit KnowView(QString _name, QWidget *_parent = 0);
+    explicit KnowView(QString _name
+                      , TreeScreen *_parent // QWidget *_parent = 0
+                     );
     virtual ~KnowView();
 
     void sychronize();

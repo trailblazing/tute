@@ -183,7 +183,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
     , [this](QMouseEvent * ev) {
         Q_UNUSED(ev)
         assert(_item);
-        assert(_item->page_valid() && _item->page_link());
+        assert(_item->page_valid() && _item->page());
         _item->activate();
     });
 
@@ -195,7 +195,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         //            Q_UNUSED(home)
         assert(_item);
         assert(_item->page_valid());
-        browser::WebPage *page = _item->page_link();
+        browser::WebPage *page = _item->page();
         assert(page);
         QString home = _item->field("home");
 

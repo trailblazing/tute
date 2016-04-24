@@ -468,7 +468,7 @@ namespace browser {
                 disconnect(oldWebView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
                 disconnect(static_cast<QWebEnginePage *>(oldWebView->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
-                auto it = webView->page()->item_link();
+                auto it = webView->page()->item();
 
                 if(it) {
 
@@ -515,7 +515,7 @@ namespace browser {
                 webView->setFocus();
 
                 //                auto controller = webView->recordtablecontroller();
-                auto it = webView->page()->item_link();
+                auto it = webView->page()->item();
 
                 if(it) { // controller != nullptr &&
                     //                    QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
@@ -672,7 +672,7 @@ namespace browser {
             WebPage *p = v->page();
 
             if(p) {
-                auto it = p->item_link();
+                auto it = p->item();
 
                 if(it && it->field("pin") == _string_from_check_state[Qt::Unchecked]) {
                     found++;
@@ -696,9 +696,7 @@ namespace browser {
     }
 
 
-    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> target   // , bool openinnewtab
-                               // , const TreeScreen::paste_strategy &_view_paste_strategy
-                               // , equal_t _equal
+    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> target   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
                                , bool make_current
                               )
     {
@@ -847,7 +845,7 @@ namespace browser {
                     mapper->addChild(view->page()->action(mapper->webAction()));
                 }
 
-                result = view->page()->item_link();
+                result = view->page()->item();
                 //else {
                 assert(result->binder()->integrity_external(result, view->page()));
 
@@ -855,10 +853,10 @@ namespace browser {
                 auto _record_binder = view->page()->binder();
 
                 if(_record_binder && _record_binder->item() != target) {
-                    _record_binder->break_linked_items();    // view->page()->item_break(_record_binder->item_link());
+                    _record_binder->break_linked_items();    // view->page()->item_break(_record_binder->item());
                     // view->page()->binder(nullptr);   // _record_binder.reset();
-                    //                    _record_binder->item_link() = target;
-                    //                    _record_binder->page_link() = view->page();
+                    //                    _record_binder->item() = target;
+                    //                    _record_binder->page() = view->page();
                     //                    result = target;
                     result = view->page()->item_bind(target);
                     assert(result->binder()->integrity_external(result, view->page()));
@@ -870,8 +868,13 @@ namespace browser {
             assert(result->binder());
             assert(result->binder()->integrity_external(result, view->page()));
         } else {
-            assert(view->page()->item_link() == target);
-            result = target;
+            auto page_item = view->page()->item();
+
+            if(page_item != target)page_item = _tree_screen->view_merge_to_left([&]() {return _tree_screen->tree_view()->source_model();}, page_item, target);
+
+            //            if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
+
+            result = page_item; // target;
             assert(result->binder());
             assert(result->binder()->integrity_external(result, view->page()));
         }
@@ -987,10 +990,10 @@ namespace browser {
         if(index < 0 || index >= count())
             return;
 
-        assert(webView(index)->page()->item_link()->page_valid() && webView(index)->page()->item_link()->page_link());
-        assert(webView(index)->page()->item_link()->is_registered_to_browser() || webView(index)->page()->item_link()->field("url") == browser::Browser::_defaulthome);
+        assert(webView(index)->page()->item()->page_valid() && webView(index)->page()->item()->page());
+        assert(webView(index)->page()->item()->is_registered_to_browser() || webView(index)->page()->item()->field("url") == browser::Browser::_defaulthome);
         //WebView *tab =
-        newTab(webView(index)->page()->item_link(), true //, view(index)->recordtablecontroller()
+        newTab(webView(index)->page()->item(), true //, view(index)->recordtablecontroller()
               );
         //tab->setUrl(webView(index)->url());
     }
@@ -1068,8 +1071,8 @@ namespace browser {
                     lineEdit->deleteLater();    //delete lineEdit;
                 }
 
-                auto it = _view_to_close->page()->item_link();
-                assert(it->page_link() == _view_to_close->page());
+                auto it = _view_to_close->page()->item();
+                assert(it->page() == _view_to_close->page());
 
                 //                auto _tree_screen = _tree_screen;
                 _tree_screen->tree_view()->selectionModel()->select(_tree_screen->tree_view()->source_model()->index(it), QItemSelectionModel::SelectionFlag::Deselect);
@@ -1137,10 +1140,10 @@ namespace browser {
 
                 if(view != nullptr && view != webView(index)) {
                     view->setFocus();
-                    boost::intrusive_ptr<TreeItem> item = view->page()->item_link();
+                    boost::intrusive_ptr<TreeItem> item = view->page()->item();
 
                     if(item) {
-                        assert((item->page_valid() && item->page_link()) || (item->field("url") == Browser::_defaulthome));
+                        assert((item->page_valid() && item->page()) || (item->field("url") == Browser::_defaulthome));
 
                         //                    QModelIndex proxyindex = view->recordtablecontroller()->convertIdToProxyIndex(record->getField("id"));
                         //                    int position = view->recordtablecontroller()->convertProxyIndexToPos(proxyindex);
@@ -1320,9 +1323,9 @@ namespace browser {
 
         if(webView) {
             //            Record *record;
-            boost::intrusive_ptr<TreeItem> _item = webView->page()->item_link();
+            boost::intrusive_ptr<TreeItem> _item = webView->page()->item();
 
-            if(_item->page_valid() && _item->page_link()->url() != _url) {
+            if(_item->page_valid() && _item->page()->url() != _url) {
                 //                //                record = record_;
                 //                //            } else {
                 //                record = request_record(url);
@@ -1542,8 +1545,8 @@ namespace browser {
             auto vi = webView(i);
 
             if(vi != nullptr) {
-                if(vi->page()->item_link()) {
-                    if(vi->page()->item_link()->field("pin") == _string_from_check_state[Qt::Unchecked]) {
+                if(vi->page()->item()) {
+                    if(vi->page()->item()->field("pin") == _string_from_check_state[Qt::Unchecked]) {
                         bv = vi; break;
                     }
                 }
@@ -1636,7 +1639,7 @@ namespace browser {
             auto current_view = webView(i);
 
             if(current_view != nullptr) {
-                auto it = current_view->page()->item_link();
+                auto it = current_view->page()->item();
 
                 if(it) {
                     if(_equal(it)) { //it->url<url_type>() == url_type()(find_url)

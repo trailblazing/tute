@@ -15,14 +15,14 @@
 class XmlTree;
 class ClipboardBranch;
 class TreeScreen;
-
+class KnowView;
 
 class KnowModel : public TreeModel {
     Q_OBJECT
 
 public:
-    KnowModel(QObject *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
-    KnowModel(boost::intrusive_ptr<TreeItem> _root_item, QObject *parent = 0);
+    KnowModel(KnowView *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+    KnowModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent = 0);
     ~KnowModel();
 
     std::shared_ptr<XmlTree> init_from_xml(QString file_name);
@@ -85,13 +85,16 @@ public:
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
 
-    boost::intrusive_ptr<TreeItem> model_merge_to_left(const std::function<QList<boost::intrusive_ptr<TreeItem::linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &, const QString &, const bool)> &_view_remove
+    boost::intrusive_ptr<TreeItem> model_merge_to_left(const std::function<QList<boost::intrusive_ptr<TreeItem::Linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &, const QString &, const bool)> &_view_remove
                                                        , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
 
     //    boost::intrusive_ptr<ItemsFlat::linker> record_remove(boost::intrusive_ptr<TreeItem> _item);
 
-    boost::intrusive_ptr<TreeItem> model_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = add_new_record_after);
+    boost::intrusive_ptr<TreeItem> model_move_as_child(ModelIndex modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
     //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
+    boost::intrusive_ptr<TreeItem> intercept(TreeModel::ModelIndex modelindex);    // boost::intrusive_ptr<TreeItem> _item
+
+
 
 private:
 
@@ -113,7 +116,7 @@ private:
                                 );
 
     //    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
-    boost::intrusive_ptr<ItemsFlat::linker> model_delete_permanent(boost::intrusive_ptr<ItemsFlat::linker> delete_linker);
+    boost::intrusive_ptr<ItemsFlat::Linker> model_delete_permanent(boost::intrusive_ptr<ItemsFlat::Linker> delete_linker);
     //    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
@@ -139,11 +142,11 @@ private:
 
     // Добавление новой ветки после указанной ветки
     //    boost::intrusive_ptr<TreeItem> model_new_sibling(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> model_move_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item);
+    //    boost::intrusive_ptr<TreeItem> model_move_as_sibling(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> _source_item);
 
     // Добавление новой подветки к указанной ветке
     //    boost::intrusive_ptr<TreeItem> model_new_child(const QModelIndex &_index, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> model_move_as_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
+    //    boost::intrusive_ptr<TreeItem> model_move_as_child(const QModelIndex &_index, boost::intrusive_ptr<TreeItem> it);
 
     //    // Добавление новой подветки к Item элементу
     //    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
@@ -164,7 +167,7 @@ private:
     //    QString model_paste_child_from_clipboard(const QModelIndex &_index, ClipboardBranch *subbranch);
     //    QString model_paste_sibling_from_clipboard(const QModelIndex &_index, ClipboardBranch *subbranch);
 
-    boost::intrusive_ptr<TreeItem> intercept_self(boost::intrusive_ptr<TreeItem> _item);
+
     boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
 
 private:
