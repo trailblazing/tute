@@ -344,7 +344,7 @@ namespace browser {
 
         //        _tabbar->setMaximumSize(0, 0);
 
-        //        _tabbar->hide();
+        _tabbar->hide();
 
         // Actions
         //        _newtabaction = ;
@@ -870,7 +870,7 @@ namespace browser {
         } else {
             auto page_item = view->page()->item();
 
-            if(page_item != target)page_item = _tree_screen->view_merge_to_left([&]() {return _tree_screen->tree_view()->source_model();}, page_item, target);
+            if(page_item != target)page_item = _tree_screen->view_merge_to_left(TreeModel::ModelIndex([&]() {return _tree_screen->tree_view()->source_model();}, page_item), target);
 
             //            if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 

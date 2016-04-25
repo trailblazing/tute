@@ -1960,6 +1960,26 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
         //        }
     }
 
+    if(!_linker) {
+        if(cut->linker()) {
+            _linker = boost::intrusive_ptr<TreeItem::Linker>(new TreeItem::Linker(cut->linker()->host_parent(), boost::intrusive_ptr<TreeItem>(this))); // cut->linker()
+
+            _linker->parent(cut->linker()->host_parent(), 0);
+        }
+    }
+
+    auto cut_page_rebind = [&]() {
+        if(cut->binder())
+            if(cut->binder()->page())
+                cut->binder()->page()->item_bind(this);
+    };
+
+    if(!_binder) {
+        cut_page_rebind();
+    } else if(!_binder->page()) {
+        cut_page_rebind();
+    }
+
     assert(_child_linkers.size() == origin_child_linkers_size + new_count);
     cut->clear();
 

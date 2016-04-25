@@ -142,7 +142,8 @@ public:
 
     boost::intrusive_ptr<TreeItem> cursor_follow_up_one_level(void);
     boost::intrusive_ptr<TreeItem> cursor_follow_up_to_root(void);
-    boost::intrusive_ptr<TreeItem> view_merge_to_left(const std::function<KnowModel*()> &_current_model, boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
+    boost::intrusive_ptr<TreeItem> view_merge_to_left(TreeModel::ModelIndex modelindex    // const std::function<KnowModel*()> &_current_model, boost::intrusive_ptr<TreeItem> target
+                                                      , boost::intrusive_ptr<TreeItem> source);
 
     QList<boost::intrusive_ptr<ItemsFlat::Linker> > view_delete_permanent(
         const std::function<KnowModel *()>      &_current_model

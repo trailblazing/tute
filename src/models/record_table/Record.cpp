@@ -347,6 +347,8 @@ void Record::dom_to_record(const QDomElement &_dom_element)
     // Проверка, есть ли у переданного DOM-элемента таблица файлов для заполнения
     if(!_dom_element.firstChildElement("files").isNull())
         _attach_table_data->dom_to_data(_dom_element.firstChildElement("files"));   // Заполнение таблицы приаттаченных файлов
+
+    if(_lite_flag && natural_field_source("id") != global_root_id)to_fat();
 }
 
 QDomElement Record::dom_from_record() const

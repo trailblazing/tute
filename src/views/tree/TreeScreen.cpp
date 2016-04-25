@@ -301,7 +301,7 @@ void TreeScreen::setup_actions(void)
                 result = it.next();
 
                 while(it.hasNext()) {
-                    result = view_merge_to_left(_current_model, result, it.next());
+                    result = view_merge_to_left(TreeModel::ModelIndex(_current_model, result), it.next());
                 }
 
 
@@ -1060,7 +1060,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_add_new(
             auto _it = it.next();
 
             if(_it->id() == result->id()) { // prevent error merge
-                result = view_merge_to_left(_current_model, result, _it);
+                result = view_merge_to_left(TreeModel::ModelIndex(_current_model, result), _it);
             }
         }
 
@@ -1189,7 +1189,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_insert_new(
                     auto _it = it.next();
 
                     if(_it->id() == result->id()) { // prevent error merge
-                        result = view_merge_to_left(_current_model, result, _it);
+                        result = view_merge_to_left(TreeModel::ModelIndex(_current_model, result), _it);
                     }
                 }
 
@@ -1299,7 +1299,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_children_from_children(
        && _substitute_condition(_blank_header->linker(), _current_parent->linker())
        && _blank_header->field("name") != clipboard_items_root
       ) {
-        view_merge_to_left(_current_model, _current_parent, _blank_header);
+        view_merge_to_left(TreeModel::ModelIndex(_current_model, _current_parent), _blank_header);
     }   // ? should this function ignore the _blank_header?
 
     if(_blank_header->count_direct() > 0) {
@@ -1353,7 +1353,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_children_from_children(
 
                     // Подветка
                     if(found_item) { // candidate->id()
-                        found_item = view_merge_to_left(_current_model, found_item, candidate);
+                        found_item = view_merge_to_left(TreeModel::ModelIndex(_current_model, found_item), candidate);
                         //                    reserved++;
                     } else {
                         found_item = candidate;
@@ -1954,7 +1954,7 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_child(
                         result = _source_item;  // it.next();
 
                         while(it.hasNext()) {
-                            result = view_merge_to_left(current_model, result, it.next());
+                            result = view_merge_to_left(TreeModel::ModelIndex(current_model, result), it.next());
                             assert(result);
                             assert(current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
                         }
@@ -3473,9 +3473,14 @@ void TreeScreen::view_edit(void)
 //}
 
 
-boost::intrusive_ptr<TreeItem> TreeScreen::view_merge_to_left(const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source)
+boost::intrusive_ptr<TreeItem> TreeScreen::view_merge_to_left(
+    TreeModel::ModelIndex modelindex    // const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> target
+    , boost::intrusive_ptr<TreeItem> source
+)
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
+    auto _current_model = modelindex.current_model();
+    auto target = modelindex.parent();
     //    boost::intrusive_ptr<TreeItem> keep;
     //    boost::intrusive_ptr<TreeItem> remove;
 
@@ -3483,36 +3488,37 @@ boost::intrusive_ptr<TreeItem> TreeScreen::view_merge_to_left(const std::functio
     // else
     auto target_on_tree = _current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == target->id();});
 
-    if(target != source
-       && target_on_tree
-      ) {
-        if(source->id() == static_cast<KnowModel *>(_current_model())->session_id()) {
-            //        keep = source; remove = target;
-            if(target->parent())
-                static_cast<KnowModel *>(_current_model())->session_id(TreeModel::ModelIndex(_current_model, target->parent()));
-            else
-                static_cast<KnowModel *>(_current_model())->session_id(TreeModel::ModelIndex(_current_model, target));
+    if(target_on_tree) {
+        if(target != source) { // && target_on_tree
+
+            if(source->id() == static_cast<KnowModel *>(_current_model())->session_id()) {
+                //        keep = source; remove = target;
+                if(target->parent())
+                    static_cast<KnowModel *>(_current_model())->session_id(TreeModel::ModelIndex(_current_model, target->parent()));
+                else
+                    static_cast<KnowModel *>(_current_model())->session_id(TreeModel::ModelIndex(_current_model, target));
+            }
+
+            //    else {keep = target; remove = source;}
+
+            //    //    //    KnowModel *(TreeScreen::*_know_model_board)() = &TreeScreen::know_model_board;
+            //    //    //    KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
+            //    //    auto _source_model = [&]() {return _tree_view->source_model();}; // std::bind(_source_model_func, _tree_view);
+
+            globalparameters.mainwindow()->setDisabled(true);
+            result = static_cast<KnowModel *>(_current_model())->model_merge_to_left(
+                         std::bind(&TreeScreen::view_delete_permanent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+                         , target_on_tree   // keep
+                         , source   // remove   // std::bind(_know_model_board, this)
+                     );
+            assert(_current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
+            know_model_save();
+
+            //    find_object<MainWindow>("mainwindow")
+            globalparameters.mainwindow()->setEnabled(true);
+        } else { // if(target_on_tree)
+            result = target_on_tree;
         }
-
-        //    else {keep = target; remove = source;}
-
-        //    //    //    KnowModel *(TreeScreen::*_know_model_board)() = &TreeScreen::know_model_board;
-        //    //    //    KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
-        //    //    auto _source_model = [&]() {return _tree_view->source_model();}; // std::bind(_source_model_func, _tree_view);
-
-        globalparameters.mainwindow()->setDisabled(true);
-        result = static_cast<KnowModel *>(_current_model())->model_merge_to_left(
-                     std::bind(&TreeScreen::view_delete_permanent, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-                     , target   // keep
-                     , source   // remove   // std::bind(_know_model_board, this)
-                 );
-        assert(_current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
-        know_model_save();
-
-        //    find_object<MainWindow>("mainwindow")
-        globalparameters.mainwindow()->setEnabled(true);
-    } else if(target_on_tree) {
-        result = target_on_tree;
     }
 
     return result;
@@ -3983,7 +3989,7 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
                     auto duplicated_item = _i;
 
                     if(duplicated_item != result_item) { // (duplicated_item->id() != result_item->id()) ||
-                        result_item = view_merge_to_left(_source_model, result_item, duplicated_item);
+                        result_item = view_merge_to_left(TreeModel::ModelIndex(_source_model, result_item), duplicated_item);
                     }
                 }
             }
@@ -4000,7 +4006,7 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
                 auto duplicated_item = _i;
 
                 if(duplicated_item != result_item) { // (duplicated_item->id() != result_item->id()) ||
-                    result_item = view_merge_to_left(_source_model, result_item, duplicated_item);
+                    result_item = view_merge_to_left(TreeModel::ModelIndex(_source_model, result_item), duplicated_item);
                 }
             }
         }
@@ -4143,11 +4149,16 @@ void TreeScreen::index_invoke(const QModelIndex &_index)
 
             if(result_item->field("url") != "") {
                 //            _tree_view->select_and_current(result_item);
-                if(!result_item->binder() || (result_item->binder() && !result_item->binder()->integrity_internal()))
-                    item_bind(result_item, std::bind(&TreeScreen::view_paste_child, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();
-                else {
+                auto item_bind_ = [&]() {return item_bind(result_item, std::bind(&TreeScreen::view_paste_child, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();};
+
+                if(!result_item->binder()) {
+                    item_bind_();
+                } else if(result_item->binder() && !result_item->binder()->page()) {   // !result_item->binder()->integrity_internal()){
+                    item_bind_();
+                } else {
                     result_item->activate();
                 }
+
             }
         }
     }
@@ -4771,10 +4782,10 @@ bool TreeScreen::synchronized() {return _know_model_board->synchronized();}
 boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_strategy(
     TreeModel::ModelIndex                                       _modelindex
     , boost::intrusive_ptr<TreeItem>                            _result
-    , const TreeScreen::substitute_condition                    &_substitute_condition
-    , const TreeScreen::paste_strategy                          &_view_paste_strategy_impl
+    , const TreeScreen::substitute_condition                     &_substitute_condition
+    , const TreeScreen::paste_strategy                           &_view_paste_strategy_impl
     , const bool                                                _item_is_brand_new
-    , const QUrl                                                &_find_url
+    , const QUrl                                                 &_find_url
     , const std::function<bool(boost::intrusive_ptr<TreeItem>)> &_check_url
 )
 {

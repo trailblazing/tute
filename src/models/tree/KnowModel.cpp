@@ -853,6 +853,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
                     remove_result |= parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == parent;}); // model_remove(_source_item->up_linker());
 
                     update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
+                    static_cast<KnowView *>(static_cast<QObject *>(this)->parent())->update(_index_origin.parent());
                     endRemoveRows();
                 }   // else sibling_order = _index_origin.row();
 

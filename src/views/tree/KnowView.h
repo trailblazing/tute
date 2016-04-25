@@ -88,12 +88,12 @@ protected:
     template <class X> bool isDragableData(X *event)
     {
         // Проверяется, содержит ли объект переноса данные нужного формата
-        const QMimeData *mimeData = event->mimeData();
+        const QMimeData *mime_data = event->mimeData();
 
-        if(mimeData == nullptr)
+        if(mime_data == nullptr)
             return false;
 
-        if(!(mimeData->hasFormat("mytetra/records")))
+        if(!(mime_data->hasFormat("mytetra/records")))
             return false;
 
         QObject *sourceObject = qobject_cast<QObject *>(event->source());

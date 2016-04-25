@@ -891,7 +891,7 @@ namespace browser {
 
                     // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                     // already create window, why do this? -- refer to demo browser
-assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
+                    assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
                     page = _tree_screen->item_bind(
                                QUrl(Browser::_defaulthome)
                                , std::bind(&TreeScreen::view_paste_child, _tree_screen
@@ -1727,6 +1727,10 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
                     _binder->item()->field("name", title);
 
+                    auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                    source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
+
+
                     auto _mainwindow = globalparameters.mainwindow();
 
                     if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
@@ -1834,6 +1838,9 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
                 if(url.toString() != "") {
                     _binder->item()->field("url", url.toString());
 
+                    auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                    source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
+
                     if(_view == _tabmanager->currentWebView()) {
                         if(_editor_screen->item() != _binder->item())sychronize_metaeditor_to_item(_binder->item());  // metaeditor->bind(_record);
 
@@ -1930,12 +1937,18 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
             bool is_current = (_view == _tabmanager->currentWebView()) ;
 
+
+
+            bool data_changed = false;
+
             if(title != ""
                && title != _binder->item()->field("name")
                //                   && !QUrl(title).isValid()
               ) {
 
                 _binder->item()->field("name", title);
+                data_changed = true;
+
                 //metaeditor->setName(title);
                 auto _mainwindow = globalparameters.mainwindow();
 
@@ -1947,9 +1960,15 @@ assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).
 
             if(url.toString() != "") {
                 _binder->item()->field("url", url.toString());
+                data_changed = true;
 
                 if(is_current)_editor_screen->url(url.toString());
 
+            }
+
+            if(data_changed) {
+                auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
             }
 
             if(_editor_screen->item() != _binder->item() && is_current)sychronize_metaeditor_to_item(_binder->item());  // metaeditor->bind(_record);

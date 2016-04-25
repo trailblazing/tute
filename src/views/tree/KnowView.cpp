@@ -437,8 +437,8 @@ void KnowView::dropEvent(QDropEvent *event)
             // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
             // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
             // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-
-            _tabmanager->closeTab(_tabmanager->indexOf(record->page()->view()));    // _record_controller->remove_child(record->field("id"));
+            if(record->binder())
+                _tabmanager->closeTab(_tabmanager->indexOf(record->page()->view()));    // _record_controller->remove_child(record->field("id"));
 
             // Если таблица конечных записей после удаления перемещенной записи стала пустой
             if(_record_controller->row_count() == 0) {
