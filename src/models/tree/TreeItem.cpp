@@ -413,7 +413,7 @@ TreeItem::~TreeItem()
     //        //
     //    }
 
-    page_break();
+    binder_reset();
 }
 
 
@@ -1414,9 +1414,9 @@ boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_
 
 }
 
-boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<Linker> &&_item_linker)const
+boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_ptr<const Linker> &&_item_linker)const
 {
-    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::Linker>>(_item_linker));    //
+    return ItemsFlat::contains_direct(std::forward<const boost::intrusive_ptr<const TreeItem::Linker>>(_item_linker));    //
 
     //    boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -3270,7 +3270,7 @@ int TreeItem::count_children_all()
     return count_all_recursive(boost::intrusive_ptr<const TreeItem> (this), 1);
 }
 
-void TreeItem::page_break()
+void TreeItem::binder_reset()
 {
     if(_binder) {    // _page != nullptr
 
@@ -3324,7 +3324,7 @@ void TreeItem::page_break()
         //        if(_binder->page_link()) {
         //            _binder->page_link() = nullptr;
         //        }
-        _binder->page()->binder() = std::move(boost::intrusive_ptr<TreeItem::Coupler> (nullptr));
+        _binder->page()->binder(std::move(boost::intrusive_ptr<TreeItem::Coupler> (nullptr)));
         // _binder->break_page();
         _binder.reset();
         //        _activator.reset();

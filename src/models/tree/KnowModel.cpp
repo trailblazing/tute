@@ -671,8 +671,8 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(TreeModel::ModelIndex 
 {
     boost::intrusive_ptr<TreeItem> parent = _modelindex.parent();
     int pos = _modelindex.sibling_order();
-
-    beginInsertRows(index(parent)
+    auto index_parent = index(parent);
+    beginInsertRows(index_parent
                     , pos   // parent->count_direct()
                     , pos   // parent->count_direct()
                    );
@@ -684,7 +684,9 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(TreeModel::ModelIndex 
     // Подузел прикрепляется к указанному элементу
     // в конец списка подчиненных элементов
     boost::intrusive_ptr<TreeItem> current = new TreeItem(parent, data, QDomElement(), pos); // parent->child_add_new(pos, id, name);
-
+    auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
+    update_index(index_parent);
+    view->update(index_parent);
     //    //    // Определяется ссылка на только что созданную ветку
     //    //    boost::intrusive_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
 
@@ -828,13 +830,10 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
     assert(original_parent);
     auto original_parent_index = index(original_parent);
 
-    if(!(source_item->parent() == parent && parent->contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::Linker>>(source_item->linker())))) {
+    if(!(source_item->parent() == parent && parent->contains_direct(std::forward<const boost::intrusive_ptr<const TreeItem::Linker>>(source_item->linker())))) {
         auto _index_parent = index(parent);
-
-
-
         auto _index_origin = index(source_item);
-
+        auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
 
         if(source_item->parent() != parent) {
             //            boost::intrusive_ptr<TreeItem::linker> deleted_linker;
@@ -853,7 +852,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
                     remove_result |= original_parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent;}); // model_remove(_source_item->up_linker());
 
                     update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
-                    static_cast<KnowView *>(static_cast<QObject *>(this)->parent())->update(_index_origin.parent());
+                    view->update(_index_origin.parent());
                     endRemoveRows();
                 }   // else sibling_order = _index_origin.row();
 
@@ -887,9 +886,12 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
             }
 
             update_index(_index_parent);
+            view->update(_index_parent);
 
-            if(original_parent_index.isValid())
+            if(original_parent_index.isValid()) {
                 update_index(original_parent_index);
+                view->update(original_parent_index);
+            }
 
             endInsertRows();
         } else {    // should not use
@@ -1291,6 +1293,9 @@ boost::intrusive_ptr<TreeItem::Linker> KnowModel::model_delete_permanent(boost::
             //            remove_target->self_remove_from_parent();
             //    success
             result = host_parent->delete_permanent_recursive(delete_target_linker);
+            auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
+            update_index(parent_index);
+            view->update(parent_index);
             endRemoveRows();
         }
 
@@ -1512,11 +1517,19 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge_to_left(
         //    if(_index_origin.isValid())update_index(_index_origin.parent());
         auto old_source_parent_index = index(old_source_parent);
 
-        if(old_source_parent_index.isValid())update_index(old_source_parent_index);
+        auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
+
+        if(old_source_parent_index.isValid()) {
+            update_index(old_source_parent_index);
+            view->update(old_source_parent_index);
+        }
 
         auto _index_result = index(result);
 
-        if(_index_result.isValid())update_index(_index_result);
+        if(_index_result.isValid()) {
+            update_index(_index_result);
+            view->update(_index_result);
+        }
 
         //    if(_index_result.parent().isValid())update_index(_index_result.parent());
 
@@ -2619,11 +2632,12 @@ void KnowModel::clear()
 }
 // if succeeded, id and name changed, deprecated, replaced by KnowView::setup_model(boost::intrusive_ptr<TreeItem> _item)
 boost::intrusive_ptr<TreeItem> KnowModel::intercept(
-    TreeModel::ModelIndex modelindex    // boost::intrusive_ptr<TreeItem> _item
+    boost::intrusive_ptr<TreeItem> _item    // TreeModel::ModelIndex modelindex    //
 )
 {
-    auto _item = modelindex.parent();
-
+    //    auto _item = modelindex.parent();
+    auto absolute_source_model = []() {return globalparameters.tree_screen()->know_model_board();};
+    assert(_item == absolute_source_model()->root_item() || absolute_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _item->id();}));
     boost::intrusive_ptr<TreeItem> result(nullptr);
     //    QMap<QString, QString> root_data;
 

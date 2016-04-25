@@ -305,7 +305,7 @@ public:
     //    // в конец списка подчиненных элементов
     //    boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
     boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const;
-    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<Linker> &&_item_linker)const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<const Linker> &&_item_linker)const;
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> _item);
 
@@ -318,7 +318,7 @@ public:
     bool children_insert_new(int position, int count, int columns);
 
 
-    void page_break();
+    void binder_reset();
     boost::intrusive_ptr<Linker> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker);
 
     boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);

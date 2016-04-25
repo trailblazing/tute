@@ -849,12 +849,28 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_mo
     : _current_model(current_model), _parent(parent_item), _sibling_order(sibling_order)  // , _current_index(_current_index)
 {
     bool current_parent_valid = [&]() {
-        if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "") {
-            if(parent_item->is_ancestor_of(static_cast<KnowModel *>(current_model())->root_item()))
-                static_cast<KnowModel *>(current_model())->intercept(TreeModel::ModelIndex([&]() {return globalparameters.tree_screen()->know_model_board();}, parent_item));
+        bool result = false;
+        auto absolute_root = globalparameters.tree_screen()->know_model_board()->root_item();
+        auto current_root = [&]() {return static_cast<KnowModel *>(current_model())->root_item();};
+
+        if(parent_item->is_ancestor_of(current_root())) {
+            auto new_root = (parent_item == absolute_root) ? parent_item : parent_item->parent();
+            static_cast<KnowModel *>(current_model())->intercept(new_root);
+
+            if(parent_item == absolute_root) {
+                result = true;
+            } else { // if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "")
+                result = (current_model()->index(parent_item).isValid())
+                && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
+            }
+        } else if(parent_item == current_root()) {
+            result = true;
+        } else {
+            result = (current_model()->index(parent_item).isValid())
+            && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
         }
-        return (current_model()->index(parent_item).isValid())
-        && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
+
+        return result;
     }();
     assert(current_parent_valid);
     assert(sibling_order >= 0);

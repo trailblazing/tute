@@ -970,7 +970,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive
 
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive_ptr<TreeItem::Linker> &&_item_linker)const
+boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive_ptr<const TreeItem::Linker> &&_item_linker)const
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -1725,7 +1725,7 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
                 result = this;
 
 
-                auto item = _host_parent ? _host_parent->contains_direct(std::forward < const boost::intrusive_ptr<TreeItem::Linker> > (this)) : nullptr;
+                auto item = _host_parent ? _host_parent->contains_direct(std::forward < const boost::intrusive_ptr<const TreeItem::Linker> > (this)) : nullptr;
                 auto linker_ = item ? item->linker() : nullptr;
 
 
@@ -1774,7 +1774,7 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
         this->child_move_unique(_host_parent, 0, add_new_record_before);
 
         if(_host_parent) {
-            if(!_host_parent->contains_direct(std::forward <const boost::intrusive_ptr<Linker>> (this))) {
+            if(!_host_parent->contains_direct(std::forward <const boost::intrusive_ptr<const Linker>> (this))) {
                 result = false;
                 assert(result);
             }
@@ -1839,7 +1839,7 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
         std::get<2>(_status) = [&]() {return _host->linker();};  // std::forward < const boost::intrusive_ptr<TreeItem::linker> > (this);    // you cannot forward something more than once?
 
         std::get<3>(_status) = [&]() {
-            auto it = _host_parent ? _host_parent->contains_direct(std::forward <boost::intrusive_ptr<TreeItem::Linker>> (this)) : nullptr;
+            auto it = _host_parent ? _host_parent->contains_direct(std::forward <const boost::intrusive_ptr<const TreeItem::Linker>> (this)) : nullptr;
             return it ? it->linker() : nullptr;
         }; //
 
@@ -2039,7 +2039,7 @@ boost::intrusive_ptr<ItemsFlat::Linker> ItemsFlat::Linker::parent(boost::intrusi
 
             if(_host_parent) {
                 if(_host_parent != parent_item
-                   && _host_parent->contains_direct(std::forward < const boost::intrusive_ptr<Linker> > (this)) // _host->up_linker()
+                   && _host_parent->contains_direct(std::forward < const boost::intrusive_ptr<const Linker> > (this)) // _host->up_linker()
                    && _host_parent->id() != _host->_field_data.value("id")
                   ) {
                     //            _parent_item->delete_permanent(_host->up_linker());    // leading boost::intrusive_ptr<linker> reseted!!!, so this function may be an illegal operation?

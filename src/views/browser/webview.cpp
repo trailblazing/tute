@@ -461,7 +461,7 @@ namespace browser {
 
 
 
-                on_close_requested();   // item->binder().reset(); //->break_page();
+                binder_reset();   // item->binder().reset(); //->break_page();
 
 
 
@@ -533,7 +533,7 @@ namespace browser {
 
         connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::titleChanged, this, &WebPage::onTitleChanged);
         connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::urlChanged, this, &WebPage::onUrlChanged);
-        connect(this, &WebPage::close_requested, &WebPage::on_close_requested);
+        connect(this, &WebPage::close_requested, &WebPage::binder_reset);
 
         //        if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
@@ -1186,7 +1186,7 @@ namespace browser {
             return result_coupler;
         };
 
-        if(_binder)on_close_requested();
+        if(_binder)binder_reset();
 
         if(result->binder()) {
             if(!result->binder()->integrity_external(result, this)) {
@@ -1884,13 +1884,13 @@ namespace browser {
         }
     }
 
-    void WebPage::on_close_requested()
+    void WebPage::binder_reset()
     {
         _record_controller->on_recordtable_configchange();
         //        _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
 
         if(_binder) {
-            _binder->item()->binder() = nullptr;
+            _binder->item()->binder(nullptr);
             // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
             _binder.reset();
         }
@@ -2788,11 +2788,15 @@ namespace browser {
 
             if(_item->binder() != _page->binder()) {
                 assert(_item->binder());
-                _page->binder() = // std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(
-                    _item->binder()
-                    // )
-                    ;
+                _page->binder_reset();
+                //                _page->binder(// std::forward<boost::intrusive_ptr<TreeItem::Coupler>&>(
+                //                    _item->binder()
+                //                    // )
+                //                )
+                //                ;
             }
+
+            _page->item_bind(_item);
 
             if(_page->url().toString() != _item->field("url")) {
                 _page->setUrl(QUrl(_item->field("url")));
@@ -2803,7 +2807,10 @@ namespace browser {
             assert(_page->_editor_screen);
 
             if(_page->_editor_screen->item() != _item)_page->sychronize_metaeditor_to_item(_item);
+
+            assert(_page->binder()->integrity_external(_item, _page));
         }
+
 
         return view;  // _the->load(record, _make_current);
     }

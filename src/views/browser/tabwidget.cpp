@@ -853,7 +853,7 @@ namespace browser {
                 auto _record_binder = view->page()->binder();
 
                 if(_record_binder && _record_binder->item() != target) {
-                    view->page()->on_close_requested(); // _record_binder->break_page();    // view->page()->item_break(_record_binder->item());
+                    view->page()->binder_reset(); // _record_binder->break_page();    // view->page()->item_break(_record_binder->item());
                     // view->page()->binder(nullptr);   // _record_binder.reset();
                     //                    _record_binder->item() = target;
                     //                    _record_binder->page() = view->page();

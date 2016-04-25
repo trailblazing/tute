@@ -235,7 +235,7 @@ namespace browser {
         void update_record(const QUrl &url, const QString &title);
         void update_record_view(boost::intrusive_ptr<TreeItem> item);
         void item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item);
-        void on_close_requested();
+        void binder_reset();
 
 
 

@@ -92,7 +92,7 @@ public:
 
     boost::intrusive_ptr<TreeItem> model_move_as_child(ModelIndex modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
     //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
-    boost::intrusive_ptr<TreeItem> intercept(TreeModel::ModelIndex modelindex);    // boost::intrusive_ptr<TreeItem> _item
+    boost::intrusive_ptr<TreeItem> intercept(boost::intrusive_ptr<TreeItem> _item);    // boost::intrusive_ptr<TreeItem> _item
 
 
 
