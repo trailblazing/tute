@@ -126,6 +126,8 @@ void RecordController::item_click(const QModelIndex &index)
     int source_pos = sourceIndex.row();
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
+    select_pos(sourcepos_to_proxypos(source_pos));  // ?
+
     _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
@@ -277,8 +279,8 @@ void RecordController::browser_update(const int source_pos)
         //            page->load(record);
         //        } else
 
-        if(entrance && !item->page_valid()    // unique_page()
-          ) {    // !record->binder() || !record->activator())) {
+        if(entrance && !item->page_valid()) {    // unique_page()
+            // !record->binder() || !record->activator())) {
             entrance->item_bind(item);
 
 

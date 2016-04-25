@@ -3599,9 +3599,11 @@ bool TreeItem::Coupler::integrity_external(boost::intrusive_ptr<const TreeItem> 
 
 void TreeItem::Coupler::break_linked_items()
 {
-    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it    // if(item_link())item_link().reset();  // if(item_link() && item_link()->binder())item_link()->binder().reset();
+    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it    //
+    if(item())item().reset();   // if(item_link() && item_link()->binder())item_link()->binder().reset();
 
-    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it   // if(page_link())page_link() = nullptr; // if(page_link() && page_link()->binder())page_link()->binder().reset();
+    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it   //
+    if(page())page() = nullptr; // if(page_link() && page_link()->binder())page_link()->binder().reset();
 }
 
 

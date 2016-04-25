@@ -1024,8 +1024,11 @@ namespace browser {
     // When index is -1 index chooses the current tab
     void TabWidget::closeTab(int index)
     {
-        if(index < 0)
-            index = currentIndex();
+        int current_index = currentIndex();
+
+        if(index != current_index)index = current_index;
+
+        //        if(index < 0)index = currentIndex();
 
         if(index >= 0 && index < count()) { // if(index < 0 || index >= count())
             // return;

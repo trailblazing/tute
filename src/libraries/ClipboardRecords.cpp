@@ -81,7 +81,7 @@ void ClipboardRecords::add_record(boost::intrusive_ptr<TreeItem> record)
     }
 
     if(!found) { // if(!_records._child_items.contains(record))
-        _records._child_items << record->dom_from_record();
+        _records._child_items << record->dom_from_treeitem();   // dom_from_record();
     }
 }
 
@@ -93,7 +93,7 @@ void ClipboardRecords::print(void) const
 
     for(auto el : _records._child_items) {
         boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
-        it->dom_to_record(el);
+        it->dom_to_records(el);
         source_list << it;
     }
 
@@ -132,7 +132,7 @@ boost::intrusive_ptr<TreeItem> ClipboardRecords::record(int n) const
 {
     if(n < _records._child_items.size()) {
         boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
-        it->dom_to_record(_records._child_items.at(n));
+        it->dom_to_records(_records._child_items.at(n));    // dom_to_record
         return it;
     } else {
         critical_error("In ClipboardRecords::getRecord() unavailable number " + QString::number(n));
@@ -146,7 +146,7 @@ QString ClipboardRecords::record_text(int n) const
 {
     if(n < _records._child_items.size()) {
         boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
-        it->dom_to_record(_records._child_items.at(n));
+        it->dom_to_records(_records._child_items.at(n));
         return it->text_from_fat();
     } else {
         critical_error("In ClipboardRecords::getRecordText() unavailable number " + QString::number(n));
@@ -160,7 +160,7 @@ QMap<QString, QString> ClipboardRecords::record_field_list(int n) const
 {
     if(n < _records._child_items.size()) {
         boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
-        it->dom_to_record(_records._child_items.at(n));
+        it->dom_to_records(_records._child_items.at(n));
         return it->natural_field_list();
     } else {
         critical_error("In ClipboardRecords::getRecordFieldTable() unavailable number " + QString::number(n));
@@ -186,7 +186,7 @@ QMap<QString, QByteArray> ClipboardRecords::record_picture_files(int n) const
 {
     if(n < _records._child_items.size()) {
         boost::intrusive_ptr<TreeItem> it(new TreeItem(nullptr));
-        it->dom_to_record(_records._child_items.at(n));
+        it->dom_to_records(_records._child_items.at(n));
         return it->picture_files();
     } else {
         critical_error("In ClipboardRecords::getRecordPictureFiles() unavailable number " + QString::number(n));
