@@ -461,7 +461,7 @@ namespace browser {
 
 
 
-                item->binder()->break_linked_items();
+                on_close_requested();   // item->binder().reset(); //->break_page();
 
 
 
@@ -493,12 +493,12 @@ namespace browser {
             //        }
 
             //        item_bind(item);  // you can't modify _binder before it's initialize time!!!
-            auto ar = std::make_shared<WebPage::coupler>(item, this);
+            auto ar = std::make_shared<WebPage::Coupler>(item, this);
             new TreeItem::Coupler(
-                std::move(TreeItem::Coupler::item_interface("", &WebPage::coupler::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-                , std::move(TreeItem::Coupler::page_interface("", &WebPage::coupler::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-                , std::move(TreeItem::Coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-                , std::move(TreeItem::Coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+                std::move(TreeItem::Coupler::item_interface("", &WebPage::Coupler::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                , std::move(TreeItem::Coupler::page_interface("", &WebPage::Coupler::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                , std::move(TreeItem::Coupler::bind_interface("", &WebPage::Coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                , std::move(TreeItem::Coupler::activate_interface("", &WebPage::Coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
             );
             assert(item->binder()->integrity_external(item, this));   // item->binder() = new TreeItem::coupler(std::make_shared<WebPage::coupler>(item, this));
             assert(_binder->integrity_external(item, this));
@@ -1173,18 +1173,20 @@ namespace browser {
             result = item;
 
         auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item) {
-            auto ar = std::make_shared<WebPage::coupler>(result_item, this);
+            auto ar = std::make_shared<WebPage::Coupler>(result_item, this);
             auto result_coupler = new TreeItem::Coupler(
-                std::move(TreeItem::Coupler::item_interface("", &WebPage::coupler::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-                , std::move(TreeItem::Coupler::page_interface("", &WebPage::coupler::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-                , std::move(TreeItem::Coupler::bind_interface("", &WebPage::coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-                , std::move(TreeItem::Coupler::activate_interface("", &WebPage::coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+                std::move(TreeItem::Coupler::item_interface("", &WebPage::Coupler::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                , std::move(TreeItem::Coupler::page_interface("", &WebPage::Coupler::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                , std::move(TreeItem::Coupler::bind_interface("", &WebPage::Coupler::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                , std::move(TreeItem::Coupler::activate_interface("", &WebPage::Coupler::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
             );
             //            new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this));
             assert(_binder->integrity_external(result_item, this));   // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
             assert(result_item->binder()->integrity_external(result_item, this));  // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
             return result_coupler;
         };
+
+        if(_binder)on_close_requested();
 
         if(result->binder()) {
             if(!result->binder()->integrity_external(result, this)) {
@@ -1889,7 +1891,7 @@ namespace browser {
 
         if(_binder) {
             _binder->item()->binder() = nullptr;
-            _binder->break_linked_items();   // item_break(_binder->item_link());  // break_items();
+            // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
             _binder.reset();
         }
     }
@@ -2750,7 +2752,7 @@ namespace browser {
     //        show();
     //    }
 
-    WebPage::coupler::coupler(boost::intrusive_ptr<TreeItem> item_, WebPage *page_)  // , bool make_current = true
+    WebPage::Coupler::Coupler(boost::intrusive_ptr<TreeItem> item_, WebPage *page_)  // , bool make_current = true
         : // std::enable_shared_from_this<Coupler>()
           _item(item_)
         , _page(page_)                     // , _make_current(make_current)
@@ -2759,7 +2761,7 @@ namespace browser {
         //        _bounded_item->record_binder(_bounded_page->record_binder());
     }
 
-    WebView *WebPage::coupler::bind(/*boost::intrusive_ptr<TreeItem> item*/)
+    WebView *WebPage::Coupler::bind(/*boost::intrusive_ptr<TreeItem> item*/)
     {
         assert(_page);
         //        //                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
@@ -2806,7 +2808,7 @@ namespace browser {
         return view;  // _the->load(record, _make_current);
     }
 
-    WebPage::coupler::~coupler()
+    WebPage::Coupler::~Coupler()
     {
         //        if(_bounded_item && _bounded_page) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
         //            if(_bounded_page->record_binder() && _bounded_item->record_binder())
@@ -2817,7 +2819,7 @@ namespace browser {
         //        _bounded_item->record_binder().reset();
     }
 
-    WebView *WebPage::coupler::activator(
+    WebView *WebPage::Coupler::activator(
         // boost::intrusive_ptr<TreeItem> item
     )
     {

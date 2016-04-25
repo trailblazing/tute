@@ -4915,12 +4915,12 @@ boost::intrusive_ptr<TreeItem> TreeScreen::item_register(//        std::function
     //    assert(browser_pages);
 
     //    if(browser_pages) {
-    auto v = globalparameters.entrance()->find(check_euqal);
+    auto view = globalparameters.entrance()->find(check_euqal);
 
     boost::intrusive_ptr<TreeItem> in_browser;
 
-    if(v) {
-        in_browser = v->page()->binder()->item();
+    if(view) {
+        in_browser = view->page()->binder()->item();
         assert(check_euqal(in_browser));   // assert(_result->url<url_type>() == url_type()(_find_url));
     }
 
@@ -5276,12 +5276,12 @@ boost::intrusive_ptr<TreeItem> TreeScreen::item_register(
         //    assert(browser_pages);
 
         //    if(_source_model->count() > 0) {
-        auto v = globalparameters.entrance()->find(check_euqal);
+        auto view = globalparameters.entrance()->find(check_euqal);
 
         boost::intrusive_ptr<TreeItem> in_browser;
 
-        if(v) {
-            in_browser = v->page()->binder()->item();
+        if(view) {
+            in_browser = view->page()->binder()->item();
             assert(check_euqal(in_browser));   // assert(_result->url() == item->url());
             // assert(_result->fragment() == item->fragment());
         }

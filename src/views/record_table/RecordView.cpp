@@ -532,10 +532,42 @@ void RecordView::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture)
 // Реакция на нажатие кнопок мышки
 void RecordView::mousePressEvent(QMouseEvent *event)
 {
+
+    TreeScreen *_tree_screen = globalparameters.tree_screen();  // static_cast<TreeScreen *>(this->parent());
+    // get the buttons type
+    Qt::MouseButtons mouse_button = event->buttons();
+
     // Если нажата левая кнопка мыши
-    if(event->buttons() == Qt::LeftButton) {
+    if(mouse_button == Qt::LeftButton || mouse_button == Qt::RightButton) {
         _mouse_start_position = event->pos();
+        QModelIndex next_index = indexAt(event->pos());
+        selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
+        _tree_screen->tree_view()->select_as_current(next_index);
+
+    } else if(mouse_button == Qt::RightButton) {    // only the right mouse buton
+        _mouse_start_position = event->pos();
+        //select item at cursor position
+        //        QPersistentModelIndex
+        QModelIndex next_index = indexAt(event->pos());
+        selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);
+        selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
+        _tree_screen->tree_view()->select_as_current(next_index);
+
+
+
+        //        // start the context menu
+        //        QModelIndexList select_indexes(selectedIndexes());
+
+        //        if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
+        //            _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
+        //        }
+
     }
+
+    //    else {
+    //        //call the parents function
+    //        QTableView::mousePressEvent(event);
+    //    }
 
     QTableView::mousePressEvent(event);
 }
@@ -603,7 +635,7 @@ void RecordView::start_drag()
 ClipboardRecords *RecordView::get_selected_records(void)
 {
     // Получение списка Item-элементов, подлежащих копированию
-    QModelIndexList itemsForCopy = selectionModel()->selectedIndexes();
+    QModelIndexList indexes_for_copy = selectionModel()->selectedIndexes();
 
     // В списке должны остаться только элементы столбца 0
     // (так как ранее одна строка была одним элементом списка,
@@ -613,7 +645,7 @@ ClipboardRecords *RecordView::get_selected_records(void)
     // (As earlier one line was one element of the list,
     // And now uses a table, and a dedicated line
     // Select multiple items)
-    QMutableListIterator<QModelIndex> iterator(itemsForCopy);
+    QMutableListIterator<QModelIndex> iterator(indexes_for_copy);
 
     while(iterator.hasNext()) {
         iterator.next();
@@ -627,12 +659,12 @@ ClipboardRecords *RecordView::get_selected_records(void)
 
     // Список возвращается в произвольном порядке, не в таком как на экране
     // поэтому его нужно отсортировать по QModelIndex
-    qSort(itemsForCopy.begin(), itemsForCopy.end());
+    qSort(indexes_for_copy.begin(), indexes_for_copy.end());
 
     qDebug() << "Get selected records";
 
-    for(int i = 0; i < itemsForCopy.size(); ++i)
-        qDebug() << itemsForCopy.at(i).data().toString();
+    for(int i = 0; i < indexes_for_copy.size(); ++i)
+        qDebug() << indexes_for_copy.at(i).data().toString();
 
 
     // Объект с данными для заполнения буфера обмена
@@ -640,7 +672,7 @@ ClipboardRecords *RecordView::get_selected_records(void)
     clipboardRecords->clear();
 
     // Объект заполняется выбранными записями
-    _record_controller->add_items_to_clipboard(clipboardRecords, itemsForCopy);
+    _record_controller->add_items_to_clipboard(clipboardRecords, indexes_for_copy);
 
     return clipboardRecords;
 }

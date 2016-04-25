@@ -301,19 +301,19 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 
     // Если запрашивается текст строки для отрисовки или для редактирования
     if(role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE) {
-        QStringList showFields = appconfig.record_table_show_fields();
+        QStringList show_fields = appconfig.record_table_show_fields();
 
         // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
-        if(index.column() < showFields.size()) {
-            QString fieldName = showFields.value(index.column());
+        if(index.column() < show_fields.size()) {
+            QString field_name = show_fields.value(index.column());
 
-            QString field = item(index.row())->field(fieldName);
+            QString field = item(index.row())->field(field_name);
 
 
             // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
             // Преобразование возможно только для отображаемой в таблице информации
 
-            if(role == Qt::DisplayRole && fieldName == "ctime") {
+            if(role == Qt::DisplayRole && field_name == "ctime") {
                 // Преобразование временного штампа в дату и время
                 QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
 
@@ -321,12 +321,12 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
                     return fieldDateTime.toString(Qt::SystemLocaleDate);
                 else
                     return fieldDateTime.toString(appconfig.custom_datetime_format());
-            } else if(role == Qt::DisplayRole && fieldName == "hasAttach") { // Наличие аттачей
+            } else if(role == Qt::DisplayRole && field_name == "hasAttach") { // Наличие аттачей
                 if(field == "0")
                     return ""; // Если аттачей нет, выводится пустая строка. Это повышает читабельность
                 else
                     return tr("Yes"); // На русский перевести как "Есть"
-            } else if(role == Qt::DisplayRole && fieldName == "attachCount") { // Количество аттачей
+            } else if(role == Qt::DisplayRole && field_name == "attachCount") { // Количество аттачей
                 if(field == "0")
                     return ""; // Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
                 else

@@ -824,9 +824,9 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
     int pos = modelindex.sibling_order();
 
     boost::intrusive_ptr<TreeItem> result(source_item);    // 1-1
-    auto old_source_parent = source_item->parent();
-
-    auto old_source_parent_index = index(old_source_parent);
+    auto original_parent = source_item->parent();
+    assert(original_parent);
+    auto original_parent_index = index(original_parent);
 
     if(!(source_item->parent() == parent && parent->contains_direct(std::forward<const boost::intrusive_ptr<TreeItem::Linker>>(source_item->linker())))) {
         auto _index_parent = index(parent);
@@ -841,16 +841,16 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
             bool remove_result = false;
 
             if(_index_origin.isValid()) {
-                auto parent = source_item->parent();
-                assert(parent);
+                // auto original_parent = source_item->parent();
+
                 int sibling_order = -1;
 
-                if(parent) {
-                    sibling_order = parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item;});
+                if(original_parent) {
+                    sibling_order = original_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item;});
                     assert(_index_origin.row() == sibling_order);
 
                     beginRemoveRows(_index_parent, _index_origin.row(), _index_origin.row());
-                    remove_result |= parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == parent;}); // model_remove(_source_item->up_linker());
+                    remove_result |= original_parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent;}); // model_remove(_source_item->up_linker());
 
                     update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
                     static_cast<KnowView *>(static_cast<QObject *>(this)->parent())->update(_index_origin.parent());
@@ -867,6 +867,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
             //            }
 
             //            assert(!deleted_linker);  // means always doed not work!? no, eg. _source_item->parent() == nullptr, so some time it is nullptr, not always
+            assert(remove_result);
         }
 
 
@@ -887,8 +888,8 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
 
             update_index(_index_parent);
 
-            if(old_source_parent_index.isValid())
-                update_index(old_source_parent_index);
+            if(original_parent_index.isValid())
+                update_index(original_parent_index);
 
             endInsertRows();
         } else {    // should not use

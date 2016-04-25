@@ -375,98 +375,123 @@ void KnowView::dropEvent(QDropEvent *event)
         qDebug() << "Try move record by drag and drop";
 
         // Извлечение объекта
-        const ClipboardRecords *clipboardRecords;
-        clipboardRecords = qobject_cast<const ClipboardRecords *>(event->mimeData());
+        const ClipboardRecords *clipboard_records;
+        clipboard_records = qobject_cast<const ClipboardRecords *>(event->mimeData());
 
         // Печать в консоль содержимого перетаскиваемого объекта (для отладки)
-        clipboardRecords->print();
+        clipboard_records->print();
 
         // Выясняется элемент дерева, над которым был сделан Drop
-        QModelIndex index = indexAt(event->pos());
+        QModelIndex index_to = indexAt(event->pos());
 
         // Если отпускание мышки произошло не на ветке дерева, а на свободном пустом месте в области виджета дерева
-        if(!index.isValid())
+        if(!index_to.isValid())
             return;
 
         // Указатель на родительский элемент
         TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
 
         // Выясняется ссылка на элемент дерева (на ветку), над которым был совершен Drop
-        auto tree_item_drop = _know_root->item(index);
+        auto tree_item_drop = _know_root->item(index_to);
 
         //        // Выясняется ссылка на таблицу данных ветки, над которой совершен Drop
         //        auto tree_item_drop = tree_item_drop;    // ->record_table();
 
-        // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
-        QModelIndex indexFrom = current_index(); // selectionModel()->currentIndex();    // find_object<TreeScreen>(tree_screen_singleton_name)
-        // static_cast<TreeScreen *>(this->parent())->view_index();
 
-        // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
-        auto treeItemDrag = _know_root->item(indexFrom);
+        auto check_crypt = [&](boost::intrusive_ptr<TreeItem> tree_item_drag)->bool {
+            bool result = true;
+            //            // Исходная ветка в момент Drop (откуда переностся запись) - это выделенная курсором ветка
+            //            QModelIndex index_from = _know_root->index(tree_item_drag);   // current_index(); // selectionModel()->currentIndex();    // find_object<TreeScreen>(tree_screen_singleton_name)
 
-        // Если перенос происходит в ту же самую ветку
-        if(indexFrom == index)
-            return;
+            //            //            // Выясняется ссылка на элемент дерева (на ветку), откуда переностся запись
+            //            //            auto tree_item_drag = _know_root->item(index_from);
 
-        // Если перенос происходит из не зашифрованной ветки в зашифрованную, а пароль не установлен
-        if(treeItemDrag->field("crypt") != "1" &&
-           tree_item_drop->field("crypt") == "1" &&
-           globalparameters.crypt_key().length() == 0) {
-            // Выводится уведомление что невозможен перенос без пароля
-            QMessageBox msgBox;
-            msgBox.setWindowTitle(tr("Warning!"));
-            msgBox.setText(tr("Cant move this item to encrypt item. Please open crypt item (entry password) before."));
-            msgBox.setIcon(QMessageBox::Information);
-            msgBox.exec();
+            // Если перенос происходит в ту же самую ветку
+            if(tree_item_drag != tree_item_drop)
+            {
+                // Если перенос происходит из не зашифрованной ветки в зашифрованную, а пароль не установлен
+                if(tree_item_drag->field("crypt") != "1" &&
+                tree_item_drop->field("crypt") == "1" &&
+                globalparameters.crypt_key().length() == 0) {
+                    // Выводится уведомление что невозможен перенос без пароля
+                    QMessageBox msgBox;
+                    msgBox.setWindowTitle(tr("Warning!"));
+                    msgBox.setText(tr("Can\'t move this item to encrypt item. Please open crypt item (entry password) before."));
+                    msgBox.setIcon(QMessageBox::Information);
+                    msgBox.exec();
 
-            return;
-        }
+                    result = false;
+                }
+            } else{result = false;}
 
+            return result;
+        };
 
         // Перенос записей, хранящихся в MimeData
         // В настоящий момент в MimeData попадает только одна запись,
         // но в дальнейшем планируется переносить несколько записей
         // и здесь код подготовлен для переноса нескольких записей
-        RecordController *_record_controller = treeItemDrag->page()->record_controller(); // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
-        browser::TabWidget *_tabmanager = treeItemDrag->page()->view()->tabmanager();
 
-        for(int i = 0; i < clipboardRecords->size(); i++) {
+        int worked = 0;
+
+        for(int i = 0; i < clipboard_records->size(); i++) {
             // Полные данные записи
-            boost::intrusive_ptr<TreeItem> record = clipboardRecords->record(i);
+            boost::intrusive_ptr<TreeItem> tree_item_drag = clipboard_records->record(i);
 
-            // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
-            // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
-            // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-            if(record->binder())
-                _tabmanager->closeTab(_tabmanager->indexOf(record->page()->view()));    // _record_controller->remove_child(record->field("id"));
+            auto item_on_tree = _know_root->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == tree_item_drag->id(); });
+            assert(item_on_tree);
 
-            // Если таблица конечных записей после удаления перемещенной записи стала пустой
-            if(_record_controller->row_count() == 0) {
-                //                find_object<MetaEditor>(meta_editor_singleton_name)
-                globalparameters.meta_editor()->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+            if(item_on_tree)tree_item_drag = item_on_tree;
+
+            RecordController *_record_controller = tree_item_drag->page()->record_controller();  // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
+
+            browser::TabWidget *_tabmanager = tree_item_drag->page()->view()->tabmanager();
+
+            if(check_crypt(tree_item_drag)) {
+                // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
+                // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
+                // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
+                if(tree_item_drag->binder())
+                    _tabmanager->closeTab(_tabmanager->indexOf(tree_item_drag->page()->view()));    // _record_controller->remove_child(record->field("id"));
+
+                // Если таблица конечных записей после удаления перемещенной записи стала пустой
+                if(_record_controller->row_count() == 0) {
+                    //                find_object<MetaEditor>(meta_editor_singleton_name)
+                    globalparameters.meta_editor()->clear_all(); // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+                }
+
+                //            find_object<RecordScreen>(table_screen_singleton_name)
+                _record_controller->record_screen()->tools_update();
+
+                // Добавление записи в базу
+                _know_root->model_move_as_child(TreeModel::ModelIndex([&]() {return _know_root;}, tree_item_drop, 0), tree_item_drag); // tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
+
+                QModelIndex index_from = _know_root->index(tree_item_drag);
+                // Обновление исходной ветки чтобы было видно что записей убавилось
+                _know_root->update_index(index_from);
+
+                update(index_from.parent());
+
+                // Сохранение дерева веток
+                //            find_object<TreeScreen>(tree_screen_singleton_name)
+                worked++;
             }
-
-            //            find_object<RecordScreen>(table_screen_singleton_name)
-            _record_controller->record_screen()->tools_update();
-
-            // Добавление записи в базу
-            _know_root->model_move_as_child(TreeModel::ModelIndex([&]() {return _know_root;}, tree_item_drop, 0), record); // tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
-
-            // Сохранение дерева веток
-            //            find_object<TreeScreen>(tree_screen_singleton_name)
-            static_cast<TreeScreen *>(this->parent())->know_model_save();
         }
 
-        // Обновление исходной ветки чтобы было видно что записей убавилось
-        _know_root->update_index(indexFrom);
+        if(worked > 0) {
+            static_cast<TreeScreen *>(this->parent())->know_model_save();
 
-        // Обновлении конечной ветки чтобы было видно что записей прибавилось
-        _know_root->update_index(index);
 
-        // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
-        _know_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+            // Обновлении конечной ветки чтобы было видно что записей прибавилось
+            _know_root->update_index(index_to);
 
-        _tree_screen->synchronized(false);
+            update(index_to);
+
+            // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
+            _know_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+
+            _tree_screen->synchronized(false);
+        }
     }
 }
 

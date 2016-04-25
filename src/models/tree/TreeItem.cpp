@@ -494,7 +494,7 @@ void TreeItem::isolate(void)
 
     //    //    //    }
 
-    if(_linker)_linker->break_linker();
+    if(_linker)_linker->remove();
 }
 
 
@@ -3325,7 +3325,7 @@ void TreeItem::page_break()
         //            _binder->page_link() = nullptr;
         //        }
         _binder->page()->binder() = std::move(boost::intrusive_ptr<TreeItem::Coupler> (nullptr));
-        _binder->break_linked_items();
+        // _binder->break_page();
         _binder.reset();
         //        _activator.reset();
 
@@ -3597,14 +3597,16 @@ bool TreeItem::Coupler::integrity_external(boost::intrusive_ptr<const TreeItem> 
     //        (*std::get<0>(*_state))() && (*std::get<1>(*_state))() && (*std::get<2>(*_state))() && (*std::get<3>(*_state))() && (*std::get<4>(*_state))() && (*std::get<5>(*_state))() && (*std::get<6>(*_state))(host) && (*std::get<7>(*_state))(page) && (*std::get<8>(*_state))(host) && (*std::get<9>(*_state))(page);
 }
 
-void TreeItem::Coupler::break_linked_items()
-{
-    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it    //
-    if(item())item().reset();   // if(item_link() && item_link()->binder())item_link()->binder().reset();
 
-    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it   //
-    if(page())page() = nullptr; // if(page_link() && page_link()->binder())page_link()->binder().reset();
-}
+// RecordModel::data need the internal data before this binder reseted
+//void TreeItem::Coupler::break_page()
+//{
+//    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it    //
+//    // if(item())item().reset();   // if(item_link() && item_link()->binder())item_link()->binder().reset();
+
+//    // I want to reuse it for tab refill? RecordModel::date RecordModel::item need it   //
+//    if(page())page() = nullptr; // if(page_link() && page_link()->binder())page_link()->binder().reset();
+//}
 
 
 

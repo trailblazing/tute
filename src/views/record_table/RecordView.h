@@ -120,4 +120,4 @@ private:
     friend class VerticalScrollArea;
 };
 
-#endif /* RECORDLISTSCREEN_H_ */
+#endif // RECORDLISTSCREEN_H_

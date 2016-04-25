@@ -994,14 +994,17 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive
 bool ItemsFlat::remove(const std::function<bool(boost::intrusive_ptr<TreeItem::Linker>)> &_equal)
 {
     bool result = false;
-    QMutableListIterator<boost::intrusive_ptr<TreeItem::Linker> > it(_child_linkers);
+    //    QMutableListIterator<boost::intrusive_ptr<TreeItem::Linker> > it(_child_linkers);
 
-    while(it.hasNext()) {
-        auto _it = it.next();
+    for(auto &_it : _child_linkers) { // while(it.hasNext()) {
+        // auto _it = it.next();
 
         if(_equal(_it)) {
+            // _it->break_linker();    // recursive calling removeOne!!!
             result |= _child_linkers.removeOne(_it);
             assert(result);
+
+            // if(_it->integrity_internal())
             _it.reset();
         }
     }
@@ -1120,6 +1123,13 @@ boost::intrusive_ptr<TreeItem::Linker> ItemsFlat::delete_permanent_recursive(boo
 
             if(it->id() == _to_be_removed_linker->host()->id()) { //_child_items.removeAt(position);    // _child_items.takeAt(position).reset(); // delete _child_items.takeAt(position);
 
+                // auto it = it_linker->host();
+
+                if(it && it->count_direct() > 0) {
+                    for(auto &il : it->_child_linkers) {
+                        it->delete_permanent_recursive(il);
+                    }
+                }
 
                 // Удаление директории и файлов внутри, с сохранением в резервной директории
                 QString dir_for_delete = appconfig.tetra_dir() + "/base/" + it->field("dir") // field(i, "dir")
@@ -1147,8 +1157,14 @@ boost::intrusive_ptr<TreeItem::Linker> ItemsFlat::delete_permanent_recursive(boo
                 // Удаляется элемент
                 _child_linkers.removeOne(it_linker); //removeAt(i); // Было takeAt
 
-                if(it->binder())it->binder()->break_linked_items();  // it->page_break();
 
+
+                if(it->binder()) {
+                    auto page = it->binder()->page();
+                    auto tab_manager = page->tabmanager();
+                    tab_manager->closeTab(tab_manager->webViewIndex(page->view()));
+                    //                    it->binder()->page()->on_close_requested(); // it->binder()->break_page();  // it->page_break();
+                }
 
 
 
@@ -1168,13 +1184,7 @@ boost::intrusive_ptr<TreeItem::Linker> ItemsFlat::delete_permanent_recursive(boo
                 //                    //                    _to_be_removed_linker->host()->remove_and_delete();
                 //                }
 
-                auto it_linker_host = it_linker->host();
 
-                if(it_linker_host && it_linker_host->count_direct() > 0) {
-                    for(auto &il : it_linker_host->_child_linkers) {
-                        it_linker_host->delete_permanent_recursive(il);
-                    }
-                }
 
                 it_linker.reset();
                 result = it_linker;
@@ -2058,7 +2068,7 @@ boost::intrusive_ptr<ItemsFlat::Linker> ItemsFlat::Linker::parent(boost::intrusi
     return result;
 }
 
-void ItemsFlat::Linker::break_linker()
+void ItemsFlat::Linker::remove()
 {
     //    if(_host_parent->up_linker())_host_parent->up_linker(nullptr);    // pretty wrong semantic!
     _host->dangle();

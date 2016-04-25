@@ -78,7 +78,7 @@ public:
 
         int move_up(void);
         int move_dn(void);
-        void break_linker();
+        void remove();
 
         bool integrity_internal()const;
         bool integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_)const;

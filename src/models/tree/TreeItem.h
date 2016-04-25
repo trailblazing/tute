@@ -149,7 +149,7 @@ public:
 
         bool integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page)const;
         status_type state()const {return _status;}
-        void break_linked_items();
+        //        void break_page();
     private:
         status_type state_impl();   // is_closure
         //        bool integrity();

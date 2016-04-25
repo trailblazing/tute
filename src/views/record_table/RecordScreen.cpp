@@ -206,8 +206,7 @@ void RecordScreen::setup_actions(void)
     _save_in_new_branch->setIcon(QIcon(":/resource/pic/trace.svg"));
 
     connect(_save_in_new_branch, &QAction::triggered, this
-            , //&RecordScreen::save_in_new_branch
-    [&](bool checked = false) {
+    , [&](bool checked = false) { // &RecordScreen::save_in_new_branch
         Q_UNUSED(checked)
 
         TreeScreen *_tree_screen = globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);

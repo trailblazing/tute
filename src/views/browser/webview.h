@@ -176,7 +176,7 @@ namespace browser {
         boost::intrusive_ptr<TreeItem> item()const; // {return _record_binder->bounded_item();}
         WebPage *page()const;
 
-        struct coupler : public std::enable_shared_from_this<coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>    //
+        struct Coupler : public std::enable_shared_from_this<Coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>    //
         private:
             //            WebPage *_bounded_page;
 
@@ -185,10 +185,10 @@ namespace browser {
 
             //            bool _make_current;
         public:
-            coupler(boost::intrusive_ptr<TreeItem>  item_, WebPage *page_);  // , bool make_current = true
+            Coupler(boost::intrusive_ptr<TreeItem>  item_, WebPage *page_);  // , bool make_current = true
             // : _bounded_page(_page);            // , _make_current(make_current)
             // {}
-            ~coupler();
+            ~Coupler();
             boost::intrusive_ptr<TreeItem> &item() {return _item;}
             WebPage *&page() {return _page;}
             WebView *bind(); // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
@@ -218,6 +218,10 @@ namespace browser {
         const boost::intrusive_ptr<TreeItem::Coupler> &&binder()const;
         void binder(boost::intrusive_ptr<TreeItem::Coupler> &&binder_);
 
+
+
+
+
     protected:
         //        void setUrl(const QUrl &url);
 
@@ -231,6 +235,9 @@ namespace browser {
         void update_record(const QUrl &url, const QString &title);
         void update_record_view(boost::intrusive_ptr<TreeItem> item);
         void item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item);
+        void on_close_requested();
+
+
 
     private slots:
 
@@ -243,10 +250,9 @@ namespace browser {
         void onUrlChanged(const QUrl &url);
         void onTitleChanged(const QString &title);
 
-        void on_close_requested();
+
     private:
-        friend class WebView;
-        friend class Record;
+
         TreeScreen              *_tree_screen;
         MetaEditor              *_editor_screen;
         Entrance                *_entrance;
@@ -286,6 +292,11 @@ namespace browser {
         //        friend boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page);
 
         //        friend bool TreeItem::is_holder();
+
+        friend class TabWidget;
+        friend class WebView;
+        friend class Record;
+
     };
 
 #ifdef USE_POPUP_WINDOW

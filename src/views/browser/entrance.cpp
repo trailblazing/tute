@@ -1266,6 +1266,7 @@ namespace browser {
             vtab->setCurrentWidget(_browser->record_screen());
         }
 
+        assert(result->binder()->integrity_external(result, _view->page()));
         return result; // _view;
     }
 

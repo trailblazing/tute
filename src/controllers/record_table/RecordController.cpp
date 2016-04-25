@@ -127,7 +127,8 @@ void RecordController::item_click(const QModelIndex &index)
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
     select_pos(sourcepos_to_proxypos(source_pos));  // ?
-
+    auto _tree_screen = globalparameters.tree_screen();
+    _tree_screen->tree_view()->select_as_current(source_model()->item(source_pos));
     _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);

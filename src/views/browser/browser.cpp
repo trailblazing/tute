@@ -1017,7 +1017,7 @@ namespace browser {
         //_historyback = findscreen->historyback();
 
         _historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
-                              ); //this
+                             ); //this
 
         _historybackmenu = new QMenu(this);
         _historyback->setMenu(_historybackmenu);
@@ -1027,7 +1027,7 @@ namespace browser {
         //navigater->addAction(_historyback);
 
         _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
-                                 ); //this
+                                ); //this
 
         _historyforwardmenu = new QMenu(this);
         connect(_historyforwardmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowForwardMenu);
@@ -1682,12 +1682,15 @@ namespace browser {
 
             //            tab->setCurrentWidget(dp.second);   // tab->setCurrentIndex(tab->webViewIndex(dp.second));
             //            dp.second->show();
+        } else {
+            result = view->page()->item();
         }
 
         //        tab->setCurrentWidget(dp.second);
         //        dp.second->show();
         //        assert(dp.first);
         assert(view);
+        assert(result->binder()->integrity_external(result, view->page()));
         return result;  //_mainWindows[0];
     }
 
