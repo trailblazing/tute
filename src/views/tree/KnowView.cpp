@@ -1974,7 +1974,7 @@ void KnowView::view_paste_children_from_clipboard(TreeModel::ModelIndex _sibling
 
             // Установка курсора на новую созданную ветку
             auto pasted_branch_item = _current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == pasted_branch_id;});
-            QStringList pasted_branch_path = pasted_branch_item->path_absolute();
+            QStringList pasted_branch_path = pasted_branch_item->path_list();
             //    find_object<MainWindow>("mainwindow")
             globalparameters.mainwindow()->set_tree_position(source_model()->root_item()->id(), pasted_branch_path);
 
@@ -2320,7 +2320,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> KnowView::view_delete_permanent(
                 }
 
                 // Проверяется наличие флага шифрования у всех подветок
-                QList<QStringList> cryptFlagsList = it->path_children_all_as_field("crypt");
+                QList<QStringList> cryptFlagsList = it->path_children_all("crypt");
 
                 foreach(QStringList cryptFlags, cryptFlagsList) {
                     if(cryptFlags.contains("1")) {
@@ -2452,8 +2452,8 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> KnowView::view_delete_permanent(
                     // Индексы с длинным путем перемещаются в начало списка
                     for(int i = 0; i < items_candidate.size(); i++) {
                         for(int j = items_candidate.size() - 1; j > i; j--) {
-                            QStringList path_1 = items_candidate.at(j - 1)->path_absolute();//(_current_model()->item(  // ))
-                            QStringList path_2 = items_candidate.at(j)->path_absolute();    //(_current_model()->item(  // ))
+                            QStringList path_1 = items_candidate.at(j - 1)->path_list();//(_current_model()->item(  // ))
+                            QStringList path_2 = items_candidate.at(j)->path_list();    //(_current_model()->item(  // ))
 
                             if(path_1.size() < path_2.size()) items_candidate.swap(j - 1, j);
                         }
@@ -2462,7 +2462,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> KnowView::view_delete_permanent(
                     qDebug() << "Path for delete";
 
                     for(int i = 0; i < items_candidate.size(); ++i)
-                        qDebug() << items_candidate.at(i)->path_absolute(); //(_current_model()->item(  //))
+                        qDebug() << items_candidate.at(i)->path_list(); //(_current_model()->item(  //))
 
                     // auto _source_model = source_model();
                     //_source_model->beginRemoveRows(_index_common_parent, _index_list.first().row(), _index_list.last().row());
@@ -3291,7 +3291,7 @@ void KnowView::cursor_step_into(const QModelIndex &_index)
             // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
             if(appconfig.interface_mode() == "mobile") {
 
-                QStringList path = selected_item->path_absolute_as_name();
+                QStringList path = selected_item->path_list("name");
 
                 // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
                 int emptyStringIndex = path.indexOf("");
@@ -3484,7 +3484,7 @@ void KnowView::index_invoke(const QModelIndex &_index)
                 // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
                 if(appconfig.interface_mode() == "mobile") {
 
-                    QStringList path = result_item->path_absolute_as_name();
+                    QStringList path = result_item->path_list("name");
 
                     // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
                     int emptyStringIndex = path.indexOf("");
@@ -3630,7 +3630,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up_one_level(void)
     auto root_item      = current_model()->root_item();
 
 
-    if(_current_item->parent() && _current_item->parent() != root_item && _current_item->parent()->path_absolute().size() > root_item->path_absolute().size()) {
+    if(_current_item->parent() && _current_item->parent() != root_item && _current_item->parent()->path_list().size() > root_item->path_list().size()) {
         select_as_current(_current_item->parent());
     } else if(_current_item->parent() == root_item) {
         auto _root_up = root_item->parent();
@@ -3647,7 +3647,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up_one_level(void)
             // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
             if(appconfig.interface_mode() == "mobile") {
 
-                QStringList path = _root_up->path_absolute_as_name();
+                QStringList path = _root_up->path_list("name");
 
                 // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
                 int emptyStringIndex = path.indexOf("");

@@ -2062,6 +2062,7 @@ boost::intrusive_ptr<ItemsFlat::Linker> ItemsFlat::Linker::parent(boost::intrusi
             //        _host_parent = new_host_parent;
             assert(integrity());
             assert(integrity_external(this->_host, _host_parent));
+            assert(pos == _host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _host->linker() && il->host() == _host;}));
         }
     }
 

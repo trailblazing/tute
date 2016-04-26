@@ -659,13 +659,13 @@ void MainWindow::save_tree_position(void)
         // Сохраняем путь к элементу item
         appconfig.tree_position(
             _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
-            , item->path_absolute()
+            , item->path_list()
         );
         //    }
     } else if(current_item) {
         appconfig.tree_position(
             _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
-            , current_item->path_absolute()
+            , current_item->path_list()
         );
     }
 }

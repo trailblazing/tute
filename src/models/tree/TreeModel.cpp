@@ -46,9 +46,9 @@ int TreeModel::columnCount(const QModelIndex &parent) const
     int result = 1;
 
     if(parent.isValid()) {
-        result = static_cast<TreeItem *>(parent.internalPointer())->path_absolute().size();
+        result = static_cast<TreeItem *>(parent.internalPointer())->path_list().size();
     } else {
-        result = _root_item->path_absolute().size();
+        result = _root_item->path_list().size();
     }
 
     return result;
@@ -468,10 +468,10 @@ void TreeModel::update_index(const QModelIndex &_index)
         auto _item = item(_index);
 
         // Перебираются подветки
-        QList<QStringList> updatePathts = _item->path_children_all();
+        QList<QStringList> update_pathts = _item->path_children_all();
 
-        foreach(QStringList currentPath, updatePathts) {
-            auto current_item = item(currentPath);
+        foreach(QStringList current_path, update_pathts) {
+            auto current_item = item(current_path);
 
             QModelIndex _current_index = index(current_item);
 

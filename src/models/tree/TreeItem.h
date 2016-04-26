@@ -3,7 +3,6 @@
 
 
 #include <memory>
-//#include <map>
 #include <QList>
 #include <QVariant>
 #include <QVector>
@@ -343,22 +342,21 @@ public:
     int move_dn(void);
     void move_up(int pos) {ItemsFlat::move_up(pos);}
     void move_dn(int pos) {ItemsFlat::move_dn(pos);}
-    // Возвращает id путь (список идентификаторов от корня до текущего элемента)
-    QStringList path_absolute(void) const;
+    //    // Возвращает id путь (список идентификаторов от корня до текущего элемента)
+    //    QStringList path_absolute(void) const;
 
     // Возвращает путь в виде названий веток дерева
-    QStringList path_absolute_as_name(void)const;
+    QStringList path_list(QString field_name = "id")const;
 
-    QString path_absolute_as_name_with_delimiter(QString delimeter) const;
+    QString path_string(QString field_name, QString delimeter) const;
 
-    // Возвращает набор значений указанного поля для пути от корня к ветке
-    QStringList path_absolute_as_field(QString field_name)const;
 
-    // Возвращает массив путей всех подветок, которые содержит ветка
-    QList<QStringList> path_children_all(void) const;
+
+    //    // Возвращает массив путей всех подветок, которые содержит ветка
+    //    QList<QStringList> path_children_all(void) const;
 
     // Возвращает набор значений указанного поля для подветок
-    QList<QStringList> path_children_all_as_field(QString fieldName)const;
+    QList<QStringList> path_children_all(QString field_name = "id")const;
 
     // Получение идентификатора элемента
     QString id() const;
@@ -465,8 +463,11 @@ private:
 
     void isolate(void);
 
-    // QList<QStringList> get_all_children_path_recurse(TreeItem *item,int mode);
-    QList<QStringList> path_children_all_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)const;
+    //    // Возвращает набор значений указанного поля для пути от корня к ветке
+    //    std::function<QStringList(QString field_name)> path_absolute_as_field;     // std::function<QStringList (QString field_name)const>
+
+    //    QList<QStringList> get_all_children_path_recurse(TreeItem *item, int mode);
+    //    std::function<QList<QStringList> (boost::intrusive_ptr<const TreeItem> item, QString field_name, int mode)> path_children_all_as_field_impl;    // std::function<QList<QStringList> (boost::intrusive_ptr<const TreeItem> item, QString field_name, int mode)const>
 
     //    bool is_field_name_available(QString name) const;
     //    QStringList field_name_available_list(void) const;

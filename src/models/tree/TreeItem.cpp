@@ -116,6 +116,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _host_parent
         }
     }
 })
+
 , _linker([ & ]() {/*_up_linker = nullptr;*/ return new TreeItem::Linker(_host_parent, this);}())    // , pos, mode
 {
     assert(_linker->host().get() == this);
@@ -599,7 +600,7 @@ QString TreeItem::field(QString _name)const
 // Получение всех установленных полей "имя_поля"->"значение"
 QMap<QString, QString> TreeItem::fields_all()
 {
-    qDebug() << "TreeItem::getAllFields() : Fields data " << _field_data;
+    qDebug() << "TreeItem::fields_all() : Fields data " << _field_data;
 
     QMap<QString, QString> result;
 
@@ -2162,43 +2163,25 @@ int TreeItem::move_dn(void)
 }
 
 
-// Путь к элементу (список идентификаторов от корня до текущего элемента)
-QStringList TreeItem::path_absolute(void)const
-{
-    return path_absolute_as_field("id");
-}
+//// Путь к элементу (список идентификаторов от корня до текущего элемента)
+//QStringList TreeItem::path_absolute(void)const
+//{
+//    return path_absolute_as_field("id");
+//}
 
 
 // Путь к элементу (в виде списка названий веток)
-QStringList TreeItem::path_absolute_as_name(void)const
+QStringList TreeItem::path_list(QString field_name)const
 {
-    return path_absolute_as_field("name");
-}
 
-
-// Путь к элементу в виде строки, разделенной указанным разделителем
-QString TreeItem::path_absolute_as_name_with_delimiter(QString delimeter)const
-{
-    QStringList path = path_absolute_as_name();
-
-    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
-    int emptyStringIndex = path.indexOf("");
-    path.removeAt(emptyStringIndex);
-
-    return path.join(delimeter);
-}
-
-
-QStringList TreeItem::path_absolute_as_field(QString field_name)const
-{
+    //    auto path_absolute_as_field = [&](QString field_name)->QStringList { // const
     QStringList path;
-    boost::intrusive_ptr<TreeItem> current_item =
-        boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-        ;
+    boost::intrusive_ptr<const TreeItem> current_item(this);   // = boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
+
 
     path << current_item->field(field_name);
 
-    while(current_item->parent() != nullptr) {
+    while(current_item->parent()) { //  != nullptr
         current_item = current_item->parent();
         path << current_item->field(field_name);
     }
@@ -2210,27 +2193,41 @@ QStringList TreeItem::path_absolute_as_field(QString field_name)const
     for(int i = 0; i < j; ++i)path.swap(i, k - i);
 
     return path;
+    //    };
+    //    return path_absolute_as_field(field_name);  // "id", "name"
 }
 
 
-// Возвращает массив путей всех подветок, которые содержит ветка
-QList<QStringList> TreeItem::path_children_all(void)const
+// Путь к элементу в виде строки, разделенной указанным разделителем
+QString TreeItem::path_string(QString field_name, QString delimeter)const
 {
-    // Очищение списка путей
-    path_children_all_as_field(
-        boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-        , "", 0);
+    QStringList path = path_list(field_name);   // "name"
 
-    // Получение списка путей
-    QList<QStringList> pathList = path_children_all_as_field(
-                                      boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this))   // shared_from_this()
-                                      , "id", 1);
+    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+    int emptyStringIndex = path.indexOf("");
+    path.removeAt(emptyStringIndex);
 
-    return pathList;
+    return path.join(delimeter);
 }
 
 
-QList<QStringList> TreeItem::path_children_all_as_field(QString fieldName) const
+
+
+
+//// Возвращает массив путей всех подветок, которые содержит ветка
+//QList<QStringList> TreeItem::path_children_all(void)const
+//{
+//    // Очищение списка путей
+//    path_children_all_as_field_impl(this, "", 0);    // const_cast<TreeItem *>(this)  // shared_from_this()
+
+//    // Получение списка путей
+//    QList<QStringList> path_list = path_children_all_as_field_impl(this, "id", 1);    // boost::intrusive_ptr<const TreeItem>(this)  // const_cast<TreeItem *>(this)   // shared_from_this()
+
+//    return path_list;
+//}
+
+
+QList<QStringList> TreeItem::path_children_all(QString field_name) const
 {
 
     //    std::function<QList<QStringList>(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)> all_children_path_as_field =
@@ -2258,11 +2255,39 @@ QList<QStringList> TreeItem::path_children_all_as_field(QString fieldName) const
     //    };
 
 
+
+    // Возвращает массив указанных полей всех подветок, которые содержит ветка
+    // Внутренняя рекурсивная функция
+    std::function<QList<QStringList> (boost::intrusive_ptr<const TreeItem> item, QString field_name, int mode)> path_children_all_as_field_impl
+    = [&](boost::intrusive_ptr<const TreeItem> item, QString field_name, int mode) ->QList<QStringList>  {  // const
+        static QList<QStringList> path_list;
+
+        // Если дана команда очистить список путей
+        if(mode == 0)
+        {
+            path_list.clear();
+            return QList<QStringList>();
+        }
+
+        for(int i = 0; i < item->count_direct(); i++)
+        {
+            auto it = item->item_direct(i);
+            QStringList path = it->path_list(field_name);
+            path_list << path;
+            path_children_all_as_field_impl(it, field_name, 1); // 2?
+        }
+
+        if(mode == 1)return path_list;
+        else return QList<QStringList>();
+    };
+
+
+
     // Очищение списка путей
-    path_children_all_as_field(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)), "", 0);
+    path_children_all_as_field_impl(this, "", 0);
 
     // Получение списка путей
-    QList<QStringList> pathList = path_children_all_as_field(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)), fieldName, 1);
+    QList<QStringList> pathList = path_children_all_as_field_impl(this, field_name, 1);
 
     return pathList;
 }
@@ -2292,29 +2317,6 @@ QList<QStringList> TreeItem::path_children_all_as_field(QString fieldName) const
 //}
 
 
-
-// Возвращает массив указанных полей всех подветок, которые содержит ветка
-// Внутренняя рекурсивная функция
-QList<QStringList> TreeItem::path_children_all_as_field(boost::intrusive_ptr<TreeItem> item, QString fieldName, int mode)const
-{
-    static QList<QStringList> pathList;
-
-    // Если дана команда очистить список путей
-    if(mode == 0) {
-        pathList.clear();
-        return QList<QStringList>();
-    }
-
-    for(int i = 0; i < (item->count_direct()); i++) {
-        auto it = item->item_direct(i);
-        QStringList path = it->path_absolute_as_field(fieldName);
-        pathList << path;
-        path_children_all_as_field(it, fieldName, 2);
-    }
-
-    if(mode == 1)return pathList;
-    else return QList<QStringList>();
-}
 
 
 // Переключение ветки и всех подветок в зашифрованное состояние
@@ -2971,7 +2973,7 @@ bool TreeItem::is_holder()const
 
 bool TreeItem::is_ancestor_of(boost::intrusive_ptr<const TreeItem> it) const
 {
-    return it->path_absolute().contains(this->id());
+    return it->path_list().contains(this->id());
 }
 
 //void TreeItem::binder(TreeItem::bind_helper g) {_binder = g;}
