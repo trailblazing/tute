@@ -650,7 +650,7 @@ namespace browser {
 
         //        //        _record->active_immediately(true);
 
-        auto it = _tree_screen->item_register(item, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+        auto it = _tree_screen->tree_view()->item_register(item, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         it = item_bind(it);
         //                      item
         //                      , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
@@ -830,7 +830,7 @@ namespace browser {
 
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
             assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-            auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_child, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3));
+            auto it = _tree_screen->tree_view()->item_register(QUrl(Browser::_defaulthome), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3));
             auto view = _browser->item_bind(it)->activate();
             //            _browser->tabmanager()->newTab(it);
             //            _browser->raise();
@@ -875,7 +875,7 @@ namespace browser {
                     //                return view->page();
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
                     assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-                    auto it = _tree_screen->item_register(QUrl(Browser::_defaulthome), std::bind(&TreeScreen::view_paste_child, _tree_screen, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3));
+                    auto it = _tree_screen->tree_view()->item_register(QUrl(Browser::_defaulthome), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3));
                     auto _view = view->page()->item_bind(it)->activate();
                     assert(_view == view);
 
@@ -892,9 +892,9 @@ namespace browser {
                     // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                     // already create window, why do this? -- refer to demo browser
                     assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-                    page = _tree_screen->item_bind(
+                    page = _tree_screen->tree_view()->item_bind(
                                QUrl(Browser::_defaulthome)
-                               , std::bind(&TreeScreen::view_paste_child, _tree_screen
+                               , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view()
                                            , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()) // std::placeholders::_1
                                            , std::placeholders::_2, std::placeholders::_3)
                            )->activate()->page();
@@ -1168,7 +1168,7 @@ namespace browser {
 
         //        if(!item->is_registered_to_browser() && !item->record_binder()) {
         if(!_tree_screen->tree_view()->source_model()->index(item).isValid())
-            result = _tree_screen->item_register(item, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            result = _tree_screen->tree_view()->item_register(item, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
         else
             result = item;
 

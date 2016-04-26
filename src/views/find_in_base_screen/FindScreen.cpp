@@ -458,12 +458,12 @@ void FindScreen::setup_signals(void)
 
     connect(_find_in_text, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
 
-    boost::intrusive_ptr<TreeItem> (TreeScreen::*_item_bind)(
+    boost::intrusive_ptr<TreeItem> (KnowView::*_item_bind)(
         const QUrl & _find_url
-        , const TreeScreen::paste_strategy & _view_paste_strategy
+        , const KnowView::paste_strategy & _view_paste_strategy
         , equal_url_t _equal
-    ) = &TreeScreen::item_bind;
-    connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen, _item_bind);
+    ) = &KnowView::item_bind;
+    connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen->tree_view(), _item_bind);
 }
 
 
@@ -618,7 +618,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    // Очищается таблица результата поиска
     //    _findtable->re_initialize();
 
-    const KnowModel *_global_source_model = _tree_screen->know_model_board();
+    const KnowModel *_global_source_model = _tree_screen->tree_view()->know_model_board();
     // Выясняется ссылка на модель дерева данных
     auto _current_model = [&]() {return _tree_screen->tree_view()->source_model();};   // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
 
@@ -636,7 +636,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
-    boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->session_root_item());    // new TreeItem(nullptr, data)
+    boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->tree_view()->session_root_item());    // new TreeItem(nullptr, data)
     // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
 
     //    auto original_count = _result_item->count_direct();
@@ -1056,8 +1056,8 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                 //                                                  , _session_root_item->count_direct()
                                 //                                              );
 
-                                auto result = _tree_screen->item_bind(candidate // result
-                                                                      , std::bind(&TreeScreen::view_paste_child, _tree_screen
+                                auto result = _tree_screen->tree_view()->item_bind(candidate // result
+                                                                      , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view()
                                                                                   , TreeModel::ModelIndex(_source_model,  _session_root_item) // std::placeholders::_1
                                                                                   , std::placeholders::_2
                                                                                   , std::placeholders::_3));    // ->activate(); //

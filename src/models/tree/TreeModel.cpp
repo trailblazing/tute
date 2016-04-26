@@ -24,7 +24,9 @@ TreeModel::TreeModel(KnowView *parent)
 TreeModel::TreeModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent)
     : QAbstractItemModel(parent)
     , _root_item(_root_item)
-{}
+{
+
+}
 
 TreeModel::~TreeModel(void)
 {
@@ -850,7 +852,7 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_mo
 {
     bool current_parent_valid = [&]() {
         bool result = false;
-        auto absolute_root = globalparameters.tree_screen()->know_model_board()->root_item();
+        auto absolute_root = globalparameters.tree_screen()->tree_view()->know_model_board()->root_item();
         auto current_root = [&]() {return static_cast<KnowModel *>(current_model())->root_item();};
 
         if(parent_item->is_ancestor_of(current_root())) {

@@ -179,9 +179,9 @@ namespace browser {
               ) {
                 //QLineEdit *lineedit =
 
-                _tree_screen->item_bind(
+                _tree_screen->tree_view()->item_bind(
                     url
-                    , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                 )->activate();
 
                 assert(_lineedits);
@@ -231,7 +231,7 @@ namespace browser {
                 // QString u = url.toString();
 
                 //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                _tree_screen->item_bind(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();
+                _tree_screen->tree_view()->item_bind(url, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();
 
             }
         } else if(result_item != _tree_screen->tree_view()->current_item()) {
@@ -257,11 +257,11 @@ namespace browser {
                 //                //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
                 //                //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 
-                _tree_screen->index_invoke(index_result);
+                _tree_screen->tree_view()->index_invoke(index_result);
             }
 
         } else {
-            _tree_screen->index_invoke(_tree_screen->tree_view()->source_model()->index(result_item));
+            _tree_screen->tree_view()->index_invoke(_tree_screen->tree_view()->source_model()->index(result_item));
         }
     }
 

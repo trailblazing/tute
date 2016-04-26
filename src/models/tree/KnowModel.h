@@ -12,6 +12,10 @@
 // KnowTreeModel - класс с удобными методами для управления данными дерева
 // Внимание! Данный класс наследуется от класса TreeModel
 
+
+extern const char *index_xml_file_name;
+
+
 class XmlTree;
 class ClipboardBranch;
 class TreeScreen;
@@ -21,7 +25,7 @@ class KnowModel : public TreeModel {
     Q_OBJECT
 
 public:
-    KnowModel(KnowView *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
+    KnowModel(const QString &index_xml_file_name, KnowView *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
     KnowModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent = 0);
     ~KnowModel();
 
@@ -92,7 +96,7 @@ public:
 
     boost::intrusive_ptr<TreeItem> model_move_as_child(ModelIndex modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
     //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
-    boost::intrusive_ptr<TreeItem> intercept(boost::intrusive_ptr<TreeItem> _item);    // boost::intrusive_ptr<TreeItem> _item
+
 
 
 
@@ -169,17 +173,19 @@ private:
 
 
     boost::intrusive_ptr<TreeItem> synchronize(boost::intrusive_ptr<TreeItem> source);
+    boost::intrusive_ptr<TreeItem> intercept(boost::intrusive_ptr<TreeItem> _item);    // boost::intrusive_ptr<TreeItem> _item
 
 private:
 
     // QModelIndex get_item_index_recurse(QModelIndex currindex, TreeItem *finditem, int mode);
-    QString _xml_file_name = "";
+    QString _xml_file_name = index_xml_file_name;
 
     bool _synchronized = false;
 
     //    bool _is_global_root = false;
+    friend class KnowView;
     friend class TreeScreen;
-
+    friend class TreeModel::ModelIndex;
 };
 
 

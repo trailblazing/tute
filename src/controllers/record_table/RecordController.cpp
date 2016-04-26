@@ -1192,7 +1192,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
     //    }
 
     //    else {
@@ -1413,7 +1413,7 @@ void RecordController::edit_field(int pos
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 }
 
 
@@ -1708,7 +1708,7 @@ void RecordController::move_up(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 }
 
 
@@ -1731,7 +1731,7 @@ void RecordController::move_dn(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 }
 
 

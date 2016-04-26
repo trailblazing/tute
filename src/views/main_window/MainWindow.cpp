@@ -645,7 +645,7 @@ void MainWindow::save_tree_position(void)
 {
     auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _tree_screen->session_root_item();   //item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
+    auto item = _tree_screen->tree_view()->session_root_item();   //item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
     //    // Получение QModelIndex выделенного в дереве элемента
     //    const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->tree_view()->current_item();
@@ -676,20 +676,20 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     //    _tree_screen->session_root_id(current_item_absolute_path.last());
 
     auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
-    auto know_model_board = [&]() {return _tree_screen->know_model_board();};
+    auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
 
     if(source_model()->root_item()->id() != current_root_id) {
-        _tree_screen->intercept(TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == current_root_id;})));
+        _tree_screen->tree_view()->intercept(TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == current_root_id;})));
     }
 
     //    if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
     //        return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->know_model_board()->item(current_item_absolute_path);            // on know_root semantic
+    auto item = know_model_board()->item(current_item_absolute_path);            // on know_root semantic
 
     if(!source_model()->index(item).isValid()) {
-        _tree_screen->intercept(TreeModel::ModelIndex(know_model_board, item));
+        _tree_screen->tree_view()->intercept(TreeModel::ModelIndex(know_model_board, item));
     }
 
     if(item) {
@@ -712,16 +712,16 @@ bool MainWindow::is_tree_position_crypt()
     QString id = pair.first;
     QStringList path = pair.second;
 
-    auto know_model_board = [&]() {return _tree_screen->know_model_board();};
+    auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
 
     if(_tree_screen->tree_view()->source_model()->root_item()->id() != id) {
-        _tree_screen->intercept(TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;})));
+        _tree_screen->tree_view()->intercept(TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;})));
     }
 
     //    if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = _tree_screen->know_model_board()->item(path);
+    auto item = know_model_board()->item(path);
 
     if(item) {
         if(item->field("crypt") == "1")
@@ -790,17 +790,17 @@ void MainWindow::restore_editor_scrollbar_position(void)
 }
 
 
-void MainWindow::restore_find_on_base_visible(void)
+void MainWindow::restore_find_in_base_visible(void)
 {
     bool n = appconfig.findscreen_show();
 
     // Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
+    FindScreen *find_screen = globalparameters.find_screen(); // find_object<FindScreen>(find_screen_singleton_name);
 
     if(n)
-        findScreenRel->show();
+        find_screen->show();
     else
-        findScreenRel->hide();
+        find_screen->hide();
 }
 
 
@@ -1258,7 +1258,7 @@ void MainWindow::synchronization(void)
     walkhistory.set_drop(true);
 
     // Заново считываются данные в дерево
-    _tree_screen->know_model_reload();
+    _tree_screen->tree_view()->know_model_reload();
     restore_tree_position();
     //    restore_recordtable_position();
     restore_editor_cursor_position();
@@ -1413,9 +1413,11 @@ void MainWindow::go_walk_history(void)
     //        return;
     //    }
 
+    auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
+
     if(record_id.length() > 0) {
         // Выясняется путь к ветке, где находится данная запись
-        QStringList absolute_path = _tree_screen->know_model_board()->record_path(record_id);    // on know_root semantic
+        QStringList absolute_path = know_model_board()->record_path(record_id);    // on know_root semantic
 
         //    // Проверяем, есть ли такая ветка
         //    if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
@@ -1425,7 +1427,7 @@ void MainWindow::go_walk_history(void)
 
 
         // Выясняется позицию записи в таблице конечных записей
-        auto item = _tree_screen->know_model_board()->item(absolute_path);    // on know_root semantic
+        auto item = know_model_board()->item(absolute_path);    // on know_root semantic
 
         if(item) {
             //            // Проверяем, есть ли такая позиция

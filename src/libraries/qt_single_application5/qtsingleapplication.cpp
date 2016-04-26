@@ -531,7 +531,7 @@ void QtSingleApplication::main_window()
     // Эти действия нельзя делать в конструкторе главного окна,
     // т.к. окно еще не создано
     _globalparameters.window_switcher()->disableSwitch();
-    _window->restore_find_on_base_visible();
+    _window->restore_find_in_base_visible();
     _window->restore_geometry();
     _window->restore_tree_position();
     //    _window->restore_recordtable_position();
@@ -906,7 +906,7 @@ void QtSingleApplication::newLocalSocketConnection()
         if(openLinksIn == 1) {
 
             auto browser = entrance->new_browser();
-            auto it = tree_screen->item_register(url, std::bind(&TreeScreen::view_paste_child, tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+            auto it = tree_screen->tree_view()->item_register(url, std::bind(&KnowView::view_paste_child, tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
             browser->tabmanager()->newTab(it);
             browser->raise();
             browser->activateWindow();
@@ -916,9 +916,9 @@ void QtSingleApplication::newLocalSocketConnection()
 
             //            browser::Browser *browser = globalparameters.entrance()->activated_browser();
             //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-            tree_screen->item_bind(
+            tree_screen->tree_view()->item_bind(
                 url
-                , std::bind(&TreeScreen::view_paste_child, tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , std::bind(&KnowView::view_paste_child, tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
             )->activate();
 
         }

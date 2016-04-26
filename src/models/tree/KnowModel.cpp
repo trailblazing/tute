@@ -27,7 +27,7 @@ extern AppConfig appconfig;
 const char *global_root_id = "0";
 
 // Конструктор модели дерева, состоящего из Item элементов
-KnowModel::KnowModel(KnowView *parent)
+KnowModel::KnowModel(const QString &index_xml_file_name, KnowView *parent)
     : TreeModel(parent) //    , _root_item(nullptr)
 {
     //    xmlFileName = "";
@@ -47,12 +47,20 @@ KnowModel::KnowModel(KnowView *parent)
 
     assert(_root_item->linker()->host().get() == _root_item.get());
     assert(_root_item->linker()->host_parent().get() != _root_item.get());
+
+    init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);  // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
+    int all_count = count_records_all();
+    assert(all_count > 0);
+
+    synchronized(true);
 }
 
 
 KnowModel::KnowModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent)
     : TreeModel(_root_item, parent)
-{}
+{
+    //    intercept(_root_item);
+}
 
 // Деструктор Item модели.
 // По-хорошему деструктор перед удалением корневого элемента должен пробежать по
@@ -826,13 +834,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
     int pos = modelindex.sibling_order();
 
     boost::intrusive_ptr<TreeItem> result(source_item);    // 1-1
+    auto _index_origin = index(source_item);
     auto original_parent = source_item->parent();
-    assert(original_parent);
-    auto original_parent_index = index(original_parent);
+    //    assert(original_parent);
+    auto _index_original_parent = original_parent ? index(original_parent) : QModelIndex();
 
     if(!(source_item->parent() == parent && parent->contains_direct(std::forward<const boost::intrusive_ptr<const TreeItem::Linker>>(source_item->linker())))) {
         auto _index_parent = index(parent);
-        auto _index_origin = index(source_item);
+        //        auto _index_origin = index(source_item);
         auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
 
         if(source_item->parent() != parent) {
@@ -851,8 +860,12 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
                     beginRemoveRows(_index_parent, _index_origin.row(), _index_origin.row());
                     remove_result |= original_parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent;}); // model_remove(_source_item->up_linker());
 
-                    update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
-                    view->update(_index_origin.parent());
+                    if(_index_original_parent.isValid()) {
+                        update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
+                        view->update(_index_origin.parent());
+                        emit layoutChanged(QList<QPersistentModelIndex>() << _index_original_parent);
+                    }
+
                     endRemoveRows();
                 }   // else sibling_order = _index_origin.row();
 
@@ -888,9 +901,16 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
             update_index(_index_parent);
             view->update(_index_parent);
 
-            if(original_parent_index.isValid()) {
-                update_index(original_parent_index);
-                view->update(original_parent_index);
+            emit layoutChanged(QList<QPersistentModelIndex>() << _index_parent);
+
+            if(_index_original_parent.isValid()) {
+                update_index(_index_original_parent);
+                view->update(_index_original_parent);
+                emit layoutChanged(QList<QPersistentModelIndex>() << _index_original_parent);
+            } else if(_index_origin.isValid()) {
+                update_index(_index_origin);
+                view->update(_index_origin);
+                emit layoutChanged(QList<QPersistentModelIndex>() << _index_origin);
             }
 
             endInsertRows();
@@ -1536,7 +1556,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge_to_left(
         if(result->parent()) {
             //        emit_datachanged_signal(index(result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_result.parent()));
             emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it->host()->id() == result->id();}), 0, _index_result));
-            layoutChanged(QList<QPersistentModelIndex>() << _index_result);
+            emit layoutChanged(QList<QPersistentModelIndex>() << _index_result);
         }
 
 
@@ -2158,7 +2178,7 @@ void KnowModel::re_encrypt(QString previousPassword, QString currentPassword)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    static_cast<KnowView *>(static_cast<QObject *const>(this)->parent())->know_model_save();
 }
 
 
@@ -2637,7 +2657,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::intercept(
 )
 {
     //    auto _item = modelindex.parent();
-    auto absolute_source_model = []() {return globalparameters.tree_screen()->know_model_board();};
+    auto absolute_source_model = [&]() {return static_cast<KnowView *>(static_cast<QObject *const>(this)->parent())->know_model_board();};
     assert(_item == absolute_source_model()->root_item() || absolute_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _item->id();}));
     boost::intrusive_ptr<TreeItem> result(nullptr);
     //    QMap<QString, QString> root_data;
@@ -2686,13 +2706,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::intercept(
     _root_item = _item;
 
     endResetModel();
-    //    QObject *(QObject::*_parent)() const = &QObject::parent;
-    KnowView *view = static_cast<KnowView *>(
-                         static_cast<QObject *>(this)->parent() // (this->*_parent)()
-                     );
-    view->reset();
-    view->source_model(_root_item);
-    //    save(); // temporary
+    //    //    QObject *(QObject::*_parent)() const = &QObject::parent;
+
+    //    KnowView *view = static_cast<KnowView *>(
+    //                         static_cast<QObject *>(this)->parent() // (this->*_parent)()
+    //                     );
+    //    view->reset();
+    //    view->source_model(_root_item);
+    //    //    save(); // temporary
     _synchronized = false;
 
     return result;

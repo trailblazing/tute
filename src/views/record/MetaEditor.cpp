@@ -410,7 +410,7 @@ void MetaEditor::switch_pin()
             //find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
             TreeScreen *treescreen = globalparameters.tree_screen();
 
-            if(treescreen)treescreen->know_model_save();
+            if(treescreen)treescreen->tree_view()->know_model_save();
 
             if(recordtableview)recordtableview->cursor_to_index(pos);
         }

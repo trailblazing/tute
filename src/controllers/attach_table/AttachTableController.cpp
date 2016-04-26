@@ -151,7 +151,7 @@ void AttachTableController::add_smart(QString attach_type)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() > 0) {
@@ -375,7 +375,7 @@ void AttachTableController::on_edit_file_name(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 
 }
 
@@ -410,7 +410,7 @@ void AttachTableController::on_delete_attach(void)
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
-    globalparameters.tree_screen()->know_model_save();
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 
     // Обновление иконки аттачей в редакторе
     if(attachTableData->size() == 0) {

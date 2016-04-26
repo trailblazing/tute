@@ -1415,9 +1415,9 @@ namespace browser {
         //        auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(
         //                       _tabmanager // _entrance
         //                   );
-        _tree_screen->item_bind(
+        _tree_screen->tree_view()->item_bind(
             QUrl(home)
-            , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+            , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
         )->activate();
     }
 

@@ -322,9 +322,9 @@ namespace browser {
             , &TabBar::newTab   //                , this
         , [&]() {
 
-            _tree_screen->item_bind(
+            _tree_screen->tree_view()->item_bind(
                 QUrl(Browser::_defaulthome)
-                , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
             )->activate();
 
         });
@@ -356,9 +356,9 @@ namespace browser {
         , [&](bool make_current) {
             Q_UNUSED(make_current)
 
-            _tree_screen->item_bind(
+            _tree_screen->tree_view()->item_bind(
                 QUrl(Browser::_defaulthome)
-                , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
             )->activate();
 
         });
@@ -870,7 +870,7 @@ namespace browser {
         } else {
             auto page_item = view->page()->item();
 
-            if(page_item != target)page_item = _tree_screen->view_merge_to_left(TreeModel::ModelIndex([&]() {return _tree_screen->tree_view()->source_model();}, page_item), target);
+            if(page_item != target)page_item = _tree_screen->tree_view()->view_merge_to_left(TreeModel::ModelIndex([&]() {return _tree_screen->tree_view()->source_model();}, page_item), target);
 
             //            if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
@@ -1271,9 +1271,9 @@ namespace browser {
            // Remove the line below when QTabWidget does not have a one pixel frame
            && event->pos().y() < (tabBar()->y() + tabBar()->height())
           ) {
-            _tree_screen->item_bind(
+            _tree_screen->tree_view()->item_bind(
                 QUrl(Browser::_defaulthome)
-                , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
             )->activate();
             return;
         }
@@ -1312,9 +1312,9 @@ namespace browser {
             QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
 
             if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
-                _tree_screen->item_bind(
+                _tree_screen->tree_view()->item_bind(
                     url
-                    , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                 )->activate();
             }
         }
@@ -1340,7 +1340,7 @@ namespace browser {
                 //                webView->setFocus();
 
                 //                auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page());
-                auto it = _tree_screen->item_register(_url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                auto it = _tree_screen->tree_view()->item_register(_url, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                 auto r = // _record_controller
                     webView->page()->item_bind(it);
                 //                        _url
@@ -1449,15 +1449,15 @@ namespace browser {
             //            Record *_record = request_record(_url);
 
             if(i != 0) {
-                _tree_screen->item_bind(
+                _tree_screen->tree_view()->item_bind(
                     _url
-                    , std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                 )->activate();
             } else {
                 if(webView(0)->page()->url() != _url) {
                     //                    webView(0)->load(_record);    //loadUrl(_url);
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
-                    auto it = _tree_screen->item_register(QUrl(_url), std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    auto it = _tree_screen->tree_view()->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                     auto r = // _record_controller
                         webView(0)->page()->item_bind(it);
                     //                            QUrl(_url)
