@@ -1536,6 +1536,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge_to_left(
         if(result->parent()) {
             //        emit_datachanged_signal(index(result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_result.parent()));
             emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it->host()->id() == result->id();}), 0, _index_result));
+            layoutChanged(QList<QPersistentModelIndex>() << _index_result);
         }
 
 
