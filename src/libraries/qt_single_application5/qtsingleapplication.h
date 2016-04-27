@@ -91,6 +91,8 @@ namespace browser {
     class CookieJar;
     class DownloadManager;
     class HistoryManager;
+    class UrlRequestInterceptor;
+    class Profile;
 }
 
 class MainWindow;
@@ -154,6 +156,8 @@ private:
     void sys_init();
     void main_window();
     void browser_init();
+
+
     QtLocalPeer *_peer;
     QWidget     *_act_window;
     bool        _gui_enabled;
@@ -236,9 +240,11 @@ private:
     static browser::BookmarksManager    *_bookmarksmanager;
 
     //    QList<QPointer<BrowserWindow> > _mainWindows;
+    browser::Profile    *_profile;
     QLocalServer        *_localserver;
     QByteArray          _last_session;
-    QWebEngineProfile   *_private_profile;
+    // QWebEngineProfile
+    browser::Profile    *_private_profile;
     bool                _private_browsing;
     mutable QIcon       _default_icon;
 

@@ -296,7 +296,8 @@ namespace browser {
         , _lineeditcompleter(nullptr)                 // new QCompleter(_completionModel, this)
         , _lineedits(new QStackedWidget(this))
         , _tabbar(new TabBar(this))
-        , _profile(QWebEngineProfile::defaultProfile())
+        , _profile(globalparameters.profile()   // QWebEngineProfile::defaultProfile()
+                  )
         , _fullscreenview(nullptr)
         , _fullscreennotification(nullptr)
           //        , _active_record(this)
@@ -465,7 +466,7 @@ namespace browser {
 #endif
                 disconnect(static_cast<QWebEnginePage *>(oldWebView->page()), &QWebEnginePage::linkHovered, this, &TabWidget::linkHovered);
                 disconnect(oldWebView, &WebView::loadProgress, this, &TabWidget::loadProgress);
-                disconnect(oldWebView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
+                disconnect(oldWebView->page()->profile(), &Profile::downloadRequested, this, &TabWidget::downloadRequested);
                 disconnect(static_cast<QWebEnginePage *>(oldWebView->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
                 auto it = webView->page()->item();
@@ -493,7 +494,7 @@ namespace browser {
 #endif
             connect(static_cast<QWebEnginePage *>(webView->page()), &QWebEnginePage::linkHovered, this, &TabWidget::linkHovered);
             connect(webView, &WebView::loadProgress, this, &TabWidget::loadProgress);
-            connect(webView->page()->profile(), &QWebEngineProfile::downloadRequested, this, &TabWidget::downloadRequested);
+            connect(webView->page()->profile(), &Profile::downloadRequested, this, &TabWidget::downloadRequested);
             connect(static_cast<QWebEnginePage *>(webView->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
             for(int i = 0; i < _actions.count(); ++i) {
@@ -1057,7 +1058,8 @@ namespace browser {
 #endif
                 hasFocus = _view_to_close->hasFocus();
 
-                if(_profile == QWebEngineProfile::defaultProfile()) {
+                if(_profile == globalparameters.profile()   // QWebEngineProfile::defaultProfile()
+                  ) {
                     _recentlyclosedtabsaction->setEnabled(true);
                     _recentlyclosedtabs.prepend(_view_to_close->page()->url());
 
@@ -1176,7 +1178,8 @@ namespace browser {
     }
 
     //deprecated, profile should be assigned at the construction of BrowserPage
-    void TabWidget::setProfile(QWebEngineProfile *profile)
+    void TabWidget::setProfile(Profile *profile // QWebEngineProfile *profile
+                              )
     {
         _profile = profile;
 

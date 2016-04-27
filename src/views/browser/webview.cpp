@@ -66,6 +66,7 @@
 #include <QtWidgets/QMessageBox>
 #include <QtGui/QMouseEvent>
 #include <QWebEnginePage>
+#include <QWebChannel>
 
 #if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 #include <QWebEngineHitTestResult>
@@ -107,7 +108,7 @@ namespace browser {
 
 #ifdef USE_POPUP_WINDOW
 
-    PopupPage::PopupPage(QWebEngineProfile *profile, QObject *parent)
+    PopupPage::PopupPage(Profile *profile, QObject *parent)
         : QWebEnginePage(profile, parent)
         , m_keyboardModifiers(Qt::NoModifier)
         , m_pressedButtons(Qt::NoButton)
@@ -323,7 +324,7 @@ namespace browser {
 
 
 
-    WebPage::WebPage(QWebEngineProfile      *profile
+    WebPage::WebPage(Profile                *profile
                      , boost::intrusive_ptr<TreeItem> item
                      , TreeScreen           *tree_screen
                      , MetaEditor           *editor_screen
@@ -535,6 +536,7 @@ namespace browser {
         connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::urlChanged, this, &WebPage::onUrlChanged);
         connect(this, &WebPage::close_requested, &WebPage::binder_reset);
 
+        connect(this, &WebPage::linkHovered, [&](const QString & url) {_hovered_url = url;});
         //        if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
         //        if(url != nullptr) {
@@ -557,6 +559,7 @@ namespace browser {
     void WebPage::update_record_view(boost::intrusive_ptr<TreeItem> item)
     {
         _record_controller->update_record_view(item);
+
 
         //        //        auto tab_manager = view()->tabmanager();
         //        auto source_model = _record_controller->source_model(); // tab_manager->source_model();
@@ -649,14 +652,23 @@ namespace browser {
         //        //        return active();
 
         //        //        _record->active_immediately(true);
+        if(item->binder() && item->binder() == _binder) {
+            if(!item->binder()->integrity_external(item, this)) {
+                auto it = _tree_screen->tree_view()->item_register(item, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                it = item_bind(it);
+                //                      item
+                //                      , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                //                  );
 
-        auto it = _tree_screen->tree_view()->item_register(item, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-        it = item_bind(it);
-        //                      item
-        //                      , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-        //                  );
+                if(checked)it->activate();
+            } else {
+                if(checked)activate();
+            }
+        } else {
+            auto it = item_bind(item);
 
-        if(checked)it->activate();
+            if(checked)it->activate();
+        }
 
         return _view;
     }
@@ -772,7 +784,7 @@ namespace browser {
     //    class PopupWindow : public QWidget {
     //        Q_OBJECT
     //    public:
-    //        PopupWindow(QWebEngineProfile *profile)
+    //        PopupWindow(Profile *profile)
     //            : m_addressBar(new QLineEdit(this))
     //            , m_view(new PopupView(this))
     //        {
@@ -818,28 +830,35 @@ namespace browser {
 
     QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type)
     {
-        //        Record *blank_record = request_record(QUrl(DockedWindow::_defaulthome));    // QUrl("about:newtab")
+        //        QString url = "";
+        QString script = "location.href";   // "document.title";  //"JavaScript:function(){return this.href;}();";
+        runJavaScript(script, [&](const QVariant & var) {
+            QString url = var.toString();
+            assert(url != "");
+        });
+
+        QUrl url = QUrl(_hovered_url);
+
+        if(!url.isValid())url = Browser::_defaulthome;
+
+        //        assert(url != "");
+
+        //        QWebChannel *channel = new QWebChannel(this);
+        //        QVariant _content;
+        //        channel->registerObject(QStringLiteral("content"), &_content);
+        //        this->setWebChannel(channel);
 
         //        QWebEnginePage
         WebPage *page = nullptr;
-        //        auto _tree_screen = globalparameters.tree_screen();
 
-
-        //        else
         if(type == QWebEnginePage::WebBrowserWindow) {
 
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
             assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-            auto it = _tree_screen->tree_view()->item_register(QUrl(Browser::_defaulthome), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3));
+            auto it = _tree_screen->tree_view()->item_register(QUrl(url), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3)); // Browser::_defaulthome
             auto view = _browser->item_bind(it)->activate();
-            //            _browser->tabmanager()->newTab(it);
-            //            _browser->raise();
-            //            _browser->activateWindow();
 
-            //            DockedWindow *mainWindow = _entrance->activiated_registered().first;  // QtSingleApplication::instance()->mainWindow();
-            //            return
-
-            page = view->page();   // _browser->tabmanager()->currentWebView()->page();  // mainWindow->currentTab()->page();
+            page = view->page();
 
         } else
 
@@ -849,62 +868,38 @@ namespace browser {
 #endif  // USE_POPUP_WINDOW
 
             {
-                //                // always open new window in new tab
+                //                // should I think about always open new window in new tab
 
                 //                // _openinnewtab = false;  // true
-
-
-                //                // assert(_record);
 
                 //                QUrl current = url();
                 //                QUrl requestedurl = requestedUrl(); //equal to current page url
 
-                //                //            QString previous_url = _record->getNaturalFieldSource("url");    // the parent page that host the new link
 
-                //                //            return _entrance->activebrowser()->tabWidget()->newTab()->page();
+                WebView *view = _entrance->find([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == url.toString();}); // Browser::_defaulthome
 
-                //                //assert(url == DockedWindow::_defaulthome);
-                //                //Record *new_record = register_record(QUrl(DockedWindow::_defaulthome));    // do not modify current this->_record!
-                //                //assert(_record->page() == this); //_record->page(this);
-
-                //                // return nullptr;
-
-                WebView *view = _entrance->find([](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;});
+                auto tree_view = _tree_screen->tree_view();
 
                 if(view) {
-                    //                return view->page();
-                    //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(view->page());
-                    assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-                    auto it = _tree_screen->tree_view()->item_register(QUrl(Browser::_defaulthome), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3));
-                    auto _view = view->page()->item_bind(it)->activate();
+
+                    auto page_found = view->page();
+                    assert(tree_view->source_model()->index(page_found->binder()->item()).isValid());
+                    assert(page_found->binder() && page_found->binder()->integrity_external(page_found->binder()->item(), page_found));
+
+                    //                    auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3)); // QUrl(Browser::_defaulthome)
+                    auto _view = page_found->activate();  // view->page()->item_bind(it)->activate();
                     assert(_view == view);
 
-                    //                                      QUrl(Browser::_defaulthome)
-                    //                                      , std::bind(&TreeScreen::view_paste_as_sibling, _tree_screen
-                    //                                                  , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->source_model()->index(this->binder()->item_link())) // std::placeholders::_1
-                    //                                                  , std::placeholders::_2, std::placeholders::_3)
-
-                    //                record->generate();
-
-                    page = view->page();
+                    page = page_found;  // view->page();
                 } else {
 
-                    // Page *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
+                    // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                     // already create window, why do this? -- refer to demo browser
-                    assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-                    page = _tree_screen->tree_view()->item_bind(
-                               QUrl(Browser::_defaulthome)
-                               , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view()
-                                           , TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()) // std::placeholders::_1
-                                           , std::placeholders::_2, std::placeholders::_3)
-                           )->activate()->page();
-
-                    // page = r->page_link();
-
+                    assert(tree_view->source_model()->index(this->binder()->item()).isValid());
+                    page = tree_view->item_bind(url // QUrl(Browser::_defaulthome)
+                                                , std::bind(&KnowView::view_paste_child, tree_view, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()) // std::placeholders::_1
+                                                            , std::placeholders::_2, std::placeholders::_3))->activate()->page();
                 }
-
-
-
             }
 
 #ifdef USE_POPUP_WINDOW
@@ -942,16 +937,24 @@ namespace browser {
         // not realy needed for each time
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
             boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
-            _current_item->field("url", url.toString());
-            page->load(_current_item); // record->generate();
-            // page->activate();     // record->active();
+
+            if(_current_item->field("url") != url.toString()) {
+                _current_item->field("url", url.toString());
+                page->load(_current_item); // record->generate();
+                page->activate();     // record->active();
+            } else
+                page->activate();
         });
 
         connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::load, [&](const QUrl & url) {
             boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
-            _current_item->field("url", url.toString());
-            page->load(_current_item); // record->generate();
-            // page->activate();     // record->active();
+
+            if(_current_item->field("url") != url.toString()) {
+                _current_item->field("url", url.toString());
+                page->load(_current_item); // record->generate();
+                page->activate();     // record->active();
+            } else
+                page->activate();
         });
 
         return page;
@@ -1188,7 +1191,7 @@ namespace browser {
 
         if(_binder)binder_reset();
 
-        if(result->binder()) {
+        if(result->binder() && result->binder() == _binder) {
             if(!result->binder()->integrity_external(result, this)) {
                 create_coupler(result);
             }
@@ -1728,7 +1731,7 @@ namespace browser {
                   ) {
 
                     _binder->item()->field("name", title);
-
+                    update_record_view(_binder->item());
                     auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
                     source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
 
@@ -1839,7 +1842,7 @@ namespace browser {
 
                 if(url.toString() != "") {
                     _binder->item()->field("url", url.toString());
-
+                    update_record_view(_binder->item());
                     auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
                     source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
 
@@ -1969,6 +1972,7 @@ namespace browser {
             }
 
             if(data_changed) {
+                update_record_view(_binder->item());
                 auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
                 source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
             }
@@ -2289,7 +2293,7 @@ namespace browser {
 
 
     //    WebView::WebView(const boost::intrusive_ptr<TreeItem> requested_item
-    //                     , QWebEngineProfile *profile   // , bool openinnewtab
+    //                     , Profile *profile   // , bool openinnewtab
     //                     , TabWidget *tabmanager
     //                     , QWidget *parent
     //                     , RecordController *table_controller
@@ -2373,13 +2377,13 @@ namespace browser {
     //    }
 
     WebView::WebView(boost::intrusive_ptr<TreeItem> item
-                     , QWebEngineProfile            *profile   // , bool openinnewtab
-                     , TreeScreen                   *tree_screen
-                     , MetaEditor                   *editor_screen
-                     , Entrance                     *entrance
-                     , Browser                      *browser
-                     , TabWidget                    *tabmanager
-                     , RecordController             *table_controller
+                     , Profile          *profile   // , bool openinnewtab
+                     , TreeScreen       *tree_screen
+                     , MetaEditor       *editor_screen
+                     , Entrance         *entrance
+                     , Browser          *browser
+                     , TabWidget        *tabmanager
+                     , RecordController *table_controller
                     )
         : QWebEngineView(static_cast<QWidget *>(tabmanager))    // ->parent()
         , _browser(browser)

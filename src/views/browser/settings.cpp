@@ -88,15 +88,20 @@ namespace browser {
         downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation));
 
         enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
-//#if defined(QTWEBENGINE_PLUGINS)
+        //#if defined(QTWEBENGINE_PLUGINS)
         enablePlugins->setChecked(defaultSettings->testAttribute(QWebEngineSettings::PluginsEnabled));
-//#endif
+        //#endif
 
         enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
-
-        persistentDataPath->setText(QWebEngineProfile::defaultProfile()->persistentStoragePath());
-        sessionCookiesCombo->setCurrentIndex(QWebEngineProfile::defaultProfile()->persistentCookiesPolicy());
-        httpUserAgent->setText(QWebEngineProfile::defaultProfile()->httpUserAgent());
+        auto profile = globalparameters.profile();
+        persistentDataPath->setText(profile // QWebEngineProfile::defaultProfile()
+                                    ->persistentStoragePath()
+                                   );
+        sessionCookiesCombo->setCurrentIndex(profile    // QWebEngineProfile::defaultProfile()
+                                             ->persistentCookiesPolicy());
+        httpUserAgent->setText(profile  // QWebEngineProfile::defaultProfile()
+                               ->httpUserAgent()
+                              );
     }
 
     void SettingsDialog::loadFromSettings()

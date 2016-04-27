@@ -357,7 +357,7 @@ void QtSingleApplication::sys_init()
     // Initialize global parameters,
     // Is being installed inside the working directory
     _globalparameters.init();
-
+    _globalparameters.profile(_profile);
     // Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
     _appconfig.init();
 
@@ -636,6 +636,7 @@ QtSingleApplication::QtSingleApplication(
     , _peer(new QtLocalPeer(this, QString()))
     , _act_window(nullptr)
     , _gui_enabled(GUIenabled)
+    , _profile(new browser::Profile(this))
     , _localserver(new QLocalServer(this))
     , _private_profile(nullptr)
     , _private_browsing(false)
@@ -674,8 +675,9 @@ QtSingleApplication::QtSingleApplication(
     , _peer(new QtLocalPeer(this, appId))
     , _act_window(nullptr)
     , _gui_enabled(true)
+    , _profile(new browser::Profile(this))
     , _localserver(new QLocalServer(this))
-    , _private_profile(0)
+    , _private_profile(nullptr)
     , _private_browsing(false)
     , _globalparameters(globalparameters)
     , _appconfig(appconfig)
@@ -937,6 +939,10 @@ void QtSingleApplication::newLocalSocketConnection()
 
 QtSingleApplication::~QtSingleApplication()
 {
+    if(_profile) {
+        _profile->deleteLater(); _profile = nullptr;
+    }
+
     // delete
     _downloadmanager->deleteLater();
 
@@ -1042,7 +1048,7 @@ void QtSingleApplication::loadSettings()
     settings.beginGroup(QLatin1String("websettings"));
 
     QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
-    QWebEngineProfile *defaultProfile = QWebEngineProfile::defaultProfile();
+    //    QWebEngineProfile *defaultProfile = QWebEngineProfile::defaultProfile();
 
     QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
     int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
@@ -1067,10 +1073,10 @@ void QtSingleApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
-    set_user_style_sheet(defaultProfile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
+    set_user_style_sheet(_profile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
 
-    defaultProfile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
+    _profile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
     settings.endGroup();
 
 
@@ -1438,14 +1444,15 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
 
     if(privateBrowsing) {
         if(!_private_profile)
-            _private_profile = new QWebEngineProfile(this);
+            _private_profile = new browser::Profile(this);  // new QWebEngineProfile(this);
 
         for(auto &window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(_private_profile);
         }
     } else {
         for(auto &window : globalparameters.entrance()->browsers()) {
-            window->tabWidget()->setProfile(QWebEngineProfile::defaultProfile());
+            window->tabWidget()->setProfile(_profile    // QWebEngineProfile::defaultProfile()
+                                           );
             window->lastsearch() = QString::null;
             window->tabWidget()->clear();
         }

@@ -112,7 +112,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _host_parent
 
         if(!il->host_parent() || il->host_parent() != this) {
             // candidates << il->host(); //
-            il->parent(this, i);   // this operation will remove il from _child_linkers and try to insert new one
+            il->parent(this, i, add_new_record_before);  // this operation will remove il from _child_linkers and try to insert new one
         }
     }
 })

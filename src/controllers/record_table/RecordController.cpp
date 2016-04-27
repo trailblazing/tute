@@ -751,9 +751,9 @@ QModelIndex RecordController::id_to_sourceindex(QString id) const
     //    auto table = _source_model->tree_item();
 
     // Номер записи в Source данных
-    int sourcePos = _source_model->position(id);
+    int source_pos = _source_model->position(id);
 
-    return pos_to_sourceindex(sourcePos);
+    return pos_to_sourceindex(source_pos);
 }
 
 
@@ -763,10 +763,10 @@ QModelIndex RecordController::id_to_proxyindex(QString id) const
     //    auto table = _source_model->tree_item();
 
     // Номер записи в Source данных
-    int sourcePos = _source_model->position(id);
-    int proxyPos = sourcepos_to_proxypos(sourcePos);
+    int source_pos = _source_model->position(id);
+    int proxy_pos = sourcepos_to_proxypos(source_pos);
 
-    return pos_to_proxyindex(proxyPos);
+    return pos_to_proxyindex(proxy_pos);
 }
 
 
@@ -835,9 +835,9 @@ QModelIndex RecordController::sourceindex_to_proxyindex(QModelIndex sourceIndex)
 }
 
 
-int RecordController::sourcepos_to_proxypos(int sourcePos) const
+int RecordController::sourcepos_to_proxypos(int source_pos) const
 {
-    QModelIndex proxyIndex = _proxy_model->mapFromSource(_source_model->index(sourcePos, 0));
+    QModelIndex proxyIndex = _proxy_model->mapFromSource(_source_model->index(source_pos, 0));
     return proxyIndex.row();
 }
 
@@ -1864,6 +1864,10 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
     //    }
 
     _source_model->on_table_config_changed();
+
+    auto proxy_index = pos_to_proxyindex(source_position);
+    _view->dataChanged(proxy_index, proxy_index);
+
 
     return _item; //_record;
 }

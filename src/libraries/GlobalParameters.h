@@ -11,6 +11,7 @@
 namespace browser {
     class Entrance;
     class DownloadManager;
+    class Profile;
 }
 
 class TreeScreen;
@@ -42,6 +43,10 @@ public:
 
     QString target_os(void);
     QString application_name(void);
+
+
+    browser::Profile *profile();
+    void profile(browser::Profile *profile);
 
     QSplitter *find_splitter();
     void find_splitter(QSplitter *_find_splitter);
@@ -109,6 +114,7 @@ private:
     void create_portable_programfiles(void);
     void create_first_programfiles(QString dirName);
 
+    browser::Profile            *_profile;
     TreeScreen                  *_tree_screen;
     browser::Entrance           *_browsermanager;
     std::vector<RecordScreen *> _table_screens;

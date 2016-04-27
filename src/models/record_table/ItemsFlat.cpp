@@ -1537,7 +1537,8 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
 
     if(_host != _parent)
     {
-        int insert_position = -1;
+        int actually_insert_position = -1;
+        int result_should_be_position = pos;
         int count = 0;
         int found = 0;
 
@@ -1551,7 +1552,7 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
 
                         if(il->_host_parent != _parent)il->_host_parent = _parent;
 
-                        insert_position = count;
+                        actually_insert_position = count;
                     } else {
                         _parent->_child_linkers.removeOne(il);
                     }
@@ -1691,13 +1692,13 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
 
                 if(mode == add_new_record_to_end) {         // В конец списка
                     _parent->_child_linkers << this;        // _self;
-                    //                    insert_position = _parent->_child_linkers.size() - 1;
+                    result_should_be_position = _parent->_child_linkers.size() - 1; // parent may be empty before
                 } else if(mode == add_new_record_before) {  // Перед указанной позицией
                     _parent->_child_linkers.insert(pos, this);
-                    //                    insert_position = pos;
+                    result_should_be_position = pos;
                 } else if(mode == add_new_record_after) {   // После указанной позиции
                     _parent->_child_linkers.insert(pos + 1, this);
-                    //                    insert_position = pos + 1;
+                    result_should_be_position = _parent->_child_linkers.size() == 1 ? pos : pos + 1;    // parent may be empty before
                 }
 
                 if(this->_host_parent != _parent)this->_host_parent = _parent;
@@ -1715,9 +1716,18 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
             //                    //                    _parent_target->sibling_order(_source_item);
             //                }
 
-            insert_position = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == this;});
-            qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
-            assert(_parent->_child_linkers[insert_position] == this);
+            actually_insert_position = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == this && il == _host->linker() && il->host() == _host;});
+
+            //            int insert_position = _host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _host->linker() && il->host() == _host;});
+
+
+            //            if(mode == add_new_record_after)result_should_be_position = _host_parent->count_direct() == 1 ? pos : pos + 1; // parent may be empty before
+            //            else if(mode == add_new_record_to_end)result_should_be_position = _host_parent->count_direct() - 1; // parent may be empty before
+
+            assert(result_should_be_position == actually_insert_position);
+
+            qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(actually_insert_position);
+            assert(_parent->_child_linkers[actually_insert_position] == this);
 
             auto it = _parent->_child_linkers.contains(this);
 
@@ -2022,7 +2032,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::Linker::host()const {return _host;}
 void ItemsFlat::Linker::host_parent(boost::intrusive_ptr<TreeItem> &&p) {_host_parent = p;}
 void ItemsFlat::Linker::host(boost::intrusive_ptr<TreeItem> &&h) {_host = h;}
 
-boost::intrusive_ptr<ItemsFlat::Linker> ItemsFlat::Linker::parent(boost::intrusive_ptr<TreeItem> parent_item, int pos, int mode)
+boost::intrusive_ptr<ItemsFlat::Linker> ItemsFlat::Linker::parent(boost::intrusive_ptr<TreeItem> parent_item, const int pos, const int mode)
 {
     assert(_host);
     boost::intrusive_ptr<Linker> result(nullptr);
@@ -2062,7 +2072,14 @@ boost::intrusive_ptr<ItemsFlat::Linker> ItemsFlat::Linker::parent(boost::intrusi
             //        _host_parent = new_host_parent;
             assert(integrity());
             assert(integrity_external(this->_host, _host_parent));
-            assert(pos == _host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _host->linker() && il->host() == _host;}));
+
+            //            int actually_insert_position = _host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _host->linker() && il->host() == _host;});
+            //            int result_should_be_position = pos;
+
+            //            if(mode == add_new_record_after)result_should_be_position = _host_parent->count_direct() == 1 ? pos : pos + 1; // parent may be empty before
+            //            else if(mode == add_new_record_to_end)result_should_be_position = _host_parent->count_direct() - 1; // parent may be empty before
+
+            //            assert(result_should_be_position == actually_insert_position);
         }
     }
 

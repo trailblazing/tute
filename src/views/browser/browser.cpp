@@ -115,6 +115,22 @@ namespace browser {
         return wrapper;
     }
 
+
+    UrlRequestInterceptor::UrlRequestInterceptor(QObject *p): QWebEngineUrlRequestInterceptor(p) {}
+
+
+    void UrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
+    {
+        if(info.navigationType() == QWebEngineUrlRequestInfo::NavigationTypeLink) {
+            info.requestUrl();
+        }
+    }
+
+    Profile::Profile(QObject *p): QWebEngineProfile(p), _urlrequestinterceptor(new UrlRequestInterceptor(p))
+    {
+        setRequestInterceptor(_urlrequestinterceptor);
+    }
+
     // const char *DockedWindow::_defaulthome = "about:blank";
 
     Browser::~Browser()
@@ -129,8 +145,8 @@ namespace browser {
 
         _autosaver->changeOccurred();
         //        _autosaver->saveIfNeccessary();
-        delete _autosaver;
-        delete _bookmarkstoolbar;
+        _autosaver->deleteLater();
+        _bookmarkstoolbar->deleteLater();
         //        delete _tabmanager;
 
         if(globalparameters.vtab()->indexOf(_record_screen) != -1)
@@ -141,8 +157,8 @@ namespace browser {
         //            //            delete _record_screen; _record_screen = nullptr;
         //        }
 
-        delete _layout;
-        delete _centralwidget;
+        _layout->deleteLater();
+        _centralwidget->deleteLater();
 
 
 

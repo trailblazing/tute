@@ -118,6 +118,7 @@ private:
     void start_drag();
     friend class RecordScreen;
     friend class VerticalScrollArea;
+    friend class RecordController;
 };
 
 #endif // RECORDLISTSCREEN_H_

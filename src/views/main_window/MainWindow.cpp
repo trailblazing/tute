@@ -168,7 +168,7 @@ MainWindow::~MainWindow()
 {
     save_all_state();
 
-    //    delete  _entrance; _entrance = nullptr;
+    _entrance->deleteLater(); _entrance = nullptr;
     // delete
     _switcher->deleteLater();
     // delete

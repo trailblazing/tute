@@ -55,7 +55,7 @@
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "views/browser/history.h"
-#include "views/browser/browser.h"
+//#include "views/browser/browser.h"
 #include "views/browser/webview.h"
 #include "utility/delegate.h"
 //#include "models/tree/TreeItem.h"
@@ -124,6 +124,7 @@ namespace browser {
 
     class Browser;
     class FullScreenNotification;
+    class Profile;
 
     /*
         Tab bar with a few more features such as a context menu and shortcuts
@@ -289,7 +290,7 @@ namespace browser {
         QByteArray saveState() const;
         bool restoreState(const QByteArray &state);
 
-        void setProfile(QWebEngineProfile *setProfile);
+        void setProfile(Profile *setProfile);
         WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
         //        WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
@@ -464,7 +465,8 @@ namespace browser {
         QCompleter              *_lineeditcompleter;// = new QCompleter(_completionModel, this);
         QStackedWidget          *_lineedits;
         TabBar                  *_tabbar;
-        QWebEngineProfile       *_profile;
+        // QWebEngineProfile
+        Profile                 *_profile;
         QWebEngineView          *_fullscreenview;
         FullScreenNotification  *_fullscreennotification;
     protected:

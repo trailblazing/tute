@@ -85,7 +85,7 @@ public:
     int         sourceindex_to_pos(QModelIndex index)const;
     QModelIndex proxyindex_to_sourceindex(QModelIndex proxyIndex)const;
     QModelIndex sourceindex_to_proxyindex(QModelIndex sourceIndex)const;
-    int         sourcepos_to_proxypos(int sourcePos)const;
+    int         sourcepos_to_proxypos(int source_pos)const;
     int         proxypos_to_sourcepos(int proxyPos)const;
     QModelIndex id_to_sourceindex(QString id)const;
     QModelIndex id_to_proxyindex(QString id)const;

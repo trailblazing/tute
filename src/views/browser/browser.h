@@ -50,8 +50,12 @@
 #include <QtGui/QIcon>
 #include <QtCore/QUrl>
 #include <QWebEngineSettings>
+
+#include <QWebEngineProfile>
+#include <QWebEngineUrlRequestInterceptor>
+
 #include "controllers/record_table/RecordController.h"
-//#include "tabmanager.h"
+
 //#include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "views/tree/TreeScreen.h"
@@ -83,6 +87,23 @@ namespace browser {
     class Entrance;
 
 
+
+    class UrlRequestInterceptor
+        : public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>
+        , public QWebEngineUrlRequestInterceptor {
+    public:
+        UrlRequestInterceptor(QObject *p);
+        virtual void interceptRequest(QWebEngineUrlRequestInfo &info);
+    };
+
+    class Profile
+        : public boost::intrusive_ref_counter<Profile, boost::thread_safe_counter>
+        , public QWebEngineProfile {
+    public:
+        Profile(QObject *p);
+    private:
+        UrlRequestInterceptor *_urlrequestinterceptor;
+    };
 
     /*!
         The MainWindow of the Browser Application.

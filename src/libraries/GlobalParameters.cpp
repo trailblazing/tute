@@ -415,6 +415,10 @@ QString GlobalParameters::application_name(void)
     return appName;
 }
 
+browser::Profile *GlobalParameters::profile() {return _profile;}
+void GlobalParameters::profile(browser::Profile *profile) {_profile = profile;}
+
+
 QSplitter *GlobalParameters::find_splitter() {return _find_splitter;}
 void GlobalParameters::find_splitter(QSplitter *_find_splitter) {this->_find_splitter = _find_splitter;}
 

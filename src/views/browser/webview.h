@@ -100,7 +100,7 @@ namespace browser {
         void loadingUrl(const QUrl &url);
 
     public:
-        PopupPage(QWebEngineProfile *profile, QObject *parent = 0);
+        PopupPage(Profile *profile, QObject *parent = 0);
         Browser *browser();
 
     protected:
@@ -149,7 +149,7 @@ namespace browser {
         typedef typename TreeItem::Coupler::item_helper     item_helper;
         typedef typename TreeItem::Coupler::page_helper     page_helper;
 
-        WebPage(QWebEngineProfile                   *profile
+        WebPage(Profile *profile
                 , boost::intrusive_ptr<TreeItem>    item
                 , TreeScreen                        *tree_screen
                 , MetaEditor                        *editor_screen
@@ -268,6 +268,7 @@ namespace browser {
         Qt::MouseButtons        _pressedbuttons;
         // bool _openinnewtab;
         QUrl                    _loadingurl;
+        QString                 _hovered_url = Browser::_defaulthome;
         //bool _create_window_generated;
 
         //        boost::intrusive_ptr<TreeItem>  _item;
@@ -356,7 +357,7 @@ namespace browser {
 
     public:
         WebView(boost::intrusive_ptr<TreeItem>  item
-                , QWebEngineProfile             *profile    // , bool openinnewtab
+                , Profile *profile    // , bool openinnewtab
                 , TreeScreen                    *tree_screen
                 , MetaEditor                    *editor_screen
                 , Entrance                      *entrance
@@ -366,7 +367,7 @@ namespace browser {
                );
 
         //        WebView(const boost::intrusive_ptr<TreeItem> requested_item
-        //                , QWebEngineProfile *profile    // , bool openinnewtab
+        //                , Profile *profile    // , bool openinnewtab
         //                , TabWidget *tabmanager
         //                , QWidget *parent
         //                , RecordController *record_controller
@@ -440,7 +441,7 @@ namespace browser {
         Q_OBJECT
     public:
 
-        PopupWindow(QWebEngineProfile *profile)
+        PopupWindow(Profile *profile)
             : QWidget()
             , _addressbar(new QLineEdit(this))
             , _view(new PopupView(this))

@@ -65,7 +65,7 @@ public:
         void host_parent(boost::intrusive_ptr<TreeItem> &&p);
         void host(boost::intrusive_ptr<TreeItem> &&h);
 
-        boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> parent_item, int pos = 0, int mode = add_new_record_before);    //
+        boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> parent_item, const int pos = 0, const int mode = add_new_record_before);    //
         //        // Удаление потомков, начиная с позиции position массива childItems
         //        bool remove(int position, int count);
 
