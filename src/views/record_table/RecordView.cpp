@@ -387,7 +387,7 @@ QModelIndex RecordView::selection_first_proxy_index(void)
         return QModelIndex();
 
     // QModelIndex index = recordProxyModel->index( pos, 0 );
-    QModelIndex index = _record_controller->pos_to_proxyindex(pos);
+    QModelIndex index = _record_controller->proxypos_to_proxyindex(pos);
 
     return index;
 }
@@ -432,7 +432,8 @@ void RecordView::cursor_to_index(boost::intrusive_ptr<TreeItem> it)
 // Установка засветки в нужную строку на экране
 void RecordView::cursor_to_index(int pos)
 {
-    QModelIndex index = _record_controller->pos_to_proxyindex(pos); // Модельный индекс в Proxy модели
+    int proxy_pos = _record_controller->sourcepos_to_proxypos(pos);
+    QModelIndex index = _record_controller->proxypos_to_proxyindex(proxy_pos); // Модельный индекс в Proxy модели
     int pos_real = index.row();
 
     // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
@@ -497,12 +498,12 @@ void RecordView::move_cursor_to_new_record(int mode, int pos)
         scrollToBottom();
     }
 
-    int proxy_pos = _record_controller->pos_to_proxyindex(pos).row();
+    int proxy_pos = _record_controller->proxypos_to_proxyindex(pos).row();
 
     selectRow(proxy_pos);
 
 
-    QModelIndex index = _record_controller->pos_to_proxyindex(pos);
+    QModelIndex index = _record_controller->proxypos_to_proxyindex(pos);
     selectionModel()->select(index, current_tree_selection_mode);
     // Установка засветки на нужный индекс
     // Set the backlight to the desired index

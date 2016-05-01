@@ -79,10 +79,10 @@ public:
     // Действия при редактировании инфополей записи из контекстного меню
     bool edit_field_context(QModelIndex proxyIndex);
 
-    QModelIndex pos_to_proxyindex(int pos)const;
-    QModelIndex pos_to_sourceindex(int pos)const;
-    int         proxyindex_to_pos(QModelIndex index)const;
-    int         sourceindex_to_pos(QModelIndex index)const;
+    QModelIndex proxypos_to_proxyindex(int pos)const;
+    QModelIndex proxypos_to_sourceindex(int pos)const;
+    int         proxyindex_to_proxypos(QModelIndex index)const;
+    int         sourceindex_to_sourcepos(QModelIndex index)const;
     QModelIndex proxyindex_to_sourceindex(QModelIndex proxyIndex)const;
     QModelIndex sourceindex_to_proxyindex(QModelIndex sourceIndex)const;
     int         sourcepos_to_proxypos(int source_pos)const;

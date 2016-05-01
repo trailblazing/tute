@@ -738,9 +738,10 @@ void RecordController::select_id(QString id)
     //    if(_view->selection_first_pos()
     //       != sourcepos_to_proxypos(pos)
     //      ) {
-    _view->cursor_to_index(sourcepos_to_proxypos(pos));
+    int proxy_pos = sourcepos_to_proxypos(pos);
+    _view->cursor_to_index(proxy_pos);
 
-    emit _view->clicked(pos_to_proxyindex(pos));
+    emit _view->clicked(proxypos_to_proxyindex(proxy_pos));
     //    }
 
     //    }
@@ -754,8 +755,8 @@ QModelIndex RecordController::id_to_sourceindex(QString id) const
 
     // Номер записи в Source данных
     int source_pos = _source_model->position(id);
-
-    return pos_to_sourceindex(source_pos);
+    int proxy_pos = sourcepos_to_proxypos(source_pos);
+    return proxypos_to_sourceindex(proxy_pos);
 }
 
 
@@ -768,11 +769,11 @@ QModelIndex RecordController::id_to_proxyindex(QString id) const
     int source_pos = _source_model->position(id);
     int proxy_pos = sourcepos_to_proxypos(source_pos);
 
-    return pos_to_proxyindex(proxy_pos);
+    return proxypos_to_proxyindex(proxy_pos);
 }
 
 
-QModelIndex RecordController::pos_to_proxyindex(int pos) const
+QModelIndex RecordController::proxypos_to_proxyindex(int pos) const
 {
     if(pos < 0 || pos >= _proxy_model->rowCount())
         return QModelIndex();
@@ -783,12 +784,12 @@ QModelIndex RecordController::pos_to_proxyindex(int pos) const
 }
 
 
-QModelIndex RecordController::pos_to_sourceindex(int pos) const
+QModelIndex RecordController::proxypos_to_sourceindex(int pos) const
 {
     if(pos < 0 || pos >= _proxy_model->rowCount())
         return QModelIndex();
 
-    QModelIndex proxyIndex = pos_to_proxyindex(pos);
+    QModelIndex proxyIndex = proxypos_to_proxyindex(pos);
     QModelIndex index = _proxy_model->mapToSource(proxyIndex);
 
     return index;
@@ -796,7 +797,7 @@ QModelIndex RecordController::pos_to_sourceindex(int pos) const
 
 
 // Преобразование Proxy индекса в позицию на экране (так, как это будет выглядеть при Proxy модели)
-int RecordController::proxyindex_to_pos(QModelIndex index) const
+int RecordController::proxyindex_to_proxypos(QModelIndex index) const
 {
     if(!index.isValid())
         return -1;
@@ -806,7 +807,7 @@ int RecordController::proxyindex_to_pos(QModelIndex index) const
 
 
 // Преобразование Source индекса в позицию на экране (так, как это будет выглядеть при Source модели)
-int RecordController::sourceindex_to_pos(QModelIndex index) const
+int RecordController::sourceindex_to_sourcepos(QModelIndex index) const
 {
     if(!index.isValid())
         return -1;
@@ -1871,7 +1872,7 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
 
     _source_model->on_table_config_changed();
 
-    auto proxy_index = pos_to_proxyindex(source_position);
+    auto proxy_index = proxypos_to_proxyindex(source_position);
     _view->dataChanged(proxy_index, proxy_index);
 
 
