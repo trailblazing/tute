@@ -274,6 +274,7 @@ namespace browser {
                          , Entrance      *_entrance
                          , Browser       *_browser
                          , MainWindow    *_main_window
+                         , browser::Profile  *_profile
                         )
         : QTabWidget(_browser)
         , _tree_screen(_tree_screen)
@@ -296,8 +297,7 @@ namespace browser {
         , _lineeditcompleter(nullptr)                 // new QCompleter(_completionModel, this)
         , _lineedits(new QStackedWidget(this))
         , _tabbar(new TabBar(this))
-        , _profile(globalparameters.profile()   // QWebEngineProfile::defaultProfile()
-                  )
+        , _profile(_profile) // globalparameters.profile()   // QWebEngineProfile::defaultProfile()
         , _fullscreenview(nullptr)
         , _fullscreennotification(nullptr)
           //        , _active_record(this)

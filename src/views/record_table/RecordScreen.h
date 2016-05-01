@@ -34,13 +34,14 @@ namespace browser {
     class Browser;
     class ToolbarSearch;
     class TabWidget;
+    class Profile;
 }
 
 class RecordScreen : public QWidget {
     Q_OBJECT
 
 public:
-    RecordScreen(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, browser::Browser *_browser, HidableTabWidget *_vtabwidget, MainWindow *_main_window);
+    RecordScreen(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, browser::Browser *_browser, HidableTabWidget *_vtabwidget, MainWindow *_main_window, browser::Profile *_profile);
 
     virtual ~RecordScreen();
 

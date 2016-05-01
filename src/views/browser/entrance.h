@@ -88,6 +88,7 @@ namespace browser {
                  , HidableTabWidget *_vtabwidget
                  , MainWindow *_main_window
                  , AppConfig &_appconfig, const QString &style_source
+                 , browser::Profile *_profile
                  , Qt::WindowFlags flags
                  = 0
                 );
@@ -205,8 +206,9 @@ namespace browser {
         AppConfig                       &_appconfig;
         // RecordController                *_record_controller;
         QString                         _style_source;
+        browser::Profile                *_profile;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
-        QAction                         *_actionFreeze;
+        //        QAction                         *_actionFreeze;
         //struct BrowserViewPrivate *d;
         //        QDockWidget *_dockwidget;
         //        DockedWindow *_browser;

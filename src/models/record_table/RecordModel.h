@@ -135,8 +135,8 @@ public:
 
     int count()const; // {return _tabmanager->count();}
 
-    void index_current(int _index);
-    int index_current()const;
+    void current_position(int _index);
+    int current_position()const;
 
 
 

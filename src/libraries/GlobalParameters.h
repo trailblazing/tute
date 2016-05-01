@@ -46,7 +46,7 @@ public:
 
 
     browser::Profile *profile();
-    void profile(browser::Profile *profile);
+    void profile(browser::Profile *profile_);
 
     QSplitter *find_splitter();
     void find_splitter(QSplitter *_find_splitter);

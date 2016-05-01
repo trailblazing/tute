@@ -41,6 +41,7 @@ RecordScreen::RecordScreen(
     , browser::Browser  *_browser
     , HidableTabWidget  *_vtabwidget
     , MainWindow        *_main_window
+    , browser::Profile  *_profile
 )
     : QWidget(_vtabwidget)
     , _save_in_new_branch(new QAction(tr("Save in new branch"), this))
@@ -74,6 +75,7 @@ RecordScreen::RecordScreen(
                                          , _entrance
                                          , _browser
                                          , _main_window
+                                         , _profile
                                         ))
     , _record_controller(_tabmanager->record_controller())
       //    , _record_controller(new RecordController(object_name
@@ -212,7 +214,7 @@ void RecordScreen::setup_actions(void)
 
         TreeScreen *_tree_screen = globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
         assert(_tree_screen);
-
+        auto tree_view = _tree_screen->tree_view();
         browser::Entrance *_entrance = globalparameters.entrance();
         assert(_entrance);
         auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
@@ -222,7 +224,7 @@ void RecordScreen::setup_actions(void)
         if(_tree_screen && _entrance) {
 
             QMap<QString, QString> data;
-            auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+            auto _source_model = [&]() {return tree_view->source_model();};
             //                auto current_root_item = _source_model()->item(_index);
 
             data["id"]      =  get_unical_id(); //current_root_item->id();     // source_model->root_item()->id();     //
@@ -254,18 +256,18 @@ void RecordScreen::setup_actions(void)
 
             if(modified) {
 
-                _tree_screen->tree_view()->view_paste_children_from_children(    // view_paste_sibling
-                    TreeModel::ModelIndex(_source_model, _tree_screen->tree_view()->session_root_item()) // _tree_screen->tree_view()->current_index() //,
+                tree_view->view_paste_children_from_children(    // view_paste_sibling
+                    TreeModel::ModelIndex(_source_model, tree_view->session_root_item()) // _tree_screen->tree_view()->current_index() //,
                     , branch_item
                     , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );
 
                 //                _tree_screen->resetup_model(_source_model()->root_item());
-                _tree_screen->tree_view()->synchronized(false);
-                _tree_screen->tree_view()->know_model_save();
+                tree_view->synchronized(false);
+                tree_view->know_model_save();
             }
 
-            _source_model()->update_index(_source_model()->index(_tree_screen->tree_view()->session_root_item()));
+            _source_model()->update_index(_source_model()->index(tree_view->session_root_item()));
         }
 
         //        }
@@ -335,8 +337,7 @@ void RecordScreen::setup_actions(void)
 
     _delete->setStatusTip(tr("Delete note(s)"));
     _delete->setIcon(QIcon(":/resource/pic/note_delete.svg"));
-    connect(_delete, &QAction::triggered, _tree_screen
-    , [&](bool checked = false) {
+    connect(_delete, &QAction::triggered, _tree_screen, [&](bool checked = false)->void {
         Q_UNUSED(checked);
         auto _tree_view = _tree_screen->tree_view();
         auto _current_model = [&]() {return _tree_view->source_model();};
@@ -347,8 +348,7 @@ void RecordScreen::setup_actions(void)
             , "cut"
             , false
         );
-    }
-           );
+    });
 
 
 
@@ -480,7 +480,7 @@ void RecordScreen::setup_ui(void)
     if(appconfig.interface_mode() == "desktop") {
         insert_action_as_button<QToolButton>(_toolsline, _edit_field);
         insert_action_as_button<QToolButton>(_toolsline, _close);
-        insert_action_as_button<QToolButton>(_toolsline, _delete);
+
     }
 
     insert_action_as_button<QToolButton>(_toolsline, _action_walk_history_previous);
@@ -493,6 +493,7 @@ void RecordScreen::setup_ui(void)
     insert_action_as_button<QToolButton>(_toolsline, _cut);
     insert_action_as_button<QToolButton>(_toolsline, _copy);
     insert_action_as_button<QToolButton>(_toolsline, _paste);
+    insert_action_as_button<QToolButton>(_toolsline, _delete);
 
     _toolsline->addSeparator();
 
@@ -702,55 +703,63 @@ void RecordScreen::tools_update(void)
     // Добавлять можно к любой ветке
     _addnew_to_end->setEnabled(true);
 
-    QItemSelectionModel *item_selection_model = _record_controller->view()->selectionModel();
     RecordView *view = _record_controller->view();
+    QItemSelectionModel *item_selection_model = view->selectionModel();
+
+    int selected_rows = (item_selection_model->selectedRows()).size();
+    bool has_selection = item_selection_model->hasSelection();
+    bool sorting_enabled = view->isSortingEnabled();
 
     // Добавление записи до
     // Добавлять "до" можно только тогда, когда выбрана только одна строка
     // и не включена сортировка
-    if(item_selection_model->hasSelection()
-       && (item_selection_model->selectedRows()).size() == 1
-       && view->isSortingEnabled() == false
+    if(has_selection
+       && 1 == selected_rows
+       && sorting_enabled == false
       ) {
         _addnew_before->setEnabled(true);
-    }
-
-    // Добавление записи после
-    // Добавлять "после" можно только тогда, когда выбрана только одна строка
-    // и не включена сортировка
-    if(item_selection_model->hasSelection()
-       && (item_selection_model->selectedRows()).size() == 1
-       && view->isSortingEnabled() == false
-      ) {
         _addnew_after->setEnabled(true);
     }
 
+    //    // Добавление записи после
+    //    // Добавлять "после" можно только тогда, когда выбрана только одна строка
+    //    // и не включена сортировка
+    //    if(item_selection_model->hasSelection()
+    //       && (item_selection_model->selectedRows()).size() == 1
+    //       && view->isSortingEnabled() == false
+    //      ) {
+    //        _addnew_after->setEnabled(true);
+    //    }
+
     // Редактирование записи
     // Редактировать можно только тогда, когда выбрана только одна строка
-    if(item_selection_model->hasSelection()
-       && (item_selection_model->selectedRows()).size() == 1
+    if(has_selection    // item_selection_model->hasSelection()
+       && 1 == selected_rows  // (item_selection_model->selectedRows()).size() == 1
       ) {
         _edit_field->setEnabled(true);
     }
 
     // Удаление записи
     // Пункт активен только если запись (или записи) выбраны в списке
-    if(item_selection_model->hasSelection()) {
+    if(has_selection) {    // item_selection_model->hasSelection()
+
+        _cut->setEnabled(true);
+        _copy->setEnabled(true);
         _close->setEnabled(true);
         _delete->setEnabled(true);
     }
 
-    // Удаление с копированием записи в буфер обмена
-    // Пункт активен только если запись (или записи) выбраны в списке
-    if(item_selection_model->hasSelection()) {
-        _cut->setEnabled(true);
-    }
+    //    // Удаление с копированием записи в буфер обмена
+    //    // Пункт активен только если запись (или записи) выбраны в списке
+    //    if(item_selection_model->hasSelection()) {
+    //        _cut->setEnabled(true);
+    //    }
 
-    // Копирование записи в буфер обмена
-    // Пункт активен только если запись (или записи) выбраны в списке
-    if(item_selection_model->hasSelection()) {
-        _copy->setEnabled(true);
-    }
+    //    // Копирование записи в буфер обмена
+    //    // Пункт активен только если запись (или записи) выбраны в списке
+    //    if(item_selection_model->hasSelection()) {
+    //        _copy->setEnabled(true);
+    //    }
 
     // Вставка записи из буфера обмена
     // Вставлять записи можно только тогда, когда выбрана
@@ -758,14 +767,14 @@ void RecordScreen::tools_update(void)
     // или не выбрано ни одной строки (тогда добавляется в конец списка)
     // или записей вообще нет
     // И проверяется, содержит ли буфер обмена данные нужного формата
-    if((item_selection_model->hasSelection() && (item_selection_model->selectedRows()).size() == 1)
-       || item_selection_model->hasSelection() == false
-       || view->model()->rowCount() == 0
+    if((has_selection && 1 == selected_rows) //(item_selection_model->hasSelection() && (item_selection_model->selectedRows()).size() == 1)
+       || !has_selection    // item_selection_model->hasSelection() == false
+       || 0 == view->model()->rowCount()
       ) {
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData();
+        const QMimeData *mime_data = QApplication::clipboard()->mimeData();
 
-        if(mimeData != nullptr) {
-            if(mimeData->hasFormat("mytetra/records")) {
+        if(mime_data != nullptr) {
+            if(mime_data->hasFormat("mytetra/records")) {
                 _paste->setEnabled(true);
             }
         }
@@ -775,10 +784,10 @@ void RecordScreen::tools_update(void)
     // Пункт возможен только когда выбрана одна строка
     // и указатель стоит не на начале списка
     // и не включена сортировка
-    if(item_selection_model->hasSelection()
-       && (item_selection_model->selectedRows()).size() == 1
+    if(has_selection    // item_selection_model->hasSelection()
+       && 1 == selected_rows // (item_selection_model->selectedRows()).size() == 1
+       && false == sorting_enabled  // view->isSortingEnabled() == false
        && view->is_selected_set_to_top() == false
-       && view->isSortingEnabled() == false
       ) {
         _action_move_up->setEnabled(true);
     }
@@ -787,16 +796,16 @@ void RecordScreen::tools_update(void)
     // Пункт возможен только когда выбрана одна строка
     // и указатель стоит не в конце списка
     // и не включена сортировка
-    if(item_selection_model->hasSelection()
-       && (item_selection_model->selectedRows()).size() == 1
+    if(has_selection    // item_selection_model->hasSelection()
+       && 1 == selected_rows // (item_selection_model->selectedRows()).size() == 1
+       && false == sorting_enabled  // view->isSortingEnabled() == false
        && view->is_selected_set_to_bottom() == false
-       && view->isSortingEnabled() == false
       ) {
         _action_move_dn->setEnabled(true);
     }
 
     // Обновляется состояние области редактирования текста
-    if(item_selection_model->hasSelection()
+    if(has_selection    // item_selection_model->hasSelection()
        && _record_controller->row_count() > 0
       ) {
         qDebug() << "In table select present";
@@ -838,8 +847,9 @@ void RecordScreen::select_id(QString id)
 {
     _tabmanager->setCurrentIndex(_record_controller->source_model()->position(id));
 
-    if(_record_controller->view()->selection_first_id() != id)
+    if(_record_controller->view()->selection_first_id() != id) {
         _record_controller->select_id(id);
+    }
 }
 
 

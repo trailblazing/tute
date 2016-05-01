@@ -509,7 +509,7 @@ void QtSingleApplication::main_window()
 
 
     // Создание объекта главного окна
-    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig); // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
+    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig, _profile); // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
 
     _globalparameters.mainwindow(_window);
 
@@ -636,7 +636,7 @@ QtSingleApplication::QtSingleApplication(
     , _peer(new QtLocalPeer(this, QString()))
     , _act_window(nullptr)
     , _gui_enabled(GUIenabled)
-    , _profile(new browser::Profile(this))
+    , _profile(new browser::Profile(profile_storage_name, this))
     , _localserver(new QLocalServer(this))
     , _private_profile(nullptr)
     , _private_browsing(false)
@@ -675,7 +675,7 @@ QtSingleApplication::QtSingleApplication(
     , _peer(new QtLocalPeer(this, appId))
     , _act_window(nullptr)
     , _gui_enabled(true)
-    , _profile(new browser::Profile(this))
+    , _profile(new browser::Profile(profile_storage_name, this))
     , _localserver(new QLocalServer(this))
     , _private_profile(nullptr)
     , _private_browsing(false)
@@ -960,6 +960,8 @@ QtSingleApplication::~QtSingleApplication()
         _window->deleteLater(); // delete _window;
         _window = nullptr;
     }
+
+    if(_profile) {_profile->deleteLater(); _profile = nullptr;}
 }
 
 //#if defined(Q_OS_OSX)
@@ -1080,26 +1082,25 @@ void QtSingleApplication::loadSettings()
     settings.endGroup();
 
 
-    //    // this group lead chrome_odthread deadlock? or initialize failure
-    //    settings.beginGroup(QLatin1String("cookies"));
+    // this group lead chrome_odthread deadlock? or initialize failure
+    settings.beginGroup(QLatin1String("cookies"));
 
-    //    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
-    //                //                QWebEngineProfile::AllowPersistentCookies   //
-    //                //                QWebEngineProfile::ForcePersistentCookies  //
-    //                settings.value(QLatin1String("persistentCookiesPolicy")).toInt()
-    //            );
-    //    defaultProfile->setPersistentCookiesPolicy(persistentCookiesPolicy);
-    //    QString pdataPath = settings.value(QLatin1String("persistentDataPath")).toString();
-    //    QDir cookie_path(pdataPath);
+    QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
+                settings.value(QLatin1String("persistentCookiesPolicy")).toInt()    // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
+            );
+    _profile->setPersistentCookiesPolicy(persistentCookiesPolicy);
+    QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
+    QDir cookie_path(persistent_data_path);
 
-    //    if(!cookie_path.exists()) {
-    //        //        QDir dir;
-    //        cookie_path.mkpath(pdataPath);
-    //    }
+    if(!cookie_path.exists()) {
+        //        QDir dir;
+        cookie_path.mkpath(persistent_data_path);
+    }
 
-    //    defaultProfile->setPersistentStoragePath(pdataPath);
+    _profile->setPersistentStoragePath(persistent_data_path);
 
-    //    settings.endGroup();
+    settings.endGroup();
+
 
     settings.beginGroup(QLatin1String("proxy"));
     QNetworkProxy proxy;
@@ -1444,7 +1445,7 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
 
     if(privateBrowsing) {
         if(!_private_profile)
-            _private_profile = new browser::Profile(this);  // new QWebEngineProfile(this);
+            _private_profile = new browser::Profile(profile_storage_name, this);  // new QWebEngineProfile(this);
 
         for(auto &window : globalparameters.entrance()->browsers()) {
             window->tabWidget()->setProfile(_private_profile);

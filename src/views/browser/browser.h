@@ -52,6 +52,7 @@
 #include <QWebEngineSettings>
 
 #include <QWebEngineProfile>
+//#include <QtWebEngine/QQuickWebEngineProfile>
 #include <QWebEngineUrlRequestInterceptor>
 
 #include "controllers/record_table/RecordController.h"
@@ -73,6 +74,7 @@ class FingScreen;
 class TreeModel;
 class TreeScreen;
 
+extern const char *profile_storage_name;
 
 QT_BEGIN_NAMESPACE
 
@@ -89,18 +91,19 @@ namespace browser {
 
 
     class UrlRequestInterceptor
-        : public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>
-        , public QWebEngineUrlRequestInterceptor {
+        : // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
+          public QWebEngineUrlRequestInterceptor {
     public:
         UrlRequestInterceptor(QObject *p);
         virtual void interceptRequest(QWebEngineUrlRequestInfo &info);
     };
 
     class Profile
-        : public boost::intrusive_ref_counter<Profile, boost::thread_safe_counter>
-        , public QWebEngineProfile {
+        : // public boost::intrusive_ref_counter<Profile, boost::thread_safe_counter>,
+          public QWebEngineProfile { // QQuickWebEngineProfile
     public:
-        Profile(QObject *p);
+        Profile(const QString &name, QObject *p);
+        ~Profile();
     private:
         UrlRequestInterceptor *_urlrequestinterceptor;
     };
@@ -124,6 +127,7 @@ namespace browser {
                 , MainWindow        *_main_window
                 , Entrance          *_entrance
                 , const QString     &style_source
+                , browser::Profile  *_profile
                 , Qt::WindowFlags   flags
                );
 

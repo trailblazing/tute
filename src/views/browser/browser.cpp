@@ -94,7 +94,7 @@
 
 extern GlobalParameters globalparameters;
 //Record *default_record = nullptr;
-
+const char *profile_storage_name = "cookie";
 
 namespace browser {
 
@@ -126,9 +126,41 @@ namespace browser {
         }
     }
 
-    Profile::Profile(QObject *p): QWebEngineProfile(p), _urlrequestinterceptor(new UrlRequestInterceptor(p))
+    Profile::~Profile()
     {
+        _urlrequestinterceptor->deleteLater();
+    }
+
+    Profile::Profile(const QString &name, QObject *p)
+        :  QWebEngineProfile(name, p) // QQuickWebEngineProfile(p)
+        , _urlrequestinterceptor(new UrlRequestInterceptor(p))
+    {
+        //        setStorageName(profile_storage_name);
         setRequestInterceptor(_urlrequestinterceptor);
+
+        QSettings settings;
+        // this group lead chrome_odthread deadlock? or initialize failure
+        settings.beginGroup(QLatin1String("cookies"));
+
+        setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
+        setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies); // AllowPersistentCookies
+
+        QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
+                    settings.value(QLatin1String("persistentCookiesPolicy")).toInt()    // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
+                );
+        setPersistentCookiesPolicy(persistentCookiesPolicy);
+        QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
+        QDir cookie_path(persistent_data_path);
+
+        if(!cookie_path.exists()) {
+            //        QDir dir;
+            cookie_path.mkpath(persistent_data_path);
+        }
+
+        setPersistentStoragePath(persistent_data_path);
+
+        settings.endGroup();
+
     }
 
     // const char *DockedWindow::_defaulthome = "about:blank";
@@ -463,7 +495,7 @@ namespace browser {
                      , MainWindow       *_main_window
                      , Entrance         *_entrance
                      , const QString    &style_source
-                     , Qt::WindowFlags  flags
+                     , Profile *_profile, Qt::WindowFlags  flags
                     )
         : QMainWindow(0, flags)
           //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
@@ -475,7 +507,9 @@ namespace browser {
                                           , _entrance
                                           , this
                                           , _vtabwidget
-                                          , _main_window))
+                                          , _main_window
+                                          , _profile
+                                         ))
         , _main_window(_main_window)
         , _tabmanager(_record_screen->tabmanager())
           //        , _toolbarsearch(_find_screen->toolbarsearch())

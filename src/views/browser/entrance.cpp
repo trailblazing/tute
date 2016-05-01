@@ -418,6 +418,7 @@ namespace browser {
                            , _main_window
                            , this
                            , _style_source
+                           , _profile
                            , Qt::MaximizeUsingFullscreenGeometryHint
                           ); //, dock_widget
 
@@ -586,6 +587,7 @@ namespace browser {
                        , MainWindow *_main_window
                        , AppConfig   &_appconfig
                        , const QString &style_source
+                       , browser::Profile *_profile
                        , Qt::WindowFlags flags
                       )
         : QDockWidget(_main_window, flags)  //, _application(application)
@@ -597,6 +599,7 @@ namespace browser {
         , _main_window(_main_window)
         , _appconfig(_appconfig)
         , _style_source(style_source)
+        , _profile(_profile)
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)) //| Qt::SplashScreen
 
 

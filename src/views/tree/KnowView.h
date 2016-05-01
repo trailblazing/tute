@@ -49,6 +49,18 @@ public:
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, QString)> add_new;
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, const add_new &)> add_new_delegate;
 
+
+    struct LocalLizeInitializer {
+        LocalLizeInitializer(KnowView *_tree_view);
+        //        QModelIndexList index_list() {return _origin_index_list;}
+        //        QModelIndex     index() {return _index;}
+        QItemSelection  operator()();
+    private:
+        KnowView        *_tree_view;
+        //        QModelIndexList _index_list;
+        //        QModelIndex     _index;
+    };
+
     explicit KnowView(QString _name
                       , TreeScreen *_parent // QWidget *_parent = 0
                      );
@@ -72,8 +84,8 @@ public:
     QModelIndex select_as_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
     QModelIndex select_as_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
     void update_selected_indexes(void);
-    QModelIndexList index_localize(const QModelIndexList _origin_index_list);
-    bool is_index_localized(const QModelIndexList _origin_index_list)const;
+    //    QModelIndexList index_localize(const QModelIndexList _origin_index_list);
+    //    bool is_index_localized(const QModelIndexList _origin_index_list)const;
 
     //    template<bool insert_sibling_branch = true>
     boost::intrusive_ptr<TreeItem> view_add_new(TreeModel::ModelIndex _modelindex   // std::function<KnowModel *()> _current_model, QModelIndex _current_index

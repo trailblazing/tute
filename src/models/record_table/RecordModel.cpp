@@ -829,12 +829,12 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(int index)
 
 
 
-void RecordModel::index_current(int _index)
+void RecordModel::current_position(int _index)
 {
     _tabmanager->setCurrentIndex(_index);
 }
 
-int RecordModel::index_current()const {return _tabmanager->currentIndex();}
+int RecordModel::current_position()const {return _tabmanager->currentIndex();}
 
 
 

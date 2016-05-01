@@ -39,18 +39,26 @@ int TreeModel::columnCount(const QModelIndex &parent) const
 
     //    // Ранее число столбцов вычислялось исходя из
     //    // количества полей в корневом элементе
+    // Previously, the number of columns is calculated from
+    // Number of fields in the root element
     //    // return rootItem->fieldCount();
 
     //    return 1;
 
     int result = 1;
+    int root_path_size = _root_item->path_list().size();
+    int currnet_index_path_size = parent.isValid() ? static_cast<TreeItem *>(parent.internalPointer())->path_list().size() : root_path_size;
 
-    if(parent.isValid()) {
-        result = static_cast<TreeItem *>(parent.internalPointer())->path_list().size();
-    } else {
-        result = _root_item->path_list().size();
-    }
+    //    if(parent.isValid()) {
 
+    //        currnet_index_path_size = static_cast<TreeItem *>(parent.internalPointer())->path_list().size();
+    //        int columncount = currnet_index_path_size - root_path_size;
+    //        assert(columncount > 0);
+    //        result = columncount;   // static_cast<TreeItem *>(parent.internalPointer())->path_list().size() - _root_item->path_list().size();
+    //    } else {
+    //        result = _root_item->path_list().size() - _root_item->path_list().size();
+    //    }
+    result = currnet_index_path_size - root_path_size + 1;
     return result;
 }
 
@@ -131,8 +139,15 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
     //        return QModelIndex();
     //    }
 
-    if(!current_index.isValid() || (0 == current_index.column())) {
-        boost::intrusive_ptr<TreeItem> current_item  = current_index.isValid() ? this->item(current_index) : _root_item;
+    if(0 <= current_index.column())assert(current_index.isValid());
+
+    //        if(0 == current_index.column())assert(!current_index.isValid());
+    if(!current_index.isValid() || (0 <= current_index.column())) { // if(!current_index.isValid() || (0 == current_index.column())) {
+
+
+
+        boost::intrusive_ptr<TreeItem> current_item  = current_index.isValid()  // || 0 < current_index.column()
+                                                       ? this->item(current_index) : _root_item;
 
         if(row >= 0 && row < current_item->count_direct()) {
             boost::intrusive_ptr<TreeItem> child_item   = current_item->item_direct(row);

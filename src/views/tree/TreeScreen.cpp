@@ -333,8 +333,8 @@ void TreeScreen::setup_actions(void)
     connect(ac, &QAction::triggered, this
     , [this](bool checked = false)->void {
         Q_UNUSED(checked);
-        QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
-        QModelIndexList _selectitems = _tree_view->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
+        //        QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
+        QModelIndexList _selectitems = KnowView::LocalLizeInitializer(_tree_view)().indexes();  // ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
         // view_remove(_selectitems, "cut");
         _tree_view->view_delete_permanent([&]() {return _tree_view->source_model();}, [&]() {QList<boost::intrusive_ptr<TreeItem>> r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r;}(), "cut", false);
     }); //, &TreeScreen::del_branch

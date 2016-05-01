@@ -416,7 +416,7 @@ QString GlobalParameters::application_name(void)
 }
 
 browser::Profile *GlobalParameters::profile() {return _profile;}
-void GlobalParameters::profile(browser::Profile *profile) {_profile = profile;}
+void GlobalParameters::profile(browser::Profile *profile_) {_profile = profile_;}
 
 
 QSplitter *GlobalParameters::find_splitter() {return _find_splitter;}

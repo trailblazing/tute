@@ -117,13 +117,13 @@ RecordView *RecordController::view(void)
 
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-void RecordController::item_click(const QModelIndex &index)
+void RecordController::item_click(const QModelIndex &proxy_index)
 {
     // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
-    QModelIndex sourceIndex = proxyindex_to_sourceindex(index);
+    QModelIndex source_index = proxyindex_to_sourceindex(proxy_index);
 
     // Позиция записи в списке
-    int source_pos = sourceIndex.row();
+    int source_pos = source_index.row();
     qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
 
     select_pos(sourcepos_to_proxypos(source_pos));  // ?
@@ -132,7 +132,7 @@ void RecordController::item_click(const QModelIndex &index)
     _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
-    if(sourceIndex.isValid()) {
+    if(source_index.isValid()) {
         sychronize_attachtable_to_item(source_pos);
         browser_update(source_pos); // if new one, create it? no, you can't click a record which does not exist.
     }
@@ -332,10 +332,10 @@ void RecordController::browser_update(const int source_pos)
 // so if our records are come from different tree path, we must switch the parent node, our give them a sharing parent.
 // that's why we need a page_controller,  or we should implement a multi table screen architecture -- but with this design,
 // we can not settle the medium results easily.
-void RecordController::sychronize_metaeditor_to_item(const int _index)
+void RecordController::sychronize_metaeditor_to_item(const int pos)
 {
 
-    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(_index);
+    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(pos);
     assert(item);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -350,7 +350,7 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     // В таблице конечных данных запоминается какая запись была выбрана
     // чтобы затем при выборе этой же подветки засветка автоматически
     // установилась на последнюю рабочую запись
-    this->source_model()->index_current(_index);   // item->work_pos(pos);
+    this->source_model()->current_position(pos);   // item->work_pos(pos);
 
 
     // Устанавливается функция обратного вызова для записи данных
@@ -360,12 +360,12 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->save_text_area();
 
-    auto it = item->item_direct(_index);
+    auto it = item->item_direct(pos);
     // Для новой выбраной записи выясняется директория и основной файл
-    QString currentDir = it->field("dir");
-    QString currentFile = it->field("file");
-    QString fullDir = appconfig.tetra_dir() + "/base/" + currentDir;
-    QString fullFileName = fullDir + "/" + currentFile;
+    QString currentDir      = it->field("dir");
+    QString currentFile     = it->field("file");
+    QString fullDir         = appconfig.tetra_dir() + "/base/" + currentDir;
+    QString fullFileName    = fullDir + "/" + currentFile;
     qDebug() << " File " << fullFileName << "\n";
 
     // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
@@ -380,7 +380,7 @@ void RecordController::sychronize_metaeditor_to_item(const int _index)
     // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
     // Before the opening of the editor it attempts to get the text records
     // This call will create a text file with the record if it is not already created (think remake)
-    item->text(_index);
+    item->text(pos);
 
     // Редактору задаются имя файла и директории
     // И дается команда загрузки файла
@@ -739,6 +739,8 @@ void RecordController::select_id(QString id)
     //       != sourcepos_to_proxypos(pos)
     //      ) {
     _view->cursor_to_index(sourcepos_to_proxypos(pos));
+
+    emit _view->clicked(pos_to_proxyindex(pos));
     //    }
 
     //    }
@@ -1338,10 +1340,10 @@ void RecordController::on_edit_fieldcontext(void)
 
 
 // Действия при нажатии кнопки редактирования записи
-void RecordController::edit_field_context(QModelIndex proxyIndex)
+bool RecordController::edit_field_context(QModelIndex proxyIndex)
 {
     qDebug() << "RecordTableController::editFieldContext()";
-
+    bool result = false;
     QModelIndex sourceIndex = proxyindex_to_sourceindex(proxyIndex);
     int pos = sourceIndex.row(); // Номер строки в базе
 
@@ -1362,17 +1364,21 @@ void RecordController::edit_field_context(QModelIndex proxyIndex)
 
     int i = edit_record_dialog.exec();
 
-    if(i == QDialog::Rejected)
-        return; // Была нажата отмена, ничего ненужно делать
+    if(i != QDialog::Rejected) {
+        //        result; // Была нажата отмена, ничего ненужно делать
 
-    // Измененные данные записываются
-    edit_field(pos,
-               edit_record_dialog.getField("pin"),
-               edit_record_dialog.getField("name"),
-               edit_record_dialog.getField("author"),
-               edit_record_dialog.getField("home"),
-               edit_record_dialog.getField("url"),
-               edit_record_dialog.getField("tags"));
+        // Измененные данные записываются
+        edit_field(pos,
+                   edit_record_dialog.getField("pin"),
+                   edit_record_dialog.getField("name"),
+                   edit_record_dialog.getField("author"),
+                   edit_record_dialog.getField("home"),
+                   edit_record_dialog.getField("url"),
+                   edit_record_dialog.getField("tags"));
+        result = true;
+    }
+
+    return result;
 }
 
 

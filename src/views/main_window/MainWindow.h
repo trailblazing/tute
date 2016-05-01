@@ -59,6 +59,7 @@ namespace browser {
     class DownloadManager;
     class HistoryMenu;
     class BookmarksMenu;
+    class Profile;
 }
 
 class TreeScreen;
@@ -80,7 +81,8 @@ class MainWindow : public QMainWindow {
 public:
     MainWindow(GlobalParameters &_globalparameters
                , AppConfig &_appconfig
-               , DataBaseConfig &_databaseconfig);
+               , DataBaseConfig &_databaseconfig
+               , browser::Profile *_profile);
 
     ~MainWindow();
 

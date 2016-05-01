@@ -253,6 +253,7 @@ namespace browser {
                   , Entrance        *_entrance
                   , Browser         *_browser
                   , MainWindow      *_main_window
+                  , Profile         *_profile
                  );
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
@@ -290,7 +291,7 @@ namespace browser {
         QByteArray saveState() const;
         bool restoreState(const QByteArray &state);
 
-        void setProfile(Profile *setProfile);
+        void setProfile(Profile *profile);
         WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
         //        WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;

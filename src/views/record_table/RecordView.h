@@ -1,6 +1,11 @@
 #ifndef RECORDLISTSCREEN_H_
 #define RECORDLISTSCREEN_H_
 
+
+#include <boost/smart_ptr/intrusive_ref_counter.hpp>
+#include <boost/smart_ptr/intrusive_ptr.hpp>
+
+
 #include <QWidget>
 #include <QTableView>
 #include <QHBoxLayout>
@@ -16,6 +21,8 @@
 class ClipboardRecords;
 class RecordController;
 class RecordScreen;
+class TreeItem;
+
 
 class RecordView : public QTableView {
     Q_OBJECT
@@ -37,7 +44,8 @@ public:
     int selection_first_pos(void);
     QString selection_first_id(void);
 
-    void cursor_to_index(int _index);
+    void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
+    void cursor_to_index(int pos);
 
     QModelIndex selection_first_proxy_index(void);
     QModelIndex selection_first_source_index(void);
@@ -47,7 +55,7 @@ public:
 
     ClipboardRecords *get_selected_records(void);
 
-    void move_cursor_to_new_record(int mode, int _index);
+    void move_cursor_to_new_record(int mode, int pos);
     //    void on_parent_resizevent(QResizeEvent *e);
 
 
@@ -80,7 +88,7 @@ protected slots:
     // является переопределенным, так как его тип virtual protected slot
     virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    void on_click_to_record(const QModelIndex &index);
+    void on_click_to_record(const QModelIndex &proxy_index);
 
 protected:
 
@@ -99,7 +107,7 @@ protected:
 
     // Реакия на выбор записи мышкой или клавишами
     // The response to the record selection with the mouse or keys
-    void click_record(const QModelIndex &index);
+    void click_record(const QModelIndex &proxy_index);
 
     bool event(QEvent *event);
     bool gesture_event(QGestureEvent *event);

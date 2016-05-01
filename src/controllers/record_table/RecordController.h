@@ -64,7 +64,7 @@ public:
     RecordModel *source_model();    // {return _source_model;}
     RecordProxyModel *proxy_model();
     browser::TabWidget *tabmanager() {return _tabmanager;}
-    void item_click(const QModelIndex &index);
+    void item_click(const QModelIndex &proxy_index);
 
     //    bool is_tree_item_exists(void);
     //    void reset_tabledata_test(TableData *rtData);
@@ -77,7 +77,7 @@ public:
 
     void url_load(QModelIndex proxyIndex);
     // Действия при редактировании инфополей записи из контекстного меню
-    void edit_field_context(QModelIndex proxyIndex);
+    bool edit_field_context(QModelIndex proxyIndex);
 
     QModelIndex pos_to_proxyindex(int pos)const;
     QModelIndex pos_to_sourceindex(int pos)const;
@@ -108,7 +108,7 @@ public:
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
     //    boost::intrusive_ptr<TreeItem> tree_item();
-    void sychronize_metaeditor_to_item(const int _index);
+    void sychronize_metaeditor_to_item(const int pos);
     void sychronize_attachtable_to_item(const int pos);
 
     void addnew_blank(int mode);

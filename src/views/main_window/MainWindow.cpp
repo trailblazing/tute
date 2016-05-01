@@ -50,11 +50,10 @@ const char *record_view_multi_instance_name     = "record_view";
 
 extern const char *action_find_in_base;
 
-MainWindow::MainWindow(
-    GlobalParameters    &_globalparameters
-    , AppConfig         &_appconfig
-    , DataBaseConfig    &_databaseconfig
-)
+MainWindow::MainWindow(GlobalParameters    &_globalparameters
+                       , AppConfig         &_appconfig
+                       , DataBaseConfig    &_databaseconfig
+                       , browser::Profile *_profile)
     : QMainWindow()
     , _globalparameters(_globalparameters)
     , _appconfig(_appconfig)
@@ -84,6 +83,7 @@ MainWindow::MainWindow(
                                       , this
                                       , _appconfig
                                       , _globalparameters.style_source()
+                                      , _profile
                                       , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
                                      ))
     , _download(new browser::DownloadManager(download_manager_singleton_name, _vtabwidget))

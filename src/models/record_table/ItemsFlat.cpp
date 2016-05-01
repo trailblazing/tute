@@ -1690,15 +1690,16 @@ ItemsFlat::Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boos
 
                 //        item->is_registered_to_record_controller_and_tabmanager(true);
 
-                if(mode == add_new_record_to_end) {         // В конец списка
+                if(mode == add_new_record_to_end) {         // В конец списка           // mode == 0
                     _parent->_child_linkers << this;        // _self;
                     result_should_be_position = _parent->_child_linkers.size() - 1; // parent may be empty before
-                } else if(mode == add_new_record_before) {  // Перед указанной позицией
+                } else if(mode == add_new_record_before) {  // Перед указанной позицией // mode == 1
                     _parent->_child_linkers.insert(pos, this);
-                    result_should_be_position = pos;
-                } else if(mode == add_new_record_after) {   // После указанной позиции
+                    result_should_be_position = pos < 0 ? 0 : pos;
+                } else if(mode == add_new_record_after) {   // После указанной позиции  // mode == 2
                     _parent->_child_linkers.insert(pos + 1, this);
-                    result_should_be_position = _parent->_child_linkers.size() == 1 ? pos : pos + 1;    // parent may be empty before
+                    auto last = _parent->_child_linkers.size() - 1;
+                    result_should_be_position = pos >= last ? last : pos + 1;  // parent may be empty before
                 }
 
                 if(this->_host_parent != _parent)this->_host_parent = _parent;
