@@ -60,6 +60,7 @@
 #include <QWebEngineSettings>
 #include <QWebEngineDownloadItem>
 
+extern std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 namespace browser {
 
@@ -69,7 +70,9 @@ namespace browser {
         as update the information/progressbar and report errors.
      */
 
-    DownloadWidget::DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent)
+    DownloadWidget::DownloadWidget(QWebEngineDownloadItem   *download
+                                   , DownloadManager        *parent
+                                  )
         : QWidget(parent)
         , std::enable_shared_from_this<DownloadWidget>()
         , _bytesreceived(0)
@@ -84,6 +87,27 @@ namespace browser {
         connect(openButton, &FlatToolButton::clicked, this, &DownloadWidget::open);
 
         if(download) {
+            assert(download->state() == QWebEngineDownloadItem::DownloadRequested);
+            QSettings settings;
+            settings.beginGroup(QLatin1String("downloadmanager"));
+            QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
+            settings.endGroup();
+
+
+            auto path = download->path();
+            auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
+            auto difference = url_difference(file_path.toStdString(), download_directory.toStdString());
+
+            if(!(difference == "" || difference == "/")) {
+                auto file_name = path.mid(path.lastIndexOf('/'));
+                *file_name.begin() != '/' ? file_name.prepend('/') : "";
+                *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/' ? download_directory += '/' : "";
+                auto new_path = download_directory + file_name;
+                download->setPath(new_path);
+                assert(download->path() == new_path);
+            }
+
+
             _file.setFile(download->path());
             _url = download->url();
         }
@@ -94,14 +118,10 @@ namespace browser {
     void DownloadWidget::init()
     {
         if(_download) {
-            connect(
-                //                _download.get() //
-                //                _download.data()
+            connect(    // _download.get() // _download.data()
                 _download
                 , &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress);
-            connect(
-                //                _download.get() //
-                //                _download.data()
+            connect(    // _download.get() // _download.data()
                 _download
                 , &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);
         }
@@ -109,8 +129,10 @@ namespace browser {
         // reset info
         downloadInfoLabel->clear();
         progressBar->setValue(0);
-        getFileName();
 
+        getFileName(static_cast<DownloadManager *const>(this->parent())->_prompt_store_position);
+
+        _download->accept();
         // start timer for the download estimation
         _downloadtime.start();
     }
@@ -146,10 +168,15 @@ namespace browser {
 
         _file.setFile(fileName);
 
-        if(_download && _download->state() == QWebEngineDownloadItem::DownloadRequested)
+        auto download_state = _download->state() ;
+        assert(download_state == QWebEngineDownloadItem::DownloadRequested);
+
+        if(_download && _download->state() == QWebEngineDownloadItem::DownloadRequested) {
             _download->setPath(_file.absoluteFilePath());
+        }
 
         fileNameLabel->setText(_file.fileName());
+        settings.endGroup();
         return true;
     }
 
@@ -168,7 +195,7 @@ namespace browser {
 
     void DownloadWidget::open()
     {
-        QUrl url = QUrl::fromLocalFile(_file.absolutePath());
+        QUrl url = QUrl::fromLocalFile(_file.absoluteFilePath());
         QDesktopServices::openUrl(url);
     }
 
@@ -356,6 +383,26 @@ namespace browser {
 
     void DownloadManager::download(QWebEngineDownloadItem *download)
     {
+        assert(download->state() == QWebEngineDownloadItem::DownloadRequested);
+        QSettings settings;
+        settings.beginGroup(QLatin1String("downloadmanager"));
+        QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
+        settings.endGroup();
+
+
+        auto path = download->path();
+        auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
+        auto difference = url_difference(file_path.toStdString(), download_directory.toStdString());
+
+        if(!(difference == "" || difference == "/")) {
+            auto file_name = path.mid(path.lastIndexOf('/'));
+            *file_name.begin() != '/' ? file_name.prepend('/') : "";
+            *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/' ? download_directory += '/' : "";
+            auto new_path = download_directory + file_name;
+            download->setPath(new_path);
+            assert(download->path() == new_path);
+        }
+
         auto widget = std::make_shared< DownloadWidget>(download, this);
         addItem(widget);
     }
@@ -455,6 +502,9 @@ namespace browser {
             settings.remove(key + QLatin1String("done"));
             key = QString(QLatin1String("download_%1_")).arg(++i);
         }
+
+        settings.setValue(QLatin1String("prompt_store_position"), QLatin1String((QString::number(_prompt_store_position)).toLatin1()));
+        settings.endGroup();
     }
 
     void DownloadManager::load()
@@ -481,7 +531,7 @@ namespace browser {
             bool done = settings.value(key + QLatin1String("done"), true).toBool();
 
             if(done && !url.isEmpty() && !fileName.isEmpty()) {
-                auto widget = std::make_shared< DownloadWidget>(nullptr, this);
+                std::shared_ptr<DownloadWidget> widget = std::make_shared<DownloadWidget>(nullptr, this);
                 widget->_file.setFile(fileName);
                 widget->fileNameLabel->setText(widget->_file.fileName());
                 widget->_url = url;
@@ -495,6 +545,8 @@ namespace browser {
         }
 
         cleanupButton->setEnabled(_downloads.count() - activeDownloads() > 0);
+        _prompt_store_position = settings.value(QLatin1String("prompt_store_position")).toBool();
+        settings.endGroup();
     }
 
     void DownloadManager::cleanup()

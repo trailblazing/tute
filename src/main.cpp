@@ -75,7 +75,7 @@ QObject             *mainwindow;
 
 
 
-std::string difference(const std::string &url_compare_stored, const std::string &url_compare_get)
+std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get)
 {
     std::string compare = "";
 

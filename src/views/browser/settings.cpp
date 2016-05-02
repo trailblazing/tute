@@ -85,7 +85,7 @@ namespace browser {
         fixedFont = QFont(fixedFontFamily, fixedFontSize);
         fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
 
-        downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DesktopLocation));
+        downloadsLocation->setText(QStandardPaths::writableLocation(QStandardPaths::DownloadLocation));  // DesktopLocation
 
         enableJavascript->setChecked(defaultSettings->testAttribute(QWebEngineSettings::JavascriptEnabled));
         //#if defined(QTWEBENGINE_PLUGINS)
@@ -94,14 +94,10 @@ namespace browser {
 
         enableScrollAnimator->setChecked(defaultSettings->testAttribute(QWebEngineSettings::ScrollAnimatorEnabled));
         auto profile = globalparameters.profile();
-        persistentDataPath->setText(profile // QWebEngineProfile::defaultProfile()
-                                    ->persistentStoragePath()
-                                   );
-        sessionCookiesCombo->setCurrentIndex(profile    // QWebEngineProfile::defaultProfile()
-                                             ->persistentCookiesPolicy());
-        httpUserAgent->setText(profile  // QWebEngineProfile::defaultProfile()
-                               ->httpUserAgent()
-                              );
+        persistentDataPath->setText(profile->persistentStoragePath());              // QWebEngineProfile::defaultProfile()
+        sessionCookiesCombo->setCurrentIndex(profile->persistentCookiesPolicy());   // QWebEngineProfile::defaultProfile()
+        httpUserAgent->setText(profile->httpUserAgent());                           // QWebEngineProfile::defaultProfile()
+
     }
 
     void SettingsDialog::loadFromSettings()

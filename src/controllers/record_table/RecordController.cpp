@@ -332,10 +332,10 @@ void RecordController::browser_update(const int source_pos)
 // so if our records are come from different tree path, we must switch the parent node, our give them a sharing parent.
 // that's why we need a page_controller,  or we should implement a multi table screen architecture -- but with this design,
 // we can not settle the medium results easily.
-void RecordController::sychronize_metaeditor_to_item(const int pos)
+void RecordController::sychronize_metaeditor_to_item(const int source_pos)
 {
 
-    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(pos);
+    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(source_pos);
     assert(item);
     // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
@@ -350,7 +350,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // В таблице конечных данных запоминается какая запись была выбрана
     // чтобы затем при выборе этой же подветки засветка автоматически
     // установилась на последнюю рабочую запись
-    this->source_model()->current_position(pos);   // item->work_pos(pos);
+    this->source_model()->current_position(source_pos);   // item->work_pos(pos);
 
 
     // Устанавливается функция обратного вызова для записи данных
@@ -360,7 +360,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     //    find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->save_text_area();
 
-    auto it = item->item_direct(pos);
+    auto it = item->item_direct(source_pos);
     // Для новой выбраной записи выясняется директория и основной файл
     QString currentDir      = it->field("dir");
     QString currentFile     = it->field("file");
@@ -380,7 +380,7 @@ void RecordController::sychronize_metaeditor_to_item(const int pos)
     // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
     // Before the opening of the editor it attempts to get the text records
     // This call will create a text file with the record if it is not already created (think remake)
-    item->text(pos);
+    item->text(source_pos);
 
     // Редактору задаются имя файла и директории
     // И дается команда загрузки файла
@@ -840,7 +840,9 @@ QModelIndex RecordController::sourceindex_to_proxyindex(QModelIndex sourceIndex)
 
 int RecordController::sourcepos_to_proxypos(int source_pos) const
 {
+    assert(source_pos != -1);
     QModelIndex proxyIndex = _proxy_model->mapFromSource(_source_model->index(source_pos, 0));
+    assert(proxyIndex.row() != -1);
     return proxyIndex.row();
 }
 
@@ -1872,7 +1874,7 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
 
     _source_model->on_table_config_changed();
 
-    auto proxy_index = proxypos_to_proxyindex(source_position);
+    auto proxy_index = proxypos_to_proxyindex(sourcepos_to_proxypos(source_position));
     _view->dataChanged(proxy_index, proxy_index);
 
 

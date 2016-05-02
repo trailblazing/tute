@@ -917,7 +917,7 @@ QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeItem> _item, st
     }
 
 
-    _item->binder() ? _item->binder()->page()->record_controller()->view()->cursor_to_index(_item) : void(0);
+    _item->binder() ? [&] {auto c = _item->binder()->page()->record_controller(); auto v = _item->binder()->page()->record_controller()->view(); c->update_record_view(_item); return v->cursor_to_index(_item);}() : void(0);
 
     //    QModelIndex _index_current;
 

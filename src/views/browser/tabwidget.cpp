@@ -1493,8 +1493,20 @@ namespace browser {
 
     void TabWidget::downloadRequested(QWebEngineDownloadItem *download)
     {
-        QtSingleApplication::downloadManager()->download(download);
-        download->accept();
+
+        QMessageBox message_box;
+
+        message_box.setText(tr("Do you want to download the file?"));
+        message_box.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+        message_box.setDefaultButton(QMessageBox::Cancel);
+        int ret = message_box.exec();
+
+        if(ret == QMessageBox::Ok) {
+            //            download->accept();
+            QtSingleApplication::downloadManager()->download(download);
+        } else {
+            download->cancel();
+        }
     }
 
 

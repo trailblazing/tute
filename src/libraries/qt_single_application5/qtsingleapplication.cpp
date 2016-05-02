@@ -1085,6 +1085,9 @@ void QtSingleApplication::loadSettings()
     // this group lead chrome_odthread deadlock? or initialize failure
     settings.beginGroup(QLatin1String("cookies"));
 
+    _profile->setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
+    _profile->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies); // AllowPersistentCookies
+
     QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
                 settings.value(QLatin1String("persistentCookiesPolicy")).toInt()    // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
             );

@@ -69,7 +69,9 @@ namespace browser {
         void statusChanged();
 
     public:
-        DownloadWidget(QWebEngineDownloadItem *download, QWidget *parent = 0);
+        DownloadWidget(QWebEngineDownloadItem   *download
+                       , DownloadManager        *parent = 0 //    QWidget *parent = 0
+                      );
         bool downloading() const;
         bool downloadedSuccessfully() const;
 
@@ -98,6 +100,7 @@ namespace browser {
         //        QSharedPointer<QWebEngineDownloadItem>
         //        std::shared_ptr<QWebEngineDownloadItem>
         QWebEngineDownloadItem *_download;
+
     };
 
     class AutoSaver;
@@ -145,7 +148,10 @@ namespace browser {
         QFileIconProvider       *_iconprovider;
         QList<std::shared_ptr<DownloadWidget>> _downloads;
         RemovePolicy            _removepolicy;
+        bool                    _prompt_store_position = false;
+
         friend class DownloadModel;
+        friend class DownloadWidget;
     };
 
     class DownloadModel : public QAbstractListModel {

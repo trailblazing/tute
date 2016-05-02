@@ -108,7 +108,7 @@ public:
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
     //    boost::intrusive_ptr<TreeItem> tree_item();
-    void sychronize_metaeditor_to_item(const int pos);
+    void sychronize_metaeditor_to_item(const int source_pos);
     void sychronize_attachtable_to_item(const int pos);
 
     void addnew_blank(int mode);

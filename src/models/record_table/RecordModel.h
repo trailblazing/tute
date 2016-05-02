@@ -98,7 +98,7 @@ public:
     void fields(int pos, QMap<QString, QString> data);
 
     // for multi items link with unique page
-    boost::intrusive_ptr<TreeItem> item_bound(boost::intrusive_ptr<TreeItem> it)const;
+    boost::intrusive_ptr<TreeItem> item_bounded(boost::intrusive_ptr<TreeItem> it)const;
     boost::intrusive_ptr<TreeItem> item(boost::intrusive_ptr<TreeItem> it)const;
 
     //    int item_current(QString find_id);

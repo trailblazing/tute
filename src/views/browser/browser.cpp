@@ -138,28 +138,40 @@ namespace browser {
         //        setStorageName(profile_storage_name);
         setRequestInterceptor(_urlrequestinterceptor);
 
-        QSettings settings;
-        // this group lead chrome_odthread deadlock? or initialize failure
-        settings.beginGroup(QLatin1String("cookies"));
+        //        QSettings settings;
 
-        setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
-        setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies); // AllowPersistentCookies
+        //        settings.beginGroup(QLatin1String("downloadmanager"));
+        //        QString downloadDirectory = settings.value(QLatin1String("downloadDirectory")).toString();
+        //        // downloadsLocation->setText(downloadDirectory);
+        //        settings.endGroup();
 
-        QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
-                    settings.value(QLatin1String("persistentCookiesPolicy")).toInt()    // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
-                );
-        setPersistentCookiesPolicy(persistentCookiesPolicy);
-        QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
-        QDir cookie_path(persistent_data_path);
 
-        if(!cookie_path.exists()) {
-            //        QDir dir;
-            cookie_path.mkpath(persistent_data_path);
-        }
+        //        // this group lead chrome_odthread deadlock? or initialize failure
+        //        settings.beginGroup(QLatin1String("cookies"));
 
-        setPersistentStoragePath(persistent_data_path);
+        //        setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
+        //        setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies); // AllowPersistentCookies
 
-        settings.endGroup();
+        //        QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
+        //                    settings.value(QLatin1String("persistentCookiesPolicy")).toInt()    // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
+        //                );
+        //        setPersistentCookiesPolicy(persistentCookiesPolicy);
+
+
+        //        QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
+
+        //        if(persistent_data_path == "")persistent_data_path = downloadDirectory;
+
+        //        QDir cookie_path(QStandardPaths::writableLocation(QStandardPaths::StandardLocation::CacheLocation)); // persistent_data_path
+
+        //        if(!cookie_path.exists()) {
+        //            //        QDir dir;
+        //            cookie_path.mkpath(persistent_data_path);
+        //        }
+
+        //        setPersistentStoragePath(persistent_data_path);
+
+        //        settings.endGroup();
 
     }
 

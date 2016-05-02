@@ -659,7 +659,7 @@ void RecordModel::fields(int pos, QMap<QString, QString> data)
 }
 
 // for multi items link with unique page
-boost::intrusive_ptr<TreeItem> RecordModel::item_bound(boost::intrusive_ptr<TreeItem> it)const
+boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<TreeItem> it)const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
@@ -687,13 +687,24 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> 
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url)const
 {
-    boost::intrusive_ptr<TreeItem> result = nullptr;
+    boost::intrusive_ptr<TreeItem> result(nullptr);
+
+    //    for(int i = 0; i < count(); i++) {
+    //        if(item(i)->field("url") == _url.toString()) {
+    //            result = item(i); break;
+    //        }
+    //    }
 
     for(int i = 0; i < count(); i++) {
-        if(item(i)->field("url") == _url.toString()) {
-            result = item(i); break;
+        auto it = item(i);
+        std::string compare = url_difference((it->field("url")).toStdString(), _url.toString().toStdString());
+
+        if(compare.size() == 0 || compare == "/") {
+            result = it;
+            break;
         }
     }
+
 
     return result;
 }
