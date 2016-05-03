@@ -717,7 +717,9 @@ namespace browser {
                 _vtabwidget->setCurrentWidget(record_screen);
             }
 
-            _tree_screen->tree_view()->select_as_current(_binder->item());
+            auto it = _binder->item();
+            auto tree_view = _tree_screen->tree_view();
+            tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
             if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
 
@@ -2001,7 +2003,9 @@ namespace browser {
 
 
             //            auto _tree_screen = globalparameters.tree_screen();
-            _tree_screen->tree_view()->select_as_current(_binder->item());
+            auto it = _binder->item();
+            auto tree_view = _tree_screen->tree_view();
+            tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
             if(is_current) {// globalparameters.mainwindow()
                 if(_record_controller->view()->selection_first_id() != _binder->item()->field("id"))

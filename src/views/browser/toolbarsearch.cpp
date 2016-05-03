@@ -135,6 +135,7 @@ namespace browser {
 
         auto result_item = globalparameters.find_screen()->find_clicked();
         TreeScreen *_tree_screen = globalparameters.tree_screen();
+        auto tree_view = _tree_screen->tree_view();
 
         if(!result_item) {  //  || 0 == result_item->count_direct()
 
@@ -234,13 +235,14 @@ namespace browser {
                 _tree_screen->tree_view()->item_bind(url, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();
 
             }
-        } else if(result_item != _tree_screen->tree_view()->current_item()) {
+        } else if(result_item != tree_view->current_item()) {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
             //            TreeScreen *_tree_screen = globalparameters.tree_screen();
-            auto index_result = _tree_screen->tree_view()->source_model()->index(result_item);
+            auto index_result = tree_view->source_model()->index(result_item);
 
             if(index_result.isValid()) {
-                _tree_screen->tree_view()->select_as_current(index_result);
+                auto it = tree_view->source_model()->item(index_result);
+                _tree_screen->tree_view()->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
 
                 //                //            else {

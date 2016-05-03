@@ -48,7 +48,8 @@ public:
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, QString)> add_new;
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, const add_new &)> add_new_delegate;
-
+    typedef std::function<QModelIndex(KnowView *const, const QModelIndex &)> select_strategy;
+    typedef std::function<QModelIndex(KnowView *const, const QModelIndex &, const int)> current_strategy;
 
     struct LocalLizeInitializer {
         LocalLizeInitializer(KnowView *_tree_view);
@@ -61,16 +62,15 @@ public:
         //        QModelIndex     _index;
     };
 
-    explicit KnowView(QString _name
-                      , TreeScreen *_parent // QWidget *_parent = 0
-                     );
+    explicit KnowView(QString _name, TreeScreen *_parent); // QWidget *_parent = 0
+
     virtual ~KnowView();
 
     void sychronize();
 
     //    void source_model(boost::intrusive_ptr<TreeItem> _item);
 
-    KnowModel *source_model()const; // {return _know_root;}
+    KnowModel *source_model()const;
     KnowModel *source_model();
     //    void setModel(QAbstractItemModel *model) Q_DECL_OVERRIDE;
     boost::intrusive_ptr<TreeItem> current_item();
@@ -79,18 +79,18 @@ public:
     QModelIndex current_index(void);
 
 
-    //    QModelIndex view_index_last(void)const;
-    //    QModelIndex selection_to_pos(int _index);
-    QModelIndex select_as_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
-    QModelIndex select_as_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy = [](KnowView *v, const QModelIndex &_i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;});
-    void update_selected_indexes(void);
-    //    QModelIndexList index_localize(const QModelIndexList _origin_index_list);
-    //    bool is_index_localized(const QModelIndexList _origin_index_list)const;
+    QModelIndex select_as_current(TreeModel::ModelIndex _modelindex
+                                  , select_strategy _select_strategy = [](KnowView *const v, const QModelIndex &_i) ->QModelIndex{assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
+                                          , current_strategy _current_strategy = [](KnowView *const v, const QModelIndex &_i, const int dummy = 0) ->QModelIndex{(void)(dummy); assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->setCurrentIndex(_i, current_tree_current_index_mode); return _i;}
+                                 );
 
-    //    template<bool insert_sibling_branch = true>
-    boost::intrusive_ptr<TreeItem> view_add_new(TreeModel::ModelIndex _modelindex   // std::function<KnowModel *()> _current_model, QModelIndex _current_index
-                                                , QString _name
-                                                , const std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, QString)> &_branch_add_new_impl);
+    //    QModelIndex select_as_current_item(boost::intrusive_ptr<TreeItem> _item
+    //                                       , select_strategy _select_strategy = [](KnowView *const v, const QModelIndex &_i) ->QModelIndex{assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
+    //                                               , current_strategy _current_strategy = [](KnowView *const v, const QModelIndex &_i, const int dummy = 0) ->QModelIndex{(void)(dummy); assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->setCurrentIndex(_i, current_tree_current_index_mode); return _i;}
+    //                                      );
+
+    void update_selected_indexes(void);
+
     KnowModel *know_model_board()const;
     boost::intrusive_ptr<TreeItem> session_root_item();
 signals:
@@ -105,12 +105,14 @@ public slots:
     void tree_crypt_control(void);
 
 
-    //    template<bool insert_sibling_branch = true>
-    boost::intrusive_ptr<TreeItem> view_insert_new(
-        TreeModel::ModelIndex _modelindex  // std::function<KnowModel *()> _current_model, QModelIndex _current_index
-        , const add_new_delegate &_branch_add_new
-        , const add_new &_branch_add_new_impl
-    );
+    boost::intrusive_ptr<TreeItem> view_add_new(TreeModel::ModelIndex _modelindex
+                                                , QString _name
+                                                , const add_new &_branch_add_new_impl);
+
+    boost::intrusive_ptr<TreeItem> view_insert_new(TreeModel::ModelIndex _modelindex
+                                                   , const add_new_delegate &_branch_add_new
+                                                   , const add_new &_branch_add_new_impl
+                                                  );
 
     boost::intrusive_ptr<TreeItem> view_paste_children_from_children(TreeModel::ModelIndex _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition &_substitute_condition);
 
@@ -127,7 +129,7 @@ public slots:
     void view_cut(bool _cut_branch_confirm = false);
     QModelIndexList view_copy(void);   // const;
     void view_edit(void);
-    boost::intrusive_ptr<TreeItem> view_merge_to_left(TreeModel::ModelIndex modelindex    // const std::function<KnowModel*()> &_current_model, boost::intrusive_ptr<TreeItem> target
+    boost::intrusive_ptr<TreeItem> view_merge_to_left(TreeModel::ModelIndex modelindex
                                                       , boost::intrusive_ptr<TreeItem> source);
 
 

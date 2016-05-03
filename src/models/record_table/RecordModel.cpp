@@ -689,12 +689,6 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url)const
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    //    for(int i = 0; i < count(); i++) {
-    //        if(item(i)->field("url") == _url.toString()) {
-    //            result = item(i); break;
-    //        }
-    //    }
-
     for(int i = 0; i < count(); i++) {
         auto it = item(i);
         std::string compare = url_difference((it->field("url")).toStdString(), _url.toString().toStdString());
@@ -776,11 +770,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const int _index)const
         assert(_tabmanager->webView(_index)->page()->binder());
         r = _tabmanager->webView(_index)->page()->binder()->item();
 
-        //        if(!r) {
-        //            //            _tabmanager->webView(pos)->page()->record_binder()->binder();
-        //        }
-
-        assert(r);  // if find_recursive get noew item from tree, there will be no item_link? becuse I move it?
+        assert(r);  // if find_recursive get new item from tree, there will be no item_link? because I move it?
     }
 
     return r;

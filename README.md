@@ -5,7 +5,7 @@ A knowledge management system equipped with an embedded web browser derived from
 
 The next step, I aim to append some real-time collaborative editing functions.
 
-If you need new functions, feel free to contact me: hughvonyoung@gmail.com
+Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
 _______________________________________________________________________
 
@@ -50,8 +50,15 @@ _______________________________________________________________________
 
 The system Git created two main branches.
 
-* Master - the main branch with the latest stable release;
-* Experimental - branch to develop.
+For MyTetra
+
+* MyTetra       - the main branch with the latest stable release;
+* Experimental  - branch to develop.
+
+For mytetra_webengine:
+
+* mytetra_webengine - the main branch with the latest stable release;
+* develop           - branch to develop.
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
@@ -71,11 +78,11 @@ http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x
 
 1.3 Install it to your Linux distribution
 
-Default location:
+Default location for administrator installation:
 
 /opt/Qt5.6.0
 
-Do not recommend to mix it up with system installation of Qt
+or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
 
 After installation, you'll get a "MaintenanceTool" under the installation root directory.
 

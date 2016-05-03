@@ -309,20 +309,17 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(int pos)const
 boost::intrusive_ptr<TreeItem> ItemsFlat::item_direct(const QUrl &url)const
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
-    //    int found = -1;
 
     for(int i = 0; i < count_direct(); i++) {
-        std::string compare = url_difference((item_direct(i)->field("url")).toStdString()
-                                         , url.toString().toStdString());
+        std::string compare = url_difference((item_direct(i)->field("url")).toStdString(), url.toString().toStdString());
 
-        if(compare.size() == 0 || compare == "/") {  // if(getField("url", i) == url.toString())
-            //            found = i;
+        if(compare.size() == 0 || compare == "/") {
             result = item_direct(i);
             break;
         }
     }
 
-    return result;  // found;
+    return result;
 }
 
 

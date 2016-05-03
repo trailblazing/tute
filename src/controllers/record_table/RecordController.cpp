@@ -128,7 +128,10 @@ void RecordController::item_click(const QModelIndex &proxy_index)
 
     select_pos(sourcepos_to_proxypos(source_pos));  // ?
     auto _tree_screen = globalparameters.tree_screen();
-    _tree_screen->tree_view()->select_as_current(source_model()->item(source_pos));
+    auto tree_view = _tree_screen->tree_view();
+    auto item = source_model()->item(source_pos);
+    auto parent = source_model()->item(source_pos)->parent();
+    tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == item && item->linker() == il && item->parent() == il->host_parent();})));
     _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);

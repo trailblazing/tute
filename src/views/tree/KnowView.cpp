@@ -436,7 +436,8 @@ void KnowView::mousePressEvent(QMouseEvent *event)  // Q_DECL_OVERRIDE
         selectionModel()->clear();
         auto selection = LocalLizeInitializer(this)();
         selectionModel()->select(selection, current_tree_selection_mode);
-        select_as_current(next_index);
+        auto it = _know_root->item(next_index);
+        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
         //        // start the context menu
         //        QModelIndexList select_indexes(selectedIndexes());
@@ -741,15 +742,16 @@ QModelIndex KnowView::current_index(void)
 
 
     if(!result.isValid()) {
-        boost::intrusive_ptr<TreeItem> new_item;
+        boost::intrusive_ptr<TreeItem> it = session_root_item();
 
-        if(selectionModel()->selectedIndexes().size() > 1) {
-            result = selectionModel()->selectedIndexes().first();
-        }
+        //        if(selectionModel()->selectedIndexes().size() > 1) {
+        //            result = selectionModel()->selectedIndexes().first();
+        //        }
 
         if(result.isValid()) {
-            new_item = _know_root->item(result);
+            it = _know_root->item(result);
         } else {
+
             if(_know_root->root_item()->count_direct() == 0) {
                 //            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
                 //        } else {
@@ -781,11 +783,11 @@ QModelIndex KnowView::current_index(void)
             }
 
             //            else {
-            new_item = _know_root->root_item()->item_direct(0);
+            it = _know_root->root_item()->item_direct(0);
             //            }
         }
 
-        select_as_current(new_item);
+        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
         result = selectionModel()->currentIndex();
         //        selectionModel()->setCurrentIndex(_know_root->index(_know_root->root_item()->child(0)), QItemSelectionModel::ClearAndSelect);
@@ -843,108 +845,190 @@ QModelIndex KnowView::current_index(void)
 //    return selectionModel()->currentIndex();
 //}
 
-QModelIndex KnowView::select_as_current(const QModelIndex &_index, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
+QModelIndex KnowView::select_as_current(TreeModel::ModelIndex   _modelindex
+                                        , select_strategy       _select_strategy
+                                        , current_strategy      _current_strategy
+                                       )
 {
     QModelIndex _result;
-    //    int pos = index.row();
+    //    QModelIndex _current_index = _modelindex.parent_index();
+    QModelIndex _current_index = _modelindex.current_index();
+    auto _item = _modelindex.current_item();
 
-    //    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    //    if(pos != to_pos) {
-    //        QMessageBox msgBox;
-    //        msgBox.setText("In RecordView::setSelectionToPos() input pos not equal model pos");
-    //        msgBox.exec();
-    //    }
-
-    //    int rowCount = _know_root->root_item()->count_direct();
-
-    //    if(pos < rowCount) {  // pos > (rowCount - 1)   // return;
-    _result = _strategy(this, _index);
-
-    //    // Простой механизм выбора строки. Похоже, что его использовать не получится
-    //    selectionModel()->select(_result
-    //                             , (_result == _index) ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Deselect
-    //                            ); // QItemSelectionModel::SelectCurrent // current_tree_selection_mode
-    // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-
-
-    //    auto recordSourceModel = controller->getRecordTableModel();
-    //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
-
-    // Установка засветки на нужный индекс
-    // Set the backlight to the desired index
-    selectionModel()->setCurrentIndex(_result, current_tree_current_index_mode); // QItemSelectionModel::SelectCurrent    // ClearAndSelect   // current_tree_selection_mode
-
-    //    assert(_result == selectionModel()->currentIndex());
-
-#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-
-    // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-    // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-    // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-    // Therefore, the recording must be made a virtual click to fill the final table of records
-    if(appconfig.interface_mode() == "mobile")
-        emit this->clicked(_result); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
-
-#endif
-
-    // emit this->clicked(index);
-    //    _result = currentIndex();
-
-    scrollTo(_result);   // QAbstractItemView::PositionAtCenter
-
-    //    this->setFocus();   // ?
-
-    //    }
-    return _result;
-}
-
-
-QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeItem> _item, std::function<QModelIndex(KnowView *, const QModelIndex &)> _strategy)
-{
 
     TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
     assert(_tree_screen);
-    // auto _tree_screen = globalparameters.tree_screen();
 
-    QModelIndex _index = _know_root->index(_item);  // = _tree_screen->tree_view()->source_model()->index(_item);
-
-    while(!_index.isValid()
-          && _know_root->root_item() != _know_model_board->root_item()
-         ) {
-        cursor_follow_up_one_level();
-        _index = _know_root->index(_item);
-        //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
-    }
+    //    auto _item = _know_root->item(_parent_index);
 
 
     _item->binder() ? [&] {auto c = _item->binder()->page()->record_controller(); auto v = _item->binder()->page()->record_controller()->view(); c->update_record_view(_item); return v->cursor_to_index(_item);}() : void(0);
 
-    //    QModelIndex _index_current;
 
-    //    try {
-    //        _index_current = selectionModel()->currentIndex();
-    //    } catch(std::exception &e) {qDebug() << e.what();}
 
-    if(_index.isValid() && _index != selectionModel()->currentIndex()   // _index_current //
-      ) {
-        //                _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, QItemSelectionModel::SelectionFlag::SelectCurrent);
-        _index = select_as_current(_index
-                                   , _strategy  // [](KnowView * v, const QModelIndex & _i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
-                                  );
+    if(_current_index.isValid() && _current_index != selectionModel()->currentIndex()) {   // _index_current //
 
+
+        //    int pos = index.row();
+
+
+        //    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
+        //    if(pos != to_pos) {
+        //        QMessageBox msgBox;
+        //        msgBox.setText("In RecordView::setSelectionToPos() input pos not equal model pos");
+        //        msgBox.exec();
+        //    }
+
+        //    int rowCount = _know_root->root_item()->count_direct();
+
+        //    if(pos < rowCount) {  // pos > (rowCount - 1)   // return;
+        _result = _select_strategy(this, _current_index);
+        _result = _current_strategy(this, _result, 0);
+
+        //    //    // Простой механизм выбора строки. Похоже, что его использовать не получится
+        //    //    selectionModel()->select(_result
+        //    //                             , (_result == _index) ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Deselect
+        //    //                            ); // QItemSelectionModel::SelectCurrent // current_tree_selection_mode
+        //    // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+
+
+        //    //    auto recordSourceModel = controller->getRecordTableModel();
+        //    //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+        //    // Установка засветки на нужный индекс
+        //    // Set the backlight to the desired index
+        //    selectionModel()->setCurrentIndex(_result, current_tree_current_index_mode); // QItemSelectionModel::SelectCurrent    // ClearAndSelect   // current_tree_selection_mode
+
+        //    //    assert(_result == selectionModel()->currentIndex());
+
+#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
+
+        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+        // Therefore, the recording must be made a virtual click to fill the final table of records
+        if(appconfig.interface_mode() == "mobile")
+            emit this->clicked(_result); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+#endif
+
+        // emit this->clicked(index);
+        //    _result = currentIndex();
+
+        scrollTo(_result);   // QAbstractItemView::PositionAtCenter
+
+        //    this->setFocus();   // ?
+
+        //    }
     }
 
-
-
-
-
-
-    //    QModelIndex _index = _know_root->index(_item);  //_record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
-
-    //    _index = select_and_current(_index, _strategy);
-
-    return _index;
+    return _result;
 }
+
+
+//QModelIndex KnowView::select_as_current_item(boost::intrusive_ptr<TreeItem> _item
+//                                             , select_strategy _select_strategy
+//                                             , current_strategy _current_strategy
+//                                            )
+//{
+
+//    auto select_as_current_index = [&](const QModelIndex & _index
+//                                       , select_strategy _select_strategy = [](KnowView * const v, const QModelIndex & _i) ->QModelIndex{assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
+//                                               , current_strategy _current_strategy = [](KnowView * const v, const QModelIndex & _i, const int dummy = 0) ->QModelIndex{(void)(dummy); assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->setCurrentIndex(_i, current_tree_current_index_mode); return _i;}
+//    )->QModelIndex {
+//        QModelIndex _result;
+//        //    int pos = index.row();
+
+//        //    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
+//        //    if(pos != to_pos) {
+//        //        QMessageBox msgBox;
+//        //        msgBox.setText("In RecordView::setSelectionToPos() input pos not equal model pos");
+//        //        msgBox.exec();
+//        //    }
+
+//        //    int rowCount = _know_root->root_item()->count_direct();
+
+//        //    if(pos < rowCount) {  // pos > (rowCount - 1)   // return;
+//        _result = _select_strategy(this, _index);
+//        _result = _current_strategy(this, _result, 0);
+
+//        //    //    // Простой механизм выбора строки. Похоже, что его использовать не получится
+//        //    //    selectionModel()->select(_result
+//        //    //                             , (_result == _index) ? QItemSelectionModel::SelectionFlag::Select : QItemSelectionModel::SelectionFlag::Deselect
+//        //    //                            ); // QItemSelectionModel::SelectCurrent // current_tree_selection_mode
+//        //    // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+
+
+//        //    //    auto recordSourceModel = controller->getRecordTableModel();
+//        //    //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+//        //    // Установка засветки на нужный индекс
+//        //    // Set the backlight to the desired index
+//        //    selectionModel()->setCurrentIndex(_result, current_tree_current_index_mode); // QItemSelectionModel::SelectCurrent    // ClearAndSelect   // current_tree_selection_mode
+
+//        //    //    assert(_result == selectionModel()->currentIndex());
+
+//#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
+
+//        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+//        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+//        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+//        // Therefore, the recording must be made a virtual click to fill the final table of records
+//        if(appconfig.interface_mode() == "mobile")
+//            emit this->clicked(_result); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+//#endif
+
+//        // emit this->clicked(index);
+//        //    _result = currentIndex();
+
+//        scrollTo(_result);   // QAbstractItemView::PositionAtCenter
+
+//        //    this->setFocus();   // ?
+
+//        //    }
+//        return _result;
+//    };
+
+//    TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+//    assert(_tree_screen);
+//    // auto _tree_screen = globalparameters.tree_screen();
+
+//    QModelIndex _index = _know_root->index(_item);  // = _tree_screen->tree_view()->source_model()->index(_item);
+
+//    while(!_index.isValid()
+//          && _know_root->root_item() != _know_model_board->root_item()
+//         ) {
+//        cursor_follow_up_one_level();
+//        _index = _know_root->index(_item);
+//        //                _index_item = _tree_screen->tree_view()->source_model()->index(_item);
+//    }
+
+
+//    _item->binder() ? [&] {auto c = _item->binder()->page()->record_controller(); auto v = _item->binder()->page()->record_controller()->view(); c->update_record_view(_item); return v->cursor_to_index(_item);}() : void(0);
+
+//    //    QModelIndex _index_current;
+
+//    //    try {
+//    //        _index_current = selectionModel()->currentIndex();
+//    //    } catch(std::exception &e) {qDebug() << e.what();}
+
+//    if(_index.isValid() && _index != selectionModel()->currentIndex()) {   // _index_current //
+//        // _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, QItemSelectionModel::SelectionFlag::SelectCurrent);
+//        _index = select_as_current_index(_index, _select_strategy, _current_strategy);  // [](KnowView * v, const QModelIndex & _i) ->QModelIndex{v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
+//    }
+
+
+
+
+
+
+//    //    QModelIndex _index = _know_root->index(_item);  //_record_controller->pos_to_proxyindex(to_pos); // Модельный индекс в Proxy модели
+
+//    //    _index = select_and_current(_index, _strategy);
+
+//    return _index;
+//}
 
 //QModelIndex KnowView::deselect(const QModelIndex &_index)
 //{
@@ -1415,11 +1499,10 @@ void KnowView::view_expand_selected(bool expand)
 
 
 //template<>
-boost::intrusive_ptr<TreeItem> KnowView::view_add_new(
-    TreeModel::ModelIndex _modelindex   // std::function<KnowModel *()> _current_model, QModelIndex _current_index
-    , QString _name
-    , const std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, QString)> &_branch_add_new_impl
-)
+boost::intrusive_ptr<TreeItem> KnowView::view_add_new(TreeModel::ModelIndex _modelindex   // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+                                                      , QString _name
+                                                      , const add_new &_branch_add_new_impl
+                                                     )
 {
     auto _current_model = _modelindex.current_model();
     //    auto _current_index = _modelindex.current_index();
@@ -1477,7 +1560,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_add_new(
     // Установка курсора на только что созданную позицию
     //        QModelIndex
     //    setto = _current_model()->index(result);  //index_child(_current_index, item->current_count() - 1);
-    select_as_current(result);
+    select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
     //    selectionModel()->select(setto, current_tree_selection_mode);
     //    selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -1561,7 +1644,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(
 )     // bool insert_sibling_branch
 {
     auto _current_model = _modelindex.current_model();
-    auto _current_index = _modelindex.current_index();
+    auto _current_index = _modelindex.parent_index();
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
     //    // Получение списка индексов QModelIndex выделенных элементов
@@ -1648,7 +1731,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(
                                          , _branch_add_new_impl);   // nonsense
             }
 
-            select_as_current(result);
+            select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
             // , insert_sibling_branch
         }
     }
@@ -1664,7 +1747,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(
 )
 {
     auto _current_model = _parent_modelindex.current_model();
-    auto _current_parent_index = _parent_modelindex.current_index();
+    auto _current_parent_index = _parent_modelindex.parent_index();
     auto _current_parent = _parent_modelindex.parent();
     boost::intrusive_ptr<TreeItem>  result(nullptr);
 
@@ -1768,7 +1851,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(
                 // index_child(_current_index.parent(), _current_index.row() + 1);   // current_item->current_count() - 1
 
                 assert(setto.isValid());
-                select_as_current(result);  // setto
+                select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));  // setto
                 //            selectionModel()->select(setto, current_tree_selection_mode);
                 //            selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -1970,7 +2053,7 @@ void KnowView::view_paste_children_from_clipboard(TreeModel::ModelIndex _sibling
 
 
     auto _current_model = _sibling_modelindex.current_model();
-    auto _current_sibling_index = _sibling_modelindex.current_index();
+    auto _current_sibling_index = _sibling_modelindex.parent_index();
     boost::intrusive_ptr<TreeItem> _result(nullptr);
     // Проверяется, содержит ли буфер обмена данные нужного формата
     const QMimeData *mime_data = QApplication::clipboard()->mimeData();
@@ -2158,7 +2241,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(
     )->boost::intrusive_ptr<TreeItem> {
         boost::intrusive_ptr<TreeItem>  result(nullptr);
         auto current_model = _modelindex.current_model();
-        auto current_index = _modelindex.current_index();
+        auto current_index = _modelindex.parent_index();
         auto current_item = _modelindex.parent();   // _current_model()->item(_current_index);
 
         assert(current_item); // make it automatically?
@@ -2262,7 +2345,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(
 
                     //                    }
 
-                    select_as_current(result);
+                    select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
                     //            view_paste_from_children_move(_modelindex, _source_item, [&](boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source)->bool {return target->field("url") == source->field("url") && target->field("name") == source->field("name");});  // , _substitute_condition
 
                     assert(result != know_model_board()->root_item());
@@ -2289,7 +2372,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(
 
                 //        setto = _current_model()->index(result);    //(current_item->parent()->current_count() - 1, 0, _current_index.parent());
                 //        assert(setto.isValid());
-                select_as_current(result);
+                select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
 
                 //        selectionModel()->select(setto, current_tree_selection_mode);
                 //        selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
@@ -2304,7 +2387,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(
                 //        return
 
                 //        result = _current_model()->item(setto);
-                select_as_current(result);
+                select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
                 assert(
                     (_source_item == result) || (_source_item->name() == result->name())
                 );
@@ -2332,7 +2415,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(
 
     boost::intrusive_ptr<TreeItem> result(nullptr);
     auto current_model = _modelindex.current_model();
-    auto current_index = _modelindex.current_index();
+    auto current_index = _modelindex.parent_index();
     auto current_item = _modelindex.parent();
     assert(current_model()->item(current_index));
 
@@ -2398,7 +2481,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(
                 assert(current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
                 //            setto = _current_model()->index(result);  //index_child(_current_index, current_item->current_count() - 1);
                 //            assert(setto.isValid());
-                select_as_current(result);   // setto
+                select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));   // setto
                 //        selectionModel()->select(setto, current_tree_selection_mode);
                 //        selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -2665,7 +2748,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> KnowView::view_delete_permanent(
 
                                 setto = _current_model()->index(new_position, 0, index_to_be_delete_first.parent());
                                 left_sibling_item = _item_common_parent->item_direct(new_position);
-                                select_as_current(left_sibling_item);    // setto
+                                select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, left_sibling_item->parent(), left_sibling_item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == left_sibling_item->linker() && il->host() == left_sibling_item && left_sibling_item->parent() == il->host_parent();})));    // setto
 
 
                                 //                        selectionModel()->select(setto, current_tree_selection_mode);   // current_tree_selection_mode
@@ -2710,7 +2793,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> KnowView::view_delete_permanent(
                                 setto = _current_model()->index(left_sibling_item);
                                 assert(setto.isValid());
 
-                                select_as_current(left_sibling_item);  // setto
+                                select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, left_sibling_item->parent(), left_sibling_item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == left_sibling_item->linker() && il->host() == left_sibling_item && left_sibling_item->parent() == il->host_parent();})));  // setto
 
                                 //            if(index.parent().parent().isValid()) {view_up_one_level();}
                                 //            else {view_return_to_root();}
@@ -3127,7 +3210,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_strategy(
 )
 {
     auto _current_model = _modelindex.current_model();
-    auto _current_item = _current_model()->item(_modelindex.current_index());
+    auto _current_item = _current_model()->item(_modelindex.parent_index());
 
     //    auto _tree_screen = globalparameters.tree_screen();
 
@@ -3200,7 +3283,9 @@ void KnowView::on_current_changed(const QModelIndex &current, const QModelIndex 
     Q_UNUSED(previous);
 
     //    selectionModel()->select(previous, current_tree_selection_mode);
-    if(currentIndex() != current)select_as_current(current);
+    auto result = _know_root->item(current);
+
+    if(currentIndex() != current)select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
 }
 
 void KnowView::on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected)
@@ -3228,8 +3313,9 @@ void KnowView::on_current_row_changed(const QModelIndex &current, const QModelIn
     //    if(it && it != source_model()->root_item()) {
     //        if(current.isValid() && current_index() != current && !it->is_activated()) {
 
+    auto result = _know_root->item(current);
 
-    if(currentIndex() != current)select_as_current(current);
+    if(currentIndex() != current)select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
 
     //    index_invoke(current_index());    // current
 
@@ -3241,7 +3327,9 @@ void KnowView::on_current_row_changed(const QModelIndex &current, const QModelIn
 void KnowView::on_pressed(const QModelIndex &_index)
 {
     if(_index.isValid()) {
-        select_as_current(_index);
+        auto result = _know_root->item(_index);
+        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
+
         //        selectionModel()->select(_index, current_tree_selection_mode);    //, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
         //        selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode);    //
 
@@ -3689,7 +3777,8 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(boost::intrusive_ptr<T
         current_root = cursor_follow_up_one_level();
     }
 
-    select_as_current(_new_session_root_item);
+    auto result = _new_session_root_item;
+    select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
 
     //    auto entrance = globalparameters.entrance();
 
@@ -3772,20 +3861,22 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up_one_level(void)
     globalparameters.mainwindow()->save_text_area();
 
     auto current_model  = [&]() {return source_model();};
-    auto _current_item   = current_item();
+    auto _current_item  = current_item();
     int origin_count    = current_model()->count_records_all();
     auto root_item      = current_model()->root_item();
 
 
     if(_current_item->parent() && _current_item->parent() != root_item && _current_item->parent()->path_list().size() > root_item->path_list().size()) {
-        select_as_current(_current_item->parent());
+        auto result = _current_item->parent();
+        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
     } else if(_current_item->parent() == root_item) {
         auto _root_up = root_item->parent();
 
         if(_root_up && !_check_crypt_conflict(_root_up)) { // && _root_item->parent() != _know_model_board->root_item()
             root_item = _root_up;
             intercept(TreeModel::ModelIndex(current_model, _root_up));
-            select_as_current(_current_item->parent());
+            auto it = _current_item->parent();
+            select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
             // Получаем указатель на данные таблицы конечных записей
 
@@ -3895,7 +3986,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up_to_absolute_root(void)
 
         if(_source_model()->root_item() != current_root)intercept(TreeModel::ModelIndex(_source_model, current_root)); // _know_branch->intercept(know_root()->root_item());
 
-        select_as_current(_current_item);
+        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, _current_item->parent(), _current_item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();})));
         tree_screen->enable_up_action();
     }
 
@@ -3931,8 +4022,9 @@ boost::intrusive_ptr<TreeItem> KnowView::intercept(
 
     //    reset();
     // Модель подключется к виду
-    source_model()->intercept(result);  // source_model(result);
-    setModel(source_model());
+    _know_root->intercept(result);  // source_model(result);
+    reset();
+    setModel(_know_root);
     cursor_follow_up(result);
     return result;
 }

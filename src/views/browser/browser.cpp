@@ -311,9 +311,10 @@ namespace browser {
         slotUpdateWindowTitle();
         load_default_state();
 
+        auto vtab = _main_window->vtab();
 
-        if(globalparameters.vtab()->indexOf(_record_screen) == -1)
-            globalparameters.vtab()->addTab(_record_screen, "Browser " + globalparameters.vtab()->count());
+        if(vtab->indexOf(_record_screen) == -1)
+            vtab->addTab(_record_screen, QIcon(":/resource/pic/search.svg"), "Browser " + vtab->count() - 1);
 
         //        int size = _tabmanager->lineEditStack()->sizeHint().height();
 

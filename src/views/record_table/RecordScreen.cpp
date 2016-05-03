@@ -530,8 +530,8 @@ void RecordScreen::setup_ui(void)
     //        std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>>("", &RecordView::resizeEvent, _record_controller->view())
     //        , this
     //    );
-
-    _main_window->vtab()->addTab(this, QIcon(":/resource/pic/clover.svg"), "Browser");
+    auto vtab = _main_window->vtab();
+    vtab->addTab(this, QIcon(":/resource/pic/search.svg"), "Browser" + vtab->count() - 1);
 }
 
 

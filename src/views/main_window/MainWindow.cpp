@@ -686,21 +686,22 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     //        return;
 
     // Получаем указатель на элемент вида TreeItem, используя путь
-    auto item = know_model_board()->item(current_item_absolute_path);            // on know_root semantic
+    auto it = know_model_board()->item(current_item_absolute_path);            // on know_root semantic
 
-    if(!source_model()->index(item).isValid()) {
-        _tree_screen->tree_view()->intercept(TreeModel::ModelIndex(know_model_board, item));
+    if(!source_model()->index(it).isValid()) {
+        _tree_screen->tree_view()->intercept(TreeModel::ModelIndex(know_model_board, it));
     }
 
-    if(item) {
-        qDebug() << "Set tree position to " << item->field("name") << " id " << item->field("id");
+    if(it) {
+        qDebug() << "Set tree position to " << it->field("name") << " id " << it->field("id");
 
         //        // Из указателя на элемент TreeItem получаем QModelIndex
         //        QModelIndex setto = source_model()->index(item);
 
         // Курсор устанавливается в нужную позицию
-        _tree_screen->tree_view()->select_as_current(item);
-        _tree_screen->tree_view()->source_model()->session_id(TreeModel::ModelIndex(source_model, item));  //session_root_id();
+        auto tree_view = _tree_screen->tree_view();
+        tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+        tree_view->source_model()->session_id(TreeModel::ModelIndex(source_model, it));  //session_root_id();
     }
 }
 

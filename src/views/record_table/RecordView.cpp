@@ -560,18 +560,21 @@ void RecordView::mousePressEvent(QMouseEvent *event)
     // get the buttons type
     Qt::MouseButtons mouse_button = event->buttons();
 
+    _mouse_start_position = event->pos();
+    QModelIndex next_index = indexAt(event->pos());
+
     // Если нажата левая кнопка мыши
     if(mouse_button == Qt::LeftButton) {    // || mouse_button == Qt::RightButton
-        _mouse_start_position = event->pos();
-        QModelIndex next_index = indexAt(event->pos());
+
         selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
-        _tree_screen->tree_view()->select_as_current(next_index);
+        //        auto it = _record_controller->source_model()->item(next_index.row());
+        //        _tree_screen->tree_view()->select_as_current(it);
 
     } else if(mouse_button == Qt::RightButton) {    // only the right mouse buton
-        _mouse_start_position = event->pos();
-        //select item at cursor position
-        //        QPersistentModelIndex
-        QModelIndex next_index = indexAt(event->pos());
+        //        _mouse_start_position = event->pos();
+        //        //select item at cursor position
+        //        //        QPersistentModelIndex
+        //        QModelIndex next_index = indexAt(event->pos());
         //        selectionModel()->clear();
         selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);    // Select
         selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
@@ -579,7 +582,6 @@ void RecordView::mousePressEvent(QMouseEvent *event)
         _record_controller->select_pos(next_index.row());   //
         emit clicked(next_index);
 
-        _tree_screen->tree_view()->select_as_current(next_index);
 
 
 
@@ -591,6 +593,10 @@ void RecordView::mousePressEvent(QMouseEvent *event)
         //        }
 
     }
+
+    auto it = _record_controller->source_model()->item(next_index.row());
+    auto tree_view = _tree_screen->tree_view();
+    tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
     //    else {
     //        //call the parents function

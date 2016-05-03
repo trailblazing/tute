@@ -479,7 +479,8 @@ namespace browser {
                     if(_tree_view->current_index() != _i) {
                         //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
                         //                        _tree_view->selectionModel()->select(_i, current_tree_selection_mode);  //
-                        _tree_view->select_as_current(it);
+                        auto parent = it->parent();
+                        _tree_view->select_as_current(TreeModel::ModelIndex([&] {return _tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
                         //                    //                    globalparameters.mainwindow()
                         //                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
@@ -530,7 +531,7 @@ namespace browser {
 
                     if(_tree_view->current_index() != _i) {
                         //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
-                        _tree_view->select_as_current(it);
+                        _tree_view->select_as_current(TreeModel::ModelIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
                         //                    //                    globalparameters.mainwindow()
                         if(_record_controller->view()->selection_first_id() != it->field("id")) {

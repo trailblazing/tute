@@ -283,7 +283,7 @@ void TreeScreen::setup_actions(void)
                                     , std::bind(&KnowView::view_add_new, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
         , [&](TreeModel::ModelIndex _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
             auto _current_model = _modelindex.current_model();
-            auto _current_index = _modelindex.current_index();
+            auto _current_index = _modelindex.parent_index();
             boost::intrusive_ptr<TreeItem> result;
             auto parent_parent = _modelindex.parent()->parent();
             assert(parent_parent);
@@ -932,7 +932,8 @@ void TreeScreen::item_move_up_dn_branch(int(TreeItem::*_move)()) // int directio
 
         // Установка курсора на позицию, куда была перенесена ветка
         if(index_after_move.isValid() && index_after_move != _index) {
-            _tree_view->select_as_current(index_after_move);
+            auto it = _tree_view->source_model()->item(index_after_move);
+            _tree_view->select_as_current(TreeModel::ModelIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
             //            _tree_view->selectionModel()->select(index_after_move, current_tree_selection_mode);    // QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
             //            _tree_view->selectionModel()->setCurrentIndex(index_after_move, current_tree_current_index_mode);   //  | QItemSelectionModel::Current
 
