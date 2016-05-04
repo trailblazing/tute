@@ -125,6 +125,7 @@ namespace browser {
         Qt::KeyboardModifiers m_keyboardModifiers;
         Qt::MouseButtons m_pressedButtons;
         QUrl m_loadingUrl;
+        bool    _certificate_ignored = false;
     };
 
 #endif // USE_POPUP_WINDOW
@@ -293,6 +294,7 @@ namespace browser {
         //        friend boost::intrusive_ptr<TreeItem> TreeItem::bind(browser::WebPage *page);
 
         //        friend bool TreeItem::is_holder();
+        bool                    _certificate_ignored = false;
 
         friend class TabWidget;
         friend class WebView;
@@ -342,6 +344,7 @@ namespace browser {
         PopupPage *m_page;
         QIcon m_icon;
         QNetworkReply *m_iconReply;
+
     };
 
 

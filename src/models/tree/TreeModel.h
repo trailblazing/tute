@@ -36,7 +36,7 @@ public:
         ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order = 0);   // , const QModelIndex &_current_index
         std::function<KnowModel *()> current_model()const {return _current_model;}
         QModelIndex parent_index()const;
-        QModelIndex current_index()const;
+        //        QModelIndex current_index()const;
         boost::intrusive_ptr<TreeItem> parent() const;          // {return _parent;}
         boost::intrusive_ptr<TreeItem> current_item() const;    // {return _parent->item_direct(_sibling_order);}
         int sibling_order() const;                              // {return _sibling_order;}
@@ -44,7 +44,7 @@ public:
         std::function<KnowModel *()>    _current_model;
         boost::intrusive_ptr<TreeItem>  _parent;
         int                             _sibling_order;
-        QModelIndex                     _current_index;
+        //        QModelIndex                     _current_index;
     };
 
     //    struct  delegater {

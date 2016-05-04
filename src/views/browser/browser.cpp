@@ -314,7 +314,7 @@ namespace browser {
         auto vtab = _main_window->vtab();
 
         if(vtab->indexOf(_record_screen) == -1)
-            vtab->addTab(_record_screen, QIcon(":/resource/pic/search.svg"), "Browser " + vtab->count() - 1);
+            vtab->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), "Browser " + vtab->count() - 1);
 
         //        int size = _tabmanager->lineEditStack()->sizeHint().height();
 

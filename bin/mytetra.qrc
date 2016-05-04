@@ -131,7 +131,9 @@
         <file>resource/pic/note_close.svg</file>
         <file>resource/pic/mobile_reload.svg</file>
         <file>resource/pic/mobile_stop.svg</file>
-        <file>resource/pic/gingko.svg</file>
         <file>resource/pic/tomato.svg</file>
+        <file>resource/pic/ginkgo_black.svg</file>
+        <file>resource/pic/ginkgo.svg</file>
+        <file>resource/pic/ginkgo_pure.svg</file>
     </qresource>
 </RCC>

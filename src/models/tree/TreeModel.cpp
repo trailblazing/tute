@@ -863,7 +863,7 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QV
 //}
 
 TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order)
-    : _current_model(current_model), _parent(parent_item), _sibling_order(sibling_order), _current_index(_current_model()->index(_parent->item_direct(_sibling_order)))
+    : _current_model(current_model), _parent(parent_item), _sibling_order(sibling_order)    // , _current_index(_current_model()->index(_parent->item_direct(_sibling_order)))
 {
     bool current_parent_valid = [&]() {
         bool result = false;
@@ -881,19 +881,19 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_mo
                 && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
             }
 
-            _current_index = _current_model()->index(current_item());
-            assert(_current_index.isValid());
+            //            _current_index = _current_model()->index(current_item());
+            //            assert(_current_index.isValid());
 
         } else if(parent_item == current_root()) {
-            assert(_current_index.isValid());
+            //            assert(_current_index.isValid());
             result = true;
         } else {
-            assert(_current_index.isValid());
+            //            assert(_current_index.isValid());
             result = (current_model()->index(parent_item).isValid())
             && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
         }
 
-        assert(_current_index.isValid());
+        //        assert(_current_index.isValid());
         return result;
     }();
     assert(current_parent_valid);
@@ -901,7 +901,7 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_mo
     auto count_direct = _parent->count_direct();
     count_direct = count_direct == 0 ? 1 : count_direct;
     assert(sibling_order < count_direct);
-    assert(_current_index.isValid());
+    //    assert(_current_index.isValid());
 }
 
 boost::intrusive_ptr<TreeItem> TreeModel::ModelIndex::parent()const {return _parent;}
@@ -910,11 +910,11 @@ boost::intrusive_ptr<TreeItem> TreeModel::ModelIndex::current_item()const {retur
 
 QModelIndex TreeModel::ModelIndex::parent_index()const {return _current_model()->index(_parent);}
 
-QModelIndex TreeModel::ModelIndex::current_index()const
-{
-    return _current_index;  // _current_model()->index(current_item())
+//QModelIndex TreeModel::ModelIndex::current_index()const
+//{
+//    return _current_index;  // _current_model()->index(current_item())
 
-}
+//}
 
 int TreeModel::ModelIndex::sibling_order() const {return _sibling_order;}
 

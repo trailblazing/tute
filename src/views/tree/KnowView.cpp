@@ -423,29 +423,31 @@ void KnowView::mousePressEvent(QMouseEvent *event)  // Q_DECL_OVERRIDE
         //select item at cursor position
         //        QPersistentModelIndex
         QModelIndex next_index = indexAt(event->pos());
-        //        selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
+
+        if(next_index.isValid()) {
+            //        selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
 
 
-        //        // Получение списка индексов QModelIndex выделенных элементов
-        //        QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
-        //        QModelIndexList _selectitems = // selectionModel()->selectedIndexes(); //
-        //            is_index_localized(_origin_index_list) ? _origin_index_list : index_localize(_origin_index_list, _origin_index_list.indexOf(next_index));
+            //        // Получение списка индексов QModelIndex выделенных элементов
+            //        QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
+            //        QModelIndexList _selectitems = // selectionModel()->selectedIndexes(); //
+            //            is_index_localized(_origin_index_list) ? _origin_index_list : index_localize(_origin_index_list, _origin_index_list.indexOf(next_index));
 
-        //        qSort(_selectitems.begin(), _selectitems.end());
+            //        qSort(_selectitems.begin(), _selectitems.end());
 
-        selectionModel()->clear();
-        auto selection = LocalLizeInitializer(this)();
-        selectionModel()->select(selection, current_tree_selection_mode);
-        auto it = _know_root->item(next_index);
-        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+            selectionModel()->clear();
+            auto selection = LocalLizeInitializer(this)();
+            selectionModel()->select(selection, current_tree_selection_mode);
+            auto it = _know_root->item(next_index);
+            select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
-        //        // start the context menu
-        //        QModelIndexList select_indexes(selectedIndexes());
+            //        // start the context menu
+            //        QModelIndexList select_indexes(selectedIndexes());
 
-        //        if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
-        //            _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
-        //        }
-
+            //        if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
+            //            _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
+            //        }
+        }
     } else {
         //call the parents function
         QTreeView::mousePressEvent(event);
@@ -852,7 +854,7 @@ QModelIndex KnowView::select_as_current(TreeModel::ModelIndex   _modelindex
 {
     QModelIndex _result;
     //    QModelIndex _current_index = _modelindex.parent_index();
-    QModelIndex _current_index = _modelindex.current_index();
+    QModelIndex _current_index = _modelindex.current_model()()->index(_modelindex.current_item());
     auto _item = _modelindex.current_item();
 
 

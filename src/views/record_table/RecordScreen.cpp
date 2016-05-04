@@ -531,7 +531,7 @@ void RecordScreen::setup_ui(void)
     //        , this
     //    );
     auto vtab = _main_window->vtab();
-    vtab->addTab(this, QIcon(":/resource/pic/search.svg"), "Browser" + vtab->count() - 1);
+    vtab->addTab(this, QIcon(":/resource/pic/clover.svg"), "Browser" + vtab->count() - 1);
 }
 
 

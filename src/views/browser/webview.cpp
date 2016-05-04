@@ -151,7 +151,7 @@ namespace browser {
 
     bool PopupPage::certificateError(const QWebEngineCertificateError &error)
     {
-        if(error.isOverridable()) {
+        if(error.isOverridable() && !_certificate_ignored) {
             QMessageBox msgBox;
             msgBox.setIcon(QMessageBox::Warning);
             msgBox.setText(error.errorDescription());
@@ -161,11 +161,12 @@ namespace browser {
                                          "Do you wish to override the security check and continue?"));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
-            return msgBox.exec() == QMessageBox::Yes;
+            return _certificate_ignored = (msgBox.exec() == QMessageBox::Yes);
         }
 
-        QMessageBox::critical(view(), tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
-        return false;
+        //        QMessageBox::critical(view(), tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
+        //        return false;
+        return _certificate_ignored;
     }
 
 
@@ -765,7 +766,7 @@ namespace browser {
 
     bool WebPage::certificateError(const QWebEngineCertificateError &error)
     {
-        if(error.isOverridable()) {
+        if(error.isOverridable() && !_certificate_ignored) {
             QMessageBox msgBox;
             msgBox.setIcon(QMessageBox::Warning);
             msgBox.setText(error.errorDescription());
@@ -775,11 +776,12 @@ namespace browser {
                                          "Do you wish to override the security check and continue?"));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
-            return msgBox.exec() == QMessageBox::Yes;
+            return _certificate_ignored = (msgBox.exec() == QMessageBox::Yes);
         }
 
-        QMessageBox::critical(_view, tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
-        return false;
+        //        QMessageBox::critical(_view, tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
+        //        return false;
+        return _certificate_ignored;
 
     }
 
