@@ -854,11 +854,11 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
                 int sibling_order = -1;
 
                 if(original_parent) {
-                    sibling_order = original_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item;});
+                    sibling_order = original_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == il->host_parent();});
                     assert(_index_origin.row() == sibling_order);
 
                     beginRemoveRows(_index_parent, _index_origin.row(), _index_origin.row());
-                    remove_result |= original_parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent;}); // model_remove(_source_item->up_linker());
+                    remove_result |= original_parent->remove([&](boost::intrusive_ptr<TreeItem::Linker> il) {return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent && source_item->parent() == il->host_parent();}); // model_remove(_source_item->up_linker());
 
                     if(_index_original_parent.isValid()) {
                         update_index(_index_origin.parent());   // emit_datachanged_signal(_index_origin.parent());
@@ -895,7 +895,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
             assert(result->linker()->integrity_external(result, parent));
 
             if(result && item([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->id() == result->id();})) {
-                emit_datachanged_signal(index(parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it->host()->id() == result->id();}), 0, _index_parent));
+                emit_datachanged_signal(index(parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host()->id() == result->id() && result->linker() == il && il->host_parent() == result->parent();}), 0, _index_parent));
             }
 
             update_index(_index_parent);
@@ -1308,7 +1308,7 @@ boost::intrusive_ptr<TreeItem::Linker> KnowModel::model_delete_permanent(boost::
         {
             QModelIndex parent_index = index(host_parent);
             //    bool success = false;
-            int position = host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it->host()->id() == delete_target_linker->host()->id();});
+            int position = host_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker;});
             beginRemoveRows(parent_index, position, position);    // + rows - 1
             //            remove_target->self_remove_from_parent();
             //    success
@@ -1555,7 +1555,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge_to_left(
 
         if(result->parent()) {
             //        emit_datachanged_signal(index(result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::linker> it) {return it->host()->id() == result->id();}), 0, _index_result.parent()));
-            emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it->host()->id() == result->id();}), 0, _index_result));
+            emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host()->id() == result->id() && il == result->linker() && result->parent() == il->host_parent();}), 0, _index_result));
             emit layoutChanged(QList<QPersistentModelIndex>() << _index_result);
         }
 

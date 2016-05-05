@@ -1474,13 +1474,12 @@ namespace browser {
         QSettings settings;
         settings.beginGroup(QLatin1String("MainWindow"));
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
-        //loadPage(home);
-        //        auto ara = boost::make_shared<TabWidget::ActiveRecordBinder>(
-        //                       _tabmanager // _entrance
-        //                   );
-        _tree_screen->tree_view()->item_bind(
-            QUrl(home)
-            , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+        auto tree_view = _tree_screen->tree_view();
+        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
+        tree_view->item_bind(
+            tree_view->current_item()
+            , QUrl(home)
+            , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
         )->activate();
     }
 
@@ -1684,11 +1683,11 @@ namespace browser {
         return globalparameters.status_bar();
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<TreeItem> _it)
+    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it)
     {
         // clean();
         //        assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
-
+        assert(tab_brother != _it);
         boost::intrusive_ptr<TreeItem> result(nullptr);
         WebView *view = nullptr;
         TabWidget *const tab = tabWidget();
@@ -1738,7 +1737,7 @@ namespace browser {
             //                }
             //            }
             else {
-                view = tab->newTab(_it);  // , false
+                view = tab->newTab(tab_brother, _it); // , false
                 result = view->page()->binder()->item();
                 // auto load
             }

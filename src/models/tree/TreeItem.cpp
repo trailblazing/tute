@@ -3038,23 +3038,18 @@ browser::WebView *TreeItem::bind()
 browser::WebView *TreeItem::activate()
 {
     assert(_binder);    // auto result = globalparameters.entrance()->item_bind(this);  // may be not registered to tree model
-    bind();
+    browser::WebView *v = nullptr;
 
-    //    assert(page_valid());
-    //    assert(_record_binder->bounded_page());
-    //    assert(_record_binder->bounded_item() && _record_binder->bounded_item().get() == this);
+    if(!is_activated()) {
+        bind();
+        //    assert(page_valid());
+        v = _binder->activator();
+    } else {
 
-    //    if(_page->url().toString() != getNaturalFieldSource("url"))   // wrong! just activate the wiew
-    //    if(_page->record_controller()->tabmanager()->currentWebView() != _page->view())
+        v = _binder->page()->view();
+    }
 
-    return _binder->activator(); // boost::intrusive_ptr<TreeItem>(this)
-
-
-    //    else
-    //        return _page->view();
-
-    //    else
-    //        return _page->view();
+    return v;
 }
 
 void TreeItem::active_request(int pos, int openLinkIn)
@@ -3111,17 +3106,18 @@ void TreeItem::active_request(int pos, int openLinkIn)
 
 boost::intrusive_ptr<const TreeItem> TreeItem::is_activated()const
 {
-    boost::intrusive_ptr<const TreeItem> found(nullptr);
+    boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
 
     if(_binder) {
         auto _entrance = globalparameters.entrance();
         auto v = _entrance->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == this->id();});
-        auto test =  is_registered_to_browser();
+        auto _this =  is_registered_to_browser();
+        assert(_this == v->page()->binder()->item());
 
-        if(test && (v->tabmanager()->currentWebView() == v))found = test;
+        if(_this && (v->tabmanager()->currentWebView() == v) && v->load_finished())found_myself = _this;
     }
 
-    return found;
+    return found_myself;
 }
 
 boost::intrusive_ptr<const TreeItem> TreeItem::is_registered_to_browser()const

@@ -900,6 +900,8 @@ void QtSingleApplication::newLocalSocketConnection()
 
     auto entrance = globalparameters.entrance();
     auto tree_screen = globalparameters.tree_screen();
+    auto tree_view = tree_screen->tree_view();
+    TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
     //    Record *record = request_record(url);
 
     //    std::pair<browser::Browser *, browser::WebView *> dp;
@@ -908,19 +910,17 @@ void QtSingleApplication::newLocalSocketConnection()
         if(openLinksIn == 1) {
 
             auto browser = entrance->new_browser();
-            auto it = tree_screen->tree_view()->item_register(url, std::bind(&KnowView::view_paste_child, tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-            browser->tabmanager()->newTab(it);
-            browser->raise();
-            browser->activateWindow();
-            //bw->tabWidget()->newTabFull(record, globalParameters.getRecordTableScreen()->getRecordTableController());
+            auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
+            browser->item_bind(tree_view->current_item(), it)->activate();   // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+            //            browser->raise();
+            //            browser->activateWindow();
+
         } else {
 
-
-            //            browser::Browser *browser = globalparameters.entrance()->activated_browser();
-            //                auto arb = boost::make_shared<browser::TabWidget::ActiveRecordBinder>(browser->tabWidget());
-            tree_screen->tree_view()->item_bind(
-                url
-                , std::bind(&KnowView::view_paste_child, tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+            tree_view->item_bind(
+                tree_view->current_item()
+                , url
+                , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
             )->activate();
 
         }

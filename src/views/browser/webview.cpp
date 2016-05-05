@@ -855,12 +855,16 @@ namespace browser {
         //        QWebEnginePage
         WebPage *page = nullptr;
 
+        auto tree_view = _tree_screen->tree_view();
+        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, this->binder()->item());
+
+
         if(type == QWebEnginePage::WebBrowserWindow) {
 
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
-            assert(_tree_screen->tree_view()->source_model()->index(this->binder()->item()).isValid());
-            auto it = _tree_screen->tree_view()->item_register(QUrl(url), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3)); // Browser::_defaulthome
-            auto view = _browser->item_bind(it)->activate();
+            assert(tree_view->source_model()->index(this->binder()->item()).isValid());
+            auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)); // Browser::_defaulthome
+            auto view = _browser->item_bind(this->binder()->item(), it)->activate();
 
             page = view->page();
 
@@ -900,9 +904,10 @@ namespace browser {
                     // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                     // already create window, why do this? -- refer to demo browser
                     assert(tree_view->source_model()->index(this->binder()->item()).isValid());
-                    page = tree_view->item_bind(url // QUrl(Browser::_defaulthome)
-                                                , std::bind(&KnowView::view_paste_child, tree_view, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()) // std::placeholders::_1
-                                                            , std::placeholders::_2, std::placeholders::_3))->activate()->page();
+                    page = tree_view->item_bind(this->binder()->item(), url
+                                                , std::bind(&KnowView::view_paste_child, tree_view, modelindex // std::placeholders::_1
+                                                            , std::placeholders::_2, std::placeholders::_3)
+                                               )->activate()->page();
                 }
             }
 
@@ -2272,7 +2277,7 @@ namespace browser {
             _page->update_record(_page->url(), _page->title());
             //            }
 
-
+            _load_finished = true;
 
 
         }
@@ -2280,6 +2285,7 @@ namespace browser {
         _progress = 0;
     }
 
+    bool WebView::load_finished()const {return _load_finished;}
 
     WebView::~WebView()
     {

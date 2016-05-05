@@ -1194,9 +1194,10 @@ namespace browser {
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
     // prepare active chain but not load them
-    boost::intrusive_ptr<TreeItem> Entrance::item_bind(boost::intrusive_ptr<TreeItem> _it)
+    boost::intrusive_ptr<TreeItem> Entrance::item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it)
     {
         assert(_it);
+        assert(tab_brother != _it);
 
         if(_it->is_lite())_it->to_fat();
 
@@ -1207,6 +1208,9 @@ namespace browser {
 
         Browser *_browser = nullptr;    // DockedWindow *w = nullptr;
         WebView *_view = nullptr;
+
+        //        auto tree_view = _tree_screen->tree_view();
+        //        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
 
         if(_it) {   // && !_it->record_binder()
 
@@ -1220,7 +1224,7 @@ namespace browser {
                 if(_browsers.size() == 0) {
 
                     _browser = new_browser();
-                    result = _browser->item_bind(_it);  // _tree_screen->item_register(_it, std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    result = _browser->item_bind(nullptr, _it);  // _tree_screen->item_register(_it, std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                     _view = result->binder()->page()->view();
 
                 } else {
@@ -1242,7 +1246,13 @@ namespace browser {
 
                     if(_browser) {
                         if(_view == nullptr) {
-                            result = _browser->item_bind(_it);
+                            if(_browser->tabmanager()->count() > 0) {
+                                assert(_browser->tabmanager()->currentWebView()->page()->binder()->item() == tab_brother);
+                                result = _browser->item_bind(tab_brother, _it);    // _browser->tabmanager()->currentWebView()->page()->binder()->item()
+                            } else {
+                                result = _browser->item_bind(nullptr, _it);
+                            }
+
                             _view = result->binder()->page()->view();
                         } else {
                             result = _view->page()->item_bind(_it);

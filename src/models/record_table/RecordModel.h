@@ -136,6 +136,7 @@ public:
     int count()const; // {return _tabmanager->count();}
 
     void current_position(int _index);
+    boost::intrusive_ptr<TreeItem> current_item()const;
     int current_position()const;
 
 
@@ -160,7 +161,7 @@ private:
     void on_table_config_changed(void);
 
     // Добавление записей
-    int insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
+    int insert_new_item(QModelIndex source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
     void remove_child(boost::intrusive_ptr<TreeItem> it);
 

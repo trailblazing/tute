@@ -162,7 +162,7 @@ void FindScreen::setup_navigate(void)
 
     _historyforward->setShortcuts(QKeySequence::Forward);
     _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, this)
-                             );
+                            );
     //    _historyforwardmenu = new QMenu(this);
     //    connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
     //    connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
@@ -176,7 +176,7 @@ void FindScreen::setup_navigate(void)
 
     //_reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
     _stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg") // style()->standardIcon(QStyle::SP_BrowserReload)
-                         );
+                        );
     insert_action_as_button<QToolButton>(_navigater, _stopreload); // _navigater->addAction(_stopreload);
 
 
@@ -459,7 +459,8 @@ void FindScreen::setup_signals(void)
     connect(_find_in_text, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
 
     boost::intrusive_ptr<TreeItem> (KnowView::*_item_bind)(
-        const QUrl & _find_url
+        boost::intrusive_ptr<TreeItem> tab_brother
+        , const QUrl & _find_url
         , const KnowView::paste_strategy & _view_paste_strategy
         , equal_url_t _equal
     ) = &KnowView::item_bind;
@@ -934,7 +935,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                            )
 {
     //    auto _result_item = _result_item;  // ->record_table();
-
+    auto tree_view = _tree_screen->tree_view();
     //    // Если была нажата отмена поиска
     //    if(_cancel_flag == 1)return _result_item;
 
@@ -950,7 +951,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
             // Если в ветке присутсвует таблица конечных записей
             if(_start_item->count_direct() > 0) {
 
-                auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                auto _source_model = [&]() {return tree_view->source_model();};
 
                 //        auto _current_item = _tree_screen->tree_view()->current_item();
 
@@ -1046,6 +1047,9 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
 
                             if(candidate->is_lite())candidate->to_fat();
 
+                            auto browser = globalparameters.entrance()->activated_browser();
+                            auto tab_brother = browser->record_screen()->record_controller()->view()->current_item();
+
                             if((candidate->parent() != _session_root_item->parent())  // _current_item->parent())
                             && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})) {
                                 //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
@@ -1056,11 +1060,12 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                 //                                                  , _session_root_item->count_direct()
                                 //                                              );
 
-                                auto result = _tree_screen->tree_view()->item_bind(candidate // result
-                                                                      , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view()
-                                                                                  , TreeModel::ModelIndex(_source_model,  _session_root_item) // std::placeholders::_1
-                                                                                  , std::placeholders::_2
-                                                                                  , std::placeholders::_3));    // ->activate(); //
+                                auto result = tree_view->item_bind(tab_brother
+                                                                   , candidate // result
+                                                                   , std::bind(&KnowView::view_paste_child, tree_view
+                                , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
+                                , std::placeholders::_2
+                                , std::placeholders::_3));    // ->activate(); //
                                 result->activate();
                                 _result_list << result->linker();   //
 
@@ -1081,7 +1086,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                 //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
                                 //                }
                             } else {
-                                auto result = globalparameters.entrance()->item_bind(candidate);
+                                auto result = globalparameters.entrance()->item_bind(tab_brother, candidate);
                                 result->activate();
                                 _result_list << result->linker();   //
                             }

@@ -368,7 +368,7 @@ void TreeScreen::setup_actions(void)
         //        auto _index_child = _tree_view->current_index();
         auto _current_item = _tree_view->current_item();
         auto _parent = _current_item->parent();
-        int sibling_order = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _current_item->linker();});
+        int sibling_order = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();});
         //        auto _parent_valid = _parent == source_model()->root_item() ?
         //                             source_model()->root_item() == _know_model_board->root_item() ?
         //                             _parent

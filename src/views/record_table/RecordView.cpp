@@ -377,6 +377,10 @@ QString RecordView::selection_first_id(void)
     return selectItems.at(0).data(RECORD_ID_ROLE).toString();
 }
 
+boost::intrusive_ptr<TreeItem> RecordView::current_item()
+{
+    return _record_controller->source_model()->current_item();
+}
 
 // Получение модельного индекса первого выделенного элемента в Proxy модели
 QModelIndex RecordView::selection_first_proxy_index(void)

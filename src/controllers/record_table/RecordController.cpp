@@ -190,52 +190,52 @@ void RecordController::url_load(QModelIndex proxyIndex)
 // you can switch between two already existing record from this
 void RecordController::browser_update(const int source_pos)
 {
-    //RecordTableData *table = recordSourceModel->getTableData();
+    //    //RecordTableData *table = recordSourceModel->getTableData();
 
-    browser::Entrance *entrance = globalparameters.entrance();
+    //    browser::Entrance *entrance = globalparameters.entrance();
 
-    //Record *current_record = browser_view->getCurrentRecord();
+    //    //Record *current_record = browser_view->getCurrentRecord();
 
 
-    //if(current_record) {
+    //    //if(current_record) {
 
-    //if(current_record->isLite())current_record->switchToFat();
+    //    //if(current_record->isLite())current_record->switchToFat();
 
-    //bool existing = table->isRecordExists(current_record->getNaturalFieldSource("id"));
+    //    //bool existing = table->isRecordExists(current_record->getNaturalFieldSource("id"));
 
-    //    QUrl _url = table->getField("url", pos); //reply->url();
-    //    QString url = current_record->getNaturalFieldSource("url");
-    //    std::string url_compare_stored = url.toStdString();
-    //    std::string url_compare_get = _url.toString().toStdString();
-    //    std::string compare = getDifference(url_compare_stored, url_compare_get);
+    //    //    QUrl _url = table->getField("url", pos); //reply->url();
+    //    //    QString url = current_record->getNaturalFieldSource("url");
+    //    //    std::string url_compare_stored = url.toStdString();
+    //    //    std::string url_compare_get = _url.toString().toStdString();
+    //    //    std::string compare = getDifference(url_compare_stored, url_compare_get);
 
-    //    if(//!existing &&
-    //        compare.size() != 0 && compare != "/") {
-    //        //if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
-    //        Record record;
+    //    //    if(//!existing &&
+    //    //        compare.size() != 0 && compare != "/") {
+    //    //        //if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
+    //    //        Record record;
 
-    //        //if(record.isLite())record.switchToFat();
+    //    //        //if(record.isLite())record.switchToFat();
 
-    //        record.setNaturalFieldSource("id",   current_record->getNaturalFieldSource("id"));
-    //        record.setNaturalFieldSource("name",   current_record->getNaturalFieldSource("name"));
-    //        record.setNaturalFieldSource("author", current_record->getNaturalFieldSource("author"));
-    //        record.setNaturalFieldSource("url",    _url.toString());    // only changed
-    //        record.setNaturalFieldSource("tags",   current_record->getNaturalFieldSource("tags"));
-    //        //record.setText(browser_view->getText());
+    //    //        record.setNaturalFieldSource("id",   current_record->getNaturalFieldSource("id"));
+    //    //        record.setNaturalFieldSource("name",   current_record->getNaturalFieldSource("name"));
+    //    //        record.setNaturalFieldSource("author", current_record->getNaturalFieldSource("author"));
+    //    //        record.setNaturalFieldSource("url",    _url.toString());    // only changed
+    //    //        record.setNaturalFieldSource("tags",   current_record->getNaturalFieldSource("tags"));
+    //    //        //record.setText(browser_view->getText());
 
-    //        //this->current_record->setNaturalFieldSource("url", _url.toString());
-    //        addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+    //    //        //this->current_record->setNaturalFieldSource("url", _url.toString());
+    //    //        addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
 
-    //        browser_view->loadUrl(_url);
+    //    //        browser_view->loadUrl(_url);
 
-    //        //current_record = table->getRecordFat(pos); // wrong pos ! new position created //findRecord();
-    //        assert(current_record->getNaturalFieldSource("url") == _url.toString());
+    //    //        //current_record = table->getRecordFat(pos); // wrong pos ! new position created //findRecord();
+    //    //        assert(current_record->getNaturalFieldSource("url") == _url.toString());
 
-    //        //browser_view->loadUrl(pos);
+    //    //        //browser_view->loadUrl(pos);
 
-    //        //this->current_record->setNaturalFieldSource("url", url.toString());
-    //        //this->loadChanged();
-    //    } else {
+    //    //        //this->current_record->setNaturalFieldSource("url", url.toString());
+    //    //        //this->loadChanged();
+    //    //    } else {
 
 
 
@@ -267,40 +267,38 @@ void RecordController::browser_update(const int source_pos)
 
     //    if(record != old_record) {
 
-    if(url != ""
-       && url != browser::Browser::_defaulthome
-       //       && record->active_immediately()
-      ) {
-
-        //        // back compatible
-        //        //record->setNaturalFieldSource("url", browser::DockedWindow::_defaulthome);
-        //        if(// (!page && url != "")
-        //            // || (page && url != "" && url != page->url().toString())  // page redirect to new record already!
-        //            // || (page && !page->view()->hasFocus())
-        //            (old_record && _state_check[old_record->getNaturalFieldSource("pin")] == Qt::Unchecked)
-        //            || (page && !old_record)
-        //        ) {
-        //            page->load(record);
-        //        } else
-
-        if(entrance && !item->page_valid()) {    // unique_page()
-            // !record->binder() || !record->activator())) {
-            entrance->item_bind(item);
+    if(url != "" && url != browser::Browser::_defaulthome) {   //       && record->active_immediately()
 
 
-            //        assert(record->unique_page());    // not sure
-            assert(item->binder());
-            //            assert(item->activator());
+        //        //        // back compatible
+        //        //        //record->setNaturalFieldSource("url", browser::DockedWindow::_defaulthome);
+        //        //        if(// (!page && url != "")
+        //        //            // || (page && url != "" && url != page->url().toString())  // page redirect to new record already!
+        //        //            // || (page && !page->view()->hasFocus())
+        //        //            (old_record && _state_check[old_record->getNaturalFieldSource("pin")] == Qt::Unchecked)
+        //        //            || (page && !old_record)
+        //        //        ) {
+        //        //            page->load(record);
+        //        //        } else
 
-            //        if(record->binder() && !record->unique_page())record->bind();
-            //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
-            if(item->binder())item->activate();
+        //        if(entrance && !item->page_valid()) {    // unique_page()
+        //            // !record->binder() || !record->activator())) {
+        //            entrance->item_bind(item);
 
-            //        else if(entrance)
-        } else {
-            //            if(!item->is_registered_to_browser())
-            item->activate();
-        }
+
+        //            //        assert(record->unique_page());    // not sure
+        //            assert(item->binder());
+        //            //            assert(item->activator());
+
+        //            //        if(record->binder() && !record->unique_page())record->bind();
+        //            //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
+        //            if(item->binder())item->activate();
+
+        //            //        else if(entrance)
+        //        } else {
+        //            if(!item->is_registered_to_browser())
+        item->activate();
+        //        }
     }
 
     //    } else {
@@ -1154,24 +1152,24 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
     qDebug() << "In add_new()";
 
     // Получение Source-индекса первой выделенной строки
-    QModelIndex position_index = _view->selection_first_source_index();
+    QModelIndex source_position_index = _view->selection_first_source_index();
 
     //    if(!position_index.isValid()) {
     //        position_index = _view->currentIndex();   // very wrong!
     //    }
 
-    if(!position_index.isValid() && _source_model->size() > 0) {
+    if(!source_position_index.isValid() && _source_model->size() > 0) {
         //        if(0 == _source_model->tree_item()->size()) {
         //            _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
         //        }
 
-        position_index = _source_model->createIndex(_source_model->size() - 1
-                                                    , 0
-                                                    , static_cast<void *>(_source_model->item(_source_model->size() - 1).get())
-                                                   );
+        source_position_index = _source_model->createIndex(_source_model->size() - 1
+                                                           , 0
+                                                           , static_cast<void *>(_source_model->item(_source_model->size() - 1).get())
+                                                          );
     }
 
-    assert(position_index.row() < _source_model->size());
+    assert(source_position_index.row() < _source_model->size());
     //    assert(position_index.isValid());
 
     //    if(!position_index.isValid()) {
@@ -1186,7 +1184,7 @@ int RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item, const int
 
     // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
     if(!_source_model->item(item)) {
-        selected_position = _source_model->insert_new_item(position_index, item, mode);
+        selected_position = _source_model->insert_new_item(source_position_index, item, mode);
     } else {
         selected_position = _source_model->position(item);
     }

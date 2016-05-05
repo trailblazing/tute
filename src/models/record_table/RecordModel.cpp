@@ -592,10 +592,12 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-int RecordModel::insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<TreeItem> _item, int mode)
+int RecordModel::insert_new_item(QModelIndex source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode)
 {
-    Q_UNUSED(pos_index) // to be used
+    int source_insert_pos = source_pos_index.row(); //    Q_UNUSED(pos_index) // to be used
     Q_UNUSED(mode)      // to be used
+
+    if(-1 == source_insert_pos)source_insert_pos = 0;
 
     beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
@@ -612,7 +614,7 @@ int RecordModel::insert_new_item(QModelIndex pos_index, boost::intrusive_ptr<Tre
 
         //    if(selected_position == -1) {
 
-        view = _tabmanager->newTab(_item); // , _item->field("name")
+        view = _tabmanager->newTab(_tabmanager->webView(source_insert_pos)->page()->binder()->item(), _item); // , _item->field("name")
         //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
         selected_position = _tabmanager->indexOf(view);
     }
@@ -835,6 +837,8 @@ void RecordModel::current_position(int _index)
     _tabmanager->setCurrentIndex(_index);
 }
 
+
+boost::intrusive_ptr<TreeItem> RecordModel::current_item()const {return _tabmanager->currentWebView()->page()->binder()->item();}
 int RecordModel::current_position()const {return _tabmanager->currentIndex();}
 
 

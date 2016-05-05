@@ -167,7 +167,7 @@ public slots:
                                                  , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
                                                 );
 
-    boost::intrusive_ptr<TreeItem> item_bind(const QUrl &_find_url
+    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> tab_brother, const QUrl &_find_url
                                              , const KnowView::paste_strategy &_view_paste_strategy
                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
                                             );
@@ -177,7 +177,7 @@ public slots:
                                                  , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                                 );
 
-    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> target
+    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
                                              , const KnowView::paste_strategy &_view_paste_strategy
                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                             );
@@ -222,6 +222,7 @@ private:
 
     // create custom delegate
     HtmlDelegate    *_delegate;
+    QModelIndex     _previous_index;
 };
 
 #endif // __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__

@@ -96,7 +96,7 @@ namespace browser {
         Q_OBJECT
 
     signals:
-        void search(const QUrl &url
+        void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
                     , const TreeScreen::paste_strategy &_view_paste_strategy
                     , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
                    );

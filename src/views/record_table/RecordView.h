@@ -47,6 +47,7 @@ public:
     void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
     void cursor_to_index(int pos);
 
+    boost::intrusive_ptr<TreeItem> current_item();
     QModelIndex selection_first_proxy_index(void);
     QModelIndex selection_first_source_index(void);
 

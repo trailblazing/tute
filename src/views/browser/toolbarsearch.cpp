@@ -171,6 +171,9 @@ namespace browser {
             //            }
             //        }
 
+            //            auto tree_view = _tree_screen->tree_view();
+            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+
             // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
             if(!url.isEmpty()
                && !url.host().isNull()
@@ -180,10 +183,10 @@ namespace browser {
               ) {
                 //QLineEdit *lineedit =
 
-                _tree_screen->tree_view()->item_bind(
-                    url
-                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                )->activate();
+                tree_view->item_bind(tree_view->current_item()
+                                     , url
+                                     , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
+                                    )->activate();
 
                 assert(_lineedits);
 
@@ -232,7 +235,7 @@ namespace browser {
                 // QString u = url.toString();
 
                 //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                _tree_screen->tree_view()->item_bind(url, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3))->activate();
+                tree_view->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();
 
             }
         } else if(result_item != tree_view->current_item()) {
@@ -242,7 +245,7 @@ namespace browser {
 
             if(index_result.isValid()) {
                 auto it = tree_view->source_model()->item(index_result);
-                _tree_screen->tree_view()->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+                tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent() && tree_view->current_item()->parent() == il->host_parent();})));
 
 
                 //                //            else {
@@ -259,11 +262,11 @@ namespace browser {
                 //                //            _tree_screen->tree_view()->selectionModel()->select(_index, current_tree_selection_mode);   //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);   // current_tree_selection_mode
                 //                //            _tree_screen->tree_view()->selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode); //QItemSelectionModel::Clear | QItemSelectionModel::SelectCurrent);  //current_tree_selection_mode , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 
-                _tree_screen->tree_view()->index_invoke(index_result);
+                tree_view->index_invoke(index_result);
             }
 
         } else {
-            _tree_screen->tree_view()->index_invoke(_tree_screen->tree_view()->source_model()->index(result_item));
+            tree_view->index_invoke(tree_view->source_model()->index(result_item));
         }
     }
 

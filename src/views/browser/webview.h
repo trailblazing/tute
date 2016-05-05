@@ -378,6 +378,7 @@ namespace browser {
 
         ~WebView();
         WebPage *page() const { return _page; }
+        bool load_finished()const;
         void page(WebPage *page);
 
 
@@ -434,7 +435,7 @@ namespace browser {
         int                     _progress;
         QIcon                   _icon;
         QNetworkReply           *_iconreply;
-
+        bool                    _load_finished = false;
         friend class TabWidget;
     };
 

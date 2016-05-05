@@ -752,7 +752,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
                     auto parent_parent = parent_item->parent();
 
                     if(parent_parent) {
-                        _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> it) {return it == parent_item->linker();}), 0, static_cast<void *>(parent_item.get()));
+                        _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == parent_item->linker() && il->host() == parent_item && parent_item->parent() == il->host_parent();}), 0, static_cast<void *>(parent_item.get()));
                     } else {
                         _result = QModelIndex();  // index(0, 0, index(parent_item));
 

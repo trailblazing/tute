@@ -322,17 +322,19 @@ namespace browser {
             _tabbar
             , &TabBar::newTab   //                , this
         , [&]() {
-
+            auto tree_view = _tree_screen->tree_view();
+            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
             _tree_screen->tree_view()->item_bind(
-                QUrl(Browser::_defaulthome)
-                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                tree_view->current_item()
+                , QUrl(Browser::_defaulthome)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
             )->activate();
 
         });
 
         connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::requestCloseTab);
         connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::closeTab);  // added by hughvonyoung@gmail.com
-        connect(_tabbar, &TabBar::cloneTabSignal, this, &TabWidget::cloneTab);
+        //        connect(_tabbar, &TabBar::cloneTabSignal, this, &TabWidget::cloneTab);
         connect(_tabbar, &TabBar::closeOtherTabsSignal, this, &TabWidget::closeOtherTabs);
         connect(_tabbar, &TabBar::reloadTabSignal, this, &TabWidget::reloadTab);
         connect(_tabbar, &TabBar::reloadAllTabs, this, &TabWidget::reloadAllTabs);
@@ -356,10 +358,12 @@ namespace browser {
             , &QAction::triggered   //                , this
         , [&](bool make_current) {
             Q_UNUSED(make_current)
-
+            auto tree_view = _tree_screen->tree_view();
+            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
             _tree_screen->tree_view()->item_bind(
-                QUrl(Browser::_defaulthome)
-                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                tree_view->current_item()
+                , QUrl(Browser::_defaulthome)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
             )->activate();
 
         });
@@ -698,12 +702,13 @@ namespace browser {
     }
 
 
-    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> target   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
+    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
                                , bool make_current
                               )
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
         assert(target);
+        assert(tab_brother != target);
         assert(!target->is_lite());
 
         if(target->is_lite())target->to_fat();
@@ -829,7 +834,10 @@ namespace browser {
 #if             defined(QWEBENGINEPAGE_TOOLBARVISIBILITYCHANGEREQUESTED)
                 connect(view->page(), &WebPage::toolBarVisibilityChangeRequested, this, &TabWidget::toolBarVisibilityChangeRequested);
 #endif
-                int index = addTab(view, target->field("name").leftJustified(5, '.', true)); //, tr("(Untitled)")
+
+                //                int index = addTab(view, target->field("name").leftJustified(5, '.', true)); //, tr("(Untitled)")
+                int index = insertTab(tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0, view, target->field("name").leftJustified(5, '.', true));
+
                 setTabToolTip(index, target->field("name"));
 
                 //record->page()->load(record);
@@ -983,22 +991,21 @@ namespace browser {
             closeTab(i);
     }
 
-    // When index is -1 index chooses the current tab
-    void TabWidget::cloneTab(int index)
-    {
-        if(index < 0)
-            index = currentIndex();
+    //    // When index is -1 index chooses the current tab
+    //    void TabWidget::cloneTab(int index)
+    //    {
+    //        if(index < 0)
+    //            index = currentIndex();
 
-        if(index < 0 || index >= count())
-            return;
+    //        if(index < 0 || index >= count())
+    //            return;
 
-        assert(webView(index)->page()->item()->page_valid() && webView(index)->page()->item()->page());
-        assert(webView(index)->page()->item()->is_registered_to_browser() || webView(index)->page()->item()->field("url") == browser::Browser::_defaulthome);
-        //WebView *tab =
-        newTab(webView(index)->page()->item(), true //, view(index)->recordtablecontroller()
-              );
-        //tab->setUrl(webView(index)->url());
-    }
+    //        assert(webView(index)->page()->item()->page_valid() && webView(index)->page()->item()->page());
+    //        assert(webView(index)->page()->item()->is_registered_to_browser() || webView(index)->page()->item()->field("url") == browser::Browser::_defaulthome);
+
+    //        newTab(webView(index)->page()->item(), webView(index)->page()->item(), true);
+
+    //    }
 
 
     // When index is -1 index chooses the current tab
@@ -1275,9 +1282,12 @@ namespace browser {
            // Remove the line below when QTabWidget does not have a one pixel frame
            && event->pos().y() < (tabBar()->y() + tabBar()->height())
           ) {
+            auto tree_view = _tree_screen->tree_view();
+            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
             _tree_screen->tree_view()->item_bind(
-                QUrl(Browser::_defaulthome)
-                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                tree_view->current_item()
+                , QUrl(Browser::_defaulthome)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
             )->activate();
             return;
         }
@@ -1314,11 +1324,14 @@ namespace browser {
             && event->pos().y() < (tabBar()->y() + tabBar()->height())
         ) {
             QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
+            auto tree_view = _tree_screen->tree_view();
+            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
 
             if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
                 _tree_screen->tree_view()->item_bind(
-                    url
-                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    tree_view->current_item()
+                    , url
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
                 )->activate();
             }
         }
@@ -1451,17 +1464,20 @@ namespace browser {
         for(int i = 0; i < openTabs.count(); ++i) {
             auto _url = openTabs.at(i);
             //            Record *_record = request_record(_url);
+            auto tree_view = _tree_screen->tree_view();
+            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
 
             if(i != 0) {
-                _tree_screen->tree_view()->item_bind(
-                    _url
-                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                tree_view->item_bind(
+                    tree_view->current_item()
+                    , _url
+                    , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
                 )->activate();
             } else {
                 if(webView(0)->page()->url() != _url) {
                     //                    webView(0)->load(_record);    //loadUrl(_url);
                     //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
-                    auto it = _tree_screen->tree_view()->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    auto it = tree_view->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
                     auto r = // _record_controller
                         webView(0)->page()->item_bind(it);
                     //                            QUrl(_url)
@@ -1502,7 +1518,7 @@ namespace browser {
         message_box.setDefaultButton(QMessageBox::Cancel);
         int ret = message_box.exec();
 
-        if(ret == QMessageBox::Ok) {
+        if(ret == QMessageBox::Ok && download->state() == QWebEngineDownloadItem::DownloadRequested) {
             //            download->accept();
             QtSingleApplication::downloadManager()->download(download);
         } else {
