@@ -111,7 +111,7 @@ RecordScreen::RecordScreen(
     setup_ui();
     setup_signals();
     assembly();
-    _inited = true;
+    //    _inited = true;
 }
 
 
@@ -119,8 +119,10 @@ RecordScreen::~RecordScreen()
 {
     //    delete _recordtree_search;
     // delete
-    _record_controller->deleteLater();
-    //    delete _tabmanager;
+    if(_record_controller)_record_controller->deleteLater();
+
+    if(_tabmanager)_tabmanager->deleteLater();
+
     // delete
     _vertical_scrollarea->deleteLater();
 }
@@ -183,11 +185,13 @@ void RecordScreen::save_in_new_branch(bool checked)
             auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
 
             for(int i = 0; i < _record_model()->size(); i++) {
-                if(!know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _record_model()->item(i)->field("id");})) { // source_model->item(i)->field("id")
-                    if(_record_model()->item(i)->is_lite())_record_model()->item(i)->to_fat();
+                auto it = _record_model()->item(PosSource(i));
+
+                if(!know_model_board()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == it->field("id");})) { // source_model->item(i)->field("id")
+                    if(it->is_lite())it->to_fat();
 
                     // _record_model->item(i)->parent(_result_item);    // inside child_rent?
-                    _blank_header << _record_model()->item(i);  // _blank_header->child_rent(_record_model()->item(i));   // _result_item->work_pos(),
+                    _blank_header << it;  // _blank_header->child_rent(_record_model()->item(i));   // _result_item->work_pos(),
 
                 }
             }
@@ -257,7 +261,7 @@ void RecordScreen::setup_actions(void)
             if(modified) {
 
                 tree_view->view_paste_children_from_children(    // view_paste_sibling
-                    TreeModel::ModelIndex(_source_model, tree_view->session_root_item()) // _tree_screen->tree_view()->current_index() //,
+                    TreeModel::ModelIndex(_source_model, tree_view->session_root_auto()) // _tree_screen->tree_view()->current_index() //,
                     , branch_item
                     , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                 );
@@ -267,7 +271,7 @@ void RecordScreen::setup_actions(void)
                 tree_view->know_model_save();
             }
 
-            _source_model()->update_index(_source_model()->index(tree_view->session_root_item()));
+            _source_model()->update_index(_source_model()->index(tree_view->session_root_auto()));
         }
 
         //        }
@@ -296,7 +300,7 @@ void RecordScreen::setup_actions(void)
     //    setIcon(style()->standardIcon(QStyle::SP_FileIcon, 0, this));
     connect(_addnew_to_end, &QAction::triggered
             , _record_controller    // _tabmanager
-            , &RecordController::addnew_to_end  // &browser::TabWidget::addnew_to_end
+            , std::bind(&RecordController::addnew_blank, _record_controller, add_new_record_to_end)  // &RecordController::addnew_to_end  // &browser::TabWidget::addnew_to_end
            );
 
     // Добавление записи до
@@ -304,7 +308,7 @@ void RecordScreen::setup_actions(void)
     _addnew_before->setStatusTip(tr("Add a note before selected"));
     connect(_addnew_before, &QAction::triggered
             , _record_controller    // _tabmanager
-            , &RecordController::addnew_before  // &browser::TabWidget::addnew_before
+            , std::bind(&RecordController::addnew_blank, _record_controller, add_new_record_before)  // &RecordController::addnew_before  // &browser::TabWidget::addnew_before
            );
 
     // Добавление записи после
@@ -312,7 +316,7 @@ void RecordScreen::setup_actions(void)
     _addnew_after->setStatusTip(tr("Add a note after selected"));
     connect(_addnew_after, &QAction::triggered
             , _record_controller    // _tabmanager
-            , &RecordController::addnew_after   // &browser::TabWidget::addnew_after
+            , std::bind(&RecordController::addnew_blank, _record_controller, add_new_record_after)  // &RecordController::addnew_after   // &browser::TabWidget::addnew_after
            );
 
     // Редактирование записи
@@ -395,13 +399,55 @@ void RecordScreen::setup_actions(void)
     //    _action_move_up = new QAction(tr("&Move Up"), this);
     _action_move_up->setStatusTip(tr("Move note up"));
     _action_move_up->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
-    connect(_action_move_up, &QAction::triggered, _record_controller, &RecordController::move_up);   // connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
+    connect(_action_move_up, &QAction::triggered
+    , [&] {
+        qDebug() << "In moveup()";
+
+        // Получение номера первой выделенной строки
+        PosProxy pos_proxy_ = _record_controller->view()->selection_first<PosProxy>();
+
+        // Выясняется ссылка на таблицу конечных данных
+        //    auto item = _source_model->browser_pages();
+
+        // Перемещение текущей записи вверх
+        _record_controller->source_model()->move_up(_record_controller->index<PosSource>(pos_proxy_));
+
+
+        // Установка засветки на перемещенную запись
+        _record_controller->view()->cursor_to_index(PosProxy((int)pos_proxy_ - 1));
+
+        // Сохранение дерева веток
+        //    find_object<TreeScreen>(tree_screen_singleton_name)
+        globalparameters.tree_screen()->tree_view()->know_model_save();
+    }  // _record_controller, &RecordController::move_up
+           );   // connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
 
     // Перемещение записи вниз
     //    _action_move_dn = new QAction(tr("&Move Down"), this);
     _action_move_dn->setStatusTip(tr("Move note down"));
     _action_move_dn->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
-    connect(_action_move_dn, &QAction::triggered, _record_controller, &RecordController::move_dn);   // connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
+    connect(_action_move_dn, &QAction::triggered
+    , [&] {
+        qDebug() << "In movedn()";
+
+        // Получение номера первой выделенной строки
+        PosProxy pos_proxy_ = _record_controller->view()->selection_first<PosProxy>();
+
+        // Выясняется ссылка на таблицу конечных данных
+        //    auto item = _source_model->browser_pages();
+
+        // Перемещение текущей записи вниз
+        _record_controller->source_model()->move_dn(_record_controller->index<PosSource>(pos_proxy_));
+
+        // Установка засветки на перемещенную запись
+        _record_controller->view()->cursor_to_index(PosProxy((int)pos_proxy_ + 1));
+
+        // Сохранение дерева веток
+        //    find_object<TreeScreen>(tree_screen_singleton_name)
+        globalparameters.tree_screen()->tree_view()->know_model_save();
+
+    } // _record_controller, &RecordController::move_dn
+           );   // connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
 
     // Поиск по базе (клик связывается с действием в MainWindow)
     //    _find_in_base = new QAction(tr("Find in base"), this);
@@ -678,9 +724,9 @@ void RecordScreen::disable_all_actions(void)
 }
 
 
-void RecordScreen::tools_update(void)
+void RecordScreen::tools_update()
 {
-    qDebug() << "recordtablescreen::tools_update()";
+    qDebug() << "RecordScreen::tools_update()";
 
     // Отключаются все действия
     disable_all_actions();
@@ -820,37 +866,34 @@ void RecordScreen::tools_update(void)
 }
 
 
-// Получение номера первого выделенного элемента в таблице записи на экране
-int RecordScreen::first_selection_pos(void)
-{
-    return _record_controller->first_selectionpos();
-}
+//// Получение номера первого выделенного элемента в таблице записи на экране
+//int RecordScreen::first_selection_pos(void)
+//{
+//    return _record_controller->first_selectionpos();
+//}
 
 
-// Получение ID первого выделенного элемента в таблице записи на экране
-QString RecordScreen::first_selection_id(void)
-{
-    return _record_controller->first_selectionid();
-}
+//// Получение ID первого выделенного элемента в таблице записи на экране
+//QString RecordScreen::first_selection_id(void)
+//{
+//    return _record_controller->first_selectionid();
+//}
 
 
-// Установка засветки в нужную строку в таблице записи на экране
-void RecordScreen::select_pos(int pos)
-{
-    _tabmanager->setCurrentIndex(pos);
-    _record_controller->select_pos(pos);
-}
+//// Установка засветки в нужную строку в таблице записи на экране
+//void RecordScreen::select_pos(PosProxy pos_proxy_)
+//{
+//    _record_controller->select_pos(pos_proxy_);
+//}
 
 
-// Установка засветки в нужную запись в таблице записей на экране
-void RecordScreen::select_id(QString id)
-{
-    _tabmanager->setCurrentIndex(_record_controller->source_model()->position(id));
-
-    if(_record_controller->view()->selection_first_id() != id) {
-        _record_controller->select_id(id);
-    }
-}
+//// Установка засветки в нужную запись в таблице записей на экране
+//void RecordScreen::select_id(IdType id)
+//{
+//    if(_record_controller->view()->selection_first_id() != id) {
+//        _record_controller->select_id(id);
+//    }
+//}
 
 
 

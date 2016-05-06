@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QModelIndexList>
 #include "utility/delegate.h"
+#include <boost/serialization/strong_typedef.hpp>
 //#include "models/record_table/ItemsFlat.h"
 //#include "models/tree/TreeItem.h"
 
@@ -41,8 +42,12 @@ namespace browser {
     // extern constexpr const char * DockedWindow::_defaulthome;
 }
 
+struct PosProxy;
+struct PosSource;
+struct IndexProxy;
+struct IndexSource;
+struct IdType;
 
-//BOOST_STRONG_TYPEDEF(QString, Id_T)
 
 
 class RecordController : public QObject {
@@ -64,7 +69,7 @@ public:
     RecordModel *source_model();    // {return _source_model;}
     RecordProxyModel *proxy_model();
     browser::TabWidget *tabmanager() {return _tabmanager;}
-    void item_click(const QModelIndex &proxy_index);
+    void item_click(const IndexProxy &index_proxy_);
 
     //    bool is_tree_item_exists(void);
     //    void reset_tabledata_test(TableData *rtData);
@@ -75,29 +80,37 @@ public:
 
     void add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList itemsForCopy);
 
-    void url_load(QModelIndex proxyIndex);
+    void url_load(IndexProxy proxyIndex);
     // Действия при редактировании инфополей записи из контекстного меню
-    bool edit_field_context(QModelIndex proxyIndex);
+    bool edit_field_context(IndexProxy proxyIndex);
 
-    QModelIndex proxypos_to_proxyindex(int pos)const;
-    QModelIndex proxypos_to_sourceindex(int pos)const;
-    int         proxyindex_to_proxypos(QModelIndex index)const;
-    int         sourceindex_to_sourcepos(QModelIndex index)const;
-    QModelIndex proxyindex_to_sourceindex(QModelIndex proxyIndex)const;
-    QModelIndex sourceindex_to_proxyindex(QModelIndex sourceIndex)const;
-    int         sourcepos_to_proxypos(int source_pos)const;
-    int         proxypos_to_sourcepos(int proxyPos)const;
-    QModelIndex id_to_sourceindex(QString id)const;
-    QModelIndex id_to_proxyindex(QString id)const;
+    template<typename return_type, typename parameter_type>  inline return_type index(const parameter_type &)const;
 
-    int     first_selectionpos(void) const;
-    QString first_selectionid(void)const;
-    void    select_pos(int pos);
-    void    select_id(QString id);
+    //    IndexProxy  index_proxy(PosProxy pos)const;
+    //    IndexProxy  index_proxy(IndexSource sourceIndex)const;
+    //    IndexProxy  index_proxy(PosSource pos_source_) const;
+    //    IndexProxy  index_proxy(IdType id)const;
+
+    //    IndexSource index_source(IdType id)const;
+    //    IndexSource index_source(IndexProxy proxyIndex)const;
+    //    IndexSource index_source(PosProxy pos_proxy_)const;
+    //    IndexSource index_source(PosSource pos_source_)const;
+
+    //    PosProxy    pos_proxy(IndexProxy index)const;
+    //    PosProxy    pos_proxy(PosSource pos_source)const;
+
+    //    PosSource   pos_source(PosProxy pos_proxy_)const;
+    //    PosSource   pos_source(IndexSource index)const;
 
 
-    void page_remove(QString del_id);
-    void pages_remove(QVector<QString> del_ids);
+    //    PosProxy first_selectionpos(void) const;
+    //    IdType first_selectionid(void)const;
+    void    select(PosProxy pos_proxy_);
+    void    select(IdType id);
+
+
+    void remove(IdType delete_id);
+    void remove(QVector<IdType> delete_ids);
 
     boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
@@ -108,22 +121,22 @@ public:
     //    int addnew_page_record(boost::intrusive_ptr<Record> record, int mode = add_new_record_after);
 
     //    boost::intrusive_ptr<TreeItem> tree_item();
-    void sychronize_metaeditor_to_item(const int source_pos);
-    void sychronize_attachtable_to_item(const int pos);
+    void sychronize_metaeditor_to_item(const PosSource pos_source_);
+    void sychronize_attachtable_to_item(const PosSource pos);
 
     void addnew_blank(int mode);
 
     //    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
-    int addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after); // add_new_record_after
+
 
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
     //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
-    bool no_view() {return _no_view;}
+    //    bool no_view() {return _no_view;}
     boost::intrusive_ptr<TreeItem> update_record_view(boost::intrusive_ptr<TreeItem> item);
     RecordScreen *record_screen() {return _record_screen;}
-    RecordController *reocrd_controller() {return this;}
-    // RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
+    //    RecordController *reocrd_controller() {return this;}
+    //    RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
 
 
 signals:
@@ -141,19 +154,19 @@ public slots:
 
     void on_edit_fieldcontext(void);
 
-    void pages_remove(void);
+    //    void pages_remove(void);
 
     // Вызов действий из контекстного меню для открытия окна с вводом новой записи
-    void addnew_to_end(void);
-    void addnew_before(void);
-    void addnew_after(void);
+    //    void addnew_to_end(void);
+    //    void addnew_before(void);
+    //    void addnew_after(void);
     //void autoAddNewAfterContext(void);
 
     // Вызов действий из контекстного меню для удаления конечной записи
     void close_context(void);
 
-    void move_up(void);
-    void move_dn(void);
+    //    void move_up(void);
+    //    void move_dn(void);
 
     // Клик по пункту "Сортировка" в контекстном меню
     void on_sort_click(void);
@@ -170,9 +183,9 @@ public slots:
 protected:
 
 
-    void browser_update(const int source_pos);
+    void browser_update(const PosSource pos_source_);
 
-    bool                _no_view = true;
+    //    bool                _no_view = true;
     RecordModel         *_source_model; // Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
     RecordProxyModel    *_proxy_model;
     RecordView          *_view;
@@ -181,7 +194,8 @@ protected:
     MetaEditor          *_editor_screen;
     MainWindow          *_main_window;
 
-    int addnew_item(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after);
+    PosSource addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after); // add_new_record_after
+    PosSource addnew_item(boost::intrusive_ptr<TreeItem> item_, const int mode = add_new_record_after);
 
     void edit_field(int pos
                     , QString pin
@@ -193,7 +207,7 @@ protected:
 
     // Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
 
-    void pages_remove_from_browser(QVector<QString> del_ids);
+    //    void pages_remove_from_browser(QVector<QString> del_ids);
     //    void remove_child(int index);
 
     //    friend class browser::Entrance;
@@ -204,5 +218,31 @@ protected:
 
     //    friend Record *register_record(const QUrl &_url);
 };
+
+
+template<>PosProxy      RecordController::index<PosProxy>(const PosSource &)const;
+template<>PosProxy      RecordController::index<PosProxy>(const IndexProxy &)const;
+template<>PosProxy      RecordController::index<PosProxy>(const IndexSource &)const;
+template<>PosProxy      RecordController::index<PosProxy>(const IdType &)const;
+
+template<>PosSource     RecordController::index<PosSource>(const PosProxy &)const;
+template<>PosSource     RecordController::index<PosSource>(const IndexProxy &)const;
+template<>PosSource     RecordController::index<PosSource>(const IndexSource &)const;
+template<>PosSource     RecordController::index<PosSource>(const IdType &)const;
+
+template<>IndexProxy    RecordController::index<IndexProxy>(const PosSource &)const;
+template<>IndexProxy    RecordController::index<IndexProxy>(const PosProxy &)const;
+template<>IndexProxy    RecordController::index<IndexProxy>(const IndexSource &)const;
+template<>IndexProxy    RecordController::index<IndexProxy>(const IdType &)const;
+
+template<>IndexSource   RecordController::index<IndexSource>(const PosSource &)const;
+template<>IndexSource   RecordController::index<IndexSource>(const IndexProxy &)const;
+template<>IndexSource   RecordController::index<IndexSource>(const PosProxy &)const;
+template<>IndexSource   RecordController::index<IndexSource>(const IdType &)const;
+
+template<>IdType        RecordController::index<IdType>(const PosSource &)const;
+template<>IdType        RecordController::index<IdType>(const IndexProxy &)const;
+template<>IdType        RecordController::index<IdType>(const PosProxy &)const;
+template<>IdType        RecordController::index<IdType>(const IndexSource &)const;
 
 #endif // __RECORDTABLECONTROLLER_H__

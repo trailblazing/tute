@@ -11,7 +11,7 @@
 #include "models/tree/TreeItem.h"
 #include "models/attach_table/AttachTableData.h"
 #include "ClipboardRecords.h"
-
+#include "models/record_table/RecordModel.h"
 
 ClipboardRecords::ClipboardRecords(void) : QMimeData()
 {

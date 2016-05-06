@@ -149,32 +149,43 @@ void RecordView::setup_signals(void)
     // Signal to open for editing the parameters of the recording double click
     connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
 
-    if(appconfig.interface_mode() == "desktop")
-        connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
+    //    if(appconfig.interface_mode() == "desktop")
+    //        connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
 
     // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
     // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
     //    if(appconfig.getInterfaceMode() == "mobile")
     connect(this, &RecordView::clicked, this, &RecordView::on_click_to_record);
 
-    RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
+    //    RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
 
     // Сигналы для обновления панели инструментов при изменении в selectionModel()
-    connect(this->selectionModel(), &QItemSelectionModel::currentChanged, parentPointer, &RecordScreen::tools_update);
-    connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, parentPointer, &RecordScreen::tools_update);
+    connect(this->selectionModel(), &QItemSelectionModel::currentChanged, [&](const QModelIndex & current, const QModelIndex & previous) {
+        (void)current;
+
+        if(previous.isValid())_previous_index = previous;
+
+        _record_screen->tools_update();
+    });
+    connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection & selected, const QItemSelection & deselected) {
+        (void)selected;
+        (void)deselected;
+        _record_screen->tools_update();
+    });
 
     // Сигналы для обновления панели инструментов
-    connect(this, &RecordView::activated, parentPointer, &RecordScreen::tools_update);
-    connect(this, &RecordView::clicked, parentPointer, &RecordScreen::tools_update);
-    connect(this, &RecordView::doubleClicked, parentPointer, &RecordScreen::tools_update);
-    connect(this, &RecordView::entered, parentPointer, &RecordScreen::tools_update);
-    connect(this, &RecordView::pressed, parentPointer, &RecordScreen::tools_update);
-    connect(QApplication::clipboard(), &QClipboard::dataChanged, parentPointer, &RecordScreen::tools_update);
+    connect(this, &RecordView::activated, _record_screen, &RecordScreen::tools_update);
+    connect(this, &RecordView::clicked, _record_screen, &RecordScreen::tools_update);
+    connect(this, &RecordView::doubleClicked, _record_screen, &RecordScreen::tools_update);
+    connect(this, &RecordView::entered, _record_screen, &RecordScreen::tools_update);
+    connect(this, &RecordView::pressed, _record_screen, &RecordScreen::tools_update);
+    connect(QApplication::clipboard(), &QClipboard::dataChanged, _record_screen, &RecordScreen::tools_update);
 
     connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &RecordView::on_section_moved);
     connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &RecordView::on_section_resized);
 }
 
+QModelIndex RecordView::previous_index()const {return _previous_index;}
 
 void RecordView::restore_header_state(void)
 {
@@ -192,40 +203,40 @@ void RecordView::restore_header_state(void)
 }
 
 
-void RecordView::on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected)
-{
-    QModelIndex select_record_index;
-    QModelIndex deselect_record_index;
+//void RecordView::on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected)
+//{
+//    QModelIndex select_record_index;
+//    QModelIndex deselect_record_index;
 
-    if(!selected.indexes().isEmpty())
-        select_record_index = selected.indexes().at(0);
+//    if(!selected.indexes().isEmpty())
+//        select_record_index = selected.indexes().at(0);
 
-    if(!deselected.indexes().isEmpty())
-        deselect_record_index = deselected.indexes().at(0);
-
-
-    //    qDebug() << "RecordTableView::onSelectionChanged()";
-    //    qDebug() << "Current index. row() " << selectRecord.row() << " isValid() " << selectRecord.isValid();
-    //    qDebug() << "Previous index. row() " << deselectRecord.row() << " isValid() " << deselectRecord.isValid();
+//    if(!deselected.indexes().isEmpty())
+//        deselect_record_index = deselected.indexes().at(0);
 
 
-    // return;
+//    //    qDebug() << "RecordTableView::onSelectionChanged()";
+//    //    qDebug() << "Current index. row() " << selectRecord.row() << " isValid() " << selectRecord.isValid();
+//    //    qDebug() << "Previous index. row() " << deselectRecord.row() << " isValid() " << deselectRecord.isValid();
 
-    //    if(select_record_index.isValid())
-    //        click_record(select_record_index);    // this lead RecordScreen::disable_all_actions does not work correctly
-}
+
+//    // return;
+
+//    //    if(select_record_index.isValid())
+//    //        click_record(select_record_index);    // this lead RecordScreen::disable_all_actions does not work correctly
+//}
 
 
 // Слот клика по записи. Принимает индекс Proxy модели
 void RecordView::on_click_to_record(const QModelIndex &proxy_index)
 {
-    click_record(proxy_index);
+    click_record(IndexProxy(proxy_index));
 }
 
 
 // Действия при выборе строки таблицы конечных записей. Принимает индекс Proxy модели
 // Actions when choosing the final row of the table entries. Accepts index Proxy models
-void RecordView::click_record(const QModelIndex &proxy_index)
+void RecordView::click_record(const IndexProxy &proxy_index)
 {
     _record_controller->item_click(proxy_index);
 
@@ -314,7 +325,7 @@ void RecordView::on_doubleclick(const QModelIndex &index)
 
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        click_record(index); // Раньше было select()
+        click_record(IndexProxy(index));  // Раньше было select()
         globalparameters.mainwindow()->editor_switch();
 
     }
@@ -328,11 +339,11 @@ void RecordView::edit_field_context(void)
 
     // Получение индекса выделенного элемента
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    QModelIndex proxy_index;
+    IndexProxy proxy_index;
 
     for(auto &si : selectItems) {
         if(0 == si.column())
-            proxy_index = si;   // selectItems.at(0);
+            proxy_index = IndexProxy(si);   // selectItems.at(0);
     }
 
     auto current_index = currentIndex();
@@ -341,9 +352,9 @@ void RecordView::edit_field_context(void)
     //    auto _index1 = _record_controller->sourceindex_to_proxyindex(proxy_index);  // invalid
 
     //    proxy_index = _record_controller->pos_to_proxyindex(proxy_index.row());
-    assert(proxy_index.isValid());
+    assert(((QModelIndex)proxy_index).isValid());
 
-    assert(proxy_index.row() == current_index.row());
+    assert(((QModelIndex)proxy_index).row() == current_index.row());
 
     if(_record_controller->edit_field_context(proxy_index)) {   // proxy_index
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
@@ -352,76 +363,77 @@ void RecordView::edit_field_context(void)
     }
 }
 
-// Получение номера первого выделенного элемента
-int RecordView::selection_first_pos(void)
-{
-    // Получение списка выделенных Item-элементов
-    QModelIndexList selectItems = selectionModel()->selectedIndexes();
+//// Получение номера первого выделенного элемента
+//PosProxy RecordView::selection_first_pos(void)const
+//{
+//    // Получение списка выделенных Item-элементов
+//    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
-    if(selectItems.isEmpty())
-        return -1; // Если ничего не выделено
-    else
-        return (selectItems.at(0)).row(); // Номер первого выделенного элемента
-}
+//    if(selectItems.isEmpty())
+//        return PosProxy(-1); // Если ничего не выделено
+//    else
+//        return PosProxy((selectItems.at(0)).row()); // Номер первого выделенного элемента
+//}
 
 
-// Получение ID первого выделенного элемента
-QString RecordView::selection_first_id(void)
-{
-    // Получение списка выделенных Item-элементов
-    QModelIndexList selectItems = selectionModel()->selectedIndexes();
+//// Получение ID первого выделенного элемента
+//IdType RecordView::selection_first_id(void)const
+//{
+//    // Получение списка выделенных Item-элементов
+//    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
-    if(selectItems.isEmpty())
-        return ""; // Если ничего не выделено
+//    if(selectItems.isEmpty())
+//        return IdType(""); // Если ничего не выделено
 
-    return selectItems.at(0).data(RECORD_ID_ROLE).toString();
-}
+//    return IdType(selectItems.at(0).data(RECORD_ID_ROLE).toString());
+//}
+
+//// Получение модельного индекса первого выделенного элемента в Proxy модели
+//IndexProxy RecordView::selection_first_proxy_index(void)const
+//{
+//    PosProxy pos = selection_first<PosProxy>();
+
+//    if(pos == -1)
+//        return IndexProxy(QModelIndex());
+
+//    // QModelIndex index = recordProxyModel->index( pos, 0 );
+//    IndexProxy index = _record_controller->index_proxy(PosProxy(pos));
+
+//    return index;
+//}
+
+
+//// Получение модельного индекса первого выделенного элемента в Source модели
+//IndexSource RecordView::selection_first_source_index(void)const
+//{
+//    IndexProxy proxy_index = selection_first<IndexProxy>();
+
+//    if(!((QModelIndex)proxy_index).isValid())
+//        return IndexSource(QModelIndex());
+
+//    // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
+//    IndexSource index = _record_controller->index_source(proxy_index);
+
+//    return index;
+//}
 
 boost::intrusive_ptr<TreeItem> RecordView::current_item()
 {
     return _record_controller->source_model()->current_item();
 }
 
-// Получение модельного индекса первого выделенного элемента в Proxy модели
-QModelIndex RecordView::selection_first_proxy_index(void)
-{
-    int pos = selection_first_pos();
-
-    if(pos == -1)
-        return QModelIndex();
-
-    // QModelIndex index = recordProxyModel->index( pos, 0 );
-    QModelIndex index = _record_controller->proxypos_to_proxyindex(pos);
-
-    return index;
-}
-
-
-// Получение модельного индекса первого выделенного элемента в Source модели
-QModelIndex RecordView::selection_first_source_index(void)
-{
-    QModelIndex proxy_index = selection_first_proxy_index();
-
-    if(!proxy_index.isValid())
-        return QModelIndex();
-
-    // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
-    QModelIndex index = _record_controller->proxyindex_to_sourceindex(proxy_index);
-
-    return index;
-}
 
 
 bool RecordView::is_selected_set_to_top(void)
 {
-    if(selection_first_pos() == 0)return true;
+    if(selection_first<PosProxy>() == PosProxy(0))return true;
     else return false;
 }
 
 
 bool RecordView::is_selected_set_to_bottom(void)
 {
-    if(selection_first_pos() == model()->rowCount() - 1)
+    if((int)selection_first<PosProxy>() == model()->rowCount() - 1)
         return true;
     else
         return false;
@@ -429,19 +441,31 @@ bool RecordView::is_selected_set_to_bottom(void)
 
 void RecordView::cursor_to_index(boost::intrusive_ptr<TreeItem> it)
 {
-    auto pos = _record_controller->source_model()->position(it);
-    cursor_to_index(pos);
+    PosSource pos_source_ = _record_controller->source_model()->position(it->id());
+    cursor_to_index(_record_controller->index<PosProxy>(pos_source_));
 }
 
 // Установка засветки в нужную строку на экране
-void RecordView::cursor_to_index(int pos)
+void RecordView::cursor_to_index(PosProxy pos_proxy_, const int mode)
 {
-    int proxy_pos = _record_controller->sourcepos_to_proxypos(pos);
-    QModelIndex index = _record_controller->proxypos_to_proxyindex(proxy_pos); // Модельный индекс в Proxy модели
-    int pos_real = index.row();
+
+    // В QTableView некорректно работает установка на только что созданную строку
+    // Это как-то связано с отрисовкой виджета QTableView
+    // Прокрутка к только что созданной строке через selectRow() показывает только
+    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
+    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
+    if(mode == add_new_record_to_end
+       || (mode == add_new_record_after && pos_proxy_ >= (model()->rowCount() - 1))
+      ) {
+        scrollToBottom();
+    }
+
+    //    PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
+    IndexProxy index = _record_controller->index<IndexProxy>(pos_proxy_); // Модельный индекс в Proxy модели
+    PosProxy pos_proxy_real(((QModelIndex)index).row());
 
     // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    if(pos_real != pos) {
+    if((int)pos_proxy_real != (int)pos_proxy_) {
         QMessageBox msgBox;
         msgBox.setText("In RecordView::cursor_to_index() input pos not equal model pos");
         msgBox.exec();
@@ -449,11 +473,11 @@ void RecordView::cursor_to_index(int pos)
 
     int rowCount = _record_controller->row_count();
 
-    if(pos_real < rowCount) {   // if(pos_real > (rowCount - 1))return;
+    if((int)pos_proxy_real < rowCount) {   // if(pos_real > (rowCount - 1))return;
 
 
         // Простой механизм выбора строки. Похоже, что его использовать не получится
-        selectRow(pos_real);
+        selectRow((int)pos_proxy_real);
 
         //    auto recordSourceModel = controller->getRecordTableModel();
         //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
@@ -470,7 +494,7 @@ void RecordView::cursor_to_index(int pos)
         // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
         // Therefore, the recording must be made a virtual click to fill the final table of records
         if(appconfig.interface_mode() == "mobile")
-            emit this->clicked(index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+            emit this->clicked((QModelIndex)index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
         // emit this->clicked(index);
 
@@ -481,41 +505,41 @@ void RecordView::cursor_to_index(int pos)
 }
 
 
-// mode - режим в котором добавлялась новая запись
-// pos - позиция новой записи в размерности Source модели
-void RecordView::move_cursor_to_new_record(int mode, int pos)
-{
-    // Установка курсора на только что созданную позицию
+//// mode - режим в котором добавлялась новая запись
+//// pos - позиция новой записи в размерности Source модели
+//void RecordView::cursor_to_index(PosProxy pos_proxy_, int mode)
+//{
+//    // Установка курсора на только что созданную позицию
 
-    //    QModelIndex selIdx = recordSourceModel->index(selPos, 0); // Создание индекса из номера
-    //    selectionModel()->setCurrentIndex(selIdx, QItemSelectionModel::ClearAndSelect);
-
-
-    // В QTableView некорректно работает установка на только что созданную строку
-    // Это как-то связано с отрисовкой виджета QTableView
-    // Прокрутка к только что созданной строке через selectRow() показывает только
-    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
-    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-    if(mode == add_new_record_to_end
-       || (mode == add_new_record_after && pos >= (model()->rowCount() - 1))
-      ) {
-        scrollToBottom();
-    }
-
-    int proxy_pos = _record_controller->proxypos_to_proxyindex(pos).row();
-
-    selectRow(proxy_pos);
+//    //    QModelIndex selIdx = recordSourceModel->index(selPos, 0); // Создание индекса из номера
+//    //    selectionModel()->setCurrentIndex(selIdx, QItemSelectionModel::ClearAndSelect);
 
 
-    QModelIndex index = _record_controller->proxypos_to_proxyindex(pos);
-    selectionModel()->select(index, current_tree_selection_mode);
-    // Установка засветки на нужный индекс
-    // Set the backlight to the desired index
-    selectionModel()->setCurrentIndex(index   // selIdx
-                                      , current_tree_current_index_mode // QItemSelectionModel::Select    // ClearAndSelect
-                                     );
+//    // В QTableView некорректно работает установка на только что созданную строку
+//    // Это как-то связано с отрисовкой виджета QTableView
+//    // Прокрутка к только что созданной строке через selectRow() показывает только
+//    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
+//    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
+//    if(mode == add_new_record_to_end
+//       || (mode == add_new_record_after && pos_proxy_ >= (model()->rowCount() - 1))
+//      ) {
+//        scrollToBottom();
+//    }
 
-}
+//    PosProxy proxy_pos(((QModelIndex)_record_controller->index_proxy(pos_proxy_)).row());
+
+//    selectRow((int)proxy_pos);
+
+
+//    IndexProxy index = _record_controller->index_proxy(pos_proxy_);
+//    selectionModel()->select((QModelIndex)index, current_tree_selection_mode);
+//    // Установка засветки на нужный индекс
+//    // Set the backlight to the desired index
+//    selectionModel()->setCurrentIndex((QModelIndex)index   // selIdx
+//                                      , current_tree_current_index_mode // QItemSelectionModel::Select    // ClearAndSelect
+//                                     );
+
+//}
 
 
 
@@ -584,7 +608,7 @@ void RecordView::mousePressEvent(QMouseEvent *event)
             selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);    // Select
             selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
             assert(next_index == currentIndex());
-            _record_controller->select_pos(next_index.row());   //
+            _record_controller->select(PosProxy(next_index.row()));   //
             emit clicked(next_index);
 
 
@@ -600,7 +624,7 @@ void RecordView::mousePressEvent(QMouseEvent *event)
         }
 
 
-        auto it = _record_controller->source_model()->item(next_index.row());
+        auto it = _record_controller->source_model()->item(PosSource(next_index.row()));
         assert(it);
         auto tree_view = _tree_screen->tree_view();
         tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
@@ -724,9 +748,9 @@ ClipboardRecords *RecordView::get_selected_records(void)
 void RecordView::selectionChanged(const QItemSelection &selected,
                                   const QItemSelection &deselected)
 {
-    // qDebug() << "RecordTableView::selectionChanged()";
+    // qDebug() << "RecordView::selectionChanged()";
 
-    emit list_selection_changed(selected, deselected);
+    //    emit list_selection_changed(selected, deselected);
 
     // Для корректной работы надо вызвать сигнал базового класса
     QTableView::selectionChanged(selected, deselected);
@@ -891,4 +915,56 @@ void RecordView::resizeEvent(QResizeEvent *e)
     }
 
     QTableView::resizeEvent(e);
+}
+
+
+
+template<>PosProxy RecordView::selection_first<PosProxy>()const
+{
+    // Получение списка выделенных Item-элементов
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
+
+    if(selectItems.isEmpty())
+        return PosProxy(-1); // Если ничего не выделено
+    else
+        return PosProxy((selectItems.at(0)).row()); // Номер первого выделенного элемента
+}
+
+template<>IdType RecordView::selection_first<IdType>()const
+{
+    // Получение списка выделенных Item-элементов
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
+
+    if(selectItems.isEmpty())
+        return IdType(""); // Если ничего не выделено
+
+    return IdType(selectItems.at(0).data(RECORD_ID_ROLE).toString());
+
+}
+
+template<>IndexProxy RecordView::selection_first<IndexProxy>()const
+{
+
+    PosProxy pos = selection_first<PosProxy>();
+
+    if(pos == -1)
+        return IndexProxy(QModelIndex());
+
+    // QModelIndex index = recordProxyModel->index( pos, 0 );
+    IndexProxy index = _record_controller->index<IndexProxy>(PosProxy(pos));
+
+    return index;
+}
+
+template<>IndexSource RecordView::selection_first<IndexSource>()const
+{
+    IndexProxy proxy_index = selection_first<IndexProxy>();
+
+    if(!((QModelIndex)proxy_index).isValid())
+        return IndexSource(QModelIndex());
+
+    // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
+    IndexSource index = _record_controller->index<IndexSource>(proxy_index);
+
+    return index;
 }

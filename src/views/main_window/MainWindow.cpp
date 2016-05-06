@@ -645,7 +645,7 @@ void MainWindow::save_tree_position(void)
 {
     auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _tree_screen->tree_view()->session_root_item();   //item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
+    auto item = _tree_screen->tree_view()->session_root_auto();   //item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
     //    // Получение QModelIndex выделенного в дереве элемента
     //    const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->tree_view()->current_item();

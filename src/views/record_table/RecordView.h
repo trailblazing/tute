@@ -18,11 +18,21 @@
 #include <QEvent>
 #include <QGestureEvent>
 
+
+extern const int add_new_record_to_end;
+extern const int add_new_record_before;
+extern const int add_new_record_after;
+
+
 class ClipboardRecords;
 class RecordController;
 class RecordScreen;
 class TreeItem;
-
+struct PosProxy;
+struct PosSource;
+struct IndexProxy;
+struct IndexSource;
+struct IdType;
 
 class RecordView : public QTableView {
     Q_OBJECT
@@ -41,28 +51,33 @@ public:
     void restore_header_state(void);
     void restore_column_width(void);
 
-    int selection_first_pos(void);
-    QString selection_first_id(void);
+    template<typename return_type>inline return_type selection_first()const;
+
+
+    //    PosProxy selection_first_pos(void) const;
+    //    IdType selection_first_id(void) const;
+    //    IndexProxy selection_first_proxy_index(void) const;
+    //    IndexSource selection_first_source_index(void) const;
+
 
     void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
-    void cursor_to_index(int pos);
+    void cursor_to_index(PosProxy pos_proxy_, const int mode = add_new_record_after);
+    //    void cursor_to_index(PosProxy pos_proxy_);
 
     boost::intrusive_ptr<TreeItem> current_item();
-    QModelIndex selection_first_proxy_index(void);
-    QModelIndex selection_first_source_index(void);
 
     bool is_selected_set_to_top(void);
     bool is_selected_set_to_bottom(void);
 
     ClipboardRecords *get_selected_records(void);
 
-    void move_cursor_to_new_record(int mode, int pos);
+
     //    void on_parent_resizevent(QResizeEvent *e);
 
 
 signals:
 
-    void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+    //    void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
     void tap_and_hold_gesture_finished(const QPoint &);
 
 
@@ -78,11 +93,13 @@ public slots:
     // Вызов действий из контекстного меню или из контроллера для редактирования инфополей записи
     void edit_field_context(void);
     void on_doubleclick(const QModelIndex &index);
+    QModelIndex previous_index()const;
+
 
 protected slots:
 
-    // Реакия на сдвиг засветки клавишами или мышкой
-    void on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
+    //    // Реакия на сдвиг засветки клавишами или мышкой
+    //    void on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
 
     // Слот, который автоматически срабатыват при изменении selection в списке
     // Этот слот нигде не надо прописывать через connect(), так как он
@@ -99,6 +116,7 @@ protected:
     QVBoxLayout         *_layout;
     QPoint              _mouse_start_position;
     bool                _enable_move_section;
+    QModelIndex         _previous_index;
 
     void setup_signals(void);
     void assembly_context_menu(void);
@@ -108,7 +126,7 @@ protected:
 
     // Реакия на выбор записи мышкой или клавишами
     // The response to the record selection with the mouse or keys
-    void click_record(const QModelIndex &proxy_index);
+    void click_record(const IndexProxy &proxy_index);
 
     bool event(QEvent *event);
     bool gesture_event(QGestureEvent *event);
@@ -129,5 +147,12 @@ private:
     friend class VerticalScrollArea;
     friend class RecordController;
 };
+
+
+template<>PosProxy RecordView::selection_first<PosProxy>()const;
+template<>IdType RecordView::selection_first<IdType>()const;
+template<>IndexProxy RecordView::selection_first<IndexProxy>()const;
+template<>IndexSource RecordView::selection_first<IndexSource>()const;
+
 
 #endif // RECORDLISTSCREEN_H_

@@ -904,6 +904,8 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_mo
     //    assert(_current_index.isValid());
 }
 
+std::function<KnowModel *()> TreeModel::ModelIndex::current_model()const {return _current_model;}
+
 boost::intrusive_ptr<TreeItem> TreeModel::ModelIndex::parent()const {return _parent;}
 
 boost::intrusive_ptr<TreeItem> TreeModel::ModelIndex::current_item()const {return _parent->item_direct(_sibling_order);}

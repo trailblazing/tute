@@ -122,22 +122,22 @@ namespace browser {
         Browser *activated_browser();
         std::vector<Browser *> &browsers();  //        QList<DockedWindow*> window_raw_list();
 
-        //        void clean();
+        //        //        void clean();
 
-        //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
+        //        //        std::pair<DockedWindow *, WebView *> active_record(Record *const record);
 
-        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it);    // = boost::intrusive_ptr<Record>(nullptr)
+        //        boost::intrusive_ptr<TreeItem> item_bind(RecordModel::ModelIndex modelindex);    // = boost::intrusive_ptr<Record>(nullptr)
 
-        //        //        template<typename url_type>
-        //        void activate(const QUrl &_find_url
-        //                      , const TreeScreen::paste_strategy &_view_paste_strategy
-        //                      , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-        //                     );
+        //        //        //        template<typename url_type>
+        //        //        void activate(const QUrl &_find_url
+        //        //                      , const TreeScreen::paste_strategy &_view_paste_strategy
+        //        //                      , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+        //        //                     );
 
-        //        void activate(boost::intrusive_ptr<TreeItem> item
-        //                      , const TreeScreen::paste_strategy &_view_paste_strategy
-        //                      , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-        //                     );
+        //        //        void activate(boost::intrusive_ptr<TreeItem> item
+        //        //                      , const TreeScreen::paste_strategy &_view_paste_strategy
+        //        //                      , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+        //        //                     );
 
         bool restore_state(const QByteArray &state);
         //        std::pair<Browser *, WebView *>

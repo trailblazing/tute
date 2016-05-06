@@ -27,6 +27,11 @@ class MainWindow;
 class AppConfig;
 class HidableTabWidget;
 
+struct PosProxy;
+struct PosSource;
+struct IndexProxy;
+struct IndexSource;
+struct IdType;
 
 
 namespace browser {
@@ -45,24 +50,24 @@ public:
 
     virtual ~RecordScreen();
 
-    int     first_selection_pos(void);
-    QString first_selection_id(void);
-    void    select_pos(int pos);
-    void    select_id(QString id);
+    //    int     first_selection_pos(void);
+    //    QString first_selection_id(void);
+    //    void    select_pos(PosProxy pos_proxy_);
+    //    void    select_id(IdType id);
 
     void    tree_path(QString path);
     QString tree_path(void);
 
     inline RecordController *record_controller() {return _record_controller;}
 
-    bool                inited() {return _inited;}
+    //    bool                inited() {return _inited;}
     browser::TabWidget  *tabmanager() {return _tabmanager;}
     browser::Browser    *browser() {return _browser;}
 
 public slots:
 
     // Обновление панели инструментов
-    void tools_update(void);
+    void tools_update();
 
 
 protected:
@@ -75,7 +80,7 @@ private slots:
     void on_back_click(void);
 
 private:
-    bool                _inited = false;
+    //    bool                _inited = false;
 
     // The steps used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
     QAction             *_save_in_new_branch;

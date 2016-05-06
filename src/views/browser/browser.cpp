@@ -1683,8 +1683,13 @@ namespace browser {
         return globalparameters.status_bar();
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it)
+    boost::intrusive_ptr<TreeItem> Browser::item_bind(RecordModel::ModelIndex modelindex)
     {
+        boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
+        boost::intrusive_ptr<TreeItem> _it = modelindex.target();
+
+        if(_it->is_lite())_it->to_fat();
+
         // clean();
         //        assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
         assert(tab_brother != _it);
@@ -1737,7 +1742,7 @@ namespace browser {
             //                }
             //            }
             else {
-                view = tab->newTab(tab_brother, _it); // , false
+                view = tab->newTab(modelindex); // , false
                 result = view->page()->binder()->item();
                 // auto load
             }
@@ -1751,6 +1756,15 @@ namespace browser {
         //        tab->setCurrentWidget(dp.second);
         //        dp.second->show();
         //        assert(dp.first);
+
+        _entrance->setWidget(this);
+        auto vtab = globalparameters.vtab();
+
+        if(vtab->currentWidget() != _record_screen) {
+            vtab->setCurrentWidget(_record_screen);
+        }
+
+
         assert(view);
         assert(result->binder()->integrity_external(result, view->page()));
         return result;  //_mainWindows[0];

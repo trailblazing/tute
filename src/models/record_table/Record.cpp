@@ -478,7 +478,9 @@ void Record::to_fat()
     if(_lite_flag != true || _text.length() > 0 || _picture_files.count() > 0)
         critical_error("Unavailable switching record object to fat state. " + id_and_name());
 
-    if(_text.size() == 0)check_and_create_text_file();
+    if(_text.size() == 0) {
+        check_and_create_text_file();
+    }
 
     _attach_table_data->switch_to_fat();
 
@@ -1256,9 +1258,14 @@ bool Record::file_exists()
 // В функцию должно передаваться полное имя файла
 void Record::check_and_create_text_file()
 {
-    QString fileName = full_text_file_name();
+    QString file_name = full_text_file_name();
 
-    QFile f(fileName);
+    if(file_name == "") {
+        _field_data["file"] = "text.html";
+        file_name = _field_data["file"];
+    }
+
+    QFile f(file_name);
     QFileInfo fileInfo(f);
 
     // Если директория с файлом не существует

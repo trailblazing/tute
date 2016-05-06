@@ -15,6 +15,7 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include "models/tree/KnowModel.h"
+#include "models/record_table/RecordModel.h"
 
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
@@ -26,6 +27,7 @@ class TreeItem;
 class KnowView;
 class TreeScreen;
 class TreeModel;
+class RecordModel;
 
 // http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 class HtmlDelegate : public QStyledItemDelegate {
@@ -92,7 +94,7 @@ public:
     void update_selected_indexes(void);
 
     KnowModel *know_model_board()const;
-    boost::intrusive_ptr<TreeItem> session_root_item();
+    boost::intrusive_ptr<TreeItem> session_root_auto();
 signals:
     void tapAndHoldGestureFinished(const QPoint &);
 
@@ -147,7 +149,7 @@ public slots:
     void on_pressed(const QModelIndex &_index);
     void know_model_save(void);
     void know_model_reload(void);
-    void session_root_id(bool checked = true);
+    void session_root_manual(bool checked = true);
     // Действия при клике на ветку дерева
     void cursor_step_into(const QModelIndex &_index);
     void index_invoke(const QModelIndex &_index);
@@ -177,12 +179,11 @@ public slots:
                                                  , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                                 );
 
-    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
-                                             , const KnowView::paste_strategy &_view_paste_strategy
+    boost::intrusive_ptr<TreeItem> item_bind(RecordModel::ModelIndex modelindex, const KnowView::paste_strategy &_view_paste_strategy
                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                             );
 
-
+    QModelIndex previous_index()const;
 protected:
 
     bool event(QEvent *event);

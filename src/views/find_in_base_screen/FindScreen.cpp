@@ -458,13 +458,13 @@ void FindScreen::setup_signals(void)
 
     connect(_find_in_text, &QCheckBox::stateChanged, this, &FindScreen::if_find_in_text);
 
-    boost::intrusive_ptr<TreeItem> (KnowView::*_item_bind)(
-        boost::intrusive_ptr<TreeItem> tab_brother
-        , const QUrl & _find_url
-        , const KnowView::paste_strategy & _view_paste_strategy
-        , equal_url_t _equal
-    ) = &KnowView::item_bind;
-    connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen->tree_view(), _item_bind);
+    //    boost::intrusive_ptr<TreeItem> (KnowView::*_item_bind)(
+    //        boost::intrusive_ptr<TreeItem> tab_brother
+    //        , const QUrl & _find_url
+    //        , const KnowView::paste_strategy & _view_paste_strategy
+    //        , equal_url_t _equal
+    //    ) = &KnowView::item_bind;
+    //    connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen->tree_view(), _item_bind);
 }
 
 
@@ -637,7 +637,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
-    boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->tree_view()->session_root_item());    // new TreeItem(nullptr, data)
+    boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->tree_view()->session_root_auto());    // new TreeItem(nullptr, data)
     // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
 
     //    auto original_count = _result_item->count_direct();
@@ -1048,7 +1048,9 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                             if(candidate->is_lite())candidate->to_fat();
 
                             auto browser = globalparameters.entrance()->activated_browser();
-                            auto tab_brother = browser->record_screen()->record_controller()->view()->current_item();
+                            auto record_controller = browser->record_screen()->record_controller();
+                            auto tab_brother = record_controller->view()->current_item();
+                            RecordModel::ModelIndex record_modelindex([&] {return record_controller->source_model();}, tab_brother, candidate);
 
                             if((candidate->parent() != _session_root_item->parent())  // _current_item->parent())
                             && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})) {
@@ -1060,8 +1062,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                 //                                                  , _session_root_item->count_direct()
                                 //                                              );
 
-                                auto result = tree_view->item_bind(tab_brother
-                                                                   , candidate // result
+                                auto result = tree_view->item_bind(record_modelindex // result
                                                                    , std::bind(&KnowView::view_paste_child, tree_view
                                 , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
                                 , std::placeholders::_2
@@ -1086,9 +1087,16 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                 //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
                                 //                }
                             } else {
-                                auto result = globalparameters.entrance()->item_bind(tab_brother, candidate);
+                                // auto previous_item = _source_model()->item(tree_view->previous_index());
+                                boost::intrusive_ptr<TreeItem> result;
+
+                                if(tab_brother == candidate)
+                                    result = candidate;
+                                else
+                                    result = globalparameters.entrance()->activated_browser()->item_bind(record_modelindex);
+
                                 result->activate();
-                                _result_list << result->linker();   //
+                                _result_list << result->linker();
                             }
 
                             //                else {

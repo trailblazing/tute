@@ -911,9 +911,7 @@ void QtSingleApplication::newLocalSocketConnection()
 
             auto browser = entrance->new_browser();
             auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
-            browser->item_bind(tree_view->current_item(), it)->activate();   // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
-            //            browser->raise();
-            //            browser->activateWindow();
+            browser->item_bind(RecordModel::ModelIndex([&] {return browser->record_screen()->record_controller()->source_model();}, tree_view->current_item(), it))->activate(); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
 
         } else {
 

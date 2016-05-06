@@ -724,7 +724,7 @@ namespace browser {
 
             if(_url_str != Browser::_defaulthome) {    // && _loadingurl.isValid()   // && _loadingurl == _url
 
-                if(_record_controller->first_selectionid() != _binder->item()->field("id") || _view->tabmanager()->currentWebView() != _view) {
+                if(_record_controller->view()->current_item() != _binder->item() || _view->tabmanager()->currentWebView() != _view) {
                     _tabmanager->setCurrentWidget(_view);
                     _view->show();
                     //        if(checked) // globalparameters.mainwindow()
@@ -739,8 +739,8 @@ namespace browser {
 
                     //}
 
-                    if(_record_controller->view()->selection_first_id() != _binder->item()->field("id")) {
-                        _record_controller->select_id(_binder->item()->field("id"));
+                    if(_record_controller->view()->selection_first<IdType>() != _binder->item()->field("id")) {
+                        _record_controller->select(IdType(_binder->item()->field("id")));
                     }
                 }
             }
@@ -856,15 +856,16 @@ namespace browser {
         WebPage *page = nullptr;
 
         auto tree_view = _tree_screen->tree_view();
-        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, this->binder()->item());
+        TreeModel::ModelIndex tree_modelindex([&] {return tree_view->source_model();}, this->binder()->item());
 
 
         if(type == QWebEnginePage::WebBrowserWindow) {
 
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
             assert(tree_view->source_model()->index(this->binder()->item()).isValid());
-            auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)); // Browser::_defaulthome
-            auto view = _browser->item_bind(this->binder()->item(), it)->activate();
+            auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex, std::placeholders::_2, std::placeholders::_3)); // Browser::_defaulthome
+            RecordModel::ModelIndex record_modelindex([&] {return _record_controller->source_model();}, _binder->item(), it);
+            auto view = _browser->item_bind(record_modelindex)->activate();
 
             page = view->page();
 
@@ -903,9 +904,9 @@ namespace browser {
 
                     // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                     // already create window, why do this? -- refer to demo browser
-                    assert(tree_view->source_model()->index(this->binder()->item()).isValid());
-                    page = tree_view->item_bind(this->binder()->item(), url
-                                                , std::bind(&KnowView::view_paste_child, tree_view, modelindex // std::placeholders::_1
+                    assert(tree_view->source_model()->index(this->_binder->item()).isValid());
+                    page = tree_view->item_bind(this->_binder->item(), url
+                                                , std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex // std::placeholders::_1
                                                             , std::placeholders::_2, std::placeholders::_3)
                                                )->activate()->page();
                 }
@@ -1521,8 +1522,8 @@ namespace browser {
             assert(item);
             //            assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
 
-            if(source_model->item(item->field("id"))) { //                && record->unique_page() == this
-                _record_controller->page_remove(item->id());
+            if(source_model->item(IdType(item->field("id")))) { //                && record->unique_page() == this
+                _record_controller->remove(item->id());
             }
         }
     }
@@ -1780,7 +1781,7 @@ namespace browser {
 
             if(url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty()
                && url != QUrl(Browser::_defaulthome)
-               && url != _loadingurl
+               //               && url != _loadingurl
                && url.toString() != _binder->item()->field("url")
               ) {
 
@@ -1869,7 +1870,11 @@ namespace browser {
                 //            }
                 //                }
 
+                _view->_load_finished = false;
+
             }
+
+
 
             //            }
 
@@ -2015,8 +2020,8 @@ namespace browser {
             tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
             if(is_current) {// globalparameters.mainwindow()
-                if(_record_controller->view()->selection_first_id() != _binder->item()->field("id"))
-                    _record_controller->select_id(_binder->item()->field("id"));
+                if(_record_controller->view()->selection_first<IdType>() != _binder->item()->field("id"))
+                    _record_controller->select(IdType(_binder->item()->field("id")));
 
                 // _page_controller->select_id(_record->getNaturalFieldSource("id"));
             }
@@ -2605,8 +2610,8 @@ namespace browser {
         setFocus();
 
         //        globalparameters.mainwindow()
-        if(_record_controller->view()->selection_first_id() != _page->item()->field("id"))
-            _record_controller->select_id(_page->item()->field("id"));
+        if(_record_controller->view()->selection_first<IdType>() != _page->item()->field("id"))
+            _record_controller->select(IdType(_page->item()->field("id")));
 
         //}
 

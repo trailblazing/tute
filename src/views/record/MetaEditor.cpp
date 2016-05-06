@@ -359,18 +359,18 @@ void MetaEditor::switch_pin()
     // record_screens()->record_controller();
 
     if(_tabmanager) {
-        RecordModel *source_model = _tabmanager->source_model();
-        RecordView *recordtableview = _tabmanager->view();
-        int pos = _tabmanager->currentIndex();  // first_selectionpos();
+        RecordModel *source_model   = _tabmanager->source_model();
+        RecordView *record_view     = _tabmanager->view();
+        PosSource pos_source_(_tabmanager->currentIndex());   // first_selectionpos();
 
-        if(source_model && -1 != pos) {
+        if(source_model && -1 != pos_source_) {
             // Выясняется ссылка на таблицу конечных данных
             //            auto item = source_model->tree_item();  //->record_table();    //getTableData();
 
-            QString p = source_model->field(pos, "pin");
+            QString p = source_model->field(pos_source_, "pin");
             _item_pin->setCheckState(_state_check_from_string[p]);
 
-            QString h = source_model->field(pos, "url");
+            QString h = source_model->field(pos_source_, "url");
 
             // Переданные отредактированные поля преобразуются в вид имя-значение
             QMap<QString, QString> edit_data;
@@ -403,7 +403,7 @@ void MetaEditor::switch_pin()
             //    editData["tags"] = tags;
 
             // Обновление новых данных в таблице конечных записей
-            source_model->fields(pos, edit_data);
+            source_model->fields(pos_source_, edit_data);
 
 
             // Сохранение дерева веток
@@ -412,7 +412,7 @@ void MetaEditor::switch_pin()
 
             if(treescreen)treescreen->tree_view()->know_model_save();
 
-            if(recordtableview)recordtableview->cursor_to_index(pos);
+            if(record_view)record_view->cursor_to_index(_tabmanager->record_controller()->index<PosProxy>(pos_source_));
         }
     }
 

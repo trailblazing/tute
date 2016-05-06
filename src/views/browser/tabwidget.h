@@ -407,13 +407,7 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
-                        // , const TreeScreen::paste_strategy &_view_paste_strategy
-                        // , equal_t _equal
-                        // = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                        , bool make_current
-                        = true
-                       );
+        WebView *newTab(RecordModel::ModelIndex modelindex, bool make_current = true);
 
         //        void new_view(bool make_current = false);    //true
 

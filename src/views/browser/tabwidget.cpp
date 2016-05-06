@@ -538,8 +538,8 @@ namespace browser {
                         _tree_view->select_as_current(TreeModel::ModelIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
                         //                    //                    globalparameters.mainwindow()
-                        if(_record_controller->view()->selection_first_id() != it->field("id")) {
-                            _record_controller->select_id(it->field("id"));
+                        if(_record_controller->view()->selection_first<IdType>() != it->field("id")) {
+                            _record_controller->select(IdType(it->field("id")));
                         }
                     }
 
@@ -702,14 +702,16 @@ namespace browser {
     }
 
 
-    WebView *TabWidget::newTab(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
-                               , bool make_current
-                              )
+    WebView *TabWidget::newTab(RecordModel::ModelIndex modelindex   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
+                               , bool make_current)   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
+        // auto _record_model = modelindex.current_model();
+        boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
+        boost::intrusive_ptr<TreeItem> target = modelindex.target();
         assert(target);
         assert(tab_brother != target);
-        assert(!target->is_lite());
+        // assert(!target->is_lite());
 
         if(target->is_lite())target->to_fat();
 
@@ -1166,8 +1168,8 @@ namespace browser {
                         view->setFocus();
 
                         //                        globalparameters.mainwindow()
-                        if(_record_controller->view()->selection_first_id() != item->field("id"))
-                            _record_controller->select_id(item->field("id"));
+                        if(_record_controller->view()->selection_first<IdType>() != item->field("id"))
+                            _record_controller->select(IdType(item->field("id")));
                     }
                 }
             }

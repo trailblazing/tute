@@ -22,6 +22,14 @@ class ItemsFlat;
 class TreeItem;
 class KnowModel;
 
+
+struct PosProxy;
+struct PosSource;
+struct IndexProxy;
+struct IndexSource;
+struct IdType;
+
+
 //// url_type
 
 //struct url_full {
@@ -359,11 +367,11 @@ public:
     QList<QStringList> path_children_all(QString field_name = "id")const;
 
     // Получение идентификатора элемента
-    QString id() const;
+    IdType id() const;
     QString name()const;
 
     // Получение идентификатора родительской ветки
-    QString parent_id() const;
+    IdType parent_id() const;
 
     // Шифрация данной ветки и всех подветок
     void to_encrypt(void);
@@ -421,7 +429,7 @@ public:
     //    void activator(activate_helper a);    // {_activator = a;}
     //    activate_helper activator() const;    // {return _activator;}
 
-    void active_request(int pos, int openLinkIn);
+    //    void active_request(PosSource pos, int openLinkIn);
     bool page_valid()const;// {return _page_valid;}
     //    operator ItemsFlat() {return *this;}
 
@@ -485,9 +493,10 @@ private:
 
     //    browser::WebPage    *_page;
     boost::intrusive_ptr<Coupler>   _binder;
-    //    bool                _page_valid = false;
-    int                 _position = -1;
-    int                 _open_link_in_new_window = 0;
+    //    bool                            _page_valid = false;
+    //    PosSource                       _position;
+    //    int                             _open_link_in_new_window = 0;
+
     //    friend void intrusive_ptr_add_ref(TreeItem *px);
     //    friend void intrusive_ptr_release(TreeItem *px);
     //    friend void boost::sp_adl_block::intrusive_ptr_add_ref< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;

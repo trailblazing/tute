@@ -437,6 +437,7 @@ namespace browser {
         QNetworkReply           *_iconreply;
         bool                    _load_finished = false;
         friend class TabWidget;
+        friend class WebPage;
     };
 
 #ifdef USE_POPUP_WINDOW

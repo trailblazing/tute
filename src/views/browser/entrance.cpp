@@ -300,9 +300,10 @@ namespace browser {
 
     Entrance *Entrance::prepend(Browser *browser)
     {
-        setWidget(browser);
-        browser->setParent(this);
 
+        browser->setParent(this);
+        setWidget(browser);
+        browser->show();
 
         //        adjustSize();
         //        setAutoFillBackground(true);
@@ -1193,95 +1194,100 @@ namespace browser {
 
     //    WebView *Entrance::active_record_alternative(Record *const record) {return active_record(record).second;}
 
-    // prepare active chain but not load them
-    boost::intrusive_ptr<TreeItem> Entrance::item_bind(boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it)
-    {
-        assert(_it);
-        assert(tab_brother != _it);
+    //    // prepare active chain but not load them
+    //    boost::intrusive_ptr<TreeItem> Entrance::item_bind(RecordModel::ModelIndex modelindex)   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> _it
+    //    {
+    //        boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
+    //        boost::intrusive_ptr<TreeItem> _it = modelindex.target();
+    //        assert(_it);
+    //        assert(tab_brother != _it);
 
-        if(_it->is_lite())_it->to_fat();
+    //        if(_it->is_lite())_it->to_fat();
 
-        boost::intrusive_ptr<TreeItem> result(nullptr);
-        //        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
-        //        clean();
+    //        boost::intrusive_ptr<TreeItem> result(nullptr);
+    //        //        assert(_it->is_registered_to_browser() || (_it->field("url") == browser::Browser::_defaulthome));
+    //        //        clean();
 
 
-        Browser *_browser = nullptr;    // DockedWindow *w = nullptr;
-        WebView *_view = nullptr;
+    //        Browser *_browser = nullptr;    // DockedWindow *w = nullptr;
+    //        WebView *_view = nullptr;
 
-        //        auto tree_view = _tree_screen->tree_view();
-        //        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
+    //        //        auto tree_view = _tree_screen->tree_view();
+    //        //        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
 
-        if(_it) {   // && !_it->record_binder()
+    //        if(_it) {   // && !_it->record_binder()
 
-            //            if(QUrl(_it->field("url")).isValid())_it->field("url", Browser::_defaulthome);  // terrify!!! delete all URL
-            if(_it->field("url") == "")_it->field("url", browser::Browser::_defaulthome);
+    //            //            if(QUrl(_it->field("url")).isValid())_it->field("url", Browser::_defaulthome);  // terrify!!! delete all URL
+    //            if(_it->field("url") == "")_it->field("url", browser::Browser::_defaulthome);
 
-            assert(QUrl(_it->field("url")).isValid());
+    //            assert(QUrl(_it->field("url")).isValid());
 
-            if(QUrl(_it->field("url")).isValid()) {
+    //            if(QUrl(_it->field("url")).isValid()) {
 
-                if(_browsers.size() == 0) {
+    //                if(_browsers.size() == 0) {
 
-                    _browser = new_browser();
-                    result = _browser->item_bind(nullptr, _it);  // _tree_screen->item_register(_it, std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                    _view = result->binder()->page()->view();
+    //                    _browser = new_browser();
+    //                    result = _browser->item_bind(modelindex);  // _tree_screen->item_register(_it, std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+    //                    _view = result->binder()->page()->view();
 
-                } else {
+    //                } else {
 
-                    for(auto i : _browsers) {
+    //                    for(auto i : _browsers) {
 
-                        _view = i->tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _it->field("url");});
+    //                        _view = i->tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _it->field("url");});
 
-                        if(_view != nullptr) {
-                            _browser = i;
-                            break;
-                        } else if(i->isVisible() || i->isActiveWindow()) {
-                            assert(i);
-                            _browser = i;
-                        }
-                    }
+    //                        if(_view != nullptr) {
+    //                            _browser = i;
+    //                            break;
+    //                        } else if(i->isVisible() || i->isActiveWindow()) {
+    //                            assert(i);
+    //                            _browser = i;
+    //                        }
+    //                    }
 
-                    assert(_browser);
+    //                    assert(_browser);
 
-                    if(_browser) {
-                        if(_view == nullptr) {
-                            if(_browser->tabmanager()->count() > 0) {
-                                assert(_browser->tabmanager()->currentWebView()->page()->binder()->item() == tab_brother);
-                                result = _browser->item_bind(tab_brother, _it);    // _browser->tabmanager()->currentWebView()->page()->binder()->item()
-                            } else {
-                                result = _browser->item_bind(nullptr, _it);
-                            }
+    //                    if(_browser) {
+    //                        if(_view == nullptr) {
+    //                            //                            // assert(_browser->tabmanager()->count() > 0);
 
-                            _view = result->binder()->page()->view();
-                        } else {
-                            result = _view->page()->item_bind(_it);
-                        }
-                    }
-                }
+    //                            //                            if(_browser->tabmanager()->count() > 0) {
+    //                            //                                // assert(_browser->tabmanager()->currentWebView()->page()->binder()->item() == tab_brother);
+    //                            result = _browser->item_bind(modelindex);    // _browser->tabmanager()->currentWebView()->page()->binder()->item()
+    //                            //                            }
+    //                            //                            else {
+    //                            //                                result = _browser->item_bind(nullptr, _it);
+    //                            //                            }
 
-                assert(_browser);
-                assert(_view);
-                assert(result);
-                setWidget(_browser);
-            }
-        }
+    //                            _view = result->binder()->page()->view();
+    //                        } else {
+    //                            result = _view->page()->item_bind(_it);
+    //                        }
+    //                    }
+    //                }
 
-        assert(_browser);
-        assert(_view);
-        assert(_view->page()->binder());
-        assert(_it->binder());
-        assert(_view->page()->binder() == _it->binder());
+    //                assert(_browser);
+    //                assert(_view);
+    //                assert(result);
+    //                setWidget(_browser);
+    //            }
+    //        }
 
-        auto vtab = globalparameters.vtab();
+    //        assert(_browser);
+    //        assert(_view);
+    //        assert(_view->page()->binder());
+    //        assert(_it->binder());
+    //        assert(_view->page()->binder() == _it->binder());
 
-        if(vtab->currentWidget() != _browser->record_screen()) {
-            vtab->setCurrentWidget(_browser->record_screen());
-        }
+    //        auto vtab = globalparameters.vtab();
 
-        assert(result->binder()->integrity_external(result, _view->page()));
-        return result; // _view;
-    }
+    //        if(vtab->currentWidget() != _browser->record_screen()) {
+    //            vtab->setCurrentWidget(_browser->record_screen());
+    //        }
+
+    //        assert(result->binder()->integrity_external(result, _view->page()));
+    //        return result; // _view;
+    //    }
 
     //    std::pair<DockedWindow *, WebView *> Entrance::invoke_page(Record *const record)
     //    {

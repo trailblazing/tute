@@ -202,7 +202,7 @@ void TreeScreen::setup_actions(void)
     ac = new QAction(tr("Set as session root"), this);
     ac->setStatusTip(tr("Set as session root"));
     ac->setIcon(QIcon(":/resource/pic/ginkgo_pure.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &KnowView::session_root_id);
+    connect(ac, &QAction::triggered, _tree_view, &KnowView::session_root_manual);
     _actionlist[action_set_as_session_root] = ac;
 
 

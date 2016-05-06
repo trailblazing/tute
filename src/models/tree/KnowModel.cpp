@@ -1325,7 +1325,7 @@ boost::intrusive_ptr<TreeItem::Linker> KnowModel::model_delete_permanent(boost::
     std::function<void(boost::intrusive_ptr<TreeItem>)>
     close_tab_recursive = [&](boost::intrusive_ptr<TreeItem> it)->void {
         if(it->is_registered_to_browser())   // item_to_be_deleted->unique_page()
-            it->page()->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+            it->page()->record_controller()->remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
         if(it->count_direct() > 0)
         {

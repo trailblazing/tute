@@ -11,6 +11,11 @@
 #include "views/browser/entrance.h"
 #include "views/tree/TreeScreen.h"
 #include "models/attach_table/AttachTableData.h"
+#include "models/record_table/RecordModel.h"
+
+
+
+
 
 //#include "models/record_table/Record.h"
 //#include "models/record_table/ItemsFlat.h"
@@ -118,6 +123,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _host_parent
 })
 
 , _linker([ & ]() {/*_up_linker = nullptr;*/ return new TreeItem::Linker(_host_parent, this);}())    // , pos, mode
+//, _position(PosSource(-1))
 {
     assert(_linker->host().get() == this);
     assert(_linker->host_parent().get() != this);
@@ -1292,9 +1298,9 @@ boost::intrusive_ptr<TreeItem> TreeItem::parent()const
     return result;  // _parent_item;
 }
 
-QString TreeItem::parent_id()const
+IdType TreeItem::parent_id()const
 {
-    QString id = "";
+    IdType id("");
 
     //    if(_parent_item) {
     //        return _parent_item->field("id");
@@ -1307,14 +1313,14 @@ QString TreeItem::parent_id()const
 }
 
 
-QString TreeItem::id()const
+IdType TreeItem::id()const
 {
     if(_field_data.contains("id"))
-        return (_field_data["id"]);
+        return IdType(_field_data["id"]);
     else {
         //        critical_error("In TreeItem data getting field with unavailable name 'id'");
         //        exit(1);
-        return "";
+        return IdType("");
     }
 }
 
@@ -3052,12 +3058,12 @@ browser::WebView *TreeItem::activate()
     return v;
 }
 
-void TreeItem::active_request(int pos, int openLinkIn)
-{
-    //    _active_request = true;
-    _position = pos;
-    _open_link_in_new_window = openLinkIn;
-}
+//void TreeItem::active_request(PosSource pos, int openLinkIn)
+//{
+//    //    _active_request = true;
+//    _position = pos;
+//    _open_link_in_new_window = openLinkIn;
+//}
 
 
 //// deprecated
@@ -3460,7 +3466,7 @@ TreeItem::Coupler::~Coupler()
             auto page = it->page();
 
             if(page)
-                page->record_controller()->page_remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+                page->record_controller()->remove(it->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
         }
 
         if(it->count_direct() > 0)
