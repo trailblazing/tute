@@ -146,7 +146,7 @@ public slots:
     void on_current_changed(const QModelIndex &current, const QModelIndex &previous);
     void on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
     void on_current_row_changed(const QModelIndex &current, const QModelIndex &previous);
-    void on_pressed(const QModelIndex &_index);
+    //    void on_pressed(const QModelIndex &_index);   // will make index invalid
     void know_model_save(void);
     void know_model_reload(void);
     void session_root_manual(bool checked = true);
@@ -179,7 +179,7 @@ public slots:
                                                  , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                                 );
 
-    boost::intrusive_ptr<TreeItem> item_bind(RecordModel::ModelIndex modelindex, const KnowView::paste_strategy &_view_paste_strategy
+    boost::intrusive_ptr<TreeItem> item_bind(RecordModel::ModelIndex *modelindex, const KnowView::paste_strategy &_view_paste_strategy
                                              , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                             );
 

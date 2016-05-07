@@ -1050,53 +1050,42 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                             auto browser = globalparameters.entrance()->activated_browser();
                             auto record_controller = browser->record_screen()->record_controller();
                             auto tab_brother = record_controller->view()->current_item();
-                            RecordModel::ModelIndex record_modelindex([&] {return record_controller->source_model();}, tab_brother, candidate);
+                            RecordModel::ModelIndex *record_modelindex = nullptr;
 
-                            if((candidate->parent() != _session_root_item->parent())  // _current_item->parent())
-                            && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})) {
-                                //                    auto it = _tree_screen->cut_branch(_start_item->item(i));
+                            try {
+                                record_modelindex = new RecordModel::ModelIndex([&] {return record_controller->source_model();}, tab_brother, candidate);
+                            } catch(std::exception &e) {
+                                (void)e;    // record_modelindex = nullptr;
+                            }
 
-                                //                                auto result = static_cast<KnowModel *>(_source_model())->model_move_as_child_impl(
-                                //                                                  _session_root_item //_tree_screen->session_root_item() == _result_item  // candidate->parent()
-                                //                                                  , candidate
-                                //                                                  , _session_root_item->count_direct()
-                                //                                              );
+                            if(record_modelindex) {
+                                if((candidate->parent() != _session_root_item->parent()) // _current_item->parent())
+                                && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})
+                                  ) {
 
-                                auto result = tree_view->item_bind(record_modelindex // result
-                                                                   , std::bind(&KnowView::view_paste_child, tree_view
-                                , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
-                                , std::placeholders::_2
-                                , std::placeholders::_3));    // ->activate(); //
-                                result->activate();
-                                _result_list << result->linker();   //
+                                    auto result = tree_view->item_bind(record_modelindex // result
+                                                                       , std::bind(&KnowView::view_paste_child, tree_view
+                                    , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
+                                    , std::placeholders::_2
+                                    , std::placeholders::_3));    // ->activate(); //
+                                    result->activate();
+                                    _result_list << result->linker();   //
 
+                                } else {
+                                    // auto previous_item = _source_model()->item(tree_view->previous_index());
+                                    boost::intrusive_ptr<TreeItem> result;
 
-
-                                //                    _result_item->child_insert(_result_item->count_direct(), candidate); // result->import_from_dom(_recordtable->record(i)->export_to_dom());
-
-
-
-
-
-                                //                assert(_recordtable->record(i)->is_lite());
-                                //                result->shadow_record_lite(result->size(), _recordtable->record(i));
-
-                                //                if(_recordtable->record(i)->isLite()) {
-                                //                    result->shadow_record(result->work_pos(), _recordtable->record_lite(i), ADD_NEW_RECORD_TO_END);
-                                //                } else {
-                                //                    result->shadow_record(result->work_pos(), _recordtable->record_fat(i), ADD_NEW_RECORD_TO_END);
-                                //                }
-                            } else {
-                                // auto previous_item = _source_model()->item(tree_view->previous_index());
-                                boost::intrusive_ptr<TreeItem> result;
-
-                                if(tab_brother == candidate)
-                                    result = candidate;
-                                else
                                     result = globalparameters.entrance()->activated_browser()->item_bind(record_modelindex);
 
-                                result->activate();
-                                _result_list << result->linker();
+                                    result->activate();
+                                    _result_list << result->linker();
+                                }
+
+                                delete record_modelindex;
+                                record_modelindex = nullptr;
+                            } else {
+                                candidate->activate();
+                                _result_list << candidate->linker();
                             }
 
                             //                else {

@@ -909,10 +909,23 @@ void QtSingleApplication::newLocalSocketConnection()
     if(entrance && tree_screen) {
         if(openLinksIn == 1) {
 
+
+
             auto browser = entrance->new_browser();
             auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
-            browser->item_bind(RecordModel::ModelIndex([&] {return browser->record_screen()->record_controller()->source_model();}, tree_view->current_item(), it))->activate(); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+            RecordModel::ModelIndex *record_modelindex = nullptr;
 
+            try {
+                record_modelindex = new RecordModel::ModelIndex([&] {return browser->record_screen()->record_controller()->source_model();}, tree_view->current_item(), it);
+            } catch(std::exception &) {}
+
+            if(record_modelindex) {
+                browser->item_bind(record_modelindex)->activate(); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+                delete record_modelindex;
+                record_modelindex = nullptr;
+            } else {
+                tree_view->index_invoke(tree_view->source_model()->index(it));
+            }
         } else {
 
             tree_view->item_bind(

@@ -407,7 +407,7 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(RecordModel::ModelIndex modelindex, bool make_current = true);
+        WebView *newTab(RecordModel::ModelIndex *modelindex, bool make_current = true);
 
         //        void new_view(bool make_current = false);    //true
 

@@ -594,35 +594,49 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent)
 // Функция возвращает позицию нового добавленного элемента
 PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode)
 {
-    PosSource source_insert_pos(((QModelIndex)source_pos_index).row());  //    Q_UNUSED(pos_index) // to be used
-    Q_UNUSED(mode)      // to be used
-
-    if(-1 == (int)source_insert_pos)source_insert_pos = 0;
-
-    beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
-
-    browser::WebView *view = nullptr;
     PosSource selected_position(-1);
 
-    if(_item->binder() && _item->binder()->page()) {
-        view = _item->binder()->page()->view();    // activate();
-        // Вставка новых данных в таблицу конечных записей
+    if(_item) {
+        PosSource source_insert_pos(((QModelIndex)source_pos_index).row());  //    Q_UNUSED(pos_index) // to be used
+        Q_UNUSED(mode)      // to be used
 
-        // accomplished by TabWidget::addTab in TabWidget::newTab?
-        selected_position = PosSource(_tabmanager->indexOf(view)); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
-    } else {
+        if(-1 == (int)source_insert_pos)source_insert_pos = 0;
 
-        //    if(selected_position == -1) {
+        beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
-        view = _tabmanager->newTab(RecordModel::ModelIndex([&] {return this;}, _tabmanager->webView(source_insert_pos)->page()->binder()->item(), _item)); // , _item->field("name")
-        //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
-        selected_position = PosSource(_tabmanager->indexOf(view));
+        browser::WebView *view = nullptr;
+
+
+        if(_item->binder() && _item->binder()->page()) {
+            view = _item->binder()->page()->view();    // activate();
+            // Вставка новых данных в таблицу конечных записей
+
+            // accomplished by TabWidget::addTab in TabWidget::newTab?
+            selected_position = PosSource(_tabmanager->indexOf(view)); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+        } else {
+
+
+            //    if(selected_position == -1) {
+            RecordModel::ModelIndex *record_modelindex = nullptr;
+
+            try {
+                record_modelindex = new RecordModel::ModelIndex([&] {return this;}, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->item() : nullptr, _item);
+            } catch(std::exception &) {}
+
+            if(record_modelindex)
+                view = _tabmanager->newTab(record_modelindex); // , _item->field("name")
+            else
+                _tabmanager->webView((int)source_insert_pos)->page()->binder()->item()->activate();
+
+            //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
+            selected_position = PosSource(_tabmanager->indexOf(view));
+        }
+
+
+        assert(item(selected_position) == _item);
+
+        endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
     }
-
-
-    assert(item(selected_position) == _item);
-
-    endResetModel(); // Подумать, возможно нужно заменить на endInsertRows
 
     return selected_position;
 }
@@ -937,8 +951,11 @@ int RecordModel::move_dn(const PosSource pos)
 RecordModel::ModelIndex::ModelIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem> target_item)
     : _current_model(current_model), _sibling_item(sibling_item), _target_item(target_item)
 {
-    assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
-    assert(_sibling_item != _target_item);
+    try {
+        if(!_sibling_item ? false : !_sibling_item->binder() ?  false : !_current_model()->index(_sibling_item).isValid()) {throw std::exception();} // assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
+
+        if(_sibling_item == _target_item) throw std::exception();   // assert(_sibling_item != _target_item);
+    } catch(std::exception &e) {throw e;}
 }
 
 std::function<RecordModel *()> RecordModel::ModelIndex::current_model() const {return _current_model;}

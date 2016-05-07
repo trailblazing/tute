@@ -164,7 +164,7 @@ KnowView::KnowView(QString _name, TreeScreen *_parent)
     if(appconfig.interface_mode() == "desktop")
         connect(selectionModel(), &QItemSelectionModel::currentRowChanged, this, &KnowView::on_current_row_changed);  // &TreeScreen::step_into_sub_branch
 
-    connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
+    //    connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
 
 
     if(appconfig.interface_mode() == "mobile")
@@ -416,6 +416,8 @@ void KnowView::mousePressEvent(QMouseEvent *event)  // Q_DECL_OVERRIDE
 {
     // get the buttons type
     Qt::MouseButtons mouse_button = event->buttons();
+    QModelIndex _index = indexAt(event->pos());
+    assert(_index.isValid());
 
     // only the right mouse buton
     if(mouse_button == Qt::RightButton) {
@@ -952,7 +954,7 @@ QModelIndex KnowView::select_as_current(TreeModel::ModelIndex   _modelindex
 {
     QModelIndex _result;
     //    QModelIndex _current_index = _modelindex.parent_index();
-    QModelIndex _current_index = _modelindex.current_model()()->index(_modelindex.current_item());
+    QModelIndex _aim_to_be_current_index = _modelindex.current_model()()->index(_modelindex.current_item());
     auto _item = _modelindex.current_item();
 
 
@@ -966,7 +968,7 @@ QModelIndex KnowView::select_as_current(TreeModel::ModelIndex   _modelindex
 
 
 
-    if(_current_index.isValid() && _current_index != selectionModel()->currentIndex()) {   // _index_current //
+    if(_aim_to_be_current_index.isValid() && _aim_to_be_current_index != selectionModel()->currentIndex()) {   // _index_current //
 
 
         //    int pos = index.row();
@@ -982,8 +984,9 @@ QModelIndex KnowView::select_as_current(TreeModel::ModelIndex   _modelindex
         //    int rowCount = _know_root->root_item()->count_direct();
 
         //    if(pos < rowCount) {  // pos > (rowCount - 1)   // return;
-        _result = _select_strategy(this, _current_index);
-        _result = _current_strategy(this, _result, 0);
+        _result = _select_strategy(this, _aim_to_be_current_index);
+        _result = _current_strategy(this, _aim_to_be_current_index, 0);
+        assert(_aim_to_be_current_index == _result);
 
         //    //    // Простой механизм выбора строки. Похоже, что его использовать не получится
         //    //    selectionModel()->select(_result
@@ -1008,20 +1011,27 @@ QModelIndex KnowView::select_as_current(TreeModel::ModelIndex   _modelindex
         // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
         // Therefore, the recording must be made a virtual click to fill the final table of records
         if(appconfig.interface_mode() == "mobile")
-            emit this->clicked(_result); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
+            emit this->clicked(_aim_to_be_current_index); // QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
 #endif
 
         // emit this->clicked(index);
         //    _result = currentIndex();
 
-        scrollTo(_result);   // QAbstractItemView::PositionAtCenter
+        scrollTo(_aim_to_be_current_index);   // QAbstractItemView::PositionAtCenter
 
         //    this->setFocus();   // ?
 
         //    }
+    } else if(!_aim_to_be_current_index.isValid()) {
+        _result = selectionModel()->currentIndex();
+    } else {
+        _result = _aim_to_be_current_index;
     }
 
+
+    //    assert(_aim_to_be_current_index == selectionModel()->currentIndex());
+    assert(_result == selectionModel()->currentIndex());
     return _result;
 }
 
@@ -3430,20 +3440,31 @@ void KnowView::on_current_row_changed(const QModelIndex &current, const QModelIn
 }
 
 
-void KnowView::on_pressed(const QModelIndex &_index)
-{
-    if(_index.isValid()) {
-        auto result = _know_root->item(_index);
-        select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();})));
+//void KnowView::on_pressed(const QModelIndex &_index)
+//{
+//    if(_index.isValid()) {
+//        auto result = _know_root->item(_index);
+//        auto in = result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {
+//            return il == result->linker()
+//                   && il->host() == result
+//                   && result->parent() == il->host_parent();
+//        });
+//        assert(in != -1);
+//        auto result_index = select_as_current(TreeModel::ModelIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {
+//            return il == result->linker()
+//                   && il->host() == result
+//                   && result->parent() == il->host_parent();
+//        })));
+//        assert(result_index == _index); // failure!!!
 
-        //        selectionModel()->select(_index, current_tree_selection_mode);    //, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-        //        selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode);    //
+//        //        selectionModel()->select(_index, current_tree_selection_mode);    //, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+//        //        selectionModel()->setCurrentIndex(_index, current_tree_current_index_mode);    //
 
-        // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+//        // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
 
 
-    }
-}
+//    }
+//}
 
 
 // Сохранение дерева веток на диск
@@ -3814,12 +3835,22 @@ void KnowView::index_invoke(const QModelIndex &_index)
                 auto browser = globalparameters.entrance()->activated_browser();
                 //                auto previous_item = _know_root->item(_previous_index);
                 auto previous_item = browser->record_screen()->record_controller()->source_model()->item(PosSource(browser->record_screen()->record_controller()->view()->previous_index().row()));
-                RecordModel::ModelIndex record_modelindex([&] {return browser->record_screen()->record_controller()->source_model();}, previous_item, result_item);
+                RecordModel::ModelIndex *record_modelindex = nullptr;
 
-                if(!result_item->binder()) {
+                try {
+                    record_modelindex = new RecordModel::ModelIndex([&] {return browser->record_screen()->record_controller()->source_model();}, previous_item, result_item);
+                } catch(std::exception &) {}
+
+                auto bind = [&](RecordModel::ModelIndex * record_modelindex) {
                     browser->item_bind(record_modelindex)->activate();   // item_bind_();
-                } else if(result_item->binder() && !result_item->binder()->page()) {   // !result_item->binder()->integrity_internal()){
-                    browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                    delete record_modelindex;
+                    record_modelindex = nullptr;
+                };
+
+                if(record_modelindex && !result_item->binder()) {
+                    bind(record_modelindex); // browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                } else if(record_modelindex && result_item->binder() && !result_item->binder()->page()) { // !result_item->binder()->integrity_internal()){
+                    bind(record_modelindex); // browser->item_bind(record_modelindex)->activate();   // item_bind_();
                 } else {
                     result_item->activate();
                 }
@@ -4377,6 +4408,7 @@ boost::intrusive_ptr<TreeItem> KnowView::item_register(//        std::function<b
     //            // }
     //        }
 
+    assert(_result != know_model_board->root_item());
 
     _result = tree_screen->tree_view()->view_paste_strategy(TreeModel::ModelIndex(view_source_model, tree_screen->tree_view()->session_root_auto())
                                                             , _result
@@ -4432,9 +4464,21 @@ boost::intrusive_ptr<TreeItem> KnowView::item_bind(
 {
     boost::intrusive_ptr<TreeItem> re;
     auto it = item_register(_find_url, _view_paste_strategy, _equal);
-    assert(tab_brother != it);
+    //    assert(tab_brother != it);
     auto browser = globalparameters.entrance()->activated_browser();
-    re = browser->item_bind(RecordModel::ModelIndex([&] {return tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() : browser->record_screen()->record_controller()->source_model();}, tab_brother, it));
+    RecordModel::ModelIndex *record_modelindex = nullptr;
+
+    try {
+        record_modelindex = new RecordModel::ModelIndex([&] {return tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() : browser->record_screen()->record_controller()->source_model();}, tab_brother, it);
+    } catch(std::exception &) {}
+
+    if(record_modelindex) {
+        re = browser->item_bind(record_modelindex);
+        delete record_modelindex;
+        record_modelindex = nullptr;
+    } else {
+        re = tab_brother;
+    }
 
     return re;
 
@@ -4736,15 +4780,15 @@ boost::intrusive_ptr<TreeItem> KnowView::item_register(
 }
 
 boost::intrusive_ptr<TreeItem> KnowView::item_bind(
-    RecordModel::ModelIndex modelindex   //
+    RecordModel::ModelIndex *modelindex   //
     , const KnowView::paste_strategy &_view_paste_strategy
     , equal_t _equal
 )
 {
     boost::intrusive_ptr<TreeItem> re;
     // auto _record_model = modelindex.current_model();
-    boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
-    boost::intrusive_ptr<TreeItem> target = modelindex.target();
+    boost::intrusive_ptr<TreeItem> tab_brother = modelindex->sibling();
+    boost::intrusive_ptr<TreeItem> target = modelindex->target();
 
     if(!source_model()->index(target).isValid()) {
         re = item_register(target, _view_paste_strategy, _equal);

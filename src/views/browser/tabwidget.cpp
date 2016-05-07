@@ -702,13 +702,13 @@ namespace browser {
     }
 
 
-    WebView *TabWidget::newTab(RecordModel::ModelIndex modelindex   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
+    WebView *TabWidget::newTab(RecordModel::ModelIndex *modelindex   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
                                , bool make_current)   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
         // auto _record_model = modelindex.current_model();
-        boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
-        boost::intrusive_ptr<TreeItem> target = modelindex.target();
+        boost::intrusive_ptr<TreeItem> tab_brother = modelindex->sibling();
+        boost::intrusive_ptr<TreeItem> target = modelindex->target();
         assert(target);
         assert(tab_brother != target);
         // assert(!target->is_lite());

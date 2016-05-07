@@ -1683,10 +1683,10 @@ namespace browser {
         return globalparameters.status_bar();
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_bind(RecordModel::ModelIndex modelindex)
+    boost::intrusive_ptr<TreeItem> Browser::item_bind(RecordModel::ModelIndex *modelindex)
     {
-        boost::intrusive_ptr<TreeItem> tab_brother = modelindex.sibling();
-        boost::intrusive_ptr<TreeItem> _it = modelindex.target();
+        boost::intrusive_ptr<TreeItem> tab_brother = modelindex->sibling();
+        boost::intrusive_ptr<TreeItem> _it = modelindex->target();
 
         if(_it->is_lite())_it->to_fat();
 

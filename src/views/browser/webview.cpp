@@ -864,10 +864,18 @@ namespace browser {
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
             assert(tree_view->source_model()->index(this->binder()->item()).isValid());
             auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex, std::placeholders::_2, std::placeholders::_3)); // Browser::_defaulthome
-            RecordModel::ModelIndex record_modelindex([&] {return _record_controller->source_model();}, _binder->item(), it);
-            auto view = _browser->item_bind(record_modelindex)->activate();
+            RecordModel::ModelIndex *record_modelindex = nullptr;
 
-            page = view->page();
+            try {
+                record_modelindex = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _binder->item(), it);
+            } catch(std::exception &) {}
+
+            if(record_modelindex) {
+                auto view = _browser->item_bind(record_modelindex)->activate();
+                page = view->page();
+                delete record_modelindex;
+                record_modelindex = nullptr;
+            }
 
         } else
 
