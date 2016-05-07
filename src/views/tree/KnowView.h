@@ -135,14 +135,15 @@ public slots:
                                                       , boost::intrusive_ptr<TreeItem> source);
 
 
-    boost::intrusive_ptr<TreeItem> view_paste_strategy(boost::intrusive_ptr<TreeModel::ModelIndex>                  _modelindex
-                                                       , boost::intrusive_ptr<TreeItem>                             _result
-                                                       , const substitute_condition                                 &_substitute_condition
-                                                       , const paste_strategy                                       &_view_paste_strategy_impl
-                                                       , const bool                                                 _item_is_brand_new
-                                                       , const QUrl                                                 &_find_url
-                                                       , const std::function<bool(boost::intrusive_ptr<TreeItem>)>  &_check_url
-                                                      );
+    //    boost::intrusive_ptr<TreeItem> view_paste_strategy(boost::intrusive_ptr<TreeModel::ModelIndex>                  _modelindex
+    //                                                       , boost::intrusive_ptr<TreeItem>                             _result
+    //                                                       , const substitute_condition                                 &_substitute_condition
+    //                                                       , const paste_strategy                                       &_view_paste_strategy_impl
+    //                                                       , const bool                                                 _item_is_brand_new
+    //                                                       , const QUrl                                                 &_find_url
+    //                                                       , const std::function<bool(boost::intrusive_ptr<TreeItem>)>  &_check_url
+    //                                                      );
+
     void on_current_changed(const QModelIndex &current, const QModelIndex &previous);
     void on_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
     void on_current_row_changed(const QModelIndex &current, const QModelIndex &previous);
@@ -154,9 +155,9 @@ public slots:
     void cursor_step_into(const QModelIndex &_index);
     void index_invoke(const QModelIndex &_index);
     boost::intrusive_ptr<TreeItem> cursor_follow_up(boost::intrusive_ptr<TreeItem> _new_session_root_item);
-    boost::intrusive_ptr<TreeItem> cursor_follow_up_one_level(void);
+    boost::intrusive_ptr<TreeItem> cursor_follow_up(void);
     boost::intrusive_ptr<TreeItem> cursor_follow_up_to_absolute_root(void);
-    boost::intrusive_ptr<TreeItem> intercept(TreeModel::ModelIndex modelindex);
+    boost::intrusive_ptr<TreeItem> intercept(boost::intrusive_ptr<TreeModel::ModelIndex> modelindex);
 
     void synchronized(bool _synchronized);
     bool synchronized();
@@ -175,10 +176,10 @@ public slots:
                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
                                             );
 
-    boost::intrusive_ptr<TreeItem> item_register(boost::intrusive_ptr<TreeItem> target
-                                                 , const KnowView::paste_strategy &_view_paste_strategy
-                                                 , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                                                );
+    //    boost::intrusive_ptr<TreeItem> item_register(boost::intrusive_ptr<TreeItem> target
+    //                                                 , const KnowView::paste_strategy &_view_paste_strategy
+    //                                                 , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+    //                                                );
 
     //    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> modelindex
     //                                             , const KnowView::paste_strategy &_view_paste_strategy

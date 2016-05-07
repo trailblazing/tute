@@ -223,7 +223,7 @@ void TreeScreen::setup_actions(void)
                 //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
                );
 
-    connect(ac, &QAction::triggered, _tree_view, &KnowView::cursor_follow_up_one_level);
+    connect(ac, &QAction::triggered, [&]()->void{_tree_view->cursor_follow_up();});
     _actionlist[action_view_up_one_level] = ac;
 
 

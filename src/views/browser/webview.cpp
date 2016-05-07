@@ -659,15 +659,15 @@ namespace browser {
         boost::intrusive_ptr<TreeModel::ModelIndex> tree_modelindex(nullptr);
 
         try {
-            tree_modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            tree_modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, item->parent(), item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == item && il == item->linker() && item->parent() == il->host_parent();}));
         } catch(std::exception &e) {}
 
         if(tree_modelindex) {
 
-            if(item->binder() && item->binder() == _binder) {
+            if(item->binder()) {    //  && item->binder() == _binder
                 if(!item->binder()->integrity_external(item, this)) {
-                    auto it = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex, std::placeholders::_2, std::placeholders::_3));
-                    it = item_bind(tree_modelindex);
+                    //                    auto it = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex, std::placeholders::_2, std::placeholders::_3));
+                    auto it = item_bind(tree_modelindex);
                     //                      item
                     //                      , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                     //                  );
@@ -892,8 +892,7 @@ namespace browser {
                 } catch(std::exception &) {}
 
                 if(record_modelindex) {
-                    auto view = _browser->item_bind(record_modelindex)->activate();
-                    page = view->page();
+                    page  = _browser->item_bind(record_modelindex)->binder()->page();
                 }
 
             } else
@@ -922,9 +921,9 @@ namespace browser {
                         assert(tree_view->source_model()->index(page_found->binder()->item()).isValid());
                         assert(page_found->binder() && page_found->binder()->integrity_external(page_found->binder()->item(), page_found));
 
-                        //                    auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3)); // QUrl(Browser::_defaulthome)
-                        auto _view = page_found->activate();  // view->page()->item_bind(it)->activate();
-                        assert(_view == view);
+                        //                        //                    auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3)); // QUrl(Browser::_defaulthome)
+                        //                        auto _view = page_found->activate();  // view->page()->item_bind(it)->activate();
+                        //                        assert(_view == view);
 
                         page = page_found;  // view->page();
                     } else {
@@ -935,7 +934,7 @@ namespace browser {
                         page = tree_view->item_bind(this->_binder->item(), url
                                                     , std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex // std::placeholders::_1
                                                                 , std::placeholders::_2, std::placeholders::_3)
-                                                   )->activate()->page();
+                                                   )->binder()->page();
                     }
                 }
 
@@ -1214,11 +1213,12 @@ namespace browser {
 
         //        if(!item->is_registered_to_browser() && !item->record_binder()) {
         auto tree_view = _tree_screen->tree_view();
+        assert(tree_view->source_model()->index(item).isValid());
 
-        if(!tree_view->source_model()->index(item).isValid())
-            result = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3));
-        else
-            result = item;
+        //        if(!tree_view->source_model()->index(item).isValid())
+        //            result = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3));
+        //        else
+        result = item;
 
         auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item) {
             auto ar = std::make_shared<WebPage::Coupler>(result_item, this);
