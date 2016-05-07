@@ -700,8 +700,11 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 
         // Курсор устанавливается в нужную позицию
         auto tree_view = _tree_screen->tree_view();
-        tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
-        tree_view->source_model()->session_id(TreeModel::ModelIndex(source_model, it));  //session_root_id();
+        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+        try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+
+        tree_view->select_as_current(tree_index);
+        tree_view->source_model()->session_id(tree_index);  // TreeModel::ModelIndex(source_model, it)
     }
 }
 

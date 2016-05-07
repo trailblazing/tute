@@ -131,7 +131,7 @@ namespace browser {
 
     void ToolbarSearch::searchNow()
     {
-        QString searchText = lineEdit()->text();
+        QString search_text = lineEdit()->text();
 
         auto result_item = globalparameters.find_screen()->find_clicked();
         TreeScreen *_tree_screen = globalparameters.tree_screen();
@@ -139,7 +139,7 @@ namespace browser {
 
         if(!result_item) {  //  || 0 == result_item->count_direct()
 
-            QUrl url = QUrl(searchText);
+            QUrl url = QUrl(search_text);
 
 
             // if(url.host().isSimpleText());
@@ -172,71 +172,80 @@ namespace browser {
             //        }
 
             //            auto tree_view = _tree_screen->tree_view();
-            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
 
-            // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
-            if(!url.isEmpty()
-               && !url.host().isNull()
-               && url.isValid()
-               && !url.scheme().isEmpty()
-               // && url != QUrl(DockedWindow::_defaulthome) //&& !url.host().isNull()
-              ) {
-                //QLineEdit *lineedit =
+            auto tree_view = _tree_screen->tree_view();
 
-                tree_view->item_bind(tree_view->current_item()
-                                     , url
-                                     , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                                    )->activate();
+            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
 
-                assert(_lineedits);
+            try {
+                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            } catch(std::exception &e) {}
 
-                if(_lineedits) {
-                    QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+            if(modelindex) {
+                // example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
+                if(!url.isEmpty()
+                   && !url.host().isNull()
+                   && url.isValid()
+                   && !url.scheme().isEmpty()
+                   // && url != QUrl(DockedWindow::_defaulthome) //&& !url.host().isNull()
+                  ) {
+                    //QLineEdit *lineedit =
 
-                    if(line_edit)line_edit->setText(searchText);
+                    tree_view->item_bind(tree_view->current_item()
+                                         , url
+                                         , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
+                                        )->activate();
+
+                    assert(_lineedits);
+
+                    if(_lineedits) {
+                        QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+
+                        if(line_edit)line_edit->setText(search_text);
+                    }
+
+                    //globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
+
+                    //globalparameters.entrance()->activebrowser()->tabWidget()->new_view(register_record(url));
+
+                    //currentLineEdit();  // lineEditReturnPressed();
+                    //assert(lineedit);
+                    //lineedit->setText(searchText);
+                    //lineedit->returnPressed();
+                } else  {
+
+                    QStringList newList = _stringlistmodel->stringList();
+
+                    if(newList.contains(search_text))
+                        newList.removeAt(newList.indexOf(search_text));
+
+                    newList.prepend(search_text);
+
+                    if(newList.size() >= _maxsavedsearches)
+                        newList.removeLast();
+
+                    if(!QtSingleApplication::instance()->privateBrowsing()) {
+                        _stringlistmodel->setStringList(newList);
+                        _autosaver->changeOccurred();
+                    }
+
+                    QUrl url(QLatin1String("https://www.google.com/search"));
+                    QUrlQuery url_query;
+
+                    //                url_query.addQueryItem(QLatin1String("q"), searchText);
+                    url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
+                    url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
+                    url_query.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
+                    // urlQuery.addQueryItem();
+
+                    url.setQuery(url_query);
+                    url.setFragment("q=" + search_text);
+                    // QString u = url.toString();
+
+                    //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+                    tree_view->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();
+
                 }
-
-                //globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
-
-                //globalparameters.entrance()->activebrowser()->tabWidget()->new_view(register_record(url));
-
-                //currentLineEdit();  // lineEditReturnPressed();
-                //assert(lineedit);
-                //lineedit->setText(searchText);
-                //lineedit->returnPressed();
-            } else  {
-
-                QStringList newList = _stringlistmodel->stringList();
-
-                if(newList.contains(searchText))
-                    newList.removeAt(newList.indexOf(searchText));
-
-                newList.prepend(searchText);
-
-                if(newList.size() >= _maxsavedsearches)
-                    newList.removeLast();
-
-                if(!QtSingleApplication::instance()->privateBrowsing()) {
-                    _stringlistmodel->setStringList(newList);
-                    _autosaver->changeOccurred();
-                }
-
-                QUrl url(QLatin1String("https://www.google.com/search"));
-                QUrlQuery url_query;
-
-                //                url_query.addQueryItem(QLatin1String("q"), searchText);
-                url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
-                url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-                url_query.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
-                // urlQuery.addQueryItem();
-
-                url.setQuery(url_query);
-                url.setFragment("q=" + searchText);
-                // QString u = url.toString();
-
-                //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                tree_view->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();
-
             }
         } else if(result_item != tree_view->current_item()) {
             //            globalparameters.entrance()->activiated_browser()->tabmanager()->setCurrentIndex(0);
@@ -245,7 +254,10 @@ namespace browser {
 
             if(index_result.isValid()) {
                 auto it = tree_view->source_model()->item(index_result);
-                tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent() && tree_view->current_item()->parent() == il->host_parent();})));
+                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+                try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent() && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+
+                tree_view->select_as_current(tree_index);
 
 
                 //                //            else {

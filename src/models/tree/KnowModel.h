@@ -94,7 +94,7 @@ public:
 
     //    boost::intrusive_ptr<ItemsFlat::linker> record_remove(boost::intrusive_ptr<TreeItem> _item);
 
-    boost::intrusive_ptr<TreeItem> model_move_as_child(ModelIndex modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
+    boost::intrusive_ptr<TreeItem> model_move_as_child(boost::intrusive_ptr<ModelIndex> modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
     //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
 
 
@@ -155,7 +155,7 @@ private:
     //    // Добавление новой подветки к Item элементу
     //    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
 
-    boost::intrusive_ptr<TreeItem> model_new_child(TreeModel::ModelIndex _modelindex, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex, QString id, QString name);
 
 #ifdef _with_record_table
     boost::intrusive_ptr<TreeItem> lock_child_add(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);

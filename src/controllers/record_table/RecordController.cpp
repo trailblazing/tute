@@ -131,7 +131,10 @@ void RecordController::item_click(const IndexProxy &index_proxy_)
     auto tree_view = _tree_screen->tree_view();
     auto item = source_model()->item(source_pos);
     auto parent = source_model()->item(source_pos)->parent();
-    tree_view->select_as_current(TreeModel::ModelIndex([&] {return tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == item && item->linker() == il && item->parent() == il->host_parent();})));
+    boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+    try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == item && item->linker() == il && item->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+
+    tree_view->select_as_current(tree_index);
     _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
@@ -329,118 +332,118 @@ void RecordController::browser_update(const PosSource pos_source_)
 
 }
 
-// from this function,we would have found that without a full-stack controller, we can't synchronize editor content.
-// so if our records are come from different tree path, we must switch the parent node, our give them a sharing parent.
-// that's why we need a page_controller,  or we should implement a multi table screen architecture -- but with this design,
-// we can not settle the medium results easily.
-void RecordController::sychronize_metaeditor_to_item(const PosSource pos_source_)
-{
+//// from this function,we would have found that without a full-stack controller, we can't synchronize editor content.
+//// so if our records are come from different tree path, we must switch the parent node, our give them a sharing parent.
+//// that's why we need a page_controller,  or we should implement a multi table screen architecture -- but with this design,
+//// we can not settle the medium results easily.
+//void RecordController::sychronize_metaeditor_to_item(const PosSource pos_source_)
+//{
 
-    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(PosSource(pos_source_));
-    assert(item);
-    // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
+//    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(PosSource(pos_source_));
+//    assert(item);
+//    // Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
 
-    // Выясняется указатель на объект редактирования текста записи
-    MetaEditor *meta_editor = globalparameters.meta_editor();   // find_object<MetaEditor>(meta_editor_singleton_name);
-    assert(meta_editor);
-    meta_editor->bind(item);
+//    // Выясняется указатель на объект редактирования текста записи
+//    MetaEditor *meta_editor = globalparameters.meta_editor();   // find_object<MetaEditor>(meta_editor_singleton_name);
+//    assert(meta_editor);
+//    meta_editor->bind(item);
 
-    //    // Выясняется ссылка на таблицу конечных данных
-    //    auto item = _source_model->tree_item();
+//    //    // Выясняется ссылка на таблицу конечных данных
+//    //    auto item = _source_model->tree_item();
 
-    // В таблице конечных данных запоминается какая запись была выбрана
-    // чтобы затем при выборе этой же подветки засветка автоматически
-    // установилась на последнюю рабочую запись
-    this->source_model()->position(pos_source_);   // item->work_pos(pos);
+//    // В таблице конечных данных запоминается какая запись была выбрана
+//    // чтобы затем при выборе этой же подветки засветка автоматически
+//    // установилась на последнюю рабочую запись
+//    this->source_model()->position(pos_source_);   // item->work_pos(pos);
 
 
-    // Устанавливается функция обратного вызова для записи данных
-    meta_editor->save_callback(item->editor_save_callback);
+//    // Устанавливается функция обратного вызова для записи данных
+//    meta_editor->save_callback(item->editor_save_callback);
 
-    // Сохраняется текст и картинки в окне редактирования
-    //    find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->save_text_area();
+//    // Сохраняется текст и картинки в окне редактирования
+//    //    find_object<MainWindow>("mainwindow")
+//    globalparameters.mainwindow()->save_text_area();
 
-    auto it = item->item_direct(pos_source_);
-    // Для новой выбраной записи выясняется директория и основной файл
-    QString currentDir      = it->field("dir");
-    QString currentFile     = it->field("file");
-    QString fullDir         = appconfig.tetra_dir() + "/base/" + currentDir;
-    QString fullFileName    = fullDir + "/" + currentFile;
-    qDebug() << " File " << fullFileName << "\n";
+//    auto it = item->item_direct(pos_source_);
+//    // Для новой выбраной записи выясняется директория и основной файл
+//    QString currentDir      = it->field("dir");
+//    QString currentFile     = it->field("file");
+//    QString fullDir         = appconfig.tetra_dir() + "/base/" + currentDir;
+//    QString fullFileName    = fullDir + "/" + currentFile;
+//    qDebug() << " File " << fullFileName << "\n";
 
-    // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
-    if(meta_editor->work_directory() == fullDir
-       && meta_editor->file_name() == currentFile
-      ) {
-        globalparameters.window_switcher()->switchFromRecordtableToRecord();
-        return;
-    }
+//    // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
+//    if(meta_editor->work_directory() == fullDir
+//       && meta_editor->file_name() == currentFile
+//      ) {
+//        globalparameters.window_switcher()->switchFromRecordtableToRecord();
+//        return;
+//    }
 
-    // Перед открытием редактора происходит попытка получения текста записи
-    // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
-    // Before the opening of the editor it attempts to get the text records
-    // This call will create a text file with the record if it is not already created (think remake)
-    item->text(pos_source_);
+//    // Перед открытием редактора происходит попытка получения текста записи
+//    // Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
+//    // Before the opening of the editor it attempts to get the text records
+//    // This call will create a text file with the record if it is not already created (think remake)
+//    item->text(pos_source_);
 
-    // Редактору задаются имя файла и директории
-    // И дается команда загрузки файла
-    meta_editor->work_directory(fullDir);
-    meta_editor->file_name(currentFile);
+//    // Редактору задаются имя файла и директории
+//    // И дается команда загрузки файла
+//    meta_editor->work_directory(fullDir);
+//    meta_editor->file_name(currentFile);
 
-    // Если идет работа с зашифрованной записью
-    // И если имя директории или имя файла пусты, то это означает что
-    // запись не была расшифрована, и редактор должен просто показывать пустой текст
-    // ничего не сохранять и не считывать
-    qDebug() << "RecordTableView::onClickToRecord() : id " << it->field("id");
-    qDebug() << "RecordTableView::onClickToRecord() : name " << it->field("name");
-    qDebug() << "RecordTableView::onClickToRecord() : crypt " << it->field("crypt");
+//    // Если идет работа с зашифрованной записью
+//    // И если имя директории или имя файла пусты, то это означает что
+//    // запись не была расшифрована, и редактор должен просто показывать пустой текст
+//    // ничего не сохранять и не считывать
+//    qDebug() << "RecordTableView::onClickToRecord() : id " << it->field("id");
+//    qDebug() << "RecordTableView::onClickToRecord() : name " << it->field("name");
+//    qDebug() << "RecordTableView::onClickToRecord() : crypt " << it->field("crypt");
 
-    if(it->field("crypt") == "1")
-        if(fullDir.length() == 0 || currentFile.length() == 0)
-            meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+//    if(it->field("crypt") == "1")
+//        if(fullDir.length() == 0 || currentFile.length() == 0)
+//            meta_editor->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
-    // В редактор заносится информация, идет ли работа с зашифрованным текстом
-    meta_editor->misc_field("crypt", it->field("crypt"));
+//    // В редактор заносится информация, идет ли работа с зашифрованным текстом
+//    meta_editor->misc_field("crypt", it->field("crypt"));
 
-    // В редакторе устанавливается функция обратного вызова для чтения данных
-    meta_editor->load_callback(item->editor_load_callback);
+//    // В редакторе устанавливается функция обратного вызова для чтения данных
+//    meta_editor->load_callback(item->editor_load_callback);
 
-    meta_editor->load_textarea();
-    // edView->set_textarea(table->get_text(index.row()));
+//    meta_editor->load_textarea();
+//    // edView->set_textarea(table->get_text(index.row()));
 
-    // Заполняются прочие инфо-поля
-    meta_editor->pin(it->field("pin"));
-    meta_editor->name(it->field("name"));
-    meta_editor->author(it->field("author"));
-    meta_editor->home(it->field("home"));
-    meta_editor->url(it->field("url"));
-    meta_editor->tags(it->field("tags"));
+//    // Заполняются прочие инфо-поля
+//    meta_editor->pin(it->field("pin"));
+//    meta_editor->name(it->field("name"));
+//    meta_editor->author(it->field("author"));
+//    meta_editor->home(it->field("home"));
+//    meta_editor->url(it->field("url"));
+//    meta_editor->tags(it->field("tags"));
 
-    QString id = it->field("id");
-    meta_editor->misc_field("id", id);
+//    QString id = it->field("id");
+//    meta_editor->misc_field("id", id);
 
-    meta_editor->misc_field("title", it->field("name"));
+//    meta_editor->misc_field("title", it->field("name"));
 
-    // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
-    QString path = qobject_cast<RecordScreen *>(parent())->tree_path();
+//    // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
+//    QString path = qobject_cast<RecordScreen *>(parent())->tree_path();
 
-    // В мобильном интерфейсе редактор должен показывать путь до записи
-    if(appconfig.interface_mode() == "mobile")
-        meta_editor->tree_path(path);
+//    // В мобильном интерфейсе редактор должен показывать путь до записи
+//    if(appconfig.interface_mode() == "mobile")
+//        meta_editor->tree_path(path);
 
-    // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
-    if(appconfig.remember_cursor_at_ordinary_selection()) {
-        meta_editor->cursor_position(walkhistory.cursor_position(id));
-        meta_editor->scrollbar_position(walkhistory.scrollbar_position(id));
-    }
+//    // В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
+//    if(appconfig.remember_cursor_at_ordinary_selection()) {
+//        meta_editor->cursor_position(walkhistory.cursor_position(id));
+//        meta_editor->scrollbar_position(walkhistory.scrollbar_position(id));
+//    }
 
-    // Обновление иконки аттачей
-    if(it->attach_table()->size() == 0)
-        meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_not_exists);   // Если нет приаттаченных файлов
-    else
-        meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_exists);   // Есть приаттаченные файлы
-}
+//    // Обновление иконки аттачей
+//    if(it->attach_table()->size() == 0)
+//        meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_not_exists);   // Если нет приаттаченных файлов
+//    else
+//        meta_editor->_to_attach->setIcon(meta_editor->_icon_attach_exists);   // Есть приаттаченные файлы
+//}
 
 
 void RecordController::sychronize_attachtable_to_item(const PosSource pos)

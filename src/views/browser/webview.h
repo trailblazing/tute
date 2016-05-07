@@ -201,7 +201,7 @@ namespace browser {
 
         //        void item_break(boost::intrusive_ptr<TreeItem> item);    // {if(_record->binded_page() == this)_record->bind_page(nullptr); _record = nullptr;}
         //        void items_break();
-        void sychronize_metaeditor_to_item(boost::intrusive_ptr<TreeItem> item);
+        void sychronize_metaeditor_to_item();
 
         //        boost::intrusive_ptr<TreeItem> item_bind(const QUrl &_url
         //                                                              , const TreeScreen::paste_strategy &_view_paste_strategy
@@ -213,7 +213,7 @@ namespace browser {
         //                                                 , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
         //                                                );
 
-        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
+        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeModel::ModelIndex> tree_index);
 
         boost::intrusive_ptr<TreeItem::Coupler> binder();
         const boost::intrusive_ptr<TreeItem::Coupler> &&binder()const;

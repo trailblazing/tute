@@ -196,11 +196,19 @@ void RecordScreen::save_in_new_branch(bool checked)
                 }
             }
 
-            _tree_screen->tree_view()->view_paste_children_from_children(TreeModel::ModelIndex(_tree_source_model, _tree_screen->tree_view()->current_item()), _blank_header, [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
-            //            new_tree_item_in_treeknow_root = target;
-            _tree_screen->tree_view()->synchronized(false);
-            _tree_screen->tree_view()->know_model_save();
-            // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
+            boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+
+            try {
+                tree_index = new TreeModel::ModelIndex(_tree_source_model, _tree_screen->tree_view()->current_item());
+            } catch(std::exception &) {}
+
+            if(tree_index) {
+                _tree_screen->tree_view()->view_paste_children_from_children(tree_index, _blank_header, [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
+                //            new_tree_item_in_treeknow_root = target;
+                _tree_screen->tree_view()->synchronized(false);
+                _tree_screen->tree_view()->know_model_save();
+                // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
+            }
         }
     }
 }
@@ -259,16 +267,23 @@ void RecordScreen::setup_actions(void)
 
 
             if(modified) {
+                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
 
-                tree_view->view_paste_children_from_children(    // view_paste_sibling
-                    TreeModel::ModelIndex(_source_model, tree_view->session_root_auto()) // _tree_screen->tree_view()->current_index() //,
-                    , branch_item
-                    , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
-                );
+                try {
+                    tree_index = new TreeModel::ModelIndex(_source_model, tree_view->session_root_auto());
+                } catch(std::exception &) {}
 
-                //                _tree_screen->resetup_model(_source_model()->root_item());
-                tree_view->synchronized(false);
-                tree_view->know_model_save();
+                if(tree_index) {
+                    tree_view->view_paste_children_from_children(    // view_paste_sibling
+                        tree_index // _tree_screen->tree_view()->current_index() //,
+                        , branch_item
+                        , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
+                    );
+
+                    //                _tree_screen->resetup_model(_source_model()->root_item());
+                    tree_view->synchronized(false);
+                    tree_view->know_model_save();
+                }
             }
 
             _source_model()->update_index(_source_model()->index(tree_view->session_root_auto()));

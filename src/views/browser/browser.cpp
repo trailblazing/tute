@@ -1475,12 +1475,19 @@ namespace browser {
         settings.beginGroup(QLatin1String("MainWindow"));
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         auto tree_view = _tree_screen->tree_view();
-        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
-        tree_view->item_bind(
-            tree_view->current_item()
-            , QUrl(home)
-            , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-        )->activate();
+        boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+
+        try {
+            modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
+        } catch(std::exception &e) {}
+
+        if(modelindex) {
+            tree_view->item_bind(
+                tree_view->current_item()
+                , QUrl(home)
+                , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
+            )->activate();
+        }
     }
 
     void Browser::slotWebSearch()
@@ -1683,16 +1690,16 @@ namespace browser {
         return globalparameters.status_bar();
     }
 
-    boost::intrusive_ptr<TreeItem> Browser::item_bind(RecordModel::ModelIndex *modelindex)
+    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex)
     {
-        boost::intrusive_ptr<TreeItem> tab_brother = modelindex->sibling();
-        boost::intrusive_ptr<TreeItem> _it = modelindex->target();
+        boost::intrusive_ptr<TreeItem> tab_brother = record_modelindex->sibling();
+        boost::intrusive_ptr<TreeItem> _item = record_modelindex->target();
 
-        if(_it->is_lite())_it->to_fat();
+        if(_item->is_lite())_item->to_fat();
 
         // clean();
         //        assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
-        assert(tab_brother != _it);
+        assert(tab_brother != _item);
         boost::intrusive_ptr<TreeItem> result(nullptr);
         WebView *view = nullptr;
         TabWidget *const tab = tabWidget();
@@ -1701,7 +1708,7 @@ namespace browser {
         //        } else
         //        {
         //        for(auto &i : _mainWindows) {
-        view = tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _it->field("url");});
+        view = tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _item->field("url");});
 
         //        if(view != nullptr) {
         //            //            dp.first = i.data();
@@ -1730,7 +1737,12 @@ namespace browser {
 
             if(blankview != nullptr) {
                 view = blankview;
-                result = view->page()->item_bind(_it);
+                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+
+                try {
+                    tree_index = new TreeModel::ModelIndex([&] {return globalparameters.tree_screen()->tree_view()->source_model();}, _item->parent(), _item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == _item && _item->linker() == il && _item->parent() == il->host_parent();}));
+                } catch(std::exception &e) {throw e;}
+                result = view->page()->item_bind(tree_index);
                 result->activate();//                view->page()->load(record);
             }
             //            else if(nopin_view != nullptr) {   // no_pin
@@ -1742,7 +1754,7 @@ namespace browser {
             //                }
             //            }
             else {
-                view = tab->newTab(modelindex); // , false
+                view = tab->newTab(record_modelindex); // , false
                 result = view->page()->binder()->item();
                 // auto load
             }

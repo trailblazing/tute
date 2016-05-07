@@ -901,19 +901,22 @@ void QtSingleApplication::newLocalSocketConnection()
     auto entrance = globalparameters.entrance();
     auto tree_screen = globalparameters.tree_screen();
     auto tree_view = tree_screen->tree_view();
-    TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
-    //    Record *record = request_record(url);
+    boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+
+    try {
+        modelindex  = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
+    } catch(std::exception &e) {} //    Record *record = request_record(url);
 
     //    std::pair<browser::Browser *, browser::WebView *> dp;
 
-    if(entrance && tree_screen) {
+    if(entrance && tree_screen && modelindex) {
         if(openLinksIn == 1) {
 
 
 
             auto browser = entrance->new_browser();
             auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
-            RecordModel::ModelIndex *record_modelindex = nullptr;
+            boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);
 
             try {
                 record_modelindex = new RecordModel::ModelIndex([&] {return browser->record_screen()->record_controller()->source_model();}, tree_view->current_item(), it);
@@ -921,8 +924,6 @@ void QtSingleApplication::newLocalSocketConnection()
 
             if(record_modelindex) {
                 browser->item_bind(record_modelindex)->activate(); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
-                delete record_modelindex;
-                record_modelindex = nullptr;
             } else {
                 tree_view->index_invoke(tree_view->source_model()->index(it));
             }

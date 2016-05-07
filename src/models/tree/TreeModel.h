@@ -31,7 +31,7 @@ class TreeModel : public QAbstractItemModel {
 public:
 
 
-    struct ModelIndex {
+    struct ModelIndex : public boost::intrusive_ref_counter<ModelIndex, boost::thread_safe_counter> {
     public:
         ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order = 0);   // , const QModelIndex &_current_index
         std::function<KnowModel *()> current_model()const;
@@ -117,7 +117,7 @@ public:
     // void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
     boost::intrusive_ptr<TreeItem> root_item()const {return _root_item;}
     QString session_id() {return _session_id;}
-    void session_id(ModelIndex modelindex);
+    void session_id(boost::intrusive_ptr<ModelIndex> modelindex);
 
 
 protected:

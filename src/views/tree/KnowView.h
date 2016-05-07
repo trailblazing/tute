@@ -47,9 +47,9 @@ class KnowView : public QTreeView {
 public:
 
     typedef std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>, boost::intrusive_ptr<const TreeItem::Linker>)> substitute_condition;
-    typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
-    typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, QString)> add_new;
-    typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, QString, const add_new &)> add_new_delegate;
+    typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeModel::ModelIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
+    typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeModel::ModelIndex>, QString, QString)> add_new;
+    typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeModel::ModelIndex>, QString, const add_new &)> add_new_delegate;
     typedef std::function<QModelIndex(KnowView *const, const QModelIndex &)> select_strategy;
     typedef std::function<QModelIndex(KnowView *const, const QModelIndex &, const int)> current_strategy;
 
@@ -81,7 +81,7 @@ public:
     QModelIndex current_index(void);
 
 
-    QModelIndex select_as_current(TreeModel::ModelIndex _modelindex
+    QModelIndex select_as_current(boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex
                                   , select_strategy _select_strategy = [](KnowView *const v, const QModelIndex &_i) ->QModelIndex{assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->select(_i, current_tree_selection_mode); return _i;}
                                           , current_strategy _current_strategy = [](KnowView *const v, const QModelIndex &_i, const int dummy = 0) ->QModelIndex{(void)(dummy); assert(v); assert(v->selectionModel()); assert(_i.isValid()); v->selectionModel()->setCurrentIndex(_i, current_tree_current_index_mode); return _i;}
                                  );
@@ -107,19 +107,19 @@ public slots:
     void tree_crypt_control(void);
 
 
-    boost::intrusive_ptr<TreeItem> view_add_new(TreeModel::ModelIndex _modelindex
+    boost::intrusive_ptr<TreeItem> view_add_new(boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex
                                                 , QString _name
                                                 , const add_new &_branch_add_new_impl);
 
-    boost::intrusive_ptr<TreeItem> view_insert_new(TreeModel::ModelIndex _modelindex
+    boost::intrusive_ptr<TreeItem> view_insert_new(boost::intrusive_ptr<TreeModel::ModelIndex>  _modelindex
                                                    , const add_new_delegate &_branch_add_new
                                                    , const add_new &_branch_add_new_impl
                                                   );
 
-    boost::intrusive_ptr<TreeItem> view_paste_children_from_children(TreeModel::ModelIndex _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition &_substitute_condition);
+    boost::intrusive_ptr<TreeItem> view_paste_children_from_children(boost::intrusive_ptr<TreeModel::ModelIndex> _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition &_substitute_condition);
 
-    void view_paste_children_from_clipboard(TreeModel::ModelIndex _sibling_modelindex);
-    boost::intrusive_ptr<TreeItem> view_paste_child(TreeModel::ModelIndex _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
+    void view_paste_children_from_clipboard(boost::intrusive_ptr<TreeModel::ModelIndex> _sibling_modelindex);
+    boost::intrusive_ptr<TreeItem> view_paste_child(boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 
     QList<boost::intrusive_ptr<ItemsFlat::Linker> > view_delete_permanent(
         const std::function<KnowModel *()>      &_current_model
@@ -131,11 +131,11 @@ public slots:
     void view_cut(bool _cut_branch_confirm = false);
     QModelIndexList view_copy(void);   // const;
     void view_edit(void);
-    boost::intrusive_ptr<TreeItem> view_merge_to_left(TreeModel::ModelIndex modelindex
+    boost::intrusive_ptr<TreeItem> view_merge_to_left(boost::intrusive_ptr<TreeModel::ModelIndex>   modelindex
                                                       , boost::intrusive_ptr<TreeItem> source);
 
 
-    boost::intrusive_ptr<TreeItem> view_paste_strategy(TreeModel::ModelIndex                                        _modelindex
+    boost::intrusive_ptr<TreeItem> view_paste_strategy(boost::intrusive_ptr<TreeModel::ModelIndex>                  _modelindex
                                                        , boost::intrusive_ptr<TreeItem>                             _result
                                                        , const substitute_condition                                 &_substitute_condition
                                                        , const paste_strategy                                       &_view_paste_strategy_impl
@@ -169,7 +169,8 @@ public slots:
                                                  , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
                                                 );
 
-    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> tab_brother, const QUrl &_find_url
+    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> tab_brother
+                                             , const QUrl &_find_url
                                              , const KnowView::paste_strategy &_view_paste_strategy
                                              , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
                                             );
@@ -179,9 +180,10 @@ public slots:
                                                  , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
                                                 );
 
-    boost::intrusive_ptr<TreeItem> item_bind(RecordModel::ModelIndex *modelindex, const KnowView::paste_strategy &_view_paste_strategy
-                                             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-                                            );
+    //    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> modelindex
+    //                                             , const KnowView::paste_strategy &_view_paste_strategy
+    //                                             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+    //                                            );
 
     QModelIndex previous_index()const;
 protected:

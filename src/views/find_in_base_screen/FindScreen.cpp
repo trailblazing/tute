@@ -934,10 +934,10 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                                , boost::intrusive_ptr<TreeItem> _start_item
                                            )
 {
-    //    auto _result_item = _result_item;  // ->record_table();
-    auto tree_view = _tree_screen->tree_view();
-    //    // Если была нажата отмена поиска
-    //    if(_cancel_flag == 1)return _result_item;
+
+    //    auto tree_view = _tree_screen->tree_view();
+    //    //    // Если была нажата отмена поиска
+    //    //    if(_cancel_flag == 1)return _result_item;
 
     if(_cancel_flag != 1) {
         //        // Если ветка зашифрована, и пароль не был введен
@@ -951,19 +951,19 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
             // Если в ветке присутсвует таблица конечных записей
             if(_start_item->count_direct() > 0) {
 
-                auto _source_model = [&]() {return tree_view->source_model();};
+                //                auto _source_model = [&]() {return tree_view->source_model();};
 
-                //        auto _current_item = _tree_screen->tree_view()->current_item();
+                //                //        auto _current_item = _tree_screen->tree_view()->current_item();
 
-                //        boost::intrusive_ptr<TreeItem> _current_branch_root;
+                //                //        boost::intrusive_ptr<TreeItem> _current_branch_root;
 
-                //        if(_current_item->is_registered_to_browser())_current_branch_root = _current_item->parent();
-                //        else _current_branch_root = _current_item;
+                //                //        if(_current_item->is_registered_to_browser())_current_branch_root = _current_item->parent();
+                //                //        else _current_branch_root = _current_item;
 
-                // Обработка таблицы конечных записей
+                //                // Обработка таблицы конечных записей
 
-                // Выясняется ссылка на таблицу конечных записей
-                //        auto _start_item = _start_item;   // ->record_table();
+                //                // Выясняется ссылка на таблицу конечных записей
+                //                //        auto _start_item = _start_item;
 
                 // Перебираются записи таблицы
                 for(int i = 0; i < _start_item->count_direct(); i++) {
@@ -1028,8 +1028,8 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                         if(found_flag == 1) {
                             qDebug() << "Find succesfull in " << candidate->field("name");
 
-                            // QString pin0 = curritem->getField("pin");
-                            // QString pin1 = searchRecordTable->getField("pin", i);   // work
+                            // QString pin0 = curritem->field("pin");
+                            // QString pin1 = searchRecordTable->field("pin", i);   // work
 
                             //                // В таблицу результатов поиска добавляются данные
                             //                // Имя записи
@@ -1050,7 +1050,7 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                             auto browser = globalparameters.entrance()->activated_browser();
                             auto record_controller = browser->record_screen()->record_controller();
                             auto tab_brother = record_controller->view()->current_item();
-                            RecordModel::ModelIndex *record_modelindex = nullptr;
+                            boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);
 
                             try {
                                 record_modelindex = new RecordModel::ModelIndex([&] {return record_controller->source_model();}, tab_brother, candidate);
@@ -1063,11 +1063,13 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                 && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})
                                   ) {
 
-                                    auto result = tree_view->item_bind(record_modelindex // result
-                                                                       , std::bind(&KnowView::view_paste_child, tree_view
-                                    , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
-                                    , std::placeholders::_2
-                                    , std::placeholders::_3));    // ->activate(); //
+                                    auto result = browser->item_bind(record_modelindex);
+                                    //                                        = tree_view->item_bind(record_modelindex // result
+                                    //                                                               , std::bind(&KnowView::view_paste_child, tree_view
+                                    //                                    , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
+                                    //                                    , std::placeholders::_2
+                                    //                                    , std::placeholders::_3));
+
                                     result->activate();
                                     _result_list << result->linker();   //
 
@@ -1075,14 +1077,12 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                                     // auto previous_item = _source_model()->item(tree_view->previous_index());
                                     boost::intrusive_ptr<TreeItem> result;
 
-                                    result = globalparameters.entrance()->activated_browser()->item_bind(record_modelindex);
+                                    result = browser->item_bind(record_modelindex);
 
                                     result->activate();
                                     _result_list << result->linker();
                                 }
 
-                                delete record_modelindex;
-                                record_modelindex = nullptr;
                             } else {
                                 candidate->activate();
                                 _result_list << candidate->linker();

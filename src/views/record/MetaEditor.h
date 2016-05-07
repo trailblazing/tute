@@ -11,7 +11,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "libraries/wyedit/Editor.h"
-
+#include "models/tree/TreeModel.h"
 
 extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
@@ -25,7 +25,7 @@ class AttachTableScreen;
 class Record;
 class TreeItem;
 class FindScreen;
-
+class TreeModel;
 
 class ClickableLabel: public QLabel {
     Q_OBJECT
@@ -68,7 +68,7 @@ public:
 
     void to_editor_layout(void);
     void to_attach_layout(void);
-    void bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);   // {_record = r;}
+    void bind(boost::intrusive_ptr<TreeModel::ModelIndex> tree_index);   // {_record = r;}
     boost::intrusive_ptr<TreeItem> item();    // {return _record;}
 
 private:

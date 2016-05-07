@@ -81,7 +81,7 @@ class RecordModel : public QAbstractTableModel
     friend class browser::Entrance;
 public:
 
-    struct ModelIndex {
+    struct ModelIndex : public boost::intrusive_ref_counter<ModelIndex, boost::thread_safe_counter> {
     public:
         ModelIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item);
         std::function<RecordModel *()> current_model()const;

@@ -154,8 +154,9 @@ void MetaEditor::setupLabels(void)
 }
 
 
-void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
+void MetaEditor::bind(boost::intrusive_ptr<TreeModel::ModelIndex> tree_index)
 {
+    boost::intrusive_ptr<TreeItem> item_to_be_bound = tree_index->current_item();
     _item = item_to_be_bound;
     assert(_item);
     //    TableController *table_controller = globalparameters.table_screen()->table_controller();
@@ -189,8 +190,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
 
     QObject::disconnect(_home_connection);
     _home_connection = QObject::connect(_item_home, &ClickableLabel::mousePressEvent
-                                        //            , _record->binded_only_page()
-    , [this](QMouseEvent * ev) {
+    , [&](QMouseEvent * ev) {
         Q_UNUSED(ev)
         //            Q_UNUSED(home)
         assert(_item);
@@ -202,7 +202,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         if(_item->field("url") != home)
             _item->field("url", home);
 
-        page->item_bind(_item)->activate(); // page->load(_record, true);
+        page->item_bind(tree_index)->activate(); // page->load(_record, true);
         //        _record->active();
     });
 

@@ -617,7 +617,7 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
 
 
             //    if(selected_position == -1) {
-            RecordModel::ModelIndex *record_modelindex = nullptr;
+            boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);
 
             try {
                 record_modelindex = new RecordModel::ModelIndex([&] {return this;}, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->item() : nullptr, _item);

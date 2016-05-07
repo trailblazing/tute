@@ -896,12 +896,24 @@ TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_mo
         //        assert(_current_index.isValid());
         return result;
     }();
-    assert(current_parent_valid);
-    assert(sibling_order >= 0);
-    auto count_direct = _parent->count_direct();
-    count_direct = count_direct == 0 ? 1 : count_direct;
-    assert(sibling_order < count_direct);
-    //    assert(_current_index.isValid());
+
+    try {
+
+
+        if(!current_parent_valid)throw std::exception();    //        assert(current_parent_valid);
+
+        //        assert(sibling_order >= 0);
+
+        if(sibling_order < 0)throw std::exception();
+
+        auto count_direct = _parent->count_direct();
+        count_direct = count_direct == 0 ? 1 : count_direct;
+        //        assert(sibling_order < count_direct);
+
+        if(sibling_order >= count_direct)throw std::exception();
+
+        //    assert(_current_index.isValid());
+    } catch(std::exception &e) {throw e;}
 }
 
 std::function<KnowModel *()> TreeModel::ModelIndex::current_model()const {return _current_model;}
@@ -921,9 +933,9 @@ QModelIndex TreeModel::ModelIndex::parent_index()const {return _current_model()-
 int TreeModel::ModelIndex::sibling_order() const {return _sibling_order;}
 
 void TreeModel::session_id(
-    TreeModel::ModelIndex modelindex    // const QString &id
+    boost::intrusive_ptr<TreeModel::ModelIndex> modelindex    // const QString &id
 )
 {
     //    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
-    _session_id = modelindex.parent()->id();
+    _session_id = modelindex->parent()->id();
 }

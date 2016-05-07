@@ -675,10 +675,10 @@ void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc,
 
 
 // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(TreeModel::ModelIndex _modelindex, QString id, QString name)
+boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(boost::intrusive_ptr<ModelIndex> _modelindex, QString id, QString name)
 {
-    boost::intrusive_ptr<TreeItem> parent = _modelindex.parent();
-    int pos = _modelindex.sibling_order();
+    boost::intrusive_ptr<TreeItem> parent = _modelindex->parent();
+    int pos = _modelindex->sibling_order();
     auto index_parent = index(parent);
     beginInsertRows(index_parent
                     , pos   // parent->count_direct()
@@ -824,14 +824,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(TreeModel::ModelIndex 
 
 // Add a new highlight to the Item element  // Добавление новой подветки к Item элементу
 boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
-    TreeModel::ModelIndex modelindex   // boost::intrusive_ptr<TreeItem> _parent
+    boost::intrusive_ptr<TreeModel::ModelIndex> modelindex   // boost::intrusive_ptr<TreeItem> _parent
     , boost::intrusive_ptr<TreeItem> source_item
     //    , int _pos
     , int mode
 ) //    , QString id, QString name
 {
-    boost::intrusive_ptr<TreeItem> parent = modelindex.parent();
-    int pos = modelindex.sibling_order();
+    boost::intrusive_ptr<TreeItem> parent = modelindex->parent();
+    int pos = modelindex->sibling_order();
 
     boost::intrusive_ptr<TreeItem> result(source_item);    // 1-1
     auto _index_origin = index(source_item);

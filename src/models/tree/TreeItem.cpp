@@ -1975,16 +1975,27 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
         }
     }
 
-    auto cut_page_rebind = [&]() {
-        if(cut->binder())
-            if(cut->binder()->page())
-                cut->binder()->page()->item_bind(this);
+    auto try_cut_page_rebind = [&]() {
+        if(cut->binder()) {
+            if(cut->binder()->page() && cut->parent()) {
+                //                _binder = cut->binder();
+                //                _binder->item() = this;
+
+                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+
+                try {
+                    tree_index = new TreeModel::ModelIndex([&] {return globalparameters.tree_screen()->tree_view()->source_model();}, cut->parent(), cut->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == cut->linker() && il->host() == cut && il->host_parent() == cut->parent();}));
+                } catch(std::exception &e) {throw e;}
+
+                cut->binder()->page()->item_bind(tree_index);
+            }
+        }
     };
 
     if(!_binder) {
-        cut_page_rebind();
+        try_cut_page_rebind();
     } else if(!_binder->page()) {
-        cut_page_rebind();
+        try_cut_page_rebind();
     }
 
     assert(_child_linkers.size() == origin_child_linkers_size + new_count);

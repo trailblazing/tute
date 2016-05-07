@@ -361,16 +361,19 @@ namespace browser {
                 WebPage *page = view->page();
 
                 if(page) {
-                    boost::intrusive_ptr<TreeItem> record = page->item();
-                    assert(record);
-                    QString home = record->field("home");
+                    boost::intrusive_ptr<TreeItem> _item = page->item();
+                    assert(_item);
+                    QString home = _item->field("home");
                     QUrl homeurl = QUrl(home);
 
-                    if(homeurl.isValid()
-                    && homeurl != page->url()
-                      ) {
-                        record->field("url", home);
-                        page->item_bind(record)->activate(); // page->load(record, true);
+                    if(homeurl.isValid() && homeurl != page->url()) {
+                        _item->field("url", home);
+                        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+
+                        try {
+                            tree_index = new TreeModel::ModelIndex([&] {return globalparameters.tree_screen()->tree_view()->source_model();}, _item->parent(), _item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == _item && _item->linker() == il && _item->parent() == il->host_parent();}));
+                        } catch(std::exception &e) {throw e;}
+                        page->item_bind(tree_index)->activate(); // page->load(record, true);
                     }
                 }
             }

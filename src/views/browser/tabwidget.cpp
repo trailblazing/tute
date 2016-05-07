@@ -323,12 +323,20 @@ namespace browser {
             , &TabBar::newTab   //                , this
         , [&]() {
             auto tree_view = _tree_screen->tree_view();
-            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
-            _tree_screen->tree_view()->item_bind(
-                tree_view->current_item()
-                , QUrl(Browser::_defaulthome)
-                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
-            )->activate();
+
+            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+
+            try {
+                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            } catch(std::exception &e) {}
+
+            if(modelindex) {
+                _tree_screen->tree_view()->item_bind(
+                    tree_view->current_item()
+                    , QUrl(Browser::_defaulthome)
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
+                )->activate();
+            }
 
         });
 
@@ -359,12 +367,20 @@ namespace browser {
         , [&](bool make_current) {
             Q_UNUSED(make_current)
             auto tree_view = _tree_screen->tree_view();
-            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
-            _tree_screen->tree_view()->item_bind(
-                tree_view->current_item()
-                , QUrl(Browser::_defaulthome)
-                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
-            )->activate();
+
+            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+
+            try {
+                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            } catch(std::exception &e) {}
+
+            if(modelindex) {
+                _tree_screen->tree_view()->item_bind(
+                    tree_view->current_item()
+                    , QUrl(Browser::_defaulthome)
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
+                )->activate();
+            }
 
         });
 
@@ -484,7 +500,10 @@ namespace browser {
                         //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
                         //                        _tree_view->selectionModel()->select(_i, current_tree_selection_mode);  //
                         auto parent = it->parent();
-                        _tree_view->select_as_current(TreeModel::ModelIndex([&] {return _tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+                        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+                        try {tree_index = new TreeModel::ModelIndex([&] {return _tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+
+                        _tree_view->select_as_current(tree_index);
 
                         //                    //                    globalparameters.mainwindow()
                         //                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
@@ -535,7 +554,10 @@ namespace browser {
 
                     if(_tree_view->current_index() != _i) {
                         //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
-                        _tree_view->select_as_current(TreeModel::ModelIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+                        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+                        try {tree_index = new TreeModel::ModelIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+
+                        _tree_view->select_as_current(tree_index);
 
                         //                    //                    globalparameters.mainwindow()
                         if(_record_controller->view()->selection_first<IdType>() != it->field("id")) {
@@ -553,7 +575,7 @@ namespace browser {
 
                     if(metaeditor->item() != it) {
 
-                        webView->page()->sychronize_metaeditor_to_item(it);  // metaeditor->bind(record);
+                        webView->page()->sychronize_metaeditor_to_item();  // metaeditor->bind(record);
                     }
                 }
             }
@@ -702,13 +724,13 @@ namespace browser {
     }
 
 
-    WebView *TabWidget::newTab(RecordModel::ModelIndex *modelindex   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
+    WebView *TabWidget::newTab(boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex   // boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
                                , bool make_current)   // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
         // auto _record_model = modelindex.current_model();
-        boost::intrusive_ptr<TreeItem> tab_brother = modelindex->sibling();
-        boost::intrusive_ptr<TreeItem> target = modelindex->target();
+        boost::intrusive_ptr<TreeItem> tab_brother = record_modelindex->sibling();
+        boost::intrusive_ptr<TreeItem> target = record_modelindex->target();
         assert(target);
         assert(tab_brother != target);
         // assert(!target->is_lite());
@@ -870,7 +892,13 @@ namespace browser {
                     //                    _record_binder->item() = target;
                     //                    _record_binder->page() = view->page();
                     //                    result = target;
-                    result = view->page()->item_bind(target);
+                    boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+
+                    try {
+                        tree_index = new TreeModel::ModelIndex([&] {return _tree_screen->tree_view()->source_model();}, target->parent(), target->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == target->linker() && il->host() == target && il->host_parent() == target->parent();}));
+                    } catch(std::exception &e) {throw e;}
+
+                    result = view->page()->item_bind(tree_index);
                     assert(result->binder()->integrity_external(result, view->page()));
                 }
 
@@ -881,8 +909,10 @@ namespace browser {
             assert(result->binder()->integrity_external(result, view->page()));
         } else {
             auto page_item = view->page()->item();
+            boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+            try {tree_index = new TreeModel::ModelIndex([&]() {return _tree_screen->tree_view()->source_model();}, page_item);} catch(std::exception &e) {throw e;}
 
-            if(page_item != target)page_item = _tree_screen->tree_view()->view_merge_to_left(TreeModel::ModelIndex([&]() {return _tree_screen->tree_view()->source_model();}, page_item), target);
+            if(page_item != target)page_item = _tree_screen->tree_view()->view_merge_to_left(tree_index, target);
 
             //            if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
@@ -1285,12 +1315,21 @@ namespace browser {
            && event->pos().y() < (tabBar()->y() + tabBar()->height())
           ) {
             auto tree_view = _tree_screen->tree_view();
-            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
-            _tree_screen->tree_view()->item_bind(
-                tree_view->current_item()
-                , QUrl(Browser::_defaulthome)
-                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
-            )->activate();
+
+            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+
+            try {
+                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            } catch(std::exception &e) {}
+
+            if(modelindex) {
+                _tree_screen->tree_view()->item_bind(
+                    tree_view->current_item()
+                    , QUrl(Browser::_defaulthome)
+                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
+                )->activate();
+            }
+
             return;
         }
 
@@ -1327,14 +1366,21 @@ namespace browser {
         ) {
             QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
             auto tree_view = _tree_screen->tree_view();
-            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
 
-            if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
-                _tree_screen->tree_view()->item_bind(
-                    tree_view->current_item()
-                    , url
-                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
-                )->activate();
+            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+
+            try {
+                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            } catch(std::exception &e) {}
+
+            if(modelindex) {
+                if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
+                    _tree_screen->tree_view()->item_bind(
+                        tree_view->current_item()
+                        , url
+                        , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
+                    )->activate();
+                }
             }
         }
     }
@@ -1357,30 +1403,39 @@ namespace browser {
                 //                // record.setNaturalFieldSource("url", url.toString());
                 //                webView->page()->load(record);    //webView->load(record); //loadUrl(url);
                 //                webView->setFocus();
+                auto tree_view = _tree_screen->tree_view();
 
-                //                auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page());
-                auto it = _tree_screen->tree_view()->item_register(_url, std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                auto r = // _record_controller
-                    webView->page()->item_bind(it);
-                //                        _url
-                //                        , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
 
+                try {
+                    modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+                } catch(std::exception &e) {}
 
-
-                // _url
-                //                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
-                //                                 std::string("")
-                //                                 , &WebPage::ActiveRecordBinder::binder
-                //                                 , ar
-                //                             )
-                //                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<TreeItem>>> (
-                //                                 std::string("")
-                //                                 , &WebPage::ActiveRecordBinder::activator
-                //                                 , ar
-                //                             )
+                if(modelindex) {
+                    //                auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView->page());
+                    auto it = tree_view->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
+                    auto r = // _record_controller
+                        webView->page()->item_bind(modelindex);
+                    //                        _url
+                    //                        , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 
 
-                r->activate();
+
+                    // _url
+                    //                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
+                    //                                 std::string("")
+                    //                                 , &WebPage::ActiveRecordBinder::binder
+                    //                                 , ar
+                    //                             )
+                    //                             , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, WebView *, boost::intrusive_ptr<TreeItem>>> (
+                    //                                 std::string("")
+                    //                                 , &WebPage::ActiveRecordBinder::activator
+                    //                                 , ar
+                    //                             )
+
+
+                    r->activate();
+                }
             }
         }
     }
@@ -1416,28 +1471,19 @@ namespace browser {
         stream << qint32(TabWidgetMagic);
         stream << qint32(version);
 
-        QStringList tabs;
+        QStringList tabs_url;
 
         for(int i = 0; i < count(); ++i) {
-            if(WebView *tab = qobject_cast<WebView *>(widget(i))) {
-                //Record *record = tab->page()->record();
-                //assert(tab->page()->record()->getNaturalFieldSource("url") != QUrl().toString());
-
-                //if(record) {
-                //                assert(tab->page()->url() != QUrl());
-                //if(record->getNaturalFieldSource("url") != QUrl().toString()) {
-                tabs.append(
-                    //tab->page()->record()->getNaturalFieldSource("url") //
-                    tab->page()->url().toString()
+            if(WebView *view = qobject_cast<WebView *>(widget(i))) {
+                tabs_url.append(
+                    view->page()->url().toString()
                 );
-                //}
-                //}
             } else {
-                tabs.append(QString::null);
+                tabs_url.append(QString::null);
             }
         }
 
-        stream << tabs;
+        stream << tabs_url;
         stream << currentIndex();
         return data;
     }
@@ -1466,39 +1512,47 @@ namespace browser {
         for(int i = 0; i < openTabs.count(); ++i) {
             auto _url = openTabs.at(i);
             //            Record *_record = request_record(_url);
+
             auto tree_view = _tree_screen->tree_view();
-            TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
 
-            if(i != 0) {
-                tree_view->item_bind(
-                    tree_view->current_item()
-                    , _url
-                    , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                )->activate();
-            } else {
-                if(webView(0)->page()->url() != _url) {
-                    //                    webView(0)->load(_record);    //loadUrl(_url);
-                    //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
-                    auto it = tree_view->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
-                    auto r = // _record_controller
-                        webView(0)->page()->item_bind(it);
-                    //                            QUrl(_url)
-                    //                            , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
 
-                    //                            _url
-                    //                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
-                    //                                     ""
-                    //                                     , &WebPage::ActiveRecordBinder::binder
-                    //                                     , ar
-                    //                                 )
-                    //                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> (
-                    //                                     ""
-                    //                                     , &WebPage::ActiveRecordBinder::activator
-                    //                                     , ar
-                    //                                 )
+            try {
+                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+            } catch(std::exception &e) {}
+
+            if(modelindex) {
+                if(i != 0) {
+                    tree_view->item_bind(
+                        tree_view->current_item()
+                        , _url
+                        , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
+                    )->activate();
+                } else {
+                    if(webView(0)->page()->url() != _url) {
+                        //                    webView(0)->load(_record);    //loadUrl(_url);
+                        //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
+                        auto it = tree_view->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3));
+                        auto r = // _record_controller
+                            webView(0)->page()->item_bind(modelindex);
+                        //                            QUrl(_url)
+                        //                            , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+
+                        //                            _url
+                        //                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)>> (
+                        //                                     ""
+                        //                                     , &WebPage::ActiveRecordBinder::binder
+                        //                                     , ar
+                        //                                 )
+                        //                                 , std::make_shared <sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>>> (
+                        //                                     ""
+                        //                                     , &WebPage::ActiveRecordBinder::activator
+                        //                                     , ar
+                        //                                 )
 
 
-                    r->activate();
+                        r->activate();
+                    }
                 }
             }
         }
