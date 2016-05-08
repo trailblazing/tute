@@ -892,7 +892,7 @@ namespace browser {
                 } catch(std::exception &) {}
 
                 if(record_modelindex) {
-                    page  = _browser->item_bind(record_modelindex)->binder()->page();
+                    page  = _browser->item_bind(record_modelindex)->activate()->page();
                 }
 
             } else
@@ -904,28 +904,20 @@ namespace browser {
 
                 {
                     //                // should I think about always open new window in new tab
-
                     //                // _openinnewtab = false;  // true
-
                     //                QUrl current = url();
                     //                QUrl requestedurl = requestedUrl(); //equal to current page url
-
 
                     WebView *view = _entrance->find([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == url.toString();}); // Browser::_defaulthome
 
                     auto tree_view = _tree_screen->tree_view();
 
                     if(view) {
+                        view->page()->activate();
+                        auto page = view->page();
+                        assert(tree_view->source_model()->index(page->binder()->item()).isValid());
+                        assert(page->binder() && page->binder()->integrity_external(page->binder()->item(), page));
 
-                        auto page_found = view->page();
-                        assert(tree_view->source_model()->index(page_found->binder()->item()).isValid());
-                        assert(page_found->binder() && page_found->binder()->integrity_external(page_found->binder()->item(), page_found));
-
-                        //                        //                    auto it = tree_view->item_register(url, std::bind(&KnowView::view_paste_child, tree_view, TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, this->binder()->item()), std::placeholders::_2, std::placeholders::_3)); // QUrl(Browser::_defaulthome)
-                        //                        auto _view = page_found->activate();  // view->page()->item_bind(it)->activate();
-                        //                        assert(_view == view);
-
-                        page = page_found;  // view->page();
                     } else {
 
                         // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
@@ -934,7 +926,7 @@ namespace browser {
                         page = tree_view->item_bind(this->_binder->item(), url
                                                     , std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex // std::placeholders::_1
                                                                 , std::placeholders::_2, std::placeholders::_3)
-                                                   )->binder()->page();
+                                                   )->activate()->page();
                     }
                 }
 

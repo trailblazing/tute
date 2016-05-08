@@ -45,8 +45,7 @@ public:
     virtual ~RecordView();
 
     //    void record_controller(RecordController *_record_controller);
-
-    void init(void);
+    //    void init(void);
 
     void restore_header_state(void);
     void restore_column_width(void);
@@ -105,8 +104,8 @@ protected slots:
     // Этот слот нигде не надо прописывать через connect(), так как он
     // является переопределенным, так как его тип virtual protected slot
     virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-
-    void on_click_to_record(const QModelIndex &proxy_index);
+    bool eventFilter(QObject *obj, QEvent *event);
+    void on_click(const QModelIndex &proxy_index);
 
 protected:
 
@@ -118,8 +117,8 @@ protected:
     bool                _enable_move_section;
     QModelIndex         _previous_index;
 
-    void setup_signals(void);
-    void assembly_context_menu(void);
+    //    void setup_signals(void);
+    //    void assembly_context_menu(void);
 
     //    void editField(int pos, QString name, QString author, QString url, QString tags);
     //    void deleteRecords(void);

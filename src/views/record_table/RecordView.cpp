@@ -40,6 +40,155 @@ RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_c
     , _record_controller(_record_controller)
     , _layout(new QVBoxLayout(this))
 {
+
+
+
+    // Пришлось ввести метод init, так как инициализация невозможна без
+    // созданных в parent QAction, а создать в parent QAction можно только
+    // при наличии ссылки на данный объект
+    // Причина в том, что одни и те же QAction используются в двух местах -
+    // в RecordTableScreen и здесь в контекстном меню
+    auto init = [&](void)->void { //  RecordView::
+
+        auto setup_signals = [&](void)->void { //  RecordView::
+            // Сигнал чтобы показать контекстное меню по правому клику на списке записей
+            connect(this, &RecordView::customContextMenuRequested, this, &RecordView::on_custom_context_menu_requested);
+
+            // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
+            connect(this, &RecordView::tap_and_hold_gesture_finished, this, &RecordView::on_custom_context_menu_requested);
+
+            // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
+            // Signal to open for editing the parameters of the recording double click
+            connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
+
+            //    if(appconfig.interface_mode() == "desktop")
+            //        connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
+
+            // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
+            // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
+            //    if(appconfig.getInterfaceMode() == "mobile")
+            connect(this, &RecordView::clicked, this, &RecordView::on_click);
+
+            //    RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
+
+            // Сигналы для обновления панели инструментов при изменении в selectionModel()
+            connect(this->selectionModel(), &QItemSelectionModel::currentChanged, [&](const QModelIndex & current, const QModelIndex & previous)
+            {
+                (void)current;
+
+                if(previous.isValid())_previous_index = previous;
+
+                _record_screen->tools_update();
+            });
+            connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection & selected, const QItemSelection & deselected)
+            {
+                (void)selected;
+                (void)deselected;
+                _record_screen->tools_update();
+            });
+
+            // Сигналы для обновления панели инструментов
+            connect(this, &RecordView::activated, _record_screen, &RecordScreen::tools_update);
+            connect(this, &RecordView::clicked, _record_screen, &RecordScreen::tools_update);
+            connect(this, &RecordView::doubleClicked, _record_screen, &RecordScreen::tools_update);
+            connect(this, &RecordView::entered, _record_screen, &RecordScreen::tools_update);
+            connect(this, &RecordView::pressed, _record_screen, &RecordScreen::tools_update);
+            connect(QApplication::clipboard(), &QClipboard::dataChanged, _record_screen, &RecordScreen::tools_update);
+
+            connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &RecordView::on_section_moved);
+            connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &RecordView::on_section_resized);
+        };
+
+
+        auto assembly_context_menu = [&](void)->void //  RecordView::
+        {
+            //    // Конструирование меню
+            //    _context_menu = new QMenu(this);
+
+            //    RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
+
+            _context_menu->addAction(_record_screen->_pin);
+            _context_menu->addAction(_record_screen->_addnew_to_end);
+            _context_menu->addAction(_record_screen->_edit_field);
+            _context_menu->addAction(_record_screen->_close);
+
+
+            _context_menu->addSeparator();
+
+            _context_menu->addAction(_record_screen->_addnew_before);
+            _context_menu->addAction(_record_screen->_addnew_after);
+            _context_menu->addAction(_record_screen->_action_move_up);
+            _context_menu->addAction(_record_screen->_action_move_dn);
+            _context_menu->addAction(_record_screen->_action_syncro);
+
+            _context_menu->addSeparator();
+
+            _context_menu->addAction(_record_screen->_cut);
+            _context_menu->addAction(_record_screen->_copy);
+            _context_menu->addAction(_record_screen->_paste);
+            _context_menu->addAction(_record_screen->_delete);
+
+            _context_menu->addSeparator();
+
+            _context_menu->addAction(_record_screen->_sort);
+            _context_menu->addAction(_record_screen->_print);
+            _context_menu->addAction(_record_screen->_settings);
+        };
+
+        qDebug() << "RecordTableView::init()";
+        this->viewport()->installEventFilter(this);
+
+        setup_signals();
+
+        setSelectionMode(QAbstractItemView::ExtendedSelection); // // It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop   // SingleSelection  // MultiSelection //ExtendedSelection
+
+
+        setSelectionBehavior(QAbstractItemView::SelectRows);
+
+        restore_header_state();
+
+        // Растягивание последней секции до размеров виджета
+        horizontalHeader()->setStretchLastSection(true);
+
+        // Заголовки не должны выглядеть нажатыми
+        horizontalHeader()->setHighlightSections(false);
+
+        // Горизонтальные заголовки делаются перемещяемыми
+#if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
+        horizontalHeader()->setMovable(true);
+#endif
+#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
+        horizontalHeader()->setSectionsMovable(true);
+#endif
+
+        // Установка высоты строки с принудительной стилизацией (если это необходимо),
+        // так как стилизация через QSS для элементов QTableView полноценно не работает
+        // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
+        // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
+        verticalHeader()->setDefaultSectionSize(verticalHeader()->minimumSectionSize());
+        int height = appconfig.ugly_qss_replace_height_for_table_view();
+
+        if(height != 0)
+            verticalHeader()->setDefaultSectionSize(height);
+
+        if(appconfig.interface_mode() == "mobile")
+            verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
+
+        setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //ScrollBarAlwaysOff
+
+        restore_column_width();
+
+        // Разрешается перемещать секции заголовка таблицы
+        _enable_move_section = true;
+
+        // Нужно установить правила показа контекстного самодельного меню
+        // чтобы оно могло вызываться
+        assembly_context_menu();
+        setContextMenuPolicy(Qt::CustomContextMenu);
+
+
+    };
+
     setObjectName(record_view_multi_instance_name);   // screen_name + "_view"
 
     // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
@@ -76,114 +225,8 @@ RecordView::~RecordView()
 //}
 
 
-// Пришлось ввести метод init, так как инициализация невозможна без
-// созданных в parent QAction, а создать в parent QAction можно только
-// при наличии ссылки на данный объект
-// Причина в том, что одни и те же QAction используются в двух местах -
-// в RecordTableScreen и здесь в контекстном меню
-void RecordView::init(void)
-{
-    qDebug() << "RecordTableView::init()";
-
-    setup_signals();
-
-    setSelectionMode(QAbstractItemView::ExtendedSelection); // // It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop   // SingleSelection  // MultiSelection //ExtendedSelection
 
 
-    setSelectionBehavior(QAbstractItemView::SelectRows);
-
-    restore_header_state();
-
-    // Растягивание последней секции до размеров виджета
-    horizontalHeader()->setStretchLastSection(true);
-
-    // Заголовки не должны выглядеть нажатыми
-    horizontalHeader()->setHighlightSections(false);
-
-    // Горизонтальные заголовки делаются перемещяемыми
-#if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
-    horizontalHeader()->setMovable(true);
-#endif
-#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
-    horizontalHeader()->setSectionsMovable(true);
-#endif
-
-    // Установка высоты строки с принудительной стилизацией (если это необходимо),
-    // так как стилизация через QSS для элементов QTableView полноценно не работает
-    // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
-    // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
-    verticalHeader()->setDefaultSectionSize(verticalHeader()->minimumSectionSize());
-    int height = appconfig.ugly_qss_replace_height_for_table_view();
-
-    if(height != 0)
-        verticalHeader()->setDefaultSectionSize(height);
-
-    if(appconfig.interface_mode() == "mobile")
-        verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
-
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);   // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //ScrollBarAlwaysOff
-
-    restore_column_width();
-
-    // Разрешается перемещать секции заголовка таблицы
-    _enable_move_section = true;
-
-    // Нужно установить правила показа контекстного самодельного меню
-    // чтобы оно могло вызываться
-    assembly_context_menu();
-    setContextMenuPolicy(Qt::CustomContextMenu);
-
-
-}
-
-
-void RecordView::setup_signals(void)
-{
-    // Сигнал чтобы показать контекстное меню по правому клику на списке записей
-    connect(this, &RecordView::customContextMenuRequested, this, &RecordView::on_custom_context_menu_requested);
-
-    // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
-    connect(this, &RecordView::tap_and_hold_gesture_finished, this, &RecordView::on_custom_context_menu_requested);
-
-    // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
-    // Signal to open for editing the parameters of the recording double click
-    connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
-
-    //    if(appconfig.interface_mode() == "desktop")
-    //        connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
-
-    // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
-    // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
-    //    if(appconfig.getInterfaceMode() == "mobile")
-    connect(this, &RecordView::clicked, this, &RecordView::on_click_to_record);
-
-    //    RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
-
-    // Сигналы для обновления панели инструментов при изменении в selectionModel()
-    connect(this->selectionModel(), &QItemSelectionModel::currentChanged, [&](const QModelIndex & current, const QModelIndex & previous) {
-        (void)current;
-
-        if(previous.isValid())_previous_index = previous;
-
-        _record_screen->tools_update();
-    });
-    connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection & selected, const QItemSelection & deselected) {
-        (void)selected;
-        (void)deselected;
-        _record_screen->tools_update();
-    });
-
-    // Сигналы для обновления панели инструментов
-    connect(this, &RecordView::activated, _record_screen, &RecordScreen::tools_update);
-    connect(this, &RecordView::clicked, _record_screen, &RecordScreen::tools_update);
-    connect(this, &RecordView::doubleClicked, _record_screen, &RecordScreen::tools_update);
-    connect(this, &RecordView::entered, _record_screen, &RecordScreen::tools_update);
-    connect(this, &RecordView::pressed, _record_screen, &RecordScreen::tools_update);
-    connect(QApplication::clipboard(), &QClipboard::dataChanged, _record_screen, &RecordScreen::tools_update);
-
-    connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &RecordView::on_section_moved);
-    connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &RecordView::on_section_resized);
-}
 
 QModelIndex RecordView::previous_index()const {return _previous_index;}
 
@@ -227,10 +270,96 @@ void RecordView::restore_header_state(void)
 //}
 
 
+
 // Слот клика по записи. Принимает индекс Proxy модели
-void RecordView::on_click_to_record(const QModelIndex &proxy_index)
+void RecordView::on_click(const QModelIndex &proxy_index)
 {
-    click_record(IndexProxy(proxy_index));
+    if(proxy_index.isValid() && _previous_index != proxy_index) {
+        _previous_index = proxy_index;
+        click_record(IndexProxy(proxy_index));
+    }
+}
+
+// Слот, срабатывающий при нажатии кнопки редактирования записи
+void RecordView::on_doubleclick(const QModelIndex &index)
+{
+    qDebug() << "In RecordTableView::editFieldContext";
+
+    // Получение индекса выделенного элемента
+    QModelIndexList selectItems = selectionModel()->selectedIndexes();
+
+    if(selectItems.size() > 0) {
+        //QModelIndex index = selectItems.at(0);
+
+        //globalparameters.getMetaEditor()->switch_pin();
+
+        //controller->open_website(index);    //controller->editFieldContext(index);
+
+        // Нужно перерисовать окно редактирования чтобы обновились инфополя
+        // делается это путем "повторного" выбора текущего пункта
+        click_record(IndexProxy(index));  // Раньше было select()
+        globalparameters.mainwindow()->editor_switch();
+
+    }
+}
+
+
+// Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
+void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex)
+{
+    Q_UNUSED(logicalIndex);
+
+    if(!_enable_move_section)
+        return;
+
+    // Если была включена сортировка
+    /*
+    if( this->isSortingEnabled() )
+      if( horizontalHeader()->sortIndicatorSection())
+        horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder); // Треугольничек сортировки переставляется на нужный столбец
+    */
+
+    // Запоминается ширина столбцов
+    int oldVisualWidth = horizontalHeader()->sectionSize(oldVisualIndex);
+    int newVisualWidth = horizontalHeader()->sectionSize(newVisualIndex);
+
+    // В настройках последовательность полей меняется
+    QStringList showFields = appconfig.record_table_show_fields();
+    showFields.move(oldVisualIndex, newVisualIndex);
+    appconfig.record_table_show_fields(showFields);
+
+    qDebug() << "New show field sequence" << showFields;
+
+    _enable_move_section = false;
+
+    // Перемещение в данном представлении сбрасывается, так как модель берет последовательность полей из настроек
+    // После это кода logicalIindex=visualIndex для всех полей
+    for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx++) {
+        int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
+
+        if(visualIdx != logicalIdx)
+            horizontalHeader()->moveSection(visualIdx, logicalIdx); // Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
+    }
+
+    _enable_move_section = true;
+
+    horizontalHeader()->reset();
+
+    // Устанавливается ширина столбцов после перемещения
+    horizontalHeader()->resizeSection(oldVisualIndex, newVisualWidth);
+    horizontalHeader()->resizeSection(newVisualIndex, oldVisualWidth);
+
+    save_column_width();
+}
+
+
+void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize)
+{
+    Q_UNUSED(logicalIndex);
+    Q_UNUSED(oldSize);
+    Q_UNUSED(newSize);
+
+    save_column_width();
 }
 
 
@@ -241,42 +370,6 @@ void RecordView::click_record(const IndexProxy &proxy_index)
     _record_controller->item_click(proxy_index);
 
     globalparameters.window_switcher()->switchFromRecordtableToRecord();
-}
-
-
-void RecordView::assembly_context_menu(void)
-{
-    //    // Конструирование меню
-    //    _context_menu = new QMenu(this);
-
-    //    RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
-
-    _context_menu->addAction(_record_screen->_pin);
-    _context_menu->addAction(_record_screen->_addnew_to_end);
-    _context_menu->addAction(_record_screen->_edit_field);
-    _context_menu->addAction(_record_screen->_close);
-
-
-    _context_menu->addSeparator();
-
-    _context_menu->addAction(_record_screen->_addnew_before);
-    _context_menu->addAction(_record_screen->_addnew_after);
-    _context_menu->addAction(_record_screen->_action_move_up);
-    _context_menu->addAction(_record_screen->_action_move_dn);
-    _context_menu->addAction(_record_screen->_action_syncro);
-
-    _context_menu->addSeparator();
-
-    _context_menu->addAction(_record_screen->_cut);
-    _context_menu->addAction(_record_screen->_copy);
-    _context_menu->addAction(_record_screen->_paste);
-    _context_menu->addAction(_record_screen->_delete);
-
-    _context_menu->addSeparator();
-
-    _context_menu->addAction(_record_screen->_sort);
-    _context_menu->addAction(_record_screen->_print);
-    _context_menu->addAction(_record_screen->_settings);
 }
 
 
@@ -308,28 +401,9 @@ void RecordView::on_custom_context_menu_requested(const QPoint &pos)
 }
 
 
-// Слот, срабатывающий при нажатии кнопки редактирования записи
-void RecordView::on_doubleclick(const QModelIndex &index)
-{
-    qDebug() << "In RecordTableView::editFieldContext";
 
-    // Получение индекса выделенного элемента
-    QModelIndexList selectItems = selectionModel()->selectedIndexes();
 
-    if(selectItems.size() > 0) {
-        //QModelIndex index = selectItems.at(0);
 
-        //globalparameters.getMetaEditor()->switch_pin();
-
-        //controller->open_website(index);    //controller->editFieldContext(index);
-
-        // Нужно перерисовать окно редактирования чтобы обновились инфополя
-        // делается это путем "повторного" выбора текущего пункта
-        click_record(IndexProxy(index));  // Раньше было select()
-        globalparameters.mainwindow()->editor_switch();
-
-    }
-}
 
 
 // Слот, срабатывающий при нажатии кнопки редактирования записи
@@ -541,7 +615,16 @@ void RecordView::cursor_to_index(PosProxy pos_proxy_, const int mode)
 
 //}
 
+bool RecordView::eventFilter(QObject *obj, QEvent *event)
+{
 
+    if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton) {
+        on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
+    }
+
+    return QTableView::eventFilter(obj, event);
+
+}
 
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
 bool RecordView::event(QEvent *event)
@@ -549,6 +632,8 @@ bool RecordView::event(QEvent *event)
     if(event->type() == QEvent::Gesture) {
         qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
         return gesture_event(static_cast<QGestureEvent *>(event));
+    } else if(event->type() == QEvent::MouseButtonDblClick) {
+        on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
     }
 
     return QTableView::event(event);
@@ -609,7 +694,7 @@ void RecordView::mousePressEvent(QMouseEvent *event)
             selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
             assert(next_index == currentIndex());
             _record_controller->select(PosProxy(next_index.row()));   //
-            emit clicked(next_index);
+            //            emit clicked(next_index);
 
 
 
@@ -759,64 +844,6 @@ void RecordView::selectionChanged(const QItemSelection &selected,
     QTableView::selectionChanged(selected, deselected);
 }
 
-
-// Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
-void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex)
-{
-    Q_UNUSED(logicalIndex);
-
-    if(!_enable_move_section)
-        return;
-
-    // Если была включена сортировка
-    /*
-    if( this->isSortingEnabled() )
-      if( horizontalHeader()->sortIndicatorSection())
-        horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder); // Треугольничек сортировки переставляется на нужный столбец
-    */
-
-    // Запоминается ширина столбцов
-    int oldVisualWidth = horizontalHeader()->sectionSize(oldVisualIndex);
-    int newVisualWidth = horizontalHeader()->sectionSize(newVisualIndex);
-
-    // В настройках последовательность полей меняется
-    QStringList showFields = appconfig.record_table_show_fields();
-    showFields.move(oldVisualIndex, newVisualIndex);
-    appconfig.record_table_show_fields(showFields);
-
-    qDebug() << "New show field sequence" << showFields;
-
-    _enable_move_section = false;
-
-    // Перемещение в данном представлении сбрасывается, так как модель берет последовательность полей из настроек
-    // После это кода logicalIindex=visualIndex для всех полей
-    for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx++) {
-        int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
-
-        if(visualIdx != logicalIdx)
-            horizontalHeader()->moveSection(visualIdx, logicalIdx); // Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
-    }
-
-    _enable_move_section = true;
-
-    horizontalHeader()->reset();
-
-    // Устанавливается ширина столбцов после перемещения
-    horizontalHeader()->resizeSection(oldVisualIndex, newVisualWidth);
-    horizontalHeader()->resizeSection(newVisualIndex, oldVisualWidth);
-
-    save_column_width();
-}
-
-
-void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize)
-{
-    Q_UNUSED(logicalIndex);
-    Q_UNUSED(oldSize);
-    Q_UNUSED(newSize);
-
-    save_column_width();
-}
 
 
 // Сохранение ширины колонок в конфигфайл
