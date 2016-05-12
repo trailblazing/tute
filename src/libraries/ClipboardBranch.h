@@ -10,10 +10,10 @@
 #include <QList>
 
 #include "libraries/ClipboardRecords.h"
-#include "models/tree/TreeModel.h"
+//#include "models/tree/TreeModel.h"
 
 class TreeModel;
-
+struct TreeIndex;
 
 // Определяется структура данных
 // которая будет передаваться через буфер обмена
@@ -54,7 +54,7 @@ public:
     void init(void);
 
     void branch_push(const QString &_clip_parent_id, boost::intrusive_ptr<TreeItem> it);
-    void branch_push(TreeModel::ModelIndex _modelindex, QList<boost::intrusive_ptr<TreeItem>> current_items);
+    void branch_push(TreeIndex _modelindex, QList<boost::intrusive_ptr<TreeItem>> current_items);
 
     void print(void) const;
 

@@ -52,8 +52,8 @@
 #include <QLineEdit>
 
 
-#include "models/tree/TreeItem.h"
-#include "models/tree/TreeModel.h"
+//#include "models/tree/TreeItem.h"
+//#include "models/tree/TreeModel.h"
 #include "views/tree/TreeScreen.h"
 
 QT_BEGIN_NAMESPACE

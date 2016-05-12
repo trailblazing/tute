@@ -15,10 +15,10 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 #include "utility/delegate.h"
-#include "models/tree/TreeItem.h"
-#include "views/tree/KnowView.h"
+//#include "models/tree/TreeItem.h"
+//#include "views/tree/KnowView.h"
 //#include "views/main_window/MainWindow.h"
-#include "models/tree/TreeModel.h"
+//#include "models/tree/TreeModel.h"
 //#include "models/tree/KnowModel.h"
 //#include "libraries/GlobalParameters.h"
 
@@ -32,8 +32,8 @@ extern const char *global_root_id;
 
 extern const char *action_set_as_session_root;
 extern const char *action_find_in_base;
-extern const char *action_return_to_root;
-extern const char *action_view_up_one_level;
+extern const char *action_cursor_follow_root;
+extern const char *action_cursor_follow_up;
 extern const char *action_expand_all_subbranch;
 extern const char *action_collapse_all_subbranch;
 extern const char *action_move_up_branch;
@@ -67,6 +67,9 @@ class TreeController;
 class RecordController;
 class TreeScreen;
 class InfoFieldsEditor;
+struct TreeIndex;
+struct Linker;
+
 
 namespace  browser {
     class ToolbarSearch;
@@ -91,8 +94,9 @@ class TreeScreen
     Q_OBJECT
 
 public:
-    typedef std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>, boost::intrusive_ptr<const TreeItem::Linker>)> substitute_condition;
-    typedef std::function<boost::intrusive_ptr<TreeItem> (TreeModel::ModelIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
+    typedef std::function<bool(boost::intrusive_ptr<const Linker>)> substitute_condition;
+    typedef std::function<bool(boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;
+    typedef std::function<boost::intrusive_ptr<TreeItem> (TreeIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
 
     TreeScreen(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *_parent = 0);
     virtual ~TreeScreen();
@@ -133,7 +137,7 @@ public:
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, boost::intrusive_ptr<TreeItem> it, bool insert_sibling_branch, KnowModel *_current_model);
 
 
-    //    boost::intrusive_ptr<TreeItem> view_paste_sibling(TreeModel::ModelIndex _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
+    //    boost::intrusive_ptr<TreeItem> view_paste_sibling(TreeIndex _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 
 
 
@@ -147,7 +151,7 @@ public:
     void enable_up_action();
     //    TreeModelKnow *shadow_branch() {return _shadow_branch;}
 
-    //    boost::intrusive_ptr<ItemsFlat::Linker> view_cut(boost::intrusive_ptr<TreeItem> target);
+    //    boost::intrusive_ptr<Linker> view_cut(boost::intrusive_ptr<TreeItem> target);
 
     //    boost::intrusive_ptr<TreeItem> branch_paste(boost::intrusive_ptr<TreeItem> item, KnowModel *_current_know_branch);
 
@@ -167,7 +171,7 @@ public:
 
 
 public slots:
-    //    void view_paste_from_search(TreeModel::ModelIndex _modelindex, boost::intrusive_ptr<TreeItem> _result_item, std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition); // , std::shared_ptr<RecordTable> resultset_data
+    //    void view_paste_from_search(TreeIndex _modelindex, boost::intrusive_ptr<TreeItem> _result_item, std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition); // , std::shared_ptr<RecordTable> resultset_data
 
 
 
@@ -198,7 +202,7 @@ private slots:
 
 
 
-    //    QList<boost::intrusive_ptr<ItemsFlat::linker> > view_remove(const QModelIndexList &index_list, const QString &mode = "delete", const bool _cut_branch_confirm = false);
+    //    QList<boost::intrusive_ptr<Linker> > view_remove(const QModelIndexList &index_list, const QString &mode = "delete", const bool _cut_branch_confirm = false);
 
     //    boost::intrusive_ptr<TreeItem> model_delete_one(std::function<KnowModel *()> _current_model, QModelIndex _index_delete);
 

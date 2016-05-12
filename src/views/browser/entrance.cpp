@@ -368,12 +368,12 @@ namespace browser {
 
                     if(homeurl.isValid() && homeurl != page->url()) {
                         _item->field("url", home);
-                        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+                        //                        boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
 
-                        try {
-                            tree_index = new TreeModel::ModelIndex([&] {return globalparameters.tree_screen()->tree_view()->source_model();}, _item->parent(), _item->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == _item && _item->linker() == il && _item->parent() == il->host_parent();}));
-                        } catch(std::exception &e) {throw e;}
-                        page->item_bind(tree_index)->activate(); // page->load(record, true);
+                        //                        try {
+                        //                            record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
+                        //                        } catch(std::exception &e) {throw e;}
+                        page->item_bind(_item)->activate(); // page->load(record, true);
                     }
                 }
             }
@@ -1216,7 +1216,7 @@ namespace browser {
     //        WebView *_view = nullptr;
 
     //        //        auto tree_view = _tree_screen->tree_view();
-    //        //        TreeModel::ModelIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
+    //        //        TreeIndex modelindex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == tree_view->current_item()->linker() && il->host() == tree_view->current_item() && tree_view->current_item()->parent() == il->host_parent();}));
 
     //        if(_it) {   // && !_it->record_binder()
 

@@ -3,6 +3,7 @@
 #include "RecordModel.h"
 #include "ItemsFlat.h"
 
+#include "models/tree/binder.hxx"
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
 #include "models/app_config/AppConfig.h"
@@ -11,6 +12,7 @@
 #include "libraries/GlobalParameters.h"
 #include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
+#include "models/record_table/recordindex.hxx"
 #include "views/record_table/RecordScreen.h"
 #include "controllers/record_table/RecordController.h"
 #include "models/tree/KnowModel.h"
@@ -597,7 +599,7 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
     PosSource selected_position(-1);
 
     if(_item) {
-        PosSource source_insert_pos(((QModelIndex)source_pos_index).row());  //    Q_UNUSED(pos_index) // to be used
+        PosSource source_insert_pos = _record_controller->index<PosSource>(source_pos_index); //    Q_UNUSED(pos_index) // to be used
         Q_UNUSED(mode)      // to be used
 
         if(-1 == (int)source_insert_pos)source_insert_pos = 0;
@@ -613,14 +615,15 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
 
             // accomplished by TabWidget::addTab in TabWidget::newTab?
             selected_position = PosSource(_tabmanager->indexOf(view)); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+            assert(selected_position != -1);
         } else {
 
 
             //    if(selected_position == -1) {
-            boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);
+            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
             try {
-                record_modelindex = new RecordModel::ModelIndex([&] {return this;}, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->item() : nullptr, _item);
+                record_modelindex = new RecordIndex([&] {return this;}, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->item() : nullptr, _item);
             } catch(std::exception &) {}
 
             if(record_modelindex)
@@ -630,6 +633,7 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
 
             //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
             selected_position = PosSource(_tabmanager->indexOf(view));
+            assert(selected_position != -1);
         }
 
 
@@ -679,9 +683,9 @@ QModelIndex RecordModel::index(int row, int column, const QModelIndex &parent) c
     return QAbstractTableModel::index(row, column, parent);
 }
 
-QModelIndex RecordModel::index(boost::intrusive_ptr<TreeItem> it)const
+IndexSource RecordModel::index(boost::intrusive_ptr<TreeItem> it)const
 {
-    QModelIndex result;
+    IndexSource result;
 
     for(int i = 0; i < count(); i++) {
         if(item(PosSource(i)) == it) {
@@ -863,7 +867,10 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(PosSource index)
 //}
 
 
-
+boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it)const
+{
+    return _tabmanager->sibling(it);
+}
 
 
 boost::intrusive_ptr<TreeItem> RecordModel::current_item()const
@@ -947,26 +954,6 @@ int RecordModel::move_dn(const PosSource pos)
     return new_pos;
 }
 
-
-RecordModel::ModelIndex::ModelIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem> target_item)
-    : _current_model(current_model), _sibling_item(sibling_item), _target_item(target_item)
-{
-    try {
-        if(!_sibling_item ? false : !_sibling_item->binder() ?  false : !_current_model()->index(_sibling_item).isValid()) {throw std::exception();} // assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
-
-        if(_sibling_item == _target_item) throw std::exception();   // assert(_sibling_item != _target_item);
-    } catch(std::exception &e) {throw e;}
-}
-
-std::function<RecordModel *()> RecordModel::ModelIndex::current_model() const {return _current_model;}
-
-QModelIndex RecordModel::ModelIndex::sibling_index()const {return _current_model()->index(_sibling_item);}
-
-// QModelIndex RecordModel::ModelIndex::current_index()const{}
-
-boost::intrusive_ptr<TreeItem> RecordModel::ModelIndex::sibling() const {return _sibling_item;}
-
-boost::intrusive_ptr<TreeItem> RecordModel::ModelIndex::target() const {return _target_item;}
 
 
 

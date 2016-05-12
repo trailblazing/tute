@@ -29,7 +29,7 @@ class QStackedWidget;
 
 class RecordController;
 class TreeScreen;
-
+struct Linker;
 
 namespace browser {
     class ChaseWidget;
@@ -129,7 +129,7 @@ private:
 
     boost::intrusive_ptr<TreeItem> find_start(void);
 
-    QList<boost::intrusive_ptr<ItemsFlat::Linker>> &find_recursive(QList<boost::intrusive_ptr<ItemsFlat::Linker>> &_result_list, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> curritem);
+    QList<boost::intrusive_ptr<Linker>> &find_recursive(QList<boost::intrusive_ptr<Linker>> &_result_list, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> curritem);
 
     bool find_in_text_process(const QString &text);
 

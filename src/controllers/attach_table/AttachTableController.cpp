@@ -18,14 +18,14 @@
 #include "views/tree/TreeScreen.h"
 #include "views/dialog/ReduceMessageBox.h"
 #include "libraries/FlatControl.h"
+#include "views/tree/KnowView.h"
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
 
 AttachTableController::AttachTableController(QObject *parent)
-    :
-    QObject(parent)
+    : QObject(parent)
     , _view(new AttachTableView(qobject_cast<QWidget * >(parent)))
     , _model(new AttachTableModel(this))
 {

@@ -11,7 +11,10 @@
 #include "ClipboardBranch.h"
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
+#include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
+#include "models/record_table/RecordModel.h"
+
 
 extern GlobalParameters globalparameters;
 const char *clipboard_items_root = "clipboard_items_root";
@@ -224,7 +227,7 @@ QVariant ClipboardBranch::retrieveData(const QString &format, QVariant::Type pre
     return 0;
 }
 
-void ClipboardBranch::branch_push(TreeModel::ModelIndex _modelindex
+void ClipboardBranch::branch_push(TreeIndex _modelindex
                                   // , const QString &_clip_blank_header_id
                                   , QList<boost::intrusive_ptr<TreeItem>> current_items)
 {

@@ -12,7 +12,7 @@
 
 #include "main.h"
 
-
+#include "models/record_table/linker.hxx"
 #include "models/record_table/ItemsFlat.h"
 #include "models/record_table/RecordModel.h"
 #include "controllers/record_table/RecordController.h"
@@ -20,6 +20,7 @@
 #include "models/app_config/AppConfig.h"
 #include "views/main_window/MainWindow.h"
 #include "models/tree/TreeItem.h"
+#include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
 #include "KnowView.h"
 #include "libraries/ClipboardBranch.h"
@@ -45,8 +46,8 @@ extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
 const char *action_set_as_session_root      = "set_as_session_root";
 const char *action_find_in_base             = "find_in_base";
-const char *action_return_to_root           = "return_to_root";
-const char *action_view_up_one_level        = "view_up_one_level";
+const char *action_cursor_follow_root       = "cursor_follow_root";
+const char *action_cursor_follow_up         = "cursor_follow_up";
 const char *action_expand_all_subbranch     = "expand_all_subbranch";
 const char *action_collapse_all_subbranch   = "collapse_all_subbranch";
 const char *action_move_up_branch           = "move_up_branch";
@@ -208,23 +209,22 @@ void TreeScreen::setup_actions(void)
 
 
 
-    ac = new QAction(tr("Return to root"), this);
-    ac->setStatusTip(tr("Return to root"));
+    ac = new QAction(tr("Return to absolute root"), this);
+    ac->setStatusTip(tr("Return to absolute root"));
     ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &KnowView::cursor_follow_up_to_absolute_root);
-    _actionlist[action_return_to_root] = ac;
+    connect(ac, &QAction::triggered, _tree_view, &KnowView::cursor_follow_root);
+    _actionlist[action_cursor_follow_root] = ac;
 
 
-    ac = new QAction(tr("View follow up one level"), this);
-    ac->setStatusTip(tr("View follow up one level when reach the root"));
+    ac = new QAction(tr("View follow up"), this);
+    ac->setStatusTip(tr("View follow up one level when current item reach the current root"));
     //    ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
 
-    ac->setIcon(QIcon(":/resource/pic/mobile_up.svg")        // ":/resource/pic/streamline_home.svg"
-                //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
-               );
+    ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));        // ":/resource/pic/streamline_home.svg"
+    //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
 
     connect(ac, &QAction::triggered, [&]()->void{_tree_view->cursor_follow_up();});
-    _actionlist[action_view_up_one_level] = ac;
+    _actionlist[action_cursor_follow_up] = ac;
 
 
     // Разворачивание всех подветок
@@ -265,11 +265,11 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Insert a new sub item into selected"));
     ac->setIcon(QIcon(":/resource/pic/add_subbranch.svg"));
     connect(ac, &QAction::triggered, [&]()->void {
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try{tree_index = new TreeModel::ModelIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_item());} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try{tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_item());} catch(std::exception &e) {throw e;}
         _tree_view->view_insert_new(tree_index
         , std::bind(&KnowView::view_add_new, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-        , [&](boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
+        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
             return _modelindex->current_model()()->model_new_child(_modelindex, _id, _name);
         });
     });
@@ -281,12 +281,12 @@ void TreeScreen::setup_actions(void)
     ac->setIcon(QIcon(":/resource/pic/add_branch.svg"));
     connect(ac, &QAction::triggered
     , [&]() {
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try {tree_index = new TreeModel::ModelIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_item());} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try {tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_item());} catch(std::exception &e) {throw e;}
 
         _tree_view->view_insert_new(tree_index
                                     , std::bind(&KnowView::view_add_new, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-        , [&](boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
+        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
             auto _current_model = _modelindex->current_model();
             auto _current_index = _modelindex->parent_index();
             boost::intrusive_ptr<TreeItem> result;
@@ -296,7 +296,7 @@ void TreeScreen::setup_actions(void)
 
             if(parent_parent)
             {
-                _alternative_items = parent_parent->items_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host()->name() == _name && il->host()->id() == _id;});
+                _alternative_items = parent_parent->items_direct([&](boost::intrusive_ptr<const Linker> il) {return il->host()->name() == _name && il->host()->id() == _id;});
             }
             //            auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
 
@@ -309,17 +309,17 @@ void TreeScreen::setup_actions(void)
                 result = it.next();
 
                 while(it.hasNext()) {
-                    boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-                    try {tree_index = new TreeModel::ModelIndex(_current_model, result);} catch(std::exception &e) {throw e;}
+                    boost::intrusive_ptr<TreeIndex> tree_index;
+                    try {tree_index = new TreeIndex(_current_model, result);} catch(std::exception &e) {throw e;}
 
-                    result = _tree_view->view_merge_to_left(tree_index, it.next());
+                    result = _tree_view->view_merge(tree_index, it.next());
                 }
 
 
                 //            children_transfer(_new_item, _current_model);
             } else {
-                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-                try{tree_index = new TreeModel::ModelIndex(_current_model, parent_parent, _current_index.row());} catch(std::exception &e) {throw e;}
+                boost::intrusive_ptr<TreeIndex> tree_index;
+                try{tree_index = new TreeIndex(_current_model, parent_parent, _current_index.row());} catch(std::exception &e) {throw e;}
                 // Вставка новых данных в модель дерева записей
                 result = _current_model()->model_new_child(tree_index, _id, _name);
             }
@@ -346,7 +346,7 @@ void TreeScreen::setup_actions(void)
         //        QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
         QModelIndexList _selectitems = KnowView::LocalLizeInitializer(_tree_view)().indexes();  // ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
         // view_remove(_selectitems, "cut");
-        _tree_view->view_delete_permanent([&]() {return _tree_view->source_model();}, [&]() {QList<boost::intrusive_ptr<TreeItem>> r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r;}(), "cut", false);
+        _tree_view->view_delete_permanent([&]() {return _tree_view->source_model();}, [&]() {QList<boost::intrusive_ptr<TreeItem>> r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r;}(), &KnowModel::model_delete_permanent_single, "cut", false);
     }); //, &TreeScreen::del_branch
 
     _actionlist[action_delete_branch] = ac;
@@ -378,7 +378,7 @@ void TreeScreen::setup_actions(void)
         //        auto _index_child = _tree_view->current_index();
         auto _current_item = _tree_view->current_item();
         auto _parent = _current_item->parent();
-        int sibling_order = _parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();});
+        int sibling_order = _parent->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();});
         //        auto _parent_valid = _parent == source_model()->root_item() ?
         //                             source_model()->root_item() == _know_model_board->root_item() ?
         //                             _parent
@@ -395,8 +395,8 @@ void TreeScreen::setup_actions(void)
         //        }
 
         //        assert(_index_parent.isValid());
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try{tree_index = new TreeModel::ModelIndex([&]()->KnowModel* {return _tree_view->source_model();}, _parent, sibling_order);} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try{tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _parent, sibling_order);} catch(std::exception &e) {throw e;}
         _tree_view->view_paste_children_from_clipboard(tree_index);   // std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 
     });            //, paste
@@ -413,8 +413,8 @@ void TreeScreen::setup_actions(void)
     , [&](bool checked)->void {
         Q_UNUSED(checked);
         auto _current_item = _tree_view->current_item();
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try{tree_index = new TreeModel::ModelIndex([&]()->KnowModel* {return _tree_view->source_model();}, _current_item, 0);} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try{tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _current_item, 0);} catch(std::exception &e) {throw e;}
         _tree_view->view_paste_children_from_clipboard(tree_index);         // std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 
     });            // branch_paste_sub
@@ -565,7 +565,7 @@ void TreeScreen::edit_field(QString pin
     edit_data["tags"] = tags;
 
     // Обновление новых данных в таблице конечных записей
-    auto item = _tree_view->source_model()->item(_tree_view->current_index());
+    auto item = _tree_view->current_item();
 
     for(auto i = edit_data.begin(); i != edit_data.end(); i++) {
         item->field(i.key(), i.value());
@@ -599,8 +599,8 @@ void TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
     //    _recordtree_searchlayout = new QHBoxLayout();
     //    _recordtree_searchlayout->addWidget(_recordtree_search);
 
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_return_to_root]);
-    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_view_up_one_level]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_cursor_follow_root]);
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_cursor_follow_up]);
 
     insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_insert_branch]);
     insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_insert_sub_branch]);
@@ -768,8 +768,8 @@ void TreeScreen::enable_up_action() //        bool enable
     if(enable) {
         //        _actionlist[action_paste_branch]->setEnabled(true);
         //        _actionlist[action_paste_sub_branch]->setEnabled(true);
-        _actionlist[action_view_up_one_level]->setEnabled(true);
-        _actionlist[action_return_to_root]->setEnabled(true);
+        _actionlist[action_cursor_follow_up]->setEnabled(true);
+        _actionlist[action_cursor_follow_root]->setEnabled(true);
     } else
         //        if(
         //        static_cast<TreeKnowModel *>(_tree_view->model())->root_item()->id() == _know_branch->root_item()->id() // know_root()->root_item() == _know_branch->root_item()
@@ -777,8 +777,8 @@ void TreeScreen::enable_up_action() //        bool enable
     {
         //        _actionlist[action_paste_branch]->setEnabled(false);
         //        _actionlist[action_paste_sub_branch]->setEnabled(false);
-        _actionlist[action_view_up_one_level]->setEnabled(false);
-        _actionlist[action_return_to_root]->setEnabled(false);
+        _actionlist[action_cursor_follow_up]->setEnabled(false);
+        _actionlist[action_cursor_follow_root]->setEnabled(false);
     }
 }
 
@@ -792,8 +792,8 @@ void TreeScreen::assembly_context_menu()
     _context_menu->addAction(_actionlist[action_editor_switch]);
 
 
-    _context_menu->addAction(_actionlist[action_return_to_root]);
-    _context_menu->addAction(_actionlist[action_view_up_one_level]);
+    _context_menu->addAction(_actionlist[action_cursor_follow_root]);
+    _context_menu->addAction(_actionlist[action_cursor_follow_up]);
 
     _context_menu->addAction(_actionlist[action_insert_branch]);
     _context_menu->addAction(_actionlist[action_insert_sub_branch]);
@@ -946,8 +946,8 @@ void TreeScreen::item_move_up_dn_branch(int(TreeItem::*_move)()) // int directio
         // Установка курсора на позицию, куда была перенесена ветка
         if(index_after_move.isValid() && index_after_move != _index) {
             auto it = _tree_view->source_model()->item(index_after_move);
-            boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-            try {tree_index = new TreeModel::ModelIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+            boost::intrusive_ptr<TreeIndex> tree_index;
+            try {tree_index = new TreeIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
             _tree_view->select_as_current(tree_index);
             //            _tree_view->selectionModel()->select(index_after_move, current_tree_selection_mode);    // QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
@@ -1069,7 +1069,7 @@ bool TreeScreen::move_checkenable(void)
 
 
 //void TreeScreen::view_paste_from_search(
-//    TreeModel::ModelIndex _modelindex  // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+//    TreeIndex _modelindex  // std::function<KnowModel *()> _current_model, QModelIndex _current_index
 //    , boost::intrusive_ptr<TreeItem> _result_item
 //    , std::function<bool(boost::intrusive_ptr<TreeItem>)> _substitute_condition
 //)
@@ -1509,7 +1509,7 @@ bool TreeScreen::move_checkenable(void)
 //// кнопки или пункта меню
 //// Delete the selected branches, called when the corresponding
 //// button or menu item
-//QList<boost::intrusive_ptr<TreeItem::linker>> TreeScreen::view_remove(const QModelIndexList &_index_list, const QString &mode, const bool _cut_branch_confirm)
+//QList<boost::intrusive_ptr<Linker>> TreeScreen::view_remove(const QModelIndexList &_index_list, const QString &mode, const bool _cut_branch_confirm)
 //{
 //    qDebug() << "In del_branch()";
 
@@ -1727,9 +1727,9 @@ bool TreeScreen::move_checkenable(void)
 //    return _item_deleted;
 //}
 
-//boost::intrusive_ptr<TreeItem::Linker> TreeScreen::view_cut(boost::intrusive_ptr<TreeItem> target)
+//boost::intrusive_ptr<Linker> TreeScreen::view_cut(boost::intrusive_ptr<TreeItem> target)
 //{
-//    QList<boost::intrusive_ptr<TreeItem::Linker>> results;
+//    QList<boost::intrusive_ptr<Linker>> results;
 //    //    KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
 //    auto _source_model = [&]() {return _tree_view->source_model();}; // std::bind(_source_model_func, _tree_view);
 

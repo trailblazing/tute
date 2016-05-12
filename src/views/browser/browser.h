@@ -73,6 +73,7 @@ class HidableTabWidget;
 class FingScreen;
 class TreeModel;
 class TreeScreen;
+struct RecordIndex;
 
 extern const char *profile_storage_name;
 
@@ -171,16 +172,16 @@ namespace browser {
         static constexpr const char *_defaulthome = "about:blank";
 
     public:
-        typedef TreeItem::Coupler coupler_delegation;
-        typedef TreeItem::Coupler::bind_interface          bind_interface;
-        typedef TreeItem::Coupler::activate_interface      activate_interface;
-        typedef TreeItem::Coupler::item_interface  bounded_item_interface;
-        typedef TreeItem::Coupler::page_interface  bounded_page_interface;
+        //        typedef Binder coupler_delegation;
+        //        typedef Binder::bind_interface          bind_interface;
+        //        typedef Binder::activate_interface      activate_interface;
+        //        typedef Binder::item_interface  bounded_item_interface;
+        //        typedef Binder::page_interface  bounded_page_interface;
 
-        typedef TreeItem::Coupler::bind_helper         bind_helper;
-        typedef TreeItem::Coupler::activate_helper     activate_helper;
-        typedef TreeItem::Coupler::item_helper bounded_item_helper;
-        typedef TreeItem::Coupler::page_helper bounded_page_helper;
+        //        typedef Binder::bind_helper         bind_helper;
+        //        typedef Binder::activate_helper     activate_helper;
+        //        typedef Binder::item_helper bounded_item_helper;
+        //        typedef Binder::page_helper bounded_page_helper;
 
         TabWidget   *tabWidget() {return _tabmanager;}
         TabWidget   *tabWidget() const {return _tabmanager;}
@@ -201,7 +202,7 @@ namespace browser {
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
-        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex);
+        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordIndex> record_modelindex);
         //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
         RecordScreen *record_screen() {return _record_screen;}
         Entrance    *entrance() {return _entrance;}
@@ -339,6 +340,7 @@ namespace browser {
 
         friend class QtSingleApplication;
         friend class Entrance;
+        friend class WebView;
     };
 }
 

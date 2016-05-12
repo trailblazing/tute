@@ -10,7 +10,7 @@
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
-#include "TreeItem.h"
+//#include "TreeItem.h"
 
 // TreeModel - Это вспомогательный класс! От него наследуется KnowTreeModel
 
@@ -21,8 +21,8 @@ class TreeItem;
 class KnowModel;
 class TreeScreen;
 class KnowView;
-
-
+struct Linker;
+struct TreeIndex;
 
 
 class TreeModel : public QAbstractItemModel {
@@ -31,21 +31,6 @@ class TreeModel : public QAbstractItemModel {
 public:
 
 
-    struct ModelIndex : public boost::intrusive_ref_counter<ModelIndex, boost::thread_safe_counter> {
-    public:
-        ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order = 0);   // , const QModelIndex &_current_index
-        std::function<KnowModel *()> current_model()const;
-        QModelIndex parent_index()const;
-        //        QModelIndex current_index()const;
-        boost::intrusive_ptr<TreeItem> parent() const;
-        boost::intrusive_ptr<TreeItem> current_item() const;
-        int sibling_order() const;
-    private:
-        std::function<KnowModel *()>    _current_model;
-        boost::intrusive_ptr<TreeItem>  _parent;
-        int                             _sibling_order;
-        //        QModelIndex                     _current_index;
-    };
 
     //    struct  delegater {
     //    private:
@@ -92,7 +77,7 @@ public:
 
 
     //    bool is_item_valid(QStringList path) const;
-    QModelIndex index(const std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> &_equal) const;
+    QModelIndex index(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal) const;
 
     QModelIndex index(boost::intrusive_ptr<const TreeItem> _item) const;
     void update_index(const QModelIndex &_index);
@@ -115,9 +100,9 @@ public:
     void emit_datachanged_signal(const QModelIndex &_index);
 
     // void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
-    boost::intrusive_ptr<TreeItem> root_item()const {return _root_item;}
+    boost::intrusive_ptr<TreeItem> root_item()const;    // {return _root_item;}
     QString session_id() {return _session_id;}
-    void session_id(boost::intrusive_ptr<ModelIndex> modelindex);
+    void session_id(boost::intrusive_ptr<TreeIndex> modelindex);
 
 
 protected:

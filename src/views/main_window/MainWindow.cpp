@@ -18,6 +18,8 @@
 #include "views/record_table/RecordScreen.h"
 #include "models/tree/TreeItem.h"
 #include "views/find_in_base_screen/FindScreen.h"
+#include "models/record_table/linker.hxx"
+#include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
 #include "libraries/GlobalParameters.h"
 #include "views/console_emulator/ExecuteCommand.h"
@@ -679,7 +681,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
 
     if(source_model()->root_item()->id() != current_root_id) {
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index = [&] {boost::intrusive_ptr<TreeModel::ModelIndex> tree_index; try{tree_index = new TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == current_root_id;}));} catch(std::exception &e) {throw e;} return tree_index;}();
+        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == current_root_id;}));} catch(std::exception &e) {throw e;} return tree_index;}();
         _tree_screen->tree_view()->intercept(tree_index);
     }
 
@@ -690,7 +692,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     auto it = know_model_board()->item(current_item_absolute_path);            // on know_root semantic
 
     if(!source_model()->index(it).isValid()) {
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index = [&] {boost::intrusive_ptr<TreeModel::ModelIndex> tree_index; try{tree_index = new TreeModel::ModelIndex(know_model_board, it);} catch(std::exception &e) {throw e;} return tree_index;}();
+        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it);} catch(std::exception &e) {throw e;} return tree_index;}();
         _tree_screen->tree_view()->intercept(tree_index);
     }
 
@@ -704,17 +706,17 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 
         // Курсор устанавливается в нужную позицию
 
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
         tree_view->select_as_current(tree_index);
-        tree_view->source_model()->session_id(tree_index);  // TreeModel::ModelIndex(source_model, it)
+        tree_view->source_model()->session_id(tree_index);  // TreeIndex(source_model, it)
     } else if(it) {
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, it, 0);} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it, 0);} catch(std::exception &e) {throw e;}
 
         tree_view->select_as_current(tree_index);
-        tree_view->source_model()->session_id(tree_index);  // TreeModel::ModelIndex(source_model, it)
+        tree_view->source_model()->session_id(tree_index);  // TreeIndex(source_model, it)
     }
 }
 
@@ -729,7 +731,7 @@ bool MainWindow::is_tree_position_crypt()
     auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
 
     if(_tree_screen->tree_view()->source_model()->root_item()->id() != id) {
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index = [&] {boost::intrusive_ptr<TreeModel::ModelIndex> tree_index; try{tree_index = new TreeModel::ModelIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));} catch(std::exception &e) {throw e;} return tree_index;}();
+        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));} catch(std::exception &e) {throw e;} return tree_index;}();
         _tree_screen->tree_view()->intercept(tree_index);
     }
 

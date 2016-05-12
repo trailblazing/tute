@@ -231,7 +231,11 @@ HEADERS     =   \
     src/controllers/record_table/RecordController.h \
     src/models/record_table/ItemsFlat.h \
     src/models/tree/KnowModel.h \
-    src/views/tree/KnowView.h
+    src/views/tree/KnowView.h \
+    src/models/record_table/linker.hxx \
+    src/models/tree/binder.hxx \
+    src/models/tree/treeindex.hxx \
+    src/models/record_table/recordindex.hxx
 #    src/views/browser/cookiejar.h \
 
 
@@ -354,7 +358,11 @@ SOURCES     =   src/main.cpp \
     src/controllers/record_table/RecordController.cpp \
     src/models/record_table/ItemsFlat.cpp \
     src/models/tree/KnowModel.cpp \
-    src/views/tree/KnowView.cpp
+    src/views/tree/KnowView.cpp \
+    src/models/tree/binder.cxx \
+    src/models/record_table/linker.cxx \
+    src/models/tree/treeindex.cxx \
+    src/models/record_table/recordindex.cxx
 #    src/views/browser/cookiejar.cpp \
 
 

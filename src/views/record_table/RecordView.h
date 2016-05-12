@@ -59,10 +59,6 @@ public:
     //    IndexSource selection_first_source_index(void) const;
 
 
-    void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
-    void cursor_to_index(PosProxy pos_proxy_, const int mode = add_new_record_after);
-    //    void cursor_to_index(PosProxy pos_proxy_);
-
     boost::intrusive_ptr<TreeItem> current_item();
 
     bool is_selected_set_to_top(void);
@@ -125,7 +121,7 @@ protected:
 
     // Реакия на выбор записи мышкой или клавишами
     // The response to the record selection with the mouse or keys
-    void click_record(const IndexProxy &proxy_index);
+    //    void click_record(const IndexProxy &proxy_index);
 
     bool event(QEvent *event);
     bool gesture_event(QGestureEvent *event);
@@ -149,9 +145,10 @@ private:
 
 
 template<>PosProxy RecordView::selection_first<PosProxy>()const;
+template<>PosSource RecordView::selection_first<PosSource>()const;
 template<>IdType RecordView::selection_first<IdType>()const;
 template<>IndexProxy RecordView::selection_first<IndexProxy>()const;
 template<>IndexSource RecordView::selection_first<IndexSource>()const;
-
+template<>boost::intrusive_ptr<TreeItem> RecordView::selection_first<boost::intrusive_ptr<TreeItem>>()const;
 
 #endif // RECORDLISTSCREEN_H_

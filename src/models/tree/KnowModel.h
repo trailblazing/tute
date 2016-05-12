@@ -14,17 +14,23 @@
 
 
 extern const char *index_xml_file_name;
-
+extern const int add_new_record_to_end;
+extern const int add_new_record_before;
+extern const int add_new_record_after;
 
 class XmlTree;
 class ClipboardBranch;
 class TreeScreen;
 class KnowView;
+struct Linker;
 
 class KnowModel : public TreeModel {
     Q_OBJECT
 
 public:
+
+    typedef std::function<QList<boost::intrusive_ptr<Linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &)> view_delete_permantent_strategy;
+
     KnowModel(const QString &index_xml_file_name, KnowView *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
     KnowModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent = 0);
     ~KnowModel();
@@ -89,13 +95,12 @@ public:
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
 
-    boost::intrusive_ptr<TreeItem> model_merge_to_left(const std::function<QList<boost::intrusive_ptr<TreeItem::Linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &, const QString &, const bool)> &_view_remove
-                                                       , boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source);
+    boost::intrusive_ptr<TreeItem> model_merge_to_left(boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source
+                                                       , const view_delete_permantent_strategy &_view_delete_permantent
+                                                      );
 
-    //    boost::intrusive_ptr<ItemsFlat::linker> record_remove(boost::intrusive_ptr<TreeItem> _item);
+    boost::intrusive_ptr<TreeItem> model_move_as_child(boost::intrusive_ptr<TreeIndex> modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
 
-    boost::intrusive_ptr<TreeItem> model_move_as_child(boost::intrusive_ptr<ModelIndex> modelindex, boost::intrusive_ptr<TreeItem> source_item, int mode = add_new_record_after);
-    //    boost::intrusive_ptr<TreeItem> clipboard_move_as_child_impl(boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = ADD_NEW_RECORD_AFTER);
 
 
 
@@ -115,12 +120,12 @@ private:
     void dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xml_data, boost::intrusive_ptr<TreeItem> curr_item);
 
     // Перемещение ветки вверх или вниз
-    QModelIndex model_move_up_dn(const QModelIndex &_index
-                                 , int(TreeItem::*_move)()   //int direction
-                                );
+    QModelIndex model_move_up_dn(const QModelIndex &_index, int(TreeItem::*_move)());   //int direction
+
+    boost::intrusive_ptr<Linker> model_delete_permanent_single(boost::intrusive_ptr<Linker> delete_linker);
 
     //    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
-    boost::intrusive_ptr<ItemsFlat::Linker> model_delete_permanent(boost::intrusive_ptr<ItemsFlat::Linker> delete_linker);
+    boost::intrusive_ptr<Linker> model_delete_permanent_recursive(boost::intrusive_ptr<Linker> delete_linker);
     //    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);
@@ -155,7 +160,7 @@ private:
     //    // Добавление новой подветки к Item элементу
     //    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeItem> parent, int pos, QString id, QString name);
 
-    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeModel::ModelIndex> _modelindex, QString id, QString name);
+    boost::intrusive_ptr<TreeItem> model_new_child(boost::intrusive_ptr<TreeIndex> _modelindex, QString id, QString name);
 
 #ifdef _with_record_table
     boost::intrusive_ptr<TreeItem> lock_child_add(boost::intrusive_ptr<Record> record, boost::intrusive_ptr<TreeItem> parent);
@@ -185,7 +190,8 @@ private:
     //    bool _is_global_root = false;
     friend class KnowView;
     friend class TreeScreen;
-    friend class TreeModel::ModelIndex;
+    friend class RecordScreen;
+    friend class TreeIndex;
 };
 
 

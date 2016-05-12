@@ -316,8 +316,10 @@ namespace browser {
 
     void UrlLineEdit::focusOutEvent(QFocusEvent *event)
     {
-        if(_lineedit->text().isEmpty() && _webview)
-            _lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));
+        if(_lineedit->text().isEmpty() && _webview) {
+            if(_webview->load_finished())
+                _lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));
+        }
 
         ExLineEdit::focusOutEvent(event);
     }

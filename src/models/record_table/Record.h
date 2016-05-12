@@ -193,6 +193,7 @@ private:
     //    friend class browser::WebPage;
     friend class ItemsFlat;
     friend class TreeItem;
+    friend struct Linker;
 };
 
 #endif // __RECORD_H__

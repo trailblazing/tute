@@ -18,12 +18,14 @@
 #include "controllers/record_table/RecordController.h"
 #include "libraries/FlatControl.h"
 #include "views/browser/toolbarsearch.h"
+#include "models/tree/treeindex.hxx"
 #include "views/tree/KnowView.h"
 #include "views/tree/TreeScreen.h"
 #include "views/browser/entrance.h"
 #include "models/record_table/RecordModel.h"
 #include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
+#include "models/record_table/linker.hxx"
 #include "models/tree/KnowModel.h"
 
 extern GlobalParameters globalparameters;
@@ -196,14 +198,14 @@ void RecordScreen::save_in_new_branch(bool checked)
                 }
             }
 
-            boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+            boost::intrusive_ptr<TreeIndex> tree_index;
 
             try {
-                tree_index = new TreeModel::ModelIndex(_tree_source_model, _tree_screen->tree_view()->current_item());
+                tree_index = new TreeIndex(_tree_source_model, _tree_screen->tree_view()->current_item());
             } catch(std::exception &) {}
 
             if(tree_index) {
-                _tree_screen->tree_view()->view_paste_children_from_children(tree_index, _blank_header, [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
+                _tree_screen->tree_view()->view_paste_children_from_children(tree_index, _blank_header, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");});
                 //            new_tree_item_in_treeknow_root = target;
                 _tree_screen->tree_view()->synchronized(false);
                 _tree_screen->tree_view()->know_model_save();
@@ -267,17 +269,17 @@ void RecordScreen::setup_actions(void)
 
 
             if(modified) {
-                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
+                boost::intrusive_ptr<TreeIndex> tree_index;
 
                 try {
-                    tree_index = new TreeModel::ModelIndex(_source_model, tree_view->session_root_auto());
+                    tree_index = new TreeIndex(_source_model, tree_view->session_root_auto());
                 } catch(std::exception &) {}
 
                 if(tree_index) {
                     tree_view->view_paste_children_from_children(    // view_paste_sibling
                         tree_index // _tree_screen->tree_view()->current_index() //,
                         , branch_item
-                        , [&](boost::intrusive_ptr<const TreeItem::Linker> target, boost::intrusive_ptr<const TreeItem::Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
+                        , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source)->bool {return target->host()->field("url") == source->host()->field("url") && target->host()->field("name") == source->host()->field("name");}
                     );
 
                     //                _tree_screen->resetup_model(_source_model()->root_item());
@@ -364,6 +366,7 @@ void RecordScreen::setup_actions(void)
         _tree_view->view_delete_permanent(
             _current_model
             , QList<boost::intrusive_ptr<TreeItem>>() << _item
+            , &KnowModel::model_delete_permanent_single
             , "cut"
             , false
         );
@@ -429,7 +432,7 @@ void RecordScreen::setup_actions(void)
 
 
         // Установка засветки на перемещенную запись
-        _record_controller->view()->cursor_to_index(PosProxy((int)pos_proxy_ - 1));
+        _record_controller->cursor_to_index(PosProxy((int)pos_proxy_ - 1));
 
         // Сохранение дерева веток
         //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -455,7 +458,7 @@ void RecordScreen::setup_actions(void)
         _record_controller->source_model()->move_dn(_record_controller->index<PosSource>(pos_proxy_));
 
         // Установка засветки на перемещенную запись
-        _record_controller->view()->cursor_to_index(PosProxy((int)pos_proxy_ + 1));
+        _record_controller->cursor_to_index(PosProxy((int)pos_proxy_ + 1));
 
         // Сохранение дерева веток
         //    find_object<TreeScreen>(tree_screen_singleton_name)

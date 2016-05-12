@@ -16,11 +16,13 @@
 #include "views/app_config//AppConfigDialog.h"
 #include "views/browser/entrance.h"
 #include "views/browser/tabwidget.h"
+#include "models/tree/binder.hxx"
 #include "models/record_table/Record.h"
 #include "models/record_table/ItemsFlat.h"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/RecordProxyModel.h"
 #include "models/app_config/AppConfig.h"
+#include "models/record_table/linker.hxx"
 #include "models/tree/TreeItem.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/WindowSwitcher.h"
@@ -29,6 +31,8 @@
 #include "libraries/DiskHelper.h"
 #include "views/browser/webview.h"
 #include "libraries/FlatControl.h"
+#include "models/tree/treeindex.hxx"
+#include "models/tree/KnowModel.h"
 #include "views/tree/KnowView.h"
 #include "models/tree/TreeItem.h"
 #include "models/tree/TreeModel.h"
@@ -36,7 +40,7 @@
 #include "views/record_table/RecordView.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/record_table/RecordScreen.h"
-#include "models/tree/KnowModel.h"
+
 #include "views/browser/browser.h"
 #include "views/browser/toolbarsearch.h"
 
@@ -117,220 +121,235 @@ RecordView *RecordController::view(void)
 
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-void RecordController::item_click(const IndexProxy &index_proxy_)
+boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &index_proxy_, bool force_update)
 {
+    boost::intrusive_ptr<TreeItem> result;
     // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
     IndexSource source_index = index<IndexSource>(index_proxy_);
 
     // Позиция записи в списке
-    PosSource source_pos(((QModelIndex)source_index).row());
-    qDebug() << "RecordTableView::onClickToRecord() : current item num " << source_pos;
+    PosSource pos_source_ = index<PosSource>(index_proxy_);  // (((QModelIndex)source_index).row());
+    qDebug() << "RecordController::item_click() : current item num " << pos_source_;
 
-    select(index<PosProxy>(source_pos));  // ?
+    cursor_to_index(index<PosProxy>(index_proxy_));  // ?
     auto _tree_screen = globalparameters.tree_screen();
     auto tree_view = _tree_screen->tree_view();
-    auto item = source_model()->item(source_pos);
-    auto parent = source_model()->item(source_pos)->parent();
-    boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-    try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == item && item->linker() == il && item->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+    result = source_model()->item(pos_source_);
+    auto parent = result->parent();
+    boost::intrusive_ptr<TreeIndex> tree_index;
+    try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il->host() == result && result->linker() == il && result->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
-    tree_view->select_as_current(tree_index);
+    if(result != tree_view->current_item())tree_view->select_as_current(tree_index);
+
+
+    //    PosSource pos_source_ = index<PosSource>(pos_proxy_);
+    //    auto index_tab = _tabmanager->currentIndex();
+    //    assert(index_tab == (int)pos_source_);
+
+    //    if(_tabmanager->currentIndex() != (int)pos_source_) {
+    //        _tabmanager->setCurrentIndex((int)pos_source_);
+    force_update ? result->binder()->activator() : result->activate();
+    //    }
+
     _record_screen->tools_update();
 
     // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
     if(((QModelIndex)source_index).isValid()) {
-        sychronize_attachtable_to_item(source_pos);
-        browser_update(source_pos); // if new one, create it? no, you can't click a record which does not exist.
-    }
-}
-
-void RecordController::url_load(IndexProxy proxyIndex)
-{
-    qDebug() << "RecordTableController::editFieldContext()";
-
-    IndexSource source_index = index<IndexSource>(proxyIndex);
-    auto _index = PosSource(((QModelIndex)source_index).row()); // Номер строки в базе
-
-    browser_update(_index);
-
-    //    // Create input window after exiting the function window should retire  // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
-    //    //RecordInfoFieldsEditor editRecordWin;
-    //    auto entrance = globalparameters.entrance();
-    //    // Выясняется ссылка на таблицу конечных данных
-    //    //    RecordTableData *table = recordSourceModel->getTableData();
-
-    //    // Fields box filled with initial values    // Поля окна заполняются начальными значениями
-    //    //editRecordWin.setField("name",  table->getField("name",   pos) );
-    //    //editRecordWin.setField("author",table->getField("author", pos) );
-    //    //editRecordWin.setField("url",   table->getField("url",    pos) );
-    //    //editRecordWin.setField("tags",  table->getField("tags",   pos) );
-
-    //    //    browser_view->loadUrl(pos);   //table->getField("url", pos)
-
-    //    boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
-    //    assert(record->is_registered());
-
-    //    //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
-    //    if(entrance && (!record->binder() || record->activator())) entrance->equip_registered(record);
-
-    //    if(record->binder() && record->activator())record->activate();
-
-
-    //    //    int i = editRecordWin.exec();
-    //    //    if(i == QDialog::Rejected)
-    //    //        return; // Была нажата отмена, ничего ненужно делать
-
-    //    //// Измененные данные записываются
-    //    //    editField(pos,
-    //    //              editRecordWin.getField("name"),
-    //    //              editRecordWin.getField("author"),
-    //    //              editRecordWin.getField("url"),
-    //    //              editRecordWin.getField("tags"));
-
-}
-
-// you can't click a record which does not exist.
-// you can switch between two already existing record from this
-void RecordController::browser_update(const PosSource pos_source_)
-{
-    //    //RecordTableData *table = recordSourceModel->getTableData();
-
-    //    browser::Entrance *entrance = globalparameters.entrance();
-
-    //    //Record *current_record = browser_view->getCurrentRecord();
-
-
-    //    //if(current_record) {
-
-    //    //if(current_record->isLite())current_record->switchToFat();
-
-    //    //bool existing = table->isRecordExists(current_record->getNaturalFieldSource("id"));
-
-    //    //    QUrl _url = table->getField("url", pos); //reply->url();
-    //    //    QString url = current_record->getNaturalFieldSource("url");
-    //    //    std::string url_compare_stored = url.toStdString();
-    //    //    std::string url_compare_get = _url.toString().toStdString();
-    //    //    std::string compare = getDifference(url_compare_stored, url_compare_get);
-
-    //    //    if(//!existing &&
-    //    //        compare.size() != 0 && compare != "/") {
-    //    //        //if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
-    //    //        Record record;
-
-    //    //        //if(record.isLite())record.switchToFat();
-
-    //    //        record.setNaturalFieldSource("id",   current_record->getNaturalFieldSource("id"));
-    //    //        record.setNaturalFieldSource("name",   current_record->getNaturalFieldSource("name"));
-    //    //        record.setNaturalFieldSource("author", current_record->getNaturalFieldSource("author"));
-    //    //        record.setNaturalFieldSource("url",    _url.toString());    // only changed
-    //    //        record.setNaturalFieldSource("tags",   current_record->getNaturalFieldSource("tags"));
-    //    //        //record.setText(browser_view->getText());
-
-    //    //        //this->current_record->setNaturalFieldSource("url", _url.toString());
-    //    //        addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
-
-    //    //        browser_view->loadUrl(_url);
-
-    //    //        //current_record = table->getRecordFat(pos); // wrong pos ! new position created //findRecord();
-    //    //        assert(current_record->getNaturalFieldSource("url") == _url.toString());
-
-    //    //        //browser_view->loadUrl(pos);
-
-    //    //        //this->current_record->setNaturalFieldSource("url", url.toString());
-    //    //        //this->loadChanged();
-    //    //    } else {
-
-
-
-
-    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(pos_source_);
-
-    if(item->is_lite())item->to_fat();
-
-    //    //    assert(record->is_registered());
-    //    item->active_request(source_pos, 0);
-
-    //    //    if(record->generator())record->generate();
-    //    //    else if(entrance) entrance->active_record(record);
-
-
-
-
-
-    //    //    entrance->activebrowser()->tabWidget()->view_index();
-    //    //    if(record->page() == nullptr || record->page()->view() == nullptr)
-
-    QString url = item->field("url");
-
-    //    browser::WebPage *page = record->binded_only_page();
-    //    Record *old_record = nullptr;
-    //    if(page)old_record = page->current_record();
-
-    // assert(url != "");
-
-    //    if(record != old_record) {
-
-    if(url != "" && url != browser::Browser::_defaulthome) {   //       && record->active_immediately()
-
-
-        //        //        // back compatible
-        //        //        //record->setNaturalFieldSource("url", browser::DockedWindow::_defaulthome);
-        //        //        if(// (!page && url != "")
-        //        //            // || (page && url != "" && url != page->url().toString())  // page redirect to new record already!
-        //        //            // || (page && !page->view()->hasFocus())
-        //        //            (old_record && _state_check[old_record->getNaturalFieldSource("pin")] == Qt::Unchecked)
-        //        //            || (page && !old_record)
-        //        //        ) {
-        //        //            page->load(record);
-        //        //        } else
-
-        //        if(entrance && !item->page_valid()) {    // unique_page()
-        //            // !record->binder() || !record->activator())) {
-        //            entrance->item_bind(item);
-
-
-        //            //        assert(record->unique_page());    // not sure
-        //            assert(item->binder());
-        //            //            assert(item->activator());
-
-        //            //        if(record->binder() && !record->unique_page())record->bind();
-        //            //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
-        //            if(item->binder())item->activate();
-
-        //            //        else if(entrance)
-        //        } else {
-        //            if(!item->is_registered_to_browser())
-        item->activate();
-        //        }
+        sychronize_attachtable_to_item(pos_source_);
+        //        browser_update(pos_source_); // if new one, create it? no, you can't click a record which does not exist.
     }
 
-    //    } else {
-    //        browser::TabWidget *tabwidget = entrance->activebrowser()->tabWidget();
-
-    //        if(tabwidget->currentWebView() != page->view()) {
-    //            tabwidget->setCurrentIndex(tabwidget->webViewIndex(page->view()));
-    //            // page->load(record);
-    //            page->view()->show();
-    //        }
-
-
-    //    }
-
-    //    loadUrl(pos);
-
-    //    }
-
-    //    if(browser_view->getCurrentRecord()->getNaturalFieldSource("url") != table->getField("url", pos))
-    //        browser_view->loadUrl(QUrl(table->getField("url", pos)));
-    //} else {
-    //    browser_view->loadUrl(pos);
-    //}
-
-    //    Record *_record = getRecordTableModel()->getRecordTableData()->getRecord(pos);
-    //    WebView *view = globalParameters.getBrowserView()->getBrowserWindow()->currentTab();
-    //    view->bindRecord(_record);
-
+    globalparameters.window_switcher()->switchFromRecordtableToRecord();
+    return result;
 }
+
+//void RecordController::url_load(IndexProxy proxyIndex)
+//{
+//    qDebug() << "RecordTableController::editFieldContext()";
+
+//    IndexSource source_index = index<IndexSource>(proxyIndex);
+//    auto _index = PosSource(((QModelIndex)source_index).row()); // Номер строки в базе
+
+//    browser_update(_index);
+
+//    //    // Create input window after exiting the function window should retire  // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
+//    //    //RecordInfoFieldsEditor editRecordWin;
+//    //    auto entrance = globalparameters.entrance();
+//    //    // Выясняется ссылка на таблицу конечных данных
+//    //    //    RecordTableData *table = recordSourceModel->getTableData();
+
+//    //    // Fields box filled with initial values    // Поля окна заполняются начальными значениями
+//    //    //editRecordWin.setField("name",  table->getField("name",   pos) );
+//    //    //editRecordWin.setField("author",table->getField("author", pos) );
+//    //    //editRecordWin.setField("url",   table->getField("url",    pos) );
+//    //    //editRecordWin.setField("tags",  table->getField("tags",   pos) );
+
+//    //    //    browser_view->loadUrl(pos);   //table->getField("url", pos)
+
+//    //    boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
+//    //    assert(record->is_registered());
+
+//    //    //    if(record->getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome)
+//    //    if(entrance && (!record->binder() || record->activator())) entrance->equip_registered(record);
+
+//    //    if(record->binder() && record->activator())record->activate();
+
+
+//    //    //    int i = editRecordWin.exec();
+//    //    //    if(i == QDialog::Rejected)
+//    //    //        return; // Была нажата отмена, ничего ненужно делать
+
+//    //    //// Измененные данные записываются
+//    //    //    editField(pos,
+//    //    //              editRecordWin.getField("name"),
+//    //    //              editRecordWin.getField("author"),
+//    //    //              editRecordWin.getField("url"),
+//    //    //              editRecordWin.getField("tags"));
+
+//}
+
+//// you can't click a record which does not exist.
+//// you can switch between two already existing record from this
+//void RecordController::browser_update(const PosSource pos_source_)
+//{
+//    //    //RecordTableData *table = recordSourceModel->getTableData();
+
+//    //    browser::Entrance *entrance = globalparameters.entrance();
+
+//    //    //Record *current_record = browser_view->getCurrentRecord();
+
+
+//    //    //if(current_record) {
+
+//    //    //if(current_record->isLite())current_record->switchToFat();
+
+//    //    //bool existing = table->isRecordExists(current_record->getNaturalFieldSource("id"));
+
+//    //    //    QUrl _url = table->getField("url", pos); //reply->url();
+//    //    //    QString url = current_record->getNaturalFieldSource("url");
+//    //    //    std::string url_compare_stored = url.toStdString();
+//    //    //    std::string url_compare_get = _url.toString().toStdString();
+//    //    //    std::string compare = getDifference(url_compare_stored, url_compare_get);
+
+//    //    //    if(//!existing &&
+//    //    //        compare.size() != 0 && compare != "/") {
+//    //    //        //if(this->current_record->getNaturalFieldSource("url") != url.toString()) {
+//    //    //        Record record;
+
+//    //    //        //if(record.isLite())record.switchToFat();
+
+//    //    //        record.setNaturalFieldSource("id",   current_record->getNaturalFieldSource("id"));
+//    //    //        record.setNaturalFieldSource("name",   current_record->getNaturalFieldSource("name"));
+//    //    //        record.setNaturalFieldSource("author", current_record->getNaturalFieldSource("author"));
+//    //    //        record.setNaturalFieldSource("url",    _url.toString());    // only changed
+//    //    //        record.setNaturalFieldSource("tags",   current_record->getNaturalFieldSource("tags"));
+//    //    //        //record.setText(browser_view->getText());
+
+//    //    //        //this->current_record->setNaturalFieldSource("url", _url.toString());
+//    //    //        addNew(ADD_NEW_RECORD_AFTER, record);   //recordTableController->autoAddNewAfterContext();
+
+//    //    //        browser_view->loadUrl(_url);
+
+//    //    //        //current_record = table->getRecordFat(pos); // wrong pos ! new position created //findRecord();
+//    //    //        assert(current_record->getNaturalFieldSource("url") == _url.toString());
+
+//    //    //        //browser_view->loadUrl(pos);
+
+//    //    //        //this->current_record->setNaturalFieldSource("url", url.toString());
+//    //    //        //this->loadChanged();
+//    //    //    } else {
+
+
+
+
+//    boost::intrusive_ptr<TreeItem> item = this->source_model()->item(pos_source_);
+
+//    if(item->is_lite())item->to_fat();
+
+//    //    //    assert(record->is_registered());
+//    //    item->active_request(source_pos, 0);
+
+//    //    //    if(record->generator())record->generate();
+//    //    //    else if(entrance) entrance->active_record(record);
+
+
+
+
+
+//    //    //    entrance->activebrowser()->tabWidget()->view_index();
+//    //    //    if(record->page() == nullptr || record->page()->view() == nullptr)
+
+//    QString url = item->field("url");
+
+//    //    browser::WebPage *page = record->binded_only_page();
+//    //    Record *old_record = nullptr;
+//    //    if(page)old_record = page->current_record();
+
+//    // assert(url != "");
+
+//    //    if(record != old_record) {
+
+//    if(url != "" && url != browser::Browser::_defaulthome) {   //       && record->active_immediately()
+
+
+//        //        //        // back compatible
+//        //        //        //record->setNaturalFieldSource("url", browser::DockedWindow::_defaulthome);
+//        //        //        if(// (!page && url != "")
+//        //        //            // || (page && url != "" && url != page->url().toString())  // page redirect to new record already!
+//        //        //            // || (page && !page->view()->hasFocus())
+//        //        //            (old_record && _state_check[old_record->getNaturalFieldSource("pin")] == Qt::Unchecked)
+//        //        //            || (page && !old_record)
+//        //        //        ) {
+//        //        //            page->load(record);
+//        //        //        } else
+
+//        //        if(entrance && !item->page_valid()) {    // unique_page()
+//        //            // !record->binder() || !record->activator())) {
+//        //            entrance->item_bind(item);
+
+
+//        //            //        assert(record->unique_page());    // not sure
+//        //            assert(item->binder());
+//        //            //            assert(item->activator());
+
+//        //            //        if(record->binder() && !record->unique_page())record->bind();
+//        //            //        else if(record->activator() && record->unique_page())record->activate();  // if(entrance) entrance->active_record(record);
+//        //            if(item->binder())item->activate();
+
+//        //            //        else if(entrance)
+//        //        } else {
+//        //            if(!item->is_registered_to_browser())
+//        item->activate();
+//        //        }
+//    }
+
+//    //    } else {
+//    //        browser::TabWidget *tabwidget = entrance->activebrowser()->tabWidget();
+
+//    //        if(tabwidget->currentWebView() != page->view()) {
+//    //            tabwidget->setCurrentIndex(tabwidget->webViewIndex(page->view()));
+//    //            // page->load(record);
+//    //            page->view()->show();
+//    //        }
+
+
+//    //    }
+
+//    //    loadUrl(pos);
+
+//    //    }
+
+//    //    if(browser_view->getCurrentRecord()->getNaturalFieldSource("url") != table->getField("url", pos))
+//    //        browser_view->loadUrl(QUrl(table->getField("url", pos)));
+//    //} else {
+//    //    browser_view->loadUrl(pos);
+//    //}
+
+//    //    Record *_record = getRecordTableModel()->getRecordTableData()->getRecord(pos);
+//    //    WebView *view = globalParameters.getBrowserView()->getBrowserWindow()->currentTab();
+//    //    view->bindRecord(_record);
+
+//}
 
 //// from this function,we would have found that without a full-stack controller, we can't synchronize editor content.
 //// so if our records are come from different tree path, we must switch the parent node, our give them a sharing parent.
@@ -721,48 +740,114 @@ int RecordController::row_count(void) const
 //    return _view->selection_first_id();
 //}
 
-
-void RecordController::select(PosProxy pos_proxy_)
+// Установка засветки в нужную строку на экране
+void RecordController::cursor_to_index(PosProxy pos_proxy_) // , const int mode
 {
-    _view->cursor_to_index(pos_proxy_);
-    //    emit _view->clicked((QModelIndex)index_proxy(pos_proxy_));
-    PosSource pos_source_ = index<PosSource>(pos_proxy_);
+    //    //    IdType id;
+    //    //    PosSource pos_source_ = _source_model->position(id);
+    //    //    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
 
-    if(_tabmanager->currentIndex() != (int)pos_source_)_tabmanager->setCurrentIndex((int)pos_source_);
-}
-
-
-void RecordController::select(IdType id)
-{
-    // Выясняется ссылка на таблицу конечных данных
-    //    auto table = _source_model->tree_item();
-
-    // Если таблица конечных данных задана
-    // (Не задана таблица может быть по причине если ветка зашифрована и введен неверный пароль, или при вводе пароля была нажата отмена)
-    //    if(table) {
-    // Номер записи в Source данных
-    PosSource pos_source_ = _source_model->position(id);
-
-    //    if(_view->selection_first_pos()
-    //       != sourcepos_to_proxypos(pos)
+    //    // В QTableView некорректно работает установка на только что созданную строку
+    //    // Это как-то связано с отрисовкой виджета QTableView
+    //    // Прокрутка к только что созданной строке через selectRow() показывает только
+    //    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
+    //    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
+    //    if(mode == add_new_record_to_end
+    //       || (mode == add_new_record_after && pos_proxy_ >= (_view->model()->rowCount() - 1))
     //      ) {
-
-
-    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
-
-
-    _view->cursor_to_index(pos_proxy_);
-
-    //    emit _view->clicked((QModelIndex)index_proxy(pos_proxy_));
-
+    //        _view->scrollToBottom();
     //    }
 
-    //    }
+    //    PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
+    IndexProxy index_proxy_ = index<IndexProxy>(pos_proxy_); // Модельный индекс в Proxy модели
+    PosProxy pos_proxy_real(((QModelIndex)index_proxy_).row());
 
-    //    PosSource tab_index = _source_model->position(id);
+    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
+    if((int)pos_proxy_real != (int)pos_proxy_) {
+        QMessageBox msg_box;
+        msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
+        msg_box.exec();
+    }
 
-    if(_tabmanager->currentIndex() != (int)pos_source_) _tabmanager->setCurrentIndex((int)pos_source_);
+    int rowCount = row_count();
+
+    if((int)pos_proxy_real < rowCount) {   // if(pos_real > (rowCount - 1))return;
+
+
+        // Простой механизм выбора строки. Похоже, что его использовать не получится
+        _view->selectRow((int)pos_proxy_real);
+
+        //    auto recordSourceModel = controller->getRecordTableModel();
+        //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+        _view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
+        // Установка засветки на нужный индекс
+        // Set the backlight to the desired index
+        _view->selectionModel()->setCurrentIndex(index_proxy_   // selIdx
+                                                 , current_tree_current_index_mode // QItemSelectionModel::Select    // ClearAndSelect
+                                                );
+
+        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+        // Therefore, the recording must be made a virtual click to fill the final table of records
+        if(appconfig.interface_mode() == "mobile")
+            emit _view->clicked((QModelIndex)index_proxy_); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+
+        // emit this->clicked(index);
+        assert(_view->currentIndex() == (QModelIndex)index_proxy_);
+        _view->scrollTo(_view->currentIndex());   // QAbstractItemView::PositionAtCenter
+
+        //    this->setFocus();   // ?
+    }
 }
+
+
+//void RecordController::cursor_to_index(boost::intrusive_ptr<TreeItem> it)
+//{
+//    PosSource pos_source_ = _source_model->position(it->id());
+//    cursor_to_index(index<PosProxy>(pos_source_));
+//}
+
+//void RecordController::select(PosProxy pos_proxy_)
+//{
+//    cursor_to_index(pos_proxy_);
+//    //    emit _view->clicked((QModelIndex)index_proxy(pos_proxy_));
+
+//}
+
+
+//void RecordController::select(IdType id)
+//{
+//    // Выясняется ссылка на таблицу конечных данных
+//    //    auto table = _source_model->tree_item();
+
+//    // Если таблица конечных данных задана
+//    // (Не задана таблица может быть по причине если ветка зашифрована и введен неверный пароль, или при вводе пароля была нажата отмена)
+//    //    if(table) {
+//    // Номер записи в Source данных
+//    PosSource pos_source_ = _source_model->position(id);
+
+//    //    if(_view->selection_first_pos()
+//    //       != sourcepos_to_proxypos(pos)
+//    //      ) {
+
+
+//    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
+
+
+//    cursor_to_index(pos_proxy_);
+
+//    //    emit _view->clicked((QModelIndex)index_proxy(pos_proxy_));
+
+//    //    }
+
+//    //    }
+
+//    //    PosSource tab_index = _source_model->position(id);
+
+//    //    if(_tabmanager->currentIndex() != (int)pos_source_) _tabmanager->setCurrentIndex((int)pos_source_);
+//}
 
 
 //IndexSource RecordController::index_source(IdType id) const
@@ -1253,7 +1338,7 @@ PosSource RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_, co
     assert(_source_model->position(item_->id()) == selected_source_position);
     //    assert(_source_model->child(selected_position) == item);
 
-    _view->cursor_to_index(index<PosProxy>(selected_source_position), mode);   // modify _source_model? yeah
+    cursor_to_index(index<PosProxy>(selected_source_position));   // , mode // modify _source_model? yeah
 
     // Сохранение дерева веток
     //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1812,7 +1897,7 @@ void RecordController::remove(QVector<IdType> delete_ids)
 
 
 //    // Установка засветки на перемещенную запись
-//    _view->cursor_to_index(PosProxy((int)pos_proxy_ - 1));
+//    cursor_to_index(PosProxy((int)pos_proxy_ - 1));
 
 //    // Сохранение дерева веток
 //    //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1835,7 +1920,7 @@ void RecordController::remove(QVector<IdType> delete_ids)
 //    _source_model->move_dn(index<PosSource>(pos_proxy_));
 
 //    // Установка засветки на перемещенную запись
-//    _view->cursor_to_index(PosProxy((int)pos_proxy_ + 1));
+//    cursor_to_index(PosProxy((int)pos_proxy_ + 1));
 
 //    // Сохранение дерева веток
 //    //    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1976,7 +2061,7 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
 
     IndexProxy proxy_index = index<IndexProxy>(index<PosProxy>(source_position));
     _view->dataChanged((QModelIndex)proxy_index, (QModelIndex)proxy_index);
-    _view->cursor_to_index(current_item);
+    cursor_to_index(index<PosProxy>(current_item));
 
     return _item; //_record;
 }
@@ -2458,7 +2543,10 @@ template<>PosProxy      RecordController::index<PosProxy>(const IdType &id)const
     PosSource source_pos = _source_model->position(id);
     return index<PosProxy>(source_pos);
 }
-
+template<>PosProxy      RecordController::index<PosProxy>(const boost::intrusive_ptr<TreeItem> &it)const
+{
+    return index<PosProxy>(it->id());
+}
 
 
 
@@ -2483,7 +2571,10 @@ template<>PosSource     RecordController::index<PosSource>(const IdType &id)cons
 {
     return _source_model->position(id);
 }
-
+template<>PosSource     RecordController::index<PosSource>(const boost::intrusive_ptr<TreeItem> &it)const
+{
+    return index<PosSource>(it->id());
+}
 
 
 
@@ -2517,7 +2608,7 @@ template<>IndexProxy    RecordController::index<IndexProxy>(const IdType &id)con
 
     return index<IndexProxy>(proxy_pos);
 }
-
+template<>IndexProxy    RecordController::index<IndexProxy>(const boost::intrusive_ptr<TreeItem> &it)const {return index<IndexProxy>(it->id());}
 
 
 
@@ -2552,7 +2643,7 @@ template<>IndexSource   RecordController::index<IndexSource>(const IdType &id)co
     PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
     return index<IndexSource>(proxy_pos_);
 }
-
+template<>IndexSource   RecordController::index<IndexSource>(const boost::intrusive_ptr<TreeItem> &it)const {return index<IndexSource>(it->id());}
 
 
 
@@ -2572,4 +2663,11 @@ template<>IdType        RecordController::index<IdType>(const IndexSource &is)co
 {
     return _source_model->item(index<PosSource>(is))->id();
 }
+template<>IdType        RecordController::index<IdType>(const boost::intrusive_ptr<TreeItem> &it)const {return index<IdType>(index<PosSource>(it->id()));}
 
+
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem>>(const PosSource &ps)const {return _source_model->item(ps);}
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem>>(const IndexProxy &ip)const {return _source_model->item(index<PosSource>(ip));}
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem>>(const PosProxy &pp)const {return _source_model->item(index<PosSource>(pp));}
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem>>(const IndexSource &is)const {return _source_model->item(index<PosSource>(is));}
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem>>(const IdType &it)const {return _source_model->item(index<PosSource>(it));}

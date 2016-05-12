@@ -20,6 +20,7 @@
 #include "views/main_window/MainWindow.h"
 #include "FindScreen.h"
 //#include "FindTableWidget.h"
+#include "models/record_table/linker.hxx"
 #include "models/tree/KnowModel.h"
 #include "models/app_config/AppConfig.h"
 #include "models/tree/TreeItem.h"
@@ -33,6 +34,7 @@
 #include "views/browser/toolbarsearch.h"
 #include "views/browser/chasewidget.h"
 #include "libraries/FlatControl.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/ItemsFlat.h"
 #include "views/browser/tabwidget.h"
 
@@ -633,7 +635,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
     //    data["dir"]     = data["id"];
     //    data["file"]    = "text.html";
 
-    QList<boost::intrusive_ptr<TreeItem::Linker>> _result_list;
+    QList<boost::intrusive_ptr<Linker>> _result_list;
     // Выясняется стартовый элемент в дереве, с которого будет начат поиск
     // Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
@@ -789,10 +791,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         _progress->close();
     };
 
-    auto final_search = [&](QList<boost::intrusive_ptr<TreeItem::Linker>>   &_result_list
+    auto final_search = [&](QList<boost::intrusive_ptr<Linker>>   &_result_list
                             , boost::intrusive_ptr<TreeItem>                &_session_root_item  // std::shared_ptr<RecordTable> &resultset_data
                             , boost::intrusive_ptr<TreeItem>                &_start_item
-    ) ->QList<boost::intrusive_ptr<TreeItem::Linker>> & {
+    ) ->QList<boost::intrusive_ptr<Linker>> & {
         qDebug() << "Start finding in " << _candidate_records << " records";
         prepare_progressbar();
 
@@ -814,7 +816,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
     //        // После вставки всех данных подгоняется ширина колонок
     //        //        _findtable->updateColumnsWidth();
-    //        _tree_screen->view_paste_from_search(TreeModel::ModelIndex(_current_source_model, _tree_screen->tree_view()->current_index())
+    //        _tree_screen->view_paste_from_search(TreeIndex(_current_source_model, _tree_screen->tree_view()->current_index())
     //                                             , _result_item, [&](boost::intrusive_ptr<TreeItem> it)->bool {return it->field("name") == _result_item->field("name");}
     //                                            ); // dump to table screen
     //    };
@@ -928,8 +930,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 }
 
 
-QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
-                                               QList<boost::intrusive_ptr<TreeItem::Linker>> &_result_list
+QList<boost::intrusive_ptr<Linker>> &FindScreen::find_recursive(
+                                               QList<boost::intrusive_ptr<Linker>> &_result_list
                                                , boost::intrusive_ptr<TreeItem> _session_root_item
                                                , boost::intrusive_ptr<TreeItem> _start_item
                                            )
@@ -1050,23 +1052,23 @@ QList<boost::intrusive_ptr<TreeItem::Linker>> &FindScreen::find_recursive(
                             auto browser = globalparameters.entrance()->activated_browser();
                             auto record_controller = browser->record_screen()->record_controller();
                             auto tab_brother = record_controller->view()->current_item();
-                            boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);
+                            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
                             try {
-                                record_modelindex = new RecordModel::ModelIndex([&] {return record_controller->source_model();}, tab_brother, candidate);
+                                record_modelindex = new RecordIndex([&] {return record_controller->source_model();}, tab_brother, candidate);
                             } catch(std::exception &e) {
                                 (void)e;    // record_modelindex = nullptr;
                             }
 
                             if(record_modelindex) {
                                 if((candidate->parent() != _session_root_item->parent()) // _current_item->parent())
-                                && !_session_root_item->item_direct([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == candidate->linker();})
+                                && !_session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il) {return il == candidate->linker();})
                                   ) {
 
                                     auto result = browser->item_bind(record_modelindex);
                                     //                                        = tree_view->item_bind(record_modelindex // result
                                     //                                                               , std::bind(&KnowView::view_paste_child, tree_view
-                                    //                                    , TreeModel::ModelIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
+                                    //                                    , TreeIndex(_source_model,  tab_brother->parent(), tab_brother->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == tab_brother->linker() && il->host() == tab_brother && tab_brother->parent() == il->host_parent();})) // std::placeholders::_1
                                     //                                    , std::placeholders::_2
                                     //                                    , std::placeholders::_3));
 

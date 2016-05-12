@@ -11,7 +11,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "libraries/wyedit/Editor.h"
-#include "models/tree/TreeModel.h"
+#include "models/record_table/RecordModel.h"
 
 extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
@@ -25,7 +25,7 @@ class AttachTableScreen;
 class Record;
 class TreeItem;
 class FindScreen;
-class TreeModel;
+class RecordModel;
 
 class ClickableLabel: public QLabel {
     Q_OBJECT
@@ -44,52 +44,53 @@ public slots:
 
     void field(QString n, QString v);
     void clear_all(void);
-    void onClickToTag(const QString &text);
+    void on_click_to_tag(const QString &text);
 
 
 signals:
     // Сигнал вырабатывается при клике на текстовой метке
-    void setFindTextSignal(QString text);
+    void set_find_text_signal(QString text);
 
 public:
     MetaEditor(QString object_name, FindScreen *_find_screen);
     ~MetaEditor(void);
 
     void tree_path(QString path);
-    void pin(QString p);
+    void pin(QString pin_);
     void switch_pin();
-    void name(QString name);
-    void author(QString author);
+    void name(QString name_);
+    void author(QString author_);
     void home(QString url);
-    void url(QString url);
-    void tags(QString tags);
+    void url(QString url_);
+    void tags(QString tags_);
 
     static void to_attach_callback(void);
 
     void to_editor_layout(void);
     void to_attach_layout(void);
-    void bind(boost::intrusive_ptr<TreeModel::ModelIndex> tree_index);   // {_record = r;}
+    void bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);   // {_record = r;}
     boost::intrusive_ptr<TreeItem> item();    // {return _record;}
 
 private:
-    void setupLabels(void);
+    void setup_labels(void);
     void setup_ui(void);
     void assembly(void);
-    void setupSignals(FindScreen *_find_screen);
+    void setup_signals(FindScreen *_find_screen);
 
-    QLabel          *_tree_path;       // Надпись Path (только для мобильного интерфейса)
+    FindScreen      *_find_screen;
+    QLabel          *_tree_path;        // Надпись Path (только для мобильного интерфейса)
     QCheckBox       *_item_pin;
 
-    QLabel          *_item_name;     // Надпись Title
-    QLabel          *_item_author;   // Надпись Author(s)
+    QLabel          *_item_name;        // Надпись Title
+    QLabel          *_item_author;      // Надпись Author(s)
 
     QLabel          *_label_home;       // Inscription    // Надпись "Url"
-    ClickableLabel  *_item_home;
+    QLabel          *_label_url;        // Inscription    // Надпись "Url"
 
-    QLabel          *_label_url;       // Inscription    // Надпись "Url"
+    ClickableLabel  *_item_home;
     ClickableLabel  *_item_url;
 
-    QLabel          *_label_tags;      // Надпись "Tags"
+    QLabel          *_label_tags;       // Надпись "Tags"
     QWidget         *_item_tags_container;
     QHBoxLayout     *_item_tags_layout;
     QScrollArea     *_item_tags_scrollarea;
@@ -103,9 +104,9 @@ private:
     AttachTableScreen   *_attachtable_screen;
 
     // Виджет слоя редактирования текста
-    QGridLayout     *_editor_main_layer;
-    QWidget         *_editor_main_screen;
 
+    QWidget         *_editor_main_screen;
+    QGridLayout     *_editor_main_layer;
     // Группировалка виджетов всех слоев (слоя редактирования и слоя прикрепляемых файлов)
     QVBoxLayout     *_meta_editor_join_layer;
     QMetaObject::Connection _home_connection;   // for disconnect

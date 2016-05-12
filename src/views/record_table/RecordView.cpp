@@ -14,6 +14,8 @@
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/RecordProxyModel.h"
 #include "models/app_config/AppConfig.h"
+#include "models/record_table/linker.hxx"
+#include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
 #include "libraries/GlobalParameters.h"
 #include "views/main_window/MainWindow.h"
@@ -276,7 +278,7 @@ void RecordView::on_click(const QModelIndex &proxy_index)
 {
     if(proxy_index.isValid() && _previous_index != proxy_index) {
         _previous_index = proxy_index;
-        click_record(IndexProxy(proxy_index));
+        _record_controller->item_click(IndexProxy(proxy_index));
     }
 }
 
@@ -297,7 +299,7 @@ void RecordView::on_doubleclick(const QModelIndex &index)
 
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        click_record(IndexProxy(index));  // Раньше было select()
+        _record_controller->item_click(IndexProxy(index), true); // Раньше было select()
         globalparameters.mainwindow()->editor_switch();
 
     }
@@ -363,14 +365,14 @@ void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize)
 }
 
 
-// Действия при выборе строки таблицы конечных записей. Принимает индекс Proxy модели
-// Actions when choosing the final row of the table entries. Accepts index Proxy models
-void RecordView::click_record(const IndexProxy &proxy_index)
-{
-    _record_controller->item_click(proxy_index);
+//// Действия при выборе строки таблицы конечных записей. Принимает индекс Proxy модели
+//// Actions when choosing the final row of the table entries. Accepts index Proxy models
+//void RecordView::click_record(const IndexProxy &proxy_index)
+//{
+//    _record_controller->item_click(proxy_index);
 
-    globalparameters.window_switcher()->switchFromRecordtableToRecord();
-}
+//    //    globalparameters.window_switcher()->switchFromRecordtableToRecord();  // move to item_click
+//}
 
 
 // Открытие контекстного меню в таблице конечных записей
@@ -433,7 +435,7 @@ void RecordView::edit_field_context(void)
     if(_record_controller->edit_field_context(proxy_index)) {   // proxy_index
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        click_record(proxy_index);  // proxy_index // Раньше было select()
+        _record_controller->item_click(proxy_index);  // proxy_index // Раньше было select()
     }
 }
 
@@ -513,70 +515,9 @@ bool RecordView::is_selected_set_to_bottom(void)
         return false;
 }
 
-void RecordView::cursor_to_index(boost::intrusive_ptr<TreeItem> it)
-{
-    PosSource pos_source_ = _record_controller->source_model()->position(it->id());
-    cursor_to_index(_record_controller->index<PosProxy>(pos_source_));
-}
-
-// Установка засветки в нужную строку на экране
-void RecordView::cursor_to_index(PosProxy pos_proxy_, const int mode)
-{
-
-    // В QTableView некорректно работает установка на только что созданную строку
-    // Это как-то связано с отрисовкой виджета QTableView
-    // Прокрутка к только что созданной строке через selectRow() показывает только
-    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
-    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-    if(mode == add_new_record_to_end
-       || (mode == add_new_record_after && pos_proxy_ >= (model()->rowCount() - 1))
-      ) {
-        scrollToBottom();
-    }
-
-    //    PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
-    IndexProxy index = _record_controller->index<IndexProxy>(pos_proxy_); // Модельный индекс в Proxy модели
-    PosProxy pos_proxy_real(((QModelIndex)index).row());
-
-    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    if((int)pos_proxy_real != (int)pos_proxy_) {
-        QMessageBox msgBox;
-        msgBox.setText("In RecordView::cursor_to_index() input pos not equal model pos");
-        msgBox.exec();
-    }
-
-    int rowCount = _record_controller->row_count();
-
-    if((int)pos_proxy_real < rowCount) {   // if(pos_real > (rowCount - 1))return;
 
 
-        // Простой механизм выбора строки. Похоже, что его использовать не получится
-        selectRow((int)pos_proxy_real);
 
-        //    auto recordSourceModel = controller->getRecordTableModel();
-        //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
-
-        selectionModel()->select(index, current_tree_selection_mode);
-        // Установка засветки на нужный индекс
-        // Set the backlight to the desired index
-        selectionModel()->setCurrentIndex(index   // selIdx
-                                          , current_tree_current_index_mode // QItemSelectionModel::Select    // ClearAndSelect
-                                         );
-
-        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-        // Therefore, the recording must be made a virtual click to fill the final table of records
-        if(appconfig.interface_mode() == "mobile")
-            emit this->clicked((QModelIndex)index); // QModelIndex selIdx=recordSourceModel->index(pos, 0);
-
-        // emit this->clicked(index);
-
-        scrollTo(currentIndex());   // QAbstractItemView::PositionAtCenter
-
-        //    this->setFocus();   // ?
-    }
-}
 
 
 //// mode - режим в котором добавлялась новая запись
@@ -693,7 +634,7 @@ void RecordView::mousePressEvent(QMouseEvent *event)
             selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);    // Select
             selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
             assert(next_index == currentIndex());
-            _record_controller->select(PosProxy(next_index.row()));   //
+            _record_controller->cursor_to_index(PosProxy(next_index.row()));   //
             //            emit clicked(next_index);
 
 
@@ -712,8 +653,8 @@ void RecordView::mousePressEvent(QMouseEvent *event)
         auto it = _record_controller->source_model()->item(PosSource(next_index.row()));
         assert(it);
         auto tree_view = _tree_screen->tree_view();
-        boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-        try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+        boost::intrusive_ptr<TreeIndex> tree_index;
+        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
         tree_view->select_as_current(tree_index);
     }
@@ -960,6 +901,13 @@ template<>PosProxy RecordView::selection_first<PosProxy>()const
         return PosProxy((selectItems.at(0)).row()); // Номер первого выделенного элемента
 }
 
+template<>PosSource RecordView::selection_first<PosSource>()const
+{
+
+    PosProxy pos_proxy_ = selection_first<PosProxy>();
+    return _record_controller->index<PosSource>(pos_proxy_);
+}
+
 template<>IdType RecordView::selection_first<IdType>()const
 {
     // Получение списка выделенных Item-элементов
@@ -975,13 +923,13 @@ template<>IdType RecordView::selection_first<IdType>()const
 template<>IndexProxy RecordView::selection_first<IndexProxy>()const
 {
 
-    PosProxy pos = selection_first<PosProxy>();
+    PosProxy pos_proxy_ = selection_first<PosProxy>();
 
-    if(pos == -1)
+    if(pos_proxy_ == -1)
         return IndexProxy(QModelIndex());
 
     // QModelIndex index = recordProxyModel->index( pos, 0 );
-    IndexProxy index = _record_controller->index<IndexProxy>(PosProxy(pos));
+    IndexProxy index = _record_controller->index<IndexProxy>(PosProxy(pos_proxy_));
 
     return index;
 }
@@ -997,4 +945,9 @@ template<>IndexSource RecordView::selection_first<IndexSource>()const
     IndexSource index = _record_controller->index<IndexSource>(proxy_index);
 
     return index;
+}
+
+template<>boost::intrusive_ptr<TreeItem> RecordView::selection_first<boost::intrusive_ptr<TreeItem>>()const
+{
+    return _record_controller->source_model()->item(selection_first<PosSource>());
 }

@@ -55,13 +55,17 @@
 #include <QtCore/QStringListModel>
 #include <QtWidgets/QStackedWidget>
 #include <QWebEngineSettings>
+
 //#include "views/browser/chasewidget.h"
+
+#include "models/record_table/linker.hxx"
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include "main.h"
 #include "views/tree/TreeScreen.h"
 #include "views/tree/KnowView.h"
+#include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
 
 
@@ -175,10 +179,10 @@ namespace browser {
 
             auto tree_view = _tree_screen->tree_view();
 
-            boost::intrusive_ptr<TreeModel::ModelIndex> modelindex(nullptr);
+            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
             try {
-                modelindex = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
+                modelindex = new TreeIndex([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();}));
             } catch(std::exception &e) {}
 
             if(modelindex) {
@@ -191,10 +195,11 @@ namespace browser {
                   ) {
                     //QLineEdit *lineedit =
 
-                    tree_view->item_bind(tree_view->current_item()
-                                         , url
-                                         , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                                        )->activate();
+                    modelindex->item_bind(tree_view->current_item()
+                                          , url
+                                          , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
+                                          , [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == url.toString();}
+                                         )->activate();
 
                     assert(_lineedits);
 
@@ -243,7 +248,7 @@ namespace browser {
                     // QString u = url.toString();
 
                     //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                    tree_view->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();
+                    modelindex->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == url.toString();})->activate();
 
                 }
             }
@@ -254,17 +259,17 @@ namespace browser {
 
             if(index_result.isValid()) {
                 auto it = tree_view->source_model()->item(index_result);
-                boost::intrusive_ptr<TreeModel::ModelIndex> tree_index;
-                try {tree_index = new TreeModel::ModelIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent() && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+                boost::intrusive_ptr<TreeIndex> tree_index;
+                try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent() && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
                 tree_view->select_as_current(tree_index);
 
 
                 //                //            else {
                 //                //                _tree_screen->view_paste_as_child(
-                //                //                    TreeModel::ModelIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index())
+                //                //                    TreeIndex([&]()->KnowModel* {return _tree_screen->tree_view()->source_model();}, _tree_screen->tree_view()->current_index())
                 //                //                    , result_item
-                //                //                    , std::bind([&](boost::intrusive_ptr<const TreeItem::linker> target, boost::intrusive_ptr<const TreeItem::linker> source)->bool{return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, result_item->up_linker())
+                //                //                    , std::bind([&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source)->bool{return target->host()->field("url") == source->host()->field("url");}, std::placeholders::_1, result_item->up_linker())
                 //                //                );
                 //                //            }
 

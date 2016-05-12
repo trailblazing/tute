@@ -81,20 +81,7 @@ class RecordModel : public QAbstractTableModel
     friend class browser::Entrance;
 public:
 
-    struct ModelIndex : public boost::intrusive_ref_counter<ModelIndex, boost::thread_safe_counter> {
-    public:
-        ModelIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item);
-        std::function<RecordModel *()> current_model()const;
-        QModelIndex sibling_index()const;
-        // QModelIndex current_index()const;
-        boost::intrusive_ptr<TreeItem> sibling() const;
-        boost::intrusive_ptr<TreeItem> target() const;
-    private:
-        std::function<RecordModel *()>  _current_model;
-        boost::intrusive_ptr<TreeItem>  _sibling_item;
-        boost::intrusive_ptr<TreeItem>  _target_item;
-        //        QModelIndex                     _current_index;
-    };
+
 
     RecordModel(RecordController        *_record_controller
                 , RecordScreen          *_record_screen
@@ -129,7 +116,7 @@ public:
     void fields(int pos, QMap<QString, QString> data);
 
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-    QModelIndex index(boost::intrusive_ptr<TreeItem> it)const;
+    IndexSource index(boost::intrusive_ptr<TreeItem> it)const;
     // for multi items link with unique page
     boost::intrusive_ptr<TreeItem> item_bounded(boost::intrusive_ptr<TreeItem> it)const;
     boost::intrusive_ptr<TreeItem> item(boost::intrusive_ptr<TreeItem> it)const;
@@ -166,7 +153,7 @@ public:
 
     int count()const; // {return _tabmanager->count();}
 
-
+    boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it)const;
     boost::intrusive_ptr<TreeItem> current_item()const;
 
     void position(PosSource _index);

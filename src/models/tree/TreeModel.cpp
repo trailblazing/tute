@@ -1,3 +1,4 @@
+#include "models/record_table/linker.hxx"
 #include "TreeItem.h"
 #include "TreeModel.h"
 #include "main.h"
@@ -8,8 +9,36 @@
 #include "views/tree/KnowView.h"
 
 
+#include "main.h"
+#include "libraries/ClipboardRecords.h"
+#include "libraries/GlobalParameters.h"
+#include "models/tree/treeindex.hxx"
+#include "models/tree/binder.hxx"
+#include "models/record_table/linker.hxx"
+#include "models/tree/KnowModel.h"
+#include "models/record_table/ItemsFlat.h"
+#include "models/tree/TreeItem.h"
+#include "models/record_table/RecordModel.h"
+#include "views/main_window/MainWindow.h"
+#include "views/record_table/RecordScreen.h"
+#include "views/record/MetaEditor.h"
+#include "controllers/record_table/RecordController.h"
+#include "views/browser/webview.h"
+#include "views/browser/tabwidget.h"
+#include "views/browser/entrance.h"
+#include "models/tree/TreeItem.h"
+#include "libraries/crypt/Password.h"
+#include "libraries/ClipboardBranch.h"
+
+
+
+
 
 extern GlobalParameters globalparameters;
+extern AppConfig appconfig;
+extern const char *clipboard_items_root;
+
+
 
 
 // TreeModel - Это модель данных, которая работает с видом TreeScreen
@@ -166,12 +195,12 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
 }
 
 // does not must be succeeded
-QModelIndex TreeModel::index(const std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> &_equal) const
+QModelIndex TreeModel::index(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal) const
 {
     //    QModelIndex result;
 
-    std::function<QModelIndex(QModelIndex, std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)>)>
-    index_recursive = [&](QModelIndex _index, std::function<bool(boost::intrusive_ptr<const TreeItem::Linker>)> _equal) {
+    std::function<QModelIndex(QModelIndex, std::function<bool(boost::intrusive_ptr<const Linker>)>)>
+    index_recursive = [&](QModelIndex _index, std::function<bool(boost::intrusive_ptr<const Linker>)> _equal) {
 
         QModelIndex find_index;
 
@@ -679,6 +708,7 @@ boost::intrusive_ptr<TreeItem> TreeModel::item(const std::function<bool(boost::i
 //    return true;
 //}
 
+boost::intrusive_ptr<TreeItem> TreeModel::root_item()const {return _root_item;}
 
 void TreeModel::emit_datachanged_signal(const QModelIndex &_index)
 {
@@ -752,7 +782,7 @@ QModelIndex TreeModel::parent(const QModelIndex &_index) const
                     auto parent_parent = parent_item->parent();
 
                     if(parent_parent) {
-                        _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const TreeItem::Linker> il) {return il == parent_item->linker() && il->host() == parent_item && parent_item->parent() == il->host_parent();}), 0, static_cast<void *>(parent_item.get()));
+                        _result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == parent_item->linker() && il->host() == parent_item && parent_item->parent() == il->host_parent();}), 0, static_cast<void *>(parent_item.get()));
                     } else {
                         _result = QModelIndex();  // index(0, 0, index(parent_item));
 
@@ -797,6 +827,16 @@ int TreeModel::rowCount(const QModelIndex &_index) const
     return // item(_index)->count_direct();    //
         count;
 }
+
+
+void TreeModel::session_id(
+    boost::intrusive_ptr<TreeIndex> modelindex    // const QString &id
+)
+{
+    //    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
+    _session_id = modelindex->parent()->id();
+}
+
 
 
 // Set the values ​​in the Item element associated with the specified QModelIndex   // Установка значений в Item элементе, связанного с указанным QModelIndex
@@ -849,7 +889,7 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QV
     return true;
 }
 
-//TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &_current_model
+//TreeIndex::ModelIndex(const std::function<KnowModel *()> &_current_model
 //, const QModelIndex &_current_index): _current_model(_current_model), _current_index(_current_index)
 //{
 //    assert(_current_model()->item(_current_index));
@@ -862,80 +902,3 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation, const QV
 //    _session_id = id;
 //}
 
-TreeModel::ModelIndex::ModelIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order)
-    : _current_model(current_model), _parent(parent_item), _sibling_order(sibling_order)    // , _current_index(_current_model()->index(_parent->item_direct(_sibling_order)))
-{
-    bool current_parent_valid = [&]() {
-        bool result = false;
-        auto absolute_root = globalparameters.tree_screen()->tree_view()->know_model_board()->root_item();
-        auto current_root = [&]() {return static_cast<KnowModel *>(current_model())->root_item();};
-
-        if(parent_item->is_ancestor_of(current_root())) {
-            auto new_root = (parent_item == absolute_root) ? parent_item : parent_item->parent();
-            static_cast<KnowModel *>(current_model())->intercept(new_root);
-
-            if(parent_item == absolute_root) {
-                result = true;
-            } else { // if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "")
-                result = (current_model()->index(parent_item).isValid())
-                && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
-            }
-
-            //            _current_index = _current_model()->index(current_item());
-            //            assert(_current_index.isValid());
-
-        } else if(parent_item == current_root()) {
-            //            assert(_current_index.isValid());
-            result = true;
-        } else {
-            //            assert(_current_index.isValid());
-            result = (current_model()->index(parent_item).isValid())
-            && (current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}));
-        }
-
-        //        assert(_current_index.isValid());
-        return result;
-    }();
-
-    try {
-
-
-        if(!current_parent_valid)throw std::exception();    //        assert(current_parent_valid);
-
-        //        assert(sibling_order >= 0);
-
-        if(sibling_order < 0)throw std::exception();
-
-        auto count_direct = _parent->count_direct();
-        count_direct = count_direct == 0 ? 1 : count_direct;
-        //        assert(sibling_order < count_direct);
-
-        if(sibling_order >= count_direct)throw std::exception();
-
-        //    assert(_current_index.isValid());
-    } catch(std::exception &e) {throw e;}
-}
-
-std::function<KnowModel *()> TreeModel::ModelIndex::current_model()const {return _current_model;}
-
-boost::intrusive_ptr<TreeItem> TreeModel::ModelIndex::parent()const {return _parent;}
-
-boost::intrusive_ptr<TreeItem> TreeModel::ModelIndex::current_item()const {return _parent->item_direct(_sibling_order);}
-
-QModelIndex TreeModel::ModelIndex::parent_index()const {return _current_model()->index(_parent);}
-
-//QModelIndex TreeModel::ModelIndex::current_index()const
-//{
-//    return _current_index;  // _current_model()->index(current_item())
-
-//}
-
-int TreeModel::ModelIndex::sibling_order() const {return _sibling_order;}
-
-void TreeModel::session_id(
-    boost::intrusive_ptr<TreeModel::ModelIndex> modelindex    // const QString &id
-)
-{
-    //    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
-    _session_id = modelindex->parent()->id();
-}

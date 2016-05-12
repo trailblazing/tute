@@ -47,24 +47,33 @@
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QShortcut>
-#include "models/record_table/Record.h"
+
+
+#include "models/record_table/recordindex.hxx"
+//#include "models/record_table/Record.h"
+//#include "models/record_table/ItemsFlat.h"
 //#include "models/tree/TreeItem.h"
-#include "controllers/record_table/RecordController.h"
-#include "views/record_table/RecordScreen.h"
+//#include "models/record_table/RecordModel.h"
+//#include "controllers/record_table/RecordController.h"
+//#include "views/record_table/RecordScreen.h"
+
+
+
+
 #include "libraries/GlobalParameters.h"
-#include "models/record_table/RecordModel.h"
-#include "models/record_table/ItemsFlat.h"
-#include "views/browser/history.h"
-//#include "views/browser/browser.h"
-#include "views/browser/webview.h"
-#include "utility/delegate.h"
-//#include "models/tree/TreeItem.h"
-#include "models/tree/TreeModel.h"
-#include "views/tree/TreeScreen.h"
-#include "views/tree/KnowView.h"
-#include "models/tree/KnowModel.h"
 #include "libraries/DiskHelper.h"
 
+#include "views/browser/history.h"
+
+#include "views/browser/webview.h"
+
+
+//#include "models/tree/TreeModel.h"
+
+//#include "views/tree/KnowView.h"
+#include "models/tree/KnowModel.h"
+
+#include "views/tree/TreeScreen.h"
 
 
 
@@ -101,7 +110,7 @@ class TreeItem;
 class TreeModel;
 class RecordModel;
 class RecordView;
-
+class KnowView;
 
 
 
@@ -258,16 +267,16 @@ namespace browser {
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-        typedef TreeItem::Coupler CouplerDelegation;
-        typedef typename TreeItem::Coupler::bind_interface      bind_interface;
-        typedef typename TreeItem::Coupler::activate_interface  activate_interface;
-        typedef typename TreeItem::Coupler::item_interface      item_interface;
-        typedef typename TreeItem::Coupler::page_interface      page_interface;
+        //        typedef Binder CouplerDelegation;
+        //        typedef typename Binder::bind_interface      bind_interface;
+        //        typedef typename Binder::activate_interface  activate_interface;
+        //        typedef typename Binder::item_interface      item_interface;
+        //        typedef typename Binder::page_interface      page_interface;
 
-        typedef typename TreeItem::Coupler::bind_helper     bind_helper;
-        typedef typename TreeItem::Coupler::activate_helper activate_helper;
-        typedef typename TreeItem::Coupler::item_helper     item_helper;
-        typedef typename TreeItem::Coupler::page_helper     page_helper;
+        //        typedef typename Binder::bind_helper     bind_helper;
+        //        typedef typename Binder::activate_helper activate_helper;
+        //        typedef typename Binder::item_helper     item_helper;
+        //        typedef typename Binder::page_helper     page_helper;
 
         ~TabWidget();
         void clear();
@@ -395,6 +404,9 @@ namespace browser {
         //        void on_print_click(void);
 
         TabWidget *tabmanager() {return this;}
+        boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it)const;
+
+
     protected:
         void mouseDoubleClickEvent(QMouseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
@@ -407,7 +419,7 @@ namespace browser {
         //        void new_view_void() {newTab(false);}
         //BrowserView *new_dummy();
 
-        WebView *newTab(boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex, bool make_current = true);
+        WebView *newTab(boost::intrusive_ptr<RecordIndex> record_modelindex, bool make_current = true);
 
         //        void new_view(bool make_current = false);    //true
 
