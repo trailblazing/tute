@@ -2768,35 +2768,35 @@ boost::intrusive_ptr<TreeItem> KnowModel::intercept(
     // Создание корневого Item объекта
     if(_root_item) _root_item.reset();
 
-    //    QMap<QString, QString> data;
-    //    data["id"]      = _item->id();
-    //    data["name"]    = _item->name();
-    //    _root_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data)); // ?
+    //    //    QMap<QString, QString> data;
+    //    //    data["id"]      = _item->id();
+    //    //    data["name"]    = _item->name();
+    //    //    _root_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data)); // ?
 
-    //    //    _root_item->field("id", _item->id()); // boost::intrusive_ptr<TreeItem>(new TreeItem(root_data, nullptr)); // ?
-    //    //    _root_item->field("name", _item->name());
+    //    //    //    _root_item->field("id", _item->id()); // boost::intrusive_ptr<TreeItem>(new TreeItem(root_data, nullptr)); // ?
+    //    //    //    _root_item->field("name", _item->name());
 
-    //    //    //    if(item->id() == global_root_id) {_is_global_root = true;} else {_is_global_root = false;}
+    //    //    //    //    if(item->id() == global_root_id) {_is_global_root = true;} else {_is_global_root = false;}
 
-    //    //    // , std::make_shared<RecordTable>(QDomElement())
+    //    //    //    // , std::make_shared<RecordTable>(QDomElement())
 
-    //    //    //    //    // Динамическое создание дерева из Item объектов на основе DOM модели
-    //    //    //    //    setup_modeldata(dom_model, _root_item);
-    //    //    //    assert(dom_model);
-    //    //    //    QDomElement content_root_record = dom_model->documentElement().firstChildElement("content").firstChildElement("record");   // "node"
+    //    //    //    //    //    // Динамическое создание дерева из Item объектов на основе DOM модели
+    //    //    //    //    //    setup_modeldata(dom_model, _root_item);
+    //    //    //    //    assert(dom_model);
+    //    //    //    //    QDomElement content_root_record = dom_model->documentElement().firstChildElement("content").firstChildElement("record");   // "node"
 
-    //    //    //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+    //    //    //    //    std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
 
-    //    auto content_root_record_dom = _item->dom_from_treeitem();  // std::make_shared<QDomDocument>()
+    //    //    auto content_root_record_dom = _item->dom_from_treeitem();  // std::make_shared<QDomDocument>()
 
-    //    if(content_root_record_dom.isNull()) {
-    //        qDebug() << "Unable load xml tree, first content node not found.";
-    //        //        return;
-    //    } else {
-    //        result = _root_item;
-    //    }
+    //    //    if(content_root_record_dom.isNull()) {
+    //    //        qDebug() << "Unable load xml tree, first content node not found.";
+    //    //        //        return;
+    //    //    } else {
+    //    //        result = _root_item;
+    //    //    }
 
-    //    _root_item->dom_to_records(content_root_record_dom);
+    //    //    _root_item->dom_to_records(content_root_record_dom);
 
 
     _root_item = _item;
@@ -2820,12 +2820,16 @@ boost::intrusive_ptr<TreeItem> KnowModel::synchronize(boost::intrusive_ptr<TreeI
 {
     boost::intrusive_ptr<TreeItem> result(_root_item);
     result = item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == source->id();});
-    auto parent = result->parent();
+    boost::intrusive_ptr<TreeItem> parent;
+
+    if(result)
+        parent = result->parent();
 
     //    int pos = parent ? parent->list_position(result) : 0;
 
     if(parent) {
-        result.reset(); //->clear_children();
+        if(result)result.reset(); //->clear_children();
+
         result = boost::intrusive_ptr<TreeItem>(new TreeItem(parent));
     }
 

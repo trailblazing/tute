@@ -3445,8 +3445,8 @@ void KnowView::view_edit(void)
 
 
 boost::intrusive_ptr<TreeItem> KnowView::view_merge(boost::intrusive_ptr<TreeIndex> modelindex    // const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> target
-                                                            , boost::intrusive_ptr<TreeItem> source
-                                                           )
+                                                    , boost::intrusive_ptr<TreeItem> source
+                                                   )
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     auto _current_model = modelindex->current_model();
@@ -3975,6 +3975,15 @@ void KnowView::index_invoke(const QModelIndex &_index)
                     result_item->activate();
                 }
 
+            }
+        } else {
+            //        auto c = _binder->page()->record_controller();
+            auto v = result_item->binder()->page()->view();
+            auto t = v->tabmanager();
+            auto index = t->webViewIndex(v);
+
+            if(index != t->currentIndex()) {    // c->index<PosSource>(c->source_model()->index(_binder->item()))
+                t->setCurrentIndex(index);
             }
         }
     }

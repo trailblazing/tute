@@ -533,6 +533,18 @@ namespace browser {
         settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessRemoteUrls, true);
         settings()->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
+        settings()->setAttribute(QWebEngineSettings::AutoLoadImages, true);
+        settings()->setAttribute(QWebEngineSettings::JavascriptCanAccessClipboard, true);
+        settings()->setAttribute(QWebEngineSettings::LinksIncludedInFocusChain, true);
+        settings()->setAttribute(QWebEngineSettings::LocalStorageEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::XSSAuditingEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::SpatialNavigationEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::HyperlinkAuditingEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::ScrollAnimatorEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::ErrorPageEnabled, true);
+        settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+
+
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
         setNetworkAccessManager(QtSingleApplication::networkAccessManager());
 #endif
@@ -1958,9 +1970,14 @@ namespace browser {
         //        _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
 
         if(_binder) {
-            _binder->item()->binder(nullptr);
+            _binder->item()->binder()->page(nullptr);
+            _binder->item()->binder()->item(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder->item()->binder(nullptr);
+
             // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
-            _binder.reset();
+            if(_binder->page())_binder->page(nullptr);
+
+            if(_binder->item())_binder->item(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder.reset();
+
         }
     }
 
