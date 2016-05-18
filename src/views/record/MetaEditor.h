@@ -27,17 +27,19 @@ class TreeItem;
 class FindScreen;
 class RecordModel;
 
-class ClickableLabel: public QLabel {
+class ClickableLabel : public QLabel {
     Q_OBJECT
 public:
-    ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(parent, f) {}
-    ClickableLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()): QLabel(text, parent, f) {}
+    ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()) : QLabel(parent, f) {
+    }
+    ClickableLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()) : QLabel(text, parent, f) {
+    }
 Q_SIGNALS:
     void mousePressEvent(QMouseEvent *ev);
 
 };
 
-class MetaEditor: public Editor {
+class MetaEditor : public Editor {
     Q_OBJECT
 
 public slots:
@@ -91,9 +93,12 @@ private:
     ClickableLabel  *_item_url;
 
     QLabel          *_label_tags;       // Надпись "Tags"
+
+
+    QScrollArea     *_item_tags_scrollarea;
+    QHBoxLayout     *_item_tags_scrollarea_layout;
     QWidget         *_item_tags_container;
     QHBoxLayout     *_item_tags_layout;
-    QScrollArea     *_item_tags_scrollarea;
     QString         _item_tags_text;
     QStringList     _item_tags_text_list;
     QList<QLabel *> _item_tags_labels;

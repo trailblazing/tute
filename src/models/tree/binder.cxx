@@ -372,3 +372,31 @@ bool Binder::integrity_external(boost::intrusive_ptr<const TreeItem> host, const
 //    if(page())page() = nullptr; // if(page_link() && page_link()->binder())page_link()->binder().reset();
 //}
 
+void Binder::item(boost::intrusive_ptr<TreeItem> it) {
+        _item_linker_set(std::forward<boost::intrusive_ptr<TreeItem> >(it));
+}
+
+void Binder::page(browser::WebPage *page) {
+        return _page_linker_set(std::forward<browser::WebPage *>(page));
+}
+
+boost::intrusive_ptr<TreeItem> Binder::item() const {
+        return _item_linker();
+}
+
+browser::WebPage *Binder::page() const {
+        return _page_linker();
+}
+
+browser::WebView *Binder::bind() {
+        return _bind_helper();
+}
+
+browser::WebView *Binder::activator() {
+        return _activate_helper();
+}
+
+Binder::status_type Binder::state() const
+{
+    return _status;
+}

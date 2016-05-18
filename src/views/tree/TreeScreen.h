@@ -11,6 +11,9 @@
 #include <QToolBar>
 #include <QInputDialog>
 #include <QMenuBar>
+#include <QScrollArea>
+#include <QEvent>
+
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -77,6 +80,27 @@ namespace  browser {
     class TabWidget;
 }
 
+class AdjustingScrollArea : public QScrollArea {
+    bool eventFilter(QObject *obj, QEvent *ev);
+    KnowView *_tree_view;
+protected:
+    void resizeEvent(QResizeEvent *e);
+public:
+    AdjustingScrollArea(KnowView *_tree_view, QWidget *parent = 0);
+
+    void setWidget(KnowView *w);
+    friend class TreeScreen;
+};
+
+class KnowView;
+
+//class TreeViewHelpWidget: public QWidget {
+//    KnowView        *_tree_view;
+//    QScrollArea     *_scroll_area;
+//public:
+//    TreeViewHelpWidget(TreeScreen *_tree_screen);
+//    void repaintZoom();
+//};
 
 //struct know_root_holder {
 //protected:  //public:
@@ -90,18 +114,18 @@ namespace  browser {
 //};
 
 class TreeScreen
-    : public QWidget {  //    , public know_root_holder
+    : public QWidget {      //    , public know_root_holder
     Q_OBJECT
 
 public:
-    typedef std::function<bool(boost::intrusive_ptr<const Linker>)> substitute_condition;
-    typedef std::function<bool(boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;
+    typedef std::function<bool (boost::intrusive_ptr<const Linker>)> substitute_condition;
+    typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
 
     TreeScreen(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *_parent = 0);
     virtual ~TreeScreen();
 
-    QMap<QString, QAction *> _actionlist;
+    QMap<QString, QAction * > _actionlist;
 
     //    TreeKnowModel const *know_root()const {return know_root_holder::know_root();}
     //    TreeKnowModel *know_root_modify() {return know_root_holder::know_root();}
@@ -130,7 +154,10 @@ public:
 
     //    void branch_update_from_model(const QModelIndex &index);
 
-    QMenu *buttonmenu() {return _menus_in_button;}
+    QMenu *buttonmenu()
+    {
+        return _menus_in_button;
+    }
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
 
@@ -160,7 +187,10 @@ public:
     //    bool is_item_valid(QStringList _path) {return know_root_holder::know_root()->is_item_valid(_path);}
     //    boost::intrusive_ptr<TreeItem> item(QStringList path) const;
     //    boost::intrusive_ptr<TreeItem> item(TreeModel::delegater _del) const;
-    KnowView *tree_view() {return _tree_view;}
+    KnowView *tree_view()
+    {
+        return _tree_view;
+    }
     //    void resetup_model(boost::intrusive_ptr<TreeItem> _item);
 
 
@@ -183,7 +213,8 @@ public slots:
     //    void session_root_id(QString root_id);
     //    QString session_root();
 
-
+protected:
+    void resizeEvent(QResizeEvent *e);
 private slots:
 
 
@@ -241,7 +272,7 @@ private:
     //    TreeController  *_tree_controller;
 
     QToolBar        *_tools_line;
-    QToolBar        *_menubar;              // QMenuBar *_menubar;
+    QToolBar        *_menubar;                  // QMenuBar *_menubar;
     QPushButton     *_menubutton;
     QWidgetAction   *_menuaction;
     QMenu           *_menus_in_button;
@@ -252,10 +283,15 @@ private:
     QHBoxLayout     *_tools_layout;
     //    browser::ToolbarSearch  *_recordtree_search;
     //    QHBoxLayout             *_recordtree_searchlayout;
+    AdjustingScrollArea *_adjustingscrollarea;
+    //    TreeViewHelpWidget *_treeviewhelpwidget;
+
     QVBoxLayout     *_treescreenlayout;
 
     const AppConfig &_appconfig;
     //    QString         _session_id = global_root_id;
+
+
 
     void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
 
@@ -266,7 +302,7 @@ private:
     void setup_actions(void);
     void assembly(void);
 
-    void item_move_up_dn_branch(int(TreeItem::*_move)());
+    void item_move_up_dn_branch(int (TreeItem::*_move)());
     bool move_checkenable(void);
 
     //    boost::intrusive_ptr<TreeItem> insert_branch_process(QModelIndex current_index, QString name, bool insert_sibling_branch);
@@ -471,7 +507,3 @@ private:
 
 
 #endif  // _TREESCREEN_H_
-
-
-
-

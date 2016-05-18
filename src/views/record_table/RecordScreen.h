@@ -112,10 +112,12 @@ private:
     //    FlatToolButton  *_treepath_button;
     QString             _treepath;
 
+
+
     browser::TabWidget  *_tabmanager;
     RecordController    *_record_controller;
-
     VerticalScrollArea  *_vertical_scrollarea;
+
 
 
     QHBoxLayout         *_records_toolslayout;

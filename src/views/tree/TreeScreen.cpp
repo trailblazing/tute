@@ -8,7 +8,7 @@
 #include <QAction>
 #include <QItemSelectionModel>
 #include <QWidgetAction>
-
+#include <QScrollArea>
 
 #include "main.h"
 
@@ -44,27 +44,27 @@ extern const char *clipboard_items_root;
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
-const char *action_set_as_session_root      = "set_as_session_root";
-const char *action_find_in_base             = "find_in_base";
-const char *action_cursor_follow_root       = "cursor_follow_root";
-const char *action_cursor_follow_up         = "cursor_follow_up";
-const char *action_expand_all_subbranch     = "expand_all_subbranch";
-const char *action_collapse_all_subbranch   = "collapse_all_subbranch";
-const char *action_move_up_branch           = "move_up_branch";
-const char *action_move_dn_branch           = "move_dn_branch";
-const char *action_insert_sub_branch        = "insert_sub_branch";
-const char *action_insert_branch            = "insert_branch";
-const char *action_edit_branch              = "edit_branch";
-const char *action_delete_branch            = "delete_branch";
-const char *action_cut_branch               = "cut_branch";
-const char *action_copy_branch              = "copy_branch";
-const char *action_paste_branch             = "paste_branch";
-const char *action_paste_sub_branch         = "paste_sub_branch";
-const char *action_encrypt_branch           = "encrypt_branch";
-const char *action_decrypt_branch           = "decrypt_branch";
-const char *action_freeze_browser_view      = "freeze_browser_view";
-const char *action_edit_field               = "edit_field";
-const char *action_editor_switch            = "editor_switch";
+const char *action_set_as_session_root = "set_as_session_root";
+const char *action_find_in_base = "find_in_base";
+const char *action_cursor_follow_root = "cursor_follow_root";
+const char *action_cursor_follow_up = "cursor_follow_up";
+const char *action_expand_all_subbranch = "expand_all_subbranch";
+const char *action_collapse_all_subbranch = "collapse_all_subbranch";
+const char *action_move_up_branch = "move_up_branch";
+const char *action_move_dn_branch = "move_dn_branch";
+const char *action_insert_sub_branch = "insert_sub_branch";
+const char *action_insert_branch = "insert_branch";
+const char *action_edit_branch = "edit_branch";
+const char *action_delete_branch = "delete_branch";
+const char *action_cut_branch = "cut_branch";
+const char *action_copy_branch = "copy_branch";
+const char *action_paste_branch = "paste_branch";
+const char *action_paste_sub_branch = "paste_sub_branch";
+const char *action_encrypt_branch = "encrypt_branch";
+const char *action_decrypt_branch = "decrypt_branch";
+const char *action_freeze_browser_view = "freeze_browser_view";
+const char *action_edit_field = "edit_field";
+const char *action_editor_switch = "editor_switch";
 
 //know_root_holder::know_root_holder(const AppConfig &_appconfig, TreeScreen *_this)
 //    : _know_root(new KnowModel(_this))
@@ -79,7 +79,7 @@ const char *action_editor_switch            = "editor_switch";
 
 //know_root_holder::~know_root_holder() {delete _know_root;}
 
-TreeScreen::TreeScreen(QString              object_name
+TreeScreen::TreeScreen(QString object_name
                        , const AppConfig    &_appconfig
                        , QMenu              *_filemenu
                        , QMenu              *_toolsmenu
@@ -101,6 +101,7 @@ TreeScreen::TreeScreen(QString              object_name
     , _tools_layout(new QHBoxLayout())
       //    , _recordtree_search(new browser::ToolbarSearch(this))
       //    , _recordtree_searchlayout(new QHBoxLayout())
+    , _adjustingscrollarea(new AdjustingScrollArea(_tree_view, this))
     , _treescreenlayout(new QVBoxLayout())
     , _appconfig(_appconfig)
       //    , _shadow_branch(new TreeModelKnow(this))
@@ -220,10 +221,12 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("View follow up one level when current item reach the current root"));
     //    ac->setIcon(QIcon(":/resource/pic/move_up.svg"));
 
-    ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));        // ":/resource/pic/streamline_home.svg"
+    ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));                // ":/resource/pic/streamline_home.svg"
     //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
 
-    connect(ac, &QAction::triggered, [&]()->void{_tree_view->cursor_follow_up();});
+    connect(ac, &QAction::triggered, [&]() -> void {
+        _tree_view->cursor_follow_up();
+    });
     _actionlist[action_cursor_follow_up] = ac;
 
 
@@ -239,7 +242,7 @@ void TreeScreen::setup_actions(void)
     ac = new QAction(tr("Collapse all sub items"), this);
     ac->setStatusTip(tr("Collapse all sub items"));
     ac->setIcon(QIcon(":/resource/pic/collapse_all_subbranch.svg"));
-    connect(ac, &QAction::triggered, std::bind(&KnowView::view_expand_selected, _tree_view, false));   // view_collapse_all_sub
+    connect(ac, &QAction::triggered, std::bind(&KnowView::view_expand_selected, _tree_view, false));           // view_collapse_all_sub
     _actionlist[action_collapse_all_subbranch] = ac;
 
     // Перемещение ветки вверх
@@ -247,7 +250,9 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Move item up"));
     ac->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
     connect(ac, &QAction::triggered, this
-            , [&]()->void {item_move_up_dn_branch(&TreeItem::move_up);});   // &TreeScreen::item_move_up_branch
+    , [&]() -> void {
+        item_move_up_dn_branch(&TreeItem::move_up);
+    });                                                                             // &TreeScreen::item_move_up_branch
 
     _actionlist[action_move_up_branch] = ac;
 
@@ -256,7 +261,9 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Move item down"));
     ac->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
     connect(ac, &QAction::triggered, this
-            , [&]()->void {item_move_up_dn_branch(&TreeItem::move_dn);});   // &TreeScreen::item_move_dn_branch
+    , [&]() -> void {
+        item_move_up_dn_branch(&TreeItem::move_dn);
+    });                                                                             // &TreeScreen::item_move_dn_branch
 
     _actionlist[action_move_dn_branch] = ac;
 
@@ -264,12 +271,16 @@ void TreeScreen::setup_actions(void)
     ac = new QAction(tr("Insert a new sub item"), this);
     ac->setStatusTip(tr("Insert a new sub item into selected"));
     ac->setIcon(QIcon(":/resource/pic/add_subbranch.svg"));
-    connect(ac, &QAction::triggered, [&]()->void {
+    connect(ac, &QAction::triggered, [&]() -> void {
         boost::intrusive_ptr<TreeIndex> tree_index;
-        try{tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_item());} catch(std::exception &e) {throw e;}
+
+        try{
+            tree_index = new TreeIndex([&]() -> KnowModel* {
+                return _tree_view->source_model();
+            }, _tree_view->current_item()); } catch(std::exception &e) {throw e; }
         _tree_view->view_insert_new(tree_index
         , std::bind(&KnowView::view_add_new, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
+        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
             return _modelindex->current_model()()->model_new_child(_modelindex, _id, _name);
         });
     });
@@ -282,25 +293,32 @@ void TreeScreen::setup_actions(void)
     connect(ac, &QAction::triggered
     , [&]() {
         boost::intrusive_ptr<TreeIndex> tree_index;
-        try {tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _tree_view->current_item());} catch(std::exception &e) {throw e;}
+
+        try {
+            tree_index = new TreeIndex([&]() -> KnowModel* {
+                return _tree_view->source_model();
+            }, _tree_view->current_item());
+        } catch(std::exception &e) {throw e; }
 
         _tree_view->view_insert_new(tree_index
                                     , std::bind(&KnowView::view_add_new, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name)->boost::intrusive_ptr<TreeItem> {
+        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
             auto _current_model = _modelindex->current_model();
             auto _current_index = _modelindex->parent_index();
             boost::intrusive_ptr<TreeItem> result;
             auto parent_parent = _modelindex->parent()->parent();
             assert(parent_parent);
-            QList<boost::intrusive_ptr<TreeItem>> _alternative_items;
+            QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
 
             if(parent_parent)
             {
-                _alternative_items = parent_parent->items_direct([&](boost::intrusive_ptr<const Linker> il) {return il->host()->name() == _name && il->host()->id() == _id;});
+                _alternative_items = parent_parent->items_direct([&](boost::intrusive_ptr<const Linker> il) {
+                    return il->host()->name() == _name && il->host()->id() == _id;
+                });
             }
             //            auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
 
-            if(_alternative_items.size() > 0)    // && _item_has_no_child_first
+            if(_alternative_items.size() > 0)                            // && _item_has_no_child_first
             {
                 //                assert(_item_has_no_child_first->name() == _name);
                 //                result = _item_has_no_child_first;
@@ -310,7 +328,7 @@ void TreeScreen::setup_actions(void)
 
                 while(it.hasNext()) {
                     boost::intrusive_ptr<TreeIndex> tree_index;
-                    try {tree_index = new TreeIndex(_current_model, result);} catch(std::exception &e) {throw e;}
+                    try {tree_index = new TreeIndex(_current_model, result); } catch(std::exception &e) {throw e; }
 
                     result = _tree_view->view_merge(tree_index, it.next());
                 }
@@ -319,7 +337,7 @@ void TreeScreen::setup_actions(void)
                 //            children_transfer(_new_item, _current_model);
             } else {
                 boost::intrusive_ptr<TreeIndex> tree_index;
-                try{tree_index = new TreeIndex(_current_model, parent_parent, _current_index.row());} catch(std::exception &e) {throw e;}
+                try{tree_index = new TreeIndex(_current_model, parent_parent, _current_index.row()); } catch(std::exception &e) {throw e; }
                 // Вставка новых данных в модель дерева записей
                 result = _current_model()->model_new_child(tree_index, _id, _name);
             }
@@ -341,13 +359,19 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Delete selected item and all sub items"));
     ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
     connect(ac, &QAction::triggered, this
-    , [this](bool checked = false)->void {
+    , [this](bool checked = false) -> void {
         Q_UNUSED(checked);
         //        QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
-        QModelIndexList _selectitems = KnowView::LocalLizeInitializer(_tree_view)().indexes();  // ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
+        QModelIndexList _selectitems = KnowView::LocalLizeInitializer(_tree_view)().indexes();                  // ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
         // view_remove(_selectitems, "cut");
-        _tree_view->view_delete_permanent([&]() {return _tree_view->source_model();}, [&]() {QList<boost::intrusive_ptr<TreeItem>> r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r;}(), &KnowModel::model_delete_permanent_single, "cut", false);
-    }); //, &TreeScreen::del_branch
+        _tree_view->view_delete_permanent([&]()
+        {
+            return _tree_view->source_model();
+        }, [&]()
+        {
+            QList<boost::intrusive_ptr<TreeItem> > r; for(auto ix : _selectitems) r << _tree_view->source_model()->item(ix); return r;
+        }(), &KnowModel::model_delete_permanent_single, "cut", false);
+    });         //, &TreeScreen::del_branch
 
     _actionlist[action_delete_branch] = ac;
 
@@ -372,13 +396,16 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Paste sibling item after selected"));
     ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
     connect(ac, &QAction::triggered
-    , [&](bool checked)->void {
+    , [&](bool checked) -> void {
         Q_UNUSED(checked);
         //        auto source_model = [&]() {return _tree_view->source_model();};
         //        auto _index_child = _tree_view->current_index();
         auto _current_item = _tree_view->current_item();
         auto _parent = _current_item->parent();
-        int sibling_order = _parent->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();});
+        int sibling_order = _parent->sibling_order([&](boost::intrusive_ptr<const Linker> il)
+        {
+            return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();
+        });
         //        auto _parent_valid = _parent == source_model()->root_item() ?
         //                             source_model()->root_item() == _know_model_board->root_item() ?
         //                             _parent
@@ -396,10 +423,14 @@ void TreeScreen::setup_actions(void)
 
         //        assert(_index_parent.isValid());
         boost::intrusive_ptr<TreeIndex> tree_index;
-        try{tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _parent, sibling_order);} catch(std::exception &e) {throw e;}
-        _tree_view->view_paste_children_from_clipboard(tree_index);   // std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 
-    });            //, paste
+        try{
+            tree_index = new TreeIndex([&]() -> KnowModel* {
+                return _tree_view->source_model();
+            }, _parent, sibling_order); } catch(std::exception &e) {throw e; }
+        _tree_view->view_paste_children_from_clipboard(tree_index);                   // std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+
+    });                    //, paste
 
     _actionlist[action_paste_branch] = ac;
 
@@ -410,14 +441,18 @@ void TreeScreen::setup_actions(void)
     ac->setStatusTip(tr("Paste item as sub item for selected"));
     ac->setIcon(QIcon(":/resource/pic/branch_paste.svg"));
     connect(ac, &QAction::triggered
-    , [&](bool checked)->void {
+    , [&](bool checked) -> void {
         Q_UNUSED(checked);
         auto _current_item = _tree_view->current_item();
         boost::intrusive_ptr<TreeIndex> tree_index;
-        try{tree_index = new TreeIndex([&]()->KnowModel* {return _tree_view->source_model();}, _current_item, 0);} catch(std::exception &e) {throw e;}
-        _tree_view->view_paste_children_from_clipboard(tree_index);         // std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 
-    });            // branch_paste_sub
+        try{
+            tree_index = new TreeIndex([&]() -> KnowModel* {
+                return _tree_view->source_model();
+            }, _current_item, 0); } catch(std::exception &e) {throw e; }
+        _tree_view->view_paste_children_from_clipboard(tree_index);                         // std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+
+    });                    // branch_paste_sub
 
     _actionlist[action_paste_sub_branch] = ac;
 
@@ -436,15 +471,15 @@ void TreeScreen::setup_actions(void)
     _actionlist[action_decrypt_branch] = ac;
 
     ac = new QAction(tr("Pin / freeze browser view"), this);
-    ac->setStatusTip(tr("Pin / freeze browser view"));  // _pin->setStatusTip(tr("Pin a note"));
-    ac->setIcon(QIcon(":/resource/pic/pentalpha.svg")); // _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
+    ac->setStatusTip(tr("Pin / freeze browser view"));          // _pin->setStatusTip(tr("Pin a note"));
+    ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));         // _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
     connect(ac, &QAction::triggered
-    , [&](bool checked = false)->void {
+    , [&](bool checked = false) -> void {
         Q_UNUSED(checked)
         // Обновление инфополей в области редактирования записи
-        MetaEditor *metaeditor = globalparameters.meta_editor();  //MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
+        MetaEditor *metaeditor = globalparameters.meta_editor();                   //MetaEditor *metaEditor = find_object<MetaEditor>(meta_editor_singleton_name);
 
-        if(metaeditor)metaeditor->switch_pin();
+        if(metaeditor) metaeditor->switch_pin();
     });
     _actionlist[action_freeze_browser_view] = ac;
 
@@ -471,7 +506,9 @@ void TreeScreen::setup_actions(void)
     QAction *_edit_field = (new QAction(tr("Edit properties (name, url, tags...)"), this));
     _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) {Q_UNUSED(checked); edit_field_context(this->_tree_view->current_index());});
+    connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) {
+        Q_UNUSED(checked); edit_field_context(this->_tree_view->current_index());
+    });
     _actionlist[action_edit_field] = _edit_field;
 
 
@@ -480,7 +517,9 @@ void TreeScreen::setup_actions(void)
     QAction *_editor_switch = (new QAction(tr("&Editor switch"), this));
     _editor_switch->setStatusTip(tr("Open/Close editor"));
     _editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
-    connect(_editor_switch, &QAction::triggered, []() {globalparameters.mainwindow()->editor_switch();});
+    connect(_editor_switch, &QAction::triggered, []() {
+        globalparameters.mainwindow()->editor_switch();
+    });
     //    insert_action_as_button<QToolButton>(_toolsline, _settings);
     _actionlist[action_editor_switch] = _editor_switch;
 
@@ -529,7 +568,7 @@ void TreeScreen::edit_field_context(QModelIndex index_current)
     int i = edit_record_dialog.exec();
 
     if(i == QDialog::Rejected)
-        return; // Была нажата отмена, ничего ненужно делать
+        return;                 // Была нажата отмена, ничего ненужно делать
 
     // Измененные данные записываются
     edit_field(edit_record_dialog.getField("pin"),
@@ -573,7 +612,7 @@ void TreeScreen::edit_field(QString pin
 
 
     // Обновление инфополей в области редактирования записи
-    MetaEditor *meta_editor = globalparameters.meta_editor();   //find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *meta_editor = globalparameters.meta_editor();           //find_object<MetaEditor>(meta_editor_singleton_name);
     meta_editor->pin(pin);
     meta_editor->name(name);
     meta_editor->author(author);
@@ -623,7 +662,7 @@ void TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
     if(appconfig.interface_mode() == "mobile") {
         _tools_line->addSeparator();
         insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
-        insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_find_in_base]); // Клик по этой кнопке связывается с действием в MainWindow
+        insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_find_in_base]);                         // Клик по этой кнопке связывается с действием в MainWindow
     }
 
     //_toolsline->addSeparator();
@@ -652,23 +691,23 @@ void TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
     //    ac->setIcon(QIcon(":/resource/pic/note_delete.svg"));
     //    connect(ac, SIGNAL(triggered()), this, SLOT(del_branch()));
 
-    _menus_in_button->addMenu(_filemenu);           // globalparameters.mainwindow()->filemenu()
+    _menus_in_button->addMenu(_filemenu);                   // globalparameters.mainwindow()->filemenu()
 
-    _menus_in_button->addMenu(_toolsmenu);           // globalparameters.mainwindow()->toolsmenu()
+    _menus_in_button->addMenu(_toolsmenu);                   // globalparameters.mainwindow()->toolsmenu()
 
     //_buttonmenu->addAction(_menuaction);
 
-    _menubutton->setMenu(_menus_in_button);    // Ownership of the menu is not transferred to the push button
+    _menubutton->setMenu(_menus_in_button);            // Ownership of the menu is not transferred to the push button
     //_menuaction
 
 
     //connect(_menuaction, &QWidgetAction::triggered, _menubar, &QMenuBar::show);
     //connect(menubutton, &QPushButton::clicked, _menubar, &QMenuBar::show);
 
-    _menuaction->setDefaultWidget(_menubutton); // The ownership is transferred to QWidgetAction!!!  //_menubar////_buttonmenu//
+    _menuaction->setDefaultWidget(_menubutton);         // The ownership is transferred to QWidgetAction!!!  //_menubar////_buttonmenu//
 
 
-    _menubutton->setIcon(QIcon(":/resource/pic/tableware.svg"));    // must have
+    _menubutton->setIcon(QIcon(":/resource/pic/tableware.svg"));            // must have
     _menubutton->setToolTip(tr("Main Menu"));
     _menubutton->setStatusTip(tr("Pull down to get the main menu"));
 
@@ -859,7 +898,34 @@ void TreeScreen::assembly(void)
 
     //    _treescreenlayout->addLayout(_recordtree_searchlayout);
     _treescreenlayout->addLayout(_tools_layout);
-    _treescreenlayout->addWidget(_tree_view);
+
+    //    //    _adjustingscrollarea = new AdjustingScrollArea(_tree_view, this);
+    //    //    //    _treescreenlayout->addWidget(_adjustingscrollarea = new AdjustingScrollArea);  // , 0, 1
+    //    //    _tree_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    //    _adjustingscrollarea->setSizePolicy(QSizePolicy::Preferred  // QSizePolicy::MinimumExpanding
+    //                                        , QSizePolicy::Preferred
+    //                                       );
+    //    _adjustingscrollarea->setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    //    _adjustingscrollarea->setWidgetResizable(true);
+    //    _adjustingscrollarea->setStyleSheet("QScrollArea { border: 0px solid blue }");
+    //    //    _adjustingscrollarea->setWidget(_tree_view);
+    //    //    _tree_view->viewport()->installEventFilter(_adjustingscrollarea);
+
+    //    _treescreenlayout->setColumnStretch(1, 1);
+    QVBoxLayout *baseLayout = new QVBoxLayout();
+    baseLayout->setSpacing(0);
+    baseLayout->addWidget(_adjustingscrollarea);
+
+    //    RecordView *record_view = _record_controller->view(); //    auto record_view = new QWidget(this);
+    //    record_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    //    _vertical_scrollarea->setWidget(record_view);
+    //    record_view->viewport()->installEventFilter(_vertical_scrollarea);
+    //    QVBoxLayout *baseLayout = new QVBoxLayout();
+    //    baseLayout->addWidget(_vertical_scrollarea);
+
+    //    _treeviewhelpwidget = new TreeViewHelpWidget(this);
+
+    _treescreenlayout->addLayout(baseLayout);   // addWidget(_adjustingscrollarea);   // _tree_view // _treeviewhelpwidget
 
     setLayout(_treescreenlayout);
 
@@ -867,6 +933,7 @@ void TreeScreen::assembly(void)
     QLayout *lt;
     lt = layout();
     lt->setContentsMargins(0, 2, 0, 0);
+    lt->setSpacing(0);
 }
 
 
@@ -922,7 +989,7 @@ void TreeScreen::assembly(void)
 //}
 
 
-void TreeScreen::item_move_up_dn_branch(int(TreeItem::*_move)()) // int direction
+void TreeScreen::item_move_up_dn_branch(int (TreeItem::*_move)()) // int direction
 {
     // Если ветку нельзя перемещать
     if(!move_checkenable()) return;
@@ -947,7 +1014,12 @@ void TreeScreen::item_move_up_dn_branch(int(TreeItem::*_move)()) // int directio
         if(index_after_move.isValid() && index_after_move != _index) {
             auto it = _tree_view->source_model()->item(index_after_move);
             boost::intrusive_ptr<TreeIndex> tree_index;
-            try {tree_index = new TreeIndex([&] {return _tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+
+            try {
+                tree_index = new TreeIndex([&] {return _tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {
+                    return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+                }));
+            } catch(std::exception &e) {throw e; }
 
             _tree_view->select_as_current(tree_index);
             //            _tree_view->selectionModel()->select(index_after_move, current_tree_selection_mode);    // QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
@@ -2008,7 +2080,9 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &_position)
     //    QMenu _context_menu(this);
     //    _context_menu->clear();
 
-    auto _current_model = [&]() {return _tree_view->source_model();};
+    auto _current_model = [&]() {
+        return _tree_view->source_model();
+    };
     //    //select item at cursor position
     //    //    QPersistentModelIndex
     //    QModelIndex index = _tree_view->indexAt(_position);
@@ -2321,12 +2395,134 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &_position)
 //    return know_root_holder::know_root()->item(_del);
 //}
 
+void TreeScreen::resizeEvent(QResizeEvent *e)
+{
+
+    //    _tree_view->resizeEvent(e); //
+    _adjustingscrollarea->resizeEvent(e);
+
+    QWidget::resizeEvent(e);
+
+    //    int rw = contentsRect().width();
+    //    int vw = recordTableController->getView()->contentsRect().width();
+    //    int vwe = recordTableController->getView()->width();
+    //    int w = width();
+    //    int bw = this->baseSize().width();
+    //    int border = this->geometry().width();
+
+    //    _treepath_button->setMaximumWidth(
+    //        //        e->size().width() - 10 // contentsMargins().left() - contentsMargins().right() //
+    //        contentsRect().width() - 1
+    //    );
+
+    //    _treepath_button->setMinimumWidth(
+    //        //        e->size().width() - 10//contentsMargins().left() - contentsMargins().right() //
+    //        contentsRect().width() - 1
+    //    );
+
+}
+
+void AdjustingScrollArea::resizeEvent(QResizeEvent *e)
+{
+    (void)e;
+    //    auto w = width();
+    //    auto vw = viewport()->width() ;
+    //    auto ww = widget()->width();
+    // Essential vvv
+    resize(_tree_view->_tree_screen->width(), height());
+    _tree_view->resize(_tree_view->_tree_screen->width(), height());
+    //    _tree_view->resizeEvent(e);
+}
+
+bool AdjustingScrollArea::eventFilter(QObject *obj, QEvent *ev)
+{
+
+    // This works because QScrollArea::setWidget installs an eventFilter on the widget
+    if(obj && obj == widget() && ev->type() == QEvent::Resize) {
+
+        // deprecated:
+        //        setMinimumWidth(widget()->minimumSizeHint().width() + verticalScrollBar()->width());
+
+        //        widget()->setMaximumWidth(width() + verticalScrollBar()->width());
+        //        widget()->repaint();
+
+        //        static_cast<RecordView *>(o)
+        //        //        widget()
+        //        ->resizeEvent(static_cast<QResizeEvent *>(e));
+
+        //        auto w = width();
+        //        auto vw = viewport()->width() ;
+        //        auto ww = widget()->width();
+        resize(_tree_view->_tree_screen->width(), height());    // resize(width() - viewport()->width() + widget()->width(), height());
+        _tree_view->resize(_tree_view->_tree_screen->width(), height());
+        //        _tree_view->resizeEvent(static_cast<QResizeEvent *>(ev));  // (*_interface)(static_cast<QResizeEvent *>(ev));
+    }
+
+    if(obj == widget() && ev->type() != QEvent::Resize) {
+        //        auto w = width();
+        //        auto vw = viewport()->width() ;
+        //        auto ww = widget()->width();
+        // Essential vvv
+        resize(_tree_view->_tree_screen->width(), height());
+        _tree_view->resize(_tree_view->_tree_screen->width(), height()); // setMinimumWidth(width() - viewport()->width() + widget()->width()); // setMaximumWidth(width() - viewport()->width() + widget()->width());
+    }
+
+    return QScrollArea::eventFilter(obj, ev);
+}
+
+AdjustingScrollArea::AdjustingScrollArea(KnowView *_tree_view, QWidget *parent) : QScrollArea(parent), _tree_view(_tree_view)
+{
 
 
+    //    //    _treescreenlayout->addWidget(_adjustingscrollarea = new AdjustingScrollArea);  // , 0, 1
+    //    _tree_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    setSizePolicy(QSizePolicy::Preferred  // QSizePolicy::MinimumExpanding
+                  , QSizePolicy::Preferred
+                 );
+    setSizeAdjustPolicy(QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents);
+    setMinimumSize(_tree_view->size());
+    setWidgetResizable(true);
+    setStyleSheet("QScrollArea { border: 0px solid blue }");
+
+    //    _adjustingscrollarea->setWidget(_tree_view);
+    //    _tree_view->viewport()->installEventFilter(_adjustingscrollarea);
 
 
+    _tree_view->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+    //    _adjustingscrollarea->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+    //    area->setStyleSheet("QScrollArea { border: 1px solid blue }");
+    this->setWidget(_tree_view);
+    _tree_view->viewport()->installEventFilter(this);
 
+}
 
+void AdjustingScrollArea::setWidget(KnowView *w)
+{
+    QScrollArea::setWidget(w);
+    // It so happens that QScrollArea already filters widget events,
+    // but that's an implementation detail that we shouldn't rely on.
+    w->viewport()->installEventFilter(this);
+}
 
+//TreeViewHelpWidget::TreeViewHelpWidget(TreeScreen *_tree_screen)
+//    : QWidget(_tree_screen)
+//{
+//    QVBoxLayout *layout = new QVBoxLayout;
+//    _scroll_area = new QScrollArea(this);
 
+//    _tree_view = new KnowView("", _tree_screen);
+//    _tree_view->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+//    QObject::connect(_tree_view, SIGNAL(zoomChanged()), this, SLOT(repaintZoom()));
+//    _scroll_area->setWidget(_tree_view);
+//    _scroll_area->setWidgetResizable(true);
+//    _scroll_area->setAlignment(Qt::AlignLeft);
+//    layout->addWidget(_scroll_area);
+//    setLayout(layout);
+//}
 
+//void TreeViewHelpWidget::repaintZoom()
+//{
+//    _scroll_area->viewport()->updateGeometry();
+//    _scroll_area->viewport()->update();
+//    _scroll_area->update();
+//}

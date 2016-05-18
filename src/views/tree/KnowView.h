@@ -26,6 +26,8 @@ extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
 extern const char *record_view_multi_instance_name;
 
+
+class TreeScreen;
 class KnowModel;
 class TreeItem;
 class KnowView;
@@ -34,7 +36,7 @@ class TreeModel;
 class RecordModel;
 struct Linker;
 struct RecordIndex;
-
+class AdjustingScrollArea;
 // http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 class HtmlDelegate : public QStyledItemDelegate {
 public:
@@ -74,7 +76,7 @@ public:
         //        QModelIndex     _index;
     };
 
-    explicit KnowView(QString _name, TreeScreen *_parent); // QWidget *_parent = 0
+    explicit KnowView(QString _name, TreeScreen *_tree_screen); // QWidget *_parent = 0
 
     virtual ~KnowView();
 
@@ -109,6 +111,7 @@ public:
     boost::intrusive_ptr<TreeItem> session_root_auto();
 signals:
     void tapAndHoldGestureFinished(const QPoint &);
+    //    void zoomChanged();
 
 public slots:
     //private slots:
@@ -136,13 +139,13 @@ public slots:
 
 
     QList<boost::intrusive_ptr<Linker>> view_delete_permanent(const std::function<KnowModel *()>      &_current_model
-                                                               , QList<boost::intrusive_ptr<TreeItem>> _items
-                                                               , delete_strategy                       _delete_strategy
-                                                               , const QString                         &_mode
-                                                               = "cut"
-                                                                       , const bool                          _cut_branch_confirm
-                                                               = false
-                                                              );
+                                                              , QList<boost::intrusive_ptr<TreeItem>> _items
+                                                              , delete_strategy                       _delete_strategy
+                                                              , const QString                         &_mode
+                                                              = "cut"
+                                                                , const bool                          _cut_branch_confirm
+                                                              = false
+                                                             );
 
     void view_cut(bool _cut_branch_confirm = false);
     QModelIndexList view_copy(void);   // const;
@@ -174,15 +177,16 @@ public slots:
 
 
     QModelIndex previous_index()const;
+    //    void zoom(double scale_);
 protected:
-
-    bool event(QEvent *event);
+    void resizeEvent(QResizeEvent *e);
+    bool event(QEvent *event)override;
     bool gestureEvent(QGestureEvent *event);
     void tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture);
 
-    void dragEnterEvent(QDragEnterEvent *event);
-    void dragMoveEvent(QDragMoveEvent *event);
-    void dropEvent(QDropEvent *event);
+    void dragEnterEvent(QDragEnterEvent *event)override;
+    void dragMoveEvent(QDragMoveEvent *event)override;
+    void dropEvent(QDropEvent *event)override;
 
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
 
@@ -206,15 +210,18 @@ protected:
     }
 
     //    bool is_owner();
-    void setModel(KnowModel *model);
+    void setModel(QAbstractItemModel *model)override;
 private:
+    TreeScreen      *_tree_screen;
     KnowModel       *_know_model_board;      // for tree screen
     KnowModel       *_know_root;
 
     // create custom delegate
     HtmlDelegate    *_delegate;
     QModelIndex     _previous_index;
+    double          _previous_scale;
+    friend class AdjustingScrollArea;
+    friend class TreeScreen;
 };
 
 #endif // __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__
-

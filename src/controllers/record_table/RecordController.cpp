@@ -59,51 +59,51 @@ RecordController::RecordController(
     , RecordScreen       *_record_screen
     , MainWindow         *_main_window
     )
-        : QObject(_record_screen)
-        , _source_model(new RecordModel(this, _record_screen, _tabmanager))
-        , _proxy_model(new RecordProxyModel(this))
-        , _view(new RecordView(_record_screen, this))                       // , qobject_cast<QWidget * >(RecordTableScreen)
-        , _tabmanager(_tabmanager)
-        , _record_screen(_record_screen)
-        , _editor_screen(_editor_screen)
-        , _main_window(_main_window)
+    : QObject(_record_screen)
+    , _source_model(new RecordModel(this, _record_screen, _tabmanager))
+    , _proxy_model(new RecordProxyModel(this))
+    , _view(new RecordView(_record_screen, this))                           // , qobject_cast<QWidget * >(RecordTableScreen)
+    , _tabmanager(_tabmanager)
+    , _record_screen(_record_screen)
+    , _editor_screen(_editor_screen)
+    , _main_window(_main_window)
 {
-        // setObjectName(screen_name + "_controller");
+    // setObjectName(screen_name + "_controller");
 
 
-        //    _tree_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
-        //    _find_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
+    //    _tree_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
+    //    _find_screen->reocrd_controller = std::make_shared<sd::_interface<sd::meta_info<void *>, RecordController *>>("", &RecordController::reocrd_controller, this);
 
-        //    _find_screen->toolbarsearch()->lineedits(_tabmanager->lineEditStack());
+    //    _find_screen->toolbarsearch()->lineedits(_tabmanager->lineEditStack());
 
-        // Инициализируется область со списком записей
-        //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
-        //    _view->setObjectName("recordTableView");
-        //    view->setController(this);
+    // Инициализируется область со списком записей
+    //    view = new RecordTableView(qobject_cast<QWidget *>(parent));   // Вид размещается внутри виджета Screen
+    //    _view->setObjectName("recordTableView");
+    //    view->setController(this);
 
-        // Создание модели данных
-        //    recordSourceModel = new RecordTableModel(this);
-        //    _source_model->setObjectName("recordSourceModel");
+    // Создание модели данных
+    //    recordSourceModel = new RecordTableModel(this);
+    //    _source_model->setObjectName("recordSourceModel");
 
-        //    recordProxyModel = new RecordTableProxyModel(this);
-        _proxy_model->setSourceModel(_source_model);
-        //    _proxy_model->setObjectName("recordProxyModel");
+    //    recordProxyModel = new RecordTableProxyModel(this);
+    _proxy_model->setSourceModel(_source_model);
+    //    _proxy_model->setObjectName("recordProxyModel");
 
-        // Модель данных задается для вида
-        _view->setModel(_proxy_model);
-        //    init();
-        //    _no_view = false;
+    // Модель данных задается для вида
+    _view->setModel(_proxy_model);
+    //    init();
+    //    _no_view = false;
 }
 
 
 RecordController::~RecordController()
 {
-        // delete
-        _view->deleteLater();
-        // delete
-        _proxy_model->deleteLater();
-        // delete
-        _source_model->deleteLater();
+    // delete
+    _view->deleteLater();
+    // delete
+    _proxy_model->deleteLater();
+    // delete
+    _source_model->deleteLater();
 }
 
 
@@ -115,7 +115,7 @@ RecordController::~RecordController()
 
 RecordView *RecordController::view(void)
 {
-        return _view;
+    return _view;
 }
 
 
@@ -123,49 +123,49 @@ RecordView *RecordController::view(void)
 // Accepts index Proxy models
 boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &index_proxy_, bool force_update)
 {
-        boost::intrusive_ptr<TreeItem> result;
-        // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
-        IndexSource source_index = index<IndexSource>(index_proxy_);
+    boost::intrusive_ptr<TreeItem> result;
+    // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
+    IndexSource source_index = index<IndexSource>(index_proxy_);
 
-        // Позиция записи в списке
-        PosSource pos_source_ = index<PosSource>(index_proxy_);                      // (((QModelIndex)source_index).row());
-        qDebug() << "RecordController::item_click() : current item num " << pos_source_;
+    // Позиция записи в списке
+    PosSource pos_source_ = index<PosSource>(index_proxy_);                          // (((QModelIndex)source_index).row());
+    qDebug() << "RecordController::item_click() : current item num " << pos_source_;
 
-        cursor_to_index(index<PosProxy>(index_proxy_));                      // ?
-        auto _tree_screen = globalparameters.tree_screen();
-        auto tree_view = _tree_screen->tree_view();
-        result = source_model()->item(pos_source_);
-        auto parent = result->parent();
-        boost::intrusive_ptr<TreeIndex> tree_index;
+    cursor_to_index(index<PosProxy>(index_proxy_));                          // ?
+    auto _tree_screen = globalparameters.tree_screen();
+    auto tree_view = _tree_screen->tree_view();
+    result = source_model()->item(pos_source_);
+    auto parent = result->parent();
+    boost::intrusive_ptr<TreeIndex> tree_index;
 
-        try {
-                        tree_index = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                        return il->host() == result && result->linker() == il && result->parent() == il->host_parent();
-                }));
-                } catch(std::exception &e) {throw e; }
+    try {
+        tree_index = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+            return il->host() == result && result->linker() == il && result->parent() == il->host_parent();
+        }));
+    } catch(std::exception &e) {throw e; }
 
-        if(result != tree_view->current_item()) tree_view->select_as_current(tree_index);
+    if(result != tree_view->current_item()) tree_view->select_as_current(tree_index);
 
 
-        //    PosSource pos_source_ = index<PosSource>(pos_proxy_);
-        //    auto index_tab = _tabmanager->currentIndex();
-        //    assert(index_tab == (int)pos_source_);
+    //    PosSource pos_source_ = index<PosSource>(pos_proxy_);
+    //    auto index_tab = _tabmanager->currentIndex();
+    //    assert(index_tab == (int)pos_source_);
 
-        //    if(_tabmanager->currentIndex() != (int)pos_source_) {
-        //        _tabmanager->setCurrentIndex((int)pos_source_);
-        force_update ? result->binder()->activator() : result->activate();
-        //    }
+    //    if(_tabmanager->currentIndex() != (int)pos_source_) {
+    //        _tabmanager->setCurrentIndex((int)pos_source_);
+    force_update ? result->binder()->activator() : result->activate();
+    //    }
 
-        _record_screen->tools_update();
+    _record_screen->tools_update();
 
-        // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
-        if(((QModelIndex)source_index).isValid()) {
-                        sychronize_attachtable_to_item(pos_source_);
-                        //        browser_update(pos_source_); // if new one, create it? no, you can't click a record which does not exist.
-                }
+    // sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
+    if(((QModelIndex)source_index).isValid()) {
+        sychronize_attachtable_to_item(pos_source_);
+        //        browser_update(pos_source_); // if new one, create it? no, you can't click a record which does not exist.
+    }
 
-        globalparameters.window_switcher()->switchFromRecordtableToRecord();
-        return result;
+    globalparameters.window_switcher()->switchFromRecordtableToRecord();
+    return result;
 }
 
 //void RecordController::url_load(IndexProxy proxyIndex)
@@ -472,12 +472,12 @@ boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &in
 
 void RecordController::sychronize_attachtable_to_item(const PosSource pos)
 {
-        // Выясняется ссылка на таблицу конечных данных
-        //    auto table = _source_model->tree_item();
+    // Выясняется ссылка на таблицу конечных данных
+    //    auto table = _source_model->tree_item();
 
-        // Устанавливается таблица приаттаченных файлов
-        AttachTableController *attachTableController = globalparameters.attachtable_controller();                       //find_object<AttachTableController>("attachTableController");
-        attachTableController->attach_table_data(_source_model->item(pos)->attach_table());
+    // Устанавливается таблица приаттаченных файлов
+    AttachTableController *attachTableController = globalparameters.attachtable_controller();                           //find_object<AttachTableController>("attachTableController");
+    attachTableController->attach_table_data(_source_model->item(pos)->attach_table());
 }
 
 
@@ -515,12 +515,12 @@ void RecordController::sychronize_attachtable_to_item(const PosSource pos)
 
 RecordModel *RecordController::source_model()
 {
-        return _source_model;
+    return _source_model;
 }
 
 RecordProxyModel *RecordController::proxy_model()
 {
-        return _proxy_model;
+    return _proxy_model;
 }
 
 //void RecordController::init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen)
@@ -711,24 +711,24 @@ RecordProxyModel *RecordController::proxy_model()
 // Index QModelIndexList transferred from the Proxy pattern
 void RecordController::add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelIndexList items_copy)
 {
-        // Выясняется ссылка на таблицу конечных данных
-        //    auto table = _source_model->tree_item();
+    // Выясняется ссылка на таблицу конечных данных
+    //    auto table = _source_model->tree_item();
 
-        // Перебираются записи и вносятся в буфер обмена
-        for(int i = 0; i < items_copy.size(); ++i) {
-                        IndexSource index_ = index<IndexSource>(IndexProxy(items_copy.at(i)));
+    // Перебираются записи и вносятся в буфер обмена
+    for(int i = 0; i < items_copy.size(); ++i) {
+        IndexSource index_ = index<IndexSource>(IndexProxy(items_copy.at(i)));
 
-                        // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-                        boost::intrusive_ptr<TreeItem> record = _source_model->item_fat(PosSource(((QModelIndex)index_).row()));
+        // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
+        boost::intrusive_ptr<TreeItem> record = _source_model->item_fat(PosSource(((QModelIndex)index_).row()));
 
-                        clipboardRecords->add_record(record);
-                }
+        clipboardRecords->add_record(record);
+    }
 }
 
 
 int RecordController::row_count(void) const
 {
-        return _proxy_model->rowCount();
+    return _proxy_model->rowCount();
 }
 
 
@@ -748,63 +748,63 @@ int RecordController::row_count(void) const
 // Установка засветки в нужную строку на экране
 void RecordController::cursor_to_index(PosProxy pos_proxy_) // , const int mode
 {
-        //    //    IdType id;
-        //    //    PosSource pos_source_ = _source_model->position(id);
-        //    //    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
+    //    //    IdType id;
+    //    //    PosSource pos_source_ = _source_model->position(id);
+    //    //    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
 
-        //    // В QTableView некорректно работает установка на только что созданную строку
-        //    // Это как-то связано с отрисовкой виджета QTableView
-        //    // Прокрутка к только что созданной строке через selectRow() показывает только
-        //    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
-        //    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-        //    if(mode == add_new_record_to_end
-        //       || (mode == add_new_record_after && pos_proxy_ >= (_view->model()->rowCount() - 1))
-        //      ) {
-        //        _view->scrollToBottom();
-        //    }
+    //    // В QTableView некорректно работает установка на только что созданную строку
+    //    // Это как-то связано с отрисовкой виджета QTableView
+    //    // Прокрутка к только что созданной строке через selectRow() показывает только
+    //    // верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
+    //    // таблицы конечных записей, установка прокрутки делается через scrollToBottom()
+    //    if(mode == add_new_record_to_end
+    //       || (mode == add_new_record_after && pos_proxy_ >= (_view->model()->rowCount() - 1))
+    //      ) {
+    //        _view->scrollToBottom();
+    //    }
 
-        //    PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
-        IndexProxy index_proxy_ = index<IndexProxy>(pos_proxy_);                     // Модельный индекс в Proxy модели
-        PosProxy pos_proxy_real(((QModelIndex)index_proxy_).row());
+    //    PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
+    IndexProxy index_proxy_ = index<IndexProxy>(pos_proxy_);                         // Модельный индекс в Proxy модели
+    PosProxy pos_proxy_real(((QModelIndex)index_proxy_).row());
 
-        // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-        if((int)pos_proxy_real != (int)pos_proxy_) {
-                        QMessageBox msg_box;
-                        msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
-                        msg_box.exec();
-                }
+    // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
+    if((int)pos_proxy_real != (int)pos_proxy_) {
+        QMessageBox msg_box;
+        msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
+        msg_box.exec();
+    }
 
-        int rowCount = row_count();
+    int rowCount = row_count();
 
-        if((int)pos_proxy_real < rowCount) {                       // if(pos_real > (rowCount - 1))return;
+    if((int)pos_proxy_real < rowCount) {                           // if(pos_real > (rowCount - 1))return;
 
 
-                        // Простой механизм выбора строки. Похоже, что его использовать не получится
-                        _view->selectRow((int)pos_proxy_real);
+        // Простой механизм выбора строки. Похоже, что его использовать не получится
+        _view->selectRow((int)pos_proxy_real);
 
-                        //    auto recordSourceModel = controller->getRecordTableModel();
-                        //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
+        //    auto recordSourceModel = controller->getRecordTableModel();
+        //    QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
-                        _view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
-                        // Установка засветки на нужный индекс
-                        // Set the backlight to the desired index
-                        _view->selectionModel()->setCurrentIndex(index_proxy_                                       // selIdx
-                            , current_tree_current_index_mode                                                                          // QItemSelectionModel::Select    // ClearAndSelect
-                            );
+        _view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
+        // Установка засветки на нужный индекс
+        // Set the backlight to the desired index
+        _view->selectionModel()->setCurrentIndex(index_proxy_                                                       // selIdx
+            , current_tree_current_index_mode                                                                                          // QItemSelectionModel::Select    // ClearAndSelect
+            );
 
-                        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-                        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-                        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-                        // Therefore, the recording must be made a virtual click to fill the final table of records
-                        if(appconfig.interface_mode() == "mobile")
-                                emit _view->clicked((QModelIndex)index_proxy_);                                                         // QModelIndex selIdx=recordSourceModel->index(pos, 0);
+        // В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+        // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+        // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+        // Therefore, the recording must be made a virtual click to fill the final table of records
+        if(appconfig.interface_mode() == "mobile")
+            emit _view->clicked((QModelIndex)index_proxy_);                                                                             // QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
-                        // emit this->clicked(index);
-                        assert(_view->currentIndex() == (QModelIndex)index_proxy_);
-                        _view->scrollTo(_view->currentIndex());                                       // QAbstractItemView::PositionAtCenter
+        // emit this->clicked(index);
+        assert(_view->currentIndex() == (QModelIndex)index_proxy_);
+        _view->scrollTo(_view->currentIndex());                                                       // QAbstractItemView::PositionAtCenter
 
-                        //    this->setFocus();   // ?
-                }
+        //    this->setFocus();   // ?
+    }
 }
 
 
@@ -975,90 +975,90 @@ void RecordController::cursor_to_index(PosProxy pos_proxy_) // , const int mode
 // из таблицы конечных записей
 void RecordController::cut(void)
 {
-        // Надо сохранить запись, так как перед копированием в буфер обмена запись
-        // обязательно должна быть сохранена, иначе редактирование,
-        // которое было после открытия записи и до нажатия Cut, потеряется
-        //    find_object<MetaEditor>(meta_editor_singleton_name)
-        globalparameters.meta_editor()->save_textarea();
+    // Надо сохранить запись, так как перед копированием в буфер обмена запись
+    // обязательно должна быть сохранена, иначе редактирование,
+    // которое было после открытия записи и до нажатия Cut, потеряется
+    //    find_object<MetaEditor>(meta_editor_singleton_name)
+    globalparameters.meta_editor()->save_textarea();
 
-        copy();
+    copy();
 
-        QModelIndexList items_for_delete = _view->selectionModel()->selectedIndexes();
+    QModelIndexList items_for_delete = _view->selectionModel()->selectedIndexes();
 
 
-        // Проверка, выбраны ли записи
-        if(items_for_delete.count() == 0) {
-                        qDebug() << "Records for delete not selected.";
+    // Проверка, выбраны ли записи
+    if(items_for_delete.count() == 0) {
+        qDebug() << "Records for delete not selected.";
 
-                        QMessageBox msgBox;
-                        msgBox.setText("Please select at least one record for delete.");
-                        msgBox.exec();
+        QMessageBox msgBox;
+        msgBox.setText("Please select at least one record for delete.");
+        msgBox.exec();
 
-                        return;
-                }
+        return;
+    }
 
-        QVector<IdType>    delete_ids;
-        //    QVector<int>        del_rows;
+    QVector<IdType>    delete_ids;
+    //    QVector<int>        del_rows;
 
-        for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
-                        QModelIndex curr_idx;
-                        curr_idx = *it;
+    for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
+        QModelIndex curr_idx;
+        curr_idx = *it;
 
-                        IdType append_id(curr_idx.data(RECORD_ID_ROLE).toString());
+        IdType append_id(curr_idx.data(RECORD_ID_ROLE).toString());
 
-                        // Если идентификатор не содержится в перечне удаляемых идентификаторов
-                        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
-                        if(!delete_ids.contains(append_id)) {
-                                        qDebug() << "Mark for delete item id " << append_id;
-                                        delete_ids.append(append_id);
-                                        //            del_rows.append(curr_idx.row());
-                                }
-                }
+        // Если идентификатор не содержится в перечне удаляемых идентификаторов
+        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
+        if(!delete_ids.contains(append_id)) {
+            qDebug() << "Mark for delete item id " << append_id;
+            delete_ids.append(append_id);
+            //            del_rows.append(curr_idx.row());
+        }
+    }
 
-        remove(delete_ids);
+    remove(delete_ids);
 }
 
 
 // Копирование отмеченных записей в буфер обмена
 void RecordController::copy(void)
 {
-        // Объект с записями помещается в буфер обмена
-        QApplication::clipboard()->setMimeData(_view->get_selected_records());
+    // Объект с записями помещается в буфер обмена
+    QApplication::clipboard()->setMimeData(_view->get_selected_records());
 }
 
 
 // Insert records from the clipboard    // Вставка записей из буфера обмена
 void RecordController::paste(void)
 {
-        // Проверяется, содержит ли буфер обмена данные нужного формата
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData();
+    // Проверяется, содержит ли буфер обмена данные нужного формата
+    const QMimeData *mimeData = QApplication::clipboard()->mimeData();
 
-        if(mimeData == nullptr)
-                return;
+    if(mimeData == nullptr)
+        return;
 
-        if(!(mimeData->hasFormat("mytetra/records")))
-                return;
+    if(!(mimeData->hasFormat("mytetra/records")))
+        return;
 
-        // Создается ссылка на буфер обмена
-        QClipboard *clipboardBuf = QApplication::clipboard();
+    // Создается ссылка на буфер обмена
+    QClipboard *clipboardBuf = QApplication::clipboard();
 
-        // Извлечение объекта из буфера обмена
-        // const clipboardrecords *rcd=new clipboardrecords();
-        const ClipboardRecords *clipboardRecords;
-        clipboardRecords = qobject_cast<const ClipboardRecords *>(clipboardBuf->mimeData());
-        clipboardRecords->print();
+    // Извлечение объекта из буфера обмена
+    // const clipboardrecords *rcd=new clipboardrecords();
+    const ClipboardRecords *clipboardRecords;
+    clipboardRecords = qobject_cast<const ClipboardRecords *>(clipboardBuf->mimeData());
+    clipboardRecords->print();
 
-        // Выясняется количество записей в буфере
-        int nList = clipboardRecords->size();
+    // Выясняется количество записей в буфере
+    int nList = clipboardRecords->size();
 
-        // Пробегаются все записи в буфере
-        for(int i = 0; i < nList; i++)
-                addnew_item(clipboardRecords->record(i), add_new_record_to_end);
+    // Пробегаются все записи в буфере
+    for(int i = 0; i < nList; i++)
+        addnew_item(clipboardRecords->record(i), add_new_record_to_end);
 
-        // Обновление на экране ветки, на которой стоит засветка,
-        // так как количество хранимых в ветке записей поменялось
-        //    find_object<TreeScreen>(tree_screen_singleton_name)
-        globalparameters.tree_screen()->tree_view()->update_selected_indexes();
+    // Обновление на экране ветки, на которой стоит засветка,
+    // так как количество хранимых в ветке записей поменялось
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->tree_view()->update_selected_indexes();
 }
 
 
@@ -1169,66 +1169,66 @@ void RecordController::paste(void)
 // Call window to add data to a table of final entries
 void RecordController::addnew_blank(int mode)
 {
-        qDebug() << "In add_new_record()";
+    qDebug() << "In add_new_record()";
 
-        //    // Создается окно ввода данных
-        //    // При клике Ok внутри этого окна, будет создана временная директория
-        //    // с картинками, содержащимися в тексте
-        //    AddNewRecord addNewRecordWin;
+    //    // Создается окно ввода данных
+    //    // При клике Ok внутри этого окна, будет создана временная директория
+    //    // с картинками, содержащимися в тексте
+    //    AddNewRecord addNewRecordWin;
 
-        //    int i = addNewRecordWin.exec();
-
-
-        //    if(i == QDialog::Rejected)
-        //        return; // Была нажата отмена, ничего ненужно делать
-
-        // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-        QString directory = DiskHelper::create_temp_directory();                      //
-        // addNewRecordWin.getImagesDirectory();
-
-        // todo: сделать заполнение таблицы приаттаченных файлов
-
-        QMap<QString, QString> data;
-        data["id"] = get_unical_id();
-        data["pin"] = _string_from_check_state[Qt::Unchecked];
-        data["name"] = "";
-        data["author"] = "";
-        data["home"] = browser::Browser::_defaulthome;
-        data["url"] = browser::Browser::_defaulthome;
-        data["tags"] = "";
+    //    int i = addNewRecordWin.exec();
 
 
-        boost::intrusive_ptr<TreeItem> item
-            = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+    //    if(i == QDialog::Rejected)
+    //        return; // Была нажата отмена, ничего ненужно делать
+
+    // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+    QString directory = DiskHelper::create_temp_directory();                          //
+    // addNewRecordWin.getImagesDirectory();
+
+    // todo: сделать заполнение таблицы приаттаченных файлов
+
+    QMap<QString, QString> data;
+    data["id"] = get_unical_id();
+    data["pin"] = _string_from_check_state[Qt::Unchecked];
+    data["name"] = "";
+    data["author"] = "";
+    data["home"] = browser::Browser::_defaulthome;
+    data["url"] = browser::Browser::_defaulthome;
+    data["tags"] = "";
 
 
-        item->to_fat();
-        //    record.setText(addNewRecordWin.getField("text"));
-        //    record.setField("pin",   addNewRecordWin.getField("pin"));
-        //    record.setField("name",   addNewRecordWin.getField("name"));
-        //    record.setField("author", addNewRecordWin.getField("author"));
-        //    record.setField("url",    addNewRecordWin.getField("url"));
-        //    record.setField("tags",   addNewRecordWin.getField("tags"));
-        item->text_to_fat("");
-        //    item->field("pin",   _check_state[Qt::Unchecked]);
-        //    item->field("name",   "");
-        //    item->field("author", "");
-        //    item->field("home",   browser::Browser::_defaulthome);
-        //    item->field("url",    browser::Browser::_defaulthome);
-        //    item->field("tags",   "");
+    boost::intrusive_ptr<TreeItem> item
+        = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
 
-        item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
-        // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
-        // Запись должна быть создана, потом можно аттачить файлы.
-        // Это ограничение для "ленивого" программинга, но пока так
-        // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
+    item->to_fat();
+    //    record.setText(addNewRecordWin.getField("text"));
+    //    record.setField("pin",   addNewRecordWin.getField("pin"));
+    //    record.setField("name",   addNewRecordWin.getField("name"));
+    //    record.setField("author", addNewRecordWin.getField("author"));
+    //    record.setField("url",    addNewRecordWin.getField("url"));
+    //    record.setField("tags",   addNewRecordWin.getField("tags"));
+    item->text_to_fat("");
+    //    item->field("pin",   _check_state[Qt::Unchecked]);
+    //    item->field("name",   "");
+    //    item->field("author", "");
+    //    item->field("home",   browser::Browser::_defaulthome);
+    //    item->field("url",    browser::Browser::_defaulthome);
+    //    item->field("tags",   "");
 
-        // Временная директория с картинками и приаттаченными файлами удаляется
-        DiskHelper::remove_directory(directory);
+    item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
-        // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-        addnew_item(item, mode);
+    // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+    // Запись должна быть создана, потом можно аттачить файлы.
+    // Это ограничение для "ленивого" программинга, но пока так
+    // record.setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
+
+    // Временная директория с картинками и приаттаченными файлами удаляется
+    DiskHelper::remove_directory(directory);
+
+    // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
+    addnew_item(item, mode);
 }
 
 
@@ -1237,60 +1237,60 @@ void RecordController::addnew_blank(int mode)
 // Call window to add data to a table of final entries
 PosSource RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode)
 {
-        qDebug() << "In add_new_record()";
+    qDebug() << "In add_new_record()";
 
-        //    // Создается окно ввода данных
-        //    // При клике Ok внутри этого окна, будет создана временная директория
-        //    // с картинками, содержащимися в тексте
-        //    AddNewRecord addNewRecordWin;
+    //    // Создается окно ввода данных
+    //    // При клике Ok внутри этого окна, будет создана временная директория
+    //    // с картинками, содержащимися в тексте
+    //    AddNewRecord addNewRecordWin;
 
-        //    int i = addNewRecordWin.exec();
+    //    int i = addNewRecordWin.exec();
 
 
-        //    if(i == QDialog::Rejected)
-        //        return; // Была нажата отмена, ничего ненужно делать
+    //    if(i == QDialog::Rejected)
+    //        return; // Была нажата отмена, ничего ненужно делать
 
-        // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-        QString directory = DiskHelper::create_temp_directory();                      //
-        // addNewRecordWin.getImagesDirectory();
+    // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+    QString directory = DiskHelper::create_temp_directory();                          //
+    // addNewRecordWin.getImagesDirectory();
 
-        // todo: сделать заполнение таблицы приаттаченных файлов
+    // todo: сделать заполнение таблицы приаттаченных файлов
 
-        //    Record record;
+    //    Record record;
 
-        //    if(record.isLite())record.switchToFat();
+    //    if(record.isLite())record.switchToFat();
 
-        assert(!item->is_lite());
+    assert(!item->is_lite());
 
-        //    record.setText(addNewRecordWin.getField("text"));
-        //    record.setField("pin",   addNewRecordWin.getField("pin"));
-        //    record.setField("name",   addNewRecordWin.getField("name"));
-        //    record.setField("author", addNewRecordWin.getField("author"));
-        //    record.setField("url",    addNewRecordWin.getField("url"));
-        //    record.setField("tags",   addNewRecordWin.getField("tags"));
+    //    record.setText(addNewRecordWin.getField("text"));
+    //    record.setField("pin",   addNewRecordWin.getField("pin"));
+    //    record.setField("name",   addNewRecordWin.getField("name"));
+    //    record.setField("author", addNewRecordWin.getField("author"));
+    //    record.setField("url",    addNewRecordWin.getField("url"));
+    //    record.setField("tags",   addNewRecordWin.getField("tags"));
 
-        //    record.setText("");
-        //    record.setField("pin",   _check_state[Qt::Unchecked]);
-        //    record.setField("name",   "");
-        //    record.setField("author", "");
-        //    record.setField("home",   url.toString());
-        //    record.setField("url",    url.toString());
-        //    record.setField("tags",   "");
+    //    record.setText("");
+    //    record.setField("pin",   _check_state[Qt::Unchecked]);
+    //    record.setField("name",   "");
+    //    record.setField("author", "");
+    //    record.setField("home",   url.toString());
+    //    record.setField("url",    url.toString());
+    //    record.setField("tags",   "");
 
-        item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
+    item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
-        //    record->generator(generator);
+    //    record->generator(generator);
 
-        // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
-        // Запись должна быть создана, потом можно аттачить файлы.
-        // Это ограничение для "ленивого" программинга, но пока так
-        // record->setAttachFiles(DiskHelper::getFilesFromDirectory(directory, "*.bin"));
+    // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+    // Запись должна быть создана, потом можно аттачить файлы.
+    // Это ограничение для "ленивого" программинга, но пока так
+    // record->setAttachFiles(DiskHelper::getFilesFromDirectory(directory, "*.bin"));
 
-        // Временная директория с картинками и приаттаченными файлами удаляется
-        DiskHelper::remove_directory(directory);
+    // Временная директория с картинками и приаттаченными файлами удаляется
+    DiskHelper::remove_directory(directory);
 
-        // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-        return addnew_item(item, mode);
+    // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
+    return addnew_item(item, mode);
 }
 
 
@@ -1298,78 +1298,78 @@ PosSource RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item,
 // Принимает полный формат записи
 PosSource RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_, const int mode)
 {
-        qDebug() << "In add_new()";
+    qDebug() << "In add_new()";
 
-        // Получение Source-индекса первой выделенной строки
-        IndexSource source_position_index = _view->selection_first<IndexSource>();
+    // Получение Source-индекса первой выделенной строки
+    IndexSource source_position_index = _view->selection_first<IndexSource>();
 
-        //    if(!position_index.isValid()) {
-        //        position_index = _view->currentIndex();   // very wrong!
-        //    }
+    //    if(!position_index.isValid()) {
+    //        position_index = _view->currentIndex();   // very wrong!
+    //    }
 
-        if(!((QModelIndex)source_position_index).isValid() && _source_model->size() > 0) {
-                        //        if(0 == _source_model->tree_item()->size()) {
-                        //            _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
-                        //        }
+    if(!((QModelIndex)source_position_index).isValid() && _source_model->size() > 0) {
+        //        if(0 == _source_model->tree_item()->size()) {
+        //            _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
+        //        }
 
-                        source_position_index = _source_model->createIndex(_source_model->size() - 1
-                                , 0
-                                , static_cast<void *>(_source_model->item(PosSource(_source_model->size() - 1)).get())
-                                );
-                }
+        source_position_index = _source_model->createIndex(_source_model->size() - 1
+                , 0
+                , static_cast<void *>(_source_model->item(PosSource(_source_model->size() - 1)).get())
+                );
+    }
 
-        assert(((QModelIndex)source_position_index).row() < _source_model->size());
-        //    assert(position_index.isValid());
+    assert(((QModelIndex)source_position_index).row() < _source_model->size());
+    //    assert(position_index.isValid());
 
-        //    if(!position_index.isValid()) {
-        //        position_index = view->getFirstSelectionProxyIndex();
-        //    }
+    //    if(!position_index.isValid()) {
+    //        position_index = view->getFirstSelectionProxyIndex();
+    //    }
 
-        //    if(position_index.isValid() //   // do not need? but if it is invalid, the sequence will be changed. hughvonyoung@gmail.com
-        //       //       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
-        //      ) {
+    //    if(position_index.isValid() //   // do not need? but if it is invalid, the sequence will be changed. hughvonyoung@gmail.com
+    //       //       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
+    //      ) {
 
-        PosSource selected_source_position(-1);
+    PosSource selected_source_position(-1);
 
-        // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-        if(!_source_model->item(item_)) {
-                        selected_source_position = _source_model->insert_new_item(source_position_index, item_, mode);
-                } else {
-                        selected_source_position = _source_model->position(item_->id());
-                }
-
-        assert(selected_source_position != -1);
-        assert(_source_model->item(selected_source_position) == item_);
-        assert(_source_model->position(item_->id()) == selected_source_position);
-        //    assert(_source_model->child(selected_position) == item);
-
-        cursor_to_index(index<PosProxy>(selected_source_position));                       // , mode // modify _source_model? yeah
-
-        // Сохранение дерева веток
-        //    find_object<TreeScreen>(tree_screen_singleton_name)
-        globalparameters.tree_screen()->tree_view()->know_model_save();
-        //    }
-
-        //    else {
-        //        // Add a record in the database // Добавление записи в базу
-        //        RecordTableData *table = nullptr;
-        //        table = recordSourceModel->getRecordTableData();
-
-        //        //        if(table == nullptr) {}
-
-        //        int selPos = table->insertNewRecord(ADD_NEW_RECORD_TO_END, 0, record);
-
-        //        view->moveCursorToNewRecord(mode, convertSourcePosToProxyPos(selPos));
-
-        //        // Сохранение дерева веток
-        //        find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
-        //    }
-
+    // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
+    if(!_source_model->item(item_)) {
+        selected_source_position = _source_model->insert_new_item(source_position_index, item_, mode);
+    } else {
         selected_source_position = _source_model->position(item_->id());
-        assert(selected_source_position != -1);
-        assert(_source_model->item(selected_source_position) == item_);
+    }
 
-        return selected_source_position;
+    assert(selected_source_position != -1);
+    assert(_source_model->item(selected_source_position) == item_);
+    assert(_source_model->position(item_->id()) == selected_source_position);
+    //    assert(_source_model->child(selected_position) == item);
+
+    cursor_to_index(index<PosProxy>(selected_source_position));                           // , mode // modify _source_model? yeah
+
+    // Сохранение дерева веток
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->tree_view()->know_model_save();
+    //    }
+
+    //    else {
+    //        // Add a record in the database // Добавление записи в базу
+    //        RecordTableData *table = nullptr;
+    //        table = recordSourceModel->getRecordTableData();
+
+    //        //        if(table == nullptr) {}
+
+    //        int selPos = table->insertNewRecord(ADD_NEW_RECORD_TO_END, 0, record);
+
+    //        view->moveCursorToNewRecord(mode, convertSourcePosToProxyPos(selPos));
+
+    //        // Сохранение дерева веток
+    //        find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
+    //    }
+
+    selected_source_position = _source_model->position(item_->id());
+    assert(selected_source_position != -1);
+    assert(_source_model->item(selected_source_position) == item_);
+
+    return selected_source_position;
 }
 
 
@@ -1486,8 +1486,8 @@ PosSource RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_, co
 
 void RecordController::on_edit_fieldcontext(void)
 {
-        _view->edit_field_context();
-        //view->loadUrl();
+    _view->edit_field_context();
+    //view->loadUrl();
 }
 
 
@@ -1495,43 +1495,47 @@ void RecordController::on_edit_fieldcontext(void)
 // Действия при нажатии кнопки редактирования записи
 bool RecordController::edit_field_context(IndexProxy proxyIndex)
 {
-        qDebug() << "RecordController::edit_field_context()";
-        bool result = false;
-        IndexSource sourceIndex = index<IndexSource>(proxyIndex);
-        PosSource pos_source_(((QModelIndex)sourceIndex).row());                       // Номер строки в базе
+    qDebug() << "RecordController::edit_field_context()";
+    bool result = false;
+    IndexSource sourceIndex = index<IndexSource>(proxyIndex);
+    PosSource pos_source_(((QModelIndex)sourceIndex).row());                           // Номер строки в базе
 
-        // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
-        InfoFieldsEditor edit_record_dialog;
+    // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
+    InfoFieldsEditor edit_record_dialog;
 
-        // Выясняется ссылка на таблицу конечных данных
-        auto item = _source_model->item(pos_source_);
+    // Выясняется ссылка на таблицу конечных данных
+    auto item = _source_model->item(pos_source_);
 
-        // Поля окна заполняются начальными значениями
-        edit_record_dialog.setField("pin",       item->field("pin"));
-        edit_record_dialog.setField("name",      item->field("name"));
-        edit_record_dialog.setField("author",    item->field("author"));
-        edit_record_dialog.setField("home",      item->field("home"));
-        edit_record_dialog.setField("url",       item->field("url"));
-        edit_record_dialog.setField("tags",      item->field("tags"));
+    // Поля окна заполняются начальными значениями
+    edit_record_dialog.setField("pin",       item->field("pin"));
+    edit_record_dialog.setField("name",      item->field("name"));
+    edit_record_dialog.setField("author",    item->field("author"));
+    edit_record_dialog.setField("home",      item->field("home"));
+    edit_record_dialog.setField("url",       item->field("url"));
+    edit_record_dialog.setField("tags",      item->field("tags"));
 
 
-        int i = edit_record_dialog.exec();
+    int i = edit_record_dialog.exec();
 
-        if(i != QDialog::Rejected) {
-                        //        result; // Была нажата отмена, ничего ненужно делать
+    if(i != QDialog::Rejected) {
+        //        result; // Была нажата отмена, ничего ненужно делать
 
-                        // Измененные данные записываются
-                        edit_field(pos_source_,
-                            edit_record_dialog.getField("pin"),
-                            edit_record_dialog.getField("name"),
-                            edit_record_dialog.getField("author"),
-                            edit_record_dialog.getField("home"),
-                            edit_record_dialog.getField("url"),
-                            edit_record_dialog.getField("tags"));
-                        result = true;
-                }
+        // Измененные данные записываются
+        edit_field(pos_source_,
+            edit_record_dialog.getField("pin"),
+            edit_record_dialog.getField("name"),
+            edit_record_dialog.getField("author"),
+            edit_record_dialog.getField("home"),
+            edit_record_dialog.getField("url"),
+            edit_record_dialog.getField("tags"));
+        auto editor = globalparameters.meta_editor();
+        if(!editor->isHidden()) {
+            item->page()->sychronize_metaeditor_to_item();
+        }
+        result = true;
+    }
 
-        return result;
+    return result;
 }
 
 
@@ -1545,97 +1549,97 @@ void RecordController::edit_field(int pos
     , QString tags
     )
 {
-        qDebug() << "In edit_field()";
+    qDebug() << "In edit_field()";
 
-        // Выясняется ссылка на таблицу конечных данных
-        //    auto pages = _source_model->browser_pages();
+    // Выясняется ссылка на таблицу конечных данных
+    //    auto pages = _source_model->browser_pages();
 
-        // Переданные отредактированные поля преобразуются в вид имя-значение
-        QMap<QString, QString> edit_data;
-        edit_data["pin"] = pin;
-        edit_data["name"] = name;
-        edit_data["author"] = author;
-        edit_data["home"] = home;
-        edit_data["url"] = url;
-        edit_data["tags"] = tags;
+    // Переданные отредактированные поля преобразуются в вид имя-значение
+    QMap<QString, QString> edit_data;
+    edit_data["pin"] = pin;
+    edit_data["name"] = name;
+    edit_data["author"] = author;
+    edit_data["home"] = home;
+    edit_data["url"] = url;
+    edit_data["tags"] = tags;
 
-        // Обновление новых данных в таблице конечных записей
-        _source_model->fields(pos, edit_data);
+    // Обновление новых данных в таблице конечных записей
+    _source_model->fields(pos, edit_data);
 
-        // Обновление инфополей в области редактирования записи
-        MetaEditor *meta_editor = globalparameters.meta_editor();                       //find_object<MetaEditor>(meta_editor_singleton_name);
-        meta_editor->pin(pin);
-        meta_editor->name(name);
-        meta_editor->author(author);
-        meta_editor->url(url);
-        meta_editor->tags(tags);
+    // Обновление инфополей в области редактирования записи
+    MetaEditor *meta_editor = globalparameters.meta_editor();                           //find_object<MetaEditor>(meta_editor_singleton_name);
+    meta_editor->pin(pin);
+    meta_editor->name(name);
+    meta_editor->author(author);
+    meta_editor->url(url);
+    meta_editor->tags(tags);
 
-        // Сохранение дерева веток
-        //    find_object<TreeScreen>(tree_screen_singleton_name)
-        globalparameters.tree_screen()->tree_view()->know_model_save();
+    // Сохранение дерева веток
+    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->tree_view()->know_model_save();
 }
 
 
 // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
 void RecordController::close_context(void)
 {
-        //    // Создается окно с вопросом нужно удалять запись (записи) или нет
-        //    QMessageBox messageBox(_view);
-        //    messageBox.setWindowTitle("Delete");
-        //    messageBox.setText(tr("Are you sure to delete this record(s)?"));
-        //    QAbstractButton *cancelButton = messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
-        //    QAbstractButton *deleteButton = messageBox.addButton(tr("Delete"), QMessageBox::AcceptRole);
+    //    // Создается окно с вопросом нужно удалять запись (записи) или нет
+    //    QMessageBox messageBox(_view);
+    //    messageBox.setWindowTitle("Delete");
+    //    messageBox.setText(tr("Are you sure to delete this record(s)?"));
+    //    QAbstractButton *cancelButton = messageBox.addButton(tr("Cancel"), QMessageBox::RejectRole);
+    //    QAbstractButton *deleteButton = messageBox.addButton(tr("Delete"), QMessageBox::AcceptRole);
 
-        //    Q_UNUSED(cancelButton);
+    //    Q_UNUSED(cancelButton);
 
-        //    messageBox.exec();
+    //    messageBox.exec();
 
-        //    if(messageBox.clickedButton() == deleteButton) {
-        //        // Выбранные данные удаляются
+    //    if(messageBox.clickedButton() == deleteButton) {
+    //        // Выбранные данные удаляются
 
-        QModelIndexList items_for_delete = _view->selectionModel()->selectedIndexes();
+    QModelIndexList items_for_delete = _view->selectionModel()->selectedIndexes();
 
-        // Проверка, выбраны ли записи
-        if(items_for_delete.count() == 0) {
-                        qDebug() << "Records for delete not selected.";
+    // Проверка, выбраны ли записи
+    if(items_for_delete.count() == 0) {
+        qDebug() << "Records for delete not selected.";
 
-                        QMessageBox msgBox;
-                        msgBox.setText("Please select at least one record for delete.");
-                        msgBox.exec();
+        QMessageBox msgBox;
+        msgBox.setText("Please select at least one record for delete.");
+        msgBox.exec();
 
-                        return;
-                }
+        return;
+    }
 
-        QVector<IdType>    delete_ids;
-        //    QVector<int>        del_rows;
+    QVector<IdType>    delete_ids;
+    //    QVector<int>        del_rows;
 
-        for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
-                        QModelIndex curr_idx;
-                        curr_idx = *it;
+    for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
+        QModelIndex curr_idx;
+        curr_idx = *it;
 
-                        IdType append_id(curr_idx.data(RECORD_ID_ROLE).toString());
+        IdType append_id(curr_idx.data(RECORD_ID_ROLE).toString());
 
-                        // Если идентификатор не содержится в перечне удаляемых идентификаторов
-                        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
-                        if(!delete_ids.contains(append_id)) {
-                                        qDebug() << "Mark for delete item id " << append_id;
-                                        delete_ids.append(append_id);
-                                        //            del_rows.append(curr_idx.row());
-                                }
-                }
+        // Если идентификатор не содержится в перечне удаляемых идентификаторов
+        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
+        if(!delete_ids.contains(append_id)) {
+            qDebug() << "Mark for delete item id " << append_id;
+            delete_ids.append(append_id);
+            //            del_rows.append(curr_idx.row());
+        }
+    }
 
-        remove(delete_ids);
+    remove(delete_ids);
 
 
-        //    }
+    //    }
 
 }
 
 void RecordController::remove(IdType delete_id)
 {
-        QVector<IdType> delete_ids;
-        delete_ids.append(delete_id);
-        remove(delete_ids);
+    QVector<IdType> delete_ids;
+    delete_ids.append(delete_id);
+    remove(delete_ids);
 }
 
 //// Удаление отмеченных записей
@@ -1725,138 +1729,138 @@ void RecordController::remove(QVector<IdType> delete_ids)
 {
 
 
-        // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
-        auto
-        pages_remove_from_browser
-            = [&] (QVector<IdType> delete_ids) -> void {
-                        qDebug() << "Remove rows by ID list: " << delete_ids;
+    // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
+    auto
+    pages_remove_from_browser
+        = [&] (QVector<IdType> delete_ids) -> void {
+            qDebug() << "Remove rows by ID list: " << delete_ids;
 
-                        // Выясняется ссылка на таблицу конечных данных
-                        //    auto _browser_pages = _source_model->browser_pages();
+            // Выясняется ссылка на таблицу конечных данных
+            //    auto _browser_pages = _source_model->browser_pages();
 
-                        if(_source_model->count() == 0)                                                                                                                                      // if(!_browser_pages)
-                                return;
+            if(_source_model->count() == 0)                                                                                                                                                  // if(!_browser_pages)
+                return;
 
-                        bool changed = false;
+            bool changed = false;
 
-                        for(int i = 0; i < delete_ids.count(); i++)
-                                {
-                                        IdType id = delete_ids[i];
-                                        //        QModelIndex idx = id_to_proxyindex(id);
-                                        auto item = _source_model->item(id);
+            for(int i = 0; i < delete_ids.count(); i++)
+            {
+                IdType id = delete_ids[i];
+                //        QModelIndex idx = id_to_proxyindex(id);
+                auto item = _source_model->item(id);
 
-                                        if(item) {
+                if(item) {
 
-                                                        if(item->is_registered_to_browser()) {                                                                                                                                                                      // item_to_be_deleted->unique_page()
+                    if(item->is_registered_to_browser()) {                                                                                                                                                                                                          // item_to_be_deleted->unique_page()
 
-                                                                        //                item->unique_page()->record_controller()->remove_child(item->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
+                        //                item->unique_page()->record_controller()->remove_child(item->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 
-                                                                        //                //            int index = _tabmanager->indexOf(item->unique_page()->view());
+                        //                //            int index = _tabmanager->indexOf(item->unique_page()->view());
 
-                                                                        //                //            if(index != -1)_tabmanager->closeTab(index);
+                        //                //            if(index != -1)_tabmanager->closeTab(index);
 
-                                                                        //                _source_model->remove_child(item);  // doing nothing
-                                                                        _tabmanager->closeTab(
-                                                                            _tabmanager->webViewIndex(item->page()->view())                                                                                                                                                                                      // _tabmanager->indexOf(item->bounded_page()->view())
-                                                                            );
+                        //                _source_model->remove_child(item);  // doing nothing
+                        _tabmanager->closeTab(
+                            _tabmanager->webViewIndex(item->page()->view())                                                                                                                                                                                                                                      // _tabmanager->indexOf(item->bounded_page()->view())
+                            );
 
-                                                                        changed = true;
-                                                                }
-                                                }
-
-                                        //_source_model->remove_child(id);
-
-                                        //        for(int j = 0; j < _browser_pages->size(); j++) {
-                                        //            if(_browser_pages->item(j)->id() == id) {
-                                        //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
-                                        //            }
-                                        //        }
-
-
-                                        //        globalparameters.find_screen()->remove_id(id);  // ?
-                                }
-
-                        if(changed)
-                                {
-                                        // Удаляется строка в Proxy модели
-                                        // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
-                                        //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
-                                        _view->reset();
-                                        _proxy_model->setSourceModel(_source_model);
-                                        _view->setModel(_proxy_model);
-                                }
-                };
-
-
-        //    QVector<QString> del_ids;
-        //    del_ids.append(del_id);
-        //    remove_children(del_ids);
-
-        // Сбор в массив всех идентификаторов, которые нужно удалить
-        // Напрямую пробегать массив item-элементов и удалять из него нельзя
-        // так как итератор начинает указывать на несуществующие элементы
-        //    QVector<QString>    del_ids;
-        //    del_ids.append(del_id);
-        QVector<int>        del_rows;
-        //    QModelIndexList::iterator it;
-
-
-        for(auto del_id : delete_ids) {                        //    for(it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
-                        QModelIndex curr_idx;
-                        curr_idx = index<IndexProxy>(IdType(del_id));                                        //*it;
-
-                        //        QString append_id = curr_idx.data(RECORD_ID_ROLE).toString();
-
-                        // Если идентификатор не содержится в перечне удаляемых идентификаторов
-                        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
-                        //        if(!del_ids.contains(append_id)) {
-                        qDebug() << "Mark for delete item id " << del_id;
-                        //            del_ids.append(append_id);
-                        del_rows.append(curr_idx.row());
-                        //        }
-
+                        changed = true;
+                    }
                 }
 
+                //_source_model->remove_child(id);
+
+                //        for(int j = 0; j < _browser_pages->size(); j++) {
+                //            if(_browser_pages->item(j)->id() == id) {
+                //                _browser_pages->delete_item_by_position(j); // remove_child(_browser_pages->item(j));
+                //            }
+                //        }
 
 
-        // Массив удаляемых номеров строк (в Proxy-нумерации) сортируется так чтоб вначале были индексы с наибольшим номером
-        qSort(del_rows.begin(), del_rows.end(), qGreater<int>());
-        int lastRowNum = del_rows[0];                     // Максимальный номер удаляемой строки
+                //        globalparameters.find_screen()->remove_id(id);  // ?
+            }
 
-        // Номер строки на который надо установить засветку после удаления
-        // Засветка устанавливается на запись, следующую после последней удаляемой
-        int selection_row_num = lastRowNum + 1 - del_rows.count();
-        qDebug() << "After delete cursor set to" << selection_row_num << "row";
+            if(changed)
+            {
+                // Удаляется строка в Proxy модели
+                // Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
+                //        _proxy_model->removeRow(idx.row()); // ? is this still needed after source changed?
+                _view->reset();
+                _proxy_model->setSourceModel(_source_model);
+                _view->setModel(_proxy_model);
+            }
+        };
 
-        // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
-        //    find_object<MetaEditor>(meta_editor_singleton_name)
+
+    //    QVector<QString> del_ids;
+    //    del_ids.append(del_id);
+    //    remove_children(del_ids);
+
+    // Сбор в массив всех идентификаторов, которые нужно удалить
+    // Напрямую пробегать массив item-элементов и удалять из него нельзя
+    // так как итератор начинает указывать на несуществующие элементы
+    //    QVector<QString>    del_ids;
+    //    del_ids.append(del_id);
+    QVector<int>        del_rows;
+    //    QModelIndexList::iterator it;
+
+
+    for(auto del_id : delete_ids) {                            //    for(it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
+        QModelIndex curr_idx;
+        curr_idx = index<IndexProxy>(IdType(del_id));                                                        //*it;
+
+        //        QString append_id = curr_idx.data(RECORD_ID_ROLE).toString();
+
+        // Если идентификатор не содержится в перечне удаляемых идентификаторов
+        // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
+        //        if(!del_ids.contains(append_id)) {
+        qDebug() << "Mark for delete item id " << del_id;
+        //            del_ids.append(append_id);
+        del_rows.append(curr_idx.row());
+        //        }
+
+    }
+
+
+
+    // Массив удаляемых номеров строк (в Proxy-нумерации) сортируется так чтоб вначале были индексы с наибольшим номером
+    qSort(del_rows.begin(), del_rows.end(), qGreater<int>());
+    int lastRowNum = del_rows[0];                         // Максимальный номер удаляемой строки
+
+    // Номер строки на который надо установить засветку после удаления
+    // Засветка устанавливается на запись, следующую после последней удаляемой
+    int selection_row_num = lastRowNum + 1 - del_rows.count();
+    qDebug() << "After delete cursor set to" << selection_row_num << "row";
+
+    // Надо очистить поля области редактировния, чтобы редактор не пытался сохранить текущую открытую, но удаленную запись
+    //    find_object<MetaEditor>(meta_editor_singleton_name)
+    globalparameters.meta_editor()->clear_all();
+
+    // Вызывается удаление отмеченных записей
+    pages_remove_from_browser(delete_ids);
+
+    //    // Сохранение дерева веток
+    //    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    //    globalparameters.tree_screen()->save_knowtree();
+
+    //    // Обновление на экране ветки, на которой стоит засветка,
+    //    // так как количество хранимых в ветке записей поменялось
+    //    //    find_object<TreeScreen>(tree_screen_singleton_name)
+    //    globalparameters.tree_screen()->update_selected();
+
+    // Установка курсора на нужную позицию
+    if(selection_row_num >= 0 && selection_row_num < _proxy_model->rowCount())
+        _view->selectRow(selection_row_num);
+
+    // Если таблица конечных записей пуста
+    if(_proxy_model->rowCount() == 0) {
+        // Нужно очистить поле редактирования чтобы невидно было текста
+        // последней удаленной записи
+        //        find_object<MetaEditor>(meta_editor_singleton_name)
         globalparameters.meta_editor()->clear_all();
+    }
 
-        // Вызывается удаление отмеченных записей
-        pages_remove_from_browser(delete_ids);
-
-        //    // Сохранение дерева веток
-        //    //    find_object<TreeScreen>(tree_screen_singleton_name)
-        //    globalparameters.tree_screen()->save_knowtree();
-
-        //    // Обновление на экране ветки, на которой стоит засветка,
-        //    // так как количество хранимых в ветке записей поменялось
-        //    //    find_object<TreeScreen>(tree_screen_singleton_name)
-        //    globalparameters.tree_screen()->update_selected();
-
-        // Установка курсора на нужную позицию
-        if(selection_row_num >= 0 && selection_row_num < _proxy_model->rowCount())
-                _view->selectRow(selection_row_num);
-
-        // Если таблица конечных записей пуста
-        if(_proxy_model->rowCount() == 0) {
-                        // Нужно очистить поле редактирования чтобы невидно было текста
-                        // последней удаленной записи
-                        //        find_object<MetaEditor>(meta_editor_singleton_name)
-                        globalparameters.meta_editor()->clear_all();
-                }
-
-        qobject_cast<RecordScreen *>(parent())->tools_update();
+    qobject_cast<RecordScreen *>(parent())->tools_update();
 
 }
 
@@ -1938,139 +1942,139 @@ void RecordController::remove(QVector<IdType> delete_ids)
 // Клик по пункту "Сортировка" в контекстном меню
 void RecordController::on_sort_click(void)
 {
-        RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
+    RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
 
-        // Если сортировка еще не включена
-        if(!_view->isSortingEnabled()) {
-                        // Включается сортировка
-                        _view->setSortingEnabled(true);
+    // Если сортировка еще не включена
+    if(!_view->isSortingEnabled()) {
+        // Включается сортировка
+        _view->setSortingEnabled(true);
 
-                        _proxy_model->setSortRole(SORT_ROLE);                                     // Qt::DisplayRole
+        _proxy_model->setSortRole(SORT_ROLE);                                                     // Qt::DisplayRole
 
-                        // Включается сортировка по нужному столбцу
-                        int n = parentPointer->_sort->data().toInt();                                     // В actionSort хранится номер столбца, по которому нужно сортировать
-                        qDebug() << "Sort column number " << n;
-                        _proxy_model->sort(n);
+        // Включается сортировка по нужному столбцу
+        int n = parentPointer->_sort->data().toInt();                                                     // В actionSort хранится номер столбца, по которому нужно сортировать
+        qDebug() << "Sort column number " << n;
+        _proxy_model->sort(n);
 
-                        // Треугольничек сортировки переставляется на нужный столбец
-                        _view->horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder);
+        // Треугольничек сортировки переставляется на нужный столбец
+        _view->horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder);
 
-                        // Запрещается передвижение заголовков столбцов
-                        // так как после переноса неправильно устанавливается треугольничек сортировки, он остается на том же по счету столбце
-                        // horizontalHeader()->setSectionsMovable(false);
-                } else {
-                        // Оменяется сортировка
-                        _view->setSortingEnabled(false);
-                        _proxy_model->setSortRole(Qt::InitialSortOrderRole);
-                        _proxy_model->invalidate();
+        // Запрещается передвижение заголовков столбцов
+        // так как после переноса неправильно устанавливается треугольничек сортировки, он остается на том же по счету столбце
+        // horizontalHeader()->setSectionsMovable(false);
+    } else {
+        // Оменяется сортировка
+        _view->setSortingEnabled(false);
+        _proxy_model->setSortRole(Qt::InitialSortOrderRole);
+        _proxy_model->invalidate();
 
-                        // Разрешается передвижение заголовков столбцов
-                        // horizontalHeader()->setSectionsMovable(true);
-                }
+        // Разрешается передвижение заголовков столбцов
+        // horizontalHeader()->setSectionsMovable(true);
+    }
 
-        qobject_cast<RecordScreen *>(parent())->tools_update();
+    qobject_cast<RecordScreen *>(parent())->tools_update();
 }
 
 
 // Слот, срабатывающий при вызове настроек
 void RecordController::settings(void)
 {
-        AppConfigDialog dialog(this, "pageRecordTable");
-        dialog.show();
+    AppConfigDialog dialog(this, "pageRecordTable");
+    dialog.show();
 
-        // Todo: Возвращение фокуса почему-то не работает, надо разбираться
-        // (а может просто не выделяется виджет, в Qt5 вделенный виджет не виден в дефолтной схеме)
-        // qDebug() << "Set focus to RecordTableView";
-        // this->setFocus();
+    // Todo: Возвращение фокуса почему-то не работает, надо разбираться
+    // (а может просто не выделяется виджет, в Qt5 вделенный виджет не виден в дефолтной схеме)
+    // qDebug() << "Set focus to RecordTableView";
+    // this->setFocus();
 }
 
 
 void RecordController::on_recordtable_configchange(void)
 {
-        _source_model->on_table_config_changed();
-        _view->restore_column_width();
-        _view->restore_header_state();
+    _source_model->on_table_config_changed();
+    _view->restore_column_width();
+    _view->restore_header_state();
 }
 
 
 void RecordController::on_print_click(void)
 {
-        RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
+    RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
 
-        RecordPrint printDialog(parentPointer);
-        printDialog.setModel(_proxy_model);
-        printDialog.generateHtmlTableFromModel();
-        printDialog.setTitleToHtml(
-            record_screen()->objectName()                       // _source_model->_browser_pages->path_as_name_with_delimiter(" / ")
-            );
-        printDialog.exec();
+    RecordPrint printDialog(parentPointer);
+    printDialog.setModel(_proxy_model);
+    printDialog.generateHtmlTableFromModel();
+    printDialog.setTitleToHtml(
+        record_screen()->objectName()                           // _source_model->_browser_pages->path_as_name_with_delimiter(" / ")
+        );
+    printDialog.exec();
 }
 
 
 boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intrusive_ptr<TreeItem> item)
 {
-        boost::intrusive_ptr<TreeItem> _item = _source_model->item(item);
-        PosSource source_position(-1);
+    boost::intrusive_ptr<TreeItem> _item = _source_model->item(item);
+    PosSource source_position(-1);
 
-        if(!_item) {
-                        //    //    assert(record_controller);
-                        //    auto browser_pages = this->_source_model->browser_pages();
-                        //    assert(browser_pages);
-
-
-                        //    if(!_item) {
+    if(!_item) {
+        //    //    assert(record_controller);
+        //    auto browser_pages = this->_source_model->browser_pages();
+        //    assert(browser_pages);
 
 
-                        //    Record record;
-
-                        //    if(record.isLite())record.switchToFat();
-                        //    assert(!item->is_lite());
-                        if(item->is_lite()) item->to_fat();
-
-                        //    item->is_registered_to_record_controller_and_tabmanager(true);
-                        source_position = this->addnew_item_fat(item, add_new_record_after);                                     //recordTableController->autoAddNewAfterContext();
-                        assert(source_position != -1);
-                        _item = _source_model->item(source_position);
-                        //        //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
-
-                        //        //    Record *_record = nullptr;
-                        //        //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
-
-                        //        //                int pos = _record_controller->getFirstSelectionPos();
-                        //        _source_model->on_table_config_changed();
-
-                } else {
-                        source_position = _source_model->position(_item->id());
-                }
-
-        assert(_item);
+        //    if(!_item) {
 
 
-        PosSource pos = _source_model->position(_item->id());
+        //    Record record;
 
-        assert(pos == source_position);                     // maybe duplicated
+        //    if(record.isLite())record.switchToFat();
+        //    assert(!item->is_lite());
+        if(item->is_lite()) item->to_fat();
+
+        //    item->is_registered_to_record_controller_and_tabmanager(true);
+        source_position = this->addnew_item_fat(item, add_new_record_after);                                                     //recordTableController->autoAddNewAfterContext();
+        assert(source_position != -1);
         _item = _source_model->item(source_position);
-        //    int source_position_ = item->sibling_order();   // from treemodelknow->_root_item
-        //    auto _item_ = _shadow_branch_root->item(source_position_);
-        assert(_item.get() == item.get());
-        //    assert(_item_.get() == item.get());
-        //assert(record == _record);
-        assert(_item->field("url") == item->field("url"));
+        //        //    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
 
-        //            }
-        //assert(_record);
-        if(_item->is_lite()) _item->to_fat();
+        //        //    Record *_record = nullptr;
+        //        //    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
 
-        //    }
+        //        //                int pos = _record_controller->getFirstSelectionPos();
+        //        _source_model->on_table_config_changed();
 
-        //        auto current_item = _view->current_item();
-        _source_model->on_table_config_changed();
+    } else {
+        source_position = _source_model->position(_item->id());
+    }
 
-        IndexProxy proxy_index = index<IndexProxy>(index<PosProxy>(source_position));
-        _view->dataChanged((QModelIndex)proxy_index, (QModelIndex)proxy_index);
-        cursor_to_index(index<PosProxy>(_item));
+    assert(_item);
 
-        return _item;                     //_record;
+
+    PosSource pos = _source_model->position(_item->id());
+
+    assert(pos == source_position);                         // maybe duplicated
+    _item = _source_model->item(source_position);
+    //    int source_position_ = item->sibling_order();   // from treemodelknow->_root_item
+    //    auto _item_ = _shadow_branch_root->item(source_position_);
+    assert(_item.get() == item.get());
+    //    assert(_item_.get() == item.get());
+    //assert(record == _record);
+    assert(_item->field("url") == item->field("url"));
+
+    //            }
+    //assert(_record);
+    if(_item->is_lite()) _item->to_fat();
+
+    //    }
+
+    //        auto current_item = _view->current_item();
+    _source_model->on_table_config_changed();
+
+    IndexProxy proxy_index = index<IndexProxy>(index<PosProxy>(source_position));
+    _view->dataChanged((QModelIndex)proxy_index, (QModelIndex)proxy_index);
+    cursor_to_index(index<PosProxy>(_item));
+
+    return _item;                         //_record;
 }
 
 //Record *register_record(const QUrl &_url
@@ -2113,23 +2117,23 @@ boost::intrusive_ptr<TreeItem> RecordController::update_record_view(boost::intru
 
 boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url)
 {
-        boost::intrusive_ptr<TreeItem> item = nullptr;
+    boost::intrusive_ptr<TreeItem> item = nullptr;
 
 
-        //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
-        //    assert(_record_controller);
+    //    TableController *_record_controller = globalparameters.table_screen()->table_controller();
+    //    assert(_record_controller);
 
-        //    if(_record_controller) {
-        //    auto browser_pages = this->_source_model->browser_pages();
-        assert(_source_model->count() > 0);
+    //    if(_record_controller) {
+    //    auto browser_pages = this->_source_model->browser_pages();
+    assert(_source_model->count() > 0);
 
-        //    if(browser_pages) {
-        item = _source_model->item(_url);
-        //    }
+    //    if(browser_pages) {
+    item = _source_model->item(_url);
+    //    }
 
-        //    }
+    //    }
 
-        return item;
+    return item;
 }
 
 //namespace browser {
@@ -2532,58 +2536,58 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url)
 
 template<>PosProxy RecordController::index<PosProxy>(const PosSource &source_pos) const
 {
-        assert((int)source_pos != -1);
-        QModelIndex proxyIndex = _proxy_model->mapFromSource(_source_model->index(source_pos, 0));
-        assert(((QModelIndex)proxyIndex).row() != -1);
-        return PosProxy(proxyIndex.row());
+    assert((int)source_pos != -1);
+    QModelIndex proxyIndex = _proxy_model->mapFromSource(_source_model->index(source_pos, 0));
+    assert(((QModelIndex)proxyIndex).row() != -1);
+    return PosProxy(proxyIndex.row());
 }
 template<>PosProxy RecordController::index<PosProxy>(const IndexProxy &index_) const
 {
-        if(!((QModelIndex)index_).isValid())
-                return PosProxy(-1);
+    if(!((QModelIndex)index_).isValid())
+        return PosProxy(-1);
 
-        return PosProxy(((QModelIndex)index_).row());
+    return PosProxy(((QModelIndex)index_).row());
 }
 template<>PosProxy RecordController::index<PosProxy>(const IndexSource &is) const
 {
-        PosSource ps(((QModelIndex)is).row()); return index<PosProxy>(ps);
+    PosSource ps(((QModelIndex)is).row()); return index<PosProxy>(ps);
 }
 template<>PosProxy RecordController::index<PosProxy>(const IdType &id) const
 {
-        PosSource source_pos = _source_model->position(id);
-        return index<PosProxy>(source_pos);
+    PosSource source_pos = _source_model->position(id);
+    return index<PosProxy>(source_pos);
 }
 template<>PosProxy RecordController::index<PosProxy>(const boost::intrusive_ptr<TreeItem> &it) const
 {
-        return index<PosProxy>(it->id());
+    return index<PosProxy>(it->id());
 }
 
 
 
 template<>PosSource RecordController::index<PosSource>(const PosProxy &pos_proxy_) const
 {
-        QModelIndex sourceIndex = _proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0));
-        return PosSource(sourceIndex.row());
+    QModelIndex sourceIndex = _proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0));
+    return PosSource(sourceIndex.row());
 }
 template<>PosSource RecordController::index<PosSource>(const IndexProxy &ip) const
 {
-        PosProxy pp(((QModelIndex)ip).row());
-        return index<PosSource>(pp);
+    PosProxy pp(((QModelIndex)ip).row());
+    return index<PosSource>(pp);
 }
 template<>PosSource RecordController::index<PosSource>(const IndexSource &index_) const
 {
-        if(!((QModelIndex)index_).isValid())
-                return PosSource(-1);
+    if(!((QModelIndex)index_).isValid())
+        return PosSource(-1);
 
-        return PosSource(((QModelIndex)index_).row());
+    return PosSource(((QModelIndex)index_).row());
 }
 template<>PosSource RecordController::index<PosSource>(const IdType &id) const
 {
-        return _source_model->position(id);
+    return _source_model->position(id);
 }
 template<>PosSource RecordController::index<PosSource>(const boost::intrusive_ptr<TreeItem> &it) const
 {
-        return index<PosSource>(it->id());
+    return index<PosSource>(it->id());
 }
 
 
@@ -2591,120 +2595,120 @@ template<>PosSource RecordController::index<PosSource>(const boost::intrusive_pt
 
 template<>IndexProxy RecordController::index<IndexProxy>(const PosSource &pos_source_) const
 {
-        return index<IndexProxy>(index<PosProxy>(pos_source_));
+    return index<IndexProxy>(index<PosProxy>(pos_source_));
 }
 template<>IndexProxy RecordController::index<IndexProxy>(const PosProxy &pos_proxy_) const
 {
-        if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())
-                return IndexProxy(QModelIndex());
+    if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())
+        return IndexProxy(QModelIndex());
 
-        QModelIndex index = _proxy_model->index(pos_proxy_, 0);
+    QModelIndex index = _proxy_model->index(pos_proxy_, 0);
 
-        return IndexProxy(index);
+    return IndexProxy(index);
 }
 template<>IndexProxy RecordController::index<IndexProxy>(const IndexSource &sourceIndex) const
 {
-        if(!((QModelIndex)sourceIndex).isValid())
-                return IndexProxy(QModelIndex());
+    if(!((QModelIndex)sourceIndex).isValid())
+        return IndexProxy(QModelIndex());
 
-        QModelIndex index_ = _proxy_model->mapFromSource(_source_model->index(((QModelIndex)sourceIndex).row(), 0));             // (QModelIndex)sourceIndex
+    QModelIndex index_ = _proxy_model->mapFromSource(_source_model->index(((QModelIndex)sourceIndex).row(), 0));                 // (QModelIndex)sourceIndex
 
-        return IndexProxy(index_);
+    return IndexProxy(index_);
 }
 template<>IndexProxy RecordController::index<IndexProxy>(const IdType &id) const        // Выясняется ссылка на таблицу конечных данных
 {
-        //    auto table = _source_model->tree_item();
+    //    auto table = _source_model->tree_item();
 
-        // Номер записи в Source данных
-        PosSource source_pos = _source_model->position(id);
-        PosProxy proxy_pos = index<PosProxy>(source_pos);
+    // Номер записи в Source данных
+    PosSource source_pos = _source_model->position(id);
+    PosProxy proxy_pos = index<PosProxy>(source_pos);
 
-        return index<IndexProxy>(proxy_pos);
+    return index<IndexProxy>(proxy_pos);
 }
 template<>IndexProxy RecordController::index<IndexProxy>(const boost::intrusive_ptr<TreeItem> &it) const
 {
-        return index<IndexProxy>(it->id());
+    return index<IndexProxy>(it->id());
 }
 
 
 
 template<>IndexSource RecordController::index<IndexSource>(const PosSource &pos_source_) const
 {
-        PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
-        return index<IndexSource>(proxy_pos_);
+    PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
+    return index<IndexSource>(proxy_pos_);
 }
 template<>IndexSource RecordController::index<IndexSource>(const IndexProxy &proxyIndex) const
 {
-        if(!((QModelIndex)proxyIndex).isValid())
-                return IndexSource(QModelIndex());
+    if(!((QModelIndex)proxyIndex).isValid())
+        return IndexSource(QModelIndex());
 
-        QModelIndex index = _proxy_model->mapToSource(_proxy_model->index(((QModelIndex)proxyIndex).row(), 0));
+    QModelIndex index = _proxy_model->mapToSource(_proxy_model->index(((QModelIndex)proxyIndex).row(), 0));
 
-        return IndexSource(index);
+    return IndexSource(index);
 }
 template<>IndexSource RecordController::index<IndexSource>(const PosProxy &pos_proxy_) const
 {
-        if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())
-                return IndexSource(QModelIndex());
+    if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())
+        return IndexSource(QModelIndex());
 
-        //  IndexProxy proxyIndex = index<IndexProxy>(pos_proxy_);
-        IndexSource index_(_proxy_model->mapToSource(_proxy_model->index(pos_proxy_, 0)));
+    //  IndexProxy proxyIndex = index<IndexProxy>(pos_proxy_);
+    IndexSource index_(_proxy_model->mapToSource(_proxy_model->index(pos_proxy_, 0)));
 
-        return index_;
+    return index_;
 }
 template<>IndexSource RecordController::index<IndexSource>(const IdType &id) const       // Выясняется ссылка на таблицу конечных данных
 {
-        // Номер записи в Source данных
-        PosSource pos_source_ = _source_model->position(id);
-        PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
-        return index<IndexSource>(proxy_pos_);
+    // Номер записи в Source данных
+    PosSource pos_source_ = _source_model->position(id);
+    PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
+    return index<IndexSource>(proxy_pos_);
 }
 template<>IndexSource RecordController::index<IndexSource>(const boost::intrusive_ptr<TreeItem> &it) const
 {
-        return index<IndexSource>(it->id());
+    return index<IndexSource>(it->id());
 }
 
 
 
 template<>IdType RecordController::index<IdType>(const PosSource &ps) const
 {
-        return _source_model->item(ps)->id();
+    return _source_model->item(ps)->id();
 }
 template<>IdType RecordController::index<IdType>(const IndexProxy &ip) const
 {
-        return _source_model->item(index<PosSource>(ip))->id();
+    return _source_model->item(index<PosSource>(ip))->id();
 }
 template<>IdType RecordController::index<IdType>(const PosProxy &pp) const
 {
-        return _source_model->item(index<PosSource>(pp))->id();
+    return _source_model->item(index<PosSource>(pp))->id();
 }
 template<>IdType RecordController::index<IdType>(const IndexSource &is) const
 {
-        return _source_model->item(index<PosSource>(is))->id();
+    return _source_model->item(index<PosSource>(is))->id();
 }
 template<>IdType RecordController::index<IdType>(const boost::intrusive_ptr<TreeItem> &it) const
 {
-        return index<IdType>(index<PosSource>(it->id()));
+    return index<IdType>(index<PosSource>(it->id()));
 }
 
 
 template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const PosSource &ps) const
 {
-        return _source_model->item(ps);
+    return _source_model->item(ps);
 }
 template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IndexProxy &ip) const
 {
-        return _source_model->item(index<PosSource>(ip));
+    return _source_model->item(index<PosSource>(ip));
 }
 template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const PosProxy &pp) const
 {
-        return _source_model->item(index<PosSource>(pp));
+    return _source_model->item(index<PosSource>(pp));
 }
 template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IndexSource &is) const
 {
-        return _source_model->item(index<PosSource>(is));
+    return _source_model->item(index<PosSource>(is));
 }
 template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IdType &it) const
 {
-        return _source_model->item(index<PosSource>(it));
+    return _source_model->item(index<PosSource>(it));
 }

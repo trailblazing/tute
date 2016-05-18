@@ -124,8 +124,8 @@ namespace browser {
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
         connect(this, &PopupPage::unsupportedContent, this, &PopupPage::handleUnsupportedContent;
 #endif
-                connect(this, &PopupPage::authenticationRequired, &PopupPage::authenticationRequired);
-                connect(this, &PopupPage::proxyAuthenticationRequired, &PopupPage::proxyAuthenticationRequired);
+        connect(this, &PopupPage::authenticationRequired, &PopupPage::authenticationRequired);
+        connect(this, &PopupPage::proxyAuthenticationRequired, &PopupPage::proxyAuthenticationRequired);
     }
 
     Browser *PopupPage::browser()
@@ -161,9 +161,9 @@ namespace browser {
             msgBox.setIcon(QMessageBox::Warning);
             msgBox.setText(error.errorDescription());
             msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certificate. "
-                                         "Accepting an unverified certificate means "
-                                         "you may not be connected with the host you tried to connect to.\n"
-                                         "Do you wish to override the security check and continue?"));
+                "Accepting an unverified certificate means "
+                "you may not be connected with the host you tried to connect to.\n"
+                "Do you wish to override the security check and continue?"));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
             return _certificate_ignored = (msgBox.exec() == QMessageBox::Yes);
@@ -227,9 +227,9 @@ namespace browser {
 
         QString title = tr("Error loading page: %1").arg(reply->url().toString());
         QString html = QString(QLatin1String(file.readAll()))
-                       .arg(title)
-                       .arg(errorString)
-                       .arg(reply->url().toString());
+            .arg(title)
+            .arg(errorString)
+            .arg(reply->url().toString());
 
         QBuffer imageBuffer;
         imageBuffer.open(QBuffer::ReadWrite);
@@ -238,7 +238,7 @@ namespace browser {
 
         if(pixmap.save(&imageBuffer, "PNG")) {
             html.replace(QLatin1String("IMAGE_BINARY_DATA_HERE"),
-                         QString(QLatin1String(imageBuffer.buffer().toBase64())));
+                QString(QLatin1String(imageBuffer.buffer().toBase64())));
         }
 
         QList<QWebEngineFrame *> frames;
@@ -254,8 +254,8 @@ namespace browser {
 
             QList<QWebEngineFrame *> children = frame->childFrames();
 
-            foreach(QWebEngineFrame *frame, children)
-                frames.append(frame);
+            foreach(QWebEngineFrame * frame, children)
+            frames.append(frame);
         }
 
         if(m_loadingUrl == reply->url()) {
@@ -331,15 +331,15 @@ namespace browser {
 
 
     WebPage::WebPage(Profile                *profile
-                     , boost::intrusive_ptr<TreeItem> item
-                     , TreeScreen           *tree_screen
-                     , MetaEditor           *editor_screen
-                     , Entrance             *entrance
-                     , Browser              *browser
-                     , TabWidget            *tabmanager
-                     , RecordController     *record_controller
-                     , WebView              *parent
-                    )
+        , boost::intrusive_ptr<TreeItem> item
+        , TreeScreen           *tree_screen
+        , MetaEditor           *editor_screen
+        , Entrance             *entrance
+        , Browser              *browser
+        , TabWidget            *tabmanager
+        , RecordController     *record_controller
+        , WebView              *parent
+        )
         : QWebEnginePage(profile, parent)
         , _tree_screen(tree_screen)
         , _editor_screen(editor_screen)
@@ -350,96 +350,96 @@ namespace browser {
         , _view(parent)
         , _keyboardmodifiers(Qt::NoModifier)
         , _pressedbuttons(Qt::NoButton)
-          //          // , _openinnewtab(openinnewtab)  //false
-          //          // , _create_window_generated(false)
-          //        , _binder([ & ]()->boost::intrusive_ptr<TreeItem::coupler>
-          //    {
-          //        if(item->is_lite())item->to_fat();
+        //          // , _openinnewtab(openinnewtab)  //false
+        //          // , _create_window_generated(false)
+        //        , _binder([ & ]()->boost::intrusive_ptr<TreeItem::coupler>
+        //    {
+        //        if(item->is_lite())item->to_fat();
 
-          //        if(item->binder() && !item->binder()->integrity_internal()) { // !_item->binder() ||
-          //            // 6
-
-
-          //            //            //            //            auto state = _item->binder()->state();
-
-          //            //            //            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
-
-          //            //            //                assert(!_item->binder()->page_link()->binder());
-          //            //            //                _item->binder()->page_link()->item_break(_item->binder()->item_link());
-
-          //            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-          //            //            //                //                assert(_item->record_binder());
-          //            //            //                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
-          //            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-          //            //            //                //                assert(!_item->record_binder());
-
-          //            //            //                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-          //            //            //                assert(_item->binder()->page_link()->binder());
-          //            //            //                assert(_item->binder());
-          //            //            //            }
-          //            //        } else {
+        //        if(item->binder() && !item->binder()->integrity_internal()) { // !_item->binder() ||
+        //            // 6
 
 
+        //            //            //            //            auto state = _item->binder()->state();
 
+        //            //            //            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
 
-          //            item->binder()->break_linked_items();
+        //            //            //                assert(!_item->binder()->page_link()->binder());
+        //            //            //                _item->binder()->page_link()->item_break(_item->binder()->item_link());
+
+        //            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+        //            //            //                //                assert(_item->record_binder());
+        //            //            //                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
+        //            //            //                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+        //            //            //                //                assert(!_item->record_binder());
+
+        //            //            //                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+        //            //            //                assert(_item->binder()->page_link()->binder());
+        //            //            //                assert(_item->binder());
+        //            //            //            }
+        //            //        } else {
 
 
 
 
-
-          //            //            if(!_item->binder()->page_link()) {
-          //            //                _item->binder()->page_link() = this;
-          //            //                _item->binder()->item_link() = _item;
-          //            //                assert(_item->binder()->page_link());
-          //            //                assert(_item->binder()->item_link());
-
-          //            //                //                if(!_binder)  { // 0x0000000000009?
-          //            //                //                _binder = _item->binder();
-          //            //                //                }
-          //            //            }
+        //            item->binder()->break_linked_items();
 
 
 
 
 
-          //            //            item_registered_setup_binder(_item);
+        //            //            if(!_item->binder()->page_link()) {
+        //            //                _item->binder()->page_link() = this;
+        //            //                _item->binder()->item_link() = _item;
+        //            //                assert(_item->binder()->page_link());
+        //            //                assert(_item->binder()->item_link());
 
-          //            //            _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-          //            //            _binder = _item->binder();    // from return
-          //        }
+        //            //                //                if(!_binder)  { // 0x0000000000009?
+        //            //                //                _binder = _item->binder();
+        //            //                //                }
+        //            //            }
 
-          //        //        else {
-          //        //            item_bind(_item);
-          //        //        }
 
-          //        //        item_bind(item);  // you can't modify _binder before it's initialize time!!!
-          //        auto ar = std::make_shared<WebPage::coupler>(item, this);
-          //        new TreeItem::coupler(
-          //            std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-          //            , std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-          //            , std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-          //            , std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
-          //        );
-          //        assert(item->binder()->integrity_external(item, this));   // item->binder() = new TreeItem::coupler(std::make_shared<WebPage::coupler>(item, this));
-          //        assert(_binder->integrity_external(item, this));
 
-          //        //        assert(_record_binder);     // 8
-          //        //        assert(_item->binder());    // 6
-          //        //        assert(_item->binder()->item_link());   // 0
-          //        //        assert(_item->binder()->page_link());   // 1
-          //        //        assert(_item->binder()->page_link() == this);    // 9
-          //        //        assert(_item->binder()->item_link() == _item);   // 7
-          //        //        assert(_item->binder() == _binder);
 
-          //        //        assert(_item->binder()->external_integrity(_item, this));
 
-          //        return std::forward<boost::intrusive_ptr<TreeItem::coupler>>(item->binder());
-          //    }())
+        //            //            item_registered_setup_binder(_item);
+
+        //            //            _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+        //            //            _binder = _item->binder();    // from return
+        //        }
+
+        //        //        else {
+        //        //            item_bind(_item);
+        //        //        }
+
+        //        //        item_bind(item);  // you can't modify _binder before it's initialize time!!!
+        //        auto ar = std::make_shared<WebPage::coupler>(item, this);
+        //        new TreeItem::coupler(
+        //            std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+        //            , std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+        //            , std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+        //            , std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+        //        );
+        //        assert(item->binder()->integrity_external(item, this));   // item->binder() = new TreeItem::coupler(std::make_shared<WebPage::coupler>(item, this));
+        //        assert(_binder->integrity_external(item, this));
+
+        //        //        assert(_record_binder);     // 8
+        //        //        assert(_item->binder());    // 6
+        //        //        assert(_item->binder()->item_link());   // 0
+        //        //        assert(_item->binder()->page_link());   // 1
+        //        //        assert(_item->binder()->page_link() == this);    // 9
+        //        //        assert(_item->binder()->item_link() == _item);   // 7
+        //        //        assert(_item->binder() == _binder);
+
+        //        //        assert(_item->binder()->external_integrity(_item, this));
+
+        //        return std::forward<boost::intrusive_ptr<TreeItem::coupler>>(item->binder());
+        //    }())
     {
 
         _binder = [ & ]()->boost::intrusive_ptr<::Binder> {
-            if(item->is_lite())item->to_fat();
+            if(item->is_lite()) item->to_fat();
 
             if(item->binder() && !item->binder()->integrity_internal())   // !_item->binder() ||
             {
@@ -524,8 +524,8 @@ namespace browser {
 
             //        assert(_item->binder()->external_integrity(_item, this));
 
-            return std::forward<boost::intrusive_ptr<::Binder>>(item->binder());
-        }();
+            return std::forward<boost::intrusive_ptr<::Binder> >(item->binder());
+        } ();
 
         settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
         settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
@@ -558,7 +558,9 @@ namespace browser {
         connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::urlChanged, this, &WebPage::onUrlChanged);
         connect(this, &WebPage::close_requested, &WebPage::binder_reset);
 
-        connect(this, &WebPage::linkHovered, [&](const QString & url) {_hovered_url = url;});
+        connect(this, &WebPage::linkHovered, [&] (const QString & url) {
+            _hovered_url = url;
+        });
         //        if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
         //        if(url != nullptr) {
@@ -694,14 +696,14 @@ namespace browser {
                 //                      , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                 //                  );
 
-                if(checked)it->activate();
+                if(checked) it->activate();
             } else {
-                if(checked)item->activate();
+                if(checked) item->activate();
             }
         } else {
             auto it = item_bind(item);
 
-            if(checked)it->activate();
+            if(checked) it->activate();
         }
 
         //        }
@@ -715,9 +717,9 @@ namespace browser {
         QUrl _url = QUrl(_url_str);
 
         if(_view    // && _loadingurl.isValid()     // && url().isValid()    // && url().toString() != _url_str
-           && _url_str != Browser::_defaulthome     // url() may be nothing
-           && _url != _loadingurl                   // lead loading stop
-          ) {
+            && _url_str != Browser::_defaulthome    // url() may be nothing
+            && _url != _loadingurl                  // lead loading stop
+            ) {
             //triggerAction(QWebEnginePage::Stop);
             QWebEnginePage::setUrl(_url);
             QWebEnginePage::load(_url);
@@ -732,13 +734,13 @@ namespace browser {
 
             if(!_browser->isActiveWindow() || !_browser->isVisible()) {
 
-                if(!_view->isTopLevel())_view->raise();
+                if(!_view->isTopLevel()) _view->raise();
 
-                if(!_view->isActiveWindow())_view->activateWindow();
+                if(!_view->isActiveWindow()) _view->activateWindow();
 
-                if(!_browser->isTopLevel())_browser->raise();
+                if(!_browser->isTopLevel()) _browser->raise();
 
-                if(!_browser->isActiveWindow())_browser->activateWindow();
+                if(!_browser->isActiveWindow()) _browser->activateWindow();
             }
 
             auto _vtabwidget = globalparameters.vtab();
@@ -751,7 +753,9 @@ namespace browser {
             auto it = _binder->item();
             auto tree_view = _tree_screen->tree_view();
             boost::intrusive_ptr<TreeIndex> tree_index;
-            try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+                    return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+                })); } catch(std::exception &e) {throw e; }
 
             tree_view->select_as_current(tree_index);
 
@@ -768,7 +772,7 @@ namespace browser {
                     //if(_lineedits) {
                     QLineEdit *line_edit = _tabmanager->currentLineEdit();  //qobject_cast<QLineEdit *>(_lineedits->currentWidget());
 
-                    if(line_edit)line_edit->setText(_url_str);
+                    if(line_edit) line_edit->setText(_url_str);
 
                     //}
 
@@ -804,9 +808,9 @@ namespace browser {
             msgBox.setIcon(QMessageBox::Warning);
             msgBox.setText(error.errorDescription());
             msgBox.setInformativeText(tr("If you wish so, you may continue with an unverified certificate. "
-                                         "Accepting an unverified certificate means "
-                                         "you may not be connected with the host you tried to connect to.\n"
-                                         "Do you wish to override the security check and continue?"));
+                "Accepting an unverified certificate means "
+                "you may not be connected with the host you tried to connect to.\n"
+                "Do you wish to override the security check and continue?"));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
             return _certificate_ignored = (msgBox.exec() == QMessageBox::Yes);
@@ -869,14 +873,14 @@ namespace browser {
     {
         //        QString url = "";
         QString script = "location.href";   // "document.title";  //"JavaScript:function(){return this.href;}();";
-        runJavaScript(script, [&](const QVariant & var) {
+        runJavaScript(script, [&] (const QVariant & var) {
             QString url = var.toString();
             assert(url != "");
         });
 
         QUrl _url = QUrl(_hovered_url);
 
-        if(!_url.isValid())_url = Browser::_defaulthome;
+        if(!_url.isValid()) _url = Browser::_defaulthome;
 
         //        assert(url != "");
 
@@ -896,8 +900,8 @@ namespace browser {
             boost::intrusive_ptr<TreeIndex> tree_modelindex(nullptr);
 
             try {
-                tree_modelindex = new TreeIndex([&] {return tree_view->source_model();}, this->binder()->item());
-            } catch(std::exception &e) {throw e;}
+                tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, this->binder()->item());
+            } catch(std::exception &e) {throw e; }
 
             assert(tree_modelindex);
             return tree_modelindex;
@@ -909,18 +913,20 @@ namespace browser {
             Browser *_browser = _entrance->new_browser();                 // QtSingleApplication::instance()->newMainWindow();
             auto tree_index = create_tree_index();
             assert(tree_index);
-            auto it = tree_index->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == _url.toString();}); // Browser::_defaulthome
+            auto it = tree_index->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
+                return it->field("url") == _url.toString();
+            });                                                                                                                                                                                                                                                       // Browser::_defaulthome
 
             boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
             try {
-                record_modelindex = new RecordIndex([&] {return _record_controller->source_model();}, _binder->item(), it);
-            } catch(std::exception &e) {throw e;}
+                record_modelindex = new RecordIndex([&] {return _record_controller->source_model(); }, _binder->item(), it);
+            } catch(std::exception &e) {throw e; }
 
             assert(record_modelindex);
 
             if(record_modelindex) {
-                page  = _browser->item_bind(record_modelindex)->activate()->page();
+                page = _browser->item_bind(record_modelindex)->activate()->page();
             }
 
             assert(page);
@@ -928,43 +934,47 @@ namespace browser {
         } else
 
 #ifdef USE_POPUP_WINDOW
-            if(//_openinnewtab ||
-                type == QWebEnginePage::WebBrowserTab)
+        if(    //_openinnewtab ||
+            type == QWebEnginePage::WebBrowserTab)
 #endif  // USE_POPUP_WINDOW
 
-            {
-                //                // should I think about always open new window in new tab
-                //                // _openinnewtab = false;  // true
-                //                QUrl current = url();
-                //                QUrl requestedurl = requestedUrl(); //equal to current page url
+        {
+            //                // should I think about always open new window in new tab
+            //                // _openinnewtab = false;  // true
+            //                QUrl current = url();
+            //                QUrl requestedurl = requestedUrl(); //equal to current page url
 
-                WebView *view = _entrance->find([&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == _url.toString();}); // Browser::_defaulthome
+            WebView *view = _entrance->find([&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
+                return it->field("url") == _url.toString();
+            });                                                                                                                                    // Browser::_defaulthome
 
-                auto tree_view = _tree_screen->tree_view();
+            auto tree_view = _tree_screen->tree_view();
 
-                if(view) {
-                    auto c = view->page()->record_controller();
-                    page = c->item_click(c->index<IndexProxy>(PosSource(_tabmanager->webViewIndex(view))))->binder()->page();   //activate()->page();
+            if(view) {
+                auto c = view->page()->record_controller();
+                page = c->item_click(c->index<IndexProxy>(PosSource(_tabmanager->webViewIndex(view))))->binder()->page();       //activate()->page();
 
-                    assert(tree_view->source_model()->index(page->binder()->item()).isValid());
-                    assert(page->binder() && page->binder()->integrity_external(page->binder()->item(), page));
-                    assert(page);
-                } else {
+                assert(tree_view->source_model()->index(page->binder()->item()).isValid());
+                assert(page->binder() && page->binder()->integrity_external(page->binder()->item(), page));
+                assert(page);
+            } else {
 
-                    // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
-                    // already create window, why do this? -- refer to demo browser
-                    assert(tree_view->source_model()->index(this->_binder->item()).isValid());
-                    auto tree_index = create_tree_index();
-                    assert(tree_index);
-                    page = tree_index->item_bind(this->_binder->item(), _url
-                                                 , std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3) // std::placeholders::_1
-                                                 , [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == _url.toString();}
-                                                )->activate()->page();
-                    assert(page);
+                // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
+                // already create window, why do this? -- refer to demo browser
+                assert(tree_view->source_model()->index(this->_binder->item()).isValid());
+                auto tree_index = create_tree_index();
+                assert(tree_index);
+                page = tree_index->item_bind(this->_binder->item(), _url
+                        , std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3)                          // std::placeholders::_1
+                        , [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
+                    return it->field("url") == _url.toString();
                 }
-
+                        )->activate()->page();
                 assert(page);
             }
+
+            assert(page);
+        }
 
         assert(page);
 
@@ -979,7 +989,7 @@ namespace browser {
                 //                , _record_controller
                 //                , _page_controller
                 //                                                 , view()->tabmanager()->browser()
-            );
+                );
 
             popup->setAttribute(Qt::WA_DeleteOnClose);
             popup->show();
@@ -1056,9 +1066,9 @@ namespace browser {
 
         QString title = tr("Error loading page: %1").arg(reply->url().toString());
         QString html = QString(QLatin1String(file.readAll()))
-                       .arg(title)
-                       .arg(errorString)
-                       .arg(reply->url().toString());
+            .arg(title)
+            .arg(errorString)
+            .arg(reply->url().toString());
 
         QBuffer imageBuffer;
         imageBuffer.open(QBuffer::ReadWrite);
@@ -1067,7 +1077,7 @@ namespace browser {
 
         if(pixmap.save(&imageBuffer, "PNG")) {
             html.replace(QLatin1String("IMAGE_BINARY_DATA_HERE"),
-                         QString(QLatin1String(imageBuffer.buffer().toBase64())));
+                QString(QLatin1String(imageBuffer.buffer().toBase64())));
         }
 
         QList<QWebEngineFrame *> frames;
@@ -1083,8 +1093,8 @@ namespace browser {
 
             QList<QWebEngineFrame *> children = frame->childFrames();
 
-            foreach(QWebEngineFrame *frame, children)
-                frames.append(frame);
+            foreach(QWebEngineFrame * frame, children)
+            frames.append(frame);
         }
 
         if(_loadingurl == reply->url()) {
@@ -1218,7 +1228,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_bind(
         boost::intrusive_ptr<TreeItem> item
-    )  // , browser::WebPage *page
+        ) // , browser::WebPage *page
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -1243,31 +1253,31 @@ namespace browser {
         //        else
         result = item;
 
-        auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item) {
-            //            auto ar = std::make_shared<WebPage::Binder>(result_item, this);
-            auto result_coupler = new ::Binder(std::make_shared<WebPage::Binder>(result_item, this));
-            //                std::move(::Binder::item_interface("", &WebPage::Binder::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-            //                , std::move(::Binder::page_interface("", &WebPage::Binder::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-            //                , std::move(::Binder::bind_interface("", &WebPage::Binder::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-            //                , std::move(::Binder::activate_interface("", &WebPage::Binder::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
-            //            );
+        auto create_coupler = [&] (boost::intrusive_ptr<TreeItem> result_item) {
+                //            auto ar = std::make_shared<WebPage::Binder>(result_item, this);
+                auto result_coupler = new ::Binder(std::make_shared<WebPage::Binder>(result_item, this));
+                //                std::move(::Binder::item_interface("", &WebPage::Binder::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+                //                , std::move(::Binder::page_interface("", &WebPage::Binder::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+                //                , std::move(::Binder::bind_interface("", &WebPage::Binder::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+                //                , std::move(::Binder::activate_interface("", &WebPage::Binder::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+                //            );
 
 
-            assert(_binder->integrity_external(result_item, this));   // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
-            assert(result_item->binder()->integrity_external(result_item, this));  // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
-            return result_coupler;
-        };
+                assert(_binder->integrity_external(result_item, this)); // _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
+                assert(result_item->binder()->integrity_external(result_item, this)); // result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
+                return result_coupler;
+            };
 
 
 
         if(result->binder() && result->binder() == _binder) {
             if(!result->binder()->integrity_external(result, this)) {
-                if(_binder)binder_reset();
+                if(_binder) binder_reset();
 
                 create_coupler(result);
             }
         } else {
-            if(_binder)binder_reset();
+            if(_binder) binder_reset();
 
             create_coupler(result);
         }
@@ -1309,27 +1319,27 @@ namespace browser {
         , m_iconReply(0)
     {
         connect(this, &PopupView::loadProgress, this, &PopupView::setProgress);
-        connect(this, &QWebEngineView::loadFinished, this, &PopupView::loadFinished;
-                connect(this, &QWebEngineView::renderProcessTerminated,
-        [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+        connect(this, &QWebEngineView::loadFinished, this, &PopupView::loadFinished);
+        connect(this, &QWebEngineView::renderProcessTerminated,
+            [ = ] (QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
             const char *status = "";
 
             switch(termStatus) {
-                case QWebEnginePage::NormalTerminationStatus:
-                    status = "(normal exit)";
-                    break;
+            case QWebEnginePage::NormalTerminationStatus:
+                status = "(normal exit)";
+                break;
 
-                case QWebEnginePage::AbnormalTerminationStatus:
-                    status = "(abnormal exit)";
-                    break;
+            case QWebEnginePage::AbnormalTerminationStatus:
+                status = "(abnormal exit)";
+                break;
 
-                case QWebEnginePage::CrashedTerminationStatus:
-                    status = "(crashed)";
-                    break;
+            case QWebEnginePage::CrashedTerminationStatus:
+                status = "(crashed)";
+                break;
 
-                case QWebEnginePage::KilledTerminationStatus:
-                    status = "(killed)";
-                    break;
+            case QWebEnginePage::KilledTerminationStatus:
+                status = "(killed)";
+                break;
             }
 
             qInfo() << "Render process exited with code" << statusCode << status;
@@ -1780,12 +1790,12 @@ namespace browser {
         //        bind_record(record);
         if(_binder->item()) {
             if(url() != QUrl()
-               && !url().host().isEmpty()
-               && !url().scheme().isEmpty()
-               && url() != QUrl(Browser::_defaulthome)
-               && url() == _loadingurl
-               && url().toString() == _binder->item()->field("url")
-              ) {
+                && !url().host().isEmpty()
+                && !url().scheme().isEmpty()
+                && url() != QUrl(Browser::_defaulthome)
+                && url() == _loadingurl
+                && url().toString() == _binder->item()->field("url")
+                ) {
 
                 //                if(//_state_check[_record->getNaturalFieldSource("pin")] == Qt::Unchecked &&
                 //                    url().toString() == _record->getNaturalFieldSource("url")
@@ -1800,21 +1810,23 @@ namespace browser {
                 assert(_editor_screen);
 
                 if(title != ""
-                   && title != _binder->item()->field("name") // && !QUrl(title).isValid()
-                  ) {
+                    && title != _binder->item()->field("name") // && !QUrl(title).isValid()
+                    ) {
 
                     _binder->item()->field("name", title);
                     update_record_view(_binder->item());
-                    auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                    auto source_model = [&] () {
+                            return _tree_screen->tree_view()->source_model();
+                        };
                     source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
 
 
                     auto _mainwindow = globalparameters.mainwindow();
 
-                    if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
+                    if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title); }
 
                     if(_view == _tabmanager->currentWebView()) {
-                        if(_editor_screen->item() != _binder->item())sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
+                        if(_editor_screen->item() != _binder->item()) sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
 
                         _editor_screen->name(title);
                     }
@@ -1843,10 +1855,10 @@ namespace browser {
             //              ) { //           && url == _loadingurl
 
             if(url != QUrl() && !url.host().isEmpty() && !url.scheme().isEmpty()
-               && url != QUrl(Browser::_defaulthome)
-               //               && url != _loadingurl
-               && url.toString() != _binder->item()->field("url")
-              ) {
+                && url != QUrl(Browser::_defaulthome)
+                //               && url != _loadingurl
+                && url.toString() != _binder->item()->field("url")
+                ) {
 
                 //            if(!_record) {
                 //                Record *record = nullptr;
@@ -1916,11 +1928,13 @@ namespace browser {
                 if(url.toString() != "") {
                     _binder->item()->field("url", url.toString());
                     update_record_view(_binder->item());
-                    auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                    auto source_model = [&] () {
+                            return _tree_screen->tree_view()->source_model();
+                        };
                     source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
 
                     if(_view == _tabmanager->currentWebView()) {
-                        if(_editor_screen->item() != _binder->item())sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
+                        if(_editor_screen->item() != _binder->item()) sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
 
                         _editor_screen->url(url.toString());
                     }
@@ -1974,9 +1988,9 @@ namespace browser {
             _binder->item()->binder()->item(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder->item()->binder(nullptr);
 
             // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
-            if(_binder->page())_binder->page(nullptr);
+            if(_binder->page()) _binder->page(nullptr);
 
-            if(_binder->item())_binder->item(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder.reset();
+            if(_binder->item()) _binder->item(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder.reset();
 
         }
     }
@@ -2022,16 +2036,16 @@ namespace browser {
             // Выясняется ссылка на таблицу конечных данных
             //                RecordTableData *table = recordSourceModel->getTableData();
 
-            bool is_current = (_view == _tabmanager->currentWebView()) ;
+            bool is_current = (_view == _tabmanager->currentWebView());
 
 
 
             bool data_changed = false;
 
             if(title != ""
-               && title != _binder->item()->field("name")
-               //                   && !QUrl(title).isValid()
-              ) {
+                && title != _binder->item()->field("name")
+                //                   && !QUrl(title).isValid()
+                ) {
 
                 _binder->item()->field("name", title);
                 data_changed = true;
@@ -2039,27 +2053,29 @@ namespace browser {
                 //metaeditor->setName(title);
                 auto _mainwindow = globalparameters.mainwindow();
 
-                if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title);}
+                if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title); }
 
                 //                table->setWorkPos(pos);
-                if(is_current)_editor_screen->name(title);
+                if(is_current) _editor_screen->name(title);
             }
 
             if(url.toString() != "") {
                 _binder->item()->field("url", url.toString());
                 data_changed = true;
 
-                if(is_current)_editor_screen->url(url.toString());
+                if(is_current) _editor_screen->url(url.toString());
 
             }
 
             if(data_changed) {
                 update_record_view(_binder->item());
-                auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+                auto source_model = [&] () {
+                        return _tree_screen->tree_view()->source_model();
+                    };
                 source_model()->emit_datachanged_signal(source_model()->index(_binder->item()));
             }
 
-            if(_editor_screen->item() != _binder->item() && is_current)sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
+            if(_editor_screen->item() != _binder->item() && is_current) sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
 
             //metaeditor->setUrl(url.toString());
 
@@ -2086,7 +2102,9 @@ namespace browser {
             auto it = _binder->item();
             auto tree_view = _tree_screen->tree_view();
             boost::intrusive_ptr<TreeIndex> tree_index;
-            try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+                    return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+                })); } catch(std::exception &e) {throw e; }
 
             tree_view->select_as_current(tree_index);
 
@@ -2182,7 +2200,7 @@ namespace browser {
         //        } catch(std::exception &) {}
 
         //        if(record_index) {
-        _editor_screen->bind(current_item);
+        if(_editor_screen->item() != current_item) _editor_screen->bind(current_item);
 
         //        int pos = indexOf(currentWebView());
         // Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
@@ -2199,8 +2217,7 @@ namespace browser {
 
 
         // Устанавливается функция обратного вызова для записи данных
-        _editor_screen->save_callback( // table
-            _editor_screen->editor_save_callback);
+        _editor_screen->save_callback(_editor_screen->editor_save_callback);
 
         // Сохраняется текст и картинки в окне редактирования
         //        find_object<MainWindow>("mainwindow")
@@ -2209,11 +2226,11 @@ namespace browser {
 
         // Для новой выбраной записи выясняется директория и основной файл
         if(current_item->field("id") == "" // || current_item->field("url") == Browser::_defaulthome
-          ) {current_item->field("id", get_unical_id());}
+            ) {current_item->field("id", get_unical_id()); }
 
-        if(current_item->field("dir") == "")current_item->field("dir", current_item->id());
+        if(current_item->field("dir") == "") current_item->field("dir", current_item->id());
 
-        if(current_item->field("file") == "")current_item->field("file", "text.html");
+        if(current_item->field("file") == "") current_item->field("file", "text.html");
 
         QString current_dir = current_item->field("dir");  // table->field(pos, "dir");
         QString current_file = current_item->field("file");  // table->field(pos, "file");
@@ -2223,8 +2240,8 @@ namespace browser {
 
         // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
         if(_editor_screen->work_directory() == full_dir
-           && _editor_screen->file_name() == current_file
-          ) {
+            && _editor_screen->file_name() == current_file
+            ) {
             globalparameters.window_switcher()->switchFromRecordtableToRecord();
             return;
         }
@@ -2249,18 +2266,17 @@ namespace browser {
         qDebug() << "RecordTableView::onClickToRecord() : crypt " << current_item->field("crypt"); // table->field(pos, "crypt");
 
         if(current_item->field("crypt")    // table->field(pos, "crypt")
-           == "1")
+            == "1")
             if(full_dir.length() == 0 || current_file.length() == 0)
                 _editor_screen->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
 
         // В редактор заносится информация, идет ли работа с зашифрованным текстом
         _editor_screen->misc_field("crypt"
-                                   , current_item->field("crypt") // table->field(pos, "crypt")
-                                  );
+            , current_item->field("crypt")                        // table->field(pos, "crypt")
+            );
 
         // В редакторе устанавливается функция обратного вызова для чтения данных
-        _editor_screen->load_callback( // table
-            _editor_screen->editor_load_callback);
+        _editor_screen->load_callback(_editor_screen->editor_load_callback);
 
         _editor_screen->load_textarea();
         // edView->set_textarea(table->get_text(index.row()));
@@ -2301,7 +2317,7 @@ namespace browser {
 
         // Обновление иконки аттачей
         if(current_item->attach_table()->size()  // table->record(pos)->getAttachTablePointer()->size()
-           == 0)
+            == 0)
             _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_not_exists);   // Если нет приаттаченных файлов
         else
             _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_exists);   // Есть приаттаченные файлы
@@ -2365,7 +2381,9 @@ namespace browser {
         _progress = 0;
     }
 
-    bool WebView::load_finished()const {return _load_finished;}
+    bool WebView::load_finished() const {
+        return _load_finished;
+    }
 
     WebView::~WebView()
     {
@@ -2469,29 +2487,29 @@ namespace browser {
     //    }
 
     WebView::WebView(boost::intrusive_ptr<TreeItem> item
-                     , Profile          *profile   // , bool openinnewtab
-                     , TreeScreen       *tree_screen
-                     , MetaEditor       *editor_screen
-                     , Entrance         *entrance
-                     , Browser          *browser
-                     , TabWidget        *tabmanager
-                     , RecordController *table_controller
-                    )
+        , Profile          *profile                // , bool openinnewtab
+        , TreeScreen       *tree_screen
+        , MetaEditor       *editor_screen
+        , Entrance         *entrance
+        , Browser          *browser
+        , TabWidget        *tabmanager
+        , RecordController *table_controller
+        )
         : QWebEngineView(static_cast<QWidget *>(tabmanager))    // ->parent()
         , _browser(browser)
         , _tabmanager(tabmanager)                               //        , _record(record)
         , _record_controller(table_controller)
         , _page(new WebPage(profile
-                            , item // , openinnewtab
-                            , tree_screen
-                            , editor_screen
-                            , entrance
-                            , browser
-                            , tabmanager
-                            , table_controller
-                            , this)
-               )
-          //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
+            , item                 // , openinnewtab
+            , tree_screen
+            , editor_screen
+            , entrance
+            , browser
+            , tabmanager
+            , table_controller
+            , this)
+            )
+        //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
         , _progress(0)
         , _iconreply(0)
     {
@@ -2508,25 +2526,25 @@ namespace browser {
 
         connect(this, &WebView::loadFinished, this, &WebView::onLoadFinished);
         connect(this, &QWebEngineView::renderProcessTerminated
-        , [ = ](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
+            , [ = ] (QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode) {
             const char *status = "";
 
             switch(termStatus) {
-                case QWebEnginePage::NormalTerminationStatus:
-                    status = "(normal exit)";
-                    break;
+            case QWebEnginePage::NormalTerminationStatus:
+                status = "(normal exit)";
+                break;
 
-                case QWebEnginePage::AbnormalTerminationStatus:
-                    status = "(abnormal exit)";
-                    break;
+            case QWebEnginePage::AbnormalTerminationStatus:
+                status = "(abnormal exit)";
+                break;
 
-                case QWebEnginePage::CrashedTerminationStatus:
-                    status = "(crashed)";
-                    break;
+            case QWebEnginePage::CrashedTerminationStatus:
+                status = "(crashed)";
+                break;
 
-                case QWebEnginePage::KilledTerminationStatus:
-                    status = "(killed)";
-                    break;
+            case QWebEnginePage::KilledTerminationStatus:
+                status = "(killed)";
+                break;
             }            qInfo() << "Render process exited with code" << statusCode << status;
 
             QTimer::singleShot(0, [this] { reload(); });
@@ -2599,9 +2617,9 @@ namespace browser {
 
         _home_connection
             = QObject::connect(
-                  _tabmanager->browser()->_historyhome
-                  , &QAction::triggered
-        , this, [&](bool checked = true)->void {
+            _tabmanager->browser()->_historyhome
+            , &QAction::triggered
+            , this, [&] (bool checked = true) -> void {
             Q_UNUSED(checked)
 
             if(_page->binder())
@@ -2618,7 +2636,7 @@ namespace browser {
             }
 
         }
-              );
+            );
         QWebEngineView::activateWindow();
     }
 
@@ -2881,7 +2899,7 @@ namespace browser {
 
     WebPage::Binder::Binder(boost::intrusive_ptr<TreeItem> item_, WebPage *page_)  // , bool make_current = true
         : // std::enable_shared_from_this<Coupler>()
-          _item(item_)
+        _item(item_)
         , _page(page_)                     // , _make_current(make_current)
     {
         //        _bounded_page->record_binder(new TreeItem::coupler_delegation(shared_from_this()));
@@ -2894,7 +2912,7 @@ namespace browser {
         //        //                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
         WebView *view = nullptr;
 
-        if(_page)view = _page->view();;
+        if(_page) view = _page->view();;
 
         //        //                if(result) {
         //        //                    view = item->bind();    //
@@ -2939,7 +2957,7 @@ namespace browser {
             //            MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
             assert(_page->_editor_screen);
 
-            if(_page->_editor_screen->item() != _item)_page->sychronize_metaeditor_to_item();
+            if(_page->_editor_screen->item() != _item) _page->sychronize_metaeditor_to_item();
 
             assert(_page->binder()->integrity_external(_item, _page));
         }
@@ -2961,7 +2979,7 @@ namespace browser {
 
     WebView *WebPage::Binder::activator(
         // boost::intrusive_ptr<TreeItem> item
-    )
+        )
     {
         //        assert(_item_link->binder());
         //        assert(_item_link->binder() == _page_link->binder());
@@ -2984,26 +3002,28 @@ namespace browser {
         return _page->activate();   // view;
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item()const
+    boost::intrusive_ptr<TreeItem> WebPage::item() const
     {
         return _binder ? _binder->item() : nullptr;
     }
 
-    WebPage *WebPage::page()const
+    WebPage *WebPage::page() const
     {
         return _binder ? _binder->page() : nullptr;
     }
 
-    boost::intrusive_ptr<::Binder> WebPage::binder() {return _binder;}
+    boost::intrusive_ptr<::Binder> WebPage::binder() {
+        return _binder;
+    }
 
     const boost::intrusive_ptr<::Binder> &&WebPage::binder() const
     {
-        return std::forward<const boost::intrusive_ptr<::Binder>>(_binder);
+        return std::forward<const boost::intrusive_ptr<::Binder> >(_binder);
     }
 
     void WebPage::binder(boost::intrusive_ptr<::Binder> &&binder_)
     {
-        if(binder_ != _binder)this->_binder = binder_;
+        if(binder_ != _binder) this->_binder = binder_;
     }
 
     WebView *WebPage::view()
@@ -3012,9 +3032,13 @@ namespace browser {
         return _view;
     }
 
-    RecordController *WebPage::record_controller() {return _record_controller;}
+    RecordController *WebPage::record_controller() {
+        return _record_controller;
+    }
 
-    TabWidget *WebPage::tabmanager() {return _tabmanager;}
+    TabWidget *WebPage::tabmanager() {
+        return _tabmanager;
+    }
 
 
 

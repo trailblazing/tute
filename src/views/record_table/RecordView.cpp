@@ -23,7 +23,7 @@
 #include "controllers/record_table/RecordController.h"
 #include "models/record_table/ItemsFlat.h"
 #include "views/tree/KnowView.h"
-
+#include "views/record_table/verticalscrollarea.h"
 
 
 extern GlobalParameters globalparameters;
@@ -137,8 +137,8 @@ RecordView::RecordView(RecordScreen *_record_screen, RecordController *_record_c
             _context_menu->addAction(_record_screen->_settings);
         };
 
-        qDebug() << "RecordTableView::init()";
-        this->viewport()->installEventFilter(this);
+        qDebug() << "RecordView::init()";
+        //        this->viewport()->installEventFilter(static_cast<QObject *>(_record_screen->_vertical_scrollarea)); // should be record_screen->_vertical_scrollarea?
 
         setup_signals();
 
@@ -411,7 +411,7 @@ void RecordView::on_custom_context_menu_requested(const QPoint &pos)
 // Слот, срабатывающий при нажатии кнопки редактирования записи
 void RecordView::edit_field_context(void)
 {
-    qDebug() << "In RecordTableView::editFieldContext";
+    qDebug() << "In RecordView::edit_field_context";
 
     // Получение индекса выделенного элемента
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
