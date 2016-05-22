@@ -135,5 +135,7 @@
         <file>resource/pic/ginkgo_black.svg</file>
         <file>resource/pic/ginkgo.svg</file>
         <file>resource/pic/ginkgo_pure.svg</file>
+        <file>resource/pic/door.svg</file>
+        <file>resource/pic/folder.svg</file>
     </qresource>
 </RCC>

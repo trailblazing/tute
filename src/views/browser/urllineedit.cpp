@@ -126,14 +126,14 @@ namespace browser {
 
         int leftwidgetheight_ = _leftwidget->height();
         _leftwidget->setGeometry(rect.x() + 2,          rect.y() + (height - leftwidgetheight_) / 2,
-                                 _leftwidget->width(), _leftwidget->height());
+            _leftwidget->width(), _leftwidget->height());
 
         int clearButtonWidth = this->height();
         _lineedit->setGeometry(_leftwidget->x() + _leftwidget->width(),        0,
-                               width - clearButtonWidth - _leftwidget->width(), this->height());
+            width - clearButtonWidth - _leftwidget->width(), this->height());
 
         _clearbutton->setGeometry(this->width() - clearButtonWidth, 0,
-                                  clearButtonWidth, this->height());
+            clearButtonWidth, this->height());
     }
 
     void ExLineEdit::initStyleOption(QStyleOptionFrameV2 *option) const
@@ -193,10 +193,11 @@ namespace browser {
 
     bool ExLineEdit::event(QEvent *event)
     {
+        bool result = false;
         if(event->type() == QEvent::ShortcutOverride)
-            return _lineedit->event(event);
-
-        return QWidget::event(event);
+            result = _lineedit->event(event);   // return _lineedit->event(event);
+        result = QWidget::event(event);
+        return result;  // QWidget::event(event);
     }
 
     void ExLineEdit::paintEvent(QPaintEvent *)
@@ -220,16 +221,16 @@ namespace browser {
 
     class UrlIconLabel : public QLabel {
 
-    public:
+public:
         UrlIconLabel(QWidget *parent);
 
         WebView *_browserview;
 
-    protected:
+protected:
         void mousePressEvent(QMouseEvent *event);
         void mouseMoveEvent(QMouseEvent *event);
 
-    private:
+private:
         QPoint _dragstartpos;
 
     };
@@ -253,17 +254,22 @@ namespace browser {
     void UrlIconLabel::mouseMoveEvent(QMouseEvent *event)
     {
         if(event->buttons() == Qt::LeftButton
-           && (event->pos() - _dragstartpos).manhattanLength() > QApplication::startDragDistance()
-           && _browserview
-          ) {
-            QDrag *drag = new QDrag(this);
-            QMimeData *mimeData = new QMimeData;
-            mimeData->setText(QString::fromUtf8(_browserview->page()->url().toEncoded()));
-            QList<QUrl> urls;
-            urls.append(_browserview->page()->url());
-            mimeData->setUrls(urls);
-            drag->setMimeData(mimeData);
-            drag->exec();
+            && (event->pos() - _dragstartpos).manhattanLength() > QApplication::startDragDistance()
+            && _browserview
+            ) {
+            if(_browserview->page())
+            {
+                QDrag *drag = new QDrag(this);
+                QMimeData *mimeData = new QMimeData;
+
+                mimeData->setText(QString::fromUtf8(_browserview->page()->url().toEncoded()));
+                QList<QUrl> urls;
+                urls.append(_browserview->page()->url());
+                mimeData->setUrls(urls);
+
+                drag->setMimeData(mimeData);
+                drag->exec();
+            }
         }
     }
 
@@ -287,7 +293,9 @@ namespace browser {
         _iconlabel->_browserview = webView;
         connect(webView, &WebView::urlChanged, this, &UrlLineEdit::webViewUrlChanged);
         connect(webView, &WebView::iconChanged, this, &UrlLineEdit::webViewIconChanged);
-        connect(webView, &WebView::loadProgress, this, [&](int i) {Q_UNUSED(i); update();});
+        connect(webView, &WebView::loadProgress, this, [&] (int i) {
+            Q_UNUSED(i); update();
+        });
     }
 
     void UrlLineEdit::webViewUrlChanged(const QUrl &url)
@@ -318,7 +326,7 @@ namespace browser {
     {
         if(_lineedit->text().isEmpty() && _webview) {
             if(_webview->load_finished())
-                _lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));
+                if(_webview->page()) _lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));
         }
 
         ExLineEdit::focusOutEvent(event);
@@ -328,9 +336,11 @@ namespace browser {
     {
         QPalette p = palette();
 
-        if(_webview && _webview->page()->url().scheme() == QLatin1String("https")) {
-            QColor lightYellow(248, 248, 210);
-            p.setBrush(QPalette::Base, generateGradient(lightYellow));
+        if(_webview) {
+            if(_webview->page()&& _webview->page()->url().scheme() == QLatin1String("https")) {
+                QColor lightYellow(248, 248, 210);
+                p.setBrush(QPalette::Base, generateGradient(lightYellow));
+            }
         } else {
             p.setBrush(QPalette::Base, _defaultbasecolor);
         }

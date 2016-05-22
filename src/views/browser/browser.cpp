@@ -39,10 +39,9 @@
 **
 ****************************************************************************/
 
-
-#include <cassert>
-#include "utility/delegate.h"
 #include "browser.h"
+#include "utility/delegate.h"
+#include <cassert>
 
 #include "autosaver.h"
 #include "bookmarks.h"
@@ -59,45 +58,42 @@
 
 #include <QtCore/QSettings>
 
-#include <QtWidgets/QDesktopWidget>
-#include <QtWidgets/QFileDialog>
-#include <QtWidgets/QPlainTextEdit>
 #include <QtPrintSupport/QPrintDialog>
 #include <QtPrintSupport/QPrintPreviewDialog>
 #include <QtPrintSupport/QPrinter>
+#include <QtWidgets/QDesktopWidget>
+#include <QtWidgets/QFileDialog>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QMessageBox>
+#include <QtWidgets/QPlainTextEdit>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QToolBar>
-#include <QtWidgets/QInputDialog>
 
+#include <QDockWidget>
 #include <QWebEngineHistory>
 #include <QWebEngineProfile>
 #include <QWebEngineSettings>
-#include <QDockWidget>
 #include <QtCore/QDebug>
 
-
+#include "controllers/record_table/RecordController.h"
+#include "libraries/GlobalParameters.h"
 #include "main.h"
-#include "models/record_table/linker.hxx"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "models/record_table/Record.h"
-#include "views/record_table/RecordView.h"
-#include "libraries/GlobalParameters.h"
-#include "views/browser/entrance.h"
-#include "views/record_table/RecordScreen.h"
-#include "controllers/record_table/RecordController.h"
-#include "views/browser/tabwidget.h"
-#include "views/main_window/MainWindow.h"
-#include "views/find_in_base_screen/FindScreen.h"
-#include "views/tree/TreeScreen.h"
+#include "models/record_table/RecordModel.h"
+#include "models/record_table/linker.hxx"
+#include "models/record_table/recordindex.hxx"
 #include "models/tree/binder.hxx"
 #include "models/tree/treeindex.hxx"
+#include "views/browser/entrance.h"
+#include "views/browser/tabwidget.h"
+#include "views/find_in_base_screen/FindScreen.h"
+#include "views/main_window/MainWindow.h"
+#include "views/record_table/RecordScreen.h"
+#include "views/record_table/RecordView.h"
 #include "views/tree/KnowView.h"
-
-
+#include "views/tree/TreeScreen.h"
 
 extern GlobalParameters globalparameters;
 //Record *default_record = nullptr;
@@ -105,7 +101,7 @@ const char *profile_storage_name = "cookie";
 
 namespace browser {
 
-    template<typename Arg, typename R, typename C>
+    template <typename Arg, typename R, typename C>
     struct InvokeWrapper {
         R *receiver;
         void (C::*memberFun)(Arg);
@@ -115,16 +111,17 @@ namespace browser {
         }
     };
 
-    template<typename Arg, typename R, typename C>
+    template <typename Arg, typename R, typename C>
     InvokeWrapper<Arg, R, C> invoke(R *receiver, void (C::*memberFun)(Arg))
     {
-        InvokeWrapper<Arg, R, C> wrapper = {receiver, memberFun};
+        InvokeWrapper<Arg, R, C> wrapper = { receiver, memberFun };
         return wrapper;
     }
 
-
-    UrlRequestInterceptor::UrlRequestInterceptor(QObject *p): QWebEngineUrlRequestInterceptor(p) {}
-
+    UrlRequestInterceptor::UrlRequestInterceptor(QObject *p)
+        : QWebEngineUrlRequestInterceptor(p)
+    {
+    }
 
     void UrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info)
     {
@@ -139,7 +136,7 @@ namespace browser {
     }
 
     Profile::Profile(const QString &name, QObject *p)
-        :  QWebEngineProfile(name, p) // QQuickWebEngineProfile(p)
+        : QWebEngineProfile(name, p) // QQuickWebEngineProfile(p)
         , _urlrequestinterceptor(new UrlRequestInterceptor(p))
     {
         //        setStorageName(profile_storage_name);
@@ -152,7 +149,6 @@ namespace browser {
         //        // downloadsLocation->setText(downloadDirectory);
         //        settings.endGroup();
 
-
         //        // this group lead chrome_odthread deadlock? or initialize failure
         //        settings.beginGroup(QLatin1String("cookies"));
 
@@ -163,7 +159,6 @@ namespace browser {
         //                    settings.value(QLatin1String("persistentCookiesPolicy")).toInt()    // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
         //                );
         //        setPersistentCookiesPolicy(persistentCookiesPolicy);
-
 
         //        QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
 
@@ -179,19 +174,24 @@ namespace browser {
         //        setPersistentStoragePath(persistent_data_path);
 
         //        settings.endGroup();
-
     }
 
     // const char *DockedWindow::_defaulthome = "about:blank";
 
     Browser::~Browser()
     {
-        auto &_browsers = _entrance->browsers();
+        std::set<Browser *> &_browsers = _entrance->browsers();
 
-        for(auto it = _browsers.begin(); it != _browsers.end(); ++it) {
-            if(_browsers.size() > 0) {
-                if(*it == this && *it) _browsers.erase(it);
-            } else break;
+        if(_browsers.find(this) != _browsers.end()) {
+            for(auto &it : _browsers) { // for(auto it = _browsers.begin(); it != _browsers.end(); ++it) {
+                //                if(_browsers.size() > 0) {
+                if(it)
+                    if(it == this)
+                        _browsers.erase(it);
+
+                //                } else
+                //                    break;
+            }
         }
 
         _autosaver->changeOccurred();
@@ -210,12 +210,9 @@ namespace browser {
 
         _layout->deleteLater();
         _centralwidget->deleteLater();
-
-
-
     }
 
-    void Browser::init()    // QUrl const &url,
+    void Browser::init() // QUrl const &url,
     {
         //        browser->setWidget(this);
         //        this->setParent(browser);
@@ -255,11 +252,10 @@ namespace browser {
         connect(_tabmanager, &TabWidget::loadPage, this, &Browser::loadPage);
         connect(_tabmanager, &TabWidget::setCurrentTitle, this, &Browser::slotUpdateWindowTitle);
         connect(_tabmanager, &TabWidget::showStatusBarMessage, status_bar(), &QStatusBar::showMessage);
-        connect(_tabmanager, &TabWidget::linkHovered, status_bar(), [this](const QString & link) {
+        connect(_tabmanager, &TabWidget::linkHovered, status_bar(), [this] (const QString & link) {
             //            &QStatusBar::showMessage
             this->status_bar()->showMessage(link);
-        }
-               );
+        });
         connect(_tabmanager, &TabWidget::loadProgress, this, &Browser::slotLoadProgress);
         connect(_tabmanager, &TabWidget::tabsChanged, _autosaver, &AutoSaver::changeOccurred);
         connect(_tabmanager, &TabWidget::geometryChangeRequested, this, &Browser::geometry_change_requested);
@@ -274,10 +270,7 @@ namespace browser {
         connect(_tabmanager, &TabWidget::lastTabClosed, this, &Browser::close);
 #else
         connect(
-            _tabmanager
-            , &TabWidget::lastTabClosed
-            , this
-        , [&]() ->void {
+            _tabmanager, &TabWidget::lastTabClosed, this, [&] () -> void {
             //            _tabmanager->newTab(request_record(QUrl(DockedWindow::_defaulthome)));
             //            WebView *view = nullptr;
             //            sd::method(
@@ -287,7 +280,6 @@ namespace browser {
             //                , _tabmanager   //typename STATIC_IF_SHARED<object_type, object_pointer_type>::type o   //shared_ptr<object_type> o // = (object_type *const)0  //nullptr
             //                , Arg &&... arg
             //            );
-
 
             //            auto arint = boost::make_shared<TabWidget::ActiveRecordBinder>(_tabmanager, true);
             //            auto record = _record_controller->request_item(
@@ -311,8 +303,7 @@ namespace browser {
             if(index != -1)
                 globalparameters.vtab()->removeTab(index);
             //            static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
-        }
-        );
+        });
 #endif
 
         slotUpdateWindowTitle();
@@ -321,7 +312,7 @@ namespace browser {
         auto vtab = _main_window->vtab();
 
         if(vtab->indexOf(_record_screen) == -1)
-            vtab->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), "Browser " + vtab->count() - 1);
+            vtab->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), QString("Browser ") + QString::number(vtab->count() - 1));
 
         //        int size = _tabmanager->lineEditStack()->sizeHint().height();
 
@@ -362,9 +353,6 @@ namespace browser {
 
     //        // registered record, but have no generator:
     //        //        boost::shared_ptr<TabWidget::Coupler> ar =
-
-
-
 
     //        //        //        record->binder(
     //        //        //            binder(ar)
@@ -508,31 +496,15 @@ namespace browser {
     //        show();
     //    }
 
-    Browser::Browser(TreeScreen       *_tree_screen
-                     , FindScreen       *_find_screen
-                     , MetaEditor       *_editor_screen
-                     , HidableTabWidget *_vtabwidget
-                     , MainWindow       *_main_window
-                     , Entrance         *_entrance
-                     , const QString    &style_source
-                     , Profile *_profile, Qt::WindowFlags  flags
-                    )
+    Browser::Browser(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, HidableTabWidget *_vtabwidget, MainWindow *_main_window, Entrance *_entrance, const QString &style_source, Profile *_profile, Qt::WindowFlags flags)
         : QMainWindow(0, flags)
-          //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
+        //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
-        , _record_screen(new RecordScreen(_tree_screen
-                                          , _find_screen
-                                          , _editor_screen
-                                          , _entrance
-                                          , this
-                                          , _vtabwidget
-                                          , _main_window
-                                          , _profile
-                                         ))
+        , _record_screen(new RecordScreen(_tree_screen, _find_screen, _editor_screen, _entrance, this, _vtabwidget, _main_window, _profile))
         , _main_window(_main_window)
         , _tabmanager(_record_screen->tabmanager())
-          //        , _toolbarsearch(_find_screen->toolbarsearch())
+        //        , _toolbarsearch(_find_screen->toolbarsearch())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(_find_screen->chasewidget())
         , _autosaver(new AutoSaver(this))
@@ -544,13 +516,13 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(this))         //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _entrance(_entrance->prepend(this)) //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
 
-        run_script(style_source);       //        assert(record->linkpage());
+        run_script(style_source); //        assert(record->linkpage());
 
-        QMainWindow::setWindowFlags(Qt::FramelessWindowHint);    //Qt::Window |
+        QMainWindow::setWindowFlags(Qt::FramelessWindowHint); //Qt::Window |
 
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
@@ -613,7 +585,6 @@ namespace browser {
 
     //    }
 
-
     void Browser::activateWindow()
     {
         _entrance->setWidget(this);
@@ -621,7 +592,6 @@ namespace browser {
         _entrance->on_activate_window();
 
         _find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
-
 
         auto vtab = globalparameters.vtab();
         int index = vtab->indexOf(_record_screen);
@@ -635,16 +605,20 @@ namespace browser {
 
             vtab->setCurrentIndex(index);
 
-            if(!_tabmanager->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _tree_screen->tree_view()->current_item()->id();})
-              ) {
+            if(!_tabmanager->find([&] (boost::intrusive_ptr<const TreeItem> it) {
+                return it->id() == _tree_screen->tree_view()->current_item()->id();
+            })) {
                 auto it = _record_screen->record_controller()->view()->current_item();
 
                 if(it) {
                     boost::intrusive_ptr<TreeIndex> tree_index(nullptr);
 
                     try {
-                        tree_index = new TreeIndex([&] {return _tree_screen->tree_view()->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));
-                    } catch(std::exception &e) {}
+                        tree_index = new TreeIndex([&] { return _tree_screen->tree_view()->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+                            return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+                        }));
+                    } catch(std::exception &) {
+                    }
 
                     if(tree_index)
                         _tree_screen->tree_view()->select_as_current(tree_index);
@@ -754,7 +728,9 @@ namespace browser {
         updateToolbarActionText(showToolbar);
 
         _main_window->menuBar()->setVisible(showMenuBar);
-        [this](bool show) {_viewmenubar->setText(show ? tr("Hide Menu bar") : tr("Show Menu bar"));}(showMenuBar);
+        [this] (bool show) {
+            _viewmenubar->setText(show ? tr("Hide Menu bar") : tr("Show Menu bar"));
+        } (showMenuBar);
 
         _bookmarkstoolbar->setVisible(showBookmarksBar);
         update_bookmarks_toolbar_action_text(showBookmarksBar);
@@ -781,10 +757,10 @@ namespace browser {
     void Browser::append_to_file_menu()
     {
         // File
-        QMenu *filemenu = _main_window->file_menu();    //menuBar()->addMenu(tr("&File"));
+        QMenu *filemenu = _main_window->file_menu(); //menuBar()->addMenu(tr("&File"));
 
         filemenu->addAction(tr("&New Window"), this, SLOT(slotFileNew()), QKeySequence::New);
-        filemenu->addAction(_tabmanager->newTabAction());   // tr("New &Tab")
+        filemenu->addAction(_tabmanager->newTabAction()); // tr("New &Tab")
         filemenu->addAction(tr("&Open File..."), this, SLOT(slotFileOpen()), QKeySequence::Open);
         filemenu->addAction(tr("Open &Location..."), this, SLOT(slotSelectLineEdit()), QKeySequence(Qt::ControlModifier + Qt::Key_L));
         filemenu->addSeparator();
@@ -823,7 +799,6 @@ namespace browser {
 
         //        _tree_screen->buttonmenu()->addMenu(filemenu);
     }
-
 
     void Browser::append_edit_menu()
     {
@@ -867,13 +842,13 @@ namespace browser {
 
         editMenu->addAction(tr("&Browser preferences"), this, SLOT(slotPreferences()), tr("Ctrl+,"));
 
-        _tree_screen->buttonmenu()->addMenu(editMenu);
+        _tree_screen->menus_in_button()->addMenu(editMenu);
     }
 
     void Browser::append_view_menu()
     {
         // View
-        QMenu *viewMenu =  _main_window->view_menu();  // _main_window->menuBar()->addMenu(tr("&View"));
+        QMenu *viewMenu = _main_window->view_menu(); // _main_window->menuBar()->addMenu(tr("&View"));
         viewMenu->clear();
 
         _viewmenubar = new QAction(this);
@@ -881,20 +856,20 @@ namespace browser {
         _viewmenubar->setText(tr("Hide Menu bar"));
         _viewmenubar->setShortcut(tr("Shift+Ctrl+M"));
         connect(_viewmenubar, &QAction::triggered, this
-                //&DockedWindow::slotViewMenuBar
-        , [this]() {
+            //&DockedWindow::slotViewMenuBar
+            ,
+            [this] () {
             if(_main_window->menuBar()->isVisible()) {
-                _viewmenubar->setText(tr("Show Menu bar"));    //updateMenuBarActionText(false);
+                _viewmenubar->setText(tr("Show Menu bar")); //updateMenuBarActionText(false);
                 //_main_window->menuBar()->hide();
                 _main_window->menuBar()->close();
             } else {
-                _viewmenubar->setText(tr("Hide Menu bar"));    //updateMenuBarActionText(true);
+                _viewmenubar->setText(tr("Hide Menu bar")); //updateMenuBarActionText(true);
                 _main_window->menuBar()->show();
             }
 
             _autosaver->changeOccurred();
-        }
-               );
+        });
 
         viewMenu->addAction(_viewmenubar);
 
@@ -935,18 +910,16 @@ namespace browser {
 
         viewMenu->addSeparator();
         viewMenu->addAction(tr("Page S&ource"), this, SLOT(slotViewPageSource()), tr("Ctrl+Alt+U"));
-        QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)),  Qt::Key_F11);
+        QAction *a = viewMenu->addAction(tr("&Full Screen"), this, SLOT(slotViewFullScreen(bool)), Qt::Key_F11);
         a->setCheckable(true);
 
-        _tree_screen->buttonmenu()->addMenu(viewMenu);
-
-
+        _tree_screen->menus_in_button()->addMenu(viewMenu);
     }
 
     void Browser::append_history_menu()
     {
         // History
-        HistoryMenu *historyMenu =  _main_window->histry_menu();
+        HistoryMenu *historyMenu = _main_window->histry_menu();
         //        new HistoryMenu(
         //            _main_window   //this
         //        );
@@ -958,7 +931,7 @@ namespace browser {
 
         _main_window->menuBar()->addMenu(historyMenu);
 
-        _tree_screen->buttonmenu()->addMenu(historyMenu);
+        _tree_screen->menus_in_button()->addMenu(historyMenu);
 
         QList<QAction *> historyActions;
 
@@ -985,14 +958,14 @@ namespace browser {
 
 #if defined(QWEBENGINEHISTORY_RESTORESESSION)
         _restorelastsession = new QAction(tr("Restore Last Session"), this);
-        connect(_restorelastsession, &QAction::triggered, QtSingleApplication::instance(), &QtSingleApplication::restoreLastSession;
-                _restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
-                historyActions.append(_tabwidget->recentlyClosedTabsAction());
-                historyActions.append(_restorelastsession);
+        connect(_restorelastsession, &QAction::triggered, QtSingleApplication::instance(), &QtSingleApplication::restoreLastSession);
+        _restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
+        historyActions.append(_tabwidget->recentlyClosedTabsAction());
+        historyActions.append(_restorelastsession);
 #endif
 
-                historyMenu->setInitialActions(historyActions);
-                _tree_screen->buttonmenu()->addMenu(historyMenu);
+        historyMenu->setInitialActions(historyActions);
+        _tree_screen->menus_in_button()->addMenu(historyMenu);
     }
 
     void Browser::append_bookmark_menu()
@@ -1023,7 +996,7 @@ namespace browser {
         bookmarksActions.append(_addbookmark);
         bookmarksMenu->setInitialActions(bookmarksActions);
 
-        _tree_screen->buttonmenu()->addMenu(bookmarksMenu);
+        _tree_screen->menus_in_button()->addMenu(bookmarksMenu);
     }
 
     void Browser::append_window_menu()
@@ -1034,29 +1007,28 @@ namespace browser {
         connect(_windowmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowWindowMenu);
         slotAboutToShowWindowMenu();
 
-        _tree_screen->buttonmenu()->addMenu(_windowmenu);
+        _tree_screen->menus_in_button()->addMenu(_windowmenu);
     }
 
     void Browser::append_to_tools_menu()
     {
-        QMenu *toolsMenu = _main_window->tools_menu();  //menuBar()->addMenu(tr("&Tools"));
+        QMenu *toolsMenu = _main_window->tools_menu(); //menuBar()->addMenu(tr("&Tools"));
         toolsMenu->addAction(tr("Web &Search"), this, SLOT(slotWebSearch()), QKeySequence(tr("Ctrl+K", "Web Search")));
 #if defined(QWEBENGINEINSPECTOR)
         a = toolsMenu->addAction(tr("Enable Web &Inspector"), this, SLOT(slotToggleInspector(bool)));
         a->setCheckable(true);
 #endif
-
     }
 
     void Browser::append_to_help_menu()
     {
         _main_window->init_help_menu();
         assert(_main_window->help_menu());
-        QMenu *helpMenu = _main_window->help_menu();  //menuBar()->addMenu(tr("&Help"));
+        QMenu *helpMenu = _main_window->help_menu(); //menuBar()->addMenu(tr("&Help"));
         //        helpMenu->addAction(tr("About &Qt"), qApp, SLOT(aboutQt()));
         helpMenu->addAction(tr("About &Embedded Browser"), this, SLOT(slotAboutApplication()));
 
-        _tree_screen->buttonmenu()->addMenu(helpMenu);
+        _tree_screen->menus_in_button()->addMenu(helpMenu);
     }
 
     void Browser::append_to_main_menu()
@@ -1084,7 +1056,6 @@ namespace browser {
         append_to_help_menu();
     }
 
-
     void Browser::setup_tool_bar()
     {
         //auto mainwindow = _main_window;
@@ -1098,7 +1069,7 @@ namespace browser {
         //_historyback = findscreen->historyback();
 
         _historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
-                             ); //this
+            );                  //this
 
         _historybackmenu = new QMenu(this);
         _historyback->setMenu(_historybackmenu);
@@ -1108,7 +1079,7 @@ namespace browser {
         //navigater->addAction(_historyback);
 
         _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
-                                ); //this
+            );                     //this
 
         _historyforwardmenu = new QMenu(this);
         connect(_historyforwardmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowForwardMenu);
@@ -1122,9 +1093,7 @@ namespace browser {
         _reloadicon = QIcon(":/resource/pic/mobile_reload.svg"); // style()->standardIcon(QStyle::SP_BrowserReload);
         _stopreload->setIcon(_reloadicon);
 
-
         //        //navigater->addAction(_stopreload);
-
 
         //        //navigater->addWidget(_tabmanager->lineEditStack());
         //        _toolbarsearch = _find_screen->toolbarsearch();
@@ -1277,13 +1246,13 @@ namespace browser {
     void Browser::slotAboutApplication()
     {
         QMessageBox::about(this, tr("About"), tr(
-                               "Version %1"
-                               "<p>This demo demonstrates the facilities "
-                               "of Qt WebEngine in action, providing an note with "
-                               "browser for you to experiment with.<p>"
-                               "<p>Qt WebEngine is based on the Chromium open source project "
-                               "developed at <a href=\"http://www.chromium.org/\">http://www.chromium.org/</a>."
-                           ).arg(QCoreApplication::applicationVersion()));
+                "Version %1"
+                "<p>This demo demonstrates the facilities "
+                "of Qt WebEngine in action, providing an note with "
+                "browser for you to experiment with.<p>"
+                "<p>Qt WebEngine is based on the Chromium open source project "
+                "developed at <a href=\"http://www.chromium.org/\">http://www.chromium.org/</a>.")
+            .arg(QCoreApplication::applicationVersion()));
     }
 
     void Browser::slotFileNew()
@@ -1305,7 +1274,7 @@ namespace browser {
     void Browser::slotFileOpen()
     {
         QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString(),
-                                                    tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
+                tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
 
         if(file.isEmpty())
             return;
@@ -1359,19 +1328,20 @@ namespace browser {
         if(!QtSingleApplication::instance()->privateBrowsing()) {
             QString title = tr("Are you sure you want to turn on private browsing?");
             QString text = tr("<b>%1</b><br><br>"
-                              "This action will reload all open tabs.<br>"
-                              "When private browsing in turned on,"
-                              " webpages are not added to the history,"
-                              " items are automatically removed from the Downloads window," \
-                              " new cookies are not stored, current cookies can't be accessed," \
-                              " site icons wont be stored, session wont be saved, " \
-                              " and searches are not added to the pop-up menu in the Google search box." \
-                              "  Until you close the window, you can still click the Back and Forward buttons" \
-                              " to return to the webpages you have opened.").arg(title);
+                    "This action will reload all open tabs.<br>"
+                    "When private browsing in turned on,"
+                    " webpages are not added to the history,"
+                    " items are automatically removed from the Downloads window,"
+                    " new cookies are not stored, current cookies can't be accessed,"
+                    " site icons wont be stored, session wont be saved, "
+                    " and searches are not added to the pop-up menu in the Google search box."
+                    "  Until you close the window, you can still click the Back and Forward buttons"
+                    " to return to the webpages you have opened.")
+                .arg(title);
 
             QMessageBox::StandardButton button = QMessageBox::question(this, QString(), text,
-                                                                       QMessageBox::Ok | QMessageBox::Cancel,
-                                                                       QMessageBox::Ok);
+                    QMessageBox::Ok | QMessageBox::Cancel,
+                    QMessageBox::Ok);
 
             if(button == QMessageBox::Ok)
                 QtSingleApplication::instance()->setPrivateBrowsing(true);
@@ -1390,10 +1360,11 @@ namespace browser {
     {
         if(_tabmanager->count() > 1) {
             int ret = QMessageBox::warning(this, QString(),
-                                           tr("Are you sure you want to close the window?"
-                                              "  There are %1 tabs open").arg(_tabmanager->count()),
-                                           QMessageBox::Yes | QMessageBox::No,
-                                           QMessageBox::No);
+                    tr("Are you sure you want to close the window?"
+                    "  There are %1 tabs open")
+                    .arg(_tabmanager->count()),
+                    QMessageBox::Yes | QMessageBox::No,
+                    QMessageBox::No);
 
             if(ret == QMessageBox::No) {
                 event->ignore();
@@ -1468,7 +1439,8 @@ namespace browser {
                 showMinimized();
             else if(isMaximized())
                 showMaximized();
-            else showNormal();
+            else
+                showNormal();
         }
     }
 
@@ -1498,19 +1470,22 @@ namespace browser {
         auto current_item = tree_view->current_item();
         auto parent = current_item->parent();
 
-        if(!parent) throw std::exception();
+        if(!parent)
+            throw std::exception();
 
         try {
-            modelindex = new TreeIndex([&] {return tree_view->source_model();}, parent, parent->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();}));
-        } catch(std::exception &e) {}
+            modelindex = new TreeIndex([&] { return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+                return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
+            }));
+        } catch(std::exception &) {
+        }
 
         if(modelindex) {
             modelindex->item_bind(
-                tree_view->current_item()
-                , QUrl(home)
-                , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                , [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == home;}
-            )->activate();
+                tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
+                return it->field("url") == home;
+            })
+            ->activate();
         }
     }
 
@@ -1529,9 +1504,9 @@ namespace browser {
 
         if(enable) {
             int result = QMessageBox::question(this, tr("Web Inspector"),
-                                               tr("The web inspector will only work correctly for pages that were loaded after enabling.\n"
-                                                  "Do you want to reload all pages?"),
-                                               QMessageBox::Yes | QMessageBox::No);
+                    tr("The web inspector will only work correctly for pages that were loaded after enabling.\n"
+                    "Do you want to reload all pages?"),
+                    QMessageBox::Yes | QMessageBox::No);
 
             if(result == QMessageBox::Yes) {
                 _tabwidget->reloadAllTabs();
@@ -1581,11 +1556,11 @@ namespace browser {
             _stopreload->setToolTip(tr("Stop loading the current page"));
         } else {
             _chasewidget->setAnimated(false);
-            disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger);   //&QAction::setChecked
+            disconnect(_stopreload, &QAction::triggered, _stop, &QAction::trigger); //&QAction::setChecked
 
             _stopreload->setIcon(_reloadicon);
 
-            connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);   //&QAction::setChecked
+            connect(_stopreload, &QAction::triggered, _reload, &QAction::trigger); //&QAction::setChecked
             _stopreload->setToolTip(tr("Reload the current page"));
         }
     }
@@ -1641,16 +1616,19 @@ namespace browser {
         _windowmenu->addAction(tr("Downloads"), this, SLOT(slotDownloadManager()), QKeySequence(tr("Alt+Ctrl+L", "Download Manager")));
         _windowmenu->addSeparator();
 
-        auto &_browsers = _entrance->browsers();  //QtSingleApplication::instance()->mainWindows();
+        auto &_browsers = _entrance->browsers(); //QtSingleApplication::instance()->mainWindows();
+        size_t index = 0;
 
-        for(size_t i = 0; i < _browsers.size(); i++) {
-            auto window = _browsers[i];
+        for(auto &window : _browsers) {  // for(size_t i = 0; i < _browsers.size(); i++) {
+            //            auto window = it;   // _browsers[i];
             QAction *action = _windowmenu->addAction(window->windowTitle(), this, SLOT(slotShowWindow()));
-            action->setData(static_cast<uint>(i));
+            action->setData(static_cast<uint>(index));
             action->setCheckable(true);
 
             if(window == this)
                 action->setChecked(true);
+
+            index++;
         }
     }
 
@@ -1661,14 +1639,28 @@ namespace browser {
 
             if(v.canConvert<uint>()) {
                 uint offset = qvariant_cast<uint>(v);
-                auto &_browsers = _entrance->browsers();   //QtSingleApplication::instance()->mainWindows();
-                auto window = _browsers[offset];
+                auto &_browsers = _entrance->browsers(); //QtSingleApplication::instance()->mainWindows();
+                auto window = [&] () -> Browser* {
+                        Browser *r = nullptr;
+                        size_t index = 0;
+
+                        for(auto &it : _browsers)
+                        {
+                            if(index == offset) {
+                                r = it;
+                                break;
+                            }
+
+                            index++;
+                        }
+
+                        return r;
+                    } (); // _browsers[offset];
 
                 if(window) {
                     window->activateWindow();
                     window->currentTab()->setFocus();
                 }
-
             }
         }
     }
@@ -1688,7 +1680,6 @@ namespace browser {
     {
         setGeometry(geometry);
     }
-
 
     //void DockedWindow::initUrl()
     //{
@@ -1716,15 +1707,17 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<RecordIndex> record_modelindex)
     {
+        boost::intrusive_ptr<TreeItem> result(nullptr);
         boost::intrusive_ptr<TreeItem> tab_brother = record_modelindex->sibling();
         boost::intrusive_ptr<TreeItem> _item = record_modelindex->target();
 
-        if(_item->is_lite())_item->to_fat();
+        if(_item->is_lite())
+            _item->to_fat();
 
         // clean();
         //        assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
         assert(tab_brother != _item);
-        boost::intrusive_ptr<TreeItem> result(nullptr);
+
         WebView *view = nullptr;
         TabWidget *const tab = tabWidget();
         //        if(_mainWindows.isEmpty()) {
@@ -1732,7 +1725,9 @@ namespace browser {
         //        } else
         //        {
         //        for(auto &i : _mainWindows) {
-        view = tabWidget()->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == _item->field("url") && it->id() == _item->id();});    // if _item->field("url") == Browser::_defaulthome , force rebind
+        view = tabWidget()->find([&] (boost::intrusive_ptr<const TreeItem> it) {
+            return it->field("url") == _item->field("url") && it->id() == _item->id();
+        });                                                                                                                                                    // if _item->field("url") == Browser::_defaulthome , force rebind
 
         //        if(view != nullptr) {
         //            //            dp.first = i.data();
@@ -1751,7 +1746,6 @@ namespace browser {
             //            //            blank.setNaturalFieldSource("url", DockedWindow::_defaulthome);
 
             //            WebView *blankview = tab->find([&](boost::intrusive_ptr<const TreeItem> it) {return it->field("url") == Browser::_defaulthome;}); // QUrl(Browser::_defaulthome)
-
 
             //            //            //PageView *no_pin = nullptr;
 
@@ -1794,7 +1788,8 @@ namespace browser {
         //        dp.second->show();
         //        assert(dp.first);
 
-        if(_entrance->widget() != this)_entrance->setWidget(this);
+        if(_entrance->widget() != this)
+            _entrance->setWidget(this);
 
         auto vtab = globalparameters.vtab();
 
@@ -1802,17 +1797,8 @@ namespace browser {
             vtab->setCurrentWidget(_record_screen);
         }
 
-
         assert(view);
         assert(result->binder()->integrity_external(result, view->page()));
-        return result;  //_mainWindows[0];
+        return result; //_mainWindows[0];
     }
-
-
 }
-
-
-
-
-
-

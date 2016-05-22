@@ -318,7 +318,7 @@ namespace browser {
             }
         }
 
-        if(!found)_browsers.push_back(browser);
+        if(!found) _browsers.insert(browser);
 
         return this;
     }
@@ -348,9 +348,9 @@ namespace browser {
         QObject::disconnect(_home_connection);
 
         _home_connection = QObject::connect(findscreen->historyhome()
-                                            , &QAction::triggered
-                                            , this
-        , [this](bool checked = true)->void {
+                , &QAction::triggered
+                , this
+                , [this] (bool checked = true) -> void {
             Q_UNUSED(checked)
             assert(activated_browser());
             auto view = activated_browser()->tabmanager()->currentWebView();
@@ -378,7 +378,7 @@ namespace browser {
                 }
             }
         }
-                                           );
+                );
 
     }
 
@@ -416,15 +416,15 @@ namespace browser {
 
         //        DockedWindow *browser =
         return new Browser(_tree_screen
-                           , _find_screen
-                           , _editor_screen
-                           , _vtabwidget
-                           , _main_window
-                           , this
-                           , _style_source
-                           , _profile
-                           , Qt::MaximizeUsingFullscreenGeometryHint
-                          ); //, dock_widget
+                   , _find_screen
+                   , _editor_screen
+                   , _vtabwidget
+                   , _main_window
+                   , this
+                   , _style_source
+                   , _profile
+                   , Qt::MaximizeUsingFullscreenGeometryHint
+                   );        //, dock_widget
 
 
         //        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
@@ -584,18 +584,18 @@ namespace browser {
     //    }
 
     Entrance::Entrance(QString object_name
-                       , TreeScreen *_tree_screen
-                       , FindScreen *_find_screen   // browser::ToolbarSearch *toolbarsearch
-                       , MetaEditor *_editor_screen
-                       , HidableTabWidget *_vtabwidget
-                       , MainWindow *_main_window
-                       , AppConfig   &_appconfig
-                       , const QString &style_source
-                       , browser::Profile *_profile
-                       , Qt::WindowFlags flags
-                      )
+        , TreeScreen *_tree_screen
+        , FindScreen *_find_screen                  // browser::ToolbarSearch *toolbarsearch
+        , MetaEditor *_editor_screen
+        , HidableTabWidget *_vtabwidget
+        , MainWindow *_main_window
+        , AppConfig   &_appconfig
+        , const QString &style_source
+        , browser::Profile *_profile
+        , Qt::WindowFlags flags
+        )
         : QDockWidget(_main_window, flags)  //, _application(application)
-        , _browsers(std::vector<Browser * >())   // , _shadow_branch(_record_controller->source_model()->_browser_pages)
+        , _browsers(std::set<Browser * >())   // , _shadow_branch(_record_controller->source_model()->_browser_pages)
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _editor_screen(_editor_screen) //, _record_controller(_record_controller)
@@ -607,16 +607,16 @@ namespace browser {
         , _hidetitlebar(new QWidget(this, Qt::FramelessWindowHint | Qt::CustomizeWindowHint)) //| Qt::SplashScreen
 
 
-          //    , _dockwidget(new DockWidget(
-          //                      this
-          //                      , _mainWindows[0].data()
-          //                      ,  flags  //Qt::Widget   //Qt::WindowMaximizeButtonHint //Qt::MaximizeUsingFullscreenGeometryHint
-          //                  )
-          //                 )
-          //        , _browser(new DockedWindow(register_record(QUrl(DockedWindow::_defaulthome))
-          //                                    , recordtablecontroller
-          //                                    , this, style_source, flags    //Qt::Widget   //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
-          //                                   ))
+        //    , _dockwidget(new DockWidget(
+        //                      this
+        //                      , _mainWindows[0].data()
+        //                      ,  flags  //Qt::Widget   //Qt::WindowMaximizeButtonHint //Qt::MaximizeUsingFullscreenGeometryHint
+        //                  )
+        //                 )
+        //        , _browser(new DockedWindow(register_record(QUrl(DockedWindow::_defaulthome))
+        //                                    , recordtablecontroller
+        //                                    , this, style_source, flags    //Qt::Widget   //Qt::WindowMaximizeButtonHint  // Qt::MaximizeUsingFullscreenGeometryHint
+        //                                   ))
     {
 
         setObjectName(object_name);
@@ -651,16 +651,16 @@ namespace browser {
             // | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
             // | Qt::DockWidgetArea::NoDockWidgetArea
             | Qt::MaximizeUsingFullscreenGeometryHint
-        );
+            );
 
         setAutoFillBackground(true);
         adjustSize();
 
         setFeatures(QDockWidget::NoDockWidgetFeatures
-                    | QDockWidget::DockWidgetVerticalTitleBar
-                    //| Qt::DockWidgetArea::NoDockWidgetArea
-                    //| Qt::MaximizeUsingFullscreenGeometryHint
-                   ); // AllDockWidgetFeatures
+            | QDockWidget::DockWidgetVerticalTitleBar
+            //| Qt::DockWidgetArea::NoDockWidgetArea
+            //| Qt::MaximizeUsingFullscreenGeometryHint
+            );        // AllDockWidgetFeatures
 
         //this->titleBarWidget()->hide();
 
@@ -741,7 +741,7 @@ namespace browser {
 
         //        delete _shadow_branch;
 
-        if(_hidetitlebar) {delete _hidetitlebar; _hidetitlebar = nullptr;}
+        if(_hidetitlebar) {delete _hidetitlebar; _hidetitlebar = nullptr; }
     }
 
 
@@ -1135,12 +1135,12 @@ namespace browser {
     void Entrance::finished(QNetworkReply *reply)
     {
         if(reply->error() != QNetworkReply::NoError) {
-            qDebug() <<  QString("Network Error: %1").arg(reply->errorString());
+            qDebug() << QString("Network Error: %1").arg(reply->errorString());
         }
 
         if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true) {
             QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
-            qDebug() <<  QString("Cache Used: %1").arg(contentVar.toString());
+            qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
         }
 
         //    QUrl url = reply->url();
@@ -1374,7 +1374,7 @@ namespace browser {
     //        return list;
     //    }
 
-    std::vector<Browser *> &Entrance::browsers()
+    std::set<Browser *> &Entrance::browsers()
     {
         //        clean();
 
@@ -1442,7 +1442,7 @@ namespace browser {
 
     WebView *Entrance::find(
         const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal  // const QUrl &url
-    )const
+        ) const
     {
         //        clean();
         //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
@@ -1544,10 +1544,10 @@ namespace browser {
 
     void Entrance::resizeEvent(QResizeEvent *e)
     {
-        for(auto i : _browsers) {
-            if(i) i->resizeEvent(e);
-        }
-
+//        for(auto i : _browsers) {
+//            if(i) i->resizeEvent(e);
+//        }
+        if(this->widget())static_cast<Browser *>(this->widget())->resizeEvent(e);
         QDockWidget::resizeEvent(e);
     }
 

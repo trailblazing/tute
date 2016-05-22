@@ -63,7 +63,7 @@ public:
     //    bool                inited() {return _inited;}
     browser::TabWidget  *tabmanager() {return _tabmanager;}
     browser::Browser    *browser() {return _browser;}
-
+    void restore_menubar();
 public slots:
 
     // Обновление панели инструментов
@@ -83,6 +83,7 @@ private:
     //    bool                _inited = false;
 
     // The steps used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
+    QAction             *_tree_hide;
     QAction             *_save_in_new_branch;
     QAction             *_pin;
     QAction             *_addnew_to_end;

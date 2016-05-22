@@ -42,6 +42,8 @@
 #ifndef TABWIDGET_H
 #define TABWIDGET_H
 
+
+#include <utility>
 #include "utility/delegate.h"
 #include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
 #include <QtWidgets/QTabBar>
@@ -141,7 +143,7 @@ namespace browser {
     class TabBar : public QTabBar {
         Q_OBJECT
 
-    signals:
+signals:
         void newTab();
         void cloneTabSignal(int index);
         void closeTabSignal(int index);
@@ -150,14 +152,14 @@ namespace browser {
         void reloadAllTabs();
         void tabMoveRequested(int fromIndex, int toIndex);
 
-    public:
+public:
         TabBar(QWidget *parent = 0);
 
-    protected:
+protected:
         void mousePressEvent(QMouseEvent *event);
         void mouseMoveEvent(QMouseEvent *event);
 
-    private slots:
+private slots:
         void selectTabAction();
         void cloneTab();
         void closeTab();
@@ -165,7 +167,7 @@ namespace browser {
         void reloadTab();
         void contextMenuRequested(const QPoint &position);
 
-    private:
+private:
         QList<QShortcut *> _tabshortcuts;
         friend class TabWidget;
 
@@ -193,19 +195,19 @@ namespace browser {
     class WebActionMapper : public QObject {
         Q_OBJECT
 
-    public:
+public:
         WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
         QWebEnginePage::WebAction webAction() const;
         void addChild(QAction *action);
         void updateCurrent(QWebEnginePage *currentParent);
 
-    private slots:
+private slots:
         void rootTriggered();
         void childChanged();
         void rootDestroyed();
         void currentDestroyed();
 
-    private:
+private:
         QWebEnginePage *_currentparent;
         QAction *_root;
         QWebEnginePage::WebAction _webaction;
@@ -234,7 +236,7 @@ namespace browser {
     class TabWidget : public QTabWidget {
         Q_OBJECT
 
-    signals:
+signals:
         // tab widget signals
         void loadPage(const QString &url);
         void tabsChanged();
@@ -254,16 +256,16 @@ namespace browser {
         void printRequested(QWebEngineFrame *frame);
 #endif
 
-    public:
+public:
         TabWidget(TreeScreen        *_tree_screen
-                  , FindScreen      *_find_screen
-                  , MetaEditor      *_editor_screen
-                  , RecordScreen    *_record_screen
-                  , Entrance        *_entrance
-                  , Browser         *_browser
-                  , MainWindow      *_main_window
-                  , Profile         *_profile
-                 );
+            , FindScreen      *_find_screen
+            , MetaEditor      *_editor_screen
+            , RecordScreen    *_record_screen
+            , Entrance        *_entrance
+            , Browser         *_browser
+            , MainWindow      *_main_window
+            , Profile         *_profile
+            );
         //                  , TableController *_page_controller
         //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -304,8 +306,10 @@ namespace browser {
         WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
         //        WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
-        WebView *find_nopin()const;
-        Browser *browser() {return _browser;}
+        WebView *find_nopin() const;
+        Browser *browser() {
+            return _browser;
+        }
 
 
 
@@ -358,8 +362,12 @@ namespace browser {
         //        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
         //        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
-        TabBar *tabbar() {return _tabbar;}
-        RecordController *record_controller() {return _record_controller;}
+        TabBar *tabbar() {
+            return _tabbar;
+        }
+        RecordController *record_controller() {
+            return _record_controller;
+        }
 
 
 
@@ -368,8 +376,12 @@ namespace browser {
 
         //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 
-        RecordModel *source_model() {return _record_controller->source_model();}
-        RecordView  *view() {return _record_controller->view();}
+        RecordModel *source_model() {
+            return _record_controller->source_model();
+        }
+        RecordView  *view() {
+            return _record_controller->view();
+        }
 
         //        void addnew_to_end(void);
         //        void addnew_before(void);
@@ -403,17 +415,20 @@ namespace browser {
 
         //        void on_print_click(void);
 
-        TabWidget *tabmanager() {return this;}
-        boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it)const;
+//        TabWidget *tabmanager() {
+//            return this;
+//        }
 
-
-    protected:
+        boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it) const;
+        void current_download_acceptance(std::pair<QUrl, bool> policy);
+        std::pair<QUrl, bool> current_download_acceptance() const;
+protected:
         void mouseDoubleClickEvent(QMouseEvent *event);
         void contextMenuEvent(QContextMenuEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void resizeEvent(QResizeEvent *);   // Q_DECL_OVERRIDE;
 
-    public slots:
+public slots:
         void loadUrlInCurrentTab(const QUrl &_url);
 
         //        void new_view_void() {newTab(false);}
@@ -433,7 +448,7 @@ namespace browser {
         void previousTab();
         void moveTab(int fromIndex, int toIndex);
 
-    private slots:
+private slots:
         void currentChanged(int index);
         void aboutToShowRecentTabsMenu();
         void aboutToShowRecentTriggeredAction(QAction *action);
@@ -448,7 +463,7 @@ namespace browser {
         void onTabsChanged();
         void fullScreenRequested(QWebEngineFullScreenRequest request);
         WebView *view_no_pinned();
-    private:
+private:
         TreeScreen          *_tree_screen;
         MetaEditor          *_editor_screen;
         Entrance            *_entrance;
@@ -463,7 +478,7 @@ namespace browser {
         QAction             *_previoustabaction;
 
         QMenu               *_recentlyclosedtabsmenu;
-        static const int    _recentlyclosedtabssize = 10;
+        static const int _recentlyclosedtabssize = 10;
 
         QList<QUrl>                 _recentlyclosedtabs;
         QList<WebActionMapper *>    _actions;
@@ -476,7 +491,9 @@ namespace browser {
         Profile                 *_profile;
         QWebEngineView          *_fullscreenview;
         FullScreenNotification  *_fullscreennotification;
-    protected:
+        std::pair<QUrl, bool>   _current_download_acceptance;
+
+protected:
 
         //        active_record _active_record;
         //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;

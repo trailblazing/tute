@@ -53,7 +53,7 @@ CONFIG  +=  qt      \
         console
 
 CONFIG  +=  c++11
-
+CONFIG  +=  staticlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets \
                                             printsupport

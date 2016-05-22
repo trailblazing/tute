@@ -88,7 +88,7 @@ protected:
 public:
     AdjustingScrollArea(KnowView *_tree_view, QWidget *parent = 0);
 
-    void setWidget(KnowView *w);
+    void setWidget(KnowView *view);
     friend class TreeScreen;
 };
 
@@ -154,9 +154,15 @@ public:
 
     //    void branch_update_from_model(const QModelIndex &index);
 
-    QMenu *buttonmenu()
+    QMenu *menus_in_button()
     {
         return _menus_in_button;
+    }
+
+
+    QToolBar *menubar()
+    {
+        return _menubar;
     }
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
@@ -193,7 +199,7 @@ public:
     }
     //    void resetup_model(boost::intrusive_ptr<TreeItem> _item);
 
-
+    void restore_menubar();
 
 
 
@@ -256,12 +262,12 @@ private slots:
 
     void edit_field_context(QModelIndex index_current);
     void edit_field(QString pin
-                    , QString name
-                    , QString author
-                    , QString home
-                    , QString url
-                    , QString tags
-                   );
+        , QString name
+        , QString author
+        , QString home
+        , QString url
+        , QString tags
+        );
 
 
 
@@ -292,15 +298,15 @@ private:
     //    QString         _session_id = global_root_id;
 
 
-
-    void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
+    QToolBar *assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu);
+    QToolBar *setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
 
     //    void setup_model(KnowModel *treemodel);
     //    void update_model(KnowModel *_current_know_branch);
 
     void setup_signals(void);
     void setup_actions(void);
-    void assembly(void);
+    void assembly(QToolBar *menubar_);
 
     void item_move_up_dn_branch(int (TreeItem::*_move)());
     bool move_checkenable(void);

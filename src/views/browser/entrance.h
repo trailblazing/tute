@@ -1,7 +1,7 @@
 #ifndef _BROWSERMANAGER_H_
 #define _BROWSERMANAGER_H_
 
-#include <vector>
+#include <set>
 #include <QWidget>
 #include <QList>
 #include <QUrl>
@@ -120,7 +120,7 @@ namespace browser {
         //        };
 
         Browser *activated_browser();
-        std::vector<Browser *> &browsers();  //        QList<DockedWindow*> window_raw_list();
+        std::set<Browser *> &browsers();  //        QList<DockedWindow*> window_raw_list();
 
         //        //        void clean();
 
@@ -196,7 +196,7 @@ namespace browser {
         //        void setup_signals(ToolbarSearch *toolbarsearch);
         void assembly(void);
         //        void setupMenu();
-        std::vector<Browser *>          _browsers;
+        std::set<Browser *>             _browsers;
         //        ItemsFlat                       *_shadow_branch;
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;

@@ -40,22 +40,22 @@ extern AppConfig appconfig;
 extern TrashMonitoring trashmonitoring;
 extern GlobalParameters globalparameters;
 extern WalkHistory walkhistory;
-const char *meta_editor_singleton_name          = "editor_screen";
-const char *record_screen_multi_instance_name   = "record_screen";
-const char *tree_screen_singleton_name          = "tree_screen";
-const char *find_screen_singleton_name          = "find_screen";
-const char *download_manager_singleton_name     = "download_manager";
-const char *windowswitcher_singleton_name       = "window_switcher";
-const char *entrance_singleton_name             = "entrance";
-const char *record_controller_multi_instance_name   = "record_controller"; // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
-const char *record_view_multi_instance_name     = "record_view";
+const char *meta_editor_singleton_name = "editor_screen";
+const char *record_screen_multi_instance_name = "record_screen";
+const char *tree_screen_singleton_name = "tree_screen";
+const char *find_screen_singleton_name = "find_screen";
+const char *download_manager_singleton_name = "download_manager";
+const char *windowswitcher_singleton_name = "window_switcher";
+const char *entrance_singleton_name = "entrance";
+const char *record_controller_multi_instance_name = "record_controller";   // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
+const char *record_view_multi_instance_name = "record_view";
 
 extern const char *action_find_in_base;
 
 MainWindow::MainWindow(GlobalParameters    &_globalparameters
-                       , AppConfig         &_appconfig
-                       , DataBaseConfig    &_databaseconfig
-                       , browser::Profile *_profile)
+    , AppConfig         &_appconfig
+    , DataBaseConfig    &_databaseconfig
+    , browser::Profile *_profile)
     : QMainWindow()
     , _globalparameters(_globalparameters)
     , _appconfig(_appconfig)
@@ -77,17 +77,7 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this))    // _vtabwidget
     , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
     , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))    // _find_screen -> for find_text
-    , _entrance(new browser::Entrance(entrance_singleton_name
-                                      , _tree_screen
-                                      , _find_screen
-                                      , _editor_screen
-                                      , _vtabwidget
-                                      , this
-                                      , _appconfig
-                                      , _globalparameters.style_source()
-                                      , _profile
-                                      , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
-                                     ))
+    , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, _vtabwidget, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))                                // Qt::MaximizeUsingFullscreenGeometryHint
     , _download(new browser::DownloadManager(download_manager_singleton_name, _vtabwidget))
     , _statusbar(new QStatusBar(this))
     , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
@@ -334,39 +324,48 @@ void MainWindow::setup_signals(void)
 
     //    hide_others(_vtabwidget->currentIndex());
 
-    connect(_vtabwidget, &HidableTabWidget::currentChanged, _vtabwidget, [&](int index) {
+    connect(_vtabwidget, &HidableTabWidget::currentChanged, _vtabwidget, [&] (int index) {
         if(-1 != index) {
             auto count = _vtabwidget->count();
-
-            for(int i = 0; i < count; i++) {
-                if(i != index) {
-                    auto current_widget = _vtabwidget->widget(i);
-
-                    if(current_widget->objectName() == record_screen_multi_instance_name) {
-                        auto record_screen = static_cast<RecordScreen *>(current_widget);
-                        record_screen->browser()->lower();
-                    }
-
-                    current_widget->hide();
+            if(1 >= count) {
+                _tree_screen->restore_menubar();
+                if(_tree_screen->isHidden()) {
+                    _tree_screen->show();
                 }
             }
+            else{
+                for(int i = 0; i < count; i++) {
+                    if(i != index) {
+                        auto current_widget = _vtabwidget->widget(i);
 
-            auto current_widget = static_cast<RecordScreen *>(_vtabwidget->widget(index));
+                        if(current_widget->objectName() == record_screen_multi_instance_name) {
+                            auto record_screen = static_cast<RecordScreen *>(current_widget);
+                            record_screen->browser()->lower();
+                        }
 
-            if(current_widget->objectName() == record_screen_multi_instance_name) {
-                auto record_screen = static_cast<RecordScreen *>(current_widget);
-                auto current_brower = record_screen->browser();
-                current_brower->raise();
-                current_brower->activateWindow();
+                        current_widget->hide();
+                    }
+                }
+
+                auto current_widget = _vtabwidget->widget(index);
+
+                if(current_widget->objectName() == record_screen_multi_instance_name) {
+                    auto record_screen = static_cast<RecordScreen *>(current_widget);
+                    record_screen->restore_menubar();
+                    auto current_brower = record_screen->browser();
+                    current_brower->raise();
+                    current_brower->activateWindow();
+                }else{
+                    _tree_screen->restore_menubar();
+                }
+
+                current_widget->show();
             }
-
-            current_widget->show();
-
         }
     });
     // deprecated: ignoring Tree Search Area
     connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
-    , [this](int index) {
+        , [this] (int index) {
         if(-1 != index) {
             if(_vtabwidget->widget(index)->objectName() == tree_screen_singleton_name) {
                 _appconfig.find_screen_tree_search_area(0);
@@ -375,7 +374,7 @@ void MainWindow::setup_signals(void)
             }
         }
     }   // &AppConfig::setFindScreenTreeSearchArea
-           );   // , findScreenDisp, &FindScreen::changedTreeSearchArea
+        );      // , findScreenDisp, &FindScreen::changedTreeSearchArea
 }
 
 
@@ -384,21 +383,20 @@ void MainWindow::assembly(void)
     //    v_right_splitter = new QSplitter(Qt::Vertical);
     _v_right_splitter->addWidget(_entrance);
     _v_right_splitter->addWidget(_editor_screen);           // Text entries // Текст записи
-    _v_right_splitter->setCollapsible(0, false              // if true, make editor can overload it
-                                     );                     // The list of final entries can not link up    // Список конечных записей не может смыкаться
-    _v_right_splitter->setCollapsible(1, false);            // The contents of the recording can not link up    // Содержимое записи не может смыкаться
+    _v_right_splitter->setCollapsible(0, true);             // if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
+    _v_right_splitter->setCollapsible(1, true);             // The contents of the recording can not link up    // Содержимое записи не может смыкаться
     _v_right_splitter->setObjectName("v_right_splitter");
 
     //    find_splitter = new QSplitter(Qt::Vertical);
-    _v_find_splitter->addWidget(_v_right_splitter);             //findSplitter->addWidget(hSplitter);
+    _v_find_splitter->addWidget(_v_right_splitter);         // findSplitter->addWidget(hSplitter);
     _v_find_splitter->addWidget(_find_screen);
-    _v_find_splitter->setCollapsible(0, false);         // Верхняя часть не должна смыкаться
-    _v_find_splitter->setCollapsible(1, false);         // Часть для поиска не должна смыкаться
+    _v_find_splitter->setCollapsible(0, false);             // Верхняя часть не должна смыкаться
+    _v_find_splitter->setCollapsible(1, false);             // Часть для поиска не должна смыкаться
     _v_find_splitter->setObjectName("find_splitter");
 
     //    _qtabwidget = new QTabWidget(this);
 
-    _vtabwidget->setTabPosition(QTabWidget::West);  // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
+    _vtabwidget->setTabPosition(QTabWidget::West);          // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
 
 
 
@@ -413,9 +411,8 @@ void MainWindow::assembly(void)
 
     // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
-    _vtabwidget->addTab(static_cast<QWidget *>(_download)
-                        , QIcon(":/resource/pic/apple.svg")    // QIcon(":/resource/pic/holly.svg")
-                        , "Download");
+    _vtabwidget->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");                    // QIcon(":/resource/pic/holly.svg")
+
 
     _appconfig.find_screen_tree_search_area(0);  // force to root_item of global tree
 
@@ -608,7 +605,7 @@ void MainWindow::save_geometry(void)
     QRect geom(pos(), size());
 
     appconfig.mainwin_geometry(geom.x(), geom.y(),
-                               geom.width(), geom.height());
+        geom.width(), geom.height());
 
     // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
     //                                   geometry().width(), geometry().height());
@@ -645,7 +642,9 @@ void MainWindow::restore_tree_position(void)
 // save
 void MainWindow::save_tree_position(void)
 {
-    auto _current_source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+    auto _current_source_model = [&] () {
+            return _tree_screen->tree_view()->source_model();
+        };
     //    if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
     auto item = _tree_screen->tree_view()->session_root_auto();   //item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
     //    // Получение QModelIndex выделенного в дереве элемента
@@ -656,7 +655,7 @@ void MainWindow::save_tree_position(void)
         appconfig.tree_position(
             _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
             , current_item->path_list()
-        );
+            );
     } else if(item) { //if(index.isValid()) {
 
         //        //    if(index.isValid()) {   // this line is to be remove
@@ -667,7 +666,7 @@ void MainWindow::save_tree_position(void)
         appconfig.tree_position(
             _current_source_model()->root_item()->id()    // _tree_screen->know_model_board()->root_item()->id()
             , item->path_list()
-        );
+            );
         //    }
     }
 }
@@ -677,11 +676,17 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 {
     //    _tree_screen->session_root_id(current_item_absolute_path.last());
 
-    auto source_model = [&]() {return _tree_screen->tree_view()->source_model();};
-    auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
+    auto source_model = [&] () {
+            return _tree_screen->tree_view()->source_model();
+        };
+    auto know_model_board = [&] () {
+            return _tree_screen->tree_view()->know_model_board();
+        };
 
     if(source_model()->root_item()->id() != current_root_id) {
-        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == current_root_id;}));} catch(std::exception &e) {throw e;} return tree_index;}();
+        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&] (boost::intrusive_ptr<const TreeItem> it) {
+                    return it->id() == current_root_id;
+                })); } catch(std::exception &e) {throw e; } return tree_index; } ();
         _tree_screen->tree_view()->intercept(tree_index);
     }
 
@@ -692,7 +697,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     auto it = know_model_board()->item(current_item_absolute_path);            // on know_root semantic
 
     if(!source_model()->index(it).isValid()) {
-        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it);} catch(std::exception &e) {throw e;} return tree_index;}();
+        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
         _tree_screen->tree_view()->intercept(tree_index);
     }
 
@@ -707,13 +712,15 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
         // Курсор устанавливается в нужную позицию
 
         boost::intrusive_ptr<TreeIndex> tree_index;
-        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+        try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+                return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+            })); } catch(std::exception &e) {throw e; }
 
         tree_view->select_as_current(tree_index);
         tree_view->source_model()->session_id(tree_index);  // TreeIndex(source_model, it)
     } else if(it) {
         boost::intrusive_ptr<TreeIndex> tree_index;
-        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it, 0);} catch(std::exception &e) {throw e;}
+        try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it, 0); } catch(std::exception &e) {throw e; }
 
         tree_view->select_as_current(tree_index);
         tree_view->source_model()->session_id(tree_index);  // TreeIndex(source_model, it)
@@ -728,10 +735,14 @@ bool MainWindow::is_tree_position_crypt()
     QString id = pair.first;
     QStringList path = pair.second;
 
-    auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
+    auto know_model_board = [&] () {
+            return _tree_screen->tree_view()->know_model_board();
+        };
 
     if(_tree_screen->tree_view()->source_model()->root_item()->id() != id) {
-        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));} catch(std::exception &e) {throw e;} return tree_index;}();
+        boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&] (boost::intrusive_ptr<const TreeItem> it) {
+                    return it->id() == id;
+                })); } catch(std::exception &e) {throw e; } return tree_index; } ();
         _tree_screen->tree_view()->intercept(tree_index);
     }
 
@@ -1030,7 +1041,7 @@ void MainWindow::file_print_pdf(void)
 {
 #ifndef QT_NO_PRINTER
     QString fileName = QFileDialog::getSaveFileName(this, "Export PDF",
-                                                    QString(), "*.pdf");
+            QString(), "*.pdf");
 
     if(!fileName.isEmpty()) {
         if(QFileInfo(fileName).suffix().isEmpty())
@@ -1206,22 +1217,22 @@ void MainWindow::on_click_help_about_mytetra(void)
     infoPhysicalDpiY = "Physical DPI Y (from desktop): " + (QString::number(qApp->desktop()->physicalDpiY(), 'f', 8)) + "<br/>";
 
     QString info = infoProgramName +
-                   infoVersion +
-                   infoAuthor +
-                   infoEmail +
-                   infoLicense +
-                   infoTargetOs +
-                   infoProgramFile +
-                   infoWorkDirectory +
-                   infoDevicePixelRatio +
-                   infoPhysicalDpi +
-                   infoPhysicalDpiX +
-                   infoPhysicalDpiY;
+        infoVersion +
+        infoAuthor +
+        infoEmail +
+        infoLicense +
+        infoTargetOs +
+        infoProgramFile +
+        infoWorkDirectory +
+        infoDevicePixelRatio +
+        infoPhysicalDpi +
+        infoPhysicalDpiX +
+        infoPhysicalDpiY;
 
     QMessageBox *msgBox = new QMessageBox(this);
     msgBox->about(this,
-                  "MyTetra v." + version,
-                  info);
+        "MyTetra v." + version,
+        info);
 }
 
 
@@ -1249,9 +1260,9 @@ void MainWindow::synchronization(void)
     // Если команда синхронизации пуста
     if(command.trimmed().length() == 0) {
         QMessageBox::warning(this,
-                             tr("MyTetra: can't synchronization"),
-                             tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu"),
-                             QMessageBox::Close);
+            tr("MyTetra: can't synchronization"),
+            tr("Do not set synchronization command.<br>Check the setting in \"Syncro\" section in \"Tools\" menu"),
+            QMessageBox::Close);
         return;
     }
 
@@ -1319,7 +1330,7 @@ void MainWindow::create_tray_icon(void)
 void MainWindow::set_icon(void)
 {
     connect(_tray_icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason)),
-            this, SLOT(icon_activated(QSystemTrayIcon::ActivationReason)));
+        this, SLOT(icon_activated(QSystemTrayIcon::ActivationReason)));
 
     QIcon icon = QIcon(":/resource/pic/logo.svg");
     _tray_icon->setIcon(icon);
@@ -1334,18 +1345,18 @@ void MainWindow::icon_activated(QSystemTrayIcon::ActivationReason reason)
     if(QSystemTrayIcon::isSystemTrayAvailable() == false) return;
 
     switch(reason) {
-        case QSystemTrayIcon::Trigger:
-        case QSystemTrayIcon::DoubleClick:
-            if(isVisible()) {
-                if(isMinimized()) showNormal();
-                else hide();
-            } else {
-                if(isMinimized()) showNormal();
-                else show();
-            }
+    case QSystemTrayIcon::Trigger:
+    case QSystemTrayIcon::DoubleClick:
+        if(isVisible()) {
+            if(isMinimized()) showNormal();
+            else hide();
+        } else {
+            if(isMinimized()) showNormal();
+            else show();
+        }
 
-        default:
-            ;
+    default:
+        ;
     }
 }
 
@@ -1390,9 +1401,9 @@ void MainWindow::go_walk_history_previous(void)
 
     QString id = _editor_screen->misc_field("id");
     walkhistory.add(id,
-                    _editor_screen->cursor_position(),
-                    _editor_screen->scrollbar_position(),
-                    WALK_HISTORY_GO_PREVIOUS);
+        _editor_screen->cursor_position(),
+        _editor_screen->scrollbar_position(),
+        WALK_HISTORY_GO_PREVIOUS);
     walkhistory.set_drop(true);
 
     go_walk_history();
@@ -1405,9 +1416,9 @@ void MainWindow::go_walk_history_next(void)
 
     QString id = _editor_screen->misc_field("id");
     walkhistory.add(id,
-                    _editor_screen->cursor_position(),
-                    _editor_screen->scrollbar_position(),
-                    WALK_HISTORY_GO_NEXT);
+        _editor_screen->cursor_position(),
+        _editor_screen->scrollbar_position(),
+        WALK_HISTORY_GO_NEXT);
     walkhistory.set_drop(true);
 
     go_walk_history();
@@ -1430,7 +1441,9 @@ void MainWindow::go_walk_history(void)
     //        return;
     //    }
 
-    auto know_model_board = [&]() {return _tree_screen->tree_view()->know_model_board();};
+    auto know_model_board = [&] () {
+            return _tree_screen->tree_view()->know_model_board();
+        };
 
     if(record_id.length() > 0) {
         // Выясняется путь к ветке, где находится данная запись
@@ -1487,8 +1500,8 @@ void MainWindow::save_text_area(void)
     _editor_screen->save_textarea();
 
     walkhistory.add(id,
-                    _editor_screen->cursor_position(),
-                    _editor_screen->scrollbar_position());
+        _editor_screen->cursor_position(),
+        _editor_screen->scrollbar_position());
 }
 
 
