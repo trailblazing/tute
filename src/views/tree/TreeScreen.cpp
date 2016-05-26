@@ -215,24 +215,28 @@ void TreeScreen::setup_actions(void)
 //        auto rl = h_right_splitter->geometry().left();  // 142
 
 
-        if(0 == h_right_splitter->widget(0)->width()) {
+        auto sizes = h_right_splitter->sizes();
+        if(0 == sizes[0]) { // h_right_splitter->widget(0)->width()
             auto shw = globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();   // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
 //            auto h = h_right_splitter->handle(1);
 //            h->move(lr + shw, h->rect().top());
 
-            auto sizes = h_right_splitter->sizes();
-            sizes[0] = shw;
+            auto size_memory = appconfig.h_right_splitter_sizelist();
+            sizes[0] = size_memory[0] > shw ? size_memory[0] : shw;
+            sizes[1] = sizes[1] = size_memory[0] + size_memory[1] - sizes[0];  // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
             h_right_splitter->setSizes(sizes);
 
 //            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
         }else{
 
 //            h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
-            auto sizes = h_right_splitter->sizes();
+
+            sizes[1] = sizes[0] + sizes[1];
             sizes[0] = 0;
             h_right_splitter->setSizes(sizes);
 
         }
+        emit h_right_splitter->splitterMoved(sizes[0], 1);
     });
     _actionlist[action_show_hide_record_screen] = ac;
 

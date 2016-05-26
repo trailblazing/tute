@@ -503,6 +503,27 @@ void MainWindow::setup_signals(void)
 
     });
 
+    connect(_h_left_splitter, &QSplitter::splitterMoved, [&] (int pos, int index){
+        (void)index;
+        (void)pos;
+//        if(0 != pos) {
+        auto sizes = _h_left_splitter->sizes();
+        _appconfig.h_left_splitter_sizelist(sizes);
+//        }
+    });
+
+
+    connect(_h_right_splitter, &QSplitter::splitterMoved, [&] (int pos, int index){
+        (void)index;
+        (void)pos;
+//        if(0 != pos) {
+        auto sizes = _h_right_splitter->sizes();
+        _appconfig.h_right_splitter_sizelist(sizes);
+//        }
+    });
+
+
+
 
 
 //    // deprecated: ignoring Tree Search Area
@@ -638,6 +659,25 @@ void MainWindow::assembly(void)
     //    findSplitter->setObjectName("find_splitter");
 
     setCentralWidget(_h_left_splitter); //    setCentralWidget(_h_splitter);                    //setCentralWidget(findSplitter);
+
+
+
+    auto sizes = _h_left_splitter->sizes();
+//    auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
+    if(0 == sizes[0]) { // _h_left_splitter->widget(0)->width()
+        auto shw = _tree_screen->minimumSizeHint().width(); // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+        //            auto h = h_right_splitter->handle(1);
+        //            h->move(lr + shw, h->rect().top());
+
+        auto size_memory = appconfig.h_left_splitter_sizelist();
+        sizes[0] = size_memory[0] > shw ? size_memory[0] : shw;
+        sizes[1] = size_memory[0] + size_memory[1] - sizes[0];  // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+//            h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
+        _h_left_splitter->setSizes(sizes);
+
+        //            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+    }
+    emit _h_left_splitter->splitterMoved(sizes[0], 1);
 
 }
 
