@@ -3,8 +3,9 @@
 #include <QToolButton>
 
 HidableTabWidget::HidableTabWidget(QWidget *parent) :
-    QTabWidget(parent),
-    _hide_action(new QAction(tr("▾"), this))
+    QTabWidget(parent)
+    , _hide_action(new QAction(tr("▾"), this))
+//    , _delegate_tab(_delegate_tab)
 {
     _hide_action->setCheckable(true);
     _hide_action->setToolTip("Hide Panels");
@@ -37,13 +38,13 @@ void HidableTabWidget::onHideAction(bool checked)
         if(this->tabPosition() == North || tabPosition() == South) { // , West, East
             this->setMaximumHeight(
                 std::numeric_limits<int>::max() // 100000
-            ); // just a very big number
-            //            setContentsMargins(0, 0, 0, 0);
+                ); // just a very big number
+                   //            setContentsMargins(0, 0, 0, 0);
         } else {
             this->setMaximumWidth(
                 std::numeric_limits<int>::max() // 100000
-            ); // just a very big number
-            //            setContentsMargins(0, 0, 0, 0);
+                ); // just a very big number
+                   //            setContentsMargins(0, 0, 0, 0);
         }
 
         this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -54,3 +55,9 @@ void HidableTabWidget::onTabBarClicked()
 {
     _hide_action->setChecked(false);
 }
+
+//HidableTabWidget *HidableTabWidget::delegate_tab(){
+//    HidableTabWidget *r = nullptr;
+//    if(_delegate_tab) r = _delegate_tab;
+//    return r;
+//}

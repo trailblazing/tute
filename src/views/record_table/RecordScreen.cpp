@@ -30,7 +30,7 @@
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
-
+extern const char *tree_screen_viewer_name;
 
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
@@ -41,11 +41,10 @@ RecordScreen::RecordScreen(
     , MetaEditor        *_editor_screen
     , browser::Entrance *_entrance
     , browser::Browser  *_browser
-    , HidableTabWidget  *_vtabwidget
     , MainWindow        *_main_window
     , browser::Profile  *_profile
     )
-    : QWidget(_vtabwidget)
+    : QWidget(_main_window->vtab_record())
     , _tree_hide(new QAction(tr("Show/hide tree view"),this))
     , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
     , _pin(new QAction(tr("Pin note"), this))
@@ -212,10 +211,43 @@ void RecordScreen::save_in_new_branch(bool checked)
 void RecordScreen::setup_actions(void)
 {
 
-    _tree_hide->setStatusTip(tr("Show/hide tree view"));
+    _tree_hide->setStatusTip(tr("Show / hide tree view"));
     _tree_hide->setIcon(QIcon(":/resource/pic/folder.svg"));
     connect(_tree_hide, &QAction::triggered, [&] (){
-        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
+        auto h_left_splitter = _main_window->h_left_splitter();
+
+////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
+//        if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
+//        else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
+
+
+//        auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
+//        auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
+        //        auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
+        //        auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
+        //        auto rl = h_right_splitter->geometry().left();  // 142
+
+
+        if(0 == h_left_splitter->widget(0)->width()) {
+            auto shw = _tree_screen->minimumSizeHint().width(); // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+            //            auto h = h_right_splitter->handle(1);
+            //            h->move(lr + shw, h->rect().top());
+
+            auto sizes = h_left_splitter->sizes();
+            sizes[0] = shw;
+            h_left_splitter->setSizes(sizes);
+
+            //            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+        }else{
+
+            //            h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
+            auto sizes = h_left_splitter->sizes();
+            sizes[0] = 0;
+            h_left_splitter->setSizes(sizes);
+
+        }
+
+
     });
 
     //    _save_in_new_branch = new QAction(tr("Save in new branch"), this);
@@ -606,8 +638,9 @@ void RecordScreen::setup_ui(void)
     //        std::make_shared<sd::_interface<sd::meta_info<void *>, void, QResizeEvent *>>("", &RecordView::resizeEvent, _record_controller->view())
     //        , this
     //    );
-    auto vtab = _main_window->vtab();
-    vtab->addTab(this, QIcon(":/resource/pic/clover.svg"), "Browser" + vtab->count() - 1);
+
+
+
 }
 
 

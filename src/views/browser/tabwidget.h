@@ -303,7 +303,7 @@ public:
         bool restoreState(const QByteArray &state);
 
         void setProfile(Profile *profile);
-        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
+        WebView *find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
         //        WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
         WebView *find_nopin() const;

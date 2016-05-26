@@ -48,9 +48,9 @@ else: DEFINES   +=  QT_NO_UITOOLS
 CONFIG  +=  qt      \
         warn_on     \
         console     \
-        debug       \
         exception   \
-        console
+        console     \
+#        debug       \
 
 CONFIG  +=  c++11
 CONFIG  +=  staticlib

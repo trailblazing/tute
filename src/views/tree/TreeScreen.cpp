@@ -44,6 +44,8 @@ extern const char *clipboard_items_root;
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode;
 
+
+const char *action_show_hide_record_screen = "action_show_hide_record_screen";
 const char *action_set_as_session_root = "set_as_session_root";
 const char *action_find_in_base = "find_in_base";
 const char *action_cursor_follow_root = "cursor_follow_root";
@@ -65,6 +67,8 @@ const char *action_decrypt_branch = "decrypt_branch";
 const char *action_freeze_browser_view = "freeze_browser_view";
 const char *action_edit_field = "edit_field";
 const char *action_editor_switch = "editor_switch";
+
+const char *tree_screen_viewer_name = "TreeScreenViewer";
 
 //know_root_holder::know_root_holder(const AppConfig &_appconfig, TreeScreen *_this)
 //    : _know_root(new KnowModel(_this))
@@ -199,6 +203,39 @@ void TreeScreen::setup_actions(void)
     QAction *ac;
 
     //    void(TreeScreen::*_set_session_id)(bool) = &TreeScreen::session_root_id;
+
+    ac = new QAction(tr("Show / hide record screen"), this);
+    ac->setStatusTip(tr("Show / hide record screen"));
+    ac->setIcon(QIcon(":/resource/pic/folder.svg"));
+    connect(ac, &QAction::triggered, [&] (){
+//        auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
+        auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
+//        auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
+//        auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
+//        auto rl = h_right_splitter->geometry().left();  // 142
+
+
+        if(0 == h_right_splitter->widget(0)->width()) {
+            auto shw = globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();   // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+//            auto h = h_right_splitter->handle(1);
+//            h->move(lr + shw, h->rect().top());
+
+            auto sizes = h_right_splitter->sizes();
+            sizes[0] = shw;
+            h_right_splitter->setSizes(sizes);
+
+//            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+        }else{
+
+//            h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
+            auto sizes = h_right_splitter->sizes();
+            sizes[0] = 0;
+            h_right_splitter->setSizes(sizes);
+
+        }
+    });
+    _actionlist[action_show_hide_record_screen] = ac;
+
 
     ac = new QAction(tr("Set as session root manually"), this);
     ac->setStatusTip(tr("Set as session root manually, not necessary"));
@@ -700,6 +737,7 @@ QToolBar *TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
     //    QSize tool_bar_icon_size(16, 16);
     //    toolsLine->setIconSize(tool_bar_icon_size);
 
+    insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_show_hide_record_screen]);
 
     insert_action_as_button<QToolButton>(_tools_line, _actionlist[action_set_as_session_root]);
 
@@ -834,6 +872,8 @@ void TreeScreen::enable_up_action() //        bool enable
 
 void TreeScreen::assembly_context_menu()
 {
+
+    _context_menu->addAction(_actionlist[action_show_hide_record_screen]);
     _context_menu->addAction(_actionlist[action_set_as_session_root]);
 
     _context_menu->addAction(_actionlist[action_freeze_browser_view]);
@@ -2537,3 +2577,57 @@ void AdjustingScrollArea::setWidget(KnowView *view)
 //    _scroll_area->viewport()->update();
 //    _scroll_area->update();
 //}
+
+
+TreeScreenViewer::TreeScreenViewer(TreeScreen *_tree_screen, RecordScreen *_record_screen)
+    : _tree_screen(_tree_screen)
+    , _record_screen(_record_screen)
+    , _layout(new QStackedLayout(this))
+{
+    setObjectName(tree_screen_viewer_name);
+    _layout->addWidget(_tree_screen);
+    _layout->setContentsMargins(0, 0, 0, 0);
+    _layout->setSpacing(0);
+    setLayout(_layout);
+
+//    _tree_screen->setParent(this);
+//    _tree_screen->show();
+
+}
+
+
+int TreeScreenViewer::tree_screen(TreeScreen *tree) {
+    return _layout->addWidget(tree);
+}
+
+QWidget *TreeScreenViewer::tree_screen() const {
+    return _layout->widget();
+}
+
+void TreeScreenViewer::record_screen(RecordScreen *rs){
+    _record_screen = rs;
+}
+
+
+RecordScreen *TreeScreenViewer::record_screen() const {
+    return _record_screen;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

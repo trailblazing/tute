@@ -1,3 +1,4 @@
+#include <functional>
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QScrollArea>
@@ -34,6 +35,7 @@ extern AppConfig appconfig;
 
 namespace browser {
     class WebPage;
+    class Entrance;
 }
 
 MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
@@ -202,7 +204,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound)
         Q_UNUSED(ev)
         assert(_item);
         assert(_item->page_valid() && _item->page());
-        _item->activate();
+        _item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
     });
 
     QObject::disconnect(_home_connection);

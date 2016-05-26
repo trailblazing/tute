@@ -46,6 +46,7 @@ namespace browser {
     class WebPage;
     class WebView;
     class TabWidget;
+    class Browser;
 }
 
 
@@ -55,7 +56,7 @@ namespace browser {
 // ItemsFlat = { item[i] | i = 0,1,2,3 ... }
 class TreeItem  //        : public std::enable_shared_from_this<TreeItem>
     : //boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
-      public Record
+    public Record
     , public ItemsFlat {
 
 public:
@@ -151,16 +152,16 @@ public:
     //            );
 
     TreeItem(boost::intrusive_ptr<TreeItem>     _host_parent    // = nullptr
-             , QMap<QString, QString>           _field_data     = QMap<QString, QString>()
-             , const QDomElement                &_dom_element   = QDomElement()
-                     , int pos = 0, int mode = add_new_record_before
-            );
+        , QMap<QString, QString>           _field_data = QMap<QString, QString>()
+        , const QDomElement                &_dom_element = QDomElement()
+        , int pos = 0, int mode = add_new_record_before
+        );
 
 #ifdef _with_record_table
     TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item    // = nullptr
-             , boost::intrusive_ptr<Record>     _record         // = nullptr
-             , const QDomElement                &_dom_element   = QDomElement()
-            );
+        , boost::intrusive_ptr<Record>     _record              // = nullptr
+        , const QDomElement                &_dom_element = QDomElement()
+        );
 #endif
 
     //    TreeItem(const TreeItem &item);
@@ -198,8 +199,8 @@ public:
     //    // Добавление нового подчиненного элемента
     //    // в конец списка подчиненных элементов
     //    boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
-    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item)const;
-    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<const Linker> &&_item_linker)const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item) const;
+    boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<const Linker> &&_item_linker) const;
     //    boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);
     boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> _item);
 
@@ -217,7 +218,7 @@ public:
 
     boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);
     // Возвращение ссылки на родительский элемент
-    boost::intrusive_ptr<TreeItem> parent()const;
+    boost::intrusive_ptr<TreeItem> parent() const;
 
     // Удаление потомков, начиная с позиции position массива childItems
     QList<boost::intrusive_ptr<Linker> > delete_permanent_recursive(int position, int count);
@@ -228,20 +229,24 @@ public:
     void clear();
 
     //    int sibling_order(boost::intrusive_ptr<TreeItem> it)const;
-    int sibling_order(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal)const;
+    int sibling_order(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal) const;
     //    // Возвращает номер, под которым данный объект хранится
     //    // в массиве childItems своего родителя
     //    int sibling_order() const;
 
     int move_up(void);
     int move_dn(void);
-    void move_up(int pos) {ItemsFlat::move_up(pos);}
-    void move_dn(int pos) {ItemsFlat::move_dn(pos);}
+    void move_up(int pos) {
+        ItemsFlat::move_up(pos);
+    }
+    void move_dn(int pos) {
+        ItemsFlat::move_dn(pos);
+    }
     //    // Возвращает id путь (список идентификаторов от корня до текущего элемента)
     //    QStringList path_absolute(void) const;
 
     // Возвращает путь в виде названий веток дерева
-    QStringList path_list(QString field_name = "id")const;
+    QStringList path_list(QString field_name = "id") const;
 
     QString path_string(QString field_name, QString delimeter) const;
 
@@ -251,11 +256,11 @@ public:
     //    QList<QStringList> path_children_all(void) const;
 
     // Возвращает набор значений указанного поля для подветок
-    QList<QStringList> path_children_all(QString field_name = "id")const;
+    QList<QStringList> path_children_all(QString field_name = "id") const;
 
     // Получение идентификатора элемента
     IdType id() const;
-    QString name()const;
+    QString name() const;
 
     // Получение идентификатора родительской ветки
     IdType parent_id() const;
@@ -280,16 +285,16 @@ public:
     //    void dom_to_direct(const QDomElement &_dom_element);
     void dom_to_records(const QDomElement &_record_dom_element);
 
-    boost::intrusive_ptr<const TreeItem> is_activated() const;
-    boost::intrusive_ptr<const TreeItem> is_registered_to_browser() const;
+//    boost::intrusive_ptr<const TreeItem> is_activated() const;
+//    boost::intrusive_ptr<const TreeItem> is_registered_to_browser() const;
 
     boost::intrusive_ptr<Binder> binder();
-    const boost::intrusive_ptr<Binder> &&binder()const;
+    const boost::intrusive_ptr<Binder> &&binder() const;
     void binder(boost::intrusive_ptr<Binder> &&binder_);
 
 
     boost::intrusive_ptr<Linker> linker();
-    const boost::intrusive_ptr<Linker> &&linker()const;
+    const boost::intrusive_ptr<Linker> &&linker() const;
     void linker(boost::intrusive_ptr<Linker> &&up_linker_);
 
     //    // Взятие ссылки на данные конечных записей
@@ -304,11 +309,11 @@ public:
 
     //    void children_clear(void);
 
-    browser::WebPage *page()const;   // const; // {return _page;}
-    boost::intrusive_ptr<TreeItem> item()const;
+    browser::WebPage *page() const;   // const; // {return _page;}
+    boost::intrusive_ptr<TreeItem> item() const;
     browser::WebView *bind();
     //    boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
-    browser::WebView *activate();
+    browser::WebView *activate(const std::function<browser::WebView *(const std::function<bool(boost::intrusive_ptr<const ::Binder>)> &_equal)> &find_activated);
 
     //    void binder(bind_helper g); // {_binder = g;}
     //    bind_helper binder() const; // {return _binder;}
@@ -317,7 +322,7 @@ public:
     //    activate_helper activator() const;    // {return _activator;}
 
     //    void active_request(PosSource pos, int openLinkIn);
-    bool page_valid()const;// {return _page_valid;}
+    bool page_valid() const;// {return _page_valid;}
     //    operator ItemsFlat() {return *this;}
 
     // deprecated
@@ -329,7 +334,7 @@ public:
 
 
     bool is_empty() const;
-    bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it)const;
+    bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it) const;
     boost::intrusive_ptr<Linker> remove(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal);
     boost::intrusive_ptr<Linker> delete_permanent_recursive();
     boost::intrusive_ptr<Linker> delete_permanent_empty_recursive();
@@ -403,7 +408,9 @@ private:
     friend class ItemsFlat;
     friend class KnowModel;
     //    friend class TreeScreen;
-    friend inline boost::intrusive_ptr<TreeItem> operator << (boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right) {return *it_left << it_right;}
+    friend inline boost::intrusive_ptr<TreeItem> operator << (boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right) {
+        return *it_left << it_right;
+    }
 };
 
 //inline void intrusive_ptr_add_ref(TreeItem *px){boost::sp_adl_block::intrusive_ptr_add_ref(px);}

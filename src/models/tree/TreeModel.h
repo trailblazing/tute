@@ -21,6 +21,7 @@ class TreeItem;
 class KnowModel;
 class TreeScreen;
 class KnowView;
+struct Binder;
 struct Linker;
 struct TreeIndex;
 

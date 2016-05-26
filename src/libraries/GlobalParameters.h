@@ -51,14 +51,20 @@ public:
     QSplitter *find_splitter();
     void find_splitter(QSplitter *_find_splitter);
 
+    void h_right_splitter(QSplitter *vrightsplitter);
+    QSplitter *h_right_splitter();
+
     void v_left_splitter(QSplitter *vleftsplitter);
     QSplitter *v_left_splitter();
 
     void v_right_splitter(QSplitter *vrightsplitter);
     QSplitter *v_right_splitter();
 
-    void vtab(QTabWidget *point);
-    QTabWidget *vtab();
+    void vtab_record(QTabWidget *point);
+    QTabWidget *vtab_record();
+
+    void vtab_tree(QTabWidget *point);
+    QTabWidget *vtab_tree();
 
     void tree_screen(TreeScreen *point);
     TreeScreen *tree_screen();
@@ -84,8 +90,12 @@ public:
     void window_switcher(WindowSwitcher *point);
     WindowSwitcher *window_switcher();
 
-    MainWindow *mainwindow() {return _mainwindow;}
-    void mainwindow(MainWindow *mainwindow) {_mainwindow = mainwindow;}
+    MainWindow *mainwindow() {
+        return _mainwindow;
+    }
+    void mainwindow(MainWindow *mainwindow) {
+        _mainwindow = mainwindow;
+    }
 
     void crypt_key(QByteArray hash);
     QByteArray crypt_key(void);
@@ -94,17 +104,31 @@ public:
     // Так как в более старых версиях MyTetra его еще небыло
     void create_stylesheet_file(QString dirName);
 
-    void style_source(const QString &source) {_style_source = source;}
-    QString style_source()const {return _style_source;}
+    void style_source(const QString &source) {
+        _style_source = source;
+    }
+    QString style_source() const {
+        return _style_source;
+    }
 
-    void download_manager(browser::DownloadManager *dm) {_download_manager = dm;}
+    void download_manager(browser::DownloadManager *dm) {
+        _download_manager = dm;
+    }
     browser::DownloadManager *download_manager();
 
-    void editor_config(EditorConfig *dialog) {_editor_config = dialog;}
-    EditorConfig *editor_config() {return _editor_config;}
+    void editor_config(EditorConfig *dialog) {
+        _editor_config = dialog;
+    }
+    EditorConfig *editor_config() {
+        return _editor_config;
+    }
 
-    AttachTableController *attachtable_controller() {return _attachtable_controller;}
-    void attachtable_controller(AttachTableController *_attachtable_controller) {this->_attachtable_controller = _attachtable_controller;}
+    AttachTableController *attachtable_controller() {
+        return _attachtable_controller;
+    }
+    void attachtable_controller(AttachTableController *_attachtable_controller) {
+        this->_attachtable_controller = _attachtable_controller;
+    }
 private:
 
     void init_workdirectory(void);
@@ -116,7 +140,7 @@ private:
 
     browser::Profile            *_profile;
     TreeScreen                  *_tree_screen;
-    browser::Entrance           *_browsermanager;
+    browser::Entrance           *_entrance;
     std::vector<RecordScreen *> _table_screens;
     EditorConfig                *_editor_config;
     FindScreen                  *_find_screen;
@@ -125,16 +149,18 @@ private:
     WindowSwitcher              *_window_switcher;
     QSplitter                   *_find_splitter;
     QSplitter                   *_v_left_splitter;
+    QSplitter                   *_h_right_splitter;
     QSplitter                   *_v_right_splitter;
-    QTabWidget                  *_vtab;
+    QTabWidget                  *_vtab_record;
+    QTabWidget                  *_vtab_tree;
     MainWindow                  *_mainwindow;
     browser::DownloadManager    *_download_manager;
-    QString                     _main_program_file;
-    QString                     _work_directory;
+    QString _main_program_file;
+    QString _work_directory;
     AttachTableController       *_attachtable_controller;
 
-    QByteArray                  _password_hash;
-    QString                     _style_source;
+    QByteArray _password_hash;
+    QString _style_source;
 };
 
 #endif  /* __GLOBALPARAMETERS_H__ */

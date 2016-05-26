@@ -941,7 +941,7 @@ void QtSingleApplication::newLocalSocketConnection()
             } catch(std::exception &) {}
 
             if(record_modelindex) {
-                browser->item_bind(record_modelindex)->activate(); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+                browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
             } else {
                 tree_view->index_invoke(tree_view->source_model()->index(it));
             }
@@ -955,7 +955,7 @@ void QtSingleApplication::newLocalSocketConnection()
                     , _url
                     , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
                     , [&](boost::intrusive_ptr<const TreeItem> it)->bool{return it->field("url") == _url;}
-                )->activate();
+                )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
         }
 

@@ -49,7 +49,7 @@ const char *windowswitcher_singleton_name = "window_switcher";
 const char *entrance_singleton_name = "entrance";
 const char *record_controller_multi_instance_name = "record_controller";   // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
 const char *record_view_multi_instance_name = "record_view";
-
+extern const char *tree_screen_viewer_name;
 extern const char *action_find_in_base;
 
 MainWindow::MainWindow(GlobalParameters    &_globalparameters
@@ -62,7 +62,8 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     , _databaseconfig(_databaseconfig)
     , _v_right_splitter(new QSplitter(Qt::Vertical))
     , _v_find_splitter(new QSplitter(Qt::Vertical))
-    , _vtabwidget(new HidableTabWidget(this))
+    , _vtab_record(new HidableTabWidget(this))
+    , _vtab_tree(new HidableTabWidget(this))
     , _h_right_splitter(new QSplitter(Qt::Horizontal))
     , _h_left_splitter(new QSplitter(Qt::Horizontal))      // Qt::Vertical
     , _h_splitter(new QSplitter(Qt::Horizontal))
@@ -77,8 +78,8 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this))    // _vtabwidget
     , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
     , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))    // _find_screen -> for find_text
-    , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, _vtabwidget, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))                                // Qt::MaximizeUsingFullscreenGeometryHint
-    , _download(new browser::DownloadManager(download_manager_singleton_name, _vtabwidget))
+    , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))                                // Qt::MaximizeUsingFullscreenGeometryHint
+    , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_tree))
     , _statusbar(new QStatusBar(this))
     , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
     , _enable_real_close(false)
@@ -103,8 +104,17 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     //    }
 
 
+    _v_right_splitter->setHandleWidth(0);
+    _v_find_splitter->setHandleWidth(0);
+    _h_left_splitter->setHandleWidth(0);
+//    int wl = _h_left_splitter->width(); // 640
+//    int wr = _h_right_splitter->width();// 640   // default handleWidth() == 6
+    _h_right_splitter->setHandleWidth(0);
+    _h_splitter->setHandleWidth(0);
 
-    _globalparameters.vtab(_vtabwidget);
+    _vtab_record->tabBar()->hide();
+    _globalparameters.vtab_record(_vtab_record);
+    _globalparameters.vtab_tree(_vtab_tree);
 
     extern QObject *mainwindow;
     mainwindow = this;
@@ -322,59 +332,193 @@ void MainWindow::setup_signals(void)
     //        }
     //    };
 
-    //    hide_others(_vtabwidget->currentIndex());
 
-    connect(_vtabwidget, &HidableTabWidget::currentChanged, _vtabwidget, [&] (int index) {
+    connect(_vtab_record, &HidableTabWidget::currentChanged, [&] (int index) {
         if(-1 != index) {
-            auto count = _vtabwidget->count();
-            if(1 >= count) {
+            auto record_widget = _vtab_record->widget(index);
+
+            //                for(int i = 0; i < _vtab_record->count(); i++) {
+            //                    if(i != real_index) {
+            //                        auto current_widget = _vtab_record->widget(i);
+            //                        if(current_widget) {
+            //                            if(current_widget->objectName() == record_screen_multi_instance_name) {
+            //                                auto record_screen = static_cast<RecordScreen *>(current_widget);
+            //                                record_screen->browser()->lower();
+            //                            }
+
+            //                            current_widget->hide();
+            //                        }
+            //                    }
+            //                }
+            RecordScreen *record_screen = nullptr;
+            if(record_widget->objectName() == record_screen_multi_instance_name)
+                record_screen = dynamic_cast<RecordScreen *>(record_widget);
+            if(record_screen) {
+                _vtab_record->setCurrentWidget(record_screen);
+                record_screen->restore_menubar();
+                auto current_brower = record_screen->browser();
+                if(current_brower && !current_brower->is_under_construction()) {
+                    current_brower->raise();
+                    current_brower->activateWindow();
+                }
+
+                for(int i = 0; i < _vtab_tree->count(); i++) {
+                    auto tree_view_curr = _vtab_tree->widget(i);
+                    if(tree_view_curr->objectName() == tree_screen_viewer_name) {
+                        auto tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_view_curr);
+                        if(tree_screen_viewer ) {
+                            if(tree_screen_viewer->record_screen() == record_screen) {
+                                if(_vtab_tree->currentIndex() != i) {
+
+                                    if(!tree_screen_viewer->tree_screen()) {
+                                        tree_screen_viewer->tree_screen(_tree_screen);
+                                    }
+
+                                    _vtab_tree->setCurrentIndex(i);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //                    else{
+            //                        _tree_screen->restore_menubar();
+            //                    }
+
+
+
+
+        }
+    });
+
+    //    hide_others(_vtabwidget->currentIndex());
+    connect(_vtab_tree, &HidableTabWidget::currentChanged, [&] (int index) {
+        if(-1 != index) {
+            int tree_viewer_count = 0;
+            for(int i = 0; i < _vtab_tree->count(); i++) {
+                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
+            }
+//            auto count = _vtab_tree->count();
+            if(0 == tree_viewer_count) {// if(1 >= count) {    // self and download
                 _tree_screen->restore_menubar();
                 if(_tree_screen->isHidden()) {
                     _tree_screen->show();
                 }
             }
-            else{
-                for(int i = 0; i < count; i++) {
-                    if(i != index) {
-                        auto current_widget = _vtabwidget->widget(i);
 
-                        if(current_widget->objectName() == record_screen_multi_instance_name) {
-                            auto record_screen = static_cast<RecordScreen *>(current_widget);
-                            record_screen->browser()->lower();
+
+            //            int tree_viewer_count = 0;
+            //            for(int i = 0; i < _vtab_tree->count(); i++) {
+            //                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
+            //            }
+
+            //            int real_index = index - (_vtab_tree->count() - tree_viewer_count);
+
+            auto tree_view_curr = _vtab_tree->widget(index);
+            if(tree_view_curr->objectName() == tree_screen_viewer_name) {                    // if(real_index < _vtab_record->count()) {
+                //                for(int i = 0; i < _vtab_record->count(); i++) {
+                //                    if(i != real_index) {
+                //                        auto current_widget = _vtab_record->widget(i);
+                //                        if(current_widget) {
+                //                            if(current_widget->objectName() == record_screen_multi_instance_name) {
+                //                                auto record_screen = static_cast<RecordScreen *>(current_widget);
+                //                                record_screen->browser()->lower();
+                //                            }
+
+                //                            current_widget->hide();
+                //                        }
+                //                    }
+                //                }
+
+                auto current_tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_view_curr);              // auto current_widget = _vtab_record->widget(real_index);
+                if(current_tree_screen_viewer) {
+                    RecordScreen *record_screen = current_tree_screen_viewer->record_screen();
+                    if(record_screen) {
+                        if(_vtab_record->currentWidget() != record_screen) _vtab_record->setCurrentWidget(record_screen);
+                        record_screen->restore_menubar();
+                        auto current_brower = record_screen->browser();
+                        if(current_brower && !current_brower->is_under_construction()) {
+                            current_brower->raise();
+                            current_brower->activateWindow();
                         }
-
-                        current_widget->hide();
                     }
+                    //                    else{
+                    //                        _tree_screen->restore_menubar();
+                    //                    }
                 }
+            }
 
-                auto current_widget = _vtabwidget->widget(index);
+//            // deprecated: ignoring Tree Search Area
+//            if(_vtab_tree->widget(index)->objectName() == tree_screen_singleton_name) {
+//                _appconfig.find_screen_tree_search_area(0);
+//            } else if(_vtab_tree->widget(index)->objectName() == record_screen_multi_instance_name) {
+//                _appconfig.find_screen_tree_search_area(1);
+//            }
 
-                if(current_widget->objectName() == record_screen_multi_instance_name) {
-                    auto record_screen = static_cast<RecordScreen *>(current_widget);
+        }
+
+    });
+
+    connect(_vtab_tree, &HidableTabWidget::tabBarClicked, _vtab_record, [&] (int index) {
+//        if(1 <= index) {
+
+//            int tree_viewer_count = 0;
+//            for(int i = 0; i < _vtab_tree->count(); i++) {
+//                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
+//            }
+
+//            int real_index = index - (_vtab_tree->count() - tree_viewer_count);
+
+        auto tree_curr = _vtab_tree->widget(index);
+        if(tree_curr->objectName() == tree_screen_viewer_name) {        // if(real_index < _vtab_record->count()) {
+
+            auto current_tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_curr);      // _vtab_record->widget(real_index);
+            if(current_tree_screen_viewer) {
+                RecordScreen *record_screen = current_tree_screen_viewer->record_screen();
+                QWidget *tree_screen = current_tree_screen_viewer->tree_screen();
+                if(!tree_screen) {
+                    current_tree_screen_viewer->tree_screen(_tree_screen);
+                }
+                if(record_screen) {     // curr_record_screen->objectName() == record_screen_multi_instance_name
+//                        auto record_screen = static_cast<RecordScreen *>(curr_record_screen);
+
+                    _vtab_record->setCurrentWidget(record_screen);
                     record_screen->restore_menubar();
                     auto current_brower = record_screen->browser();
-                    current_brower->raise();
-                    current_brower->activateWindow();
-                }else{
-                    _tree_screen->restore_menubar();
+                    if(current_brower && !current_brower->is_under_construction()) {
+                        current_brower->raise();
+                        current_brower->activateWindow();
+                    }
                 }
+//                    else{
+//                        _tree_screen->restore_menubar();
+//                    }
 
-                current_widget->show();
+//                    current_tree_screen_viewer->show();
             }
         }
+
+//        }
+
+
     });
-    // deprecated: ignoring Tree Search Area
-    connect(_vtabwidget, &QTabWidget::currentChanged,  &_appconfig
-        , [this] (int index) {
-        if(-1 != index) {
-            if(_vtabwidget->widget(index)->objectName() == tree_screen_singleton_name) {
-                _appconfig.find_screen_tree_search_area(0);
-            } else if(_vtabwidget->widget(index)->objectName() == record_screen_multi_instance_name) {
-                _appconfig.find_screen_tree_search_area(1);
-            }
-        }
-    }   // &AppConfig::setFindScreenTreeSearchArea
-        );      // , findScreenDisp, &FindScreen::changedTreeSearchArea
+
+
+
+//    // deprecated: ignoring Tree Search Area
+//    connect(_vtab_tree, &QTabWidget::currentChanged,  &_appconfig
+//        , [this] (int index) {
+//        if(-1 != index) {
+//            if(_vtab_tree->widget(index)->objectName() == tree_screen_singleton_name) {
+//                _appconfig.find_screen_tree_search_area(0);
+//            } else if(_vtab_tree->widget(index)->objectName() == record_screen_multi_instance_name) {
+//                _appconfig.find_screen_tree_search_area(1);
+//            }
+//        }
+//    }   // &AppConfig::setFindScreenTreeSearchArea
+//        );      // , findScreenDisp, &FindScreen::changedTreeSearchArea
+
+
 }
 
 
@@ -384,7 +528,7 @@ void MainWindow::assembly(void)
     _v_right_splitter->addWidget(_entrance);
     _v_right_splitter->addWidget(_editor_screen);           // Text entries // Текст записи
     _v_right_splitter->setCollapsible(0, true);             // if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
-    _v_right_splitter->setCollapsible(1, true);             // The contents of the recording can not link up    // Содержимое записи не может смыкаться
+    _v_right_splitter->setCollapsible(1, false);             // The contents of the recording can not link up    // Содержимое записи не может смыкаться
     _v_right_splitter->setObjectName("v_right_splitter");
 
     //    find_splitter = new QSplitter(Qt::Vertical);
@@ -396,7 +540,7 @@ void MainWindow::assembly(void)
 
     //    _qtabwidget = new QTabWidget(this);
 
-    _vtabwidget->setTabPosition(QTabWidget::West);          // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
+    _vtab_tree->setTabPosition(QTabWidget::West);          // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
 
 
 
@@ -411,7 +555,9 @@ void MainWindow::assembly(void)
 
     // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
-    _vtabwidget->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");                    // QIcon(":/resource/pic/holly.svg")
+    _vtab_tree->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");                    // QIcon(":/resource/pic/holly.svg")
+    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new TreeScreenViewer(_tree_screen, nullptr)), QIcon(":/resource/pic/apple.svg"), "Browser");
+    _vtab_tree->setCurrentIndex(index);
 
 
     _appconfig.find_screen_tree_search_area(0);  // force to root_item of global tree
@@ -438,16 +584,19 @@ void MainWindow::assembly(void)
     //        _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
     //    }
 
+    _h_right_splitter->addWidget(_vtab_record);
     _h_right_splitter->addWidget(_v_find_splitter);
+    globalparameters.h_right_splitter(_h_right_splitter);
 
-    _h_left_splitter->addWidget(_vtabwidget);
+    _h_left_splitter->addWidget(_vtab_tree);
     _h_left_splitter->addWidget(_h_right_splitter);
 
 
 
     //    v_left_splitter->addWidget(treeScreen);
     //    v_left_splitter->addWidget(recordTableScreen);
-    _h_left_splitter->setCollapsible(0, false);
+    _h_left_splitter->setCollapsible(0, true);
+    _h_left_splitter->setCollapsible(1, false);
     //    v_left_splitter->setCollapsible(1, false);
     _h_left_splitter->setObjectName("v_left_splitter");
 
@@ -458,7 +607,7 @@ void MainWindow::assembly(void)
 
 
 
-    _h_splitter->addWidget(_tree_screen);
+//    _h_splitter->addWidget(_tree_screen);
 
 
 
@@ -488,7 +637,7 @@ void MainWindow::assembly(void)
     //    findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
     //    findSplitter->setObjectName("find_splitter");
 
-    setCentralWidget(_h_splitter);                    //setCentralWidget(findSplitter);
+    setCentralWidget(_h_left_splitter); //    setCentralWidget(_h_splitter);                    //setCentralWidget(findSplitter);
 
 }
 
@@ -537,14 +686,14 @@ void MainWindow::restore_geometry(void)
 
     _v_right_splitter->setSizes(appconfig.vspl_sizelist());
     _h_splitter->setSizes(appconfig.hspl_sizelist());
-    _h_right_splitter->setSizes(appconfig.v_right_splitter_sizelist());
-    _h_left_splitter->setSizes(appconfig.v_left_splitter_sizelist());
+    _h_right_splitter->setSizes(appconfig.h_right_splitter_sizelist());
+    _h_left_splitter->setSizes(appconfig.h_left_splitter_sizelist());
     _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
 
     //    int vtab_base = _vtabwidget->baseSize().width();            // 0
     //    int vtab_frame = _vtabwidget->frameSize().width();          // 1118
     //    int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 1118
-    int vtab_g_width = _vtabwidget->geometry().width();         // 1118
+    int vtab_g_width = _vtab_tree->geometry().width();         // 1118
     //    int this_width = geometry().width();                        // 1366
     //    int download_width = _download->geometry().width();         // 1089
     //    int tree_screen_width = _tree_screen->geometry().width();   // 236
@@ -612,8 +761,8 @@ void MainWindow::save_geometry(void)
 
     appconfig.vspl_sizelist(_v_right_splitter->sizes());
     appconfig.hspl_sizelist(_h_splitter->sizes());
-    appconfig.v_right_splitter_sizelist(_h_right_splitter->sizes());
-    appconfig.v_left_splitter_sizelist(_h_left_splitter->sizes());
+    appconfig.h_right_splitter_sizelist(_h_right_splitter->sizes());
+    appconfig.h_left_splitter_sizelist(_h_left_splitter->sizes());
 
     // Запоминается размер сплиттера только при видимом виджете поиска,
     // т.к. если виджета поиска невидно, будет запомнен нуливой размер
@@ -1151,7 +1300,7 @@ void MainWindow::on_expand_edit_area(bool flag)
         //            _recordtable_hidden = true;
         //        }
 
-        emit _vtabwidget->_hide_action->setChecked(true);
+        emit _vtab_tree->_hide_action->setChecked(true);
         //        QTabWidget *tab = globalparameters.vtab();
         //        tab->currentWidget()->hide();
 
@@ -1176,7 +1325,7 @@ void MainWindow::on_expand_edit_area(bool flag)
         //        }
 
         //        emit _vtabwidget->hideAction.toggle();
-        emit _vtabwidget->_hide_action->setChecked(false);
+        emit _vtab_tree->_hide_action->setChecked(false);
         //        globalparameters.vtab()->resize(vtab_size); // show();
     }
 }

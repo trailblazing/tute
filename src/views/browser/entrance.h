@@ -78,19 +78,18 @@ namespace browser {
     // entrance.ini
     class Entrance : public QDockWidget {
         Q_OBJECT
-    public:
+public:
 
 
         Entrance(QString object_name
-                 , TreeScreen *_tree_screen
-                 , FindScreen *_find_screen
-                 , MetaEditor *_editor_screen // , RecordController *_record_controller
-                 , HidableTabWidget *_vtabwidget
-                 , MainWindow *_main_window
-                 , AppConfig &_appconfig, const QString &style_source
-                 , browser::Profile *_profile
-                 , Qt::WindowFlags flags
-                 = 0
+            , TreeScreen *_tree_screen
+            , FindScreen *_find_screen
+            , MetaEditor *_editor_screen      // , RecordController *_record_controller
+            , MainWindow *_main_window
+            , AppConfig &_appconfig, const QString &style_source
+            , browser::Profile *_profile
+            , Qt::WindowFlags flags
+                = 0
                 );
         ~Entrance();
         //    BrowserWindow *getBrowserWindow() {return mainWindow();}
@@ -143,13 +142,21 @@ namespace browser {
         //        std::pair<Browser *, WebView *>
         //        WebView *find(boost::intrusive_ptr<const TreeItem> item) const;
         //        std::pair<Browser *, WebView *>
-        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;
+        WebView *find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)> &_equal) const;
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-        void settingstylesource(const QString &style_source) {_style_source = style_source;}
+        void settingstylesource(const QString &style_source) {
+            _style_source = style_source;
+        }
         //        ItemsFlat const *shadow_branch()const {return _shadow_branch;}
-    public slots:
+
+//        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;
+//        boost::intrusive_ptr<const TreeItem> is_registered_to_browser(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;
+
+
+
+public slots:
 
         void init_setting(void);
 
@@ -181,14 +188,14 @@ namespace browser {
         void lastWindowClosed();
 #endif
 
-    private slots:
+private slots:
         //        void loadUrl(Record *record);
         //        void loadUrl(const int pos);
         //        void open_url(const QUrl &url);
         //        void setUrl(const QUrl &url);
-    protected:
+protected:
         void resizeEvent(QResizeEvent *);
-    private:
+private:
 
         //        void(Entrance::*invoke_ptr)(const QUrl &url);
 
@@ -201,11 +208,11 @@ namespace browser {
         TreeScreen                      *_tree_screen;
         FindScreen                      *_find_screen;
         MetaEditor                      *_editor_screen;
-        HidableTabWidget                *_vtabwidget;
+//        HidableTabWidget                *_vtab_tree;
         MainWindow                      *_main_window;
         AppConfig                       &_appconfig;
         // RecordController                *_record_controller;
-        QString                         _style_source;
+        QString _style_source;
         browser::Profile                *_profile;
         //void urlChanged(const QUrl &_url){onUrlChanged(_url);}
         //        QAction                         *_actionFreeze;
@@ -213,7 +220,7 @@ namespace browser {
         //        QDockWidget *_dockwidget;
         //        DockedWindow *_browser;
         QWidget                         *_hidetitlebar;
-        QMetaObject::Connection         _home_connection;    // for disconnect
+        QMetaObject::Connection _home_connection;            // for disconnect
         friend class QtSingleApplication;
     };
 

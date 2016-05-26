@@ -22,6 +22,7 @@ class XmlTree;
 class ClipboardBranch;
 class TreeScreen;
 class KnowView;
+struct Binder;
 struct Linker;
 
 class KnowModel : public TreeModel {

@@ -200,8 +200,8 @@ namespace browser {
         _bookmarkstoolbar->deleteLater();
         //        delete _tabmanager;
 
-        if(globalparameters.vtab()->indexOf(_record_screen) != -1)
-            globalparameters.vtab()->removeTab(globalparameters.vtab()->indexOf(_record_screen));
+        if(globalparameters.vtab_tree()->indexOf(_record_screen) != -1)
+            globalparameters.vtab_tree()->removeTab(globalparameters.vtab_tree()->indexOf(_record_screen));
 
         //        if(_record_screen) {
         //            _record_screen->deleteLater();
@@ -298,21 +298,111 @@ namespace browser {
             //            record->activate();
 
             this->close();
-            int index = globalparameters.vtab()->indexOf(_record_screen);
+            HidableTabWidget *vtab_tree = _main_window->vtab_tree();
+            HidableTabWidget *vtab_record = _main_window->vtab_record();
+            int index = vtab_record->indexOf(_record_screen);
 
-            if(index != -1)
-                globalparameters.vtab()->removeTab(index);
-            //            static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
+            if(index != -1) {
+                vtab_record->removeTab(index);
+                //            static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
+                for(int i = 0; i < vtab_tree->count(); i++) {
+                    auto wg = vtab_tree->widget(i);
+                    if(wg->objectName() == tree_screen_viewer_name) {
+                        auto tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(wg);
+                        if(tree_screen_viewer ) {
+                            if(tree_screen_viewer->record_screen() == _record_screen) {
+                                vtab_tree->removeTab(i);
+                            }
+                        }
+                    }
+                }
+            }
         });
 #endif
 
         slotUpdateWindowTitle();
         load_default_state();
 
-        auto vtab = _main_window->vtab();
 
-        if(vtab->indexOf(_record_screen) == -1)
-            vtab->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), QString("Browser ") + QString::number(vtab->count() - 1));
+
+
+
+
+        auto vtab_tree = _main_window->vtab_tree();
+        auto vtab_record = _main_window->vtab_record();
+
+
+        if(vtab_record->indexOf(_record_screen) == -1) {
+            ////        int index = vtab_tree->currentIndex();
+            TreeScreenViewer *tsv = nullptr;
+            std::vector<TreeScreenViewer *> tsvs;
+            int tree_viewer_count = 0;
+            for(int i = 0; i < vtab_tree->count(); i++) {
+                if(vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) {
+                    tsvs.push_back( dynamic_cast<TreeScreenViewer *>(vtab_tree->widget(i)));
+                    tree_viewer_count++;
+                }
+            }
+
+            if(1 == tree_viewer_count) {
+                tsv = tsvs[0];
+                if(tsv) {
+                    RecordScreen *rs = tsv->record_screen();
+                    if(rs) {
+                        vtab_tree->setUpdatesEnabled(false);
+
+                        vtab_tree->addTab(new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/clover.svg"), QString("Browser"));                // QString("Browser ") + QString::number(tree_viewer_count)
+                        //        vtab_tree->setCurrentIndex(index);
+                        vtab_tree->setUpdatesEnabled(true);
+                    }
+                    else{
+                        tsv->record_screen(_record_screen);
+                        //                    emit vtab_tree->tabBarClicked(vtab_tree->indexOf(tsv));    // vtab_tree->currentChanged(vtab_tree->indexOf(tsv));
+                    }
+                }
+            }else{
+                vtab_tree->setUpdatesEnabled(false);
+
+                vtab_tree->addTab(new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/clover.svg"), QString("Browser"));                    // QString("Browser ") + QString::number(tree_viewer_count)
+                //        vtab_tree->setCurrentIndex(index);
+                vtab_tree->setUpdatesEnabled(true);
+            }
+
+
+            //        int index = vtab_record->currentIndex();
+            vtab_record->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
+            _record_screen->adjustSize();
+            //        vtab_record->setCurrentIndex(index);
+        }
+
+        //    QSplitter *_h_right_splitter = _main_window->h_right_splitter();
+        //    if(_h_right_splitter->count() > 1) {
+        //        for(int i = 0; i < _h_right_splitter->count(); i++) {
+        //            auto wg = _h_right_splitter->widget(i);
+        //            if(wg->objectName() == record_screen_multi_instance_name) {wg->hide(); wg->setParent(nullptr); }
+        //        }
+        //    }
+        //    if(_h_right_splitter->indexOf(this) == -1) {
+        //        _h_right_splitter->insertWidget(0, _record_screen); // vtab_record->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), QString("Browser ") + QString::number(vtab_record->count()));
+        //    }
+
+////        auto vtab_record = _main_window->vtab_tree();
+//        QSplitter *_h_right_splitter = _main_window->h_right_splitter();
+//        if(_h_right_splitter->count() > 1) {
+//            for(int i = 0; i < _h_right_splitter->count(); i++) {
+//                auto wg = _h_right_splitter->widget(i);
+//                if(wg->objectName() == record_screen_multi_instance_name) {wg->hide(); wg->parent(nullptr); }
+//            }
+//        }
+//        if(_h_right_splitter->indexOf(_record_screen) == -1) {
+//            _h_right_splitter->insertWidget(0, _record_screen); // vtab_record->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), QString("Browser ") + QString::number(vtab_record->count()));
+////            vtab_record->setCurrentWidget(_record_screen);
+//        }
+
+
+
+
+
 
         //        int size = _tabmanager->lineEditStack()->sizeHint().height();
 
@@ -496,14 +586,11 @@ namespace browser {
     //        show();
     //    }
 
-    Browser::Browser(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, HidableTabWidget *_vtabwidget, MainWindow *_main_window, Entrance *_entrance, const QString &style_source, Profile *_profile, Qt::WindowFlags flags)
-        : QMainWindow(0, flags)
-        //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
+    Browser::Browser(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, MainWindow *_main_window, Entrance *_entrance, const QString &style_source, Profile *_profile, Qt::WindowFlags flags)
+        : QMainWindow(0, flags) //        ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
-        , _record_screen(new RecordScreen(_tree_screen, _find_screen, _editor_screen, _entrance, this, _vtabwidget, _main_window, _profile))
         , _main_window(_main_window)
-        , _tabmanager(_record_screen->tabmanager())
         //        , _toolbarsearch(_find_screen->toolbarsearch())
         , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
         , _chasewidget(_find_screen->chasewidget())
@@ -516,7 +603,9 @@ namespace browser {
         , _stopreload(_find_screen->stopreload())
         , _centralwidget(new QWidget(this))
         , _layout(new QVBoxLayout)
-        , _entrance(_entrance->prepend(this)) //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
+        , _record_screen(new RecordScreen(_tree_screen, _find_screen, _editor_screen, _entrance, this, _main_window, _profile))
+        , _tabmanager(_record_screen->tabmanager())
+        , _entrance(_entrance->prepend(this))                //    , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
     {
         init();
 
@@ -527,6 +616,7 @@ namespace browser {
         QMainWindow::menuBar()->hide();
         QMainWindow::statusBar()->hide();
         show();
+        _is_under_construction = false;
     }
 
     //    Browser::Browser(boost::intrusive_ptr<TreeItem> item
@@ -585,15 +675,20 @@ namespace browser {
 
     //    }
 
+    bool Browser::is_under_construction() const {
+        return _is_under_construction;
+    }
+
     void Browser::activateWindow()
     {
-        _entrance->setWidget(this);
         this->setParent(_entrance);
+        _entrance->setWidget(this);
+
         _entrance->on_activate_window();
 
         _find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
-        auto vtab = globalparameters.vtab();
+        auto vtab = globalparameters.vtab_tree();
         int index = vtab->indexOf(_record_screen);
 
         if(vtab->currentIndex() != index) {
@@ -605,8 +700,8 @@ namespace browser {
 
             vtab->setCurrentIndex(index);
 
-            if(!_tabmanager->find([&] (boost::intrusive_ptr<const TreeItem> it) {
-                return it->id() == _tree_screen->tree_view()->current_item()->id();
+            if(!_tabmanager->find([&] (boost::intrusive_ptr<const ::Binder> b) {
+                return b->host()->id() == _tree_screen->tree_view()->current_item()->id();
             })) {
                 auto it = _record_screen->record_controller()->view()->current_item();
 
@@ -1482,10 +1577,10 @@ namespace browser {
 
         if(modelindex) {
             modelindex->item_bind(
-                tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
-                return it->field("url") == home;
+                tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                return it_->field("url") == home;
             })
-            ->activate();
+            ->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
         }
     }
 
@@ -1709,14 +1804,14 @@ namespace browser {
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
         boost::intrusive_ptr<TreeItem> tab_brother = record_modelindex->sibling();
-        boost::intrusive_ptr<TreeItem> _item = record_modelindex->target();
+        boost::intrusive_ptr<TreeItem> target = record_modelindex->target();
 
-        if(_item->is_lite())
-            _item->to_fat();
+        if(target->is_lite())
+            target->to_fat();
 
         // clean();
         //        assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
-        assert(tab_brother != _item);
+        assert(tab_brother != target);
 
         WebView *view = nullptr;
         TabWidget *const tab = tabWidget();
@@ -1725,8 +1820,8 @@ namespace browser {
         //        } else
         //        {
         //        for(auto &i : _mainWindows) {
-        view = tabWidget()->find([&] (boost::intrusive_ptr<const TreeItem> it) {
-            return it->field("url") == _item->field("url") && it->id() == _item->id();
+        view = tabWidget()->find([&] (boost::intrusive_ptr<const ::Binder> b) {
+            return b->host()->field("url") == target->field("url") && b->host()->id() == target->id() && b == target->binder();
         });                                                                                                                                                    // if _item->field("url") == Browser::_defaulthome , force rebind
 
         //        if(view != nullptr) {
@@ -1774,7 +1869,7 @@ namespace browser {
             //            else {
 
             view = tab->newTab(record_modelindex); // , false
-            result = view->page()->binder()->item();
+            result = view->page()->binder()->host();
             //                // auto load
             //            }
 
@@ -1791,7 +1886,7 @@ namespace browser {
         if(_entrance->widget() != this)
             _entrance->setWidget(this);
 
-        auto vtab = globalparameters.vtab();
+        auto vtab = globalparameters.vtab_tree();
 
         if(vtab->currentWidget() != _record_screen) {
             vtab->setCurrentWidget(_record_screen);

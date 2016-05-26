@@ -57,7 +57,7 @@
 #include <QWebEngineSettings>
 
 //#include "views/browser/chasewidget.h"
-
+#include "models/tree/binder.hxx"
 #include "models/record_table/linker.hxx"
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
@@ -198,8 +198,8 @@ namespace browser {
                     modelindex->item_bind(tree_view->current_item()
                                           , url
                                           , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                                          , [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == url.toString();}
-                                         )->activate();
+                                          , [&](boost::intrusive_ptr<const TreeItem> it_)->bool {return it_->field("url") == url.toString();}
+                                         )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
                     assert(_lineedits);
 
@@ -248,7 +248,7 @@ namespace browser {
                     // QString u = url.toString();
 
                     //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                    modelindex->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it)->bool {return it->field("url") == url.toString();})->activate();
+                    modelindex->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_)->bool {return it_->field("url") == url.toString();})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
                 }
             }

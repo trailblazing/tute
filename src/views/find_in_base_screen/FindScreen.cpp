@@ -605,13 +605,13 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_clicked(void)
 
 boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 {
-    //    auto _tree_screen = globalparameters.tree_screen();
-    // deprecated:
-    if(globalparameters.vtab()->currentWidget()->objectName() == record_screen_multi_instance_name
-       && !_tree_screen->tree_view()->current_index().isValid()
-      ) {
-        appconfig.find_screen_tree_search_area(2);
-    }
+
+//    // deprecated:
+//    if(globalparameters.vtab_tree()->currentWidget()->objectName() == record_screen_multi_instance_name
+//       && !_tree_screen->tree_view()->current_index().isValid()
+//      ) {
+//        appconfig.find_screen_tree_search_area(2);
+//    }
 
     // Сохраняется текущая редактируемая запись, чтобы и в ней
     // были найдены введенные перед нажатием Find данные, если они есть
@@ -1072,7 +1072,7 @@ QList<boost::intrusive_ptr<Linker>> &FindScreen::find_recursive(
                                     //                                    , std::placeholders::_2
                                     //                                    , std::placeholders::_3));
 
-                                    result->activate();
+                                    result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                                     _result_list << result->linker();   //
 
                                 } else {
@@ -1081,12 +1081,12 @@ QList<boost::intrusive_ptr<Linker>> &FindScreen::find_recursive(
 
                                     result = browser->item_bind(record_modelindex);
 
-                                    result->activate();
+                                    result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                                     _result_list << result->linker();
                                 }
 
                             } else {
-                                candidate->activate();
+                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                                 _result_list << candidate->linker();
                             }
 

@@ -48,7 +48,7 @@ QString GlobalParameters::main_program_file(void)
 void GlobalParameters::init(void)
 {
     _tree_screen = nullptr;
-    _browsermanager = nullptr;
+    _entrance = nullptr;
     //    _table_screens = nullptr;
     //    _page_screen = nullptr;
     _find_screen = nullptr;
@@ -111,8 +111,8 @@ void GlobalParameters::init_workdirectory(void)
         qDebug() << "Cant create portable version - cant write data to mytetra bin-file directory";
 
         QString infoText = tr("The following actions will be performed before running this application: \n\n") +
-                           standartText + "\n\n" +
-                           tr("Do you agree to perform these?");
+            standartText + "\n\n" +
+            tr("Do you agree to perform these?");
 
         QMessageBox msgBox;
         msgBox.setText(welcomeText);
@@ -130,9 +130,9 @@ void GlobalParameters::init_workdirectory(void)
         // так и "переносимое"
 
         QString infoText = welcomeText + "\n\n" +
-                           tr("Please, select application mode: \n\n") +
-                           tr("Standart:\n") + standartText + "\n\n" +
-                           tr("Portable:\n") + portableText + "\n\n";
+            tr("Please, select application mode: \n\n") +
+            tr("Standart:\n") + standartText + "\n\n" +
+            tr("Portable:\n") + portableText + "\n\n";
 
         QStringList items;
         QString standartItem = tr("Standard");
@@ -147,9 +147,9 @@ void GlobalParameters::init_workdirectory(void)
 
         QWidget *tempWidget = new QWidget();
         QString item = QInputDialog::getItem(tempWidget,
-                                             welcomeText,
-                                             infoText,
-                                             items, 0, false, &ok);
+                welcomeText,
+                infoText,
+                items, 0, false, &ok);
         delete tempWidget;
 
         // Если пользователь сделал выбор
@@ -380,15 +380,15 @@ QString GlobalParameters::work_directory(void)
 
 QString GlobalParameters::target_os(void)
 {
-#if TARGET_OS==ANY_OS
+#if TARGET_OS == ANY_OS
     return "any";
 #endif
 
-#if TARGET_OS==MEEGO_OS
+#if TARGET_OS == MEEGO_OS
     return "meego";
 #endif
 
-#if TARGET_OS==ANDROID_OS
+#if TARGET_OS == ANDROID_OS
     return "android";
 #endif
 }
@@ -415,12 +415,30 @@ QString GlobalParameters::application_name(void)
     return appName;
 }
 
-browser::Profile *GlobalParameters::profile() {return _profile;}
-void GlobalParameters::profile(browser::Profile *profile_) {_profile = profile_;}
+browser::Profile *GlobalParameters::profile() {
+    return _profile;
+}
+void GlobalParameters::profile(browser::Profile *profile_) {
+    _profile = profile_;
+}
 
 
-QSplitter *GlobalParameters::find_splitter() {return _find_splitter;}
-void GlobalParameters::find_splitter(QSplitter *_find_splitter) {this->_find_splitter = _find_splitter;}
+QSplitter *GlobalParameters::find_splitter() {
+    return _find_splitter;
+}
+void GlobalParameters::find_splitter(QSplitter *_find_splitter) {
+    this->_find_splitter = _find_splitter;
+}
+
+void GlobalParameters::h_right_splitter(QSplitter *h_right_splitter)
+{
+    _h_right_splitter = h_right_splitter;
+}
+
+QSplitter *GlobalParameters::h_right_splitter()
+{
+    return _h_right_splitter;
+}
 
 void GlobalParameters::v_left_splitter(QSplitter *vleftsplitter)
 {
@@ -443,19 +461,30 @@ QSplitter *GlobalParameters::v_right_splitter()
     return _v_right_splitter;
 }
 
-void GlobalParameters::vtab(QTabWidget *point)
+void GlobalParameters::vtab_record(QTabWidget *point)
 {
-    _vtab = point;
+    _vtab_record = point;
 }
 
-QTabWidget *GlobalParameters::vtab()
+QTabWidget *GlobalParameters::vtab_record()
 {
-    return  _vtab;
+    return _vtab_record;
+}
+
+
+void GlobalParameters::vtab_tree(QTabWidget *point)
+{
+    _vtab_tree = point;
+}
+
+QTabWidget *GlobalParameters::vtab_tree()
+{
+    return _vtab_tree;
 }
 
 browser::DownloadManager *GlobalParameters::download_manager()
 {
-    _vtab->setCurrentWidget(static_cast<QWidget *>(_download_manager));
+    _vtab_tree->setCurrentWidget(static_cast<QWidget *>(_download_manager));
     return _download_manager;
 }
 
@@ -472,12 +501,12 @@ TreeScreen *GlobalParameters::tree_screen()
 
 browser::Entrance *GlobalParameters::entrance()
 {
-    return _browsermanager;
+    return _entrance;
 }
 
 void GlobalParameters::entrance(browser::Entrance *&b)
 {
-    _browsermanager = b;
+    _entrance = b;
 }
 
 

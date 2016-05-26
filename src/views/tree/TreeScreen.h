@@ -13,7 +13,7 @@
 #include <QMenuBar>
 #include <QScrollArea>
 #include <QEvent>
-
+#include <QStackedLayout>
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -32,7 +32,7 @@ extern GlobalParameters globalparameters;
 extern const char *global_root_id;
 
 
-
+extern const char *action_show_hide_record_screen;
 extern const char *action_set_as_session_root;
 extern const char *action_find_in_base;
 extern const char *action_cursor_follow_root;
@@ -55,7 +55,7 @@ extern const char *action_freeze_browser_view;
 extern const char *action_edit_field;
 extern const char *action_editor_switch;
 
-
+extern const char *tree_screen_viewer_name;
 
 class KnowModel;
 class KnowView;
@@ -70,6 +70,7 @@ class TreeController;
 class RecordController;
 class TreeScreen;
 class InfoFieldsEditor;
+class RecordScreen;
 struct TreeIndex;
 struct Linker;
 
@@ -510,6 +511,19 @@ private:
 //    return  result; // _current_model->item(setto);
 //}
 
+class TreeScreenViewer : public QFrame {
+public:
+    TreeScreenViewer(TreeScreen *_tree_screen, RecordScreen *_record_screen);
+    QWidget *tree_screen()const;
+    int tree_screen(TreeScreen *tree);
+
+    RecordScreen *record_screen()const;
+    void record_screen(RecordScreen *rs);
+private:
+    TreeScreen      *_tree_screen;
+    RecordScreen    *_record_screen;
+    QStackedLayout  *_layout;
+};
 
 
 #endif  // _TREESCREEN_H_

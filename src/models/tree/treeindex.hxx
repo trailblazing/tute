@@ -10,6 +10,7 @@
 
 
 class TreeItem;
+struct Binder;
 struct Linker;
 class KnowModel;
 

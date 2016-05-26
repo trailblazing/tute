@@ -48,6 +48,7 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "views/find_in_base_screen/FindScreen.h"
 #include <utility>
+#include "models/tree/binder.hxx"
 #include "models/tree/KnowModel.h"
 #include "views/tree/TreeScreen.h"
 #include "views/main_window/MainWindow.h"
@@ -373,7 +374,7 @@ namespace browser {
                         //                        try {
                         //                            record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
                         //                        } catch(std::exception &e) {throw e;}
-                        page->item_bind(_item)->activate(); // page->load(record, true);
+                        page->item_bind(_item)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1)); // page->load(record, true);
                     }
                 }
             }
@@ -418,7 +419,7 @@ namespace browser {
         return new Browser(_tree_screen
                    , _find_screen
                    , _editor_screen
-                   , _vtabwidget
+//                   , _vtab_tree
                    , _main_window
                    , this
                    , _style_source
@@ -587,7 +588,6 @@ namespace browser {
         , TreeScreen *_tree_screen
         , FindScreen *_find_screen                  // browser::ToolbarSearch *toolbarsearch
         , MetaEditor *_editor_screen
-        , HidableTabWidget *_vtabwidget
         , MainWindow *_main_window
         , AppConfig   &_appconfig
         , const QString &style_source
@@ -599,7 +599,6 @@ namespace browser {
         , _tree_screen(_tree_screen)
         , _find_screen(_find_screen)
         , _editor_screen(_editor_screen) //, _record_controller(_record_controller)
-        , _vtabwidget(_vtabwidget)
         , _main_window(_main_window)
         , _appconfig(_appconfig)
         , _style_source(style_source)
@@ -1440,43 +1439,7 @@ namespace browser {
     //        return v;
     //    }
 
-    WebView *Entrance::find(
-        const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal  // const QUrl &url
-        ) const
-    {
-        //        clean();
-        //        std::pair<Browser *, WebView *> dp{nullptr, nullptr};
-        WebView *v = nullptr;
-        //        if(_mainWindows.isEmpty())dp.first = activebrowser();
 
-        //        if(!_mainWindows.isEmpty()) {
-        //new_dockedwindow(record);
-        for(auto i : _browsers) {
-            if(i) {
-                v = i->tabWidget()->find(_equal);
-
-                if(v != nullptr) {  // setWidget(i.data());
-                    //                dp.first = i.data();
-                    break;
-                }
-            }
-
-            //            else if(i->isVisible() || i->isActiveWindow()) {
-            //                dp.first = i.data();
-            //            }
-        }
-
-        //        }
-
-        //        if(dp.first == nullptr)dp.first = _mainWindows[0].data();
-
-        //        if(!dp.first->isActiveWindow()) {
-        //            dp.first->raise();
-        //            dp.first->activateWindow();
-        //        }
-        //        assert(dp.first);
-        return v;
-    }
 
     //    BrowserView *BrowserManager::create_view(Record *record, BrowserWindow *window)
     //    {
@@ -1547,9 +1510,173 @@ namespace browser {
 //        for(auto i : _browsers) {
 //            if(i) i->resizeEvent(e);
 //        }
-        if(this->widget())static_cast<Browser *>(this->widget())->resizeEvent(e);
+        if(this->widget()) static_cast<Browser *>(this->widget())->resizeEvent(e);
         QDockWidget::resizeEvent(e);
     }
+
+    WebView *Entrance::find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)> &_equal) const
+    {
+        //        clean();
+        WebView *v = nullptr;
+
+        //new_dockedwindow(record);
+        for(auto i : _browsers) {
+            if(i) {
+                v = i->tabWidget()->find(_equal);
+
+                if(v != nullptr) {
+                    break;
+                }
+            }
+        }
+
+
+        boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
+        if(v) {
+            if(v->page()) {
+                boost::intrusive_ptr<::Binder> binder = v->page()->binder();
+                if(binder) {
+                    auto _this_item = v->page()->item(); // globalparameters.entrance()->find(_equal);
+                    if(_this_item) {
+                        if(binder->integrity_external(_this_item, v->page())) {
+//                            assert(_this_item == v->page()->binder()->item());
+
+//                            if(_this_item && v->load_finished()) {                                                                                                                                                   // && (v->tabmanager()->currentWebView() == v)
+                            found_myself = _this_item;
+//                            }
+                        }
+                    }
+                }
+            }
+        }
+//        }
+        if(!found_myself) v = nullptr;
+
+
+        return v;
+    }
+
+//    WebView *Entrance::find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
+//    {
+
+//        WebView * v = nullptr;
+////        if(_binder) {
+//        for(auto i : _browsers) {
+//            if(i) {
+//                v = i->tabWidget()->find(_equal);
+
+//                if(v != nullptr) {  // setWidget(i.data());
+//                    //                dp.first = i.data();
+//                    break;
+//                }
+//            }
+
+//            //            else if(i->isVisible() || i->isActiveWindow()) {
+//            //                dp.first = i.data();
+//            //            }
+//        }
+
+
+//        boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
+//        if(v) {
+//            if(v->page()) {
+//                if(v->page()->binder()) {
+//                    auto _this = v->page()->item(); // globalparameters.entrance()->find(_equal);
+//                    if(_this) {
+//                        assert(_this == v->page()->binder()->item());
+
+//                        if(_this && v->load_finished()) {                                                                                                                                                       // && (v->tabmanager()->currentWebView() == v)
+//                            found_myself = _this;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+////        }
+//        if(!found_myself) v = nullptr;
+//        return v;   // found_myself;
+//    }
+
+
+//    boost::intrusive_ptr<const TreeItem> Entrance::is_registered_to_browser(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
+//    {
+//        boost::intrusive_ptr<const TreeItem> found(nullptr);
+
+//        //    bool re = false;
+//        if(_binder) {
+////            auto _entrance = globalparameters.entrance();
+//            auto view = // _entrance->
+//                find(_equal
+////                [&] (boost::intrusive_ptr<const TreeItem> it) {
+////                return it->id() == this->id();
+////            }
+//                    );
+
+//            if(view) {
+//                auto binder = view->page()->binder();
+
+//                if(binder) {
+//                    auto page = binder->page();
+
+//                    if(page) {
+//                        if(binder == _binder
+//                            && binder->item().get() == this                                                                                                                        // boost::intrusive_ptr<const TreeItem>(this)
+//                            ) {
+//                            found = this;                                                                                                                                                   // page_binder->bounded_item();
+//                        }
+//                    }
+//                }
+//            }
+//        }
+
+//        //    if(page_valid()) {
+//        //        auto p = _record_binder->bounded_page();
+//        //        auto v = p->view();
+
+//        //        if(v) {
+//        //            auto _tabmanager = p->tabmanager();
+
+//        //            if(_tabmanager) {
+//        //                if(_tabmanager->indexOf(v) != -1) {
+//        //                    re = true;
+//        //                    found = p->record_binder()->bounded_item();
+//        //                    assert(found);
+//        //                }
+//        //            }
+
+//        //            //            if(_record_binder->bounded_page()->view()->record_controller()) {
+//        //            //                auto _record_controller = _record_binder->bounded_page()->view()->record_controller();
+//        //            //                found = _record_controller->source_model()->find_current_bound(boost::intrusive_ptr<TreeItem>(this));
+//        //            //            }
+//        //        }
+//        //    }
+
+//        //    //    else {
+//        //    //        browser::Entrance *_entrance = globalparameters.entrance();
+
+//        //    //        for(int w = 0; w < _entrance->browsers().size(); w++) {
+//        //    //            auto tabmanager = _entrance->browsers().at(w)->record_screen()->tabmanager();  // record_controller()->source_model();  // ->record_table();
+
+//        //    //            for(int i = 0; i < tabmanager->count(); i++) {
+//        //    //                auto item = tabmanager->webView(i)->page()->current_item();
+
+//        //    //                if(item->field("id") == id()) {
+//        //    //                    found = item;
+//        //    //                }
+//        //    //            }
+//        //    //        }
+//        //    //    }
+
+//        //    assert((found && re) || (!found && !re));
+//        // assert(found);
+
+//        //    if(found && found != boost::intrusive_ptr<TreeItem>(this)) {
+//        //        found = globalparameters.tree_screen()->duplicated_remove(boost::intrusive_ptr<TreeItem>(this), found);
+//        //    }
+
+//        return found;
+//    }
+
 
 }
 

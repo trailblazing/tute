@@ -153,7 +153,7 @@ boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &in
 
     //    if(_tabmanager->currentIndex() != (int)pos_source_) {
     //        _tabmanager->setCurrentIndex((int)pos_source_);
-    force_update ? result->binder()->activator() : result->activate();
+    force_update ? result->binder()->activate() : result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
     //    }
 
     _record_screen->tools_update();
@@ -1751,7 +1751,9 @@ void RecordController::remove(QVector<IdType> delete_ids)
 
                 if(item) {
 
-                    if(item->is_registered_to_browser()) {                                                                                                                                                                                                          // item_to_be_deleted->unique_page()
+                    if(globalparameters.entrance()->find([&] (boost::intrusive_ptr<const ::Binder> b){
+                                                                             return b->host()->field("url") == item->field("url");
+                                                                         })) {                                                                                                                                                                                                          // item_to_be_deleted->unique_page()
 
                         //                item->unique_page()->record_controller()->remove_child(item->id()); // (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
 

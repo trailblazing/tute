@@ -80,9 +80,9 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow(GlobalParameters &_globalparameters
-               , AppConfig &_appconfig
-               , DataBaseConfig &_databaseconfig
-               , browser::Profile *_profile);
+        , AppConfig &_appconfig
+        , DataBaseConfig &_databaseconfig
+        , browser::Profile *_profile);
 
     ~MainWindow();
 
@@ -106,17 +106,47 @@ public:
     void save_text_area(void);
 
     void save_all_state(void);
-    HidableTabWidget *vtab() {return _vtabwidget;}
 
-    QMenu *file_menu() {return _filemenu;}
-    QMenu *edit_menu() {return _editmenu;}
-    QMenu *view_menu() {return _viewmenu;}
-    browser::HistoryMenu *histry_menu() {return _histrymenu;}
-    browser::BookmarksMenu *bookmark_menu() {return _bookmarkmenu;}
-    QMenu *window_menu() {return _windowmenu;}
-    QMenu *tools_menu() {return _toolsmenu;}
-    QMenu *help_menu() {return _helpmenu;}
-    QSplitter *find_splitter() {return _v_find_splitter;}
+    HidableTabWidget *vtab_record() {
+        return _vtab_record;
+    }
+    HidableTabWidget *vtab_tree() {
+        return _vtab_tree;
+    }
+
+    QMenu *file_menu() {
+        return _filemenu;
+    }
+    QMenu *edit_menu() {
+        return _editmenu;
+    }
+    QMenu *view_menu() {
+        return _viewmenu;
+    }
+    browser::HistoryMenu *histry_menu() {
+        return _histrymenu;
+    }
+    browser::BookmarksMenu *bookmark_menu() {
+        return _bookmarkmenu;
+    }
+    QMenu *window_menu() {
+        return _windowmenu;
+    }
+    QMenu *tools_menu() {
+        return _toolsmenu;
+    }
+    QMenu *help_menu() {
+        return _helpmenu;
+    }
+    QSplitter *find_splitter() {
+        return _v_find_splitter;
+    }
+    QSplitter *h_right_splitter() {
+        return _h_right_splitter;
+    }
+    QSplitter *h_left_splitter() {
+        return _h_left_splitter;
+    }
 
 public slots:
     void application_exit(void);
@@ -186,7 +216,8 @@ private:
 
     QSplitter           *_v_right_splitter;
     QSplitter           *_v_find_splitter;
-    HidableTabWidget    *_vtabwidget;
+    HidableTabWidget    *_vtab_record;
+    HidableTabWidget    *_vtab_tree;
     QSplitter           *_h_right_splitter;
     QSplitter           *_h_left_splitter;
     QSplitter           *_h_splitter;
@@ -227,7 +258,7 @@ protected:
 
     void go_walk_history(void);
 
-    bool                _enable_real_close;
+    bool _enable_real_close;
 
     friend class browser::Browser;
 

@@ -79,7 +79,7 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
             object->show();
             appconfig.focus_widget(object->objectName());
 
-            globalparameters.vtab()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
+            globalparameters.vtab_tree()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
             // temporary setting
         }
     }
@@ -122,7 +122,7 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
                                                     ); // temporary setting
             object->show();
 
-            globalparameters.vtab()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
+            globalparameters.vtab_tree()->setCurrentWidget(record_screen);         // globalparameters.record_screens()[0]
             // temporary setting
 
             appconfig.focus_widget(object->objectName());
@@ -253,7 +253,7 @@ void WindowSwitcher::restoreFocusWidget()
                 // temporary setting
                 object->show();
 
-                globalparameters.vtab()->setCurrentWidget(_record_screen);             // globalparameters.record_screens()[0]
+                globalparameters.vtab_tree()->setCurrentWidget(_record_screen);             // globalparameters.record_screens()[0]
                 // temporary setting
 
                 appconfig.focus_widget(object->objectName());

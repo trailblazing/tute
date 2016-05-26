@@ -21,7 +21,7 @@
 #include "views/browser/tabwidget.h"
 #include "views/browser/browser.h"
 #include "models/record_table/RecordProxyModel.h"
-
+#include "views/browser/entrance.h"
 
 extern FixedParameters fixedparameters;
 extern AppConfig appconfig;
@@ -29,8 +29,9 @@ extern GlobalParameters globalparameters;
 
 pages_container::pages_container(browser::TabWidget *_tabmanager)
     : _tabmanager(_tabmanager)  // new browser::TabWidget(_browser, _record_controller)
-      //    , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
-{}
+    //    , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
+{
+}
 
 
 pages_container::~pages_container()
@@ -245,14 +246,11 @@ pages_container::~pages_container()
 //}
 
 // Конструктор модели
-RecordModel::RecordModel(
-    //TreeScreen             *_tree_screen
-    //, FindScreen           *_find_screen
-    //,
-    RecordController     *_record_controller
-    , RecordScreen         *_record_screen
-    , browser::TabWidget   *_tabmanager
-)
+RecordModel::RecordModel(    //TreeScreen             *_tree_screen    //, FindScreen           *_find_screen    //,
+    RecordController        *_record_controller
+    , RecordScreen          *_record_screen
+    , browser::TabWidget    *_tabmanager
+    )
     : QAbstractTableModel(_record_screen)
     , pages_container(_tabmanager)
     , _record_controller(_record_controller)
@@ -341,7 +339,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const
 
     if(role == RECORD_ID_ROLE) {
         return // _table
-            item(PosSource(index.row()))->field("id");
+               item(PosSource(index.row()))->field("id");
     }
 
     // Если происходит запрос ссылки на таблицу данных
@@ -397,20 +395,20 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
     }
 
     /*
-    // Если происходит запись во всю таблицу данных
-    if(role==TABLE_DATA_ROLE)
-    {
-     this->setTableData( qVariantFromValue(value) );
-     return true;
-    }
+       // Если происходит запись во всю таблицу данных
+       if(role==TABLE_DATA_ROLE)
+       {
+       this->setTableData( qVariantFromValue(value) );
+       return true;
+       }
 
-    // Если происходит запись одной строки
-    if(role==ONE_RECORD_ROLE)
-    {
-      this->setTableData( qVariantFromValue(value) );
-      return true;
-    }
-    */
+       // Если происходит запись одной строки
+       if(role==ONE_RECORD_ROLE)
+       {
+       this->setTableData( qVariantFromValue(value) );
+       return true;
+       }
+     */
 
     // Во всех остальных случаях
     return false;
@@ -602,7 +600,7 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
         PosSource source_insert_pos = _record_controller->index<PosSource>(source_pos_index); //    Q_UNUSED(pos_index) // to be used
         Q_UNUSED(mode)      // to be used
 
-        if(-1 == (int)source_insert_pos)source_insert_pos = 0;
+        if(-1 == (int)source_insert_pos) source_insert_pos = 0;
 
         beginResetModel(); // Подумать, возможно нужно заменить на beginInsertRows
 
@@ -623,13 +621,13 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
             boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
             try {
-                record_modelindex = new RecordIndex([&] {return this;}, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->item() : nullptr, _item);
+                record_modelindex = new RecordIndex([&] {return this; }, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
             } catch(std::exception &) {}
 
             if(record_modelindex)
                 view = _tabmanager->newTab(record_modelindex); // , _item->field("name")
             else
-                _tabmanager->webView((int)source_insert_pos)->page()->binder()->item()->activate();
+                _tabmanager->webView((int)source_insert_pos)->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
             //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
             selected_position = PosSource(_tabmanager->indexOf(view));
@@ -683,7 +681,7 @@ QModelIndex RecordModel::index(int row, int column, const QModelIndex &parent) c
     return QAbstractTableModel::index(row, column, parent);
 }
 
-IndexSource RecordModel::index(boost::intrusive_ptr<TreeItem> it)const
+IndexSource RecordModel::index(boost::intrusive_ptr<TreeItem> it) const
 {
     IndexSource result;
 
@@ -697,7 +695,7 @@ IndexSource RecordModel::index(boost::intrusive_ptr<TreeItem> it)const
 }
 
 // for multi items link with unique page
-boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<TreeItem> it)const
+boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<TreeItem> it) const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
@@ -710,7 +708,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<Tr
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it)const
+boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it) const
 {
     boost::intrusive_ptr<TreeItem> result = nullptr;
 
@@ -723,7 +721,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> 
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url)const
+boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url) const
 {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -772,7 +770,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const IdType &id)
 
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const IdType &id)const
+boost::intrusive_ptr<TreeItem> RecordModel::item(const IdType &id) const
 {
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
@@ -800,13 +798,13 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const PosSource _index)
 }
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const PosSource _index)const
+boost::intrusive_ptr<TreeItem> RecordModel::item(const PosSource _index) const
 {
     boost::intrusive_ptr<TreeItem> r = nullptr;
 
     if(_index >= 0 && _index < size()) {
         assert(_tabmanager->webView((int)_index)->page()->binder());
-        r = _tabmanager->webView((int)_index)->page()->binder()->item();
+        r = _tabmanager->webView((int)_index)->page()->binder()->host();
 
         assert(r);  // if find_recursive get new item from tree, there will be no item_link? because I move it?
     }
@@ -818,7 +816,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(PosSource index)
 {
     boost::intrusive_ptr<TreeItem> item = _tabmanager->webView((int)index)->page()->item();
 
-    if(item->is_lite())item->to_fat();
+    if(item->is_lite()) item->to_fat();
 
     return item;
 }
@@ -867,15 +865,15 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(PosSource index)
 //}
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it)const
+boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it) const
 {
     return _tabmanager->sibling(it);
 }
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::current_item()const
+boost::intrusive_ptr<TreeItem> RecordModel::current_item() const
 {
-    return _tabmanager->currentWebView()->page()->binder()->item();
+    return _tabmanager->currentWebView()->page()->binder()->host();
 }
 
 
@@ -889,7 +887,7 @@ void RecordModel::position(PosSource _index)
 //    return PosSource(_tabmanager->currentIndex());
 //}
 
-PosSource RecordModel::position(IdType id)const
+PosSource RecordModel::position(IdType id) const
 {
     PosSource result(-1);
 
@@ -918,9 +916,13 @@ PosSource RecordModel::position(IdType id)const
 //}
 
 
-int RecordModel::count()const {return _tabmanager->count();}
+int RecordModel::count() const {
+    return _tabmanager->count();
+}
 
-int RecordModel::size() const {return _tabmanager->count();}
+int RecordModel::size() const {
+    return _tabmanager->count();
+}
 
 
 

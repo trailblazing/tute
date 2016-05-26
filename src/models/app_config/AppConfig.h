@@ -64,11 +64,11 @@ public:
     //    QSize treescreensize(void)const;
     //    void treescreensize(const QSize&);
 
-    void v_left_splitter_sizelist(QList<int> list);
-    QList<int> v_left_splitter_sizelist();
+    void h_left_splitter_sizelist(QList<int> list);
+    QList<int> h_left_splitter_sizelist();
 
-    void v_right_splitter_sizelist(QList<int> list);
-    QList<int> v_right_splitter_sizelist();
+    void h_right_splitter_sizelist(QList<int> list);
+    QList<int> h_right_splitter_sizelist();
 
     QList<int> vspl_sizelist(void)const;
     void vspl_sizelist(QList<int> list);

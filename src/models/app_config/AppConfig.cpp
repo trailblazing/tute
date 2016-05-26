@@ -268,22 +268,22 @@ void AppConfig::mainwin_geometry(int x, int y, int w, int h)
     conf->setValue("mainwingeometry", result);
 }
 
-void AppConfig::v_left_splitter_sizelist(QList<int> list)
+void AppConfig::h_left_splitter_sizelist(QList<int> list)
 {
     splitter_sizelist("v_left_splitter", list);
 }
 
-QList<int> AppConfig::v_left_splitter_sizelist()
+QList<int> AppConfig::h_left_splitter_sizelist()
 {
     return splitter_sizelist("v_left_splitter");
 }
 
-void AppConfig::v_right_splitter_sizelist(QList<int> list)
+void AppConfig::h_right_splitter_sizelist(QList<int> list)
 {
     splitter_sizelist("v_right_splitter", list);
 }
 
-QList<int> AppConfig::v_right_splitter_sizelist()
+QList<int> AppConfig::h_right_splitter_sizelist()
 {
     return splitter_sizelist("v_right_splitter");
 }

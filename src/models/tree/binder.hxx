@@ -115,44 +115,27 @@ public:
 
 public:
 
-    void item(boost::intrusive_ptr<TreeItem> it) ;
-    //        {
-    //                _item_linker_set(std::forward<boost::intrusive_ptr<TreeItem> >(it));
-    //        }
+    void host(boost::intrusive_ptr<TreeItem> it) ;
 
     void page(browser::WebPage *page);
-    //    {
-    //        return _page_linker_set(std::forward<browser::WebPage *>(page));
-    //    }
 
-    boost::intrusive_ptr<TreeItem> item() const;
-    //    {
-    //        return _item_linker();
-    //    }
+    boost::intrusive_ptr<TreeItem> host() const;
 
     browser::WebPage *page() const;
-    //    {
-    //        return _page_linker();
-    //    }
 
     browser::WebView *bind();
-    //    {
-    //        return _bind_helper();
-    //    }
 
-    browser::WebView *activator();
-    //    {
-    //        return _activate_helper();
-    //    }
+    browser::WebView *activate();
+
 
     bool integrity_internal() const;
 
     bool integrity_external(boost::intrusive_ptr<const TreeItem> host, const browser::WebPage *page) const;
+
     status_type state() const;
-    //    {
-    //        return _status;
-    //    }
+
     //        void break_page();
+
 private:
     status_type state_impl();                                                                   // is_closure
     bool make_integrity();

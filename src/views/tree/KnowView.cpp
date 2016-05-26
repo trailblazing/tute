@@ -65,7 +65,7 @@ extern const char *action_editor_switch;
 
 
 #ifdef QT_DEBUG
-const char *index_xml_file_name = "mytetra_debug.xml";
+const char *index_xml_file_name = "mytetra.xml";  // "mytetra_debug.xml";
 #else
 const char *index_xml_file_name = "mytetra.xml";
 #endif
@@ -842,8 +842,8 @@ boost::intrusive_ptr<TreeItem> KnowView::current_item()
                         nullptr
                         , QUrl(browser::Browser::_defaulthome)
                         , std::bind(&KnowView::view_paste_child, this, tree_root_index, std::placeholders::_2, std::placeholders::_3)
-                        , [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
-                        return it->field("url") == browser::Browser::_defaulthome;
+                        , [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                        return it_->field("url") == browser::Browser::_defaulthome;
                     }
                         );
 
@@ -3765,7 +3765,20 @@ void KnowView::cursor_step_into(const QModelIndex &_index)
 {
     //    auto _tree_screen = static_cast<TreeScreen *>(parent());
 
-    if(_index.isValid() && !source_model()->item(_index)->is_activated()) {
+    if(_index.isValid() && // !source_model()->item(_index)->is_activated()
+        !globalparameters.entrance()->find([&] (boost::intrusive_ptr<const ::Binder> b) -> bool {
+        bool result = false;
+        auto ref_it = source_model()->item(_index);
+        if(ref_it->binder()) {
+            if(b->host()->field("url") == ref_it->field("url")) {
+                if(ref_it->binder()->page())
+                    if(ref_it->binder()->page()->view()->load_finished())
+                        result = true;
+            }
+        }
+        return result;
+    })
+        ) {
         // QModelIndex index = nodetreeview->selectionModel()->currentIndex();
 
         // Сохраняется текст в окне редактирования в соответсвующий файл
@@ -3978,7 +3991,20 @@ void KnowView::index_invoke(const QModelIndex &_index)
             }
         }
 
-        if(!result_item->is_activated()) {
+        if(// !result_item->is_activated()
+            !globalparameters.entrance()->find([&] (boost::intrusive_ptr<const ::Binder> b){
+            bool result = false;
+//            auto result_item = source_model()->item(_index);
+            if(result_item->binder()) {
+                if(b->host()->field("url") == result_item->field("url")) {
+                    if(result_item->binder()->page())
+                        if(result_item->binder()->page()->view()->load_finished())
+                            result = true;
+                }
+            }
+            return result;
+        })
+            ) {
             // QModelIndex index = nodetreeview->selectionModel()->currentIndex();
 
             // Сохраняется текст в окне редактирования в соответсвующий файл
@@ -4128,16 +4154,16 @@ void KnowView::index_invoke(const QModelIndex &_index)
                     record_modelindex = new RecordIndex([&] {return browser->record_screen()->record_controller()->source_model(); }, record_previous_item, result_item);
                 } catch(std::exception &) {}
 
-                auto bind = [&] (boost::intrusive_ptr<RecordIndex> record_modelindex) {
-                        browser->item_bind(record_modelindex)->activate();                                                                                                                                             // item_bind_();
+                auto activate = [&] (boost::intrusive_ptr<RecordIndex> record_modelindex) -> browser::WebView * {
+                        return browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));                                                                                                                                             // item_bind_();
                     };
 
                 if(record_modelindex && !result_item->binder()) {
-                    bind(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                    activate(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
                 } else if(record_modelindex && result_item->binder() && !result_item->binder()->page()) {                                                                                                                                 // !result_item->binder()->integrity_internal()){
-                    bind(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                    activate(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
                 } else {
-                    result_item->activate();
+                    result_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                 }
 
             }

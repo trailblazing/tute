@@ -73,6 +73,7 @@ class HidableTabWidget;
 class FingScreen;
 class TreeModel;
 class TreeScreen;
+class TreeScreenViewer;
 struct RecordIndex;
 
 extern const char *profile_storage_name;
@@ -93,19 +94,19 @@ namespace browser {
 
     class UrlRequestInterceptor
         : // public boost::intrusive_ref_counter<UrlRequestInterceptor, boost::thread_safe_counter>,
-          public QWebEngineUrlRequestInterceptor {
-    public:
+        public QWebEngineUrlRequestInterceptor {
+public:
         UrlRequestInterceptor(QObject *p);
         virtual void interceptRequest(QWebEngineUrlRequestInfo &info);
     };
 
     class Profile
         : // public boost::intrusive_ref_counter<Profile, boost::thread_safe_counter>,
-          public QWebEngineProfile { // QQuickWebEngineProfile
-    public:
+        public QWebEngineProfile {   // QQuickWebEngineProfile
+public:
         Profile(const QString &name, QObject *p);
         ~Profile();
-    private:
+private:
         UrlRequestInterceptor *_urlrequestinterceptor;
     };
 
@@ -116,21 +117,20 @@ namespace browser {
      */
     class Browser :
         public QMainWindow
-    //        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
+        //        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
     {
         Q_OBJECT
 
-    public:
+public:
         Browser(TreeScreen          *_tree_screen
-                , FindScreen        *_find_screen
-                , MetaEditor        *_editor_screen
-                , HidableTabWidget  *_vtabwidget
-                , MainWindow        *_main_window
-                , Entrance          *_entrance
-                , const QString     &style_source
-                , browser::Profile  *_profile
-                , Qt::WindowFlags   flags
-               );
+            , FindScreen        *_find_screen
+            , MetaEditor        *_editor_screen
+            , MainWindow        *_main_window
+            , Entrance          *_entrance
+            , const QString     &style_source
+            , browser::Profile  *_profile
+            , Qt::WindowFlags flags
+            );
 
         //        Browser(QUrl const &url         // Record *const record
         //                , TreeScreen        *_tree_screen
@@ -171,7 +171,7 @@ namespace browser {
 
         static constexpr const char *_defaulthome = "about:blank";
 
-    public:
+public:
         //        typedef Binder coupler_delegation;
         //        typedef Binder::bind_interface          bind_interface;
         //        typedef Binder::activate_interface      activate_interface;
@@ -183,38 +183,59 @@ namespace browser {
         //        typedef Binder::item_helper bounded_item_helper;
         //        typedef Binder::page_helper bounded_page_helper;
 
-        TabWidget   *tabWidget() {return _tabmanager;}
-        TabWidget   *tabWidget() const {return _tabmanager;}
+        TabWidget   *tabWidget() {
+            return _tabmanager;
+        }
+        TabWidget   *tabWidget() const {
+            return _tabmanager;
+        }
 
-        TabWidget   *tabmanager() {return _tabmanager;}
-        TabWidget   *tabmanager() const {return _tabmanager;}
+        TabWidget   *tabmanager() {
+            return _tabmanager;
+        }
+        TabWidget   *tabmanager() const {
+            return _tabmanager;
+        }
 
         WebView     *currentTab() const;
         QByteArray  save_state(bool withTabs = true) const;
         bool        restore_state(const QByteArray &state);
         Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-        void        setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled) {_webattribute = attribute; _webattributeenabled = enabled;}
-        QString     &lastsearch() {return _lastsearch;}
-        const QString &lastsearch() const {return _lastsearch;}
+        void        setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled) {
+            _webattribute = attribute; _webattributeenabled = enabled;
+        }
+        QString     &lastsearch() {
+            return _lastsearch;
+        }
+        const QString &lastsearch() const {
+            return _lastsearch;
+        }
 
         void        activateWindow();
-        QAction     *historyback() {return _historyback;}
+        bool is_under_construction() const;
+        QAction     *historyback() {
+            return _historyback;
+        }
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
         boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordIndex> record_modelindex);
         //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
-        RecordScreen *record_screen() {return _record_screen;}
-        Entrance    *entrance() {return _entrance;}
-    public slots:
+        RecordScreen *record_screen() {
+            return _record_screen;
+        }
+        Entrance    *entrance() {
+            return _entrance;
+        }
+public slots:
         void loadPage(const QString &url);
         void slotHome();
         void updateToolbarActionText(bool visible); // void updateToolbarActionText(bool visible);
 
-    protected:
+protected:
         void closeEvent(QCloseEvent *event);
         void resizeEvent(QResizeEvent *);
-    private slots:
+private slots:
         void save();
 
         void slotLoadProgress(int);
@@ -264,7 +285,7 @@ namespace browser {
 
         void update_bookmarks_toolbar_action_text(bool visible);
 
-    private:
+private:
         void init();
         //        boost::intrusive_ptr<TreeItem> item_request_from_tree(QUrl const &url
         //            , const TreeScreen::paste_strategy &_view_paste_strategy
@@ -291,13 +312,14 @@ namespace browser {
         void update_statusbar_action_text(bool visible);
         void handle_find_text_result(bool found);
         //    void initUrl();
-    private:
+private:
 
+        bool _is_under_construction = true;
         TreeScreen          *_tree_screen;
         FindScreen          *_find_screen;
-        RecordScreen        *_record_screen;
+
         MainWindow          *_main_window;
-        TabWidget           *_tabmanager;
+
         // RecordController    *_record_controller;
 
 
@@ -326,17 +348,19 @@ namespace browser {
         QAction             *_restorelastsession;
         QAction             *_addbookmark;
 
-        QIcon               _reloadicon;
-        QIcon               _stopicon;
+        QIcon _reloadicon;
+        QIcon _stopicon;
 
-        QString                             _lastsearch;
+        QString _lastsearch;
 
-        QWebEngineSettings::WebAttribute    _webattribute;
-        bool                                _webattributeenabled;
-        QWidget                             *_centralwidget;
-        QVBoxLayout                         *_layout;
+        QWebEngineSettings::WebAttribute _webattribute;
+        bool _webattributeenabled;
+        QWidget             *_centralwidget;
+        QVBoxLayout         *_layout;
 
-        Entrance                            *_entrance;
+        RecordScreen        *_record_screen;
+        TabWidget           *_tabmanager;
+        Entrance            *_entrance;
 
         friend class QtSingleApplication;
         friend class Entrance;
