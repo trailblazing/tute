@@ -14,8 +14,26 @@
    <string>Proxy Authentication</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <item row="0" column="0">
     <widget class="QLabel" name="iconLabel">
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
      <property name="text">
       <string>ICON</string>
      </property>
@@ -23,6 +41,9 @@
    </item>
    <item row="0" column="1" colspan="2">
     <widget class="QLabel" name="introLabel">
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
      <property name="text">
       <string>Connect to proxy</string>
      </property>
@@ -33,6 +54,9 @@
    </item>
    <item row="1" column="0" colspan="2">
     <widget class="QLabel" name="usernameLabel">
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
      <property name="text">
       <string>Username:</string>
      </property>
@@ -43,6 +67,9 @@
    </item>
    <item row="2" column="0" colspan="2">
     <widget class="QLabel" name="passwordLabel">
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
      <property name="text">
       <string>Password:</string>
      </property>

@@ -572,10 +572,11 @@ void RecordScreen::setup_ui(void)
 {
     //    _toolsline = new QToolBar(this);
 
-    /*
-       QSize toolBarIconSize(16,16);
-       toolsLine->setIconSize(toolBarIconSize);
-     */
+
+//    QSize toolBarIconSize(16,16);
+//    toolsLine->setIconSize(toolBarIconSize);
+
+    setStyleSheet("border : 0px;");
 
     if(appconfig.interface_mode() == "mobile") {
         insert_action_as_button<QToolButton>(_toolsline, _back);

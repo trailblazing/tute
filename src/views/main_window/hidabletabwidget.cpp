@@ -13,12 +13,12 @@ HidableTabWidget::HidableTabWidget(QWidget *parent) :
     hide_button->setDefaultAction(_hide_action);
     hide_button->setAutoRaise(true);
     this->setCornerWidget(hide_button);
-
+this->setStyle()
 
     setTabPosition(TabPosition::West); // South
     setTabShape(TabShape::Triangular);
     //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
-    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; } QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");
+    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // border: 0 px;
 
     connect(_hide_action, &QAction::toggled, this, &HidableTabWidget::onHideAction);
     connect(this, &HidableTabWidget::tabBarClicked, this, &HidableTabWidget::onTabBarClicked);

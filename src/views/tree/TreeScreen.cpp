@@ -737,6 +737,7 @@ QToolBar *TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
 {
     //_toolsline = new QToolBar(this);
 
+    setStyleSheet("border : 0px;");
 
     //    QSize tool_bar_icon_size(16, 16);
     //    toolsLine->setIconSize(tool_bar_icon_size);
@@ -2477,6 +2478,14 @@ void TreeScreen::resizeEvent(QResizeEvent *e)
 
 }
 
+TreeScreenViewer *TreeScreen::viewer() const {
+    return _viewer;
+}
+
+void TreeScreen::viewer(TreeScreenViewer *v){
+    _viewer = v;
+}
+
 void AdjustingScrollArea::resizeEvent(QResizeEvent *e)
 {
     (void)e;
@@ -2583,11 +2592,16 @@ void AdjustingScrollArea::setWidget(KnowView *view)
 //}
 
 
+TreeScreenViewer::~TreeScreenViewer(){
+    _tree_screen->viewer(nullptr);
+}
+
 TreeScreenViewer::TreeScreenViewer(TreeScreen *_tree_screen, RecordScreen *_record_screen)
     : _tree_screen(_tree_screen)
     , _record_screen(_record_screen)
     , _layout(new QStackedLayout(this))
 {
+    _tree_screen->viewer(this);
     setObjectName(tree_screen_viewer_name);
     _layout->addWidget(_tree_screen);
     _layout->setContentsMargins(0, 0, 0, 0);

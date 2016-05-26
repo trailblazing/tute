@@ -333,7 +333,7 @@ void MainWindow::setup_signals(void)
     //    };
 
 
-    connect(_vtab_record, &HidableTabWidget::currentChanged, [&] (int index) {
+    connect(_vtab_record, &HidableTabWidget::currentChanged, this, [&] (int index) {
         if(-1 != index) {
             auto record_widget = _vtab_record->widget(index);
 
@@ -354,7 +354,7 @@ void MainWindow::setup_signals(void)
             if(record_widget->objectName() == record_screen_multi_instance_name)
                 record_screen = dynamic_cast<RecordScreen *>(record_widget);
             if(record_screen) {
-                _vtab_record->setCurrentWidget(record_screen);
+//                _vtab_record->setCurrentWidget(record_screen);
                 record_screen->restore_menubar();
                 auto current_brower = record_screen->browser();
                 if(current_brower && !current_brower->is_under_construction()) {
@@ -366,7 +366,7 @@ void MainWindow::setup_signals(void)
                     auto tree_view_curr = _vtab_tree->widget(i);
                     if(tree_view_curr->objectName() == tree_screen_viewer_name) {
                         auto tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_view_curr);
-                        if(tree_screen_viewer ) {
+                        if(tree_screen_viewer) {
                             if(tree_screen_viewer->record_screen() == record_screen) {
                                 if(_vtab_tree->currentIndex() != i) {
 
@@ -376,6 +376,7 @@ void MainWindow::setup_signals(void)
 
                                     _vtab_tree->setCurrentIndex(i);
                                 }
+                                break;
                             }
                         }
                     }
@@ -391,29 +392,7 @@ void MainWindow::setup_signals(void)
         }
     });
 
-    //    hide_others(_vtabwidget->currentIndex());
-    connect(_vtab_tree, &HidableTabWidget::currentChanged, [&] (int index) {
-        if(-1 != index) {
-            int tree_viewer_count = 0;
-            for(int i = 0; i < _vtab_tree->count(); i++) {
-                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
-            }
-//            auto count = _vtab_tree->count();
-            if(0 == tree_viewer_count) {// if(1 >= count) {    // self and download
-                _tree_screen->restore_menubar();
-                if(_tree_screen->isHidden()) {
-                    _tree_screen->show();
-                }
-            }
-
-
-            //            int tree_viewer_count = 0;
-            //            for(int i = 0; i < _vtab_tree->count(); i++) {
-            //                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
-            //            }
-
-            //            int real_index = index - (_vtab_tree->count() - tree_viewer_count);
-
+    auto tree_viewer_integrity = [&, this] (MainWindow *_this, HidableTabWidget *_vtab_tree, int index) -> void {
             auto tree_view_curr = _vtab_tree->widget(index);
             if(tree_view_curr->objectName() == tree_screen_viewer_name) {                    // if(real_index < _vtab_record->count()) {
                 //                for(int i = 0; i < _vtab_record->count(); i++) {
@@ -432,21 +411,61 @@ void MainWindow::setup_signals(void)
 
                 auto current_tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_view_curr);              // auto current_widget = _vtab_record->widget(real_index);
                 if(current_tree_screen_viewer) {
+                    QWidget *tree_screen = current_tree_screen_viewer->tree_screen();
+                    if(!tree_screen) {
+                        current_tree_screen_viewer->tree_screen(_this->_tree_screen);
+                    }
+
                     RecordScreen *record_screen = current_tree_screen_viewer->record_screen();
                     if(record_screen) {
-                        if(_vtab_record->currentWidget() != record_screen) _vtab_record->setCurrentWidget(record_screen);
+                        if(_this->_vtab_record->currentWidget() != record_screen) _this->_vtab_record->setCurrentWidget(record_screen);
                         record_screen->restore_menubar();
                         auto current_brower = record_screen->browser();
                         if(current_brower && !current_brower->is_under_construction()) {
                             current_brower->raise();
                             current_brower->activateWindow();
+                            auto tab = current_brower->tabmanager();
+                            tab->setCurrentIndex(tab->currentIndex());
+                            auto v = tab->currentWebView();
+                            v->setFocus();
+                            v->activateWindow();
+                            v->raise();
+                            v->adjustSize();    // v->repaint();
+//                            v->layout()->update();  // activate();
                         }
                     }
+
+
+
                     //                    else{
                     //                        _tree_screen->restore_menubar();
                     //                    }
                 }
             }
+        };
+
+    auto empty_recovery = [&, this] (MainWindow *_this, HidableTabWidget *_vtab_tree, int &index) -> void {
+            (void)_this;
+            int tree_viewer_count = 0;
+            for(int i = 0; i < _vtab_tree->count(); i++) {
+                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
+            }
+//            auto count = _vtab_tree->count();
+            if(0 == tree_viewer_count) {// if(1 >= count) {    // self and download
+                _this->_tree_screen->restore_menubar();
+                index = _vtab_tree->insertTab(0, static_cast<QWidget *>(new TreeScreenViewer(_this->_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
+                _vtab_tree->setCurrentIndex(index);
+
+            }
+        };
+
+    //    hide_others(_vtabwidget->currentIndex());
+    connect(_vtab_tree, &HidableTabWidget::currentChanged, this, [&, this] (int index) {
+        if(-1 != index) {
+
+            empty_recovery(this, _vtab_tree, index);
+
+            tree_viewer_integrity(this, _vtab_tree, index);
 
 //            // deprecated: ignoring Tree Search Area
 //            if(_vtab_tree->widget(index)->objectName() == tree_screen_singleton_name) {
@@ -459,44 +478,14 @@ void MainWindow::setup_signals(void)
 
     });
 
-    connect(_vtab_tree, &HidableTabWidget::tabBarClicked, _vtab_record, [&] (int index) {
+    connect(_vtab_tree, &HidableTabWidget::tabBarClicked, this, [&, this] (int index) {
 //        if(1 <= index) {
 
-//            int tree_viewer_count = 0;
-//            for(int i = 0; i < _vtab_tree->count(); i++) {
-//                if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name) tree_viewer_count++;
-//            }
+        empty_recovery(this, _vtab_tree, index);
 
-//            int real_index = index - (_vtab_tree->count() - tree_viewer_count);
+        tree_viewer_integrity(this, _vtab_tree, index);
 
-        auto tree_curr = _vtab_tree->widget(index);
-        if(tree_curr->objectName() == tree_screen_viewer_name) {        // if(real_index < _vtab_record->count()) {
 
-            auto current_tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_curr);      // _vtab_record->widget(real_index);
-            if(current_tree_screen_viewer) {
-                RecordScreen *record_screen = current_tree_screen_viewer->record_screen();
-                QWidget *tree_screen = current_tree_screen_viewer->tree_screen();
-                if(!tree_screen) {
-                    current_tree_screen_viewer->tree_screen(_tree_screen);
-                }
-                if(record_screen) {     // curr_record_screen->objectName() == record_screen_multi_instance_name
-//                        auto record_screen = static_cast<RecordScreen *>(curr_record_screen);
-
-                    _vtab_record->setCurrentWidget(record_screen);
-                    record_screen->restore_menubar();
-                    auto current_brower = record_screen->browser();
-                    if(current_brower && !current_brower->is_under_construction()) {
-                        current_brower->raise();
-                        current_brower->activateWindow();
-                    }
-                }
-//                    else{
-//                        _tree_screen->restore_menubar();
-//                    }
-
-//                    current_tree_screen_viewer->show();
-            }
-        }
 
 //        }
 
@@ -576,8 +565,9 @@ void MainWindow::assembly(void)
 
     // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
+    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new TreeScreenViewer(_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
     _vtab_tree->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");                    // QIcon(":/resource/pic/holly.svg")
-    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new TreeScreenViewer(_tree_screen, nullptr)), QIcon(":/resource/pic/apple.svg"), "Browser");
+
     _vtab_tree->setCurrentIndex(index);
 
 

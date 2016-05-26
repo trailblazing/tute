@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>466</width>
+    <width>722</width>
     <height>446</height>
    </rect>
   </property>
@@ -14,14 +14,47 @@
    <string>Cookie Exceptions</string>
   </property>
   <layout class="QVBoxLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <widget class="QGroupBox" name="newExceptionGroupBox">
      <property name="title">
       <string>New Exception</string>
      </property>
      <layout class="QGridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item row="0" column="0">
        <layout class="QHBoxLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <widget class="QLabel" name="label">
           <property name="text">
@@ -36,6 +69,9 @@
       </item>
       <item row="1" column="0">
        <layout class="QHBoxLayout">
+        <property name="spacing">
+         <number>0</number>
+        </property>
         <item>
          <spacer>
           <property name="orientation">
@@ -90,6 +126,21 @@
       <string>Exceptions</string>
      </property>
      <layout class="QGridLayout">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>0</number>
+      </property>
       <item row="0" column="0" colspan="3">
        <spacer>
         <property name="orientation">
@@ -153,15 +204,15 @@
  </widget>
  <customwidgets>
   <customwidget>
+   <class>EditTableView</class>
+   <extends>QTableView</extends>
+   <header location="global">edittableview.hxx</header>
+  </customwidget>
+  <customwidget>
    <class>SearchLineEdit</class>
    <extends>QLineEdit</extends>
    <header>searchlineedit.h</header>
   </customwidget>
-   <customwidget>
-    <class>EditTableView</class>
-    <extends>QTableView</extends>
-    <header location="global">edittableview.hxx</header>
-   </customwidget>
  </customwidgets>
  <resources/>
  <connections>

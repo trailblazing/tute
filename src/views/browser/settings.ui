@@ -7,13 +7,28 @@
     <x>0</x>
     <y>0</y>
     <width>657</width>
-    <height>325</height>
+    <height>332</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Settings</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <item row="2" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
@@ -27,13 +42,28 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_4">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="label_3">
          <property name="text">
@@ -178,6 +208,21 @@
        <string>Appearance</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item row="0" column="0">
         <widget class="QLabel" name="label_5">
          <property name="text">
@@ -198,6 +243,9 @@
          </property>
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="lineWidth">
+          <number>0</number>
          </property>
          <property name="text">
           <string>Times 16</string>
@@ -228,6 +276,9 @@
         <widget class="QLabel" name="fixedLabel">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="lineWidth">
+          <number>0</number>
          </property>
          <property name="text">
           <string>Courier 13</string>
@@ -264,12 +315,42 @@
        <string>Privacy</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="title">
           <string>Web Content</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
+          <property name="spacing">
+           <number>0</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
           <item>
            <widget class="QCheckBox" name="enablePlugins">
             <property name="text">
@@ -300,7 +381,19 @@
          </property>
          <layout class="QGridLayout">
           <property name="leftMargin">
-           <number>9</number>
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
           </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_2">
@@ -367,6 +460,21 @@
        <string>Proxy</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
        <item>
         <widget class="QGroupBox" name="proxySupport">
          <property name="title">
@@ -376,6 +484,21 @@
           <bool>true</bool>
          </property>
          <layout class="QGridLayout" name="gridLayout_6">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <property name="spacing">
+           <number>0</number>
+          </property>
           <item row="0" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
@@ -499,14 +622,36 @@
        <string>Advanced</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <item row="2" column="1">
-        <widget class="QTextEdit" name="userStyleSheet"/>
+        <widget class="QTextEdit" name="userStyleSheet">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
+        </widget>
        </item>
        <item row="0" column="1">
         <widget class="QLineEdit" name="httpUserAgent"/>
        </item>
        <item row="0" column="0">
         <widget class="QLabel" name="label_15">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
          <property name="text">
           <string>HTTP User-Agent:</string>
          </property>
@@ -514,6 +659,9 @@
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_14">
+         <property name="lineWidth">
+          <number>0</number>
+         </property>
          <property name="text">
           <string>Style Sheet:</string>
          </property>

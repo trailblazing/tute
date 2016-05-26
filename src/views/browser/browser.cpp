@@ -345,13 +345,13 @@ namespace browser {
             }
 
             if(1 == tree_viewer_count) {
-                tsv = tsvs[0];
+                tsv = tsvs.back();
                 if(tsv) {
                     RecordScreen *rs = tsv->record_screen();
                     if(rs) {
                         vtab_tree->setUpdatesEnabled(false);
 
-                        vtab_tree->addTab(new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/clover.svg"), QString("Browser"));                // QString("Browser ") + QString::number(tree_viewer_count)
+                        vtab_tree->insertTab(vtab_tree->indexOf(tsv) + 1, new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));                // QString("Browser ") + QString::number(tree_viewer_count)
                         //        vtab_tree->setCurrentIndex(index);
                         vtab_tree->setUpdatesEnabled(true);
                     }
@@ -363,14 +363,14 @@ namespace browser {
             }else{
                 vtab_tree->setUpdatesEnabled(false);
 
-                vtab_tree->addTab(new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/clover.svg"), QString("Browser"));                    // QString("Browser ") + QString::number(tree_viewer_count)
+                vtab_tree->insertTab(vtab_tree->indexOf(tsvs.back()) + 1, new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));                    // QString("Browser ") + QString::number(tree_viewer_count)
                 //        vtab_tree->setCurrentIndex(index);
                 vtab_tree->setUpdatesEnabled(true);
             }
 
 
             //        int index = vtab_record->currentIndex();
-            vtab_record->addTab(_record_screen, QIcon(":/resource/pic/clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
+            vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser")); // QString("Browser ") + QString::number(vtab_record->count())
             _record_screen->adjustSize();
             //        vtab_record->setCurrentIndex(index);
         }

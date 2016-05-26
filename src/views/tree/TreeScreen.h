@@ -71,6 +71,7 @@ class RecordController;
 class TreeScreen;
 class InfoFieldsEditor;
 class RecordScreen;
+class TreeScreenViewer;
 struct TreeIndex;
 struct Linker;
 
@@ -202,6 +203,9 @@ public:
 
     void restore_menubar();
 
+    TreeScreenViewer *viewer() const;
+
+    void viewer(TreeScreenViewer *v);
 
 
 
@@ -294,7 +298,7 @@ private:
     //    TreeViewHelpWidget *_treeviewhelpwidget;
 
     QVBoxLayout     *_treescreenlayout;
-
+    TreeScreenViewer    *_viewer = nullptr;
     const AppConfig &_appconfig;
     //    QString         _session_id = global_root_id;
 
@@ -514,10 +518,11 @@ private:
 class TreeScreenViewer : public QFrame {
 public:
     TreeScreenViewer(TreeScreen *_tree_screen, RecordScreen *_record_screen);
-    QWidget *tree_screen()const;
+    ~TreeScreenViewer();
+    QWidget *tree_screen() const;
     int tree_screen(TreeScreen *tree);
 
-    RecordScreen *record_screen()const;
+    RecordScreen *record_screen() const;
     void record_screen(RecordScreen *rs);
 private:
     TreeScreen      *_tree_screen;

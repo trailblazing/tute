@@ -14,6 +14,9 @@
    <string>Form</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
    <property name="leftMargin">
     <number>0</number>
    </property>
@@ -33,6 +36,9 @@
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
+     </property>
+     <property name="lineWidth">
+      <number>0</number>
      </property>
      <property name="text">
       <string>Ico</string>
@@ -78,6 +84,9 @@
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item>
       <spacer name="verticalSpacer">
        <property name="orientation">
@@ -123,11 +132,11 @@
   </layout>
  </widget>
  <customwidgets>
- <customwidget>
-  <class>FlatToolButton</class>
-  <extends>QToolButton</extends>
-  <header location="global">libraries/FlatControl.h</header>
- </customwidget>
+  <customwidget>
+   <class>FlatToolButton</class>
+   <extends>QToolButton</extends>
+   <header location="global">libraries/FlatControl.h</header>
+  </customwidget>
   <customwidget>
    <class>SqueezeLabel</class>
    <extends>QWidget</extends>

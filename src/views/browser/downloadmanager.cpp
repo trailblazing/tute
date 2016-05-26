@@ -356,6 +356,7 @@ namespace browser {
         , _removepolicy(Never)
     {
         setObjectName(object_name);
+        setStyleSheet("border : 0px;");
         setupUi(this);
         downloadsView->setShowGrid(false);
         downloadsView->verticalHeader()->hide();

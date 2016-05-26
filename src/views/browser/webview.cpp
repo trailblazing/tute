@@ -733,19 +733,15 @@ namespace browser {
 
         if(_binder->host()) {  // ->_active_request
 
-            //            if(_record_binder->bounded_item()->_open_link_in_new_window == 1) {
-
-            //            }
+            //            if(_record_binder->bounded_item()->_open_link_in_new_window == 1) { }
             assert(_browser);
 
             if(!_browser->isActiveWindow() || !_browser->isVisible()) {
 
                 if(!_view->isTopLevel()) _view->raise();
-
                 if(!_view->isActiveWindow()) _view->activateWindow();
 
                 if(!_browser->isTopLevel()) _browser->raise();
-
                 if(!_browser->isActiveWindow()) _browser->activateWindow();
             }
 
@@ -788,10 +784,13 @@ namespace browser {
                 }
             }
 
-
-
         }
 
+        if(_view) {
+            _browser->adjustSize();
+            _tabmanager->adjustSize();
+            _view->adjustSize();
+        }
         return _view;
     }
 
@@ -1990,13 +1989,20 @@ namespace browser {
         //        _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
 
         if(_binder) {
-            _binder->host()->binder()->page(nullptr);
-            _binder->host()->binder()->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder->item()->binder(nullptr);
-
+            auto _host_binder = _binder->host()->binder();
+            if(_host_binder) {
+//                if(_host_binder->page()) _host_binder->page(nullptr);
+//                if(_host_binder->host()) { _host_binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr))); }
+                _binder->host()->binder(std::move<boost::intrusive_ptr<::Binder> >(nullptr));
+            }
             // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
-            if(_binder->page()) _binder->page(nullptr);
+            auto _page_binder = _binder->page()->binder();
 
-            if(_binder->host()) _binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));   // _binder.reset();
+            if(_page_binder) {
+//                if(_page_binder->page()) _page_binder->page(nullptr);
+//                if(_page_binder->host()) { _page_binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr))); }
+                _binder->page()->binder(std::move<boost::intrusive_ptr<::Binder> >(nullptr));
+            }
 
         }
     }

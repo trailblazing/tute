@@ -3288,13 +3288,28 @@ void TreeItem::binder_reset()
         //        }
 
 
-        _binder->page()->binder()->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));                                                  // _binder->page()->binder(std::move(boost::intrusive_ptr<Binder> (nullptr)));
-        _binder->page()->binder()->page(nullptr);
+        auto _page_binder = _binder->page()->binder();
 
-        // _binder->break_page();
-        if(_binder->host()) _binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));                                                    // _binder.reset();
+        if(_page_binder) {
+//            if(_page_binder->page()) _page_binder->page(nullptr);
+//            if(_page_binder->host()) { _page_binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr))); }
+            _binder->page()->binder(std::move<boost::intrusive_ptr<::Binder> >(nullptr));
+        }
 
-        if(_binder->page()) _binder->page(nullptr);
+        auto _host_binder = _binder->host()->binder();
+        if(_host_binder) {
+//            if(_host_binder->page()) _host_binder->page(nullptr);
+//            if(_host_binder->host()) { _host_binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr))); }
+            _binder->host()->binder(std::move<boost::intrusive_ptr<::Binder> >(nullptr));
+        }
+
+
+//        _binder->page()->binder()->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));                                                  // _binder->page()->binder(std::move(boost::intrusive_ptr<Binder> (nullptr)));
+//        _binder->page()->binder()->page(nullptr);
+
+//        // _binder->break_page();
+//        if(_binder->host()) _binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));                                                    // _binder.reset();
+//        if(_binder->page()) _binder->page(nullptr);
 
         //        _activator.reset();
 

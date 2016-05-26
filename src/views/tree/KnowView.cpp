@@ -3991,6 +3991,8 @@ void KnowView::index_invoke(const QModelIndex &_index)
             }
         }
 
+        browser::WebView *v = nullptr;
+
         if(// !result_item->is_activated()
             !globalparameters.entrance()->find([&] (boost::intrusive_ptr<const ::Binder> b){
             bool result = false;
@@ -4159,17 +4161,18 @@ void KnowView::index_invoke(const QModelIndex &_index)
                     };
 
                 if(record_modelindex && !result_item->binder()) {
-                    activate(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                    v = activate(record_modelindex);                                                                                                                                                  // browser->item_bind(record_modelindex)->activate();   // item_bind_();
                 } else if(record_modelindex && result_item->binder() && !result_item->binder()->page()) {                                                                                                                                 // !result_item->binder()->integrity_internal()){
-                    activate(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                    v = activate(record_modelindex);                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
                 } else {
-                    result_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                    v = result_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                 }
+
 
             }
         } else {
             //        auto c = _binder->page()->record_controller();
-            auto v = result_item->binder()->page()->view();
+            v = result_item->binder()->page()->view();
             auto t = v->tabmanager();
             auto index = t->webViewIndex(v);
 
@@ -4177,6 +4180,7 @@ void KnowView::index_invoke(const QModelIndex &_index)
                 t->setCurrentIndex(index);
             }
         }
+        if(v) v->recovery_global_consistency();
     }
 }
 

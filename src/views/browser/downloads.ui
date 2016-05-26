@@ -31,6 +31,9 @@
    </property>
    <item row="1" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <item>
       <widget class="FlatToolButton" name="cleanupButton">
        <property name="text">
@@ -58,6 +61,9 @@
    </item>
    <item row="1" column="1">
     <widget class="QLabel" name="itemCount">
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
      <property name="text">
       <string>0 Items</string>
      </property>
@@ -77,16 +83,20 @@
     </spacer>
    </item>
    <item row="0" column="0" colspan="3">
-    <widget class="EditTableView" name="downloadsView"/>
+    <widget class="EditTableView" name="downloadsView">
+     <property name="lineWidth">
+      <number>0</number>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>
  <customwidgets>
- <customwidget>
-  <class>FlatToolButton</class>
-  <extends>QToolButton</extends>
-  <header location="global">libraries/FlatControl.h</header>
- </customwidget>
+  <customwidget>
+   <class>FlatToolButton</class>
+   <extends>QToolButton</extends>
+   <header location="global">libraries/FlatControl.h</header>
+  </customwidget>
   <customwidget>
    <class>EditTableView</class>
    <extends>QTableView</extends>

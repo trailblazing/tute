@@ -115,7 +115,7 @@ public:
 
 public:
 
-    void host(boost::intrusive_ptr<TreeItem> it) ;
+    void host(boost::intrusive_ptr<TreeItem> &&it) ;
 
     void page(browser::WebPage *page);
 

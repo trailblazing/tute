@@ -125,8 +125,7 @@ public:
             SuccessFullDownload
         };
 
-        DownloadManager(QString object_name
-            , QWidget *parent = 0);
+        DownloadManager(QString object_name, QWidget *parent = 0);
         ~DownloadManager();
         int activeDownloads() const;
 
