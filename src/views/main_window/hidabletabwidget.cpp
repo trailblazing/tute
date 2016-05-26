@@ -13,7 +13,20 @@ HidableTabWidget::HidableTabWidget(QWidget *parent) :
     hide_button->setDefaultAction(_hide_action);
     hide_button->setAutoRaise(true);
     this->setCornerWidget(hide_button);
-this->setStyle()
+
+
+    setWindowFlags( //Qt::Window |
+        Qt::FramelessWindowHint
+        // |Qt::Popup
+        | Qt::CustomizeWindowHint
+        // | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
+        // | Qt::DockWidgetArea::NoDockWidgetArea
+        | Qt::MaximizeUsingFullscreenGeometryHint
+        );
+
+    setAutoFillBackground(true);
+    adjustSize();
+
 
     setTabPosition(TabPosition::West); // South
     setTabShape(TabShape::Triangular);
