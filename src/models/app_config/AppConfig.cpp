@@ -301,16 +301,16 @@ void AppConfig::vspl_sizelist(QList<int> list)
 }
 
 
-QList<int> AppConfig::hspl_sizelist(void)const
-{
-    return splitter_sizelist("hspl");
-}
+//QList<int> AppConfig::hspl_sizelist(void)const
+//{
+//    return splitter_sizelist("hspl");
+//}
 
 
-void AppConfig::hspl_sizelist(QList<int> list)
-{
-    splitter_sizelist("hspl", list);
-}
+//void AppConfig::hspl_sizelist(QList<int> list)
+//{
+//    splitter_sizelist("hspl", list);
+//}
 
 
 QList<int> AppConfig::findsplitter_sizelist(void) const
@@ -1030,7 +1030,7 @@ QStringList AppConfig::get_parameter_table_1(bool withEndSignature)const
     table << "findscreen_wordregard"    << "int" << "1";
     table << "editor_show"              << "bool" << "false";
     table << "find_splitter_sizelist"   << "QString" << "517,141";
-    table << "hspl_sizelist"            << "QString" << "237,621";
+//    table << "hspl_sizelist"            << "QString" << "237,621";
     table << "lastidnum"                << "int" << "3537";
     table << "lastnotenum"              << "int" << "3119";
     table << "lastprefixnum"            << "int" << "7540";

@@ -1,10 +1,12 @@
 #include "hidabletabwidget.h"
 #include <QTabBar>
 #include <QToolButton>
+#include <QLayout>
 
 HidableTabWidget::HidableTabWidget(QWidget *parent) :
     QTabWidget(parent)
     , _hide_action(new QAction(tr("▾"), this))
+    , _layout(new QStackedLayout(this))
 //    , _delegate_tab(_delegate_tab)
 {
     _hide_action->setCheckable(true);
@@ -19,7 +21,7 @@ HidableTabWidget::HidableTabWidget(QWidget *parent) :
         Qt::FramelessWindowHint
         // |Qt::Popup
         | Qt::CustomizeWindowHint
-        // | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
+//        | Qt::SplashScreen   // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
         // | Qt::DockWidgetArea::NoDockWidgetArea
         | Qt::MaximizeUsingFullscreenGeometryHint
         );
@@ -31,10 +33,19 @@ HidableTabWidget::HidableTabWidget(QWidget *parent) :
     setTabPosition(TabPosition::West); // South
     setTabShape(TabShape::Triangular);
     //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
-    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // border: 0 px;
-
+    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
+//    setStyleSheet("QTabWidget::pane { border: 0 px; }");
     connect(_hide_action, &QAction::toggled, this, &HidableTabWidget::onHideAction);
     connect(this, &HidableTabWidget::tabBarClicked, this, &HidableTabWidget::onTabBarClicked);
+
+//    _layout->widget()->setContentsMargins(0, 0, 0, 0);
+//    _layout->widget()->setStyleSheet("border:0px;");
+
+    _layout->setMargin(0);
+    _layout->setContentsMargins(0, 0, 0, 0);
+    _layout->setSpacing(0);
+    setLayout(_layout);
+
 }
 
 void HidableTabWidget::onHideAction(bool checked)

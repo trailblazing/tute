@@ -45,7 +45,7 @@
 #include <QtGui/QMouseEvent>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QStyle>
-#include <QtWidgets/QStyleOptionFrameV2>
+#include <QtWidgets/QStyleOptionFrame>    // #include <QtWidgets/QStyleOptionFrameV2>
 
 
 namespace browser {
@@ -190,7 +190,7 @@ namespace browser {
     {
         if(lineEdit()->text().isEmpty() && !hasFocus() && !_inactivetext.isEmpty()) {
             ExLineEdit::paintEvent(event);
-            QStyleOptionFrameV2 panel;
+            QStyleOptionFrame panel;  // QStyleOptionFrameV2
             initStyleOption(&panel);
             QRect r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
             QFontMetrics fm = fontMetrics();

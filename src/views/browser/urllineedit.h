@@ -89,7 +89,7 @@ namespace browser {
 
     protected:
         void updateGeometries();
-        void initStyleOption(QStyleOptionFrameV2 *option) const;
+        void initStyleOption(QStyleOptionFrame *option) const;    // QStyleOptionFrameV2
 
         QWidget         *_leftwidget;
         QLineEdit       *_lineedit;

@@ -737,7 +737,7 @@ QToolBar *TreeScreen::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu)
 {
     //_toolsline = new QToolBar(this);
 
-    setStyleSheet("border : 0px;");
+//    setStyleSheet("border : 0px;");
 
     //    QSize tool_bar_icon_size(16, 16);
     //    toolsLine->setIconSize(tool_bar_icon_size);
@@ -947,13 +947,24 @@ void TreeScreen::setup_signals(void)
 void TreeScreen::assembly(QToolBar *menubar_)
 {
     _tools_layout->addWidget(_tools_line);
+    _tools_line->setContentsMargins(0,0,0,0);
     _tools_layout->addStretch();
     _tools_layout->addWidget(menubar_);
+    menubar_->setContentsMargins(0,0,0,0);
+
+    _tools_layout->setSpacing(0);
+    _tools_layout->setMargin(0);
+    _tools_layout->setContentsMargins(0,0,0,0);
+
     //    _treescreenlayout = new QVBoxLayout();
     _treescreenlayout->setObjectName("treescreen_QVBoxLayout");
 
     //    _treescreenlayout->addLayout(_recordtree_searchlayout);
     _treescreenlayout->addLayout(_tools_layout);
+
+    _treescreenlayout->setSpacing(0);
+    _treescreenlayout->setMargin(0);
+    _treescreenlayout->setContentsMargins(0,0,0,0);
 
     //    //    _adjustingscrollarea = new AdjustingScrollArea(_tree_view, this);
     //    //    //    _treescreenlayout->addWidget(_adjustingscrollarea = new AdjustingScrollArea);  // , 0, 1
@@ -970,6 +981,9 @@ void TreeScreen::assembly(QToolBar *menubar_)
     //    _treescreenlayout->setColumnStretch(1, 1);
     QVBoxLayout *baseLayout = new QVBoxLayout();
     baseLayout->setSpacing(0);
+    baseLayout->setMargin(0);
+    baseLayout->setContentsMargins(0, 0, 0, 0);
+    _adjustingscrollarea->setContentsMargins(0,0,0,0);
     baseLayout->addWidget(_adjustingscrollarea);
 
     //    RecordView *record_view = _record_controller->view(); //    auto record_view = new QWidget(this);
@@ -988,7 +1002,8 @@ void TreeScreen::assembly(QToolBar *menubar_)
     // The boundaries are removed, as this facility will be used as a widget    // Границы убираются, так как данный объект будет использоваться как виджет
     QLayout *lt;
     lt = layout();
-    lt->setContentsMargins(0, 2, 0, 0);
+    lt->setMargin(0);
+    lt->setContentsMargins(0, 0, 0, 0); // setContentsMargins(0, 2, 0, 0);
     lt->setSpacing(0);
 }
 
@@ -2604,6 +2619,7 @@ TreeScreenViewer::TreeScreenViewer(TreeScreen *_tree_screen, RecordScreen *_reco
     _tree_screen->viewer(this);
     setObjectName(tree_screen_viewer_name);
     _layout->addWidget(_tree_screen);
+    _layout->setMargin(0);
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
     setLayout(_layout);

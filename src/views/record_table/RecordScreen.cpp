@@ -576,7 +576,7 @@ void RecordScreen::setup_ui(void)
 //    QSize toolBarIconSize(16,16);
 //    toolsLine->setIconSize(toolBarIconSize);
 
-    setStyleSheet("border : 0px;");
+//    setStyleSheet("border : 0px;");
 
     if(appconfig.interface_mode() == "mobile") {
         insert_action_as_button<QToolButton>(_toolsline, _back);
@@ -739,7 +739,8 @@ void RecordScreen::assembly(void)
     // Границы убираются, так как данный объект будет использоваться как виджет
     QLayout *lt;
     lt = layout();
-    lt->setContentsMargins(0, 2, 0, 0);
+    lt->setMargin(0);
+    lt->setContentsMargins(0, 0, 0, 0); // setContentsMargins(0, 2, 0, 0);
     lt->setSpacing(0);
 
 }

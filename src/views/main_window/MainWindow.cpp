@@ -66,7 +66,7 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     , _vtab_tree(new HidableTabWidget(this))
     , _h_right_splitter(new QSplitter(Qt::Horizontal))
     , _h_left_splitter(new QSplitter(Qt::Horizontal))      // Qt::Vertical
-    , _h_splitter(new QSplitter(Qt::Horizontal))
+//    , _h_splitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
     , _editmenu(new QMenu(tr("&Edit"), this))
     , _viewmenu(new QMenu(tr("&View"), this))
@@ -110,7 +110,7 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
 //    int wl = _h_left_splitter->width(); // 640
 //    int wr = _h_right_splitter->width();// 640   // default handleWidth() == 6
     _h_right_splitter->setHandleWidth(0);
-    _h_splitter->setHandleWidth(0);
+//    _h_splitter->setHandleWidth(0);
 
     _vtab_record->tabBar()->hide();
     _globalparameters.vtab_record(_vtab_record);
@@ -204,7 +204,7 @@ MainWindow::~MainWindow()
     // delete
     _h_left_splitter->deleteLater();
     // delete
-    _h_splitter->deleteLater();
+//    _h_splitter->deleteLater();
 
     // delete
     _filemenu->deleteLater();
@@ -623,7 +623,7 @@ void MainWindow::assembly(void)
 
 
     //    hSplitter = new QSplitter(Qt::Horizontal);
-    _h_splitter->addWidget(_h_left_splitter);
+//    _h_splitter->addWidget(_h_left_splitter);
     //hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
     //hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
 
@@ -634,9 +634,9 @@ void MainWindow::assembly(void)
 
 
 
-    _h_splitter->setCollapsible(0, false);            // Дерево веток не может смыкаться
-    _h_splitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
-    _h_splitter->setObjectName("hsplitter");
+//    _h_splitter->setCollapsible(0, false);            // Дерево веток не может смыкаться
+//    _h_splitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
+//    _h_splitter->setObjectName("hsplitter");
 
     //    connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &browser::Entrance::on_splitter_moved);
     //    connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen, &RecordTableScreen::on_splitter_moved);
@@ -715,7 +715,7 @@ void MainWindow::restore_geometry(void)
 
 
     _v_right_splitter->setSizes(appconfig.vspl_sizelist());
-    _h_splitter->setSizes(appconfig.hspl_sizelist());
+//    _h_splitter->setSizes(appconfig.hspl_sizelist());
     _h_right_splitter->setSizes(appconfig.h_right_splitter_sizelist());
     _h_left_splitter->setSizes(appconfig.h_left_splitter_sizelist());
     _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
@@ -790,7 +790,7 @@ void MainWindow::save_geometry(void)
     //                                   geometry().width(), geometry().height());
 
     appconfig.vspl_sizelist(_v_right_splitter->sizes());
-    appconfig.hspl_sizelist(_h_splitter->sizes());
+//    appconfig.hspl_sizelist(_h_splitter->sizes());
     appconfig.h_right_splitter_sizelist(_h_right_splitter->sizes());
     appconfig.h_left_splitter_sizelist(_h_left_splitter->sizes());
 
@@ -1381,7 +1381,7 @@ void MainWindow::on_click_help_about_mytetra(void)
     infoProgramName = "<b>MyTetra</b> - smart manager<br/>for information collecting<br/><br/>";
     infoVersion = "v." + version + "<br/><br/>";
     infoAuthor = "Author: Sergey M. Stepanov<br/>";
-    infoEmail = "Author Email:<i>xintrea@gmail.com</i><br/><br/>";
+    infoEmail = "Author Email:<i>xintrea@gmail.com</i><br/>Author Email:<i>hughvonyoung@gmail.com</i><br/>";
     infoLicense = "GNU General Public License v.3.0<br/><br/>";
     infoTargetOs = "Target OS: " + globalparameters.target_os() + "<br/>";
     infoProgramFile = "Program file: " + globalparameters.main_program_file() + "<br/>";

@@ -3,6 +3,7 @@
 
 #include <QTabWidget>
 #include <QAction>
+#include <QStackedLayout>
 
 class HidableTabWidget : public QTabWidget {
     Q_OBJECT
@@ -15,6 +16,7 @@ private slots:
     void onTabBarClicked();
 private:
 //    HidableTabWidget *_delegate_tab;
+    QStackedLayout *_layout;
 };
 
 

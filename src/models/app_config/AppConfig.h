@@ -73,8 +73,8 @@ public:
     QList<int> vspl_sizelist(void)const;
     void vspl_sizelist(QList<int> list);
 
-    QList<int> hspl_sizelist(void)const;
-    void hspl_sizelist(QList<int> list);
+//    QList<int> hspl_sizelist(void)const;
+//    void hspl_sizelist(QList<int> list);
 
     QList<int> findsplitter_sizelist(void)const;
     void findsplitter_sizelist(QList<int> list);

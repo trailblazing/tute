@@ -220,7 +220,7 @@ private:
     HidableTabWidget    *_vtab_tree;
     QSplitter           *_h_right_splitter;
     QSplitter           *_h_left_splitter;
-    QSplitter           *_h_splitter;
+//    QSplitter           *_h_splitter;
 
 
     QMenu               *_filemenu;

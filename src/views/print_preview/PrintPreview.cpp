@@ -26,7 +26,7 @@ static inline int inches_to_pixels(float inches, QPaintDevice *device)
 
 static inline qreal mm_to_inches(double mm)
 {
-    return mm*0.039370147;
+    return mm * 0.039370147;
 }
 
 
@@ -57,35 +57,35 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
 
 
     // Кнопки на панели инструментов
-    FlatToolButton *button_print=new FlatToolButton(this);
+    FlatToolButton *button_print = new FlatToolButton(this);
     button_print->setText(tr("&Print..."));
     button_print->setShortcut(Qt::CTRL + Qt::Key_P);
     button_print->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_print, &FlatToolButton::clicked, this, &PrintPreview::print);
 
-    FlatToolButton *button_page_setup=new FlatToolButton(this);
+    FlatToolButton *button_page_setup = new FlatToolButton(this);
     button_page_setup->setText(tr("Page Setup..."));
     button_page_setup->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_page_setup, &FlatToolButton::clicked, this, &PrintPreview::page_setup);
 
-    FlatToolButton *button_zoom_in=new FlatToolButton(this);
+    FlatToolButton *button_zoom_in = new FlatToolButton(this);
     button_zoom_in->setText(tr("Zoom In"));
     button_zoom_in->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_zoom_in, &FlatToolButton::clicked, view, &PreviewView::zoom_in);
 
-    FlatToolButton *button_zoom_out=new FlatToolButton(this);
+    FlatToolButton *button_zoom_out = new FlatToolButton(this);
     button_zoom_out->setText(tr("Zoom Out"));
     button_zoom_out->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_zoom_out, &FlatToolButton::clicked, view, &PreviewView::zoom_out);
 
-    FlatToolButton *button_close=new FlatToolButton(this);
+    FlatToolButton *button_close = new FlatToolButton(this);
     button_close->setText(tr("&Close"));
     button_close->setToolButtonStyle(Qt::ToolButtonTextUnderIcon);
     connect(button_close, &FlatToolButton::clicked, this, &PrintPreview::close);
 
 
     // Панель инструментов
-    QHBoxLayout *toolsbox=new QHBoxLayout();
+    QHBoxLayout *toolsbox = new QHBoxLayout();
     toolsbox->addWidget(button_print);
     toolsbox->addWidget(button_page_setup);
     toolsbox->addWidget(button_zoom_in);
@@ -95,11 +95,11 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
 
 
     // Сборка содержимого окна
-    centralLayout=new QVBoxLayout();
+    centralLayout = new QVBoxLayout();
     centralLayout->addLayout(toolsbox);
     centralLayout->addWidget(view);
     centralLayout->setSpacing(1);
-    centralLayout->setContentsMargins(1,1,1,1);
+    centralLayout->setContentsMargins(0, 0, 0, 0);  // setContentsMargins(1, 1, 1, 1);
 
     setLayout(centralLayout);
     resize(800, 600);

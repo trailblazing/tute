@@ -58,7 +58,7 @@
 #include <QtGui/QDrag>
 #include <QtGui/QPainter>
 #include <QtWidgets/QStyle>
-#include <QtWidgets/QStyleOptionFrameV2>
+#include <QtWidgets/QStyleOptionFrame>    // #include <QtWidgets/QStyleOptionFrameV2>
 
 #include <QtCore/QDebug>
 #include <QCompleter>
@@ -117,7 +117,7 @@ namespace browser {
 
     void ExLineEdit::updateGeometries()
     {
-        QStyleOptionFrameV2 panel;
+        QStyleOptionFrame panel;  // QStyleOptionFrameV2
         initStyleOption(&panel);
         QRect rect = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
 
@@ -136,7 +136,7 @@ namespace browser {
             clearButtonWidth, this->height());
     }
 
-    void ExLineEdit::initStyleOption(QStyleOptionFrameV2 *option) const
+    void ExLineEdit::initStyleOption(QStyleOptionFrame *option) const // QStyleOptionFrameV2
     {
         option->initFrom(this);
         option->rect = contentsRect();
@@ -153,7 +153,7 @@ namespace browser {
             option->state |= QStyle::State_HasEditFocus;
 
 #endif
-        option->features = QStyleOptionFrameV2::None;
+        option->features = QStyleOptionFrame::None;   // QStyleOptionFrameV2
     }
 
     QSize ExLineEdit::sizeHint() const
@@ -203,7 +203,7 @@ namespace browser {
     void ExLineEdit::paintEvent(QPaintEvent *)
     {
         QPainter p(this);
-        QStyleOptionFrameV2 panel;
+        QStyleOptionFrame panel;  // QStyleOptionFrameV2
         initStyleOption(&panel);
         style()->drawPrimitive(QStyle::PE_PanelLineEdit, &panel, &p, this);
     }
@@ -349,7 +349,7 @@ private:
         ExLineEdit::paintEvent(event);
 
         QPainter painter(this);
-        QStyleOptionFrameV2 panel;
+        QStyleOptionFrame panel;  // QStyleOptionFrameV2
         initStyleOption(&panel);
         QRect backgroundRect = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
 
