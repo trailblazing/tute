@@ -72,8 +72,10 @@ class TreeScreen;
 class InfoFieldsEditor;
 class RecordScreen;
 class TreeScreenViewer;
+class MainWindow;
 struct TreeIndex;
 struct Linker;
+
 
 
 namespace  browser {
@@ -124,7 +126,7 @@ public:
     typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;
     typedef std::function<boost::intrusive_ptr<TreeItem> (TreeIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
 
-    TreeScreen(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, QWidget *_parent = 0);
+    TreeScreen(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, MainWindow *_main_window = 0);
     virtual ~TreeScreen();
 
     QMap<QString, QAction * > _actionlist;
@@ -272,7 +274,7 @@ private slots:
         , QString home
         , QString url
         , QString tags
-        );
+                   );
 
 
 
@@ -281,7 +283,7 @@ private:
 
 
     //    TreeController  *_tree_controller;
-
+    MainWindow      *_main_window;
     QToolBar        *_tools_line;
     QToolBar        *_menubar;                  // QMenuBar *_menubar;
     QPushButton     *_menubutton;

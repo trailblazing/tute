@@ -18,6 +18,8 @@ public:
     // QModelIndex current_index()const;
     boost::intrusive_ptr<TreeItem> sibling() const;
     boost::intrusive_ptr<TreeItem> target() const;
+
+    static boost::intrusive_ptr<RecordIndex> instance(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item);
 private:
     std::function<RecordModel *()>  _current_model;
     boost::intrusive_ptr<TreeItem>  _sibling_item;

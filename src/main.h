@@ -92,7 +92,7 @@ int     screen_size_y(void);
 qreal   calculate_iconsize_px(void);
 
 void    show_message_box(QString message); // Выдача на экран простого окна с сообщением
-extern void set_css_style();
+extern QString set_css_style();
 
 class WalkHistory;
 class GlobalParameters;

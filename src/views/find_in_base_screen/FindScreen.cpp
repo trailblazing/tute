@@ -972,7 +972,7 @@ QList<boost::intrusive_ptr<Linker>> &FindScreen::find_recursive(
                     auto candidate = _start_item->item_direct(i);
                     // Обновляется линейка наполняемости
                     _progress->setValue(++ _total_progress_counter);
-                    qApp->processEvents();
+                    QtSingleApplication::instance()->processEvents();
 
                     if(!_progress->wasCanceled()) {
                         //                    if(_progress->wasCanceled()) {
@@ -1052,13 +1052,13 @@ QList<boost::intrusive_ptr<Linker>> &FindScreen::find_recursive(
                             auto browser = globalparameters.entrance()->activated_browser();
                             auto record_controller = browser->record_screen()->record_controller();
                             auto tab_brother = record_controller->view()->current_item();
-                            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
+                            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
 
-                            try {
-                                record_modelindex = new RecordIndex([&] {return record_controller->source_model();}, tab_brother, candidate);
-                            } catch(std::exception &e) {
-                                (void)e;    // record_modelindex = nullptr;
-                            }
+//                            try {
+//                                record_modelindex = new RecordIndex([&] {return record_controller->source_model();}, tab_brother, candidate);
+//                            } catch(std::exception &e) {
+//                                (void)e;    // record_modelindex = nullptr;
+//                            }
 
                             if(record_modelindex) {
                                 if((candidate->parent() != _session_root_item->parent()) // _current_item->parent())

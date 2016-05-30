@@ -54,7 +54,7 @@ public:
     void init(void);
 
     void branch_push(const QString &_clip_parent_id, boost::intrusive_ptr<TreeItem> it);
-    void branch_push(TreeIndex _modelindex, QList<boost::intrusive_ptr<TreeItem>> current_items);
+    void branch_push(boost::intrusive_ptr<TreeIndex> _modelindex, QList<boost::intrusive_ptr<TreeItem>> current_items);
 
     void print(void) const;
 

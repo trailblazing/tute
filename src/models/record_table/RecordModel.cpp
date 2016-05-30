@@ -250,7 +250,7 @@ RecordModel::RecordModel(    //TreeScreen             *_tree_screen    //, FindS
     RecordController        *_record_controller
     , RecordScreen          *_record_screen
     , browser::TabWidget    *_tabmanager
-    )
+                        )
     : QAbstractTableModel(_record_screen)
     , pages_container(_tabmanager)
     , _record_controller(_record_controller)
@@ -596,6 +596,23 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
 {
     PosSource selected_position(-1);
 
+    auto insert_new_tab = [&] (browser::WebView *view, PosSource source_insert_pos){
+            //    if(selected_position == -1) {
+            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return this; }, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
+
+//            try {
+//                record_modelindex = new RecordIndex([&] {return this; }, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
+//            } catch(std::exception &) {}
+
+            if(record_modelindex)
+                view = _tabmanager->newTab(record_modelindex); // , _item->field("name")
+            else
+                _tabmanager->webView((int)source_insert_pos)->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+
+            //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
+            return selected_position = PosSource(_tabmanager->indexOf(view));
+        };
+
     if(_item) {
         PosSource source_insert_pos = _record_controller->index<PosSource>(source_pos_index); //    Q_UNUSED(pos_index) // to be used
         Q_UNUSED(mode)      // to be used
@@ -607,30 +624,19 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
         browser::WebView *view = nullptr;
 
 
-        if(_item->binder() && _item->binder()->page()) {
-            view = _item->binder()->page()->view();    // activate();
-            // Вставка новых данных в таблицу конечных записей
+        if(_item->binder() ) {
+            if(_item->binder()->page()) {
+                view = _item->binder()->page()->view(); // activate();
+                // Вставка новых данных в таблицу конечных записей
 
-            // accomplished by TabWidget::addTab in TabWidget::newTab?
-            selected_position = PosSource(_tabmanager->indexOf(view)); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+                // accomplished by TabWidget::addTab in TabWidget::newTab?
+                selected_position = PosSource(_tabmanager->indexOf(view)); // _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+                if(selected_position == -1) selected_position = insert_new_tab(view, source_insert_pos);
+            }
             assert(selected_position != -1);
         } else {
 
-
-            //    if(selected_position == -1) {
-            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
-
-            try {
-                record_modelindex = new RecordIndex([&] {return this; }, _tabmanager->count() > 0 ? _tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
-            } catch(std::exception &) {}
-
-            if(record_modelindex)
-                view = _tabmanager->newTab(record_modelindex); // , _item->field("name")
-            else
-                _tabmanager->webView((int)source_insert_pos)->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-
-            //addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
-            selected_position = PosSource(_tabmanager->indexOf(view));
+            selected_position = insert_new_tab(view, source_insert_pos);
             assert(selected_position != -1);
         }
 
@@ -873,7 +879,14 @@ boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeIte
 
 boost::intrusive_ptr<TreeItem> RecordModel::current_item() const
 {
-    return _tabmanager->currentWebView()->page()->binder()->host();
+    boost::intrusive_ptr<TreeItem> result;
+    auto page = _tabmanager->currentWebView()->page();
+    if(page) {
+        auto binder = page->binder();
+        if(binder)
+            result = binder->host();
+    }
+    return result;  // _tabmanager->currentWebView()->page()->binder()->host();
 }
 
 

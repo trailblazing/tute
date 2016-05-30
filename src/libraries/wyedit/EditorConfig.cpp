@@ -27,7 +27,7 @@ EditorConfig::EditorConfig(QString config_file_name, QWidget *parent) : QWidget(
     QString file_dir = fileinfo.path();
 
     // Создается объект работы с конфигурацией редактора
-    conf = new QSettings(config_file_name, QSettings::IniFormat);
+    _editor_conf = new QSettings(config_file_name, QSettings::IniFormat);
     // conf->setPath(QSettings::IniFormat,QSettings::UserScope,file_dir);
     // conf->setPath(QSettings::IniFormat,QSettings::SystemScope,file_dir);
 
@@ -40,14 +40,14 @@ EditorConfig::EditorConfig(QString config_file_name, QWidget *parent) : QWidget(
 EditorConfig::~EditorConfig()
 {
     qDebug() << "Save editor config file";
-    conf->sync();
+    _editor_conf->sync();
 }
 
 
 // Получение параметра по имени в виде строки с проверкой его существования
 QString EditorConfig::get_parameter(QString name)
 {
-    QString t = conf->value(name).toString();
+    QString t = _editor_conf->value(name).toString();
 
     if(t.length() == 0)
         critical_error("In editor config not found parameter " + name);
@@ -64,7 +64,7 @@ QString EditorConfig::get_default_font(void)
 
 void EditorConfig::set_default_font(QString fontName)
 {
-    conf->setValue("default_font", fontName);
+    _editor_conf->setValue("default_font", fontName);
 }
 
 
@@ -79,7 +79,7 @@ int EditorConfig::get_default_font_size(void)
 
 void EditorConfig::set_default_font_size(int size)
 {
-    conf->setValue("default_font_size", size);
+    _editor_conf->setValue("default_font_size", size);
 }
 
 
@@ -95,7 +95,7 @@ QString EditorConfig::get_monospace_font(void)
 
 void EditorConfig::set_monospace_font(QString fontName)
 {
-    conf->setValue("monospace_font", fontName);
+    _editor_conf->setValue("monospace_font", fontName);
 }
 
 
@@ -110,7 +110,7 @@ int EditorConfig::get_monospace_font_size(void)
 
 void EditorConfig::set_monospace_font_size(int size)
 {
-    conf->setValue("monospace_font_size", size);
+    _editor_conf->setValue("monospace_font_size", size);
 }
 
 
@@ -123,8 +123,8 @@ bool EditorConfig::get_monospace_font_size_apply(void)
 
 void EditorConfig::set_monospace_font_size_apply(bool i)
 {
-    if(i == true) conf->setValue("monospace_font_size_apply", 1);
-    else        conf->setValue("monospace_font_size_apply", 0);
+    if(i == true) _editor_conf->setValue("monospace_font_size_apply", 1);
+    else        _editor_conf->setValue("monospace_font_size_apply", 0);
 }
 
 
@@ -140,7 +140,7 @@ QString EditorConfig::get_code_font(void)
 
 void EditorConfig::set_code_font(QString fontName)
 {
-    conf->setValue("code_font", fontName);
+    _editor_conf->setValue("code_font", fontName);
 }
 
 
@@ -155,7 +155,7 @@ int EditorConfig::get_code_font_size(void)
 
 void EditorConfig::set_code_font_size(int size)
 {
-    conf->setValue("code_font_size", size);
+    _editor_conf->setValue("code_font_size", size);
 }
 
 
@@ -168,8 +168,8 @@ bool EditorConfig::get_code_font_size_apply(void)
 
 void EditorConfig::set_code_font_size_apply(bool i)
 {
-    if(i == true) conf->setValue("code_font_size_apply", 1);
-    else        conf->setValue("code_font_size_apply", 0);
+    if(i == true) _editor_conf->setValue("code_font_size_apply", 1);
+    else        _editor_conf->setValue("code_font_size_apply", 0);
 }
 
 
@@ -185,7 +185,7 @@ void EditorConfig::set_code_font_color(QString color)
 
     // Если сохраняема строка действительно содержит закодированный цвет
     if(saveColor.isValid())
-        conf->setValue("code_font_color", color);
+        _editor_conf->setValue("code_font_color", color);
 }
 
 
@@ -200,7 +200,7 @@ int EditorConfig::get_code_indent_size(void)
 
 void EditorConfig::set_code_indent_size(int size)
 {
-    conf->setValue("code_indent_size", size);
+    _editor_conf->setValue("code_indent_size", size);
 }
 
 
@@ -213,8 +213,8 @@ bool EditorConfig::get_code_indent_size_apply(void)
 
 void EditorConfig::set_code_indent_size_apply(bool i)
 {
-    if(i == true) conf->setValue("code_indent_size_apply", 1);
-    else        conf->setValue("code_indent_size_apply", 0);
+    if(i == true) _editor_conf->setValue("code_indent_size_apply", 1);
+    else        _editor_conf->setValue("code_indent_size_apply", 0);
 }
 
 
@@ -233,7 +233,7 @@ int EditorConfig::get_indent_step(void)
 
 void EditorConfig::set_indent_step(int i)
 {
-    conf->setValue("indent_step", i);
+    _editor_conf->setValue("indent_step", i);
 }
 
 
@@ -249,7 +249,7 @@ QString EditorConfig::get_finddialog_geometry(void)
 
 void EditorConfig::set_finddialog_geometry(QString geometry)
 {
-    conf->setValue("finddialog_geometry", geometry);
+    _editor_conf->setValue("finddialog_geometry", geometry);
 }
 
 
@@ -266,7 +266,7 @@ QString EditorConfig::get_tools_line_1(void)
 
 void EditorConfig::set_tools_line_1(QString line)
 {
-    conf->setValue("tools_line_1", line);
+    _editor_conf->setValue("tools_line_1", line);
 }
 
 
@@ -278,7 +278,7 @@ QString EditorConfig::get_tools_line_2(void)
 
 void EditorConfig::set_tools_line_2(QString line)
 {
-    conf->setValue("tools_line_2", line);
+    _editor_conf->setValue("tools_line_2", line);
 }
 
 
@@ -291,8 +291,8 @@ bool EditorConfig::get_expand_tools_lines(void)
 
 void EditorConfig::set_expand_tools_lines(bool i)
 {
-    if(i == true) conf->setValue("expand_tools_lines", 1);
-    else        conf->setValue("expand_tools_lines", 0);
+    if(i == true) _editor_conf->setValue("expand_tools_lines", 1);
+    else        _editor_conf->setValue("expand_tools_lines", 0);
 }
 
 
@@ -302,8 +302,8 @@ void EditorConfig::set_expand_tools_lines(bool i)
 
 int EditorConfig::get_config_version(void)
 {
-    if(conf->contains("version"))
-        return conf->value("version").toInt();
+    if(_editor_conf->contains("version"))
+        return _editor_conf->value("version").toInt();
     else
         return 0;
 }
@@ -311,7 +311,7 @@ int EditorConfig::get_config_version(void)
 
 void EditorConfig::set_config_version(int i)
 {
-    conf->setValue("version", i);
+    _editor_conf->setValue("version", i);
 }
 
 
@@ -594,8 +594,8 @@ void EditorConfig::update_version(int versionFrom,
         line.clear();
         line["type"] = type;
 
-        if(conf->contains(name))
-            line["value"] = conf->value(name).toString(); // Значение из конфига
+        if(_editor_conf->contains(name))
+            line["value"] = _editor_conf->value(name).toString(); // Значение из конфига
         else
             line["value"] = defaultValue; // Дефолтное значение
 
@@ -717,7 +717,7 @@ void EditorConfig::update_version(int versionFrom,
     }
 
     // Конфиг обнуляется
-    conf->clear();
+    _editor_conf->clear();
 
     // Конечный массив записывается в конфиг
     QMapIterator< QString, QMap< QString, QString > > j(toTable);
@@ -732,11 +732,11 @@ void EditorConfig::update_version(int versionFrom,
         QString toValue = line["value"];
 
         if(toType == "QString")
-            conf->setValue(toName, toValue);
+            _editor_conf->setValue(toName, toValue);
         else if(toType == "int")
-            conf->setValue(toName, toValue.toInt());
+            _editor_conf->setValue(toName, toValue.toInt());
         else if(toType == "bool")
-            conf->setValue(toName, toValue.toInt()); // Булевые переменные как 0 или 1
+            _editor_conf->setValue(toName, toValue.toInt()); // Булевые переменные как 0 или 1
     }
 
     // Устанавливается новый номер версии

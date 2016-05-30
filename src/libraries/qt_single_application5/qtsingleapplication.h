@@ -105,18 +105,18 @@ class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication //: public BrowserApplic
 public:
     //    typedef BrowserApplication BaseType;
     QtSingleApplication(int &argc
-                        , char **argv
-                        , GlobalParameters &globalparameters
-                        , AppConfig &appconfig
-                        , DataBaseConfig &databaseconfig
-                        , bool _gui_enabled = true);
+        , char **argv
+        , GlobalParameters &globalparameters
+        , AppConfig &appconfig
+        , DataBaseConfig &databaseconfig
+        , bool _gui_enabled = true);
     QtSingleApplication(const QString &id
-                        , int &argc
-                        , char **argv
-                        , GlobalParameters &globalparameters
-                        , AppConfig &appconfig
-                        , DataBaseConfig &databaseconfig
-                       );
+        , int &argc
+        , char **argv
+        , GlobalParameters &globalparameters
+        , AppConfig &appconfig
+        , DataBaseConfig &databaseconfig
+        );
     ~QtSingleApplication();
     // Comment by Xi
     // QtSingleApplication(int &argc, char **argv, Type type);
@@ -160,7 +160,7 @@ private:
 
     QtLocalPeer *_peer;
     QWidget     *_act_window;
-    bool        _gui_enabled;
+    bool _gui_enabled;
     //    std::shared_ptr<MainWindow>
     MainWindow *_window;
     //private slots:
@@ -185,7 +185,9 @@ public:
 
     void saveSession();
     bool canRestoreSession() const;
-    bool privateBrowsing() const { return _private_browsing; }
+    bool privateBrowsing() const {
+        return _private_browsing;
+    }
 
 
     void setLastAuthenticator(QAuthenticator *);
@@ -242,18 +244,19 @@ private:
     //    QList<QPointer<BrowserWindow> > _mainWindows;
     browser::Profile    *_profile;
     QLocalServer        *_localserver;
-    QByteArray          _last_session;
+    QByteArray _last_session;
     // QWebEngineProfile
     browser::Profile    *_private_profile;
-    bool                _private_browsing;
-    mutable QIcon       _default_icon;
+    bool _private_browsing;
+    mutable QIcon _default_icon;
 
     GlobalParameters    &_globalparameters;
     AppConfig           &_appconfig;
     DataBaseConfig      &_databaseconfig;
 
-    QAuthenticator      _last_authenticator;
-    QAuthenticator      _last_proxy_authenticator;
+    QAuthenticator _last_authenticator;
+    QAuthenticator _last_proxy_authenticator;
+    QString _style;
 };
 
 #endif // QTSINGLEAPPLICATION_H

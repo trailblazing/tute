@@ -71,7 +71,7 @@ namespace qt4 {
     class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication : public QApplication {
         Q_OBJECT
 
-    public:
+public:
         QtSingleApplication(int &argc, char **argv, bool GUIenabled = true);
         QtSingleApplication(const QString &id, int &argc, char **argv);
 
@@ -97,16 +97,16 @@ namespace qt4 {
             Q_UNUSED(dummy)
         }
 
-    public Q_SLOTS:
+public Q_SLOTS:
         bool sendMessage(const QString &message, int timeout = 5000);
         void activateWindow();
 
 
-    Q_SIGNALS:
+Q_SIGNALS:
         void messageReceived(const QString &message);
 
 
-    private:
+private:
         void sysInit(const QString &appId = QString());
         QtLocalPeer *peer;
         QWidget *actWin;

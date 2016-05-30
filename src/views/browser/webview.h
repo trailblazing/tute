@@ -156,10 +156,15 @@ public:
 //        typedef typename Binder::item_helper     item_helper;
 //        typedef typename Binder::page_helper     page_helper;
 
-        WebPage(Profile *profile, boost::intrusive_ptr<TreeItem> item,
-            TreeScreen *tree_screen, MetaEditor *editor_screen,
-            Entrance *entrance, Browser *browser, TabWidget *tabmanager,
-            RecordController *record_controller, WebView *parent = 0);
+        WebPage(Profile *profile
+            , boost::intrusive_ptr<TreeItem> item
+            , TreeScreen *tree_screen
+            , MetaEditor *editor_screen
+            , Entrance *entrance
+            , Browser *browser
+            , TabWidget *tabmanager
+            , RecordController *record_controller
+            , WebView *parent = 0);
 
         ~WebPage();
 //        WebView *(*_load_record)(Record *const record);
@@ -397,12 +402,13 @@ private:
         Q_OBJECT
 
 public:
-        WebView(boost::intrusive_ptr<TreeItem> item,
-            Profile *profile               // , bool openinnewtab
-            ,
-            TreeScreen *tree_screen, MetaEditor *editor_screen,
-            Entrance *entrance, Browser *browser, TabWidget *tabmanager,
-            RecordController *record_controller);
+        WebView(boost::intrusive_ptr<TreeItem> item
+            , Profile *profile                   // , bool openinnewtab
+            , TreeScreen *tree_screen, MetaEditor *editor_screen
+            , Entrance *entrance
+            , Browser *browser
+            , TabWidget *tabmanager
+            , RecordController *record_controller);
 
 //        WebView(const boost::intrusive_ptr<TreeItem> requested_item
 //                , Profile *profile    // , bool openinnewtab

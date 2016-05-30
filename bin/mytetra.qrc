@@ -137,5 +137,7 @@
         <file>resource/pic/ginkgo_pure.svg</file>
         <file>resource/pic/door.svg</file>
         <file>resource/pic/folder.svg</file>
+        <file>resource/pic/butterfly-right.svg</file>
+        <file>resource/pic/butterfly-left.svg</file>
     </qresource>
 </RCC>

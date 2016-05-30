@@ -67,7 +67,7 @@ public:
 
 private:
 
-    QSettings *conf;
+    QSettings *_editor_conf;
 
     QString get_parameter(QString name);
 

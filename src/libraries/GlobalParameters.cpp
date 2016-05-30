@@ -1,3 +1,4 @@
+//#include <memory>
 #include <QSettings>
 #include <QFile>
 #include <QFileInfo>
@@ -237,11 +238,11 @@ void GlobalParameters::create_first_programfiles(QString dirName)
 }
 
 
-void GlobalParameters::create_stylesheet_file(QString dirName)
+void GlobalParameters::create_stylesheet_file(QString dirname)
 {
     QString targetOs = target_os();
-    QFile::copy(":/resource/standartconfig/" + targetOs + "/stylesheet.css", dirName + "/stylesheet.css");
-    QFile::setPermissions(dirName + "/stylesheet.css", QFile::ReadUser | QFile::WriteUser);
+    QFile::copy(":/resource/standartconfig/" + targetOs + "/stylesheet.css", dirname + "/stylesheet.css");
+    QFile::setPermissions(dirname + "/stylesheet.css", QFile::ReadUser | QFile::WriteUser);
 }
 
 
@@ -324,44 +325,44 @@ bool GlobalParameters::find_workdirectory(void)
 
 
 // Проверка ini-файла
-bool GlobalParameters::is_mytetra_ini_config(QString fileName)
+bool GlobalParameters::is_mytetra_ini_config(QString filename)
 {
-    qDebug() << "Check config file " << fileName;
+    qDebug() << "Check config file " << filename;
 
-    QFileInfo info(fileName);
+    QFileInfo info(filename);
 
     // Если файл существует, надо определить, от MyTetra он или от другой программы
     if(info.exists()) {
-        qDebug() << "Config file " << fileName << " is exists";
+        qDebug() << "Config file " << filename << " is exists";
 
         // Выясняется имя файла без пути к директории
-        QString shortFileName = info.fileName();
-        qDebug() << "Short config file name " << shortFileName;
+        QString short_filename = info.fileName();
+        qDebug() << "Short config file name " << short_filename;
 
         // Выясняется имя директории из имени файла
         QDir dir = info.dir();
-        QString dirName = dir.absolutePath();
-        qDebug() << "Config directory name " << dirName;
+        QString dirname = dir.absolutePath();
+        qDebug() << "Config directory name " << dirname;
 
         // Открывается хранилище настроек
-        QSettings *conf = new QSettings(fileName, QSettings::IniFormat);
+        QSettings app_conf(filename, QSettings::IniFormat);
         // conf->setPath(QSettings::IniFormat, QSettings::UserScope, dirName);
         // conf->setPath(QSettings::IniFormat, QSettings::SystemScope, dirName);
 
         // Если есть переменная version
-        if(conf->contains("version")) {
-            int version = conf->value("version").toInt();
+        if(app_conf.contains("version")) {
+            int version = app_conf.value("version").toInt();
 
             // Если номер версии конфига до 3 включительно
             if(version <= 3) {
                 // В этих версиях небыло переменной programm, поэтому проверяется
                 // переменная tetradir
-                if(conf->contains("tetradir")) return true;
+                if(app_conf.contains("tetradir")) return true;
                 else return false;
             } else {
                 // Иначе номер версии больше 3
-                if(conf->contains("programm")) {
-                    if(conf->value("programm").toString() == "mytetra") return true;
+                if(app_conf.contains("programm")) {
+                    if(app_conf.value("programm").toString() == "mytetra") return true;
                     else return false;
                 } else return false;
             }

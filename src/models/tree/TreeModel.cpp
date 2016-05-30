@@ -834,7 +834,7 @@ void TreeModel::session_id(
 )
 {
     //    assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
-    _session_id = modelindex->parent()->id();
+    _session_id = modelindex->host()->id();
 }
 
 

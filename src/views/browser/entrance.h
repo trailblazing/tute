@@ -146,7 +146,7 @@ public:
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-        void settingstylesource(const QString &style_source) {
+        void setting_style_source(const QString &style_source) {
             _style_source = style_source;
         }
         //        ItemsFlat const *shadow_branch()const {return _shadow_branch;}

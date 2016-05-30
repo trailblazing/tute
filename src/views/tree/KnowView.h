@@ -62,7 +62,7 @@ public:
     typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, QString, const add_new &)> add_new_delegate;
     typedef std::function<QModelIndex(KnowView *const, const QModelIndex &)> select_strategy;
     typedef std::function<QModelIndex(KnowView *const, const QModelIndex &, const int)> current_strategy;
-    typedef boost::intrusive_ptr<Linker>(KnowModel::*delete_strategy)(boost::intrusive_ptr<Linker>);
+    typedef boost::intrusive_ptr<TreeItem>(KnowModel::*delete_strategy)(boost::intrusive_ptr<Linker>);
 
 
     struct LocalLizeInitializer {
@@ -135,10 +135,10 @@ public slots:
 
     void view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex);
 
-    boost::intrusive_ptr<TreeItem> view_paste_child(boost::intrusive_ptr<TreeIndex> _modelindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
+    boost::intrusive_ptr<TreeItem> view_paste_child(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 
 
-    QList<boost::intrusive_ptr<Linker>> view_delete_permanent(const std::function<KnowModel *()>      &_current_model
+    QList<boost::intrusive_ptr<TreeItem>> view_delete_permanent(const std::function<KnowModel *()>      &_current_model
                                                               , QList<boost::intrusive_ptr<TreeItem>> _items
                                                               , delete_strategy                       _delete_strategy
                                                               , const QString                         &_mode

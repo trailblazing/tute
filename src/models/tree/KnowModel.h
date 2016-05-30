@@ -30,7 +30,7 @@ class KnowModel : public TreeModel {
 
 public:
 
-    typedef std::function<QList<boost::intrusive_ptr<Linker>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &)> view_delete_permantent_strategy;
+    typedef std::function<QList<boost::intrusive_ptr<TreeItem>> (const std::function<KnowModel *()> &, const QList<boost::intrusive_ptr<TreeItem>> &)> view_delete_permantent_strategy;
 
     KnowModel(const QString &index_xml_file_name, KnowView *parent = 0); // KnowTreeModel(const QStringList &headers, QDomDocument domModel, QObject *parent = 0);
     KnowModel(boost::intrusive_ptr<TreeItem> _root_item, KnowView *parent = 0);
@@ -96,7 +96,8 @@ public:
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
 
-    boost::intrusive_ptr<TreeItem> model_merge_to_left(boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source
+    boost::intrusive_ptr<TreeItem> model_merge(boost::intrusive_ptr<TreeIndex> modelindex    // boost::intrusive_ptr<TreeItem> target
+                                                       , boost::intrusive_ptr<TreeItem> source
                                                        , const view_delete_permantent_strategy &_view_delete_permantent
                                                       );
 
@@ -123,10 +124,10 @@ private:
     // Перемещение ветки вверх или вниз
     QModelIndex model_move_up_dn(const QModelIndex &_index, int(TreeItem::*_move)());   //int direction
 
-    boost::intrusive_ptr<Linker> model_delete_permanent_single(boost::intrusive_ptr<Linker> delete_linker);
+    boost::intrusive_ptr<TreeItem> model_delete_permanent_single(boost::intrusive_ptr<Linker> delete_linker);
 
     //    boost::intrusive_ptr<TreeItem> model_child_remove(boost::intrusive_ptr<TreeItem> target);
-    boost::intrusive_ptr<Linker> model_delete_permanent_recursive(boost::intrusive_ptr<Linker> delete_linker);
+    boost::intrusive_ptr<TreeItem> model_delete_permanent_recursive(boost::intrusive_ptr<Linker> delete_linker);
     //    boost::intrusive_ptr<TreeItem> model_delete_index(QModelIndex _index_delete);
 
     //    int get_all_record_count_recurse(boost::intrusive_ptr<TreeItem> item, int mode);

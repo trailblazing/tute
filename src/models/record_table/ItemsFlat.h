@@ -112,7 +112,7 @@ public:
 
     //    bool remove(int i);
     //    bool remove(QString id);
-    boost::intrusive_ptr<Linker> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker);
+    boost::intrusive_ptr<TreeItem> delete_permanent_recursive(boost::intrusive_ptr<Linker> remove_linker, std::function<bool(boost::intrusive_ptr<const TreeItem>)> condition);
 
 
     //    int sibling_order(QString id) const;
@@ -145,10 +145,10 @@ public:
 
     //    int direct_count()const {return _child_items.size();}
     //    void parent();
-    boost::intrusive_ptr<Linker> remove(const std::function<bool(boost::intrusive_ptr<Linker>)> &_equal);
+    boost::intrusive_ptr<TreeItem> delete_permanent(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal);
     void remove_duplicated();
     bool is_empty() const;
-    QList<boost::intrusive_ptr<Linker> > delete_permanent_recursive(int position, int count);
+    QList<boost::intrusive_ptr<TreeItem> > delete_permanent_recursive(int position, int count);
     void traverse(const std::function< void(boost::intrusive_ptr<Linker>)> &operation);
     QList<boost::intrusive_ptr<Linker>> child_linkers();
 

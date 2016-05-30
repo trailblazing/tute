@@ -7,6 +7,16 @@
 
 #include "ExecuteCommand.h"
 #include "ConsoleEmulator.h"
+
+#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
+#include "libraries/qt_single_application5/qtsingleapplication.h"
+#endif
+#if QT_VERSION < 0x050000
+#include "libraries/qt_single_application/qtsingleapplication.h"
+#endif
+
+
+
 #include "main.h"
 
 
@@ -137,7 +147,7 @@ void ExecuteCommand::run(void)
     process->start(commandLine);
 
     // Интерфейс обновляется
-    qApp->processEvents();
+    QtSingleApplication::instance()->processEvents();
 
     qDebug() << "Process started";
 
@@ -147,15 +157,15 @@ void ExecuteCommand::run(void)
 
         // Разгружается основной цикл обработки событий приложения
         if((rand() % 10) == 1)
-            qApp->processEvents();
+            QtSingleApplication::instance()->processEvents();
     }
 
     Sleeper::sleep(1);
-    qApp->processEvents();
+    QtSingleApplication::instance()->processEvents();
     printOutput(process, console); // Считываются остатки из стандартного вывода, если они есть
 
     closeProcess();
-    qApp->processEvents();
+    QtSingleApplication::instance()->processEvents();
     printOutput(process, console); // Считываются остатки из стандартного вывода, если они есть
 
     if((isError == false && process->exitCode() == 0) || isManualClose)
@@ -182,10 +192,10 @@ void ExecuteCommand::printOutput(QProcess *process, ConsoleEmulator *console)
     // Если считаны какие-то символы
     if(readBytes >= 1) {
         /*
-        QByteArray encodedString = "...";
-        QTextCodec *codec = QTextCodec::codecForName("KOI8-R");
-        QString string = codec->toUnicode(encodedString);
-        */
+           QByteArray encodedString = "...";
+           QTextCodec *codec = QTextCodec::codecForName("KOI8-R");
+           QString string = codec->toUnicode(encodedString);
+         */
 
         // Преобразование в QString, необходимо чтобы исключать строки с нулями
         // QString output=QString::fromLocal8Bit(buf); // Ранее было fromAscii, потом fromLatin1
@@ -193,7 +203,7 @@ void ExecuteCommand::printOutput(QProcess *process, ConsoleEmulator *console)
 
         if(output.length() > 0) {
             console->addConsoleOutput(output);
-            qApp->processEvents();
+            QtSingleApplication::instance()->processEvents();
             qDebug() << "[Console] " << output;
         }
     }
@@ -208,53 +218,53 @@ void ExecuteCommand::errorHanler(QProcess::ProcessError error)
 }
 
 
-/*
-void ExecuteCommand::run(void)
-{
- if(shell.length()==0)
-  critical_error("ExecuteCommand::run() : Not detect available shell");
 
- QString commandLine=shell.toAscii()+" \""+command.toAscii()+"\"";
+//void ExecuteCommand::run(void)
+//{
+//    if(shell.length() == 0)
+//        critical_error("ExecuteCommand::run() : Not detect available shell");
 
- ConsoleEmulator console;
- console.setWindowTitle(windowTitle);
- console.setMessageText(messageText);
- console.setConsoleOutput(commandLine);
- console.show();
+//    QString commandLine = shell.toAscii() + " \"" + command.toAscii() + "\"";
 
-
- qDebug() << "Run shell" << shell;
- qDebug() << "Run command" << command;
+//    ConsoleEmulator console;
+//    console.setWindowTitle(windowTitle);
+//    console.setMessageText(messageText);
+//    console.setConsoleOutput(commandLine);
+//    console.show();
 
 
- QProcess process;
- process.start(commandLine);
+//    qDebug() << "Run shell" << shell;
+//    qDebug() << "Run command" << command;
 
- qDebug() << "Process started";
 
- qApp->processEvents();
+//    QProcess process;
+//    process.start(commandLine);
 
- while(process.state()!=QProcess::NotRunning)
-  {
-   if(process.waitForReadyRead())
-    {
-     QString output=QString::fromAscii(process.readAll().data());
+//    qDebug() << "Process started";
 
-     if(output.length()>0)
-      {
-       console.addConsoleOutput(output);
+//    QtSingleApplication::instance()->processEvents();
 
-       qApp->processEvents();
+//    while(process.state() != QProcess::NotRunning)
+//    {
+//        if(process.waitForReadyRead())
+//        {
+//            QString output = QString::fromAscii(process.readAll().data());
 
-       qDebug() << "[Console] " << output;
-      }
-    }
+//            if(output.length() > 0)
+//            {
+//                console.addConsoleOutput(output);
 
-   // if((rand()%10)==1) qApp->processEvents();
-  }
+//                QtSingleApplication::instance()->processEvents();
 
- console.hide();
+//                qDebug() << "[Console] " << output;
+//            }
+//        }
 
- qDebug() << "Process stop";
-}
-*/
+//        // if((rand()%10)==1) QtSingleApplication::instance()->processEvents();
+//    }
+
+//    console.hide();
+
+//    qDebug() << "Process stop";
+//}
+

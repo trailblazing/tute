@@ -379,7 +379,7 @@ namespace browser {
                 }
             }
         }
-                );
+                                           );
 
     }
 
@@ -425,7 +425,7 @@ namespace browser {
                    , _style_source
                    , _profile
                    , Qt::MaximizeUsingFullscreenGeometryHint
-                   );        //, dock_widget
+                          ); //, dock_widget
 
 
         //        return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
@@ -593,7 +593,7 @@ namespace browser {
         , const QString &style_source
         , browser::Profile *_profile
         , Qt::WindowFlags flags
-        )
+                      )
         : QDockWidget(_main_window, flags)  //, _application(application)
         , _browsers(std::set<Browser * >())   // , _shadow_branch(_record_controller->source_model()->_browser_pages)
         , _tree_screen(_tree_screen)
@@ -650,7 +650,7 @@ namespace browser {
             // | Qt::SplashScreen  // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
             // | Qt::DockWidgetArea::NoDockWidgetArea
             | Qt::MaximizeUsingFullscreenGeometryHint
-            );
+                      );
 
         setAutoFillBackground(true);
         adjustSize();
@@ -659,7 +659,7 @@ namespace browser {
             | QDockWidget::DockWidgetVerticalTitleBar
             //| Qt::DockWidgetArea::NoDockWidgetArea
             //| Qt::MaximizeUsingFullscreenGeometryHint
-            );        // AllDockWidgetFeatures
+                   ); // AllDockWidgetFeatures
 
         //this->titleBarWidget()->hide();
 
@@ -723,7 +723,7 @@ namespace browser {
 
         if(_browsers.size() > 0) {
             for(auto i = _browsers.begin(); i != _browsers.end(); i++) {
-                if(*i) {
+                if(*i && *i != widget()) {
                     //                    _browsers.erase(i);
                     (*i)->deleteLater();   // delete *i;
                     //                    *i = nullptr;

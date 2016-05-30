@@ -134,7 +134,7 @@ public:
     //    void init_source_model(boost::intrusive_ptr<TreeItem> item);
     //    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
     //    bool no_view() {return _no_view;}
-    boost::intrusive_ptr<TreeItem> update_record_view(boost::intrusive_ptr<TreeItem> item);
+    boost::intrusive_ptr<TreeItem> synchronize_record_view(boost::intrusive_ptr<TreeItem> item);
     RecordScreen *record_screen() {return _record_screen;}
     //    RecordController *reocrd_controller() {return this;}
     //    RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}

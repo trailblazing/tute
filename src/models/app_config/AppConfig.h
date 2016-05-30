@@ -215,7 +215,7 @@ public:
 
 private:
 
-    QSettings *conf; // было static
+    QSettings *_app_conf; // было static
     QString get_parameter(QString name)const;
 
     QStringList remove_parameter_from_table(QString removeName, QStringList table);

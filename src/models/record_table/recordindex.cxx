@@ -25,22 +25,34 @@
 #include "models/record_table/RecordProxyModel.h"
 
 
+boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item){
+    return new RecordIndex(current_model, sibling_item, target_item);
+}
+
 RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem> target_item)
     : _current_model(current_model), _sibling_item(sibling_item), _target_item(target_item)
 {
     try {
-        if(!_sibling_item ? false : !_sibling_item->binder() ?  false : !((QModelIndex)_current_model()->index(_sibling_item)).isValid()) {throw std::exception();} // assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
+        if(!_sibling_item ? false : !_sibling_item->binder() ?  false : !((QModelIndex)_current_model()->index(_sibling_item)).isValid()) {throw std::exception(); } // assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
 
         if(_sibling_item == _target_item) throw std::exception();   // assert(_sibling_item != _target_item);
-    } catch(std::exception &e) {throw e;}
+    } catch(std::exception &e) {throw e; }
 }
 
-std::function<RecordModel *()> RecordIndex::current_model() const {return _current_model;}
+std::function<RecordModel *()> RecordIndex::current_model() const {
+    return _current_model;
+}
 
-QModelIndex RecordIndex::sibling_index()const {return _current_model()->index(_sibling_item);}
+QModelIndex RecordIndex::sibling_index() const {
+    return _current_model()->index(_sibling_item);
+}
 
 // QModelIndex RecordModel::ModelIndex::current_index()const{}
 
-boost::intrusive_ptr<TreeItem> RecordIndex::sibling() const {return _sibling_item;}
+boost::intrusive_ptr<TreeItem> RecordIndex::sibling() const {
+    return _sibling_item;
+}
 
-boost::intrusive_ptr<TreeItem> RecordIndex::target() const {return _target_item;}
+boost::intrusive_ptr<TreeItem> RecordIndex::target() const {
+    return _target_item;
+}

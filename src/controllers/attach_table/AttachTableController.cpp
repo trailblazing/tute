@@ -62,7 +62,8 @@ AttachTableView *AttachTableController::view(void)
 // Основной метод установки указателя на данные
 void AttachTableController::attach_table_data(std::shared_ptr<AttachTableData> attach_table_data)
 {
-    _model->setData(QModelIndex(), QVariant::fromValue(*attach_table_data), ATTACHTABLE_ROLE_TABLE_DATA);
+    if(attach_table_data)
+        _model->setData(QModelIndex(), QVariant::fromValue(*attach_table_data), ATTACHTABLE_ROLE_TABLE_DATA);
 }
 
 
@@ -354,11 +355,11 @@ void AttachTableController::on_edit_file_name(void)
     // Запрос нового имени файла
     bool isOk;
     QString newFileName = QInputDialog::getText(_view,
-                                                tr("File name editing"),
-                                                tr("File name:"),
-                                                QLineEdit::Normal,
-                                                fileName,
-                                                &isOk);
+            tr("File name editing"),
+            tr("File name:"),
+            QLineEdit::Normal,
+            fileName,
+            &isOk);
 
     if(!isOk)
         return; // Была нажата кнопка Cancel
@@ -405,7 +406,7 @@ void AttachTableController::on_delete_attach(void)
     AttachTableData *attachTableData = attach_table_data();
 
     foreach(QString id, selectedId)
-        attachTableData->delete_attach(id);
+    attachTableData->delete_attach(id);
 
 
     // Сохранение дерева веток
@@ -473,12 +474,12 @@ void AttachTableController::on_show_attach_info(void)
     ReduceMessageBox messageBox;
     messageBox.setText("Attach file info");
     messageBox.setDetailedText(QString("<pre><p style='font-family:monospace'>") + \
-                               "<b>Attach:</b> " + attachTableData->file_name_by_id(id) + "\n" + \
-                               "<b>Attach ID:</b> " + id + "\n" + \
-                               "<b>Attach type:</b> " + attachTableData->attach(id).getField("type") + "\n" + \
-                               "<b>File size:</b> " + QString::number(attachTableData->attach(id).getFileSize()) + " bytes\n" + \
-                               "<b>Full path:</b> " + attachTableData->absolute_inner_file_name_by_id(id) + \
-                               "</p></pre>"
+        "<b>Attach:</b> " + attachTableData->file_name_by_id(id) + "\n" + \
+        "<b>Attach ID:</b> " + id + "\n" + \
+        "<b>Attach type:</b> " + attachTableData->attach(id).getField("type") + "\n" + \
+        "<b>File size:</b> " + QString::number(attachTableData->attach(id).getFileSize()) + " bytes\n" + \
+        "<b>Full path:</b> " + attachTableData->absolute_inner_file_name_by_id(id) + \
+        "</p></pre>"
                               );
     messageBox.setDetailedTextReadOnly(true);
     messageBox.setStandardButtons(QDialogButtonBox::Ok); // Для двух кнопок можно так: QDialogButtonBox::Ok | QDialogButtonBox::Cancel

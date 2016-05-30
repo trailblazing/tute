@@ -1450,58 +1450,46 @@ boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(const boost::intrusive_
 }
 
 
-boost::intrusive_ptr<Linker> TreeItem::remove(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal)
+boost::intrusive_ptr<TreeItem> TreeItem::delete_permanent(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal)
 {
-    return ItemsFlat::remove(_equal);
+    return ItemsFlat::delete_permanent(_equal);
 }
 
 
-boost::intrusive_ptr<Linker> TreeItem::delete_permanent_recursive()
+boost::intrusive_ptr<TreeItem> TreeItem::delete_permanent_recursive(std::function<bool(boost::intrusive_ptr<const TreeItem>)> condition)
 {
-    boost::intrusive_ptr<Linker> _result(nullptr);
+    boost::intrusive_ptr<TreeItem> result(nullptr);
 
-    if(_linker) {                            // _parent_item
-        if(_linker->host_parent())
-            _result = _linker->host_parent()->delete_permanent_recursive(_linker);                                                                          // boost::intrusive_ptr<TreeItem>(this)
-    }
-
-    //    if(_up_linker) {
-    //        _result = _up_linker->host();
-    //        _up_linker.reset();
-    //    }
-
-    return _result;
-}
-
-boost::intrusive_ptr<Linker> TreeItem::delete_permanent_empty_recursive()
-{
-    boost::intrusive_ptr<Linker> result(nullptr);                         // = false;
-
-    if(_linker                           // _parent_item
-        && is_empty()) {
+    if(_linker && condition(this)) {                            // _parent_item
         auto parent = _linker->host_parent();
-
         if(parent) {
-            result = delete_permanent_recursive();
-
-            //        if(_parent_item->parent() && _parent_item->is_empty()) {
-            //        _parent_item
-
-            parent->delete_permanent_empty_recursive();
+            result = parent->delete_permanent_recursive(_linker, condition);
+            parent->delete_permanent_recursive(condition);
         }
-
-        //            if(_parent_item->remove(boost::intrusive_ptr<TreeItem>(this)))
-        //                result = true;
-        //        }
-
     }
 
     return result;
 }
 
+//boost::intrusive_ptr<TreeItem> TreeItem::delete_permanent_recursive_empty()
+//{
+//    boost::intrusive_ptr<TreeItem> result(nullptr);                         // = false;
+
+//    if(_linker && is_empty()) {
+//        auto parent = _linker->host_parent();
+
+//        if(parent) {
+//            result = delete_permanent_recursive();
+//            parent->delete_permanent_recursive_empty();
+//        }
+//    }
+
+//    return result;
+//}
 
 
-boost::intrusive_ptr<Linker> TreeItem::delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker)
+
+boost::intrusive_ptr<TreeItem> TreeItem::delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker, std::function<bool(boost::intrusive_ptr<const TreeItem>)> condition)
 {
 
     //    if(_source_item->parent() != this)_source_item->self_remove_from_parent();
@@ -1525,10 +1513,10 @@ boost::intrusive_ptr<Linker> TreeItem::delete_permanent_recursive(boost::intrusi
     //    //    self_remove_from_parent_as_empty();
 
     //    return result;
-    return ItemsFlat::delete_permanent_recursive(_to_be_removed_linker);
+    return ItemsFlat::delete_permanent_recursive(_to_be_removed_linker, condition);
 }
 
-QList<boost::intrusive_ptr<Linker> > TreeItem::delete_permanent_recursive(int position, int count)
+QList<boost::intrusive_ptr<TreeItem> > TreeItem::delete_permanent_recursive(int position, int count)
 {
     //    //    bool result = false;
     //    boost::intrusive_ptr<TreeItem> _result(nullptr);
@@ -1558,10 +1546,14 @@ void TreeItem::traverse_direct(const std::function< void(boost::intrusive_ptr<Li
 
 boost::intrusive_ptr<Linker> TreeItem::dangle()
 {
-    auto p = _linker->host_parent();
+    auto parent_ = _linker->host_parent();
 
-    if(p) {
-        p->_child_linkers.removeOne(_linker);
+    if(parent_) {
+
+        parent_->delete_permanent([&] (boost::intrusive_ptr<const Linker> il){
+            return il->host()->id() == this->id() && il == _linker;
+        });
+//        p->_child_linkers.removeOne(_linker);
     }
 
     if(_linker->host_parent()) _linker->host_parent().reset();
@@ -1967,12 +1959,12 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
         }
 
         if(!found) {
-            cut_child_linker->parent(this);                                                                          //_child_items << i;
-            merge_count++;
-            new_count++;
+            auto r = cut_child_linker->parent(this);                                                                          //_child_items << i;
+
+            if(r) {merge_count++; new_count++; }
         } else {
-            found_item_keep->merge(found_item_remove);
-            merge_count++;
+            auto r = found_item_keep->merge(found_item_remove);
+            if(r) merge_count++;
         }
 
         //            for(auto j : _child_items) {
@@ -3175,7 +3167,7 @@ const boost::intrusive_ptr<Binder> &&TreeItem::binder() const
 
 void TreeItem::binder(boost::intrusive_ptr<Binder> &&binder_)
 {
-    if(binder_ != _binder) this->_binder = binder_;
+    if(binder_ != _binder) this->_binder = std::forward<boost::intrusive_ptr<Binder> >(binder_);
 }
 
 

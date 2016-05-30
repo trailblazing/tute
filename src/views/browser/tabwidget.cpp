@@ -277,7 +277,7 @@ namespace browser {
         , Browser       *_browser
         , MainWindow    *_main_window
         , browser::Profile  *_profile
-        )
+                        )
         : QTabWidget(_browser)
         , _tree_screen(_tree_screen)
         , _editor_screen(_editor_screen)
@@ -287,8 +287,8 @@ namespace browser {
             , this
             , _record_screen
             , _main_window
-            )
-            )
+                                                 )
+                            )
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
         , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -330,26 +330,25 @@ namespace browser {
         connect(
             _tabbar
             , &TabBar::newTab             //                , this
-            , [&] () {
+            , [&, tree_view, parent, current_item] () {
 
-            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+//            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
-            try {
-                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
-                }));
-            } catch(std::exception &e) {}
+//            try {
+//                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
+//                }));
+//            } catch(std::exception &e) {}
 
-            if(modelindex) {
-                modelindex->item_bind(
-                    current_item
-                    , QUrl(Browser::_defaulthome)
-                    , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                    , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                    return it_->field("url") == Browser::_defaulthome;
-                }
-                    )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-            }
+//            if(modelindex) {
+            TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_bind(
+                current_item
+                , QUrl(Browser::_defaulthome)
+                , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                return it_->field("url") == Browser::_defaulthome;
+            })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+//            }
 
         });
 
@@ -377,28 +376,27 @@ namespace browser {
         connect(
             _newtabaction
             , &QAction::triggered             //                , this
-            , [&] (bool make_current) {
+            , [&, tree_view, parent, current_item] (bool make_current) {
             Q_UNUSED(make_current)
             // auto tree_view = _tree_screen->tree_view();
 
-            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+//            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
-            try {
-                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
-                }));
-            } catch(std::exception &e) {}
+//            try {
+//                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
+//                }));
+//            } catch(std::exception &e) {}
 
-            if(modelindex) {
-                modelindex->item_bind(
-                    current_item
-                    , QUrl(Browser::_defaulthome)
-                    , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), modelindex, std::placeholders::_2, std::placeholders::_3)
-                    , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                    return it_->field("url") == Browser::_defaulthome;
-                }
-                    )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-            }
+//            if(modelindex) {
+            TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_bind(
+                current_item
+                , QUrl(Browser::_defaulthome)
+                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                return it_->field("url") == Browser::_defaulthome;
+            })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+//            }
 
         });
 
@@ -485,6 +483,82 @@ namespace browser {
 
     void TabWidget::currentChanged(int index)   // switch tab
     {
+
+        auto synchronize = [&] (WebView *view_current ){
+                view_current->setFocus();
+
+                //                auto controller = webView->recordtablecontroller();
+                auto it_current = view_current->page()->item();
+
+                if(it_current) {                                                 // controller != nullptr &&
+                    //                    QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
+                    //                    int position = controller->convertProxyIndexToPos(proxyindex);
+                    //                    RecordTableView *recordtableview = controller->getView();
+                    //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
+                    view_current->setFocus();
+
+                    auto _tree_view = _tree_screen->tree_view();
+                    QModelIndex index_on_tree = _tree_view->source_model()->index(it_current);
+
+                    if(index_on_tree.isValid()) {
+                        if(_tree_view->current_index() != index_on_tree) {
+//                            //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
+//                            boost::intrusive_ptr<TreeIndex> tree_index;
+//                            try {tree_index = new TreeIndex([&] {return _tree_view->source_model(); }, it_current->parent(), it_current->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                                    return il == it_current->linker() && il->host() == it_current && it_current->parent() == il->host_parent();
+//                                })); } catch(std::exception &e) {}
+
+//                            if(tree_index) {
+                            // if(it_current != _tree_view->current_item())
+                            _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model(); }, it_current->parent(), it_current));
+
+
+//                            if(_record_controller->view()->selection_first<IdType>() != it_current->field("id")) {
+//                                _record_controller->cursor_to_index(_record_controller->index<PosProxy>(it_current));                                                                                                                                                         // IdType(it->field("id"))
+//                            }
+////                            }
+                        }
+                    }
+                    else {
+                        auto _tree_it_current = _tree_view->current_item();
+                        auto _index_record_table_tree_item = _record_controller->source_model()->index(_tree_it_current);
+
+                        if(((QModelIndex)_index_record_table_tree_item).isValid()) {
+                            auto pos_source = _record_controller->index<PosSource>(_index_record_table_tree_item);
+
+                            currentChanged(pos_source);
+                        } else {
+                            auto index_tree_current = _tree_view->current_index();
+
+
+                            if(index_tree_current.isValid()) {
+                                _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model(); }, _tree_it_current->parent(), _tree_it_current));    //
+                            }
+                            else {
+                                auto tree_previous = _tree_view->previous_index();
+                                auto _tree_it_previous = _tree_view->source_model()->item(tree_previous);
+                                if(tree_previous.isValid()) {
+                                    _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model(); }, _tree_it_previous->parent(), _tree_it_previous));    // _tree_view->index_invoke(tree_previous);
+                                }
+                            }
+                        }
+                    }
+
+                    auto _mainwindow = globalparameters.mainwindow();
+
+                    if(!_mainwindow->windowTitle().contains(view_current->page()->title())) {_mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title()); }
+
+                    //                    webView->setFocus();
+                    MetaEditor *metaeditor = globalparameters.meta_editor();                                                                     // find_object<MetaEditor>(meta_editor_singleton_name);
+                    assert(metaeditor);
+
+                    if(metaeditor->item() != it_current) {
+
+                        view_current->page()->sychronize_metaeditor_to_item();                                                                                         // metaeditor->bind(record);
+                    }
+                }
+            };
+
         WebView *view_current = this->webView(index);
 
         if(view_current) {          // return;
@@ -507,30 +581,35 @@ namespace browser {
                 disconnect(view_previous->page()->profile(), &Profile::downloadRequested, this, &TabWidget::downloadRequested);
                 disconnect(static_cast<QWebEnginePage *>(view_previous->page()), &QWebEnginePage::fullScreenRequested, this, &TabWidget::fullScreenRequested);
 
-                auto it_current = view_current->page()->item();
+//                auto it_current = view_current->page()->item();
 
-                if(it_current) {
+//                if(it_current) {
 
-                    auto _tree_view = _tree_screen->tree_view();
-                    QModelIndex _i = _tree_view->source_model()->index(it_current);
+//                    auto _tree_view = _tree_screen->tree_view();
+//                    QModelIndex _i = _tree_view->source_model()->index(it_current);
 
-                    if(_i.isValid() && _tree_view->current_index() != _i) {
-                        //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
-                        //                        _tree_view->selectionModel()->select(_i, current_tree_selection_mode);  //
-                        auto parent = it_current->parent();
-                        boost::intrusive_ptr<TreeIndex> tree_index;
-                        try {tree_index = new TreeIndex([&] {return _tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                                return il == it_current->linker() && il->host() == it_current && it_current->parent() == il->host_parent();
-                            })); } catch(std::exception &e) {throw e; }
+//                    if(_i.isValid() && _tree_view->current_index() != _i) {
+//                        //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
+//                        //                        _tree_view->selectionModel()->select(_i, current_tree_selection_mode);  //
+//                        auto parent = it_current->parent();
+////                        boost::intrusive_ptr<TreeIndex> tree_index;
+////                        try {tree_index = new TreeIndex([&] {return _tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+////                                return il == it_current->linker() && il->host() == it_current && it_current->parent() == il->host_parent();
+////                            })); } catch(std::exception &e) {throw e; }
 
-                        _tree_view->select_as_current(tree_index);
+//                        _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model(); }, parent, it_current));
 
-                        //                    //                    globalparameters.mainwindow()
-                        //                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
-                        //                        _record_controller->select_id(_record->field("id"));
-                        //                    }
-                    }
-                }
+//                        //                    //                    globalparameters.mainwindow()
+//                        //                    if(_record_controller->view()->selection_first_id() != _record->field("id")) {
+//                        //                        _record_controller->select_id(_record->field("id"));
+//                        //                    }
+//                    }
+//                }
+
+
+                synchronize(view_current);
+
+
             }
 
 #if defined(QWEBENGINEVIEW_STATUSBARMESSAGE)
@@ -546,9 +625,8 @@ namespace browser {
                 mapper->updateCurrent(view_current->page());
             }
 
-            emit setCurrentTitle(                             //"test"//
-                view_current->title()
-                );
+            emit setCurrentTitle(view_current->title());                             //"test"//
+
 
             _lineedits->setCurrentIndex(index);
             emit loadProgress(view_current->progress());
@@ -556,75 +634,8 @@ namespace browser {
 
             if(view_current->page()->url().isEmpty()) {
                 _lineedits->currentWidget()->setFocus();
-            } else {
-                view_current->setFocus();
-
-                //                auto controller = webView->recordtablecontroller();
-                auto it_current = view_current->page()->item();
-
-                if(it_current) {                                                 // controller != nullptr &&
-                    //                    QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
-                    //                    int position = controller->convertProxyIndexToPos(proxyindex);
-                    //                    RecordTableView *recordtableview = controller->getView();
-                    //                    if(recordtableview)recordtableview->setSelectionToPos(position); // work
-                    view_current->setFocus();
-
-                    auto _tree_view = _tree_screen->tree_view();
-                    QModelIndex tree_index_it_current = _tree_view->source_model()->index(it_current);
-
-                    if(tree_index_it_current.isValid()) {
-                        if(_tree_view->current_index() != tree_index_it_current) {
-                            //                        _tree_view->selectionModel()->setCurrentIndex(_i, QItemSelectionModel::SelectionFlag::Current);
-                            boost::intrusive_ptr<TreeIndex> tree_index;
-                            try {tree_index = new TreeIndex([&] {return _tree_view->source_model(); }, it_current->parent(), it_current->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                                    return il == it_current->linker() && il->host() == it_current && it_current->parent() == il->host_parent();
-                                })); } catch(std::exception &e) {}
-
-                            if(tree_index) {
-                                // if(it_current != _tree_view->current_item())
-                                _tree_view->select_as_current(tree_index);
-
-                                //                    //                    globalparameters.mainwindow()
-                                if(_record_controller->view()->selection_first<IdType>() != it_current->field("id")) {
-                                    _record_controller->cursor_to_index(_record_controller->index<PosProxy>(it_current));                                                                                                                                                     // IdType(it->field("id"))
-                                }
-                            }
-                        }
-                    } else {
-                        auto _index_record_table = _record_controller->source_model()->index(_tree_view->current_item());
-
-                        if(((QModelIndex)_index_record_table).isValid()) {
-                            auto pos_source = _record_controller->index<PosSource>(_index_record_table);
-
-                            currentChanged(pos_source);
-                        } else {
-                            auto tree_current = _tree_view->current_index();
-
-                            if(tree_current.isValid())
-                                _tree_view->index_invoke(tree_current);
-                            else {
-                                auto tree_previous = _tree_view->previous_index();
-
-                                if(tree_previous.isValid())
-                                    _tree_view->index_invoke(tree_previous);
-                            }
-                        }
-                    }
-
-                    auto _mainwindow = globalparameters.mainwindow();
-
-                    if(!_mainwindow->windowTitle().contains(view_current->page()->title())) {_mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title()); }
-
-                    //                    webView->setFocus();
-                    MetaEditor *metaeditor = globalparameters.meta_editor();                                                                     // find_object<MetaEditor>(meta_editor_singleton_name);
-                    assert(metaeditor);
-
-                    if(metaeditor->item() != it_current) {
-
-                        view_current->page()->sychronize_metaeditor_to_item();                                                                                         // metaeditor->bind(record);
-                    }
-                }
             }
+//            else {}
         }
     }
 
@@ -801,32 +812,29 @@ namespace browser {
             if(view == nullptr) {
                 //        if(view == nullptr) {
 
+//                {
+//                    // line edit, move after new WebView!!!
+//                    UrlLineEdit *urlLineEdit = new UrlLineEdit;
+//                    QLineEdit *lineEdit = urlLineEdit->lineEdit();
 
+//                    if(!_lineeditcompleter && count() > 0) {
+//                        HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
+//                        completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
+//                        _lineeditcompleter = new QCompleter(completionModel, this);
+//                        // Should this be in Qt by default?
+//                        QAbstractItemView *popup = _lineeditcompleter->popup();
+//                        QListView *listView = qobject_cast<QListView *>(popup);
 
+//                        if(listView)
+//                            listView->setUniformItemSizes(true);
+//                    }
 
-                //                // line edit, move after new WebView!!!
-                //                UrlLineEdit *urlLineEdit = new UrlLineEdit;
-                //                QLineEdit *lineEdit = urlLineEdit->lineEdit();
+//                    lineEdit->setCompleter(_lineeditcompleter);
+//                    connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
+//                    _lineedits->addWidget(urlLineEdit);
+//                    _lineedits->setSizePolicy(lineEdit->sizePolicy());
 
-                //                if(!_lineeditcompleter && count() > 0) {
-                //                    HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
-                //                    completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
-                //                    _lineeditcompleter = new QCompleter(completionModel, this);
-                //                    // Should this be in Qt by default?
-                //                    QAbstractItemView *popup = _lineeditcompleter->popup();
-                //                    QListView *listView = qobject_cast<QListView *>(popup);
-
-                //                    if(listView)
-                //                        listView->setUniformItemSizes(true);
-                //                }
-
-                //                lineEdit->setCompleter(_lineeditcompleter);
-                //                connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
-                //                _lineedits->addWidget(urlLineEdit);
-                //                _lineedits->setSizePolicy(lineEdit->sizePolicy());
-
-
-
+//                }
 
                 // optimization to delay creating the more expensive WebView, history, etc
                 //        if(count() == 0) {return new_dummy();}
@@ -844,7 +852,7 @@ namespace browser {
                         , _browser
                         , this
                         , _record_controller
-                        );
+                                  );
                 //        } else {
                 //            view = record->unique_page()->view();
                 //        }
@@ -857,31 +865,31 @@ namespace browser {
                 assert(view->page()->binder()->integrity_internal());
                 assert(view->page()->binder()->integrity_external(target, view->page()));
 
+                {
+
+                    // line edit
+                    UrlLineEdit *urlLineEdit = new UrlLineEdit(view);
+                    QLineEdit *lineEdit = urlLineEdit->lineEdit();
+
+                    if(!_lineeditcompleter && count() > 0) {
+                        HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
+                        completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
+                        _lineeditcompleter = new QCompleter(completionModel, this);
+                        // Should this be in Qt by default?
+                        QAbstractItemView *popup = _lineeditcompleter->popup();
+                        QListView *listView = qobject_cast<QListView *>(popup);
+
+                        if(listView)
+                            listView->setUniformItemSizes(true);
+                    }
+
+                    lineEdit->setCompleter(_lineeditcompleter);
+                    connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
+                    _lineedits->addWidget(urlLineEdit);
+                    _lineedits->setSizePolicy(lineEdit->sizePolicy());
 
 
-                // line edit
-                UrlLineEdit *urlLineEdit = new UrlLineEdit(view);
-                QLineEdit *lineEdit = urlLineEdit->lineEdit();
-
-                if(!_lineeditcompleter && count() > 0) {
-                    HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
-                    completionModel->setSourceModel(QtSingleApplication::historyManager()->historyFilterModel());
-                    _lineeditcompleter = new QCompleter(completionModel, this);
-                    // Should this be in Qt by default?
-                    QAbstractItemView *popup = _lineeditcompleter->popup();
-                    QListView *listView = qobject_cast<QListView *>(popup);
-
-                    if(listView)
-                        listView->setUniformItemSizes(true);
                 }
-
-                lineEdit->setCompleter(_lineeditcompleter);
-                connect(lineEdit, &QLineEdit::returnPressed, this, &TabWidget::lineEditReturnPressed);
-                _lineedits->addWidget(urlLineEdit);
-                _lineedits->setSizePolicy(lineEdit->sizePolicy());
-
-
-
 
 
                 //                urlLineEdit->setWebView(view);    // move inside UrlLineEdit::UrlLineEdit
@@ -950,12 +958,12 @@ namespace browser {
                 //                assert(result->binder()->integrity_external(result, view->page()));
 
                 auto page_item = view->page()->item();
-                boost::intrusive_ptr<TreeIndex> tree_index;
-                try {tree_index = new TreeIndex([&] () {
-                        return _tree_screen->tree_view()->source_model();
-                    }, page_item); } catch(std::exception &e) {throw e; }
+//                boost::intrusive_ptr<TreeIndex> tree_index;
+//                try {tree_index = new TreeIndex([&] () {return _tree_screen->tree_view()->source_model();}, page_item); } catch(std::exception &e) {throw e; }
 
-                if(page_item != target) page_item = _tree_screen->tree_view()->view_merge(tree_index, target);
+                if(page_item != target) page_item = _tree_screen->tree_view()->view_merge(TreeIndex::instance([&] () {
+                        return _tree_screen->tree_view()->source_model();
+                    }, page_item->parent(), page_item), target);
 
                 //            if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
@@ -969,12 +977,12 @@ namespace browser {
             assert(result->binder()->integrity_external(result, view->page()));
         } else {                    // id is equal
             auto page_item = view->page()->item();
-            boost::intrusive_ptr<TreeIndex> tree_index;
-            try {tree_index = new TreeIndex([&] () {
-                    return _tree_screen->tree_view()->source_model();
-                }, page_item); } catch(std::exception &e) {throw e; }
+//            boost::intrusive_ptr<TreeIndex> tree_index;
+//            try {tree_index = new TreeIndex([&] () {return _tree_screen->tree_view()->source_model();}, page_item); } catch(std::exception &e) {throw e; }
 
-            if(page_item != target) page_item = _tree_screen->tree_view()->view_merge(tree_index, target);
+            if(page_item != target) page_item = _tree_screen->tree_view()->view_merge(TreeIndex::instance([&] () {
+                    return _tree_screen->tree_view()->source_model();
+                }, page_item->parent(), page_item), target);
 
             //            if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
@@ -1028,7 +1036,7 @@ namespace browser {
 
 
         //        if(!_record_controller->source_model()->find(item))
-        _record_controller->update_record_view(result);        //        _record_controller->addnew_item_fat(item);
+        _record_controller->synchronize_record_view(result);        //        _record_controller->addnew_item_fat(result);
 
         //        item->activate(); // activate after initialization of browser
 
@@ -1161,7 +1169,7 @@ namespace browser {
                 hasFocus = _view_to_close->hasFocus();
 
                 if(_profile == globalparameters.profile()                                                 // QWebEngineProfile::defaultProfile()
-                    ) {
+                  ) {
                     _recentlyclosedtabsaction->setEnabled(true);
                     _recentlyclosedtabs.prepend(_view_to_close->page()->url());
 
@@ -1281,7 +1289,7 @@ namespace browser {
 
 //deprecated, profile should be assigned at the construction of BrowserPage
     void TabWidget::setProfile(Profile *profile // QWebEngineProfile *profile
-        )
+                              )
     {
         _profile = profile;
 
@@ -1331,7 +1339,7 @@ namespace browser {
         if(currentIndex() == index)
             emit setCurrentTitle(
                 _real_title                         // "test"//
-                );
+                                );
 
         QtSingleApplication::historyManager()->updateHistoryItem(webView->page()->url(), title);
     }
@@ -1375,7 +1383,7 @@ namespace browser {
         if(!childAt(event->pos())
             // Remove the line below when QTabWidget does not have a one pixel frame
             && event->pos().y() < (tabBar()->y() + tabBar()->height())
-            ) {
+          ) {
             auto tree_view = _tree_screen->tree_view();
 
             auto current_item = tree_view->current_item();
@@ -1383,24 +1391,23 @@ namespace browser {
 
             if(!parent) throw std::exception();
 
-            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+//            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
-            try {
-                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
-                }));
-            } catch(std::exception &e) {}
+//            try {
+//                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
+//                }));
+//            } catch(std::exception &e) {}
 
-            if(modelindex) {
-                modelindex->item_bind(
-                    current_item
-                    , QUrl(Browser::_defaulthome)
-                    , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                    , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                    return it_->field("url") == Browser::_defaulthome;
-                }
-                    )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-            }
+//            if(modelindex) {
+            TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_bind(
+                current_item
+                , QUrl(Browser::_defaulthome)
+                , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                return it_->field("url") == Browser::_defaulthome;
+            })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+//            }
 
             return;
         }
@@ -1435,7 +1442,7 @@ namespace browser {
             event->button() == Qt::MidButton && !childAt(event->pos())
             // Remove the line below when QTabWidget does not have a one pixel frame
             && event->pos().y() < (tabBar()->y() + tabBar()->height())
-            ) {
+          ) {
             QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
 
             auto tree_view = _tree_screen->tree_view();
@@ -1445,26 +1452,25 @@ namespace browser {
 
             if(!parent) throw std::exception();
 
-            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+//            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
-            try {
-                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
-                }));
-            } catch(std::exception &e) {}
+//            try {
+//                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                    return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
+//                }));
+//            } catch(std::exception &e) {}
 
-            if(modelindex) {
-                if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
-                    modelindex->item_bind(
-                        current_item
-                        , url
-                        , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
-                        , [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                        return it_->field("url") == url.toString();
-                    }
-                        )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-                }
+//            if(modelindex) {
+            if(!url.isEmpty() && url.isValid() && !url.scheme().isEmpty()) {
+                TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_bind(
+                    current_item
+                    , url
+                    , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                    , [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                    return it_->field("url") == url.toString();
+                })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
             }
+//            }
         }
     }
 
@@ -1484,15 +1490,15 @@ namespace browser {
 
                 if(!parent) throw std::exception();
 
-                boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+//                boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
-                try {
-                    modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                        return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
-                    }));
-                } catch(std::exception &e) {}
+//                try {
+//                    modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                        return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
+//                    }));
+//                } catch(std::exception &e) {}
 
-                auto it = modelindex->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                auto it = TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
                     return it_->field("url") == _url.toString();
                 });
 
@@ -1553,7 +1559,7 @@ namespace browser {
             if(WebView *view = qobject_cast<WebView *>(widget(i))) {
                 tabs_url.append(
                     view->page()->url().toString()
-                    );
+                               );
             } else {
                 tabs_url.append(QString::null);
             }
@@ -1591,29 +1597,28 @@ namespace browser {
 
             auto tree_view = _tree_screen->tree_view();
 
-            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+            boost::intrusive_ptr<TreeIndex> modelindex = TreeIndex::instance([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item());
 
-            try {
-                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                    return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();
-                }));
-            } catch(std::exception &e) {}
+//            try {
+//                modelindex = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
+//                    return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();
+//                }));
+//            } catch(std::exception &e) {}
 
             if(modelindex) {
                 if(i != 0) {
                     modelindex->item_bind(
                         tree_view->current_item()
                         , _url
-                        , std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3)
+                        , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                         , [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
                         return it_->field("url") == _url;
-                    }
-                        )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                    })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                 } else {
                     if(webView(0)->page()->url() != _url) {
                         //                    webView(0)->load(_record);    //loadUrl(_url);
                         //                    auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
-                        auto it = modelindex->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                        auto it = modelindex->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
                             return it_->field("url") == _url;
                         });
                         //                        boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);

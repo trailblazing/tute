@@ -653,10 +653,10 @@ void RecordView::mousePressEvent(QMouseEvent *event)
         auto it = _record_controller->source_model()->item(PosSource(next_index.row()));
         assert(it);
         auto tree_view = _tree_screen->tree_view();
-        boost::intrusive_ptr<TreeIndex> tree_index;
-        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+//        boost::intrusive_ptr<TreeIndex> tree_index;
+//        try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
-        tree_view->select_as_current(tree_index);
+        tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
     }
 
     //    else {

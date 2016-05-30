@@ -214,14 +214,14 @@ public:
 
 
     void binder_reset();
-    boost::intrusive_ptr<Linker> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker);
+    boost::intrusive_ptr<TreeItem> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker, std::function<bool(boost::intrusive_ptr<const TreeItem>)> condition);
 
     boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);
     // Возвращение ссылки на родительский элемент
     boost::intrusive_ptr<TreeItem> parent() const;
 
     // Удаление потомков, начиная с позиции position массива childItems
-    QList<boost::intrusive_ptr<Linker> > delete_permanent_recursive(int position, int count);
+    QList<boost::intrusive_ptr<TreeItem> > delete_permanent_recursive(int position, int count);
 
 
     boost::intrusive_ptr<Linker> dangle();
@@ -335,9 +335,9 @@ public:
 
     bool is_empty() const;
     bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it) const;
-    boost::intrusive_ptr<Linker> remove(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal);
-    boost::intrusive_ptr<Linker> delete_permanent_recursive();
-    boost::intrusive_ptr<Linker> delete_permanent_empty_recursive();
+    boost::intrusive_ptr<TreeItem> delete_permanent(const std::function<bool(boost::intrusive_ptr<const Linker>)> &_equal);
+    boost::intrusive_ptr<TreeItem> delete_permanent_recursive(std::function<bool(boost::intrusive_ptr<const TreeItem>)> condition);
+//    boost::intrusive_ptr<TreeItem> delete_permanent_recursive_empty();
     boost::intrusive_ptr<TreeItem> sibling() const;
     boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeItem> cut);
     int count_children_all();

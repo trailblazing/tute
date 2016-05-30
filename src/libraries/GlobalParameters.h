@@ -102,7 +102,7 @@ public:
 
     // Файл стилей может создаваться и после развертывания начальных файлов MyTetra
     // Так как в более старых версиях MyTetra его еще небыло
-    void create_stylesheet_file(QString dirName);
+    void create_stylesheet_file(QString dirname);
 
     void style_source(const QString &source) {
         _style_source = source;
@@ -133,7 +133,7 @@ private:
 
     void init_workdirectory(void);
     bool find_workdirectory(void);
-    bool is_mytetra_ini_config(QString fileName);
+    bool is_mytetra_ini_config(QString filename);
     void create_standard_programfiles(void);
     void create_portable_programfiles(void);
     void create_first_programfiles(QString dirName);

@@ -186,7 +186,7 @@ namespace browser {
             for(auto &it : _browsers) { // for(auto it = _browsers.begin(); it != _browsers.end(); ++it) {
                 //                if(_browsers.size() > 0) {
                 if(it)
-                    if(it == this)
+                    if(it == this && it != _entrance->widget())
                         _browsers.erase(it);
 
                 //                } else
@@ -688,17 +688,17 @@ namespace browser {
 
         _find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
-        auto vtab = globalparameters.vtab_tree();
-        int index = vtab->indexOf(_record_screen);
+        auto vtab_tree = globalparameters.vtab_tree();
+        int index = vtab_tree->indexOf(_record_screen);
 
-        if(vtab->currentIndex() != index) {
-            auto previous_browser = static_cast<Browser *>(vtab->currentWidget());
+        if(vtab_tree->currentIndex() != index) {
+            auto previous_browser = static_cast<Browser *>(vtab_tree->currentWidget());
 
             if(previous_browser) {
                 previous_browser->lower();
             }
 
-            vtab->setCurrentIndex(index);
+            vtab_tree->setCurrentIndex(index);
 
             if(!_tabmanager->find([&] (boost::intrusive_ptr<const ::Binder> b) {
                 return b->host()->id() == _tree_screen->tree_view()->current_item()->id();
@@ -706,17 +706,7 @@ namespace browser {
                 auto it = _record_screen->record_controller()->view()->current_item();
 
                 if(it) {
-                    boost::intrusive_ptr<TreeIndex> tree_index(nullptr);
-
-                    try {
-                        tree_index = new TreeIndex([&] { return _tree_screen->tree_view()->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                            return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
-                        }));
-                    } catch(std::exception &) {
-                    }
-
-                    if(tree_index)
-                        _tree_screen->tree_view()->select_as_current(tree_index);
+                    _tree_screen->tree_view()->select_as_current(TreeIndex::instance([&] { return _tree_screen->tree_view()->source_model(); }, it->parent(), it));
                 }
             }
         }
@@ -1164,7 +1154,7 @@ namespace browser {
         //_historyback = findscreen->historyback();
 
         _historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
-            );                  //this
+                             ); //this
 
         _historybackmenu = new QMenu(this);
         _historyback->setMenu(_historybackmenu);
@@ -1174,7 +1164,7 @@ namespace browser {
         //navigater->addAction(_historyback);
 
         _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
-            );                     //this
+                                ); //this
 
         _historyforwardmenu = new QMenu(this);
         connect(_historyforwardmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowForwardMenu);
@@ -1560,28 +1550,20 @@ namespace browser {
         settings.beginGroup(QLatin1String("MainWindow"));
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
         auto tree_view = _tree_screen->tree_view();
-        boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
+//        boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
         auto current_item = tree_view->current_item();
         auto parent = current_item->parent();
 
-        if(!parent)
-            throw std::exception();
+        if(!parent) {qDebug() << "!parent"; throw std::exception(); }
 
-        try {
-            modelindex = new TreeIndex([&] { return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-                return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
-            }));
-        } catch(std::exception &) {
-        }
-
-        if(modelindex) {
-            modelindex->item_bind(
-                tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, modelindex, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                return it_->field("url") == home;
-            })
-            ->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-        }
+        TreeIndex::instance([&] { return tree_view->source_model(); }, parent, current_item)->item_bind(
+            tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+            return it_->field("url") == home;
+        })
+        ->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+//        }
+        settings.endGroup();
     }
 
     void Browser::slotWebSearch()
