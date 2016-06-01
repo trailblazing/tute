@@ -66,7 +66,7 @@ void GlobalParameters::init(void)
 // Если ребочая директория не будет найдена, будут создана новая рабочая директория
 // с начальными файлами и она будет установлена как рабочая
 
-// SInitialization working directory
+// Initialization working directory
 // If the working directory already exists, it will be installed as a working directory.
 // If the directory is not found, it will create a new working directory with initial files and it will be set as the working directory
 void GlobalParameters::init_workdirectory(void)
@@ -245,11 +245,23 @@ void GlobalParameters::create_stylesheet_file(QString dirname)
     QFile::setPermissions(dirname + "/stylesheet.css", QFile::ReadUser | QFile::WriteUser);
 }
 
+QString GlobalParameters::application_mode() const {
+    QSettings setting(_work_directory + "/mode.ini", QSettings::IniFormat);
+    QString mode = setting.value("application_mode").toString();
+    return mode;
+}
+
+void GlobalParameters::application_mode(const QString &mode){
+    QSettings setting(_work_directory + "/mode.ini", QSettings::IniFormat);
+    setting.setValue("application_mode", mode);
+}
 
 // Автоопределение рабочей директории
 // Auto working directory
 bool GlobalParameters::find_workdirectory(void)
 {
+
+
     // Поиск файла conf.ini в той же директории, где находится бинарник
     // Search conf.ini file in the same directory where the binary
 
@@ -266,8 +278,10 @@ bool GlobalParameters::find_workdirectory(void)
     QFileInfo mainProgramFileInfo(_main_program_file);
     QString fullCurrentPath = mainProgramFileInfo.absolutePath();
     qDebug() << "Check full current path " << fullCurrentPath;
+    QSettings setting(fullCurrentPath + "/mode.ini", QSettings::IniFormat);
+    QString mode = setting.value("application_mode").toString();
 
-    if(is_mytetra_ini_config(fullCurrentPath + "/conf.ini") == true) {
+    if((mode == "Portable") && is_mytetra_ini_config(fullCurrentPath + "/conf.ini") == true) {
         qDebug() << "Work directory set to path " << fullCurrentPath;
 
         // QDir dir=QDir("./");
@@ -441,12 +455,12 @@ QSplitter *GlobalParameters::h_right_splitter()
     return _h_right_splitter;
 }
 
-void GlobalParameters::v_left_splitter(QSplitter *vleftsplitter)
+void GlobalParameters::h_left_splitter(QSplitter *vleftsplitter)
 {
     _v_left_splitter = vleftsplitter;
 }
 
-QSplitter *GlobalParameters::v_left_splitter()
+QSplitter *GlobalParameters::h_left_splitter()
 {
     return _v_left_splitter;
 }

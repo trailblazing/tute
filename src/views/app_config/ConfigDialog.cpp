@@ -9,7 +9,7 @@
 #include "ConfigPage.h"
 
 
-ConfigDialog::ConfigDialog()
+ConfigDialog::ConfigDialog(QWidget *parent) : QDialog (parent)
 {
     setup_ui();
     setup_signals();
@@ -151,8 +151,8 @@ void ConfigDialog::apply_changes(void)
     // Если требуется перезапустить программу для принятия изменений
     if(difficult_flag == 1) {
         QMessageBox::warning(this, tr("Warning"),
-                             tr("The program will have to be restarted for changes to take effect."),
-                             QMessageBox::Ok);
+            tr("The program will have to be restarted for changes to take effect."),
+            QMessageBox::Ok);
         exit(0);
     }
 

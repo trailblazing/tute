@@ -38,6 +38,9 @@ private slots:
 
 private:
 
+    QLabel *application_mode_label;
+    MtComboBox *application_mode_option;
+
     QLabel *tetradirLabel;
     QLineEdit *tetradirInput;
     FlatToolButton *tetradirButton;

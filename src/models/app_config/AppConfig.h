@@ -25,6 +25,8 @@ public:
     int config_version(void)const;
     void config_version(int i);
 
+
+
     // Рабочая директория
     QString tetra_dir(void)const;
     bool tetra_dir(QString dirName);
@@ -70,8 +72,8 @@ public:
     void h_right_splitter_sizelist(QList<int> list);
     QList<int> h_right_splitter_sizelist();
 
-    QList<int> vspl_sizelist(void)const;
-    void vspl_sizelist(QList<int> list);
+    QList<int> v_right_splitter_sizelist(void)const;
+    void v_right_splitter_sizelist(QList<int> list);
 
 //    QList<int> hspl_sizelist(void)const;
 //    void hspl_sizelist(QList<int> list);

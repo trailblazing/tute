@@ -254,12 +254,14 @@ void TreeScreen::setup_actions(void)
 
                     auto size_memory = appconfig.h_right_splitter_sizelist();
                     sizes[0] = size_memory[0] > shw ? size_memory[0] : shw;
-                    auto pre0 = size_memory[0] + size_memory[1] - sizes[0];
-                    if(pre0 <= 0) {
-                        auto pre1 = sizes[1] - sizes[0];
-                        sizes[1] = pre1 > 0 ? pre1 : sizes[1];             // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+                    auto sum = size_memory[0] + size_memory[1];
+                    auto pre_size_1 = sum - sizes[0];
+                    if(pre_size_1 <= 0) {
+                        auto pre_size_0 = shw;    // sizes[1] - sizes[0];
+                        sizes[0] = pre_size_0 > 0 ? pre_size_0 : sum * 15 / 100;
+                        sizes[1] = pre_size_0 > 0 ? (sum - pre_size_0) > 0 ? sum - pre_size_0 : sum * 85 /100 : sum * 85 / 100;             // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
                         }else{
-                        sizes[1] = pre0;
+                        sizes[1] = pre_size_1;
                         }
 
 //            icon = QIcon(":/resource/pic/butterfly-left.svg");
@@ -2230,9 +2232,11 @@ void TreeScreen::on_custom_contextmenu_requested(const QPoint &_position)
                         bool is_branch = false;
                         const QMimeData *mimeData = QApplication::clipboard()->mimeData();
 
-                        if(mimeData != nullptr)
-                                if(mimeData->hasFormat("mytetra/branch"))
+                        if(mimeData != nullptr){
+                                if(mimeData->hasFormat("mytetra/branch")){
                                         is_branch = true;
+                                }
+                        }
 
                         enable_up_action();
 

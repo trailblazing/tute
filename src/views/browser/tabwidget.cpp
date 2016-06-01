@@ -277,7 +277,7 @@ namespace browser {
         , Browser       *_browser
         , MainWindow    *_main_window
         , browser::Profile  *_profile
-                        )
+        )
         : QTabWidget(_browser)
         , _tree_screen(_tree_screen)
         , _editor_screen(_editor_screen)
@@ -287,8 +287,8 @@ namespace browser {
             , this
             , _record_screen
             , _main_window
-                                                 )
-                            )
+            )
+            )
         , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
         , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
         , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -852,7 +852,7 @@ namespace browser {
                         , _browser
                         , this
                         , _record_controller
-                                  );
+                        );
                 //        } else {
                 //            view = record->unique_page()->view();
                 //        }
@@ -1169,7 +1169,7 @@ namespace browser {
                 hasFocus = _view_to_close->hasFocus();
 
                 if(_profile == globalparameters.profile()                                                 // QWebEngineProfile::defaultProfile()
-                  ) {
+                    ) {
                     _recentlyclosedtabsaction->setEnabled(true);
                     _recentlyclosedtabs.prepend(_view_to_close->page()->url());
 
@@ -1289,7 +1289,7 @@ namespace browser {
 
 //deprecated, profile should be assigned at the construction of BrowserPage
     void TabWidget::setProfile(Profile *profile // QWebEngineProfile *profile
-                              )
+        )
     {
         _profile = profile;
 
@@ -1339,7 +1339,7 @@ namespace browser {
         if(currentIndex() == index)
             emit setCurrentTitle(
                 _real_title                         // "test"//
-                                );
+                );
 
         QtSingleApplication::historyManager()->updateHistoryItem(webView->page()->url(), title);
     }
@@ -1383,7 +1383,7 @@ namespace browser {
         if(!childAt(event->pos())
             // Remove the line below when QTabWidget does not have a one pixel frame
             && event->pos().y() < (tabBar()->y() + tabBar()->height())
-          ) {
+            ) {
             auto tree_view = _tree_screen->tree_view();
 
             auto current_item = tree_view->current_item();
@@ -1442,7 +1442,7 @@ namespace browser {
             event->button() == Qt::MidButton && !childAt(event->pos())
             // Remove the line below when QTabWidget does not have a one pixel frame
             && event->pos().y() < (tabBar()->y() + tabBar()->height())
-          ) {
+            ) {
             QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
 
             auto tree_view = _tree_screen->tree_view();
@@ -1559,7 +1559,7 @@ namespace browser {
             if(WebView *view = qobject_cast<WebView *>(widget(i))) {
                 tabs_url.append(
                     view->page()->url().toString()
-                               );
+                    );
             } else {
                 tabs_url.append(QString::null);
             }
@@ -1667,7 +1667,7 @@ namespace browser {
         if(_current_download_acceptance.second) {
             if(state == QWebEngineDownloadItem::DownloadRequested || state == QWebEngineDownloadItem::DownloadInProgress) {
                 // download->accept();  // default in construction
-                QtSingleApplication::downloadManager()->download(this, download);
+                if(state == QWebEngineDownloadItem::DownloadRequested ) QtSingleApplication::downloadManager()->download(this, download);
             }else{  // if(state == QWebEngineDownloadItem::DownloadCompleted || state == QWebEngineDownloadItem::DownloadCancelled || state == QWebEngineDownloadItem::DownloadInterrupted) {
                 _current_download_acceptance.second = false;
             }

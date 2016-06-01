@@ -23,7 +23,7 @@ AppConfigDialog::AppConfigDialog(RecordController *_record_controller, QString f
         this->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
     }
 
-    configDialog = new ConfigDialog();
+    configDialog = new ConfigDialog(this);
     configDialog->set_window_title(tr("MyTetra settings"));
 
     pageMain        = configDialog->add_widget(new AppConfigPageMain(this),     tr("Main"));

@@ -12,9 +12,10 @@
 #include "AppConfigPageMain.h"
 #include "models/app_config/AppConfig.h"
 #include "libraries/FlatControl.h"
+#include "libraries/GlobalParameters.h"
 
 extern AppConfig appconfig;
-
+extern GlobalParameters globalparameters;
 
 AppConfigPageMain::AppConfigPageMain(QWidget *parent) : ConfigPage(parent)
 {
@@ -27,6 +28,23 @@ AppConfigPageMain::AppConfigPageMain(QWidget *parent) : ConfigPage(parent)
 void AppConfigPageMain::setup_ui(void)
 {
     qDebug() << "Create main config page";
+
+
+    QString standartItem = tr("Standard");
+    QString portableItem = tr("Portable");
+
+
+    // Блок работы с выбором языка интерфейса
+    application_mode_label = new QLabel(this);
+    application_mode_label->setText(tr("Application Mode"));
+
+    application_mode_option = new MtComboBox(this);
+    application_mode_option->setMinimumContentsLength(2);
+    application_mode_option->addItem(standartItem);
+    application_mode_option->addItem(portableItem);
+    application_mode_option->setCurrentIndex(application_mode_option->findText( globalparameters.application_mode(), Qt::MatchCaseSensitive));
+
+
 
     // Блок работы с путем до каталога данных
     tetradirLabel = new QLabel(this);
@@ -91,10 +109,10 @@ void AppConfigPageMain::setup_ui(void)
     dateTimeFormatBox = new QGroupBox(this);
     dateTimeFormatBox->setTitle(tr("Date and time show settings"));
 
-    disableCustomDateTimeFormat = new QRadioButton(tr("Show date and time by OS locale settings"));
-    enableCustomDateTimeFormat = new QRadioButton(tr("Custom date and time show format"));
-    customDateTimeFormat = new QLineEdit();
-    dateTimeFormatHelpButton = new FlatToolButton();
+    disableCustomDateTimeFormat = new QRadioButton(tr("Show date and time by OS locale settings"), this);
+    enableCustomDateTimeFormat = new QRadioButton(tr("Custom date and time show format"), this);
+    customDateTimeFormat = new QLineEdit(this);
+    dateTimeFormatHelpButton = new FlatToolButton(this);
     QCommonStyle styleHelp;
     dateTimeFormatHelpButton->setIcon(styleHelp.standardIcon(QStyle::SP_MessageBoxQuestion));
 
@@ -116,16 +134,16 @@ void AppConfigPageMain::setup_ui(void)
 
 AppConfigPageMain::~AppConfigPageMain(void)
 {
-    delete tetradirInput;
-    delete trashdirInput;
-    delete trashsizeInput;
-    delete trashmaxfilecountInput;
-    delete interfaceLanguage;
+//    delete tetradirInput;
+//    delete trashdirInput;
+//    delete trashsizeInput;
+//    delete trashmaxfilecountInput;
+//    delete interfaceLanguage;
 
-    delete dateTimeFormatBox;
-    delete disableCustomDateTimeFormat;
-    delete enableCustomDateTimeFormat;
-    delete customDateTimeFormat;
+//    delete dateTimeFormatBox;
+//    delete disableCustomDateTimeFormat;
+//    delete enableCustomDateTimeFormat;
+//    delete customDateTimeFormat;
 }
 
 
@@ -143,6 +161,10 @@ void AppConfigPageMain::setup_signals(void)
 
 void AppConfigPageMain::assembly(void)
 {
+    QHBoxLayout *application_mode_layout = new QHBoxLayout();
+
+    application_mode_layout->addWidget(application_mode_label);
+    application_mode_layout->addWidget(application_mode_option);
     // Блок работы с путем до каталога данных
     QHBoxLayout *tetradirLayout = new QHBoxLayout();
     tetradirLayout->addWidget(tetradirInput);
@@ -204,6 +226,7 @@ void AppConfigPageMain::assembly(void)
 
 
     QVBoxLayout *centralLayout = new QVBoxLayout();
+    centralLayout->addLayout(application_mode_layout);
     centralLayout->addLayout(dirLayout);
     centralLayout->addLayout(otherSettingLayout);
     centralLayout->addWidget(dateTimeFormatBox);
@@ -297,6 +320,7 @@ int AppConfigPageMain::apply_changes(void)
 
     int difficultChanges = 0;
 
+
     // Если был изменен путь к базе, он запоминается в конфигфайл
     if(appconfig.tetra_dir() != tetradirInput->text()) {
         QDir dir(tetradirInput->text());
@@ -304,8 +328,8 @@ int AppConfigPageMain::apply_changes(void)
         // Проверяется, допустимо ли имя директории
         if(dir.isReadable() == false || dir.exists() == false)
             QMessageBox::warning(this, tr("Warning"),
-                                 tr("The data directory does not exists or unavailable for reading."),
-                                 QMessageBox::Ok);
+                tr("The data directory does not exists or unavailable for reading."),
+                QMessageBox::Ok);
         else {
             // Новое имя запоминается в конфиг
             appconfig.tetra_dir(tetradirInput->text());
@@ -321,8 +345,8 @@ int AppConfigPageMain::apply_changes(void)
         // Проверяется, допустимо ли имя директории
         if(dir.isReadable() == false || dir.exists() == false)
             QMessageBox::warning(this, tr("Warning"),
-                                 tr("The trash directory does not exists or unavailable for reading."),
-                                 QMessageBox::Ok);
+                tr("The trash directory does not exists or unavailable for reading."),
+                QMessageBox::Ok);
         else {
             // Новое имя запоминается в конфиг
             appconfig.trash_dir(trashdirInput->text());
@@ -358,6 +382,14 @@ int AppConfigPageMain::apply_changes(void)
     if(appconfig.interface_language() != interfaceLanguage->currentText()) {
         appconfig.interface_language(interfaceLanguage->currentText());
         difficultChanges = 1;
+    }
+
+    if(globalparameters.application_mode() != application_mode_option->currentText()) {
+
+        globalparameters.application_mode(application_mode_option->currentText());
+        QMessageBox message;
+        message.setText("The changes of application mode will take effect after restart the application.");  // You have to restart Mytetra for the configuration changes to take effect.
+        message.exec();
     }
 
     return difficultChanges;

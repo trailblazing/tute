@@ -2017,7 +2017,6 @@ void KnowView::tree_crypt_control(void)
 // Helper function is used when you add branches
 // Eli is branch = true, the branch is added to the same level
 // If is_branch = false, then added podvetka
-//template<bool insert_sibling_branch>
 boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(boost::intrusive_ptr<TreeIndex> _modelindex  // std::function<KnowModel *()> _current_model, QModelIndex _current_index
     , const KnowView::add_new_delegate &_branch_add_new
     , const KnowView::add_new &_branch_add_new_impl

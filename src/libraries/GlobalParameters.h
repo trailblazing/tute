@@ -39,6 +39,9 @@ public:
 
     void init(void);
 
+    QString application_mode()const;
+    void application_mode(const QString &mode);
+
     QString work_directory(void);
 
     QString target_os(void);
@@ -54,8 +57,8 @@ public:
     void h_right_splitter(QSplitter *vrightsplitter);
     QSplitter *h_right_splitter();
 
-    void v_left_splitter(QSplitter *vleftsplitter);
-    QSplitter *v_left_splitter();
+    void h_left_splitter(QSplitter *vleftsplitter);
+    QSplitter *h_left_splitter();
 
     void v_right_splitter(QSplitter *vrightsplitter);
     QSplitter *v_right_splitter();

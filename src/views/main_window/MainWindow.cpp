@@ -61,7 +61,7 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     , _appconfig(_appconfig)
     , _databaseconfig(_databaseconfig)
     , _v_right_splitter([&] {
-    auto _v_r_s = new QSplitter(Qt::Vertical); _v_r_s->setSizes(_appconfig.vspl_sizelist()); _globalparameters.v_right_splitter(_v_r_s); return _v_r_s;
+    auto _v_r_s = new QSplitter(Qt::Vertical); _v_r_s->setSizes(_appconfig.v_right_splitter_sizelist()); _globalparameters.v_right_splitter(_v_r_s); return _v_r_s;
 }
         ())
     , _v_find_splitter([&] {auto _v_f_s = new QSplitter(Qt::Vertical); _v_f_s->setSizes(_appconfig.findsplitter_sizelist()); _globalparameters.find_splitter(_v_f_s); return _v_f_s; } ())
@@ -76,23 +76,29 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
                                 move(rect.topLeft());
                             }
                             auto _h_l_s = new QSplitter(Qt::Horizontal); _h_l_s->setSizes(_appconfig.h_left_splitter_sizelist());
-                            int vtab_g_width = _vtab_tree->geometry().width();             // 1118
-                            auto sizes = _h_l_s->sizes();
-                            QList<int> new_sizes;
+//                            auto vtab_tree_size = _vtab_tree->minimumSizeHint();    // (25, 146)   // geometry().width();             // 1118
+//                            auto sizes = _h_l_s->sizes();
 
-                            for(auto sz : sizes) {
-                                if(sz == 0) {
-                                    sz = vtab_g_width * 85 / 100;
-                                } else if(sz == vtab_g_width) {
-                                    sz = vtab_g_width * 15 / 100;
-                                }
+//                            auto sum = sizes[0] + sizes[1];
+//                            auto shw = _tree_screen->minimumSizeHint().width();
+//                            if(sizes[0] == sum){sizes[0] = vtab_tree_size.width(); sizes[1] = sum - sizes[0];}
 
-                                new_sizes << sz;
-                            }
 
-                            _h_l_s->setSizes(new_sizes);
+//                            QList<int> new_sizes;
 
-                            _globalparameters.v_left_splitter(_h_l_s);
+//                            for(auto sz : sizes) {
+//                                if(sz == 0) {
+//                                    sz = vtab_g_width * 85 / 100;
+//                                } else if(sz == vtab_g_width) {
+//                                    sz = vtab_g_width * 15 / 100;
+//                                }
+
+//                                new_sizes << sz;
+//                            }
+
+//                            _h_l_s->setSizes(new_sizes);
+
+                            _globalparameters.h_left_splitter(_h_l_s);
                             return _h_l_s; } ())             // Qt::Vertical
 //    , _h_splitter(new QSplitter(Qt::Horizontal))
     , _filemenu(new QMenu(tr("&File"), this))
@@ -623,6 +629,7 @@ void MainWindow::assembly(void)
     //        _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
     //    }
 
+    _h_right_splitter->setObjectName("h_right_splitter");
     _h_right_splitter->addWidget(_vtab_record);
     _h_right_splitter->addWidget(_v_find_splitter);
 
@@ -649,10 +656,10 @@ void MainWindow::assembly(void)
     _h_left_splitter->setCollapsible(0, true);
     _h_left_splitter->setCollapsible(1, false);
     //    v_left_splitter->setCollapsible(1, false);
-    _h_left_splitter->setObjectName("v_left_splitter");
+    _h_left_splitter->setObjectName("h_left_splitter");
 
     _globalparameters.find_splitter(_v_find_splitter);
-    _globalparameters.v_left_splitter(_h_left_splitter);
+    _globalparameters.h_left_splitter(_h_left_splitter);
     _globalparameters.v_right_splitter(_v_right_splitter);
 
 
@@ -695,16 +702,23 @@ void MainWindow::assembly(void)
     auto sizes = _h_left_splitter->sizes();
 //    auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
     if(0 == sizes[0]) {         // _h_left_splitter->widget(0)->width()
-        auto shw = _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+        auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();   // _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
         //            auto h = h_right_splitter->handle(1);
         //            h->move(lr + shw, h->rect().top());
 
         auto size_memory = appconfig.h_left_splitter_sizelist();
-        sizes[0] = size_memory[0] > shw ? size_memory[0] : shw;
-        sizes[1] = size_memory[0] + size_memory[1] - sizes[0];                  // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+        auto sum = size_memory[0] + size_memory[1];
+        sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
+        sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;                  // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 //            h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
         _h_left_splitter->setSizes(sizes);
 
+//        auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
+//        auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
+//        auto s_2 = _entrance->minimumSizeHint();
+//        auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
+//        auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
+//        auto sizes_check = _h_left_splitter->sizes();
         //            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
     }
     emit _h_left_splitter->splitterMoved(sizes[0], 1);
@@ -754,16 +768,40 @@ void MainWindow::restore_geometry(void)
     // resize(rect.size());
 
 
-    _v_right_splitter->setSizes(appconfig.vspl_sizelist());
-//    _h_splitter->setSizes(appconfig.hspl_sizelist());
-    _h_right_splitter->setSizes(appconfig.h_right_splitter_sizelist());
-    _h_left_splitter->setSizes(appconfig.h_left_splitter_sizelist());
+    _v_right_splitter->setSizes(appconfig.v_right_splitter_sizelist());
+//    auto size_v_right_splitter = _v_right_splitter->size();         // (792, 614)
+//    auto sizelist_v_right_splitter = _v_right_splitter->sizes();    // (614, 0)
+
     _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
+//    auto size_v_find_splitter = _v_find_splitter->size();           // (792, 646)
+//    auto sizelist_v_find_splitter = _v_find_splitter->sizes();      // (614, 32)
+
+    //    _h_splitter->setSizes(appconfig.hspl_sizelist());
+    _h_right_splitter->setSizes(appconfig.h_right_splitter_sizelist());
+//    auto size_h_right_splitter = _h_right_splitter->size();         // (851, 646)
+//    auto sizelist_h_right_splitter = _h_right_splitter->sizes();    // (0, 851)
+
+    auto sizelist_h_left_splitter = appconfig.h_left_splitter_sizelist();   // (146, 494)?
+    _h_left_splitter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);    // ShrinkFlag  // Minimum
+    _h_left_splitter->setSizes(sizelist_h_left_splitter);
+//    auto size_h_left_splitter = _h_left_splitter->size();           // (1366, 646)
+    sizelist_h_left_splitter = _h_left_splitter->sizes();           // (312, 1054)
 
     //    int vtab_base = _vtabwidget->baseSize().width();            // 0
     //    int vtab_frame = _vtabwidget->frameSize().width();          // 1118
     //    int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 1118
-    int vtab_g_width = _vtab_tree->geometry().width();                 // 1118
+
+
+
+
+
+
+//    auto vtab_size_hint = _vtab_tree->sizeHint();                   // (352, 220)
+//    int vtab_tree_max_width = _vtab_tree->geometry().width();       // 312  // 1118
+
+
+
+
     //    int this_width = geometry().width();                        // 1366
     //    int download_width = _download->geometry().width();         // 1089
     //    int tree_screen_width = _tree_screen->geometry().width();   // 236
@@ -795,19 +833,23 @@ void MainWindow::restore_geometry(void)
     //    _h_left_splitter->repaint();
 
     auto sizes = _h_left_splitter->sizes();
-    QList<int> new_sizes;
+//    QList<int> new_sizes;
+    auto sum = sizes[0] + sizes[1];
+    auto vtab_tree_min = _vtab_tree->minimumSizeHint();   // (146, 146) // _tree_screen->minimumSizeHint().width();
+    if(sizes[0] == sum){sizes[0] = vtab_tree_min.width();sizes[1] = sum // vtab_tree_max_width
+                - sizes[0];}
 
-    for(auto sz : sizes) {
-        if(sz == 0) {
-            sz = vtab_g_width * 85 / 100;
-        } else if(sz == vtab_g_width) {
-            sz = vtab_g_width * 15 / 100;
-        }
+//    for(auto sz : sizes) {
+//        if(sz == 0) {
+//            sz = vtab_g_width * 85 / 100;
+//        } else if(sz == vtab_g_width) {
+//            sz = vtab_g_width * 15 / 100;
+//        }
 
-        new_sizes << sz;
-    }
+//        new_sizes << sz;
+//    }
 
-    _h_left_splitter->setSizes(new_sizes);
+    _h_left_splitter->setSizes(sizes);  // new_sizes
 
     //    _v_right_splitter->setSizes(appconfig.vspl_sizelist());
     //    _h_splitter->setSizes(appconfig.hspl_sizelist());
@@ -830,7 +872,7 @@ void MainWindow::save_geometry(void)
     // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
     //                                   geometry().width(), geometry().height());
 
-    appconfig.vspl_sizelist(_v_right_splitter->sizes());
+    appconfig.v_right_splitter_sizelist(_v_right_splitter->sizes());
 //    appconfig.hspl_sizelist(_h_splitter->sizes());
     appconfig.h_right_splitter_sizelist(_h_right_splitter->sizes());
     appconfig.h_left_splitter_sizelist(_h_left_splitter->sizes());

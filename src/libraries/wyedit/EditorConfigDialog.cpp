@@ -15,7 +15,7 @@ extern GlobalParameters globalparameters;
 
 EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent)
 {
-    configDialog = new ConfigDialog();
+    configDialog = new ConfigDialog(this);
 
     configDialog->set_window_title(tr("Editor settings"));
 

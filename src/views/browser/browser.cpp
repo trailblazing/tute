@@ -1154,7 +1154,7 @@ namespace browser {
         //_historyback = findscreen->historyback();
 
         _historyback->setIcon(QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, _find_screen)
-                             ); //this
+            );                  //this
 
         _historybackmenu = new QMenu(this);
         _historyback->setMenu(_historybackmenu);
@@ -1164,7 +1164,7 @@ namespace browser {
         //navigater->addAction(_historyback);
 
         _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, _find_screen)
-                                ); //this
+            );                     //this
 
         _historyforwardmenu = new QMenu(this);
         connect(_historyforwardmenu, &QMenu::aboutToShow, this, &Browser::slotAboutToShowForwardMenu);

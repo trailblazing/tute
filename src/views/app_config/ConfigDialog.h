@@ -9,13 +9,13 @@ class QListWidgetItem;
 class QStackedWidget;
 class QListWidgetItem;
 class QScrollArea;
-
+class AppConfigDialog;
 
 class ConfigDialog : public QDialog {
     Q_OBJECT
 
 public:
-    ConfigDialog();
+    ConfigDialog(QWidget *parent);
     QListWidgetItem *add_widget(QWidget *inswidget, QString name);
     void set_window_title(QString title);
 

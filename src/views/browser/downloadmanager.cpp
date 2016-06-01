@@ -92,28 +92,30 @@ namespace browser {
 
         if(_download) {
             assert(_download->state() == QWebEngineDownloadItem::DownloadRequested || _download->state() == QWebEngineDownloadItem::DownloadInProgress);
-            QSettings settings;
-            settings.beginGroup(QLatin1String("downloadmanager"));
-            QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
-            settings.endGroup();
+            if(_download->state() == QWebEngineDownloadItem::DownloadRequested || _download->state() == QWebEngineDownloadItem::DownloadInProgress) {
+                QSettings settings;
+                settings.beginGroup(QLatin1String("downloadmanager"));
+                QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
+                settings.endGroup();
 
 
-            auto path = _download->path();
-            auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
-            auto difference = url_difference(file_path.toStdString(), download_directory.toStdString());
+                auto path = _download->path();
+                auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
+                auto difference = url_difference(file_path.toStdString(), download_directory.toStdString());
 
-            if(!(difference == "" || difference == "/")) {
-                auto file_name = path.mid(path.lastIndexOf('/'));
-                *file_name.begin() != '/' ? file_name.prepend('/') : "";
-                *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/' ? download_directory += '/' : "";
-                auto new_path = download_directory + file_name;
-                _download->setPath(new_path);
-                assert(_download->path() == new_path);
+                if(!(difference == "" || difference == "/")) {
+                    auto file_name = path.mid(path.lastIndexOf('/'));
+                    *file_name.begin() != '/' ? file_name.prepend('/') : "";
+                    *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/' ? download_directory += '/' : "";
+                    auto new_path = download_directory + file_name;
+                    _download->setPath(new_path);
+                    assert(_download->path() == new_path);
+                }
+
+
+                _file.setFile(_download->path());
+                _url = _download->url();
             }
-
-
-            _file.setFile(_download->path());
-            _url = _download->url();
         }
 
         init();
@@ -122,26 +124,34 @@ namespace browser {
     void DownloadWidget::init()
     {
         if(_download) {
-            connect(    // _download.get() // _download.data()
-                _download
-                , &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress);
-            connect(    // _download.get() // _download.data()
-                _download
-                , &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);
+            if(_download->state() == QWebEngineDownloadItem::DownloadRequested) {
+                connect( // _download.get() // _download.data()
+                    _download, &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress);
+                connect( // _download.get() // _download.data()
+                    _download, &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);
+//        }
+//            if(_download->state() == QWebEngineDownloadItem::DownloadRequested ){
+                // reset info
+                downloadInfoLabel->clear();
+                progressBar->setValue(0);
+
+                getFileName(static_cast<DownloadManager *const>(this->parent())->_prompt_store_position);
+
+                _download->accept();
+                // start timer for the download estimation
+                _downloadtime.start();
+//            }
+
+            }
+//            else if(_download->state() == QWebEngineDownloadItem::DownloadInProgress) {
+//                getFileName(static_cast<DownloadManager *const>(this->parent())->_prompt_store_position);
+//                _download->accept();
+//                _downloadtime.start();
+//            }
         }
-
-        // reset info
-        downloadInfoLabel->clear();
-        progressBar->setValue(0);
-
-        getFileName(static_cast<DownloadManager *const>(this->parent())->_prompt_store_position);
-
-        _download->accept();
-        // start timer for the download estimation
-        _downloadtime.start();
     }
 
-    bool DownloadWidget::getFileName(bool promptForFileName)
+    bool DownloadWidget::getFileName(bool prompt_for_filename)
     {
         QSettings settings;
         settings.beginGroup(QLatin1String("downloadmanager"));
@@ -150,27 +160,27 @@ namespace browser {
         if(_file.absoluteDir().exists())
             defaultLocation = _file.absolutePath();
 
-        QString downloadDirectory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
+        QString download_directory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
 
-        if(!downloadDirectory.isEmpty())
-            downloadDirectory += QLatin1Char('/');
+        if(!download_directory.isEmpty())
+            download_directory += QLatin1Char('/');
 
-        QString defaultFileName = QFileInfo(downloadDirectory, _file.fileName()).absoluteFilePath();
-        QString fileName = defaultFileName;
+        QString _default_filename = QFileInfo(download_directory, _file.fileName()).absoluteFilePath();
+        QString filename = _default_filename;
 
-        if(promptForFileName) {
-            fileName = QFileDialog::getSaveFileName(this, tr("Save File"), defaultFileName);
+        if(prompt_for_filename) {
+            filename = QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename);
 
-            if(fileName.isEmpty()) {
+            if(filename.isEmpty()) {
                 if(_download)
                     _download->cancel();
 
-                fileNameLabel->setText(tr("Download canceled: %1").arg(QFileInfo(defaultFileName).fileName()));
+                fileNameLabel->setText(tr("Download canceled: %1").arg(QFileInfo(_default_filename).fileName()));
                 return false;
             }
         }
 
-        _file.setFile(fileName);
+        _file.setFile(filename);
 
         auto download_state = _download->state();
         assert(download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress);
@@ -396,27 +406,29 @@ namespace browser {
     void DownloadManager::download(TabWidget *_tab_manager, QWebEngineDownloadItem *download)
     {
         assert(download->state() == QWebEngineDownloadItem::DownloadRequested || download->state() == QWebEngineDownloadItem::DownloadInProgress);
-        QSettings settings;
-        settings.beginGroup(QLatin1String("downloadmanager"));
-        QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
-        settings.endGroup();
+        if(download->state() == QWebEngineDownloadItem::DownloadRequested) {
+            QSettings settings;
+            settings.beginGroup(QLatin1String("downloadmanager"));
+            QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
+            settings.endGroup();
 
 
-        auto path = download->path();
-        auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
-        auto difference = url_difference(file_path.toStdString(), download_directory.toStdString());
+            auto path = download->path();
+            auto file_path = path.mid(0, path.lastIndexOf('/') + 1);
+            auto difference = url_difference(file_path.toStdString(), download_directory.toStdString());
 
-        if(!(difference == "" || difference == "/")) {
-            auto file_name = path.mid(path.lastIndexOf('/'));
-            *file_name.begin() != '/' ? file_name.prepend('/') : "";
-            *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/' ? download_directory += '/' : "";
-            auto new_path = download_directory + file_name;
-            download->setPath(new_path);
-            assert(download->path() == new_path);
+            if(!(difference == "" || difference == "/")) {
+                auto file_name = path.mid(path.lastIndexOf('/'));
+                *file_name.begin() != '/' ? file_name.prepend('/') : "";
+                *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1); // *download_directory.rbegin() != '/' ? download_directory += '/' : "";
+                auto new_path = download_directory + file_name;
+                download->setPath(new_path);
+                assert(download->path() == new_path);
+            }
+
+            auto widget = std::make_shared< DownloadWidget>(download, _tab_manager, this);
+            addItem(widget);
         }
-
-        auto widget = std::make_shared< DownloadWidget>(download, _tab_manager, this);
-        addItem(widget);
     }
 
     void DownloadManager::addItem(std::shared_ptr<DownloadWidget> widget)

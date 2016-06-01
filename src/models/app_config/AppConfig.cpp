@@ -67,7 +67,7 @@ void AppConfig::sync(void)
 
 
 // Получение параметра по имени в виде строки с проверкой его существования
-QString AppConfig::get_parameter(QString name)const
+QString AppConfig::get_parameter(QString name) const
 {
     if(_app_conf->contains(name))
         return _app_conf->value(name).toString();
@@ -76,6 +76,7 @@ QString AppConfig::get_parameter(QString name)const
 
     return QString();
 }
+
 
 
 
@@ -93,7 +94,7 @@ bool AppConfig::tetra_dir(QString dirName)
 
 
 // Получение имени директории с данными (в которой находится mytetra.xml)
-QString AppConfig::tetra_dir(void)const
+QString AppConfig::tetra_dir(void) const
 {
     return get_parameter("tetradir");
 }
@@ -113,7 +114,7 @@ bool AppConfig::trash_dir(QString dirName)
 
 
 // Получение имени директории с корзиной
-QString AppConfig::trash_dir(void)const
+QString AppConfig::trash_dir(void) const
 {
     return get_parameter("trashdir");
 }
@@ -138,7 +139,7 @@ bool AppConfig::trash_size(unsigned int mbSize)
 
 
 // Получение максимально допустимого числа файлов в корзине
-int AppConfig::trash_max_file_count(void)const
+int AppConfig::trash_max_file_count(void) const
 {
     return get_parameter("trashmaxfilecount").toInt();
 }
@@ -168,7 +169,7 @@ bool AppConfig::cut_branch_confirm(bool confirm)
 }
 
 
-bool AppConfig::print_debug_messages(void)const
+bool AppConfig::print_debug_messages(void) const
 {
     return _app_conf->value("printdebugmessages").toBool();
 }
@@ -181,7 +182,7 @@ bool AppConfig::print_debug_messages(bool isPrint)
 }
 
 
-QString AppConfig::interface_language(void)const
+QString AppConfig::interface_language(void) const
 {
     QString language = get_parameter("interfacelanguage");
     qDebug() << "Get interface language" << language;
@@ -238,7 +239,7 @@ void AppConfig::add_new_record_expand_info(QString state)
 //    conf->setValue("treescreen_size", result);
 //}
 
-QRect AppConfig::mainwin_geometry(void)const
+QRect AppConfig::mainwin_geometry(void) const
 {
     QRect rect;
     QString rectString;
@@ -270,34 +271,34 @@ void AppConfig::mainwin_geometry(int x, int y, int w, int h)
 
 void AppConfig::h_left_splitter_sizelist(QList<int> list)
 {
-    splitter_sizelist("v_left_splitter", list);
+    splitter_sizelist("h_left_splitter", list);
 }
 
 QList<int> AppConfig::h_left_splitter_sizelist()
 {
-    return splitter_sizelist("v_left_splitter");
+    return splitter_sizelist("h_left_splitter");
 }
 
 void AppConfig::h_right_splitter_sizelist(QList<int> list)
 {
-    splitter_sizelist("v_right_splitter", list);
+    splitter_sizelist("h_right_splitter", list);
 }
 
 QList<int> AppConfig::h_right_splitter_sizelist()
+{
+    return splitter_sizelist("h_right_splitter");
+}
+
+
+QList<int> AppConfig::v_right_splitter_sizelist(void) const
 {
     return splitter_sizelist("v_right_splitter");
 }
 
 
-QList<int> AppConfig::vspl_sizelist(void) const
+void AppConfig::v_right_splitter_sizelist(QList<int> list)
 {
-    return splitter_sizelist("vspl");
-}
-
-
-void AppConfig::vspl_sizelist(QList<int> list)
-{
-    splitter_sizelist("vspl", list);
+    splitter_sizelist("v_right_splitter", list);
 }
 
 
@@ -326,7 +327,7 @@ void AppConfig::findsplitter_sizelist(QList<int> list)
 }
 
 
-QList<int> AppConfig::splitter_sizelist(QString name)const
+QList<int> AppConfig::splitter_sizelist(QString name) const
 {
     QStringList line_list;
     QList<int> list;
@@ -354,9 +355,9 @@ void AppConfig::splitter_sizelist(QString name, QList<int> list)
 std::pair<QString, QStringList> AppConfig::tree_position(void) const
 {
     return std::make_pair(
-               _app_conf->value("tree_intercept", global_root_id).toString()
-               , _app_conf->value("tree_position", "1").toString().split(",")
-           );
+        _app_conf->value("tree_intercept", global_root_id).toString()
+        , _app_conf->value("tree_position", "1").toString().split(",")
+        );
 }
 
 
@@ -369,7 +370,7 @@ void AppConfig::tree_position(QString view_root_id, QStringList current_item_abs
 
 
 // ID записи в таблице конечных записей, которая выделена на экране
-QString AppConfig::recordtable_selected_record_id(void)const
+QString AppConfig::recordtable_selected_record_id(void) const
 {
     return _app_conf->value("recordtableSelectedRecordId", 0).toString();
 }
@@ -406,7 +407,7 @@ void AppConfig::findscreen_howextract(int pos)
 }
 
 
-int AppConfig::find_screen_tree_search_area(void)const
+int AppConfig::find_screen_tree_search_area(void) const
 {
     return _app_conf->value("findScreenTreeSearchArea", 0).toInt();
 }
@@ -430,7 +431,7 @@ void AppConfig::findscreen_find_in_field(QString fieldName, bool isChecked)
 }
 
 
-bool AppConfig::findscreen_show(void)const
+bool AppConfig::findscreen_show(void) const
 {
     return _app_conf->value("findscreen_show", 0).toBool();
 }
@@ -440,7 +441,7 @@ void AppConfig::findscreen_show(bool isShow)
     _app_conf->setValue("findscreen_show", isShow);
 }
 
-bool AppConfig::editor_show(void)const
+bool AppConfig::editor_show(void) const
 {
     return _app_conf->value("editor_show", 0).toBool();
 }
@@ -465,7 +466,7 @@ void AppConfig::howpassrequest(QString mode)
 }
 
 
-bool AppConfig::auto_close_password_enable(void)const
+bool AppConfig::auto_close_password_enable(void) const
 {
     return _app_conf->value("autoClosePasswordEnable", 0).toBool();
 }
@@ -489,7 +490,7 @@ void AppConfig::auto_close_password_delay(int delay)
 }
 
 
-bool AppConfig::run_in_minimized_window(void)const
+bool AppConfig::run_in_minimized_window(void) const
 {
     return _app_conf->value("runinminimizedwindow").toBool();
 }
@@ -501,7 +502,7 @@ void AppConfig::run_in_minimized_window(bool flag)
 }
 
 
-QString AppConfig::synchro_command(void)const
+QString AppConfig::synchro_command(void) const
 {
     return get_parameter("synchrocommand");
 }
@@ -525,7 +526,7 @@ void AppConfig::synchro_on_startup(bool flag)
 }
 
 
-bool AppConfig::synchro_on_exit(void)const
+bool AppConfig::synchro_on_exit(void) const
 {
     return _app_conf->value("synchroonexit").toBool();
 }
@@ -549,7 +550,7 @@ void AppConfig::synchro_console_details(bool flag)
 }
 
 
-int AppConfig::editor_cursor_position(void)const
+int AppConfig::editor_cursor_position(void) const
 {
     return _app_conf->value("editorCursorPosition", 0).toInt();
 }
@@ -573,7 +574,7 @@ void AppConfig::editor_scroll_bar_position(int n)
 }
 
 
-QString AppConfig::password_middle_hash(void)const
+QString AppConfig::password_middle_hash(void) const
 {
     return get_parameter("passwordMiddleHash");
 }
@@ -586,7 +587,7 @@ void AppConfig::password_middle_hash(QString hash)
 
 
 // Нужно ли локально хранить пароль (точнее, промежуточный хеш пароля)
-bool AppConfig::password_save_flag(void)const
+bool AppConfig::password_save_flag(void) const
 {
     return _app_conf->value("passwordSaveFlag").toBool();
 }
@@ -598,7 +599,7 @@ void AppConfig::password_save_flag(bool flag)
 }
 
 
-bool AppConfig::remember_cursor_at_history_navigation(void)const
+bool AppConfig::remember_cursor_at_history_navigation(void) const
 {
     return _app_conf->value("rememberCursorAtHistoryNavigation").toBool();
 }
@@ -622,7 +623,7 @@ void AppConfig::remember_cursor_at_ordinary_selection(bool flag)
 }
 
 
-int AppConfig::ugly_qss_replace_height_for_table_view(void)const
+int AppConfig::ugly_qss_replace_height_for_table_view(void) const
 {
     return _app_conf->value("uglyQssReplaceHeightForTableView", 0).toInt();
 }
@@ -650,7 +651,7 @@ void AppConfig::record_table_show_fields(QStringList fields)
 }
 
 
-bool AppConfig::record_table_show_horizontal_headers(void)const
+bool AppConfig::record_table_show_horizontal_headers(void) const
 {
     return _app_conf->value("recordTableShowHorizontalHeaders").toBool();
 }
@@ -675,7 +676,7 @@ void AppConfig::record_table_show_vertical_headers(bool flag)
 
 
 // Ширина полей, отображаемых в таблице конечных записей
-QStringList AppConfig::record_table_fields_width(void)const
+QStringList AppConfig::record_table_fields_width(void) const
 {
     return (_app_conf->value("recordTableFieldsWidth", "256")).toString().split(",");
 }
@@ -709,7 +710,7 @@ void AppConfig::show_splash_screen(bool isShow)
 
 
 // Режим интерфейса, возможные значения "desktop" и "mobile"
-QString AppConfig::interface_mode(void)const
+QString AppConfig::interface_mode(void) const
 {
     QString mode = get_parameter("interfaceMode");
     return mode;
@@ -722,7 +723,7 @@ void AppConfig::interface_mode(QString mode)
 }
 
 // Имя последнего активного виджета
-QString AppConfig::focus_widget(void)const
+QString AppConfig::focus_widget(void) const
 {
     QString widgetName = get_parameter("focusWidget");
     return widgetName;
@@ -748,11 +749,11 @@ void AppConfig::hide_editor_tools(QStringList toolsNames)
 }
 
 
-bool AppConfig::find_in_base_expand(void)const
+bool AppConfig::find_in_base_expand(void) const
 {
     return _app_conf->value(
-               FindScreen::_find_in_base_expand    // "findInBaseExpand"
-           ).toBool();
+        FindScreen::_find_in_base_expand           // "findInBaseExpand"
+        ).toBool();
 }
 
 
@@ -761,13 +762,13 @@ void AppConfig::find_in_base_expand(bool state)
     _app_conf->setValue(
         FindScreen::_find_in_base_expand    // "findInBaseExpand"
         , state
-    );
+        );
 }
 
 
 
 // Разрешено ли использовать собственный формат вывода даты и времени
-bool AppConfig::enable_custom_datetime_format(void)const
+bool AppConfig::enable_custom_datetime_format(void) const
 {
     return _app_conf->value("enableCustomDateTimeFormat").toBool();
 }
@@ -791,7 +792,7 @@ void AppConfig::custom_datetime_format(QString format)
 
 
 // Путь на диске по которому пользователь открывал файлы чтобы приаттачить их к записи
-QString AppConfig::attach_append_dir(void)const
+QString AppConfig::attach_append_dir(void) const
 {
     return get_parameter("attachAppendDir");
 }
@@ -815,7 +816,7 @@ void AppConfig::attach_save_as_dir(QString dir)
 
 
 // Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины MyTetra
-bool AppConfig::enable_decrypt_file_to_trash_directory(void)const
+bool AppConfig::enable_decrypt_file_to_trash_directory(void) const
 {
     return _app_conf->value("enableDecryptFileToTrashDirectory").toBool();
 }
@@ -884,7 +885,7 @@ QString AppConfig::parameter_type_from_table(QString parameterName, QStringList 
 
 
 // Получение значения параметра в виде строки
-QString AppConfig::parameter_value_from_table(QString parameterName, QStringList table)const
+QString AppConfig::parameter_value_from_table(QString parameterName, QStringList table) const
 {
     // Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i++) {
@@ -1015,35 +1016,35 @@ void AppConfig::update_version_process(void)
 }
 
 
-QStringList AppConfig::get_parameter_table_1(bool withEndSignature)const
+QStringList AppConfig::get_parameter_table_1(bool withEndSignature) const
 {
     // Таблица параметров
     // Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
     QStringList table;
 
     table << "addnewrecord_expand_info" << "int" << "1";
-    table << "findscreen_find_inname"   << "bool" << "true";
-    table << "findscreen_find_intags"   << "bool" << "true";
-    table << "findscreen_find_intext"   << "bool" << "true";
-    table << "findscreen_howextract"    << "int" << "1";
-    table << "findscreen_show"          << "bool" << "false";
-    table << "findscreen_wordregard"    << "int" << "1";
-    table << "editor_show"              << "bool" << "false";
-    table << "find_splitter_sizelist"   << "QString" << "517,141";
+    table << "findscreen_find_inname" << "bool" << "true";
+    table << "findscreen_find_intags" << "bool" << "true";
+    table << "findscreen_find_intext" << "bool" << "true";
+    table << "findscreen_howextract" << "int" << "1";
+    table << "findscreen_show" << "bool" << "false";
+    table << "findscreen_wordregard" << "int" << "1";
+    table << "editor_show" << "bool" << "false";
+    table << "find_splitter_sizelist" << "QString" << "614, 32";
 //    table << "hspl_sizelist"            << "QString" << "237,621";
-    table << "lastidnum"                << "int" << "3537";
-    table << "lastnotenum"              << "int" << "3119";
-    table << "lastprefixnum"            << "int" << "7540";
-    table << "mainwingeometry"          << "QString" << "155,24,864,711)";
-    table << "recordtable_position"     << "int" << "0";
-    table << "tetradir"                 << "QString" << "/opt/mytetra/data";
-    table << "trashdir"                 << "QString" << "/opt/mytetra/trash";
-    table << "trashmaxfilecount"        << "int" << "200";
-    table << "trashsize"                << "int" << "5";
-    table << "tree_position"            << "QString" << "0,1818,1819";
-    table << "vspl_sizelist"            << "QString" << "171,487";
+    table << "lastidnum" << "int" << "3537";
+    table << "lastnotenum" << "int" << "3119";
+    table << "lastprefixnum" << "int" << "7540";
+    table << "mainwingeometry" << "QString" << "155,24,864,711)";
+    table << "recordtable_position" << "int" << "0";
+    table << "tetradir" << "QString" << "/opt/mytetra/data";
+    table << "trashdir" << "QString" << "/opt/mytetra/trash";
+    table << "trashmaxfilecount" << "int" << "200";
+    table << "trashsize" << "int" << "5";
+    table << "tree_position" << "QString" << "0,1818,1819";
+    table << "v_right_splitter_sizelist" << "QString" << "614,0";
     table << "findscreen_find_inauthor" << "bool" << "true";
-    table << "findscreen_find_inurl"    << "bool" << "false";
+    table << "findscreen_find_inurl" << "bool" << "false";
 
     if(withEndSignature)
         table << "0" << "0" << "0";
@@ -1062,7 +1063,7 @@ QStringList AppConfig::get_parameter_table_2(bool withEndSignature) const
     table << get_parameter_table_1(false);
 
     // Новый параметр
-    table << "cutbranchconfirm"         << "bool" << "true";
+    table << "cutbranchconfirm" << "bool" << "true";
 
     if(withEndSignature)
         table << "0" << "0" << "0";
@@ -1081,7 +1082,7 @@ QStringList AppConfig::get_parameter_table_3(bool withEndSignature) const
     table << get_parameter_table_2(false);
 
     // Новый параметр
-    table << "printdebugmessages"         << "bool" << "false";
+    table << "printdebugmessages" << "bool" << "false";
 
     if(withEndSignature)
         table << "0" << "0" << "0";
@@ -1447,7 +1448,7 @@ QStringList AppConfig::get_parameter_table_21(bool withEndSignature)
     table << get_parameter_table_20(false);
 
     table <<
-          FindScreen::_find_in_base_expand    // "findInBaseExpand"
+        FindScreen::_find_in_base_expand      // "findInBaseExpand"
           << "bool" << "true";
 
     if(withEndSignature)
@@ -1559,9 +1560,13 @@ QStringList AppConfig::get_parameter_table_27(bool withEndSignature)
     // Старые параметры, аналогичные версии 26
     table << get_parameter_table_26(false);
 
-    table << "v_right_splitter_sizelist"        << "QString" << "959";
-    table << "vertical_scrollbar_style_sheet"   << "QString" << "QTabWidget::pane { border: 0 px; } ";
+//    table << "v_right_splitter_sizelist"        << "QString" << "614, 0";
+    table << "h_right_splitter_sizelist" << "QString" << "0, 1220";
+    table << "h_left_splitter_sizelist" << "QString" << "312, 1054";
+
+    table << "vertical_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
     table << "horizontal_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
+//    table << "application_mode" << "QString" << "Portable";
 
     //    table << "enableDecryptFileToTrashDirectory" << "bool" << "false";
 

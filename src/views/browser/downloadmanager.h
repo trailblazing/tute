@@ -77,7 +77,7 @@ public:
         bool downloadedSuccessfully() const;
 
         void init();
-        bool getFileName(bool promptForFileName = false);
+        bool getFileName(bool prompt_for_filename = false);
         TabWidget*tab_manager() const;
 private slots:
         void stop();
