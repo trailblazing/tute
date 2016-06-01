@@ -441,6 +441,8 @@ namespace browser {
         setTabShape(TabShape::Triangular);
         setStyleSheet("QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");         // left: 1px; alignment: left; // does not work
         //        Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, 0, q));
+
+
     }
 
     void TabWidget::clear()
@@ -478,7 +480,25 @@ namespace browser {
 
     WebView *TabWidget::currentWebView() const
     {
-        return webView(currentIndex());
+        WebView *v = nullptr;
+        if(currentIndex() == -1) {
+            auto tree_view = _tree_screen->tree_view();
+            auto current_item = tree_view->current_item();
+//            auto parent = current_item->parent();
+            v = _browser->item_bind(RecordIndex::instance([&] {return _record_controller->source_model(); }, nullptr, current_item))->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+
+//            TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_bind(
+//                current_item
+//                , QUrl(Browser::_defaulthome)
+//                , std::bind(&KnowView::view_paste_child, _tree_screen->tree_view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+//                , [] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
+//                return it_->field("url") == Browser::_defaulthome;
+//            })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+
+        }else{
+            v = webView(currentIndex());
+        }
+        return v;
     }
 
     void TabWidget::currentChanged(int index)   // switch tab
