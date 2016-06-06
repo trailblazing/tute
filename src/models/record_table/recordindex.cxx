@@ -26,7 +26,13 @@
 
 
 boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item){
-    return new RecordIndex(current_model, sibling_item, target_item);
+
+    return (sibling_item == target_item) ?
+           nullptr
+           : ((!sibling_item ? false : !sibling_item->binder() ?  false : !((QModelIndex)current_model()->index(sibling_item)).isValid()) ? true : false) ?
+           nullptr
+           : new RecordIndex(current_model, sibling_item, target_item);
+
 }
 
 RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem> target_item)

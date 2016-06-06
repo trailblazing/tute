@@ -265,8 +265,14 @@ void RecordScreen::setup_actions(void)
                     //            h->move(lr + shw, h->rect().top());
 
                     auto size_memory = appconfig.h_left_splitter_sizelist();
-                    sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
-                    sizes[1] = size_memory[0] + size_memory[1] - sizes[0];      // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+
+                    auto sum = size_memory[0] + size_memory[1];
+                    sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
+                    sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;                  // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+
+//                    sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
+//                    sizes[1] = size_memory[0] + size_memory[1] - sizes[0];      // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+
 //            //            h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
 
 //            _hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");

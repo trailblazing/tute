@@ -4232,28 +4232,32 @@ QModelIndex KnowView::previous_index() const
 
 boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(boost::intrusive_ptr<TreeItem> _new_session_root_item)
 {
-    auto current_root = source_model()->root_item();
+//    auto current_root = source_model()->root_item();
+    auto _current_item = current_item();
 
-    while(_new_session_root_item->is_ancestor_of(current_root)
-        && _new_session_root_item->id() != current_root->id()
+    boost::intrusive_ptr<TreeItem> result = _new_session_root_item;
+    while(_new_session_root_item->is_ancestor_of(_current_item)  // current_root
+        && _new_session_root_item->id() != _current_item->id()   // current_root->id()
         ) {
         //        reset();
         //        source_model(_new_session_root_item->parent());
-        current_root = cursor_follow_up();
+//        current_root =
+        _current_item = cursor_follow_up(); // current_item();
+        result = _current_item;
     }
 
     //    auto result = _new_session_root_item;
     //    boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;} return tree_index;}();
     //    select_as_current(tree_index);
 
-    return current_root;                                    // _new_session_root_item;
+    return result;                                    // _new_session_root_item;
 }
 
 
 
 boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void)
 {
-    boost::intrusive_ptr<TreeItem> r;
+    boost::intrusive_ptr<TreeItem> root_updated;
     //    auto _tree_screen = static_cast<TreeScreen *>(parent());
     std::function<bool(boost::intrusive_ptr<const TreeItem>)>
     _check_crypt_conflict = [&] (boost::intrusive_ptr<const TreeItem> current_root) {
@@ -4319,7 +4323,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void)
         };
     auto _current_item = current_item();
     int origin_count = current_model()->count_records_all();
-    r = current_model()->root_item();
+    root_updated = current_model()->root_item();
 
 
 
@@ -4368,19 +4372,19 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void)
 
     if(_current_item) {
 
-        if(_current_item->parent() && _current_item->parent() != r && _current_item->parent()->path_list().size() > r->path_list().size()) {
+        if(_current_item->parent() && _current_item->parent() != root_updated && _current_item->parent()->path_list().size() > root_updated->path_list().size()) {
             auto result = _current_item->parent();
             //            boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
             //                    {
             //                        return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
             //                    })); } catch(std::exception &e) {throw e; } return tree_index; } ();
             select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));
-        } else if(_current_item->parent() == r) {
-            r = root_up_impl(r);
+        } else if(_current_item->parent() == root_updated) {
+            root_updated = root_up_impl(root_updated);
         }
 
-    } else if(r->count_direct() == r->count_children_all()) {
-        r = root_up_impl(r);
+    } else if(root_updated->count_direct() == root_updated->count_children_all()) {
+        root_updated = root_up_impl(root_updated);
     }
 
     //    auto try_root_up    = current_model()->root_item()->parent();
@@ -4446,7 +4450,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void)
     //    }
 
     _tree_screen->enable_up_action();
-    return r;
+    return current_item();    // root_updated;
 
 }
 

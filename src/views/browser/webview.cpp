@@ -339,7 +339,7 @@ namespace browser {
         , TabWidget            *tabmanager
         , RecordController     *record_controller
         , WebView              *parent
-                    )
+        )
         : QWebEnginePage(profile, parent)
         , _tree_screen(tree_screen)
         , _editor_screen(editor_screen)
@@ -725,7 +725,7 @@ namespace browser {
         if(_view    // && _loadingurl.isValid()     // && url().isValid()    // && url().toString() != _url_str
             && _url_str != Browser::_defaulthome    // url() may be nothing
             && _url != _loadingurl                  // lead loading stop
-          ) {
+            ) {
             //triggerAction(QWebEnginePage::Stop);
             QWebEnginePage::setUrl(_url);
             QWebEnginePage::load(_url);
@@ -900,12 +900,14 @@ namespace browser {
         auto tree_view = _tree_screen->tree_view();
 
         assert(tree_view->source_model()->index(this->binder()->host()).isValid());
-
+        auto parent = this->binder()->host()->parent();
+        auto parent_parent = parent->parent();
 //        auto create_tree_index = [&] {
 //            boost::intrusive_ptr<TreeIndex> tree_modelindex(nullptr);
 
 //            try {
-        boost::intrusive_ptr<TreeIndex> tree_modelindex = TreeIndex::instance([&] {return tree_view->source_model(); }, this->binder()->host()->parent(), this->binder()->host());
+        boost::intrusive_ptr<TreeIndex> tree_modelindex = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model(); }, parent_parent, parent)
+            : TreeIndex::instance([&] {return tree_view->source_model(); }, this->binder()->host()->parent(), this->binder()->host());
 //            } catch(std::exception &e) {throw e; }
 
 //            assert(tree_modelindex);
@@ -998,7 +1000,7 @@ namespace browser {
                 //                , _record_controller
                 //                , _page_controller
                 //                                                 , view()->tabmanager()->browser()
-                                                );
+                );
 
             popup->setAttribute(Qt::WA_DeleteOnClose);
             popup->show();
@@ -1237,7 +1239,7 @@ namespace browser {
 
     boost::intrusive_ptr<TreeItem> WebPage::item_bind(
         boost::intrusive_ptr<TreeItem> item
-                                                     ) // , browser::WebPage *page
+        )                                              // , browser::WebPage *page
     {
         boost::intrusive_ptr<TreeItem> result(nullptr);
 
@@ -1804,7 +1806,7 @@ namespace browser {
                 && url() != QUrl(Browser::_defaulthome)
                 && url() == _loadingurl
                 && url().toString() == _binder->host()->field("url")
-              ) {
+                ) {
 
                 //                if(//_state_check[_record->getNaturalFieldSource("pin")] == Qt::Unchecked &&
                 //                    url().toString() == _record->getNaturalFieldSource("url")
@@ -1820,7 +1822,7 @@ namespace browser {
 
                 if(title != ""
                     && title != _binder->host()->field("name") // && !QUrl(title).isValid()
-                  ) {
+                    ) {
 
 //                    _binder->host()->field("name", title);
 //                    auto source_model = [&] () {
@@ -1870,7 +1872,7 @@ namespace browser {
                 && url != QUrl(Browser::_defaulthome)
                 //               && url != _loadingurl
                 && url.toString() != _binder->host()->field("url")
-              ) {
+                ) {
 
                 //            if(!_record) {
                 //                Record *record = nullptr;
@@ -2068,7 +2070,7 @@ namespace browser {
             if(title != ""
                 && title != _binder->host()->field("name")
                 //                   && !QUrl(title).isValid()
-              ) {
+                ) {
 
                 _binder->host()->field("name", title);
                 data_changed = true;
@@ -2250,7 +2252,7 @@ namespace browser {
 
         // Для новой выбраной записи выясняется директория и основной файл
         if(current_item->field("id") == "" // || current_item->field("url") == Browser::_defaulthome
-          ) {current_item->field("id", get_unical_id()); }
+            ) {current_item->field("id", get_unical_id()); }
 
         if(current_item->field("dir") == "") current_item->field("dir", current_item->id());
 
@@ -2265,7 +2267,7 @@ namespace browser {
         // If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
         if(_editor_screen->work_directory() == full_dir
             && _editor_screen->file_name() == current_file
-          ) {
+            ) {
             globalparameters.window_switcher()->switchFromRecordtableToRecord();
             return;
         }
@@ -2297,7 +2299,7 @@ namespace browser {
         // В редактор заносится информация, идет ли работа с зашифрованным текстом
         _editor_screen->misc_field("crypt"
             , current_item->field("crypt")                        // table->field(pos, "crypt")
-                                  );
+            );
 
         // В редакторе устанавливается функция обратного вызова для чтения данных
         _editor_screen->load_callback(_editor_screen->editor_load_callback);
@@ -2518,7 +2520,7 @@ namespace browser {
         , Browser          *browser
         , TabWidget        *tabmanager
         , RecordController *table_controller
-                    )
+        )
         : QWebEngineView(static_cast<QWidget *>(tabmanager))    // ->parent()
         , _browser(browser)
         , _tabmanager(tabmanager)                               //        , _record(record)
@@ -2532,7 +2534,7 @@ namespace browser {
             , tabmanager
             , table_controller
             , this)
-               )
+            )
         //        , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
         , _progress(0)
         , _iconreply(0)
@@ -2673,7 +2675,7 @@ namespace browser {
             }
 
         }
-                              );
+            );
         QWebEngineView::activateWindow();
     }
 
@@ -3058,7 +3060,7 @@ namespace browser {
 
     WebView *WebPage::Binder::activator(
         // boost::intrusive_ptr<TreeItem> item
-                                       )
+        )
     {
         //        assert(_item_link->binder());
         //        assert(_item_link->binder() == _page_link->binder());
