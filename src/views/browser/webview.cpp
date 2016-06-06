@@ -348,8 +348,8 @@ namespace browser {
         , _tabmanager(tabmanager)
         , _record_controller(record_controller)
         , _view(parent)
-        , _keyboardmodifiers(Qt::NoModifier)
-        , _pressedbuttons(Qt::NoButton)
+//        , _keyboardmodifiers(Qt::NoModifier)
+//        , _pressedbuttons(Qt::NoButton)
         //          // , _openinnewtab(openinnewtab)  //false
         //          // , _create_window_generated(false)
         //        , _binder([ & ]()->boost::intrusive_ptr<TreeItem::coupler>

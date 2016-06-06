@@ -304,8 +304,8 @@ private:
 
         WebView *_view;
 // set the webview mousepressedevent
-        Qt::KeyboardModifiers _keyboardmodifiers;
-        Qt::MouseButtons _pressedbuttons;
+        Qt::KeyboardModifiers _keyboardmodifiers = Qt::NoModifier;
+        Qt::MouseButtons _pressedbuttons = Qt::NoButton;
 // bool _openinnewtab;
         QUrl _loadingurl;
         QString _hovered_url = Browser::_defaulthome;

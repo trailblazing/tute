@@ -1,4 +1,6 @@
 #include <cassert>
+#include <thread>
+#include <future>
 #include <utility>
 #include <QLineEdit>
 #include <QPushButton>
@@ -49,10 +51,10 @@ FindScreen::FindScreen(QString object_name
         : QWidget(parent)
         , _tree_screen(_tree_screen)
         , _navigater(new QToolBar(this))
-        , _historyback(new QAction(tr("Back"), _navigater))      //    FlatToolButton *_history_back;
-        , _historyforward(new QAction(tr("Forward"), _navigater))  //    FlatToolButton *_history_forward;
-        , _historyhome(new QAction(tr("Home"), _navigater))     //    FlatToolButton *_history_home;
-        , _stopreload(new QAction(_navigater))       //    FlatToolButton *_stop_reload;
+        , _historyback(new QAction(tr("Back"), _navigater))                              //    FlatToolButton *_history_back;
+        , _historyforward(new QAction(tr("Forward"), _navigater))                          //    FlatToolButton *_history_forward;
+        , _historyhome(new QAction(tr("Home"), _navigater))                             //    FlatToolButton *_history_home;
+        , _stopreload(new QAction(_navigater))                               //    FlatToolButton *_stop_reload;
         , _stop(new QAction(tr("&Stop"), _navigater))
         , _reload(new QAction(tr("Reload Page"), _navigater))
         //    , back_ground{
@@ -134,13 +136,13 @@ void FindScreen::setup_navigate(void)
         //    _historyhome = new QAction(tr("Home"), _navigater);
 
         _historyhome->setIcon(
-            QIcon(":/resource/pic/mobile_up.svg")                // ":/resource/pic/streamline_home.svg"
+            QIcon(":/resource/pic/mobile_up.svg")                                        // ":/resource/pic/streamline_home.svg"
             //        style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
             );
 
         _historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
 
-        insert_action_as_button<QToolButton>(_navigater, _historyhome); // _navigater->addAction(_historyhome);
+        insert_action_as_button<QToolButton>(_navigater, _historyhome);                         // _navigater->addAction(_historyhome);
 
         //_history_back = new FlatToolButton(this);
 
@@ -148,14 +150,14 @@ void FindScreen::setup_navigate(void)
 
         _historyback->setShortcuts(QKeySequence::Back);
         //    _historyback->setIconVisibleInMenu(false);
-        _historyback->setIcon(  //QIcon(":/resource/pic/walk_history_next.svg")//
-            QIcon(":/resource/pic/mobile_back.svg") // style()->standardIcon(QStyle::SP_ArrowBack, 0, this)
+        _historyback->setIcon(                          //QIcon(":/resource/pic/walk_history_next.svg")//
+            QIcon(":/resource/pic/mobile_back.svg")                         // style()->standardIcon(QStyle::SP_ArrowBack, 0, this)
             );
         //    QMenu *_historybackmenu = new QMenu(this);
         //    _historyback->setMenu(_historybackmenu);
         //    connect(_historybackmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowBackMenu()));
         //    connect(_historybackmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
-        insert_action_as_button<QToolButton>(_navigater, _historyback); // _navigater->addAction(_historyback);
+        insert_action_as_button<QToolButton>(_navigater, _historyback);                         // _navigater->addAction(_historyback);
         //insertActionAsButton(_container, _historyback);
 
         //_history_forward = new FlatToolButton(this);
@@ -163,13 +165,13 @@ void FindScreen::setup_navigate(void)
         //    _historyforward = new QAction(tr("Forward"), _navigater);
 
         _historyforward->setShortcuts(QKeySequence::Forward);
-        _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg") // style()->standardIcon(QStyle::SP_ArrowForward, 0, this)
+        _historyforward->setIcon(QIcon(":/resource/pic/mobile_forward.svg")                         // style()->standardIcon(QStyle::SP_ArrowForward, 0, this)
                                  );
         //    _historyforwardmenu = new QMenu(this);
         //    connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
         //    connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
         //    _historyforward->setMenu(_historyforwardmenu);
-        insert_action_as_button<QToolButton>(_navigater, _historyforward); // _navigater->addAction(_historyforward);
+        insert_action_as_button<QToolButton>(_navigater, _historyforward);                         // _navigater->addAction(_historyforward);
 
 
         //_stop_reload = new FlatToolButton(this);
@@ -177,9 +179,9 @@ void FindScreen::setup_navigate(void)
         //    _stopreload = new QAction(_navigater);
 
         //_reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
-        _stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg") // style()->standardIcon(QStyle::SP_BrowserReload)
+        _stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg")                         // style()->standardIcon(QStyle::SP_BrowserReload)
                              );
-        insert_action_as_button<QToolButton>(_navigater, _stopreload); // _navigater->addAction(_stopreload);
+        insert_action_as_button<QToolButton>(_navigater, _stopreload);                         // _navigater->addAction(_stopreload);
 
 
 }
@@ -199,7 +201,7 @@ void FindScreen::setup_findtext_and_button(void)
         //_findtext = new QLineEdit();
 
         // Кнопка "Поиск"
-        _find_start_button = new FlatToolButton(this);    // QPushButton
+        _find_start_button = new FlatToolButton(this);                            // QPushButton
         _find_start_button->setText(tr("Find"));
         //    _findstartbutton->setDefault(true);
         _find_start_button->setEnabled(false);
@@ -232,7 +234,7 @@ void FindScreen::assembly_findtext_and_button(void)
         //    toolsAreaFindTextAndButton->addWidget(_history_back);
         //    toolsAreaFindTextAndButton->addWidget(_stop_reload);
         //    toolsAreaFindTextAndButton->addLayout(addressbar);
-        _find_text_and_button_tools_area->addWidget(_toolbarsearch);  //_findtext
+        _find_text_and_button_tools_area->addWidget(_toolbarsearch);                          //_findtext
         //    toolsAreaFindTextAndButton->addWidget(con);
         _find_text_and_button_tools_area->addWidget(_chasewidget);
         _find_text_and_button_tools_area->addWidget(_find_start_button);
@@ -259,8 +261,8 @@ void FindScreen::setup_combooption(void)
 
         // Выбор "Во всей базе" - "В текущей ветке"
         _tree_search_area = new FlatComboBox();
-        _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_all.svg"), tr("Entire base")); // Вся база
-        _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch")); // Текущая ветка
+        _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_all.svg"), tr("Entire base"));                         // Вся база
+        _tree_search_area->addItem(QIcon(":/resource/pic/find_in_base_search_branch.svg"), tr("In current branch"));                         // Текущая ветка
         _tree_search_area->setCurrentIndex(appconfig.find_screen_tree_search_area());
 
         if(appconfig.interface_mode() == "desktop") {
@@ -310,13 +312,13 @@ void FindScreen::setup_closebutton(void)
         // Кнопка закрытия виджета
         _close_button = new FlatToolButton(this);
         _close_button->setVisible(true);
-        _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton)); // SP_TitleBarCloseButton SP_DialogCloseButton
+        _close_button->setIcon(this->style()->standardIcon(QStyle::SP_TitleBarCloseButton));                         // SP_TitleBarCloseButton SP_DialogCloseButton
         _close_button->setAutoRaise(true);
 
         if(appconfig.interface_mode() == "desktop") {
                 int w = _close_button->geometry().width();
                 int h = _close_button->geometry().height();
-                int x = min(w, h) / 2; // imin(w, h) / 2;
+                int x = min(w, h) / 2;                                                 // imin(w, h) / 2;
                 _close_button->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed, QSizePolicy::ToolButton));
                 _close_button->setMinimumSize(x, x);
                 _close_button->setMaximumSize(x, x);
@@ -392,7 +394,7 @@ void FindScreen::assembly_wherefind_line(void)
 
         _where_find_line->addStretch();
 
-        _where_find_line->setContentsMargins(3, 0, 0, 0); // Устанавливаются границы
+        _where_find_line->setContentsMargins(3, 0, 0, 0);                         // Устанавливаются границы
 }
 
 
@@ -511,8 +513,8 @@ void FindScreen::assembly(void)
 
         _central_desktop_layout->addLayout(_where_find_line);
         //    centralDesktopLayout->addWidget(_findtable, 10);
-        _central_desktop_layout->setContentsMargins(0, 0, 0, 0); // Boundaries removed // Границы убираются
-        _central_desktop_layout->setSizeConstraint(QLayout::   // SetFixedSize // this setting will lead TableScreen can not resize!!!
+        _central_desktop_layout->setContentsMargins(0, 0, 0, 0);                         // Boundaries removed // Границы убираются
+        _central_desktop_layout->setSizeConstraint(QLayout::                           // SetFixedSize // this setting will lead TableScreen can not resize!!!
                                                    SetNoConstraint
                                                    );
         _central_desktop_layout->setMargin(0);
@@ -631,7 +633,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         // Выясняется ссылка на модель дерева данных
         auto _current_model = [&] () {
                                                           return _tree_screen->tree_view()->source_model();
-                                                  };                                                           // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
+                                                  };                                                                                                                                                                                                           // static_cast<KnowModel *>(_tree_screen->tree_view()->model());
 
 
         //    QMap<QString, QString> data;
@@ -646,8 +648,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
         QList<boost::intrusive_ptr<Linker> > _result_list;
         // Выясняется стартовый элемент в дереве, с которого будет начат поиск
         // Выясняется сколько всего конечных записей
-        boost::intrusive_ptr<TreeItem> _start_item;  // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
-        boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->tree_view()->session_root_auto());    // new TreeItem(nullptr, data)
+        boost::intrusive_ptr<TreeItem> _start_item;                          // = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
+        boost::intrusive_ptr<TreeItem> _session_root_item(_tree_screen->tree_view()->session_root_auto());                            // new TreeItem(nullptr, data)
         // _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
 
         //    auto original_count = _result_item->count_direct();
@@ -693,7 +695,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                           // , std::shared_ptr<RecordTable>     &resultset_data
                                           ) {
                                                                          // Корневой элемент дерева
-                                                                         _start_item = _global_source_model->root_item(); // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+                                                                         _start_item = _global_source_model->root_item();                                                                                                                                                                                                                         // this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
                                                                          // Количество элементов (веток) во всем дереве
                                                                          _candidate_records = _global_source_model->count_records_all();
                                                                          //        assert(_result_item->count_direct() == 0);  //_result_item = _result_item->active_subset();
@@ -710,7 +712,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
                                                                          //        if(current_item_index.isValid()) {
                                                                          //            // Текущая ветка
-                                                                         _start_item = _current_model()->root_item(); //item(current_item_index);
+                                                                         _start_item = _current_model()->root_item();                                                                                                                                                                                                                         //item(current_item_index);
 
                                                                          // Количество элементов (веток) в текущей ветке и всех подветках
                                                                          _candidate_records = _current_model()->size_of(_start_item);
@@ -745,7 +747,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                                                                                 for(int i = 0; i < tabmanager->count(); i++) {
                                                                                                         auto item = tabmanager->webView(i)->page()->item();
 
-                                                                                                        _start_item << item; // _start_item->child_rent(item);
+                                                                                                        _start_item << item;                                                                                                                                                                                                                                                                                                                         // _start_item->child_rent(item);
                                                                                                 }
                                                                                         }
 
@@ -776,7 +778,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
                                                            };
 
-
+        (void)prepare_progressbar;
         auto assert_start_item = [&] () {
                                                                  // Если стартовый элемент не был установлен
                                                                  //        if(!startItem)
@@ -800,11 +802,13 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                                          };
 
         auto final_search = [&] (QList<boost::intrusive_ptr<Linker> >   &_result_list
-                                 , boost::intrusive_ptr<TreeItem>                &_session_root_item // std::shared_ptr<RecordTable> &resultset_data
-                                 , boost::intrusive_ptr<TreeItem>                &_start_item
+                                 , boost::intrusive_ptr<TreeItem>       &_session_root_item                         // std::shared_ptr<RecordTable> &resultset_data
+                                 , boost::intrusive_ptr<TreeItem>       &_start_item
                                  ) -> QList<boost::intrusive_ptr<Linker> > & {
                                                         qDebug() << "Start finding in " << _candidate_records << " records";
-                                                        prepare_progressbar();
+//                                                        prepare_progressbar();
+
+
 
                                                         //        _result_item->clear();
 
@@ -815,7 +819,11 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                                         //        //            global_search_prepare(start_item, total_records, result);
                                                         //        //        }
 
-                                                        return find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
+//							// std::future<QList<boost::intrusive_ptr<Linker> > >
+//							_result_list
+//							    = std::async(std::launch::async, [&] {return find_recursive(_result_list, _session_root_item, _start_item); }).get();
+////                                                        std::thread(&FindScreen::find_recursive, this, _result_list, _session_root_item, _start_item).detach();// find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
+                                                        return find_recursive(_result_list, _session_root_item, _start_item);                                // _result_list;
                                                 };
 
 
@@ -844,13 +852,13 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         boost::intrusive_ptr<TreeItem>  final_result(nullptr);
 
-        active_subset_search_prepare(_start_item, _candidate_records);  // , _result_item
+        active_subset_search_prepare(_start_item, _candidate_records);                          // , _result_item
 
         if(_start_item) {
 
                 if(0 != _candidate_records) {
                         _result_list = final_search(_result_list, _session_root_item, _start_item);
-                        _tree_screen->enable_up_action();   // !_is_search_global
+                        _tree_screen->enable_up_action();                                                                           // !_is_search_global
                         // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
                 }
 
@@ -864,12 +872,12 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
                                 if(0 != _candidate_records) {
                                         _result_list = final_search(_result_list, _session_root_item, _start_item);
-                                        _tree_screen->enable_up_action();   // !_is_search_global
+                                        _tree_screen->enable_up_action();                                                                                                                           // !_is_search_global
                                         // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
                                 }
 
                                 // stage 3
-                                if(0 == _result_list.size()) { // (_result_item->count_direct() - original_count)
+                                if(0 == _result_list.size()) {                                                                                                 // (_result_item->count_direct() - original_count)
 
                                         //        auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
                                         //        tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
@@ -886,28 +894,28 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
                                         //        && !find_object<TreeScreen>(tree_screen_singleton_name)->getCurrentItemIndex().isValid()
                                         //    ) { // Если нужен поиск во всем дереве
 
-                                        global_search_prepare(_start_item, _candidate_records);   // , _resultset_data
+                                        global_search_prepare(_start_item, _candidate_records);                                                                                                                           // , _resultset_data
 
                                         if(_start_item) {
 
                                                 if(0 != _candidate_records) {
                                                         _result_list = final_search(_result_list, _session_root_item, _start_item);
-                                                        _tree_screen->enable_up_action();   // _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
+                                                        _tree_screen->enable_up_action();                                                                                                                                                                           // _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
                                                         // _selected_branch_as_pages != _tree_screen->know_root()->root_item()
                                                 }
 
                                                 //    }
                                         } else {
-                                                assert_start_item();    // return nullptr;
+                                                assert_start_item();                                                                                                                                                    // return nullptr;
                                         }
 
                                 }
                         } else {
-                                assert_start_item();    // return nullptr;
+                                assert_start_item();                                                                                                    // return nullptr;
                         }
                 }
         } else {
-                assert_start_item();    // return nullptr;
+                assert_start_item();                                                    // return nullptr;
         }
 
 
@@ -934,7 +942,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void)
 
         if(_result_list.size() > 0) final_result = _result_list.at(0)->host();
 
-        return final_result; // ->record_table();
+        return final_result;                         // ->record_table();
 }
 
 
@@ -1021,7 +1029,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                                                                         iteration_search_result[key] = find_in_text_process(textdoc.toPlainText());
                                                                 }
                                                         }
-                                                } // Закрылся цикл поиска в полях
+                                                }                                                                                                                                                 // Закрылся цикл поиска в полях
 
 
                                                 // Проверяется, есть ли поле, в котором поиск был успешен
@@ -1065,7 +1073,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
 //                            }
 
                                                         if(record_modelindex) {
-                                                                if((candidate->parent() != _session_root_item->parent()) // _current_item->parent())
+                                                                if((candidate->parent() != _session_root_item->parent())                                                                                                                                                                                                 // _current_item->parent())
                                                                    && !_session_root_item->item_direct([&] (boost::intrusive_ptr<const Linker> il) {
                                                                         return il == candidate->linker();
                                                                 })
@@ -1079,7 +1087,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                                                                         //                                    , std::placeholders::_3));
 
                                                                         result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-                                                                        _result_list << result->linker();   //
+                                                                        _result_list << result->linker();                                                                                                                                                                                                                           //
 
                                                                 } else {
                                                                         // auto previous_item = _source_model()->item(tree_view->previous_index());
@@ -1111,8 +1119,8 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                                                 //                                return _result_item;
                                                 //                            }
                                         }
-                                } // Закрылся цикл перебора записей в таблице конечных записей
-                        } // Закрылось условие что в ветке есть таблица конечных записей
+                                }                                                                                                 // Закрылся цикл перебора записей в таблице конечных записей
+                        }                                                                         // Закрылось условие что в ветке есть таблица конечных записей
 
 
                         //    // Рекурсивная обработка каждой подчиненной ветки
@@ -1120,7 +1128,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                 }
         }
 
-        return _result_list;    // _result_item;
+        return _result_list;                            // _result_item;
 }
 
 
@@ -1152,7 +1160,7 @@ bool FindScreen::find_in_text_process(const QString &text)
 
                 // Если ищется хотя бы одно совпадение
                 if(findFlag == 1 && _word_regard->currentIndex() == 0)
-                        return true; // То при первом же совпадении цикл прекращается
+                        return true;                                                                         // То при первом же совпадении цикл прекращается
         }
 
         // Искалось хотябы одно совпадение, но небыло найдено
@@ -1250,7 +1258,7 @@ void FindScreen::widget_show(void)
 void FindScreen::widget_hide(void)
 {
         // Запоминается размер сплиттера перед скрытием виджета
-        QSplitter *findSplitterRel = globalparameters.find_splitter();  // find_object<QSplitter>("find_splitter");
+        QSplitter *findSplitterRel = globalparameters.find_splitter();                          // find_object<QSplitter>("find_splitter");
         appconfig.findsplitter_sizelist(findSplitterRel->sizes());
 
         // Виджет скрывается
