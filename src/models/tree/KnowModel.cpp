@@ -665,7 +665,7 @@ void KnowModel::dom_from_treeitem(std::shared_ptr<QDomDocument> doc,
 //    //    //    current->tabledata(std::make_shared<RecordTable>(current));
 
 //    // Определяется, является ли родительская ветка зашифрованной
-//    if(parent->field("crypt") == "1") {
+//    if(parent->field(boost::mpl::c_str < crypt_type > ::value) == "1") {
 //        // Новая ветка превращается в зашифрованную
 //        current->to_encrypt();
 //    }
@@ -711,7 +711,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(boost::intrusive_ptr<T
         //    //    current->tabledata(std::make_shared<RecordTable>(current));
 
         // Определяется, является ли родительская ветка зашифрованной
-        if(parent->field("crypt") == "1") {
+        if(parent->field<crypt_type>() == "1") {
                 // Новая ветка превращается в зашифрованную
                 current->to_encrypt();
         }
@@ -806,7 +806,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_new_child(boost::intrusive_ptr<T
 //    result = _parent->child_insert(_pos, result, _mode);
 
 
-//    if(_parent->field("crypt") == "1" && result) {
+//    if(_parent->field(boost::mpl::c_str < crypt_type > ::value) == "1" && result) {
 //        // Новая ветка превращается в зашифрованную
 //        result->to_encrypt();
 //    }
@@ -937,7 +937,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
                         assert(result->linker()->integrity_external(result, host));
                 }
 
-                if(host->field("crypt") == "1" && result) {
+                if(host->field<crypt_type>() == "1" && result) {
                         // Новая ветка превращается в зашифрованную
                         result->to_encrypt();
                 }
@@ -970,7 +970,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
         //    current->tabledata(std::make_shared<RecordTable>(current));
 
         //    // Определяется, является ли родительская ветка зашифрованной
-        //    if(parent->field("crypt") == "1") {
+        //    if(parent->field(boost::mpl::c_str < crypt_type > ::value) == "1") {
         //        // Новая ветка превращается в зашифрованную
         //        current->to_encrypt();
         //    }
@@ -994,7 +994,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(
 //        //    current->tabledata(std::make_shared<RecordTable>(current));
 
 //        // Определяется, является ли родительская ветка зашифрованной
-//        if(parent->field("crypt") == "1") {
+//        if(parent->field(boost::mpl::c_str < crypt_type > ::value) == "1") {
 //            // Новая ветка превращается в зашифрованную
 //            current->to_encrypt();
 //        }
@@ -1038,7 +1038,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::lock_child_add(boost::intrusive_ptr<Re
         //    current->tabledata(std::make_shared<RecordTable>(current));
 
         //    // Определяется, является ли родительская ветка зашифрованной
-        //    if(parent->field("crypt") == "1") {
+        //    if(parent->field(boost::mpl::c_str < crypt_type > ::value) == "1") {
         //        // Новая ветка превращается в зашифрованную
         //        current->to_encrypt();
         //    }
@@ -1119,7 +1119,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::lock_child_add(boost::intrusive_ptr<Re
 //        result = _parent->child_insert(_pos, result, _mode);
 
 
-//        if(_parent->field("crypt") == "1" && result)
+//        if(_parent->field(boost::mpl::c_str < crypt_type > ::value) == "1" && result)
 //        {
 //            // Новая ветка превращается в зашифрованную
 //            result->to_encrypt();
@@ -2344,8 +2344,8 @@ void KnowModel::re_encrypt(QString previousPassword, QString currentPassword)
                 auto currBranch = item(currPath);
                 auto currBranchParent = currBranch->parent();
 
-                if(currBranch->field("crypt") == "1" &&
-                   currBranchParent->field("crypt") != "1") {
+                if(currBranch->field<crypt_type>() == "1" &&
+                   currBranchParent->field<crypt_type>() != "1") {
                         Password pwd;
 
                         pwd.setCryptKeyToMemory(previousPassword);
@@ -2713,7 +2713,7 @@ bool KnowModel::is_contains_crypt_branches(void) const
                                 return isCrypt;
                         }
 
-                        if(_it->field("crypt") == "1") {
+                        if(_it->field<crypt_type>() == "1") {
                                 isCrypt = true;
                                 return isCrypt;
                         }
@@ -2739,7 +2739,7 @@ bool KnowModel::is_contains_crypt_branches(void) const
 //        return isCrypt;
 //    }
 
-//    if(item->field("crypt") == "1") {
+//    if(item->field(boost::mpl::c_str < crypt_type > ::value) == "1") {
 //        isCrypt = true;
 //        return isCrypt;
 //    }

@@ -135,7 +135,7 @@ Binder::~Binder()
     close_tab_recursive
         = [&] (boost::intrusive_ptr<TreeItem> it) -> void {
             if(globalparameters.entrance()->find([&] (boost::intrusive_ptr<const ::Binder> b){
-            return b->host()->field("url") == it->field("url");
+            return b->host()->field<url_type>() == it->field<url_type>();
         }))                                                                                                                                                                                        // item_to_be_deleted->unique_page()
             {
                 auto page = it->page();

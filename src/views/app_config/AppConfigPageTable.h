@@ -17,21 +17,21 @@ public:
     int apply_changes(void);
 
 signals:
-    void recordTableConfigChange(void); // Сигнал, испускающийся когда изменились настройки таблицы конечных записей
+    void record_table_config_change(void); // Сигнал, испускающийся когда изменились настройки таблицы конечных записей
 
 private slots:
-    void onFieldToggle(bool);
+    void on_field_toggle(bool);
 
 protected:
 
-    QMap<QString, QCheckBox *> fields;
+    QMap<QString, QCheckBox *> _fields;
 
-    QCheckBox *showHorizontalHeader;
-    QCheckBox *showVerticalHeader;
+    QCheckBox *_show_horizontal_header;
+    QCheckBox *_show_vertical_header;
 
     // Объединяющая рамка
-    QGroupBox *showFieldsBox;
-    QGroupBox *showHeadersBox;
+    QGroupBox *_show_fields_box;
+    QGroupBox *_show_headers_box;
 
     void setupSignals(void);
 

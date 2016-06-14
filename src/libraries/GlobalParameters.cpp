@@ -29,9 +29,7 @@ GlobalParameters::GlobalParameters(QObject *pobj)
 }
 
 GlobalParameters::~GlobalParameters()
-{
-
-}
+{}
 
 
 void GlobalParameters::main_program_file(QString file)
@@ -72,8 +70,7 @@ void GlobalParameters::init(void)
 void GlobalParameters::init_workdirectory(void)
 {
     // Если рабочая директория найдена автоматически
-    if(find_workdirectory())
-        return;
+    if(find_workdirectory()) return;
 
     // Рабочая директория не найдена, и нужно создать начальные данные
 
@@ -122,10 +119,9 @@ void GlobalParameters::init_workdirectory(void)
         msgBox.setDefaultButton(QMessageBox::Ok);
         int ret = msgBox.exec();
 
-        if(ret == QMessageBox::Ok)
-            create_standard_programfiles();
-        else
-            exit(0); // Была нажата отмена
+        if(ret == QMessageBox::Ok) create_standard_programfiles();
+        else exit(0); // Была нажата отмена
+
     } else {
         // Иначе есть возможность создать как стандартное файловое окружение,
         // так и "переносимое"
@@ -155,12 +151,9 @@ void GlobalParameters::init_workdirectory(void)
 
         // Если пользователь сделал выбор
         if(ok && !item.isEmpty()) {
-            if(item == standartItem)
-                create_standard_programfiles();
-            else
-                create_portable_programfiles();
-        } else
-            exit(0); // Была нажата отмена
+            if(item == standartItem) create_standard_programfiles();
+            else create_portable_programfiles();
+        } else exit(0); // Была нажата отмена
 
     }
 
@@ -248,11 +241,13 @@ void GlobalParameters::create_stylesheet_file(QString dirname)
 QString GlobalParameters::application_mode() const {
     QSettings setting(_work_directory + "/mode.ini", QSettings::IniFormat);
     QString mode = setting.value("application_mode").toString();
+
     return mode;
 }
 
 void GlobalParameters::application_mode(const QString &mode){
     QSettings setting(_work_directory + "/mode.ini", QSettings::IniFormat);
+
     setting.setValue("application_mode", mode);
 }
 
@@ -275,19 +270,20 @@ bool GlobalParameters::find_workdirectory(void)
 
     // Директория, где была выполнена команда запуска
     // Directory where you have performed command launch
-    QFileInfo mainProgramFileInfo(_main_program_file);
-    QString fullCurrentPath = mainProgramFileInfo.absolutePath();
-    qDebug() << "Check full current path " << fullCurrentPath;
-    QSettings setting(fullCurrentPath + "/mode.ini", QSettings::IniFormat);
+    QFileInfo main_program_file_info(_main_program_file);
+    QString full_current_path = main_program_file_info.absolutePath();
+
+    qDebug() << "Check full current path " << full_current_path;
+    QSettings setting(full_current_path + "/mode.ini", QSettings::IniFormat);
     QString mode = setting.value("application_mode").toString();
 
-    if((mode == "Portable") && is_mytetra_ini_config(fullCurrentPath + "/conf.ini") == true) {
-        qDebug() << "Work directory set to path " << fullCurrentPath;
+    if((mode != "Standard") && is_mytetra_ini_config(full_current_path + "/conf.ini")) {  // mode == "Portable"||
+        qDebug() << "Work directory set to path " << full_current_path;
 
         // QDir dir=QDir("./");
         // QDir dir=QDir(QDir::currentPath());
         // workDirectory=dir.absolutePath();
-        _work_directory = fullCurrentPath;
+        _work_directory = full_current_path;
     } else {
         // Если в текущей директории запуска нет conf.ini
 
@@ -298,7 +294,7 @@ bool GlobalParameters::find_workdirectory(void)
         qDebug() << "Detect home directory " << dir;
 
         // Если директория существует и в ней есть настоящий файл конфигурации
-        if(is_mytetra_ini_config(dir + "/conf.ini") == true) {
+        if(is_mytetra_ini_config(dir + "/conf.ini")) {
             qDebug() << "Config init file success find in home directory " << dir;
             _work_directory = dir;
         } else {
@@ -314,8 +310,7 @@ bool GlobalParameters::find_workdirectory(void)
             if(is_mytetra_ini_config(dir + "/conf.ini") == true) {
                 qDebug() << "Config init file success find in home subdirectory " << dir;
                 _work_directory = dir;
-            } else
-                qDebug() << "File conf.ini can't' find in home subdirectory " << dir;
+            } else qDebug() << "File conf.ini can't' find in home subdirectory " << dir;
         }
     }
 
@@ -328,8 +323,7 @@ bool GlobalParameters::find_workdirectory(void)
         qDebug() << "Set work directory to " << _work_directory;
 
         // Устанавливается эта директория как рабочая
-        if(QDir::setCurrent(_work_directory))
-            return true;
+        if(QDir::setCurrent(_work_directory)) return true;
         else {
             critical_error("Can not set work directory as '" + _work_directory + "'. System problem.");
             return false;
@@ -380,10 +374,10 @@ bool GlobalParameters::is_mytetra_ini_config(QString filename)
                     else return false;
                 } else return false;
             }
-        } else
-            return false; // Нет переменной version
-    } else
-        return false; // Нет указанного файла
+        } else return false; // Нет переменной version
+
+    } else return false; // Нет указанного файла
+
 }
 
 
@@ -416,14 +410,11 @@ QString GlobalParameters::application_name(void)
     // todo: Подумать и заменить этот код на значения, полученные из PRO-файла
     QString appName = "";
 
-    if(target_os() == "any")
-        appName = "mytetra";
+    if(target_os() == "any") appName = "mytetra";
 
-    if(target_os() == "meego")
-        appName = "ru.webhamster.mytetra";
+    if(target_os() == "meego") appName = "ru.webhamster.mytetra";
 
-    if(target_os() == "android")
-        appName = "ru.webhamster.mytetra";
+    if(target_os() == "android") appName = "ru.webhamster.mytetra";
 
     // qDebug() << "In getApplicationName() return \"" << appName << "\"";
 

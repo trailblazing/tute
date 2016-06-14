@@ -146,9 +146,8 @@ public:
         //BrowserView *create_view(Record *record, BrowserWindow *window);
 
         //        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-        void setting_style_source(const QString &style_source) {
-            _style_source = style_source;
-        }
+        void style_source(const QString &style_source);
+        QString style_source();
         //        ItemsFlat const *shadow_branch()const {return _shadow_branch;}
 
 //        WebView *find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const;

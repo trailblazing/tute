@@ -183,50 +183,29 @@ public:
         //        typedef Binder::item_helper bounded_item_helper;
         //        typedef Binder::page_helper bounded_page_helper;
 
-        TabWidget   *tabWidget() {
-            return _tabmanager;
-        }
-        TabWidget   *tabWidget() const {
-            return _tabmanager;
-        }
-
-        TabWidget   *tabmanager() {
-            return _tabmanager;
-        }
-        TabWidget   *tabmanager() const {
-            return _tabmanager;
-        }
+        TabWidget   *tabWidget();
+        TabWidget   *tabWidget() const;
+        TabWidget   *tabmanager();
+        TabWidget   *tabmanager() const;
 
         WebView     *currentTab() const;
         QByteArray  save_state(bool withTabs = true) const;
         bool        restore_state(const QByteArray &state);
         Q_INVOKABLE void runScriptOnOpenViews(const QString &);
-        void        setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled) {
-            _webattribute = attribute; _webattributeenabled = enabled;
-        }
-        QString     &lastsearch() {
-            return _lastsearch;
-        }
-        const QString &lastsearch() const {
-            return _lastsearch;
-        }
+        void        setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
+        QString     &lastsearch();
+        const QString &lastsearch() const;
 
         void        activateWindow();
         bool is_under_construction() const;
-        QAction     *historyback() {
-            return _historyback;
-        }
+        QAction     *historyback();
         QStatusBar  *statusBar() = delete;
         QStatusBar  *status_bar();
         QStatusBar  *status_bar() const;
         boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordIndex> record_modelindex);
         //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
-        RecordScreen *record_screen() {
-            return _record_screen;
-        }
-        Entrance    *entrance() {
-            return _entrance;
-        }
+        RecordScreen *record_screen();
+        Entrance    *entrance();
 public slots:
         void loadPage(const QString &url);
         void slotHome();

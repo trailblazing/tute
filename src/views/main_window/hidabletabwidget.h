@@ -5,10 +5,12 @@
 #include <QAction>
 #include <QStackedLayout>
 
+extern const char *custom_hidabletabwidget_style;
+
 class HidableTabWidget : public QTabWidget {
     Q_OBJECT
 public:
-    explicit HidableTabWidget(QWidget *parent = 0);
+    explicit HidableTabWidget(QString style_source, QWidget *parent = 0);
     QAction *_hide_action;
 //    HidableTabWidget *delegate_tab();
 private slots:
@@ -17,6 +19,7 @@ private slots:
 private:
 //    HidableTabWidget *_delegate_tab;
     QStackedLayout *_layout;
+    QString _style;
 };
 
 

@@ -15,15 +15,15 @@ class VerticalScrollArea : public QScrollArea {
 
     //    std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *> > > _interface;
     RecordView *_record_view;
-public:
+    public:
 
 
-    explicit VerticalScrollArea(RecordView *_record_view
-                                , QWidget *parent = 0
-                               );
+        explicit VerticalScrollArea(RecordView *_record_view, QWidget *parent = 0);
 
-    virtual bool eventFilter(QObject *obj, QEvent *ev);
-
+        virtual bool eventFilter(QObject *obj, QEvent *ev);
+    protected:
+        void wheelEvent(QWheelEvent *);
+        int x = 0;
 };
 
 

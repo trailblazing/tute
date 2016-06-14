@@ -58,7 +58,7 @@ void Attach::setParentTable(AttachTableData *iParentTable)
 // Допустимые имена полей
 QStringList Attach::fieldAvailableList(void) const
 {
-    return QStringList() << "id" << "fileName" << "link" << "type" << "crypt";
+    return QStringList() << "id" << "fileName" << "link" << "type" << boost::mpl::c_str < crypt_type > ::value;
 }
 
 
@@ -164,8 +164,8 @@ QString Attach::getField(QString name) const
     // Если запись зашифрована, но ключ не установлен (т.е. человек не вводил пароль)
     // то расшифровка невозможна
     if(fieldCryptedList().contains(name))
-        if(_fields.contains("crypt"))
-            if(_fields["crypt"] == "1")
+        if(_fields.contains(boost::mpl::c_str < crypt_type > ::value))
+            if(_fields[boost::mpl::c_str < crypt_type > ::value] == "1")
                 if(globalparameters.crypt_key().length() == 0)
                     return QString();
 
@@ -176,8 +176,8 @@ QString Attach::getField(QString name) const
     // и поле crypt установлено в 1
     // и запрашиваемое поле не пустое (пустые данные невозможно расшифровать)
     if(fieldCryptedList().contains(name))
-        if(_fields.contains("crypt"))
-            if(_fields["crypt"] == "1")
+        if(_fields.contains(boost::mpl::c_str < crypt_type > ::value))
+            if(_fields[boost::mpl::c_str < crypt_type > ::value] == "1")
                 if(_fields[name].length() > 0)
                     isCrypt = true;
 
@@ -239,8 +239,8 @@ void Attach::setField(QString name, QString value)
     // и поле crypt установлено в 1
     // и поле не пустое (пустые данные ненужно шифровать)
     if(fieldCryptedList().contains(name))
-        if(_fields.contains("crypt"))
-            if(_fields["crypt"] == "1")
+        if(_fields.contains(boost::mpl::c_str < crypt_type > ::value))
+            if(_fields[boost::mpl::c_str < crypt_type > ::value] == "1")
                 if(value.length() > 0) {
                     if(globalparameters.crypt_key().length() > 0)
                         isCrypt = true;
@@ -453,7 +453,7 @@ void Attach::encrypt(unsigned int area)
     // а другая пытается их использовать, а флаг шифрации еще не установлен
 
     // Если аттач уже зашифрован, значит есть какая-то ошибка в логике выше
-    if(getField("crypt") == "1")
+    if(getField(boost::mpl::c_str < crypt_type > ::value) == "1")
         critical_error("Attach::encrypt() : Cant encrypt already encrypted attach.");
 
 
@@ -480,7 +480,7 @@ void Attach::encrypt(unsigned int area)
     }
 
     // Устанавливается флаг, что запись зашифрована
-    setField("crypt", "1");
+    setField(boost::mpl::c_str < crypt_type > ::value, "1");
 }
 
 
@@ -488,7 +488,7 @@ void Attach::encrypt(unsigned int area)
 void Attach::decrypt(unsigned int area)
 {
     // Если аттач не зашифрован, и происходит расшифровка, значит есть какая-то ошибка в логике выше
-    if(getField("crypt") != "1")
+    if(getField(boost::mpl::c_str < crypt_type > ::value) != "1")
         critical_error("Attach::decrypt() : Cant decrypt unencrypted attach.");
 
     // Расшифровывается файл
@@ -513,5 +513,5 @@ void Attach::decrypt(unsigned int area)
     }
 
     // Устанавливается флаг, что запись не зашифрована
-    setField("crypt", ""); // Отсутсвие значения предпочтительней, так как тогда в XML-данные не будет попадать атрибут crypt="0"
+    setField(boost::mpl::c_str < crypt_type > ::value, ""); // Отсутсвие значения предпочтительней, так как тогда в XML-данные не будет попадать атрибут crypt="0"
 }

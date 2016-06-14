@@ -367,7 +367,7 @@ void AttachTableData::switch_to_fat()
 
 bool AttachTableData::is_record_crypt()
 {
-    if(_record->field("crypt") == "1")
+    if(_record->field<crypt_type>() == "1")
         return true;
     else
         return false;

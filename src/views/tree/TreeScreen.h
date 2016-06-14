@@ -54,6 +54,7 @@ extern const char *action_decrypt_branch;
 extern const char *action_freeze_browser_view;
 extern const char *action_edit_field;
 extern const char *action_editor_switch;
+extern const char *action_main_menu;
 
 extern const char *tree_screen_viewer_name;
 
@@ -158,16 +159,16 @@ public:
 
     //    void branch_update_from_model(const QModelIndex &index);
 
-    QMenu *menus_in_button()
-    {
-        return _menus_in_button;
-    }
+    QMenu *menus_in_button();
+//    {
+//        return _main_menu_in_button;
+//    }
 
 
-    QToolBar *menubar()
-    {
-        return _menubar;
-    }
+//    QToolBar *menubar()
+//    {
+//        return _main_menu_bar;
+//    }
 
     //    boost::intrusive_ptr<TreeItem> add_branch(QModelIndex _current_index, QString name, bool insert_sibling_branch);
 
@@ -197,13 +198,14 @@ public:
     //    bool is_item_valid(QStringList _path) {return know_root_holder::know_root()->is_item_valid(_path);}
     //    boost::intrusive_ptr<TreeItem> item(QStringList path) const;
     //    boost::intrusive_ptr<TreeItem> item(TreeModel::delegater _del) const;
-    KnowView *tree_view()
-    {
-        return _tree_view;
-    }
+    KnowView *tree_view();
+//    {
+//        return _tree_view;
+//    }
+
     //    void resetup_model(boost::intrusive_ptr<TreeItem> _item);
 
-    void restore_menubar();
+//    void restore_menubar();
 
     TreeScreenViewer *viewer() const;
 
@@ -285,10 +287,10 @@ private:
     //    TreeController  *_tree_controller;
     MainWindow      *_main_window;
     QToolBar        *_tools_line;
-    QToolBar        *_menubar;                  // QMenuBar *_menubar;
-    QPushButton     *_menubutton;
-    QWidgetAction   *_menuaction;
-    QMenu           *_menus_in_button;
+//    QToolBar        *_main_menu_bar;                  // QMenuBar *_menubar;
+//    QPushButton     *_main_menu_button;
+//    QWidgetAction   *_main_menu_action;
+    QMenu           *_main_menu_in_button;
     QMenu           *_context_menu;
 
     KnowView        *_tree_view;
@@ -305,15 +307,15 @@ private:
     //    QString         _session_id = global_root_id;
 
 
-    QToolBar *assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu);
-    QToolBar *setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
+    void assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu);
+    void setup_ui(QMenu *main_menu, QMenu *_toolsmenu);
 
     //    void setup_model(KnowModel *treemodel);
     //    void update_model(KnowModel *_current_know_branch);
 
     void setup_signals(void);
     void setup_actions(void);
-    void assembly(QToolBar *menubar_);
+    void assembly();    // QToolBar *menubar_
 
     void item_move_up_dn_branch(int (TreeItem::*_move)());
     bool move_checkenable(void);

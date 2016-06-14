@@ -204,7 +204,7 @@ namespace browser {
                         , url
                         , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                         , [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                        return it_->field("url") == url.toString();
+                        return it_->field<url_type>() == url.toString();
                     })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
                     assert(_lineedits);
@@ -255,7 +255,7 @@ namespace browser {
 
                     //                emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
                     modelindex->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                        return it_->field("url") == url.toString();
+                        return it_->field<url_type>() == url.toString();
                     })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
                 }

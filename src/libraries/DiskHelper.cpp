@@ -14,9 +14,7 @@ extern TrashMonitoring trashmonitoring;
 extern const char *index_xml_file_name;
 
 DiskHelper::DiskHelper()
-{
-
-}
+{}
 
 
 // Удаление директории с копированием содержимого в корзину
@@ -30,7 +28,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
     // Перебор всех файлов в удаляемой директории
     for(int i = 0; i < fileList.size(); i++) {
         // Директории с именами "." и ".." обрабатывать не нужно
-        if(fileList.at(i) == "." || fileList.at(i) == "..")continue;
+        if(fileList.at(i) == "." || fileList.at(i) == "..") continue;
 
         // Исходный файл, который будет перенесен в корзину
         QString fileNameFrom = nameDirFrom + "/" + fileList.at(i);
@@ -42,7 +40,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
 
         do {
             fileNameToShort = get_unical_id() + "_" + fileList.at(i);
-            fileNameTo       = nameDirTo + "/" + fileNameToShort;
+            fileNameTo = nameDirTo + "/" + fileNameToShort;
 
             if(QFile::exists(fileNameTo)) targetFileFree = false;
             else targetFileFree = true;
@@ -52,8 +50,7 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
 
         if(QFile::exists(fileNameFrom)) {
             // Перенос файла в корзину
-            if(QFile::rename(fileNameFrom, fileNameTo) == true)
-                trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
+            if(QFile::rename(fileNameFrom, fileNameTo) == true) trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
             else {
                 //            critical_error("Can not remove file\n" + fileNameFrom + "\nto directory\n" + nameDirTo + "\nwith new name\n" + fileNameTo);
             }
@@ -72,10 +69,8 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom)
     QDir applicationdir(QCoreApplication::applicationDirPath());
     qDebug() << "Try delete directory " << nameDirFrom;
 
-    if(!applicationdir.rmdir(nameDirFrom))
-        qDebug() << "Directory " << nameDirFrom << " NOT deleted";
-    else
-        qDebug() << "Directory " << nameDirFrom << " delete succesfull";
+    if(!applicationdir.rmdir(nameDirFrom)) qDebug() << "Directory " << nameDirFrom << " NOT deleted";
+    else qDebug() << "Directory " << nameDirFrom << " delete succesfull";
 }
 
 
@@ -88,14 +83,13 @@ void DiskHelper::remove_file_to_trash(QString fileNameFrom)
 
     // Получение имени файла для сохранения в корзине
     QString fileNameToShort = get_unical_id() + "_" + fileNameFromShort;
-    QString fileNameTo     = appconfig.trash_dir() + "/" + fileNameToShort;
+    QString fileNameTo = appconfig.trash_dir() + "/" + fileNameToShort;
 
     qDebug() << "Move file from " << fileNameFrom << " to " << fileNameTo;
 
     if(QFile::exists(fileNameFrom)) {
         // Файл перемещается в корзину
-        if(QFile::rename(fileNameFrom, fileNameTo) == true)
-            trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
+        if(QFile::rename(fileNameFrom, fileNameTo) == true) trashmonitoring.add_file(fileNameToShort); // Оповещение что в корзину добавлен файл
         else {
             //        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
         }
@@ -114,17 +108,17 @@ QString DiskHelper::copy_file_to_data(QString file_name_from)
     // Получение имени файла для сохранения в корзине
     //    QString file_name_to_short = file_name_from_short.remove(0, file_name_from_short.lastIndexOf('_') + 1);
     QString file_name_to = appconfig.tetra_dir()    //
-                           + "/"
-                           + index_xml_file_name  // + globalparameters.main_program_file() + ".xml"
-                           ; //appconfig.get_tetradir() + "/" + file_name_to_short;
+        + "/"
+        + index_xml_file_name                     // + globalparameters.main_program_file() + ".xml"
+    ;                        //appconfig.get_tetradir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
 
     // Файл копируется в корзину
-    if(QFile::copy(file_name_from, file_name_to) != true) {
+    if(!QFile::copy(file_name_from, file_name_to)) {
         //        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
         //        }else {
-        critical_error("Can not remove file\n" + file_name_from + "\nto reserve file\n" + file_name_to);
+        critical_error("Can not copy file\n" + file_name_from + "\nto file\n" + file_name_to);
     }
 
     QFileInfo fileInfoTo(file_name_to);
@@ -142,16 +136,15 @@ QString DiskHelper::copy_file_to_trash(QString file_name_from)
 
     // Получение имени файла для сохранения в корзине
     QString file_name_to_short = get_unical_id() + "_" + file_name_from_short;
-    QString file_name_to     = appconfig.trash_dir() + "/" + file_name_to_short;
+    QString file_name_to = appconfig.trash_dir() + "/" + file_name_to_short;
 
     qDebug() << "Copy file from " << file_name_from << " to " << file_name_to;
 
     if(QFile::exists(file_name_from)) {
         // Файл копируется в корзину
-        if(QFile::copy(file_name_from, file_name_to) == true)
-            trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
+        if(QFile::copy(file_name_from, file_name_to)) trashmonitoring.add_file(file_name_from_short);   // file_name_to_short // Оповещение что в корзину добавлен файл
         else {
-            //        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+            critical_error("Can not remove file\n" + file_name_from + "\nto reserve file\n" + file_name_to);
         }
     }
 
@@ -187,14 +180,11 @@ bool DiskHelper::remove_directory(const QString &dirName)
     QDir dir(dirName);
 
     if(dir.exists(dirName)) {
-        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
-            if(info.isDir())
-                result = remove_directory(info.absoluteFilePath());
-            else
-                result = QFile::remove(info.absoluteFilePath());
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
+            if(info.isDir()) result = remove_directory(info.absoluteFilePath());
+            else result = QFile::remove(info.absoluteFilePath());
 
-            if(!result)
-                return result;
+            if(!result) return result;
         }
 
         result = dir.rmdir(dirName);
@@ -236,8 +226,7 @@ QMap<QString, QByteArray> DiskHelper::get_files_from_directory(QString dirName, 
         foreach(QFileInfo info, directory.entryInfoList(filter, QDir::Files)) {
             QFile f(info.absoluteFilePath());
 
-            if(!f.open(QIODevice::ReadOnly))
-                critical_error("DiskHelper::getFilesFromDirectory() : File '" + info.absoluteFilePath() + "' open error");
+            if(!f.open(QIODevice::ReadOnly)) critical_error("DiskHelper::getFilesFromDirectory() : File '" + info.absoluteFilePath() + "' open error");
 
             // Содержимое файла
             QByteArray b = f.readAll();
@@ -245,8 +234,7 @@ QMap<QString, QByteArray> DiskHelper::get_files_from_directory(QString dirName, 
             // Содержимое файла сохраняется с ключем в виде имени файла
             result.insert(info.fileName(), b);
         }
-    } else
-        qDebug() << "DiskHelper::getFilesFromDirectory() : Can not find directory" << dirName;
+    } else qDebug() << "DiskHelper::getFilesFromDirectory() : Can not find directory" << dirName;
 
     return result;
 }

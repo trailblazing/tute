@@ -49,15 +49,15 @@
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QShortcut>
-
+#include <QProxyStyle>
 
 #include "models/record_table/recordindex.hxx"
-//#include "models/record_table/Record.h"
-//#include "models/record_table/ItemsFlat.h"
-//#include "models/tree/TreeItem.h"
-//#include "models/record_table/RecordModel.h"
-//#include "controllers/record_table/RecordController.h"
-//#include "views/record_table/RecordScreen.h"
+// #include "models/record_table/Record.h"
+// #include "models/record_table/ItemsFlat.h"
+// #include "models/tree/TreeItem.h"
+// #include "models/record_table/RecordModel.h"
+// #include "controllers/record_table/RecordController.h"
+// #include "views/record_table/RecordScreen.h"
 
 
 
@@ -70,9 +70,9 @@
 #include "views/browser/webview.h"
 
 
-//#include "models/tree/TreeModel.h"
+// #include "models/tree/TreeModel.h"
 
-//#include "views/tree/KnowView.h"
+// #include "views/tree/KnowView.h"
 #include "models/tree/KnowModel.h"
 
 #include "views/tree/TreeScreen.h"
@@ -102,7 +102,20 @@ QT_END_NAMESPACE
 #include <QtCore/QUrl>
 #include <QtWidgets/QTabWidget>
 
+#include <QWidget>
+#include <QIcon>
+
 QT_BEGIN_NAMESPACE
+
+class QComboBox;
+class QStackedWidget;
+class QVBoxLayout;
+class QHBoxLayout;
+class QButtonGroup;
+
+// QT_END_NAMESPACE
+
+// QT_BEGIN_NAMESPACE
 
 class QCompleter;
 class QLineEdit;
@@ -121,13 +134,14 @@ QT_END_NAMESPACE
 
 namespace browser {
     class WebView;
+    class TabWidget;
 }
 
-//extern boost::intrusive_ptr<Record> request_record(
-//    const QUrl &_url
-//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
-//    , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
-//);
+// extern boost::intrusive_ptr<Record> request_record(
+// const QUrl &_url
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
+// , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
+// );
 
 QT_BEGIN_NAMESPACE
 
@@ -137,52 +151,159 @@ namespace browser {
     class FullScreenNotification;
     class Profile;
 
-    /*
-        Tab bar with a few more features such as a context menu and shortcuts
-     */
-    class TabBar : public QTabBar {
-        Q_OBJECT
 
-signals:
-        void newTab();
-        void cloneTabSignal(int index);
-        void closeTabSignal(int index);
-        void closeOtherTabsSignal(int index);
-        void reloadTabSignal(int index);
-        void reloadAllTabs();
-        void tabMoveRequested(int fromIndex, int toIndex);
 
-public:
-        TabBar(QWidget *parent = 0);
+    namespace alter {
+        class TabBar : public QTabBar // QWidget
+        {
 
-protected:
-        void mousePressEvent(QMouseEvent *event);
-        void mouseMoveEvent(QMouseEvent *event);
+            Q_OBJECT Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex STORED true NOTIFY currentIndexChanged)
+            Q_PROPERTY(QStringList pageTitleList READ pageTitleList WRITE setPageTitleList STORED true)
+            Q_PROPERTY(QString pageTitle READ pageTitle WRITE setPageTitle STORED false NOTIFY pageTitleChanged)
+            Q_PROPERTY(QStringList pageIconList READ pageIconList WRITE setPageIconList STORED true)
+            Q_PROPERTY(QIcon pageIcon READ pageIcon WRITE setPageIcon STORED false NOTIFY pageIconChanged)
 
-private slots:
-        void selectTabAction();
-        void cloneTab();
-        void closeTab();
-        void closeOtherTabs();
-        void reloadTab();
-        void contextMenuRequested(const QPoint &position);
+            public:
+                TabBar(TabWidget *parent = 0);
 
-private:
-        QList<QShortcut *> _tabshortcuts;
-        friend class TabWidget;
+                QSize sizeHint() const;
 
-        QPoint _dragstartpos;
-        int _dragcurrentindex;
+                int count() const;
+                int currentIndex() const;
+                QWidget *widget(int index);
+                int indexOf(QWidget* w);
+
+                QStringList pageTitleList() const;
+                QString pageTitle() const;
+
+                QStringList pageIconList() const;
+                QIcon pageIcon() const;
+
+                bool setVisible(QWidget* w, bool b);
+                bool setEnabled(QWidget* w, bool b);
+
+// For lazy programmers migrating from QTabWidget to this class
+                int addTab(QWidget *page, const QString &title);
+                int addTab(QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
+
+                void setTabText(int index, const QString &title);
+
+            public slots:
+                int addPage(QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
+                int insertPage(int index, QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
+                void removePage(int index);
+                void setCurrentIndex(int index);
+
+                void setPageTitleList(QStringList const &newTitleList);
+                void setPageTitle(QString const &newTitle);
+                void setPageTitle(int index, QString const &newTitle);
+
+                void setPageIconList(QStringList const &newIconList);
+                void setPageIcon(QIcon const &newIcon);
+            private slots: // cloned from TabBar
+                void selectTabAction();
+                void cloneTab();
+                void closeTab();
+                void closeOtherTabs();
+                void reloadTab();
+                void contextMenuRequested(const QPoint &position);
+            signals: // cloned from TabBar
+                void newTab();
+                void cloneTabSignal(int index);
+                void closeTabSignal(int index);
+                void closeOtherTabsSignal(int index);
+                void reloadTabSignal(int index);
+                void reloadAllTabs();
+                void tabMoveRequested(int fromIndex, int toIndex);
+            signals:
+                void currentIndexChanged(int index);
+                void pageTitleChanged(const QString &title);
+                void pageIconChanged(const QIcon &icon);
+
+            protected: // cloned from TabBar
+                void mousePressEvent(QMouseEvent *event);
+                void mouseMoveEvent(QMouseEvent *event);
+
+            private:
+                QStringList titleList, iconList;
+
+// QStackedWidget *
+                TabWidget       *stackWidget;
+                QButtonGroup    *buttonGroup;
+                QHBoxLayout     *layout;
+                QVBoxLayout     *buttonLayout;
+            private: // cloned from TabBar
+                QList<QShortcut *> _tabshortcuts;
+                friend class browser::TabWidget;
+
+                QPoint _dragstartpos;
+                int _dragcurrentindex;
+        };
+    }
+
+
+    // deprecated:
+    class CustomTabStyle : public QProxyStyle {
+
+        public:
+            CustomTabStyle();
+
+            QSize SizeFromContents (ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const;
+            void drawControl (ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget * widget ) const;
     };
 
-    //#include <QWebEnginePage>
 
-    //    QT_BEGIN_NAMESPACE
-    //    class QAction;
-    //    QT_END_NAMESPACE
+    namespace origin {
+        /*
+            Tab bar with a few more features such as a context menu and shortcuts
+         */
+        class TabBar : public QTabBar {
+            Q_OBJECT
+
+            signals:
+                void newTab();
+                void cloneTabSignal(int index);
+                void closeTabSignal(int index);
+                void closeOtherTabsSignal(int index);
+                void reloadTabSignal(int index);
+                void reloadAllTabs();
+                void tabMoveRequested(int fromIndex, int toIndex);
+
+            public:
+                TabBar(QWidget *parent = 0);
+
+            protected:
+                void mousePressEvent(QMouseEvent *event);
+                void mouseMoveEvent(QMouseEvent *event);
+
+            private slots:
+                void selectTabAction();
+                void cloneTab();
+                void closeTab();
+                void closeOtherTabs();
+                void reloadTab();
+                void contextMenuRequested(const QPoint &position);
+
+            private:
+                QList<QShortcut *> _tabshortcuts;
+                friend class browser::TabWidget;
+
+                QPoint _dragstartpos;
+                int _dragcurrentindex;
+        };
+    }
+
+// typedef alter::TabBar TabBar;
+    using TabBar = origin::TabBar;
+
+    // #include <QWebEnginePage>
+
+    // QT_BEGIN_NAMESPACE
+    // class QAction;
+    // QT_END_NAMESPACE
 
 
-    //    template<typename T>
+    // template<typename T>
     class WebView;
 
     /*!
@@ -195,32 +316,32 @@ private:
     class WebActionMapper : public QObject {
         Q_OBJECT
 
-public:
-        WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
-        QWebEnginePage::WebAction webAction() const;
-        void addChild(QAction *action);
-        void updateCurrent(QWebEnginePage *currentParent);
+        public:
+            WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
+            QWebEnginePage::WebAction webAction() const;
+            void addChild(QAction *action);
+            void updateCurrent(QWebEnginePage *currentParent);
 
-private slots:
-        void rootTriggered();
-        void childChanged();
-        void rootDestroyed();
-        void currentDestroyed();
+        private slots:
+            void rootTriggered();
+            void childChanged();
+            void rootDestroyed();
+            void currentDestroyed();
 
-private:
-        QWebEnginePage *_currentparent;
-        QAction *_root;
-        QWebEnginePage::WebAction _webaction;
+        private:
+            QWebEnginePage *_currentparent;
+            QAction *_root;
+            QWebEnginePage::WebAction _webaction;
     };
 
-    //#include <QtCore/QUrl>
-    //#include <QtWidgets/QTabWidget>
-    //    QT_BEGIN_NAMESPACE
-    //    class QCompleter;
-    //    class QLineEdit;
-    //    class QMenu;
-    //    class QStackedWidget;
-    //    QT_END_NAMESPACE
+    // #include <QtCore/QUrl>
+    // #include <QtWidgets/QTabWidget>
+    // QT_BEGIN_NAMESPACE
+    // class QCompleter;
+    // class QLineEdit;
+    // class QMenu;
+    // class QStackedWidget;
+    // QT_END_NAMESPACE
 
 
 
@@ -236,80 +357,77 @@ private:
     class TabWidget : public QTabWidget {
         Q_OBJECT
 
-signals:
-        // tab widget signals
-        void loadPage(const QString &url);
-        void tabsChanged();
-        void lastTabClosed();
+        signals:
+            // tab widget signals
+            void loadPage(const QString &url);
+            void tabsChanged();
+            void lastTabClosed();
 
-        // current tab signals
-        void setCurrentTitle(const QString &url);
-        void showStatusBarMessage(const QString &message, int timeout = 0);
-        void linkHovered(const QString &link);  // , int timeout = 0);
-        void loadProgress(int progress);
-        void geometryChangeRequested(const QRect &geometry);
-        void menuBarVisibilityChangeRequested(bool visible);
-        void statusBarVisibilityChangeRequested(bool visible);
-        void toolBarVisibilityChangeRequested(bool visible);
+            // current tab signals
+            void setCurrentTitle(const QString &url);
+            void showStatusBarMessage(const QString &message, int timeout = 0);
+            void linkHovered(const QString &link); // , int timeout = 0);
+            void loadProgress(int progress);
+            void geometryChangeRequested(const QRect &geometry);
+            void menuBarVisibilityChangeRequested(bool visible);
+            void statusBarVisibilityChangeRequested(bool visible);
+            void toolBarVisibilityChangeRequested(bool visible);
 
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
-        void printRequested(QWebEngineFrame *frame);
+            void printRequested(QWebEngineFrame *frame);
 #endif
 
-public:
-        TabWidget(TreeScreen        *_tree_screen
-            , FindScreen      *_find_screen
-            , MetaEditor      *_editor_screen
-            , RecordScreen    *_record_screen
-            , Entrance        *_entrance
-            , Browser         *_browser
-            , MainWindow      *_main_window
-            , Profile         *_profile
-            );
-        //                  , TableController *_page_controller
-        //                  , boost::intrusive_ptr<TreeItem> _shadow_branch_root
+        public:
+            TabWidget(TreeScreen        *_tree_screen
+                     , FindScreen      *_find_screen
+                     , MetaEditor      *_editor_screen
+                     , RecordScreen    *_record_screen
+                     , Entrance        *_entrance
+                     , Browser         *_browser
+                     , MainWindow      *_main_window
+                     , Profile         *_profile);
+            // , TableController *_page_controller
+            // , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
-        //        typedef Binder CouplerDelegation;
-        //        typedef typename Binder::bind_interface      bind_interface;
-        //        typedef typename Binder::activate_interface  activate_interface;
-        //        typedef typename Binder::item_interface      item_interface;
-        //        typedef typename Binder::page_interface      page_interface;
+            // typedef Binder CouplerDelegation;
+            // typedef typename Binder::bind_interface      bind_interface;
+            // typedef typename Binder::activate_interface  activate_interface;
+            // typedef typename Binder::item_interface      item_interface;
+            // typedef typename Binder::page_interface      page_interface;
 
-        //        typedef typename Binder::bind_helper     bind_helper;
-        //        typedef typename Binder::activate_helper activate_helper;
-        //        typedef typename Binder::item_helper     item_helper;
-        //        typedef typename Binder::page_helper     page_helper;
+            // typedef typename Binder::bind_helper     bind_helper;
+            // typedef typename Binder::activate_helper activate_helper;
+            // typedef typename Binder::item_helper     item_helper;
+            // typedef typename Binder::page_helper     page_helper;
 
-        ~TabWidget();
-        void clear();
-        void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
+            ~TabWidget();
+            void clear();
+            void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
 
-        QAction *newTabAction() const;
-        QAction *closeTabAction() const;
-        QAction *recentlyClosedTabsAction() const;
-        QAction *nextTabAction() const;
-        QAction *previousTabAction() const;
+            QAction *newTabAction() const;
+            QAction *closeTabAction() const;
+            QAction *recentlyClosedTabsAction() const;
+            QAction *nextTabAction() const;
+            QAction *previousTabAction() const;
 
-        //QWidget *
-        QStackedWidget *lineEditStack() const;
-        //        void lineEditStack(QStackedWidget *lineedits);
-        QLineEdit *currentLineEdit() const;
-        WebView *currentWebView() const;
-        WebView *webView(int index) const;
-        QLineEdit *lineEdit(int index) const;
-        int webViewIndex(WebView *webView) const;
+            // QWidget *
+            QStackedWidget *lineEditStack() const;
+            // void lineEditStack(QStackedWidget *lineedits);
+            QLineEdit *currentLineEdit() const;
+            WebView *currentWebView() const;
+            WebView *webView(int index) const;
+            QLineEdit *lineEdit(int index) const;
+            int webViewIndex(WebView *webView) const;
 
-        QByteArray saveState() const;
-        bool restoreState(const QByteArray &state);
+            QByteArray saveState() const;
+            bool restoreState(const QByteArray &state);
 
-        void setProfile(Profile *profile);
-        WebView *find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)> &_equal) const;    //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
+            void setProfile(Profile *profile);
+            WebView *find(const std::function<bool(boost::intrusive_ptr<const ::Binder>)> &_equal) const; //= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
-        //        WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
-        WebView *find_nopin() const;
-        Browser *browser() {
-            return _browser;
-        }
+            // WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
+            WebView *find_nopin() const;
+            Browser *browser();
 
 
 
@@ -317,35 +435,35 @@ public:
 
 
 
-        //        struct coupler : public std::enable_shared_from_this<coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
+            // struct coupler : public std::enable_shared_from_this<coupler> { // boost::intrusive_ref_counter<Coupler, boost::thread_safe_counter>  //
 
-        //            TabWidget                       *_tabmanager;
-        //            boost::intrusive_ptr<TreeItem>  _item_link;
-        //            WebPage                         *_page_link;
-        //            bool                            _make_current;
+            // TabWidget                       *_tabmanager;
+            // boost::intrusive_ptr<TreeItem>  _item_link;
+            // WebPage                         *_page_link;
+            // bool                            _make_current;
 
-        //            coupler(TabWidget                           *_tabmanager
-        //                    , boost::intrusive_ptr<TreeItem>    item_link_
-        //                    , bool                              make_current_ = true
-        //                   );
+            // coupler(TabWidget                           *_tabmanager
+            // , boost::intrusive_ptr<TreeItem>    item_link_
+            // , bool                              make_current_ = true
+            // );
 
-        //            //                : _tabmanager(_tabmanager), _bounded_item(_bounded_item), _bounded_page(nullptr), _make_current(_make_current)
-        //            //            {
-        //            //                _bounded_item->record_binder(std::make_shared<CouplerDelegation>(
-        //            //                                                 std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, shared_from_this())
-        //            //                                                 , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, shared_from_this())
-        //            //                                                 , std::make_shared<bind_interface>("", &Coupler::binder, shared_from_this())
-        //            //                                                 , std::make_shared<activate_interface> ("", &Coupler::activator, shared_from_this())
-        //            //                                             ));
-        //            //            }
+            ////                : _tabmanager(_tabmanager), _bounded_item(_bounded_item), _bounded_page(nullptr), _make_current(_make_current)
+            ////            {
+            ////                _bounded_item->record_binder(std::make_shared<CouplerDelegation>(
+            ////                                                 std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, shared_from_this())
+            ////                                                 , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, shared_from_this())
+            ////                                                 , std::make_shared<bind_interface>("", &Coupler::binder, shared_from_this())
+            ////                                                 , std::make_shared<activate_interface> ("", &Coupler::activator, shared_from_this())
+            ////                                             ));
+            ////            }
 
-        //            boost::intrusive_ptr<TreeItem> &item_link() {return _item_link;}
-        //            WebPage *&page_link() {return _page_link;}
+            // boost::intrusive_ptr<TreeItem> &item_link() {return _item_link;}
+            // WebPage *&page_link() {return _page_link;}
 
-        //            WebView *binder();   // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
-        //            WebView *activator();
+            // WebView *binder();   // , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
+            // WebView *activator();
 
-        //        };
+            // };
 
 
 
@@ -355,231 +473,224 @@ public:
 
 
 
-        //        void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
-        //        RecordModel *source_model() {return _record_controller->source_model();}
-        //        void tree_item(boost::intrusive_ptr<TreeItem> item) {_shadow_branch_root = item;}
+            // void sychronize_metaeditor_to_record(boost::intrusive_ptr<Record> record);
+            // RecordModel *source_model() {return _record_controller->source_model();}
+            // void tree_item(boost::intrusive_ptr<TreeItem> item) {_shadow_branch_root = item;}
 
-        //        std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
-        //        void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
+            // std::shared_ptr<RecordTable> table_data() {return _page_tree_item->record_table();}
+            // void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
-        TabBar *tabbar() {
-            return _tabbar;
-        }
-        RecordController *record_controller() {
-            return _record_controller;
-        }
+            TabBar *tabbar();
+            RecordController *record_controller();
 
 
 
 
-        //        boost::intrusive_ptr<TreeItem> item_request_from_tree_fragment(const QUrl &_url);
+            // boost::intrusive_ptr<TreeItem> item_request_from_tree_fragment(const QUrl &_url);
 
-        //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
+            // boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 
-        RecordModel *source_model() {
-            return _record_controller->source_model();
-        }
-        RecordView  *view() {
-            return _record_controller->view();
-        }
+            RecordModel *source_model();
+            RecordView  *view();
 
-        //        void addnew_to_end(void);
-        //        void addnew_before(void);
+            // void addnew_to_end(void);
+            // void addnew_before(void);
 
 
-        //        // Слот для добавления новой записи после выделенной строки
-        //        // Slot to add a new record after the highlighted row
-        //        void addnew_after(void);
-        //        void on_edit_fieldcontext(void);
+            //// Слот для добавления новой записи после выделенной строки
+            //// Slot to add a new record after the highlighted row
+            // void addnew_after(void);
+            // void on_edit_fieldcontext(void);
 
-        //        // Обработка клика по удалению записи в контекстном меню и по кнопке на панели
-        //        void close_context(void);
+            //// Обработка клика по удалению записи в контекстном меню и по кнопке на панели
+            // void close_context(void);
 
-        //        // Копирование отмеченных записей в буфер обмена с удалением
-        //        // из таблицы конечных записей
-        //        void cut(void);
-        //        // Копирование отмеченных записей в буфер обмена
-        //        void copy(void);
-        //        // Insert records from the clipboard    // Вставка записей из буфера обмена
-        //        void paste(void);
-        //        // Слот, срабатывающий при вызове настроек
-        //        void settings(void);
+            //// Копирование отмеченных записей в буфер обмена с удалением
+            //// из таблицы конечных записей
+            // void cut(void);
+            //// Копирование отмеченных записей в буфер обмена
+            // void copy(void);
+            //// Insert records from the clipboard    // Вставка записей из буфера обмена
+            // void paste(void);
+            //// Слот, срабатывающий при вызове настроек
+            // void settings(void);
 
-        //        // Перемещение записи вверх
-        //        void move_up(void);
-        //        // Перемещение записи вниз
-        //        void move_dn(void);
+            //// Перемещение записи вверх
+            // void move_up(void);
+            //// Перемещение записи вниз
+            // void move_dn(void);
 
-        //        // Клик по пункту "Сортировка" в контекстном меню
-        //        void on_sort_click(void);
+            //// Клик по пункту "Сортировка" в контекстном меню
+            // void on_sort_click(void);
 
-        //        void on_print_click(void);
+            // void on_print_click(void);
 
-//        TabWidget *tabmanager() {
-//            return this;
-//        }
+// TabWidget *tabmanager() {
+// return this;
+// }
 
-        boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it) const;
-        void current_download_acceptance(std::pair<QUrl, bool> policy);
-        std::pair<QUrl, bool> current_download_acceptance() const;
-protected:
-        void mouseDoubleClickEvent(QMouseEvent *event);
-        void contextMenuEvent(QContextMenuEvent *event);
-        void mouseReleaseEvent(QMouseEvent *event);
-        void resizeEvent(QResizeEvent *);   // Q_DECL_OVERRIDE;
+            boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it) const;
+            void current_download_acceptance(std::pair<QUrl, bool> policy);
+            std::pair<QUrl, bool> current_download_acceptance() const;
 
-public slots:
-        void loadUrlInCurrentTab(const QUrl &_url);
+// int insertTab(int index, QWidget *w, const QIcon& icon, const QString &label);
+        protected:
+            void mouseDoubleClickEvent(QMouseEvent *event);
+            void contextMenuEvent(QContextMenuEvent *event);
+            void mouseReleaseEvent(QMouseEvent *event);
+            void resizeEvent(QResizeEvent *); // Q_DECL_OVERRIDE;
 
-        //        void new_view_void() {newTab(false);}
-        //BrowserView *new_dummy();
+        public slots:
+            void loadUrlInCurrentTab(const QUrl &_url);
 
-        WebView *newTab(boost::intrusive_ptr<RecordIndex> record_modelindex, bool make_current = true);
+            // void new_view_void() {newTab(false);}
+            // BrowserView *new_dummy();
 
-        //        void new_view(bool make_current = false);    //true
+            WebView *newTab(boost::intrusive_ptr<RecordIndex> record_modelindex, bool make_current = true);
 
-        //        void cloneTab(int index = -1);
-        void requestCloseTab(int index = -1);
-        void closeTab(int index = -1);
-        void closeOtherTabs(int index);
-        void reloadTab(int index = -1);
-        void reloadAllTabs();
-        void nextTab();
-        void previousTab();
-        void moveTab(int fromIndex, int toIndex);
+            // void new_view(bool make_current = false);    //true
 
-private slots:
-        void currentChanged(int index);
-        void aboutToShowRecentTabsMenu();
-        void aboutToShowRecentTriggeredAction(QAction *action);
-        void downloadRequested(QWebEngineDownloadItem *download);
-        void webViewLoadStarted();
-        void webViewIconChanged();
-        void webViewTitleChanged(const QString &title);
-        void webViewUrlChanged(const QUrl &url);
-        void lineEditReturnPressed();
-        void windowCloseRequested();
-        // void moveTab(int fromIndex, int toIndex);
-        void onTabsChanged();
-        void fullScreenRequested(QWebEngineFullScreenRequest request);
-        WebView *view_no_pinned();
-private:
-        TreeScreen          *_tree_screen;
-        MetaEditor          *_editor_screen;
-        Entrance            *_entrance;
-        Browser             *_browser;
-        // RecordScreen        *_record_screen;
-        RecordController    *_record_controller;
+            // void cloneTab(int index = -1);
+            void requestCloseTab(int index = - 1);
+            void closeTab(int index = - 1);
+            void closeOtherTabs(int index);
+            void reloadTab(int index = - 1);
+            void reloadAllTabs();
+            void nextTab();
+            void previousTab();
+            void moveTab(int fromIndex, int toIndex);
 
-        QAction             *_recentlyclosedtabsaction;
-        QAction             *_newtabaction;
-        QAction             *_closetabaction;
-        QAction             *_nexttabaction;
-        QAction             *_previoustabaction;
+        private slots:
+            void currentChanged(int index);
+            void aboutToShowRecentTabsMenu();
+            void aboutToShowRecentTriggeredAction(QAction *action);
+            void downloadRequested(QWebEngineDownloadItem *download);
+            void webViewLoadStarted();
+            void webViewIconChanged();
+            void webViewTitleChanged(const QString &title);
+            void webViewUrlChanged(const QUrl &url);
+            void lineEditReturnPressed();
+            void windowCloseRequested();
+            // void moveTab(int fromIndex, int toIndex);
+            void onTabsChanged();
+            void fullScreenRequested(QWebEngineFullScreenRequest request);
+            WebView *view_no_pinned();
+        private:
+            TreeScreen          *_tree_screen;
+            MetaEditor          *_editor_screen;
+            Entrance            *_entrance;
+            Browser             *_browser;
+            // RecordScreen        *_record_screen;
+            RecordController    *_record_controller;
 
-        QMenu               *_recentlyclosedtabsmenu;
-        static const int _recentlyclosedtabssize = 10;
+            QAction             *_recentlyclosedtabsaction;
+            QAction             *_newtabaction;
+            QAction             *_closetabaction;
+            QAction             *_nexttabaction;
+            QAction             *_previoustabaction;
 
-        QList<QUrl>                 _recentlyclosedtabs;
-        QList<WebActionMapper *>    _actions;
+            QMenu               *_recentlyclosedtabsmenu;
+            static const int _recentlyclosedtabssize = 10;
 
-        // HistoryCompletionModel *_completionModel;// = new HistoryCompletionModel(this);
-        QCompleter              *_lineeditcompleter;// = new QCompleter(_completionModel, this);
-        QStackedWidget          *_lineedits;
-        TabBar                  *_tabbar;
-        // QWebEngineProfile
-        Profile                 *_profile;
-        QWebEngineView          *_fullscreenview;
-        FullScreenNotification  *_fullscreennotification;
-        std::pair<QUrl, bool>   _current_download_acceptance;
+            QList<QUrl>                 _recentlyclosedtabs;
+            QList<WebActionMapper *>    _actions;
 
-protected:
+            // HistoryCompletionModel *_completionModel;// = new HistoryCompletionModel(this);
+            QCompleter              *_lineeditcompleter; // = new QCompleter(_completionModel, this);
+            QStackedWidget          *_lineedits;
+            TabBar          *_tabbar;
+            // QWebEngineProfile
+            Profile                 *_profile;
+            QWebEngineView          *_fullscreenview;
+            FullScreenNotification  *_fullscreennotification;
+            std::pair<QUrl, bool>   _current_download_acceptance;
 
-        //        active_record _active_record;
-        //        sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
-        //        //        sd::method<sd::meta_info<void *const>> _active_r;
-        //        boost::intrusive_ptr<TreeItem> _shadow_branch_root;
-        //        TableModel              *_shadow_source_model;
-        //        std::shared_ptr<TableData>  _table_data;
+        protected:
+
+            // active_record _active_record;
+            // sd::_interface<sd::meta_info<void *>, WebView *, Record *const> _active;
+            ////        sd::method<sd::meta_info<void *const>> _active_r;
+            // boost::intrusive_ptr<TreeItem> _shadow_branch_root;
+            // TableModel              *_shadow_source_model;
+            // std::shared_ptr<TableData>  _table_data;
 
 
-        friend class Browser;
-        friend class ToolbarSearch;
+            friend class Browser;
+            friend class ToolbarSearch;
     };
 
-    //    class PopupWindow :
-    //    //        public TabWidget {  //
-    //    //        public QWidget {
-    //        public Browser {
-    //        Q_OBJECT
-    //    public:
-    //        PopupWindow(TabWidget *tabmanager, QWebEngineProfile *const setProfile, QUrl const &url, TableController *_record_controller
-    //                    , TableController *_page_controller
-    //                    //                    , Browser *parent
-    //                   );
+    // class PopupWindow :
+    ////        public TabWidget {  //
+    ////        public QWidget {
+    // public Browser {
+    // Q_OBJECT
+    // public:
+    // PopupWindow(TabWidget *tabmanager, QWebEngineProfile *const setProfile, QUrl const &url, TableController *_record_controller
+    // , TableController *_page_controller
+    ////                    , Browser *parent
+    // );
 
-    //        //        QWebEnginePage
-    //        WebPage *page() const;
+    ////        QWebEnginePage
+    // WebPage *page() const;
 
-    //    private Q_SLOTS:
-    //        void setUrl(const QUrl &url);
+    // private Q_SLOTS:
+    // void setUrl(const QUrl &url);
 
-    //        void adjustGeometry(const QRect &newGeometry);
+    // void adjustGeometry(const QRect &newGeometry);
 
-    //    private:
-    //        QLineEdit   *_addressbar;
-    //        WebView     *_view;
+    // private:
+    // QLineEdit   *_addressbar;
+    // WebView     *_view;
 
-    //        struct ActiveRecordBinder {
-    //            PopupWindow         *_the;
-    //            TabWidget           *_tabmanager;
-    //            QWebEngineProfile   *_profile;
-    //            TableController     *_record_controller;
-    //            TableController     *_page_controller;
-    //            WebView             *_view;
+    // struct ActiveRecordBinder {
+    // PopupWindow         *_the;
+    // TabWidget           *_tabmanager;
+    // QWebEngineProfile   *_profile;
+    // TableController     *_record_controller;
+    // TableController     *_page_controller;
+    // WebView             *_view;
 
-    //            ~ActiveRecordBinder() {delete _view;}
-    //            ActiveRecordBinder(
-    //                TabWidget *tabmanager
-    //                , PopupWindow *const the
-    //                , QWebEngineProfile *profile
-    //                , TableController *_record_controller
-    //                , TableController *_page_controller
-    //            ) :
-    //                _the(the)
-    //                , _tabmanager(tabmanager)
-    //                , _profile(profile)
-    //                , _record_controller(_record_controller)
-    //                , _page_controller(_page_controller)
-    //                , _view(nullptr)
-    //            {}
+    // ~ActiveRecordBinder() {delete _view;}
+    // ActiveRecordBinder(
+    // TabWidget *tabmanager
+    // , PopupWindow *const the
+    // , QWebEngineProfile *profile
+    // , TableController *_record_controller
+    // , TableController *_page_controller
+    // ) :
+    // _the(the)
+    // , _tabmanager(tabmanager)
+    // , _profile(profile)
+    // , _record_controller(_record_controller)
+    // , _page_controller(_page_controller)
+    // , _view(nullptr)
+    // {}
 
-    //            WebView *binder(boost::intrusive_ptr<Record> record)
-    //            {
-    //                //            assert(!record->unique_page());   // assert by record it self
+    // WebView *binder(boost::intrusive_ptr<Record> record)
+    // {
+    ////            assert(!record->unique_page());   // assert by record it self
 
-    //                //            if(!record->unique_page())
-    //                return  _view =
-    //                            new WebView(record, _profile, _tabmanager, _the, _record_controller
-    //                                        , _page_controller
-    //                                       );
-    //                //                _the->newTab(record, true, _the->_record_controller
-    //                //                             , _the->_page_controller
-    //                //                            );
+    ////            if(!record->unique_page())
+    // return  _view =
+    // new WebView(record, _profile, _tabmanager, _the, _record_controller
+    // , _page_controller
+    // );
+    ////                _the->newTab(record, true, _the->_record_controller
+    ////                             , _the->_page_controller
+    ////                            );
 
-    //                //            else
-    //                //                return record->unique_page()->view();
-    //            }
+    ////            else
+    ////                return record->unique_page()->view();
+    // }
 
-    //            WebView *activator(boost::intrusive_ptr<Record> record)
-    //            {
-    //                return record->unique_page()->active();
-    //            }
+    // WebView *activator(boost::intrusive_ptr<Record> record)
+    // {
+    // return record->unique_page()->active();
+    // }
 
-    //        };
+    // };
 
-    //    };
-
+    // };
 }
 
 QT_END_NAMESPACE

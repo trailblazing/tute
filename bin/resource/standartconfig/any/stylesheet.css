@@ -18,12 +18,14 @@ QToolBar, QToolButton, QPushButton
     margin: 0px 0px 0px 0px;
     background-color: transparent;
 }
+
 QMenu{
     border: 0px;
     background: transparent;
     margin: 0px 0px 0px 0px;
     background-color: transparent;
 }
+
 QToolButton {
     padding: 0px;
 }
@@ -38,6 +40,7 @@ QScrollBar:vertical {
     border-style: solid;
     background-color: transparent;  /*    background-color: rgb(240, 240, 240);*/
 }
+
 QScrollBar::handle:vertical {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
     stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);                                         /*     stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));*/
@@ -45,6 +48,7 @@ QScrollBar::handle:vertical {
     background-color: #AEA89A;  /* rgb(180, 180, 180) 200,200,200*/
     border: 1px #948B77 solid;
 }
+
 QScrollBar::add-line:vertical {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
     stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);                                         /*     stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));*/
@@ -54,6 +58,7 @@ QScrollBar::add-line:vertical {
     border: 1px solid grey;
     background-color: rgb(241, 241, 241);
 }
+
 QScrollBar::sub-line:vertical {
     background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
     stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);                                         /*     stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));*/
@@ -67,12 +72,15 @@ QScrollBar::sub-line:vertical {
 QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {
     background: none;
 }
+
 QScrollBar::up-arrow: vertical {
-    image: url(:/BarIcon/Icons/uparrow.png);
+    image: url(:/resource/pic/mobile_up.svg);/* :/BarIcon/Icons/uparrow.png */
 }
+
 QScrollBar::down-arrow: vertical {
-    image: url(:/BarIcon/Icons/downarrow.png);
+    image: url(:/resource/pic/mobile_down.svg);/* :/BarIcon/Icons/downarrow.png */
 }
+
 QScrollBar::handle: hover {
     background-color: rgb(100, 100, 100);
     width:10px;
@@ -88,6 +96,7 @@ QScrollBar:horizontal {
     border-style: solid;
     background-color: transparent;  /*    background-color: rgb(240, 240, 240); */
 }
+
 QScrollBar::handle:horizontal {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
     stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);                                         /*     stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));*/
@@ -95,6 +104,7 @@ QScrollBar::handle:horizontal {
     background-color: #AEA89A; /* rgb(180, 180, 180) 200,200,200*/
     border: 1px #948B77 solid;
 }
+
 QScrollBar::add-line:horizontal {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
     stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);                                         /*     stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));*/
@@ -104,6 +114,7 @@ QScrollBar::add-line:horizontal {
     border: 1px solid grey;
     background-color: rgb(241, 241, 241);
 }
+
 QScrollBar::sub-line:horizontal {
     background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
     stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);                                         /*     stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));*/
@@ -113,18 +124,73 @@ QScrollBar::sub-line:horizontal {
     border: 1px solid grey;
     background-color: rgb(241, 241, 241);
 }
+
 QScrollBar::left-arrow: horizontal
 {
-    image: url(:/BarIcon/Icons/leftarrow.png);
+    image: url(:/resource/pic/mobile_back.svg);  /* :/BarIcon/Icons/leftarrow.png */
 }
+
 QScrollBar::right-arrow: horizontal
 {
-    image: url(:/BarIcon/Icons/rightarrow.png);
+    image: url(:/resource/pic/mobile_forward.svg); /* :/BarIcon/Icons/rightarrow.png */
 }
+
 QScrollBar::add-page: horizontal, QScrollBar::sub-page: horizontal {
     background: none;
 }
+
 QScrollBar::handle: hover {
     background-color: rgb(100, 100, 100);
     height:10px;
 }
+
+
+browser--QTabWidget::pane {
+    border: 0 px;
+}
+
+
+browser--QTabBar::tab {
+    /*left 3 px;*/
+    /*alignment: bottom;*/
+    height: 10px;
+    width: 16 px;
+    max-width: 16px;
+    /* qproperty-alignment: AlignBottom;  AlignCenter | AlignVCenter;*/
+    qproperty-wordWrap: false;
+    padding-bottom: 0px;
+    padding: 0 px;
+    margin-left: 2 px;
+    margin-right: 0 px;
+}    /*   margin: 0 px;*/
+
+browser--QTabWidget::tab-bar {
+    /*alignment: bottom;*/
+    height: 10px;
+    width: 10px;
+    max-width: 10 px;
+    text-align: left;
+    /*qproperty-alignment: AlignBottom;*/
+    qproperty-wordWrap: false;
+    padding-bottom: 0px;
+    margin-left: 2 px;
+    padding: 0 px;
+    margin-right: 0 px;
+}   /* margin: 0 px;*/
+
+/*
+QTabBar::tab {
+    max-width: 200px;
+    padding: 0 px;
+    margin-left: 2 px;
+    margin-right: 0 px;
+}
+QTabWidget::tab-bar {
+    max-width: 200px;
+    align: left;
+    text-align: left;
+    margin-left: 2 px;
+    padding: 0 px;
+    margin-right: 0 px;
+}
+*/

@@ -316,18 +316,16 @@ browser::BookmarksManager   *QtSingleApplication::_bookmarksmanager = nullptr;
 static void set_user_style_sheet(QWebEngineProfile *profile
     , const QString &styleSheet
     , browser::Entrance *_entrance                               //, browser::BrowserWindow *mainWindow = 0
-                                )
+    )
 {
     Q_ASSERT(profile);
     QString scriptName(QStringLiteral("userStyleSheet"));
     QWebEngineScript script;
     QList<QWebEngineScript> styleSheets = profile->scripts()->findScripts(scriptName);
 
-    if(!styleSheets.isEmpty())
-        script = styleSheets.first();
+    if(!styleSheets.isEmpty()) script = styleSheets.first();
 
-    Q_FOREACH(const QWebEngineScript &s, styleSheets)
-    profile->scripts()->remove(s);
+    Q_FOREACH(const QWebEngineScript &s, styleSheets) profile->scripts()->remove(s);
 
     if(script.isNull()) {
         script.setName(scriptName);
@@ -352,7 +350,7 @@ static void set_user_style_sheet(QWebEngineProfile *profile
     // run the script on the already loaded views
     // this has to be deferred as it could mess with the storage initialization on startup
     if(_entrance) {
-        _entrance->setting_style_source(source);
+        _entrance->style_source(source);
         //        QMetaObject::invokeMethod(browsemanager, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, source));
     }
 }
@@ -392,10 +390,8 @@ void QtSingleApplication::sys_init()
         QTextStream stream(&socket);
         QStringList args = QCoreApplication::arguments();
 
-        if(args.count() > 1)
-            stream << args.last();
-        else
-            stream << QString();
+        if(args.count() > 1) stream << args.last();
+        else stream << QString();
 
         stream.flush();
         socket.waitForBytesWritten();
@@ -412,7 +408,6 @@ void QtSingleApplication::sys_init()
             _localserver->listen(serverName);
         }
     }
-
 
 #if defined(Q_OS_OSX)
     QApplication::setQuitOnLastWindowClosed(false);
@@ -500,9 +495,7 @@ void QtSingleApplication::main_window()
     // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
     QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
 
-    if(_appconfig.show_splash_screen())
-        splash.show();
-
+    if(_appconfig.show_splash_screen()) splash.show();
 
     //    // Подключение перевода интерфейса
     //    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
@@ -517,19 +510,16 @@ void QtSingleApplication::main_window()
 
 
     // Создание объекта главного окна
-    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig, _profile); // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
+    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig, _profile, _style); // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
 
     _globalparameters.mainwindow(_window);
 
     _window->setWindowTitle(application_name);
 
-    if(_globalparameters.target_os() == "android")
-        _window->show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    if(_globalparameters.target_os() == "android") _window->show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else {
-        if(_appconfig.run_in_minimized_window() == false)
-            _window->show();
-        else
-            _window->hide();
+        if(_appconfig.run_in_minimized_window() == false) _window->show();
+        else _window->hide();
     }
 
     // win->setObjectName("mainwindow");
@@ -547,8 +537,7 @@ void QtSingleApplication::main_window()
     _window->restore_editor_scrollbar_position();
     _globalparameters.window_switcher()->enableSwitch();
 
-    if(_appconfig.interface_mode() == "mobile")
-        _globalparameters.window_switcher()->restoreFocusWidget();
+    if(_appconfig.interface_mode() == "mobile") _globalparameters.window_switcher()->restoreFocusWidget();
 
     qDebug() << "Restore session succesfull";
 
@@ -557,15 +546,13 @@ void QtSingleApplication::main_window()
     // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
     walkhistory.clear();
 
-
     // Если в конфиге настроено, что нужно синхронизироваться при старте
     // И задана команда синхронизации
     if(_appconfig.synchro_on_startup())
-        if(_appconfig.synchro_command().trimmed().length() > 0)
-            _window->synchronization();
-
+        if(_appconfig.synchro_command().trimmed().length() > 0) _window->synchronization();
 
     // Если настроено в конфиге, сразу запрашивается пароль доступа
+
     // к зашифрованным данным
     // И если есть хоть какие-то зашифрованные данные
     if(_appconfig.howpassrequest() == "atStartProgram")
@@ -580,8 +567,8 @@ void QtSingleApplication::main_window()
                 }
             }
 
-
     // Если в общем конфиге стоит опция хранения пароля
+
     // И хранимый пароль (точнее его хеш) заполнен
     if(_globalparameters.crypt_key().length() == 0) {
         if(_databaseconfig.get_crypt_mode() > 0) {
@@ -618,8 +605,7 @@ void QtSingleApplication::main_window()
     // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win->commitData(QSessionManager)));
 
     // Окно сплеш-скрина скрывается
-    if(_appconfig.show_splash_screen())
-        splash.finish(_window);
+    if(_appconfig.show_splash_screen()) splash.finish(_window);
 }
 
 /*!
@@ -639,7 +625,7 @@ QtSingleApplication::QtSingleApplication(
     , AppConfig &appconfig
     , DataBaseConfig &databaseconfig
     , bool GUIenabled
-                                        )
+    )
     : QApplication(argc, argv)
     , _peer(new QtLocalPeer(this, QString()))
     , _act_window(nullptr)
@@ -678,7 +664,7 @@ QtSingleApplication::QtSingleApplication(
     , GlobalParameters &globalparameters
     , AppConfig &appconfig
     , DataBaseConfig &databaseconfig
-                                        )
+    )
     : QApplication(argc, argv)
     , _peer(new QtLocalPeer(this, appId))
     , _act_window(nullptr)
@@ -816,10 +802,8 @@ void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessag
 {
     _act_window = aw;
 
-    if(activateOnMessage)
-        connect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
-    else
-        disconnect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
+    if(activateOnMessage) connect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
+    else disconnect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
 }
 
 
@@ -887,8 +871,7 @@ void QtSingleApplication::newLocalSocketConnection()
 {
     QLocalSocket *socket = _peer->server()->nextPendingConnection();
 
-    if(!socket)
-        return;
+    if(!socket) return;
 
     socket->waitForReadyRead(1000);
     QTextStream stream(socket);
@@ -936,8 +919,8 @@ void QtSingleApplication::newLocalSocketConnection()
 
 //            if(tree_index)
             it = TreeIndex::instance([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item())->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
-                return it->field("url") == _url;
-            });
+                        return it->field<url_type>() == _url;
+                    });
 
 //            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
@@ -960,8 +943,8 @@ void QtSingleApplication::newLocalSocketConnection()
                 , _url
                 , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                 , [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
-                return it->field("url") == _url;
-            })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                    return it->field<url_type>() == _url;
+                })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
         }
 
@@ -1037,8 +1020,7 @@ void QtSingleApplication::quitBrowser()
                 QMessageBox::Yes | QMessageBox::No,
                 QMessageBox::No);
 
-        if(ret == QMessageBox::No)
-            return;
+        if(ret == QMessageBox::No) return;
     }
 
     exit(0);
@@ -1052,8 +1034,7 @@ void QtSingleApplication::postLaunch()
 {
     QString directory = _globalparameters.work_directory();    // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
 
-    if(directory.isEmpty())
-        directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
+    if(directory.isEmpty()) directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 
 #if defined(QWEBENGINESETTINGS_PATHS)
     QWebEngineSettings::setIconDatabasePath(directory);
@@ -1074,8 +1055,7 @@ void QtSingleApplication::postLaunch()
         //            browser = dp.first;
         //        }
 
-        if(args.count() > 1)
-            browser->loadPage(args.last());  // mainWindow()->loadPage(args.last());
+        if(args.count() > 1) browser->loadPage(args.last());  // mainWindow()->loadPage(args.last());
 
         //        else
         //            browser->slotHome(); // mainWindow()->slotHome();
@@ -1087,6 +1067,7 @@ void QtSingleApplication::postLaunch()
 void QtSingleApplication::loadSettings()
 {
     QSettings settings;
+
     settings.beginGroup(QLatin1String("websettings"));
 
     QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
@@ -1121,6 +1102,7 @@ void QtSingleApplication::loadSettings()
     } else {
         css = instance()->styleSheet();
     }
+
     set_user_style_sheet(_profile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
 
@@ -1136,7 +1118,7 @@ void QtSingleApplication::loadSettings()
 
     QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
         settings.value(QLatin1String("persistentCookiesPolicy")).toInt()            // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
-                                                                                                                   );
+        );
     _profile->setPersistentCookiesPolicy(persistentCookiesPolicy);
     QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
     QDir cookie_path(persistent_data_path);
@@ -1155,10 +1137,8 @@ void QtSingleApplication::loadSettings()
     QNetworkProxy proxy;
 
     if(settings.value(QLatin1String("enabled"), false).toBool()) {
-        if(settings.value(QLatin1String("type"), 0).toInt() == 0)
-            proxy = QNetworkProxy::Socks5Proxy;
-        else
-            proxy = QNetworkProxy::HttpProxy;
+        if(settings.value(QLatin1String("type"), 0).toInt() == 0) proxy = QNetworkProxy::Socks5Proxy;
+        else proxy = QNetworkProxy::HttpProxy;
 
         proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
         proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
@@ -1192,8 +1172,7 @@ void QtSingleApplication::loadSettings()
 
 void QtSingleApplication::saveSession()
 {
-    if(_private_browsing)
-        return;
+    if(_private_browsing) return;
 
     //    globalparameters.entrance()->clean();
 
@@ -1209,8 +1188,7 @@ void QtSingleApplication::saveSession()
 
     stream << static_cast<uint>(_browsers.size());
 
-    for(auto &browser : _browsers)
-        stream << browser->save_state();
+    for(auto &browser : _browsers) stream << browser->save_state();
 
     settings.setValue(QLatin1String("lastSession"), data);
     settings.endGroup();
@@ -1260,14 +1238,13 @@ void QtSingleApplication::restoreLastSession()
         if(globalparameters.entrance()->browsers().size() == 1
             && browser->tabWidget()->count() == 1
             && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
-          ) {
+            ) {
             // newWindow = globalParameters.browsermanager()->main_window();
             globalparameters.entrance()->restore_state(historywindows.at(i));
         } else {
             // newWindow =
             globalparameters.entrance()->new_browser()->restore_state(historywindows.at(i));
         }
-
 
         // newWindow->restoreState(windows.at(i));
     }
@@ -1281,6 +1258,7 @@ void QtSingleApplication::restoreLastSession()
 void QtSingleApplication::installTranslator(const QString &name)
 {
     QTranslator *translator = new QTranslator(this);
+
     translator->load(name, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     QApplication::installTranslator(translator);
 }
@@ -1304,6 +1282,7 @@ bool QtSingleApplication::event(QEvent *event)
     }
 
     case QEvent::FileOpen:
+
         if(!_mainwindows.isEmpty()) {
             mainWindow()->loadPage(static_cast<QFileOpenEvent *>(event)->file());
             return true;
@@ -1448,8 +1427,7 @@ QNetworkAccessManager *QtSingleApplication::networkAccessManager()
 
 browser::HistoryManager *QtSingleApplication::historyManager()
 {
-    if(!_historymanager)
-        _historymanager = new browser::HistoryManager();
+    if(!_historymanager) _historymanager = new browser::HistoryManager();
 
     return _historymanager;
 }
@@ -1468,8 +1446,7 @@ QIcon QtSingleApplication::icon(const QUrl &url) const
 #if defined(QTWEBENGINE_ICONDATABASE)
     QIcon icon = QWebEngineSettings::iconForUrl(url);
 
-    if(!icon.isNull())
-        return icon.pixmap(16, 16);
+    if(!icon.isNull()) return icon.pixmap(16, 16);
 
 #else
     Q_UNUSED(url);
@@ -1479,22 +1456,19 @@ QIcon QtSingleApplication::icon(const QUrl &url) const
 
 QIcon QtSingleApplication::defaultIcon() const
 {
-    if(_default_icon.isNull())
-        _default_icon = QIcon(QLatin1String(":defaulticon.png"));
+    if(_default_icon.isNull()) _default_icon = QIcon(QLatin1String(":defaulticon.png"));
 
     return _default_icon;
 }
 
 void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
 {
-    if(_private_browsing == privateBrowsing)
-        return;
+    if(_private_browsing == privateBrowsing) return;
 
     _private_browsing = privateBrowsing;
 
     if(privateBrowsing) {
-        if(!_private_profile)
-            _private_profile = new browser::Profile(profile_storage_name, this);  // new QWebEngineProfile(this);
+        if(!_private_profile) _private_profile = new browser::Profile(profile_storage_name, this);  // new QWebEngineProfile(this);
 
         for(auto &browser : globalparameters.entrance()->browsers()) {
             browser->tabWidget()->setProfile(_private_profile);
@@ -1502,7 +1476,7 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
     } else {
         for(auto &browser : globalparameters.entrance()->browsers()) {
             browser->tabWidget()->setProfile(_profile    // QWebEngineProfile::defaultProfile()
-                                            );
+                );
             browser->lastsearch() = QString::null;
             browser->tabWidget()->clear();
         }
@@ -1515,6 +1489,7 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
 QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString &realm)
 {
     QUrl copy = url;
+
     copy.setFragment(realm);
     return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
 }
@@ -1522,12 +1497,14 @@ QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString
 QByteArray QtSingleApplication::proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm)
 {
     QString host = QString("%1:%2").arg(proxy.hostName()).arg(proxy.port());
+
     return QtSingleApplication::proxyAuthenticationKey(proxy.user(), host, realm);
 }
 
 QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, const QString &host, const QString &realm)
 {
     QUrl key;
+
     key.setScheme(QLatin1String("proxy-http"));
     key.setUserName(user);
     key.setHost(host);
@@ -1550,33 +1527,27 @@ void QtSingleApplication::setLastProxyAuthenticator(QAuthenticator *authenticato
 
 void QtSingleApplication::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator)
 {
-    if(_last_authenticator.isNull())
-        return;
-
+    if(_last_authenticator.isNull()) return;
 
     Q_ASSERT(_last_authenticator.option("key").isValid());
     QByteArray lastKey = _last_authenticator.option("key").toByteArray();
     QByteArray key = QtSingleApplication::authenticationKey(reply->url(), authenticator->realm());
 
-    if(lastKey == key)
-        *authenticator = _last_authenticator;
+    if(lastKey == key) *authenticator = _last_authenticator;
 }
 
 void QtSingleApplication::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator)
 {
-    if(_last_proxy_authenticator.isNull())
-        return;
+    if(_last_proxy_authenticator.isNull()) return;
 
     QNetworkProxy::ProxyType proxyType = proxy.type();
 
-    if(proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy)
-        return;
+    if(proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy) return;
 
     Q_ASSERT(_last_proxy_authenticator.option("host").isValid());
     QByteArray lastKey = _last_proxy_authenticator.option("key").toByteArray();
     QByteArray key = QtSingleApplication::proxyAuthenticationKey(proxy, authenticator->realm());
 
-    if(lastKey == key)
-        *authenticator = _last_authenticator;
+    if(lastKey == key) *authenticator = _last_authenticator;
 }
 

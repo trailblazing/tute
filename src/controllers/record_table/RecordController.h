@@ -200,7 +200,7 @@ protected:
     PosSource addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after); // add_new_record_after
     PosSource addnew_item(boost::intrusive_ptr<TreeItem> item_, const int mode = add_new_record_after);
 
-    void edit_field(int pos
+    void edit_field(PosSource pos
                     , QString pin
                     , QString name
                     , QString author

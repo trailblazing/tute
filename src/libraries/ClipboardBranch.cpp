@@ -261,7 +261,7 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeIndex> _modelindex //
             bool encrypt_presence = false;
 
             // Флаги на основе состояния текущей ветки
-            if(_current_parent->field("crypt") == "1")   //_current_item_absolute_path
+            if(_current_parent->field<crypt_type>() == "1")  // boost::mpl::c_str < crypt_type > ::value //_current_item_absolute_path
 
                 encrypt_presence = true;
             else
@@ -270,7 +270,7 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeIndex> _modelindex //
             // Флаги на основе состояния подветок
             for(int i = 0; i < item->count_direct(); i++) { //foreach(QStringList curr_absolute_path, sub_branches_absolute_path)
                 if( //_know_model_board->item(curr_absolute_path)
-                    item->item_direct(i)->field("crypt") == "1") {
+                    item->item_direct(i)->field<crypt_type>() == "1") {  // boost::mpl::c_str < crypt_type > ::value
                     encrypt_presence = true;
                 } else {
                     nocrypt_presence = true;

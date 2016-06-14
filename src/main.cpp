@@ -83,18 +83,18 @@ std::string url_difference(const std::string &url_compare_stored, const std::str
     if(url_compare_stored.size() >= url_compare_get.size()) {
         for(std::string::size_type i = 0; i < url_compare_get.size(); i++) {                                         //url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
             if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);                                                                     //url_compare_stored.erase(i, 1);
+
         }
 
-        for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i++)
-            compare += url_compare_stored.at(i);
+        for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i++) compare += url_compare_stored.at(i);
     } else {
         //url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
         for(std::string::size_type i = 0; i < url_compare_stored.size(); i++) {                                         //url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
             if(url_compare_stored.at(i) == url_compare_get.at(i)) compare += url_compare_get.at(i);                                                                     //url_compare_get.erase(i, 1);
+
         }
 
-        for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i++)
-            compare += url_compare_get.at(i);
+        for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i++) compare += url_compare_get.at(i);
     }
 
     std::string::size_type pos;
@@ -216,10 +216,8 @@ void print_object_tree_recurse(QObject *pobj)
 
         for(int j = 0; j < indent; j++) indentline = indentline + ".";
 
-        if((currobj->objectName()).length() == 0)
-            qDebug("%s%s", qstring_to_char(indentline), currobj->metaObject()->className());
-        else
-            qDebug("%s%s, NAME %s", qstring_to_char(indentline), currobj->metaObject()->className(), qstring_to_char(currobj->objectName()));
+        if((currobj->objectName()).length() == 0) qDebug("%s%s", qstring_to_char(indentline), currobj->metaObject()->className());
+        else qDebug("%s%s, NAME %s", qstring_to_char(indentline), currobj->metaObject()->className(), qstring_to_char(currobj->objectName()));
 
         indent++;
         print_object_tree_recurse(currobj);
@@ -303,15 +301,13 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
     QString msgText(QString::fromUtf8(msg));
 #endif
 
-
     if(!appconfig.is_init()) {
         smart_print_debug_message("[INF] " + msgText + "\n");
         return;
     }
 
     // Если в конфигурации запрещен вывод отладочных сообщений
-    if(!appconfig.print_debug_messages())
-        return;
+    if(!appconfig.print_debug_messages()) return;
 
     switch(type) {
     case QtInfoMsg:
@@ -364,6 +360,7 @@ void set_debug_message_handler()
 void show_message_box(QString message)
 {
     QMessageBox msg_box;
+
     msg_box.setText(message);
     msg_box.exec();
 }
@@ -436,23 +433,62 @@ QString set_css_style()
 {
     QString style;
 
-    QString csspath = globalparameters.work_directory() + "/stylesheet.css";
+    QString work_directory = globalparameters.work_directory();
+    auto target_os = globalparameters.target_os();
+    QString file_name_to = work_directory + "/stylesheet.css";
+    QString file_name_from = work_directory + "/resource/standartconfig/" + target_os + "/stylesheet.css";
 
-    QFile css(csspath);
+
+
+    qint64 size_from = 0;
+    QFile css_from(file_name_from);
+
+    bool result = css_from.open(QIODevice::ReadOnly | QIODevice::Text);
+
+    // Если файла не существует
+    if(!result) {
+        qDebug() << "Stylesheet not found in " << file_name_from;
+//        globalparameters.create_stylesheet_file(globalparameters.work_directory());
+    }else{
+        size_from = css_from.size();
+    }
+
+    css_from.close();    // ?
+
+
+    qint64 size_to = 0;
+    QFile css(file_name_to);
 
     bool openResult = css.open(QIODevice::ReadOnly | QIODevice::Text);
 
     // Если файла не существует
     if(!openResult) {
-        qDebug() << "Stylesheet not found in " << csspath << ". Create new css file.";
+        qDebug() << "Stylesheet not found in " << file_name_from << ". Create new css file.";
         globalparameters.create_stylesheet_file(globalparameters.work_directory());
+    }else{
+        size_to = css.size();
     }
 
     css.close();    // ?
 
+    if(size_to < size_from) {
+        if(!QFile::remove(file_name_to)) {
+            critical_error("Can not remove file\n" + file_name_to);
+        }
+
+        if(!QFile::copy(file_name_from, file_name_to)) {
+            //        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
+            //        }else {
+            critical_error("Can not copy file\n" + file_name_from + "\nto file\n" + file_name_to);
+        }
+    }
+
     // Заново открывается файл
     if(css.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qDebug() << "Stylesheet success loaded from" << csspath;
+
+
+        qDebug() << "Stylesheet success loaded from" << file_name_to;
+
 //        QString
         style = QTextStream(&css).readAll();
 
@@ -461,6 +497,7 @@ QString set_css_style()
         QtSingleApplication::instance()->setStyleSheet(style);
         css.close();
     }
+
     return style;
 }
 
@@ -474,8 +511,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object)
 
 #else
 
-    if(object == nullptr)
-        return;
+    if(object == nullptr) return;
 
     if(globalparameters.target_os() == "android") {
         // Настройка жестов прокрутки
@@ -489,7 +525,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object)
         QScrollerProperties properties = scroller->scrollerProperties();
         QVariant overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::
                 OvershootWhenScrollable                                                           // OvershootAlwaysOff
-                                                                                            );
+                );
         properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
         properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, overshootPolicy);
         scroller->setScrollerProperties(properties);                                         // QScrollerProperties::OvershootAlwaysOff
@@ -602,8 +638,8 @@ void set_kinetic_scrollarea(QAbstractItemView *object)
 //                "subcontrol-origin: margin;"
 //                "}"
 
-                             )
-                                                  );
+                )
+            );
 
 
 
@@ -688,8 +724,8 @@ void set_kinetic_scrollarea(QAbstractItemView *object)
 //                "subcontrol-origin: margin; "
 //                "}"
 
-                             )
-                                                    );
+                )
+            );
         object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
         object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -727,6 +763,7 @@ QString get_unical_id(void)
 
     // Количество секунд как число
     long seconds;
+
     seconds = (long)time(nullptr);
 
     // Количество секунд как строка
@@ -737,8 +774,7 @@ QString get_unical_id(void)
     QString symbols = "0123456789abcdefghijklmnopqrstuvwxyz";
     QString line;
 
-    for(int i = 0; i < 10; i++)
-        line += symbols.mid(rand() % symbols.length(), 1);
+    for(int i = 0; i < 10; i++) line += symbols.mid(rand() % symbols.length(), 1);
 
     QString result = secondsLine + line;
 
@@ -752,6 +788,7 @@ int get_milli_count(void)
     // It rolls over every ~ 12.1 days (0x100000/24/60/60)
     // Use getMilliSpan to correct for rollover
     timeb tb;
+
     ftime(&tb);
     int nCount = tb.millitm + (tb.time & 0xfffff) * 1000;
     return nCount;
@@ -823,8 +860,7 @@ int main(int argc, char **argv)
 
     // Установка увеличенного разрешения для дисплеев с большим DPI (Retina)
     // Set the increased resolution for displays with lots DPI (Retina)
-    if(QtSingleApplication::instance()->devicePixelRatio() > 1.0)
-        QtSingleApplication::instance()->setAttribute(Qt::AA_UseHighDpiPixmaps);
+    if(QtSingleApplication::instance()->devicePixelRatio() > 1.0) QtSingleApplication::instance()->setAttribute(Qt::AA_UseHighDpiPixmaps);
 
 #endif
 

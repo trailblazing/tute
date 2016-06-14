@@ -36,7 +36,7 @@
 #include "views/main_window/MainWindow.h"
 #include "libraries/FlatControl.h"
 #include "libraries/crypt/CryptService.h"
-
+#include "libraries/FixedParameters.h"
 #include "main.h"
 #include "libraries/DiskHelper.h"
 
@@ -918,7 +918,7 @@ void Editor::editor_load_callback(QObject *editor, QString &loadText)
     // Нужно ли дешифровать данные при чтении
     bool workWithCrypt = false;
 
-    if(currEditor->misc_field("crypt") == "1") {
+    if(currEditor->misc_field(boost::mpl::c_str < crypt_type > ::value) == "1") {
         // Если не установлено ключа шифрации
         if(globalparameters.crypt_key().length() == 0) {
             loadText = "";
@@ -969,7 +969,7 @@ void Editor::editor_save_callback(QObject *editor, QString saveText)
     // Нужно ли шифровать записываемый текст
     bool workWithCrypt = false;
 
-    if(currEditor->misc_field("crypt") == "1") {
+    if(currEditor->misc_field(boost::mpl::c_str < crypt_type > ::value) == "1") {
         // Если не установлено ключа шифрации
         if(globalparameters.crypt_key().length() == 0)
             return;
