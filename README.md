@@ -70,7 +70,7 @@ _______________________________________________________________________
 
 1 Linux
 
-1.1 Install C++ Boost library version 1.60 (for boost::intrusive_ptr<SomeObjectType>, and some others maybe)
+1.1 Install C++ Boost library version 1.60 (for boost::intrusive_ptr<SomeObjectType>, boost::MPL, and some others)
 
 1.2 Download Qt 5.6
 

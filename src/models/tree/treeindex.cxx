@@ -29,15 +29,15 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<KnowMode
 
 boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, boost::intrusive_ptr<TreeItem> current_item){
     return new TreeIndex(current_model, parent_item, parent_item->sibling_order([&](boost::intrusive_ptr<const Linker> il){
-                return il->host() == current_item && il == current_item->linker() && current_item->parent() == parent_item;
-            }));
+                   return il->host() == current_item && il == current_item->linker() && current_item->parent() == parent_item;
+               }));
 }
 
 TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order)
-    : _current_model(current_model), _host_parent(parent_item), _sibling_order(sibling_order){   // , _current_index(_current_model()->index(_parent->item_direct(_sibling_order)))
+    : _current_model(current_model), _host_parent(parent_item), _sibling_order(sibling_order){	// , _current_index(_current_model()->index(_parent->item_direct(_sibling_order)))
     bool current_parent_valid = [&](){
             bool result = false;
-            auto absolute_root = globalparameters.tree_screen()->tree_view()->know_model_board()->root_item();
+            auto absolute_root = globalparameters.tree_screen()->view()->know_model_board()->root_item();
             auto current_root = [&](){
                     return static_cast<KnowModel *>(current_model())->root_item();
                 };
@@ -46,7 +46,7 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
                 static_cast<KnowModel *>(current_model())->intercept(new_root);
                 if(parent_item == absolute_root){
                     result = true;
-                }else{   // if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "")
+                }else{	// if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "")
                     result = (current_model()->index(parent_item).isValid())
                         && (current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){
                             return it->id() == parent_item->id();
@@ -64,13 +64,13 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
                         return it->id() == parent_item->id();
                     }));
             }
-            // assert(_current_index.isValid());
+                // assert(_current_index.isValid());
             return result;
         } ();
 
     try{
         if(! _host_parent){qDebug() << "!_host_parent";   throw std::exception(); }
-        if(! current_parent_valid){qDebug() << "!current_parent_valid";   throw std::exception(); }    // assert(current_parent_valid);
+        if(! current_parent_valid){qDebug() << "!current_parent_valid";   throw std::exception(); }	// assert(current_parent_valid);
         // assert(sibling_order >= 0);
         if(sibling_order < 0){qDebug() << "sibling_order < 0"; throw std::exception(); }
         auto count_direct = _host_parent->count_direct();
@@ -105,11 +105,11 @@ boost::intrusive_ptr<TreeItem> TreeIndex::host() const {
 }
 
 QModelIndex TreeIndex::host_parent_index() const {
-    return _host_parent_index;  // _current_model()->index(_parent);
+    return _host_parent_index;	// _current_model()->index(_parent);
 }
 
 QModelIndex TreeIndex::host_index() const {
-    return _host_index;  // _current_model()->index(current_item())
+    return _host_index;	// _current_model()->index(current_item())
 }
 
 int TreeIndex::sibling_order() const {
@@ -134,85 +134,85 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(
                                               , const bool _item_is_brand_new
                                               , const QUrl                                                &_find_url
                                               , const std::function<bool (boost::intrusive_ptr<TreeItem>)> &_check_url
-        ) -> boost::intrusive_ptr<TreeItem> {                            // KnowView::
+        ) -> boost::intrusive_ptr<TreeItem> {				// KnowView::
             auto _current_model = _treeindex->current_model();
-            auto _current_item = _treeindex->host(); // _current_model()->item(_modelindex->parent_index());
+            auto _current_item = _treeindex->host();	// _current_model()->item(_modelindex->parent_index());
             assert(_result != tree_view->know_model_board()->root_item());
-            // auto _tree_screen = globalparameters.tree_screen();
-            ////                    auto _index = _tree_screen->tree_view()->current_index();
-            //// if(idx.isValid()) {
-            ////        _current_view_model = _tree_screen->tree_view()->source_model();
-            // assert(_session_root_item());
-            ////        auto _session_root_item  = _root;    // _current_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();}); // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
-            // auto _session_root_index = _session_view_model()->index(_session_root_item()); //current_index();
-            ////        if(_session_root_index.isValid()) {
-            ////            _session_root_item  = [&]() {return _session_view_model()->item(_tree_screen->tree_view()->current_index());}; // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
-            ////            _session_root_index = _tree_screen->tree_view()->current_index(); //current_index();
-            ////        }
-            ////        assert(_session_root_item());
-            // assert(_session_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _session_root_item()->id();}));
-            ////        if(_item->is_lite())_item->to_fat();
+                // auto _tree_screen = globalparameters.tree_screen();
+                ////                    auto _index = _tree_screen->tree_view()->current_index();
+                //// if(idx.isValid()) {
+                ////        _current_view_model = _tree_screen->tree_view()->source_model();
+                // assert(_session_root_item());
+                ////        auto _session_root_item  = _root;    // _current_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _tree_screen->session_root();}); // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
+                // auto _session_root_index = _session_view_model()->index(_session_root_item()); //current_index();
+                ////        if(_session_root_index.isValid()) {
+                ////            _session_root_item  = [&]() {return _session_view_model()->item(_tree_screen->tree_view()->current_index());}; // item_from_id(static_cast<TreeItem *>(_view_index.internalPointer())->id());
+                ////            _session_root_index = _tree_screen->tree_view()->current_index(); //current_index();
+                ////        }
+                ////        assert(_session_root_item());
+                // assert(_session_view_model()->item([ = ](boost::intrusive_ptr<TreeItem> t) {return t->id() == _session_root_item()->id();}));
+                ////        if(_item->is_lite())_item->to_fat();
             if(_item_is_brand_new || ! _current_model()->item([&](boost::intrusive_ptr<const TreeItem> it){
                     return it->id() == _result->id();
                 })){
-                assert(_check_url(_result)); // assert(_result->url() == item->url());
+                assert(_check_url(_result));	// assert(_result->url() == item->url());
                 // assert(_result->fragment() == item->fragment());
                 // int pos
-                _result = _view_paste_strategy_impl(_treeindex, _result, _substitute_condition); // it->insert_new_item(it->current_count() - 1, _result);
+                _result = _view_paste_strategy_impl(_treeindex, _result, _substitute_condition);// it->insert_new_item(it->current_count() - 1, _result);
                 assert(_result);
                 assert(_check_url(_result) || _result->field<url_type>() == browser::Browser::_defaulthome || _find_url.toString() == browser::Browser::_defaulthome);
                 if(_result->field<url_type>() == browser::Browser::_defaulthome && _find_url.toString() != browser::Browser::_defaulthome){
-                    _result->field<url_type>(_find_url.toString()); // item->field("url")
+                    _result->field<url_type>(_find_url.toString());	// item->field("url")
                 }
                 tree_view->synchronized(false);
                 // assert(_result == it->child(pos));
             }else if(_current_item != _result){
                 if(_result->is_ancestor_of(_current_item)){
-                    // _tree_screen->session_root_id(_result->id());
+                        // _tree_screen->session_root_id(_result->id());
                     assert(_result != tree_view->know_model_board()->root_item());
-                    // if(_result != _current_item->parent()) {
+                        // if(_result != _current_item->parent()) {
                     _result = tree_view->cursor_follow_up(_result);
                     assert(_result != tree_view->know_model_board()->root_item());
                     assert(_result);
-                    // }
+                        // }
                     tree_view->synchronized(false);
-                }else if(tree_view->session_root_auto() != _result->parent()){   // if(session_root_item->is_ancestor_of(_result) && session_root_item != _result->parent())
+                }else if(tree_view->session_root_auto() != _result->parent()){	// if(session_root_item->is_ancestor_of(_result) && session_root_item != _result->parent())
                     _result = tree_view->view_paste_child(_treeindex, _result, _substitute_condition);
                     assert(_result != tree_view->know_model_board()->root_item());
                     assert(_result);
                     tree_view->synchronized(false);
-                    // }
-                    // else {
-                    // _result = _tree_screen->view_paste_as_child(_current_view_model, session_root_index, _result);
+                        // }
+                        // else {
+                        // _result = _tree_screen->view_paste_as_child(_current_view_model, session_root_index, _result);
                 }
                 // _result = _tree_screen->view_paste_as_child(_current_view_model, session_root_index, _result);
             }
             tree_view->know_model_save();
-            // }
+                // }
             assert(_result != tree_view->know_model_board()->root_item());
             assert(_result);
             return _result;
         };
 
-    boost::intrusive_ptr<TreeItem> _result(nullptr);    // =  _know_model_board->root_item();
+    boost::intrusive_ptr<TreeItem> _result(nullptr);	// =  _know_model_board->root_item();
 
-    ////    TreeScreen *_tree_screen    = static_cast<TreeScreen *>(parent()); // globalparameters.tree_screen();
+        ////    TreeScreen *_tree_screen    = static_cast<TreeScreen *>(parent()); // globalparameters.tree_screen();
 
-    ////    auto know_model_board      = know_model_board();
+        ////    auto know_model_board      = know_model_board();
 
-    ////    //        KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model; // std::bind(_source_model_func, _tree_screen->tree_view());
-    ////    auto source_model = [&]() {return source_model();};
+        ////    //        KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model; // std::bind(_source_model_func, _tree_screen->tree_view());
+        ////    auto source_model = [&]() {return source_model();};
 
-    // auto check_euqal = [&](boost::intrusive_ptr<const TreeItem> it) {return _equal(it);};
+        // auto check_euqal = [&](boost::intrusive_ptr<const TreeItem> it) {return _equal(it);};
 
-    // boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
+        // boost::intrusive_ptr<TreeItem> _source_root_item = tree_screen->know_branch()->item(TreeModel::delegater(_url));    // on know_root semantic
     boost::intrusive_ptr<TreeItem> in_tree = tree_view->know_model_board()->item(_equal);
 
 
     bool item_is_brand_new = false;
 
 
-    // if(browser_pages) {
+        // if(browser_pages) {
     auto view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {
                 return _equal(b->host());
             });
@@ -220,22 +220,22 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(
     boost::intrusive_ptr<TreeItem> in_browser;
     if(view){
         in_browser = view->page()->binder()->host();
-        assert(_equal(in_browser));   // assert(_result->url<url_type>() == url_type()(_find_url));
+        assert(_equal(in_browser));	// assert(_result->url<url_type>() == url_type()(_find_url));
     }
     if(in_tree && in_tree != tree_view->know_model_board()->root_item()){
         if(! in_browser){
-            assert(_equal(in_tree));  // assert(_source_item->url<url_type>() == url_type()(_find_url));
+            assert(_equal(in_tree));	// assert(_source_item->url<url_type>() == url_type()(_find_url));
             if(in_tree->is_lite())in_tree->to_fat();
             _result = in_tree;
         }else{
-            assert(_equal(in_browser));     // assert(_result->url<url_type>() == url_type()(_find_url));
-            assert(_equal(in_tree));        // assert(_source_item->url<url_type>() == url_type()(_find_url));
+            assert(_equal(in_browser));		// assert(_result->url<url_type>() == url_type()(_find_url));
+            assert(_equal(in_tree));		// assert(_source_item->url<url_type>() == url_type()(_find_url));
             assert(in_browser == in_tree);
 
-            // if(_result != in_tree) {
-            // _result = in_tree; // assert(_item.get() == _source_item.get());
-            //// _result = const_cast<KnowModel *>(_know_model_board)->duplicated_remove(_result, _source_item);
-            // }
+                // if(_result != in_tree) {
+                // _result = in_tree; // assert(_item.get() == _source_item.get());
+                //// _result = const_cast<KnowModel *>(_know_model_board)->duplicated_remove(_result, _source_item);
+                // }
 
             _result = in_tree;
             if(_result->is_lite())_result->to_fat();
@@ -250,11 +250,11 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(
         if(! in_browser){
 
 
-            // record.generator(generator);
+                // record.generator(generator);
 
 
-            // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
-            QString directory = DiskHelper::create_temp_directory();  //
+                // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+            QString directory = DiskHelper::create_temp_directory();	//
 
             QMap<QString, QString> data;
             data["id"] = get_unical_id();
@@ -270,24 +270,24 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(
             boost::intrusive_ptr<TreeItem> new_item
                 = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
 
-            // if(record.isLite())
+                // if(record.isLite())
             new_item->to_fat();
             new_item->text_to_fat("");
 
             new_item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
 
-            // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
-            // Запись должна быть создана, потом можно аттачить файлы.
-            // Это ограничение для "ленивого" программинга, но пока так
-            // record->setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
+                // Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+                // Запись должна быть создана, потом можно аттачить файлы.
+                // Это ограничение для "ленивого" программинга, но пока так
+                // record->setAttachFiles( DiskHelper::getFilesFromDirectory(directory, "*.bin") );
 
-            // Временная директория с картинками и приаттаченными файлами удаляется
+                // Временная директория с картинками и приаттаченными файлами удаляется
             DiskHelper::remove_directory(directory);
             if(new_item->is_lite())new_item->to_fat();
-            _result = new_item; // assert(_item.get() == item.get());
+            _result = new_item;	// assert(_item.get() == item.get());
         }else{
-            assert(_equal(in_browser));   // assert(_result->url<url_type>() == url_type()(_find_url));
+            assert(_equal(in_browser));		// assert(_result->url<url_type>() == url_type()(_find_url));
 
             _result = in_browser;
             if(_result->is_lite())_result->to_fat();
@@ -657,20 +657,16 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_bind(boost::intrusive_ptr<TreeIte
                                                    , equal_url _equal){
     boost::intrusive_ptr<TreeItem> re;
     auto it = item_register(_find_url, _view_paste_strategy, _equal);
-    // assert(tab_brother != it);
+        // assert(tab_brother != it);
     browser::WebView *view = nullptr;
     auto binder = tab_brother->binder();
     if(binder){
         auto host = binder->host();
-        view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const Binder> b){
-                    return b->host() == host && b == binder && host->parent() == b->host()->parent() && b->host()->id() == host->id();
-                });
+        view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const Binder> b){return b->host() == host && b == binder && host->parent() == b->host()->parent() && b->host()->id() == host->id(); });
     }
     auto browser = view ? view->page()->browser() : globalparameters.entrance()->activated_browser();
-    boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() : browser->record_screen()->record_controller()->source_model(); }, tab_brother, it);;
-// try {
-// record_modelindex = new RecordIndex([&] {return tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() : browser->record_screen()->record_controller()->source_model(); }, tab_brother, it);
-// } catch(std::exception &) {}
+
+    boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model(); }, tab_brother, it);	// tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() :   // tab_brother does not guarantee the browser exists
     if(record_modelindex){
         re = browser->item_bind(record_modelindex);
     }else{

@@ -891,7 +891,7 @@ void QtSingleApplication::newLocalSocketConnection()
 
     auto entrance = globalparameters.entrance();
     auto tree_screen = globalparameters.tree_screen();
-    auto tree_view = tree_screen->tree_view();
+    auto tree_view = tree_screen->view();
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto current_item = tree_view->current_item();
     auto parent = current_item->parent();

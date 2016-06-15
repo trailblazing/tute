@@ -676,11 +676,11 @@ namespace browser {
             }
             vtab_tree->setCurrentIndex(index);
             if(! _tabmanager->find([&] (boost::intrusive_ptr<const ::Binder> b) {
-                    return b->host()->id() == _tree_screen->tree_view()->current_item()->id();
+                    return b->host()->id() == _tree_screen->view()->current_item()->id();
                 })) {
                 auto it = _record_screen->record_controller()->view()->current_item();
                 if(it) {
-                    _tree_screen->tree_view()->select_as_current(TreeIndex::instance([&] { return _tree_screen->tree_view()->source_model(); }, it->parent(), it));
+                    _tree_screen->view()->select_as_current(TreeIndex::instance([&] { return _tree_screen->view()->source_model(); }, it->parent(), it));
                 }
             }
         }
@@ -1443,7 +1443,7 @@ namespace browser {
         QSettings settings;
         settings.beginGroup(QLatin1String("MainWindow"));
         QString home = settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
-        auto tree_view = _tree_screen->tree_view();
+        auto tree_view = _tree_screen->view();
 // boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
         auto current_item = tree_view->current_item();

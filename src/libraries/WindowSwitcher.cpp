@@ -67,12 +67,12 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
 
-    auto _index = globalparameters.tree_screen()->tree_view()->current_index();
+    auto _index = globalparameters.tree_screen()->view()->current_index();
 
     if(_index.isValid()) {
-        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
+        auto item = globalparameters.tree_screen()->view()->source_model()->item(_index);
 
-        if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+        if(item != globalparameters.tree_screen()->view()->source_model()->root_item()) {
             RecordScreen *record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
             QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
             // temporary setting
@@ -111,12 +111,12 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     globalparameters.tree_screen()->hide();
     globalparameters.meta_editor()->hide();
     // globalParameters.getFindScreen()->hide();
-    auto _index = globalparameters.tree_screen()->tree_view()->current_index();
+    auto _index = globalparameters.tree_screen()->view()->current_index();
 
     if(_index.isValid()) {
-        auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
+        auto item = globalparameters.tree_screen()->view()->source_model()->item(_index);
 
-        if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+        if(item != globalparameters.tree_screen()->view()->source_model()->root_item()) {
             RecordScreen *record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
             QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                                     ); // temporary setting
@@ -240,12 +240,12 @@ void WindowSwitcher::restoreFocusWidget()
     }
 
     if(widgetName == record_screen_multi_instance_name) {
-        auto _index = globalparameters.tree_screen()->tree_view()->current_index();
+        auto _index = globalparameters.tree_screen()->view()->current_index();
 
         if(_index.isValid()) {
-            auto item = globalparameters.tree_screen()->tree_view()->source_model()->item(_index);
+            auto item = globalparameters.tree_screen()->view()->source_model()->item(_index);
 
-            if(item != globalparameters.tree_screen()->tree_view()->source_model()->root_item()) {
+            if(item != globalparameters.tree_screen()->view()->source_model()->root_item()) {
                 RecordScreen *_record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 

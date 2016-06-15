@@ -198,7 +198,7 @@ public:
     //    bool is_item_valid(QStringList _path) {return know_root_holder::know_root()->is_item_valid(_path);}
     //    boost::intrusive_ptr<TreeItem> item(QStringList path) const;
     //    boost::intrusive_ptr<TreeItem> item(TreeModel::delegater _del) const;
-    KnowView *tree_view();
+    KnowView *view();
 //    {
 //        return _tree_view;
 //    }

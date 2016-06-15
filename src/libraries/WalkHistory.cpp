@@ -284,7 +284,7 @@ void WalkHistory::check_id(QString id)
 {
     // Выясняется ссылка на модель дерева данных
     KnowModel *dataModel = static_cast<KnowModel *>(    // find_object<TreeKnowView>("knowTreeView")
-                                   globalparameters.tree_screen()->tree_view()->model()
+                                   globalparameters.tree_screen()->view()->model()
                                );
 
     // Если запись с указанным идентификатором существует

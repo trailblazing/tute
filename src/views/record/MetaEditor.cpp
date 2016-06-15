@@ -405,7 +405,7 @@ void MetaEditor::switch_pin(){
             // Сохранение дерева веток
             // find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
             TreeScreen *treescreen = globalparameters.tree_screen();
-            if(treescreen)treescreen->tree_view()->know_model_save();
+            if(treescreen)treescreen->view()->know_model_save();
             if(record_view)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(pos_source_));
         }
     }

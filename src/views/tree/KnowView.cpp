@@ -229,7 +229,7 @@ void KnowView::sychronize(){
 
     // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
     assert(_tree_screen);
-    auto tree_view = _tree_screen->tree_view();
+    auto tree_view = _tree_screen->view();
     if(_know_root                                 // && is_owner()
         ){                                // _know_root != _tree_screen->know_branch() // KnowView is the owner of _know_root
         browser::Entrance *_entrance = globalparameters.entrance();
@@ -3741,10 +3741,10 @@ void KnowView::index_invoke(const QModelIndex &_index){
         }else{
             // auto c = _binder->page()->record_controller();
             v = result_item->binder()->page()->view();
-            auto t = v->tabmanager();
-            auto index = t->webViewIndex(v);
-            if(index != t->currentIndex()){                                                                                                                                  // c->index<PosSource>(c->source_model()->index(_binder->item()))
-                t->setCurrentIndex(index);
+            auto browser_tab = v->tabmanager();
+            auto index = browser_tab->webViewIndex(v);
+            if(index != browser_tab->currentIndex()){                                                                                                                                  // c->index<PosSource>(c->source_model()->index(_binder->item()))
+                browser_tab->setCurrentIndex(index);
             }
         }
         if(v)v->recovery_global_consistency();

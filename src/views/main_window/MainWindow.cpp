@@ -414,9 +414,9 @@ void MainWindow::setup_signals(void){
                         if(current_brower && ! current_brower->is_under_construction()){
                             current_brower->raise();
                             current_brower->activateWindow();
-                            auto tab = current_brower->tabmanager();
-                            tab->setCurrentIndex(tab->currentIndex());
-                            auto v = tab->currentWebView();
+                            auto browser_tab = current_brower->tabmanager();
+                            browser_tab->setCurrentIndex(browser_tab->currentIndex());
+                            auto v = browser_tab->currentWebView();
                             v->setFocus();
                             v->activateWindow();
                             v->raise();
@@ -864,13 +864,13 @@ void MainWindow::restore_tree_position(void){
 // save
 void MainWindow::save_tree_position(void){
     auto _current_source_model = [&](){
-            return _tree_screen->tree_view()->source_model();
+            return _tree_screen->view()->source_model();
         };
     // if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _tree_screen->tree_view()->session_root_auto();               // item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
+    auto item = _tree_screen->view()->session_root_auto();               // item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
     //// Получение QModelIndex выделенного в дереве элемента
     // const QModelIndex index = _tree_screen->tree_view()->current_index();
-    auto current_item = _tree_screen->tree_view()->current_item();
+    auto current_item = _tree_screen->view()->current_item();
     if(current_item){
         appconfig.tree_position(
             _current_source_model()->root_item()->id()                            // _tree_screen->know_model_board()->root_item()->id()
@@ -896,10 +896,10 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     // _tree_screen->session_root_id(current_item_absolute_path.last());
 
     auto source_model = [&](){
-            return _tree_screen->tree_view()->source_model();
+            return _tree_screen->view()->source_model();
         };
     auto know_model_board = [&](){
-            return _tree_screen->tree_view()->know_model_board();
+            return _tree_screen->view()->know_model_board();
         };
     if(source_model()->root_item()->id() != current_root_id){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&] (boost::intrusive_ptr<const TreeItem> it) {
@@ -907,7 +907,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
         auto it = know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it){
                     return it->id() == current_root_id;
                 });
-        _tree_screen->tree_view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
+        _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
     }
     // if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
     // return;
@@ -916,9 +916,9 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
     auto it = know_model_board()->item(current_item_absolute_path);                        // on know_root semantic
     if(! source_model()->index(it).isValid()){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        _tree_screen->tree_view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
+        _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
     }
-    auto tree_view = _tree_screen->tree_view();
+    auto tree_view = _tree_screen->view();
     if(it){
         if(it != know_model_board()->root_item()){
             qDebug() << "Set tree position to " << it->field<name_type>() << " id " << it->field<id_type>();
@@ -953,16 +953,16 @@ bool MainWindow::is_tree_position_crypt(){
     QStringList path = pair.second;
 
     auto know_model_board = [&](){
-            return _tree_screen->tree_view()->know_model_board();
+            return _tree_screen->view()->know_model_board();
         };
-    if(_tree_screen->tree_view()->source_model()->root_item()->id() != id){
+    if(_tree_screen->view()->source_model()->root_item()->id() != id){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, know_model_board()->item([&] (boost::intrusive_ptr<const TreeItem> it) {
 // return it->id() == id;})); } catch(std::exception &e) {throw e; } return tree_index; } ();
         auto it = know_model_board()->item([&](boost::intrusive_ptr<const TreeItem> it){
                     return it->id() == id;
                 });
 
-        _tree_screen->tree_view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
+        _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
     }
     // if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
 
@@ -1444,7 +1444,7 @@ void MainWindow::synchronization(void){
     walkhistory.set_drop(true);
 
     // Заново считываются данные в дерево
-    _tree_screen->tree_view()->know_model_reload();
+    _tree_screen->view()->know_model_reload();
     restore_tree_position();
     // restore_recordtable_position();
     restore_editor_cursor_position();
@@ -1585,7 +1585,7 @@ void MainWindow::go_walk_history(void){
     // }
 
     auto know_model_board = [&](){
-            return _tree_screen->tree_view()->know_model_board();
+            return _tree_screen->view()->know_model_board();
         };
     if(record_id.length() > 0){
         // Выясняется путь к ветке, где находится данная запись

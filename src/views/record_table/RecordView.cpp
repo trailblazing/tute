@@ -71,10 +71,10 @@ StarRating::StarRating(int starCount, int maxStarCount){
 
     star_polygon << QPointF(1.0, 0.5);
     for(int i = 1; i < 5; ++ i)star_polygon << QPointF(0.5 + 0.5 * std::cos(0.8 * i * 3.14),
-            0.5 + 0.5 * std::sin(0.8 * i * 3.14));
-    diamond_polygon << QPointF(0.4, 0.5) << QPointF(0.5, 0.4)
-                    << QPointF(0.6, 0.5) << QPointF(0.5, 0.6)
-                    << QPointF(0.4, 0.5);
+                    0.5 + 0.5 * std::sin(0.8 * i * 3.14));
+    diamond_polygon	<< QPointF(0.4, 0.5) << QPointF(0.5, 0.4)
+                        << QPointF(0.6, 0.5) << QPointF(0.5, 0.6)
+                        << QPointF(0.4, 0.5);
 }
 //! [0]
 
@@ -114,7 +114,7 @@ void StarRating::paint(QPainter *painter, const QRect &rect, const QPalette &pal
 ViewDelegation::ViewDelegation(RecordView *view) : QStyledItemDelegate(view), _view(view){
     auto column_count = appconfig.record_table_show_fields().size();
     for(int i = 0; i < column_count; i ++){
-        auto header_title = _view->record_controller()->source_model()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();    // DisplayRole?UserRole
+        auto header_title = _view->record_controller()->source_model()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
         auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
         if(header_title == rating_field_description){
             for(int j = 0; j < _view->record_controller()->source_model()->rowCount(); j ++){
@@ -134,7 +134,7 @@ ViewDelegation::ViewDelegation(RecordView *view) : QStyledItemDelegate(view), _v
 void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
 // QStyleOptionViewItemV4 opt = setOptions(index, option);
 
-    // prepare
+        // prepare
     painter->save();
 //// get the data and the rectangles
 // const QPixmap &pixmap = qvariant_cast<QPixmap>(index.data(Qt::UserRole + 1));
@@ -145,7 +145,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 // const QPixmap &pixmapSmall = qvariant_cast<QPixmap>(index.data(Qt::UserRole + 2));
 // QRect smallIconRect = QRect(option.rect.topRight() - QPoint(100, - 20), QSize(20, 20));
 //// drawBackground(painter, option, index);
-    // painter->drawPixmap(decorationRect, pixmap);
+        // painter->drawPixmap(decorationRect, pixmap);
 // painter->drawText(displayRect, text);
 // painter->drawPixmap(smallIconRect, pixmapSmall);
 //    if(index.data().canConvert<QStyleOptionButton>()){
@@ -159,11 +159,11 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 //    }else{
 //        QStyledItemDelegate::paint(painter, option, index);
 //    }
-    //
+        //
     auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
-    auto header_title = _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+    auto header_title = _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();		// DisplayRole?UserRole
     auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
-    if(it && header_title == rating_field_description){ // index.column() == 0
+    if(it && header_title == rating_field_description){		// index.column() == 0
 //        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
         if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 //        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
@@ -174,14 +174,14 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
         opt.features = opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
         opt.rect = option.rect.adjusted(1, 1, - 1, - 1);
 //        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-        opt.text = "X";// title;         // trUtf8("Button text");
-        QApplication::style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);         // opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+        opt.text = "X";			// title;         // trUtf8("Button text");
+        QApplication::style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);				// opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
 
 //        QApplication::style()->drawControl(QStyle::CE_PushButton, &option, painter);
     }else QStyledItemDelegate::paint(painter, option, index);
 // drawFocus(painter, option, displayRect);
 
-    // done
+        // done
     painter->restore();
 }
 
@@ -189,7 +189,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
     auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
     if(it){
-        StarRating *star_rating = it->star_rating();// StarRating star_rating = qvariant_cast<StarRating>(index.data());
+        StarRating *star_rating = it->star_rating();			// StarRating star_rating = qvariant_cast<StarRating>(index.data());
         return star_rating->sizeHint();
     }else{
         return QStyledItemDelegate::sizeHint(option, index);
@@ -229,7 +229,7 @@ void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, co
 void ViewDelegation::setEditorData(QWidget *editor, const QModelIndex &index) const {
     auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
     if(it){
-        StarRating *star_rating = it->star_rating();// StarRating star_rating = qvariant_cast<StarRating>(index.data());
+        StarRating *star_rating = it->star_rating();			// StarRating star_rating = qvariant_cast<StarRating>(index.data());
         FlatToolButtonRating *starEditor = qobject_cast<FlatToolButtonRating *>(editor);
         starEditor->star_rating(*star_rating);
     }else{
@@ -247,7 +247,7 @@ void ViewDelegation::commitAndCloseEditor(){
 void ViewDelegation::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const {
     (void)index;
     QRect decorationRect = QRect(option.rect.topLeft(), QSize(80, 80));
-    QRect displayRect = QRect(decorationRect.topRight() + QPoint(20, 30), QSize(150, 25)); // QRect(decorationRect.topRight()+QPoint(20,30),QSize(50,50));
+    QRect displayRect = QRect(decorationRect.topRight() + QPoint(20, 30), QSize(150, 25));		// QRect(decorationRect.topRight()+QPoint(20,30),QSize(50,50));
     editor->setGeometry(displayRect);
 
 //    editor->setGeometry(option.rect);
@@ -282,7 +282,7 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
       , _layout(new QVBoxLayout(this))
       , _is_field_type_column([&](const QString &type_name, int index) -> bool {
 //              QString _type_name = boost::mpl::c_str<field_type>::value;
-              auto header_title = _record_controller->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString(); // DisplayRole?UserRole
+              auto header_title = _record_controller->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString();				// DisplayRole?UserRole
               auto rating_field_description = fixedparameters.record_field_description(QStringList() << type_name)[type_name];
               return header_title == rating_field_description;
           })
@@ -298,31 +298,31 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
 // при наличии ссылки на данный объект
 // Причина в том, что одни и те же QAction используются в двух местах -
 // в RecordTableScreen и здесь в контекстном меню
-    auto init = [&](void) -> void { // RecordView::
+    auto init = [&](void) -> void {		// RecordView::
 
-            auto setup_signals = [&](void) -> void { // RecordView::
-                    // Сигнал чтобы показать контекстное меню по правому клику на списке записей
+            auto setup_signals = [&](void) -> void {				// RecordView::
+                        // Сигнал чтобы показать контекстное меню по правому клику на списке записей
                     connect(this, &RecordView::customContextMenuRequested, this, &RecordView::on_custom_context_menu_requested);
 
-                    // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
+                        // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
                     connect(this, &RecordView::tap_and_hold_gesture_finished, this, &RecordView::on_custom_context_menu_requested);
 
-                    // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
-                    // Signal to open for editing the parameters of the recording double click
+                        // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
+                        // Signal to open for editing the parameters of the recording double click
                     connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
 // connect(this, &RecordView::doubleClicked, _record_controller, &RecordController::close_context); // _tabmanager
 
-                    // if(appconfig.interface_mode() == "desktop")
-                    // connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
+                        // if(appconfig.interface_mode() == "desktop")
+                        // connect(this, &RecordView::list_selection_changed, this, &RecordView::on_selection_changed);
 
-                    // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
-                    // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
-                    // if(appconfig.getInterfaceMode() == "mobile")
+                        // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
+                        // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
+                        // if(appconfig.getInterfaceMode() == "mobile")
                     connect(this, &RecordView::clicked, this, &RecordView::on_click);
 
-                    // RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
+                        // RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
 
-                    // Сигналы для обновления панели инструментов при изменении в selectionModel()
+                        // Сигналы для обновления панели инструментов при изменении в selectionModel()
                     connect(this->selectionModel(), &QItemSelectionModel::currentChanged, [&](const QModelIndex &current, const QModelIndex &previous){
                             (void)current;
                             if(previous.isValid())_previous_index = previous;
@@ -334,7 +334,7 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
                             _record_screen->tools_update();
                         });
 
-                    // Сигналы для обновления панели инструментов
+                        // Сигналы для обновления панели инструментов
                     connect(this, &RecordView::activated, _record_screen, &RecordScreen::tools_update);
                     connect(this, &RecordView::clicked, _record_screen, &RecordScreen::tools_update);
                     connect(this, &RecordView::doubleClicked, _record_screen, &RecordScreen::tools_update);
@@ -347,12 +347,12 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
                 };
 
 
-            auto assembly_context_menu = [&](void) -> void // RecordView::
+            auto assembly_context_menu = [&](void) -> void				// RecordView::
                 {
-                    //// Конструирование меню
-                    // _context_menu = new QMenu(this);
+                        //// Конструирование меню
+                        // _context_menu = new QMenu(this);
 
-                    // RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
+                        // RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 
                     _context_menu->addAction(_record_screen->_tree_hide);
                     _context_menu->addAction(_record_screen->_pin);
@@ -380,7 +380,7 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
 
                     _context_menu->addAction(_record_screen->_sort);
                     _context_menu->addAction(_record_screen->_print);
-                    _context_menu->addAction(_record_screen->_editor); // connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
+                    _context_menu->addAction(_record_screen->_editor);						// connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
                     _context_menu->addAction(_record_screen->_settings);
 
                     _context_menu->addSeparator();
@@ -392,24 +392,24 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
                 };
 
             qDebug() << "RecordView::init()";
-            // this->viewport()->installEventFilter(static_cast<QObject *>(_record_screen->_vertical_scrollarea)); // should be record_screen->_vertical_scrollarea?
+                // this->viewport()->installEventFilter(static_cast<QObject *>(_record_screen->_vertical_scrollarea)); // should be record_screen->_vertical_scrollarea?
 
             setup_signals();
 
-            setSelectionMode(QAbstractItemView::ExtendedSelection); //// It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop   // SingleSelection  // MultiSelection //ExtendedSelection
+            setSelectionMode(QAbstractItemView::ExtendedSelection);				//// It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop   // SingleSelection  // MultiSelection //ExtendedSelection
 
 
             setSelectionBehavior(QAbstractItemView::SelectRows);
 
             restore_header_state();
 
-            // астягивание последней секции до размеров виджета
+                // астягивание последней секции до размеров виджета
             horizontalHeader()->setStretchLastSection(true);
 
-            // Заголовки не должны выглядеть нажатыми
+                // Заголовки не должны выглядеть нажатыми
             horizontalHeader()->setHighlightSections(false);
 
-            // Горизонтальные заголовки делаются перемещяемыми
+                // Горизонтальные заголовки делаются перемещяемыми
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
             horizontalHeader()->setMovable(true);
 #endif
@@ -417,28 +417,28 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
             horizontalHeader()->setSectionsMovable(true);
 #endif
 
-            // Установка высоты строки с принудительной стилизацией (если это необходимо),
-            // так как стилизация через QSS для элементов QTableView полноценно не работает
-            // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
-            // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
+                // Установка высоты строки с принудительной стилизацией (если это необходимо),
+                // так как стилизация через QSS для элементов QTableView полноценно не работает
+                // У таблицы есть вертикальные заголовки, для каждой строки, в которых отображается номер строки.
+                // При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
             verticalHeader()->setDefaultSectionSize(verticalHeader()->minimumSectionSize());
             int height = appconfig.ugly_qss_replace_height_for_table_view();
             if(height != 0)verticalHeader()->setDefaultSectionSize(height);
             if(appconfig.interface_mode() == "mobile")verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
-            setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded); // setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //ScrollBarAlwaysOff
+            setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);			// setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //ScrollBarAlwaysOff
 
             restore_column_width();
 
-            // азрешается перемещать секции заголовка таблицы
+                // азрешается перемещать секции заголовка таблицы
             _enable_move_section = true;
 
-            // Нужно установить правила показа контекстного самодельного меню
-            // чтобы оно могло вызываться
+                // Нужно установить правила показа контекстного самодельного меню
+                // чтобы оно могло вызываться
             assembly_context_menu();
             setContextMenuPolicy(Qt::CustomContextMenu);
         };
 
-    setObjectName(record_view_multi_instance_name); // screen_name + "_view"
+    setObjectName(record_view_multi_instance_name);		// screen_name + "_view"
 
 // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
     this->setSortingEnabled(false);
@@ -460,9 +460,9 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
 
 
 RecordView::~RecordView(){
-    // delete
+        // delete
     _context_menu->deleteLater();
-    // delete
+        // delete
     _layout->deleteLater();
 }
 
@@ -481,10 +481,10 @@ QModelIndex RecordView::previous_index() const {
 }
 
 void RecordView::restore_header_state(void){
-    // Видимость горизонтальных заголовков
+        // Видимость горизонтальных заголовков
     if(appconfig.record_table_show_horizontal_headers() == false)horizontalHeader()->hide();
     else horizontalHeader()->show();
-    // Видимость вертикальных заголовков
+        // Видимость вертикальных заголовков
     if(appconfig.record_table_show_vertical_headers() == false)verticalHeader()->hide();
     else verticalHeader()->show();
 }
@@ -527,7 +527,7 @@ void RecordView::on_click(const QModelIndex &proxy_index){
 void RecordView::on_doubleclick(const QModelIndex &index){
     qDebug() << "In RecordTableView::editFieldContext";
 
-    // Получение индекса выделенного элемента
+        // Получение индекса выделенного элемента
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     if(selectItems.size() > 0){
         // QModelIndex index = selectItems.at(0);
@@ -538,7 +538,7 @@ void RecordView::on_doubleclick(const QModelIndex &index){
 
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        _record_controller->item_click(IndexProxy(index), true); // аньше было select()
+        _record_controller->item_click(IndexProxy(index), true);		// аньше было select()
         globalparameters.mainwindow()->editor_switch();
     }
 }
@@ -548,18 +548,18 @@ void RecordView::on_doubleclick(const QModelIndex &index){
 void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex){
     Q_UNUSED(logicalIndex);
     if(! _enable_move_section)return;
-    // Если была включена сортировка
-    /*
-       if( this->isSortingEnabled() )
-       if( horizontalHeader()->sortIndicatorSection())
-        horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder); // Треугольничек сортировки переставляется на нужный столбец
-     */
+        // Если была включена сортировка
+        /*
+           if( this->isSortingEnabled() )
+           if( horizontalHeader()->sortIndicatorSection())
+            horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder); // Треугольничек сортировки переставляется на нужный столбец
+         */
 
-    // Запоминается ширина столбцов
+        // Запоминается ширина столбцов
     int oldVisualWidth = horizontalHeader()->sectionSize(oldVisualIndex);
     int newVisualWidth = horizontalHeader()->sectionSize(newVisualIndex);
 
-    // В настройках последовательность полей меняется
+        // В настройках последовательность полей меняется
     QStringList showFields = appconfig.record_table_show_fields();
     showFields.move(oldVisualIndex, newVisualIndex);
     appconfig.record_table_show_fields(showFields);
@@ -567,17 +567,17 @@ void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newV
     qDebug() << "New show field sequence" << showFields;
 
     _enable_move_section = false;
-    // Перемещение в данном представлении сбрасывается, так как модель берет последовательность полей из настроек
-    // После это кода logicalIindex=visualIndex для всех полей
+        // Перемещение в данном представлении сбрасывается, так как модель берет последовательность полей из настроек
+        // После это кода logicalIindex=visualIndex для всех полей
     for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx ++){
         int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
-        if(visualIdx != logicalIdx)horizontalHeader()->moveSection(visualIdx, logicalIdx); // Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
+        if(visualIdx != logicalIdx)horizontalHeader()->moveSection(visualIdx, logicalIdx);			// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
     }
     _enable_move_section = true;
 
     horizontalHeader()->reset();
 
-    // Устанавливается ширина столбцов после перемещения
+        // Устанавливается ширина столбцов после перемещения
     horizontalHeader()->resizeSection(oldVisualIndex, newVisualWidth);
     horizontalHeader()->resizeSection(newVisualIndex, oldVisualWidth);
 
@@ -607,21 +607,21 @@ void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize){
 // Открытие контекстного меню в таблице конечных записей
 void RecordView::on_custom_context_menu_requested(const QPoint &pos){
     qDebug() << "In on_customContextMenuRequested";
-    // auto p = parent();
-    // RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
-    // RecordTableScreen *parentPointer = static_cast<RecordTableScreen *>(p);
-    // RecordTableScreen *_recordtablescreen = globalparameters.getRecordTableScreen();
-    // Устанавливается надпись для пункта сортировки
+        // auto p = parent();
+        // RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
+        // RecordTableScreen *parentPointer = static_cast<RecordTableScreen *>(p);
+        // RecordTableScreen *_recordtablescreen = globalparameters.getRecordTableScreen();
+        // Устанавливается надпись для пункта сортировки
     if(! this->isSortingEnabled())_record_screen->_sort->setText(tr("Enable sorting"));
     else _record_screen->_sort->setText(tr("Disable sorting"));
-    // Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
+        // Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
     int n = this->horizontalHeader()->logicalIndexAt(pos);
     qDebug() << "Click on column number " << n;
-    _record_screen->_sort->setData(n); // Запоминается в объект действия для сортировки
+    _record_screen->_sort->setData(n);		// Запоминается в объект действия для сортировки
 
 
-    // Включение отображения меню на экране
-    // menu.exec(event->globalPos());
+        // Включение отображения меню на экране
+        // menu.exec(event->globalPos());
     _context_menu->exec(viewport()->mapToGlobal(pos));
 }
 
@@ -635,25 +635,25 @@ void RecordView::on_custom_context_menu_requested(const QPoint &pos){
 void RecordView::edit_field_context(void){
     qDebug() << "In RecordView::edit_field_context";
 
-    // Получение индекса выделенного элемента
+        // Получение индекса выделенного элемента
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     IndexProxy proxy_index;
     for(auto &si : selectItems){
-        if(0 == si.column())proxy_index = IndexProxy(si); // selectItems.at(0);
+        if(0 == si.column())proxy_index = IndexProxy(si);			// selectItems.at(0);
     }
     auto current_index = currentIndex();
 
-    // auto _index0 = _record_controller->proxyindex_to_sourceindex(proxy_index);
-    // auto _index1 = _record_controller->sourceindex_to_proxyindex(proxy_index);  // invalid
+        // auto _index0 = _record_controller->proxyindex_to_sourceindex(proxy_index);
+        // auto _index1 = _record_controller->sourceindex_to_proxyindex(proxy_index);  // invalid
 
-    // proxy_index = _record_controller->pos_to_proxyindex(proxy_index.row());
+        // proxy_index = _record_controller->pos_to_proxyindex(proxy_index.row());
     assert(((QModelIndex)proxy_index).isValid());
 
     assert(((QModelIndex)proxy_index).row() == current_index.row());
-    if(_record_controller->edit_field_context(proxy_index)){ // proxy_index
+    if(_record_controller->edit_field_context(proxy_index)){		// proxy_index
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        _record_controller->item_click(proxy_index); // proxy_index // Раньше было select()
+        _record_controller->item_click(proxy_index);			// proxy_index // Раньше было select()
     }
 }
 
@@ -712,7 +712,11 @@ void RecordView::edit_field_context(void){
 // }
 
 boost::intrusive_ptr<TreeItem> RecordView::current_item(){
-    return _record_controller->source_model()->current_item();
+    auto it = _record_controller->source_model()->current_item();
+    auto posproxy = _record_controller->index<PosProxy>(it);
+    auto index = static_cast<QModelIndex>(_record_controller->index<IndexProxy>(it));
+    if(index != selectionModel()->currentIndex())_record_controller->cursor_to_index(posproxy);
+    return it;
 }
 
 
@@ -802,7 +806,7 @@ bool RecordView::gesture_event(QGestureEvent *event){
 void RecordView::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
     if(gesture->state() == Qt::GestureFinished)
-        if(globalparameters.target_os() == "android")emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
+                if(globalparameters.target_os() == "android")emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
 }
 
 
@@ -810,13 +814,13 @@ void RecordView::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
 // еакция на нажатие кнопок мышки
 void RecordView::mousePressEvent(QMouseEvent *event){
 
-    TreeScreen *_tree_screen = globalparameters.tree_screen(); // static_cast<TreeScreen *>(this->parent());
+    TreeScreen *_tree_screen = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
 //    // get the buttons type
 //    Qt::MouseButtons mouse_button = event->buttons();
 
     _mouse_start_position = event->pos();
-    QModelIndex next_index = indexAt(event->pos());
-    if(next_index.isValid()){
+    QModelIndex next_index = indexAt(_mouse_start_position);
+    if(next_index.isValid() && ! _is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
 //        // Если нажата левая кнопка мыши
 //        if(mouse_button == Qt::LeftButton){ // || mouse_button == Qt::RightButton
 
@@ -853,14 +857,14 @@ void RecordView::mousePressEvent(QMouseEvent *event){
 //            // }
 //        }
 
-        selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect); // Select
+        selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);			// Select
         selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
         assert(next_index == currentIndex());
-        _record_controller->item_click(IndexProxy(next_index)); // .row()
+        _record_controller->item_click(IndexProxy(next_index));			// .row()
 
-        auto it = _record_controller->source_model()->item(_record_controller->index<PosSource>(_record_controller->index<PosProxy>(IndexProxy(next_index))));  // .row()
+        auto it = _record_controller->source_model()->item(_record_controller->index<PosSource>(_record_controller->index<PosProxy>(IndexProxy(next_index))));			// .row()
         assert(it);
-        auto tree_view = _tree_screen->tree_view();
+        auto tree_view = _tree_screen->view();
 // boost::intrusive_ptr<TreeIndex> tree_index;
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
@@ -868,10 +872,10 @@ void RecordView::mousePressEvent(QMouseEvent *event){
         assert(tree_view->current_item() == it);
         assert(current_item() == it);
     }
-    // else {
-    ////call the parents function
-    // QTableView::mousePressEvent(event);
-    // }
+        // else {
+        ////call the parents function
+        // QTableView::mousePressEvent(event);
+        // }
 
     QTableView::mousePressEvent(event);
 }
@@ -879,7 +883,7 @@ void RecordView::mousePressEvent(QMouseEvent *event){
 
 // еакция на движение мышкой
 void RecordView::mouseMoveEvent(QMouseEvent *event){
-    // Если при движении нажата левая кнопка мышки
+        // Если при движении нажата левая кнопка мышки
     if(event->buttons() & Qt::LeftButton){
         // Выясняется расстояние от места начала нажатия
         int distance = (event->pos() - _mouse_start_position).manhattanLength();
@@ -899,13 +903,13 @@ void RecordView::mouseReleaseEvent(QMouseEvent *event){
     if(next_index.isValid()){
 //        if(mouse_button == Qt::LeftButton){
         if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
-//                auto widget = new FlatToolButton(this);
-//                setIndexWidget(next_index, widget);
-//                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
-//            _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
-            auto cur = current_item();
+////                auto widget = new FlatToolButton(this);
+////                setIndexWidget(next_index, widget);
+////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
+////            _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
+//            auto cur = current_item();
             auto pos = _record_controller->source_model()->item(_record_controller->index<PosSource>(_record_controller->index<PosProxy>(IndexProxy(next_index))));
-            assert(cur == pos);
+//            assert(cur == pos);
             _record_controller->remove(pos->id());
         }
 //        }
@@ -913,7 +917,7 @@ void RecordView::mouseReleaseEvent(QMouseEvent *event){
     QTableView::mouseReleaseEvent(event);
 }
 
-void RecordView::wheelEvent(QWheelEvent *event){    // does not work
+void RecordView::wheelEvent(QWheelEvent *event){	// does not work
 
     x -= (event->delta() / 120) * 10;
     verticalScrollBar()->setValue(x);
@@ -923,7 +927,7 @@ void RecordView::wheelEvent(QWheelEvent *event){    // does not work
 // Начало переноса записи
 void RecordView::start_drag(){
     qDebug() << "Start record drag\n";
-    // Если действительно выбрана строка
+        // Если действительно выбрана строка
     if(currentIndex().isValid()){
         // Перед переносом нужно запомнить текст последней редактируемой записи, чтобы не перенесся неотредактированный вариант
         // find_object<MainWindow>("mainwindow")
@@ -937,33 +941,33 @@ void RecordView::start_drag(){
         unsigned int result = drag->exec(Qt::MoveAction);
         // Если перетаскивание завершено
         if(result == 0){
-            // Сюда код дойдет после того, как перетаскивание будет закончено
+                // Сюда код дойдет после того, как перетаскивание будет закончено
             qDebug() << "Success drag and drop move record";
 
-            // todo: Совершенно непонятно, где удалять объект drag.
-            // Если удалять в этом месте, имеем сегфолт
-            // delete drag;
+                // todo: Совершенно непонятно, где удалять объект drag.
+                // Если удалять в этом месте, имеем сегфолт
+                // delete drag;
 
-            // В модели данных обнуляется оформление элемента, который (возможно) подсвечивался при Drag And Drop
-            // find_object<TreeScreen>(tree_screen_singleton_name)
-            globalparameters.tree_screen()->tree_view()->source_model()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
+                // В модели данных обнуляется оформление элемента, который (возможно) подсвечивался при Drag And Drop
+                // find_object<TreeScreen>(tree_screen_singleton_name)
+            globalparameters.tree_screen()->view()->source_model()->setData(QModelIndex(), QVariant(false), Qt::UserRole);
         }
     }
 }
 
 
 ClipboardRecords *RecordView::get_selected_records(void){
-    // Получение списка Item-элементов, подлежащих копированию
+        // Получение списка Item-элементов, подлежащих копированию
     QModelIndexList indexes_for_copy = selectionModel()->selectedIndexes();
 
-    // В списке должны остаться только элементы столбца 0
-    // (так как ранее одна строка была одним элементом списка,
-    // а теперь используется таблица, и при одной выделенной строке
-    // выделено несколько элементов)
-    // The list should only elements of the column 0
-    // (As earlier one line was one element of the list,
-    // And now uses a table, and a dedicated line
-    // Select multiple items)
+        // В списке должны остаться только элементы столбца 0
+        // (так как ранее одна строка была одним элементом списка,
+        // а теперь используется таблица, и при одной выделенной строке
+        // выделено несколько элементов)
+        // The list should only elements of the column 0
+        // (As earlier one line was one element of the list,
+        // And now uses a table, and a dedicated line
+        // Select multiple items)
     QMutableListIterator<QModelIndex> iterator(indexes_for_copy);
     while(iterator.hasNext()){
         iterator.next();
@@ -971,17 +975,17 @@ ClipboardRecords *RecordView::get_selected_records(void){
         QModelIndex index = iterator.value();
         if(index.column() > 0)iterator.remove();
     }
-    // Список возвращается в произвольном порядке, не в таком как на экране
-    // поэтому его нужно отсортировать по QModelIndex
+        // Список возвращается в произвольном порядке, не в таком как на экране
+        // поэтому его нужно отсортировать по QModelIndex
     qSort(indexes_for_copy.begin(), indexes_for_copy.end());
 
     qDebug() << "Get selected records";
     for(int i = 0; i < indexes_for_copy.size(); ++ i)qDebug() << indexes_for_copy.at(i).data().toString();
-    // Объект с данными для заполнения буфера обмена
+        // Объект с данными для заполнения буфера обмена
     ClipboardRecords *clipboardRecords = new ClipboardRecords();
     clipboardRecords->clear();
 
-    // Объект заполняется выбранными записями
+        // Объект заполняется выбранными записями
     _record_controller->add_items_to_clipboard(clipboardRecords, indexes_for_copy);
 
     return clipboardRecords;
@@ -990,11 +994,11 @@ ClipboardRecords *RecordView::get_selected_records(void){
 
 // Переопределенный сигнал (virtual protected slot)
 void RecordView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected){
-    // qDebug() << "RecordView::selectionChanged()";
+        // qDebug() << "RecordView::selectionChanged()";
 
-    // emit list_selection_changed(selected, deselected);
+        // emit list_selection_changed(selected, deselected);
 
-    // Для корректной работы надо вызвать сигнал базового класса
+        // Для корректной работы надо вызвать сигнал базового класса
     QTableView::selectionChanged(selected, deselected);
 }
 
@@ -1002,7 +1006,7 @@ void RecordView::selectionChanged(const QItemSelection &selected, const QItemSel
 
 // Сохранение ширины колонок в конфигфайл
 void RecordView::save_column_width(void){
-    // Выясняется количество полей
+        // Выясняется количество полей
     int count = appconfig.record_table_show_fields().size();
 
     QStringList columnWidthList;
@@ -1013,16 +1017,16 @@ void RecordView::save_column_width(void){
     }
     appconfig.record_table_fields_width(columnWidthList);
 
-    // qDebug() << "Save column width " << columnWidthList;
+        // qDebug() << "Save column width " << columnWidthList;
 }
 
 
 // Восстановление ширины колонок из конфигфайла
 void RecordView::restore_column_width(void){
     QStringList columnWidthList = appconfig.record_table_fields_width();
-    // qDebug() << "Restore column width " << columnWidthList;
-    // Восстанавливается ширина всех колонок без последней
-    // Чтобы последняя растягивалась по месту
+        // qDebug() << "Restore column width " << columnWidthList;
+        // Восстанавливается ширина всех колонок без последней
+        // Чтобы последняя растягивалась по месту
     for(int i = 0; i < columnWidthList.size() - 1; i ++)setColumnWidth(i, columnWidthList[i].toInt());
     resizeEvent(nullptr);
 }
@@ -1062,34 +1066,34 @@ void RecordView::restore_column_width(void){
 
 // if pin and title width beyond container width, when click title item, widget will move left, pin column will disappeared
 void RecordView::resizeEvent(QResizeEvent *e){
-    // Q_UNUSED(e)
+        // Q_UNUSED(e)
 
-    // int vscrollbar_width = this->verticalScrollBar()->width();
-    // int viewport_width = this->maximumViewportSize().width();
-    // int _width = width();
-    // int parent_width = e->size().width();
-    // auto margin = viewport()->contentsMargins();
-    // auto rect0 =  viewport()->contentsRect();
+        // int vscrollbar_width = this->verticalScrollBar()->width();
+        // int viewport_width = this->maximumViewportSize().width();
+        // int _width = width();
+        // int parent_width = e->size().width();
+        // auto margin = viewport()->contentsMargins();
+        // auto rect0 =  viewport()->contentsRect();
     auto rect = contentsRect();
     auto real_capacity = rect.width();
     int adjust_width = 60;
-    // auto size_width = size().width();
+        // auto size_width = size().width();
     auto show_fields = appconfig.record_table_show_fields();
     int sum_width = 0; int i = 0;
     for(auto f:show_fields){
         sum_width += columnWidth(i);
     }
     for(int i = 0; i < show_fields.size(); i ++){
-        if(sum_width >= real_capacity){// if((columnWidth(0) + columnWidth(1)) >= real_width){
-            if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 20);
-            if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 20);
+        if(sum_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
+            if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 25);
+            if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 30);
             if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, (real_capacity >= adjust_width) ? real_capacity - adjust_width : columnWidth(i));
         }else{
-            if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 20);
-            if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 20);
+            if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 25);
+            if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 30);
             real_capacity = this->contentsRect().width();
             if(real_capacity >= 300){
-                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width); // restoreColumnWidth();
+                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
             }else{
                 if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, (real_capacity >= adjust_width) ? real_capacity - adjust_width : columnWidth(i));
             }
@@ -1101,10 +1105,10 @@ void RecordView::resizeEvent(QResizeEvent *e){
 
 
 template<>PosProxy RecordView::selection_first<PosProxy>() const {
-    // Получение списка выделенных Item-элементов
+        // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty())return PosProxy(- 1); // Если ничего не выделено
-    else return PosProxy((selectItems.at(0)).row()); // Номер первого выделенного элемента
+    if(selectItems.isEmpty())return PosProxy(- 1);		// Если ничего не выделено
+    else return PosProxy((selectItems.at(0)).row());		// Номер первого выделенного элемента
 }
 
 template<>PosSource RecordView::selection_first<PosSource>() const {
@@ -1115,9 +1119,9 @@ template<>PosSource RecordView::selection_first<PosSource>() const {
 }
 
 template<>IdType RecordView::selection_first<IdType>() const {
-    // Получение списка выделенных Item-элементов
+        // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty())return IdType(""); // Если ничего не выделено
+    if(selectItems.isEmpty())return IdType("");		// Если ничего не выделено
 
     return IdType(selectItems.at(0).data(RECORD_ID_ROLE).toString());
 }
@@ -1126,7 +1130,7 @@ template<>IndexProxy RecordView::selection_first<IndexProxy>() const {
 
     PosProxy pos_proxy_ = selection_first<PosProxy>();
     if(pos_proxy_ == - 1)return IndexProxy(QModelIndex());
-    // QModelIndex index = recordProxyModel->index( pos, 0 );
+        // QModelIndex index = recordProxyModel->index( pos, 0 );
     IndexProxy index = _record_controller->index<IndexProxy>(PosProxy(pos_proxy_));
 
     return index;
@@ -1135,7 +1139,7 @@ template<>IndexProxy RecordView::selection_first<IndexProxy>() const {
 template<>IndexSource RecordView::selection_first<IndexSource>() const {
     IndexProxy proxy_index = selection_first<IndexProxy>();
     if(! ((QModelIndex)proxy_index).isValid())return IndexSource(QModelIndex());
-    // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
+        // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
     IndexSource index = _record_controller->index<IndexSource>(proxy_index);
 
     return index;

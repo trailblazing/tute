@@ -92,8 +92,8 @@ QVariant TreeModel::data(const QModelIndex &_index, int role) const {
     // Если запрашивается окраска текста элемента
     if(role == Qt::ForegroundRole){
         boost::intrusive_ptr<TreeItem> it = item(_index);
-        if(it->id() == _session_id && _index != globalparameters.tree_screen()->tree_view()->current_index())return QColor(Qt::red);
-        else if(it->id() == _session_id && _index == globalparameters.tree_screen()->tree_view()->current_index())return QColor(Qt::cyan);
+        if(it->id() == _session_id && _index != globalparameters.tree_screen()->view()->current_index())return QColor(Qt::red);
+        else if(it->id() == _session_id && _index == globalparameters.tree_screen()->view()->current_index())return QColor(Qt::cyan);
         else if(it->count_direct() > 0)return QColor(Qt::black);       // Если узел содержит таблицу конечных записей
         else return QColor(Qt::darkGray);    // Ветка без таблицы конечных записей
     }

@@ -147,7 +147,7 @@ bool Password::replacePassword(void)
 
     // Выясняется ссылка на модель дерева данных
     KnowModel *dataModel = static_cast<KnowModel *>(//find_object<TreeKnowView>(knowtreeview_singleton_name)
-                                   globalparameters.tree_screen()->tree_view()->model());
+                                   globalparameters.tree_screen()->view()->model());
 
     // Перешифрация
     dataModel->re_encrypt(previousPassword, password);
