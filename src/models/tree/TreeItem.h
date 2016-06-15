@@ -290,7 +290,7 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
         bool children_insert_new(int position, int count, int columns);
 
 
-        void binder_reset();
+//        void binder_reset();
         boost::intrusive_ptr<TreeItem> delete_permanent_recursive(boost::intrusive_ptr<Linker> _to_be_removed_linker, std::function<bool (boost::intrusive_ptr<const TreeItem>)> condition);
 
         boost::intrusive_ptr<Linker> parent(boost::intrusive_ptr<TreeItem> it, int pos = 0, int mode = add_new_record_before);

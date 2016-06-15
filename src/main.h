@@ -191,6 +191,7 @@ public:
 //class Record;
 
 extern std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
+extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 //extern Record *register_record(const QUrl &_url
 //                               //                               , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void> >, browser::WebView *, Record *const> > generator

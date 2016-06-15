@@ -137,7 +137,7 @@ boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &in
 // return il->host() == result && result->linker() == il && result->parent() == il->host_parent();
 // }));
 // } catch(std::exception &e) {throw e; }
-    if(result != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model(); }, parent, result));
+    if(result != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, parent, result));
         // PosSource pos_source_ = index<PosSource>(pos_proxy_);
         // auto index_tab = _tabmanager->currentIndex();
         // assert(index_tab == (int)pos_source_);
@@ -1574,7 +1574,7 @@ void RecordController::close_context(void){
         }
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex()){cursor_to_index(PosProxy(_tabmanager->currentIndex())); }
+    if(_view->currentIndex().row() != _tabmanager->currentIndex()){cursor_to_index(PosProxy(_tabmanager->currentIndex()));}
         // }
 }
 
@@ -1688,7 +1688,7 @@ void RecordController::remove(QVector<IdType> delete_ids){
                     auto item = _source_model->item(id);
                     if(item){
                         browser::WebView *v = nullptr;
-                        if((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->field<url_type>() == item->field<url_type>(); }))){	// "url"
+                        if((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->field<url_type>() == item->field<url_type>();}))){	// "url"
                                 // item_to_be_deleted->unique_page()
                                 ////            int index = _tabmanager->indexOf(item->unique_page()->view());
                                 ////            if(index != -1)_tabmanager->closeTab(index);
@@ -2449,10 +2449,11 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url){
 template<>PosProxy RecordController::index<PosProxy>(const PosSource &source_pos) const {
     assert((int)source_pos != - 1);
     QModelIndex source_index = _source_model->index((int)source_pos, 0, QModelIndex());
-
-// QModelIndex source_index_1 = (QModelIndex)_source_model->index(_source_model->item(source_pos));
+//    auto it = _source_model->item(source_pos);
+//    QModelIndex source_index = _source_model->createIndex((int)source_pos, 0, static_cast<void *>(it.get()));
+//    QModelIndex source_index = (QModelIndex)_source_model->index(_source_model->item(source_pos));
     QModelIndex proxy_index = _proxy_model->mapFromSource(source_index);
-    assert(proxy_index.row() != - 1);
+//    assert(proxy_index.row() != - 1);
     return PosProxy(proxy_index.row());
 }
 template<>PosProxy RecordController::index<PosProxy>(const IndexProxy &index_) const {
@@ -2460,7 +2461,7 @@ template<>PosProxy RecordController::index<PosProxy>(const IndexProxy &index_) c
     return PosProxy(((QModelIndex)index_).row());
 }
 template<>PosProxy RecordController::index<PosProxy>(const IndexSource &is) const {
-    PosSource ps(((QModelIndex)is).row()); return index<PosProxy>(ps);
+    PosSource ps(((QModelIndex)is).row());return index<PosProxy>(ps);
 }
 template<>PosProxy RecordController::index<PosProxy>(const IdType &id) const {
     PosSource source_pos = _source_model->position(id);

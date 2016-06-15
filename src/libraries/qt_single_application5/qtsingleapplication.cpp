@@ -63,7 +63,7 @@
 
 #include <utility>
 
-//begin from main.cpp
+// begin from main.cpp
 
 #include <sys/timeb.h>
 
@@ -113,30 +113,30 @@
 #include "controllers/record_table/RecordController.h"
 
 
-//using namespace std;
+// using namespace std;
 
 //// Фиксированные параметры программы (жестко заданные в текущей версии MyTetra)
-//FixedParameters fixedParameters;
+// FixedParameters fixedParameters;
 
 //// Глобальные параметры программы (вычислимые на этапе инициализации, иногда меняющиеся в процессе выполнения программы)
-//GlobalParameters globalParameters;
+// GlobalParameters globalParameters;
 
 //// Конфигурация программы (считанная из файла конфигурации)
-//AppConfig mytetraConfig;
+// AppConfig mytetraConfig;
 
 //// Конфигурация данных
-//DataBaseConfig dataBaseConfig;
+// DataBaseConfig dataBaseConfig;
 
 //// Объект слежения за состоянием корзины
-//TrashMonitoring trashMonitoring;
+// TrashMonitoring trashMonitoring;
 
 //// Объект с историей посещаемых записей
-//WalkHistory walkHistory;
+// WalkHistory walkHistory;
 
 //// Указатель на основное окно программы
-//QObject *pMainWindow;
+// QObject *pMainWindow;
 
-//end from main.cpp
+// end from main.cpp
 
 
 /*!
@@ -271,7 +271,7 @@
 ****************************************************************************/
 
 #include "bookmarks.h"
-//#include "views/browser/browser.h"
+// #include "views/browser/browser.h"
 #include "views/browser/entrance.h"
 #include "libraries/GlobalParameters.h"
 
@@ -314,101 +314,88 @@ QNetworkAccessManager       *QtSingleApplication::_networkaccessmanager = nullpt
 browser::BookmarksManager   *QtSingleApplication::_bookmarksmanager = nullptr;
 
 static void set_user_style_sheet(QWebEngineProfile *profile
-    , const QString &styleSheet
-    , browser::Entrance *_entrance                               //, browser::BrowserWindow *mainWindow = 0
-    )
-{
+                                , const QString &styleSheet
+                                , browser::Entrance *_entrance	// , browser::BrowserWindow *mainWindow = 0
+    ){
     Q_ASSERT(profile);
     QString scriptName(QStringLiteral("userStyleSheet"));
     QWebEngineScript script;
     QList<QWebEngineScript> styleSheets = profile->scripts()->findScripts(scriptName);
-
-    if(!styleSheets.isEmpty()) script = styleSheets.first();
-
+    if(! styleSheets.isEmpty())script = styleSheets.first();
     Q_FOREACH(const QWebEngineScript &s, styleSheets) profile->scripts()->remove(s);
-
-    if(script.isNull()) {
+    if(script.isNull()){
         script.setName(scriptName);
         script.setInjectionPoint(QWebEngineScript::DocumentReady);
         script.setRunsOnSubFrames(true);
         script.setWorldId(QWebEngineScript::ApplicationWorld);
     }
-
-    QString source = QString::fromLatin1("(function() {" \
-            "var css = document.getElementById(\"_qt_testBrowser_userStyleSheet\");" \
-            "if (css == undefined) {" \
-            "    css = document.createElement(\"style\");" \
-            "    css.type = \"text/css\";" \
-            "    css.id = \"_qt_testBrowser_userStyleSheet\";" \
-            "    document.head.appendChild(css);" \
-            "}" \
-            "css.innerText = \"%1\";" \
-            "})()").arg(styleSheet);
+    QString source = QString::fromLatin1("(function() {"							  \
+                                         "var css = document.getElementById(\"_qt_testBrowser_userStyleSheet\");" \
+                                         "if (css == undefined) {"						  \
+                                         "    css = document.createElement(\"style\");"				  \
+                                         "    css.type = \"text/css\";"						  \
+                                         "    css.id = \"_qt_testBrowser_userStyleSheet\";"			  \
+                                         "    document.head.appendChild(css);"					  \
+                                         "}"									  \
+                                         "css.innerText = \"%1\";"						  \
+                                         "})()").arg(styleSheet);
     script.setSourceCode(source);
     profile->scripts()->insert(script);
-
-    // run the script on the already loaded views
-    // this has to be deferred as it could mess with the storage initialization on startup
-    if(_entrance) {
+        // run the script on the already loaded views
+        // this has to be deferred as it could mess with the storage initialization on startup
+    if(_entrance){
         _entrance->style_source(source);
         //        QMetaObject::invokeMethod(browsemanager, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, source));
     }
 }
 
-void QtSingleApplication::sys_init()
-{
+void QtSingleApplication::sys_init(){
 
-    // Инициализация глобальных параметров,
-    // внутри происходит установка рабочей директории
-    // Initialize global parameters,
-    // Is being installed inside the working directory
+        // Инициализация глобальных параметров,
+        // внутри происходит установка рабочей директории
+        // Initialize global parameters,
+        // Is being installed inside the working directory
     _globalparameters.init();
     _globalparameters.profile(_profile);
-    // Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
+        // Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
     _appconfig.init();
 
 
-    // Инициализируется объект слежения за корзиной
+        // Инициализируется объект слежения за корзиной
     trashmonitoring.init(_appconfig.trash_dir());
     trashmonitoring.update();
 
-    // Инициализация переменных, отвечающих за хранилище данных
+        // Инициализация переменных, отвечающих за хранилище данных
     _databaseconfig.init();
 
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
     QCoreApplication::setOrganizationName(QLatin1String("mytetra"));
     QCoreApplication::setApplicationName(QLatin1String(application_name));
-    QCoreApplication::setApplicationVersion(version);   // QLatin1String("0.1")
+    QCoreApplication::setApplicationVersion(version);	// QLatin1String("0.1")
 
     QString serverName = QCoreApplication::applicationName() + QString::fromLatin1(QT_VERSION_STR).remove('.') + QLatin1String("webengine");
 
 
     QLocalSocket socket;
     socket.connectToServer(serverName);
-
-    if(socket.waitForConnected(500)) {
+    if(socket.waitForConnected(500)){
         QTextStream stream(&socket);
         QStringList args = QCoreApplication::arguments();
-
-        if(args.count() > 1) stream << args.last();
+        if(args.count() > 1)stream << args.last();
         else stream << QString();
-
         stream.flush();
         socket.waitForBytesWritten();
         return;
     }
-
-    //    _localserver = new QLocalServer(this);
+        //    _localserver = new QLocalServer(this);
     connect(_localserver, &QLocalServer::newConnection, this, &QtSingleApplication::newLocalSocketConnection);
-
-    if(!_localserver->listen(serverName)) {
-        if(_localserver->serverError() == QAbstractSocket::AddressInUseError
-            && QFile::exists(_localserver->serverName())) {
+    if(! _localserver->listen(serverName)){
+        if(  _localserver->serverError() == QAbstractSocket::AddressInUseError
+          && QFile::exists(_localserver->serverName())){
             QFile::remove(_localserver->serverName());
             _localserver->listen(serverName);
         }
     }
-
 #if defined(Q_OS_OSX)
     QApplication::setQuitOnLastWindowClosed(false);
 #else
@@ -416,28 +403,25 @@ void QtSingleApplication::sys_init()
 #endif
 
 #ifndef QT_NO_OPENSSL
-
-    if(!QSslSocket::supportsSsl()) {
+    if(! QSslSocket::supportsSsl()){
         QMessageBox::information(0, "Mytetra",
             "This system does not support OpenSSL. SSL websites will not be available.");
     }
-
 #endif
 
-    //    actWin = 0;
-    //    peer = new QtLocalPeer(this, appId);
+        //    actWin = 0;
+        //    peer = new QtLocalPeer(this, appId);
     connect(_peer, &QtLocalPeer::messageReceived, &QtLocalPeer::messageReceived);
 }
 
-void QtSingleApplication::browser_init()
-{
+void QtSingleApplication::browser_init(){
 
-    //QtSingleApplication::QtSingleApplication(int &argc, char **argv)
-    //        : QApplication(argc, argv)
-    //          //, _localServer(0)
-    //        , _privateProfile(0)
-    //        , _privateBrowsing(false)
-    //{
+        // QtSingleApplication::QtSingleApplication(int &argc, char **argv)
+        //        : QApplication(argc, argv)
+        //          //, _localServer(0)
+        //        , _privateProfile(0)
+        //        , _privateBrowsing(false)
+        // {
 
 
 
@@ -447,14 +431,14 @@ void QtSingleApplication::browser_init()
     installTranslator(QLatin1String("qt_") + localSysName);
 
 
-    // Подключение перевода интерфейса
-    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
+        // Подключение перевода интерфейса
+        // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
     QString langFileName = ":/resource/translations/mytetra_" + _appconfig.interface_language() + ".qm";
     qDebug() << "Use language file " << langFileName;
 
-    //QTranslator langTranslator;
-    //langTranslator.load(langFileName);
-    installTranslator(langFileName);    //&langTranslator
+        // QTranslator langTranslator;
+        // langTranslator.load(langFileName);
+    installTranslator(langFileName);	// &langTranslator
 
 
     QSettings settings;
@@ -469,14 +453,12 @@ void QtSingleApplication::browser_init()
     QTimer::singleShot(0, this, &QtSingleApplication::postLaunch);
 
 
-    //}
+        // }
 }
 
-void QtSingleApplication::main_window()
-{
-
-    // Do not run another copy    // Не запущен ли другой экземпляр
-    if(isRunning()) {
+void QtSingleApplication::main_window(){
+        // Do not run another copy    // Не запущен ли другой экземпляр
+    if(isRunning()){
         QString message = "Another MyTetra exemplar is running.\n";
 
         printf(message.toLocal8Bit());
@@ -488,124 +470,109 @@ void QtSingleApplication::main_window()
 
         exit(0);
     }
-
-    // Установка CSS-оформления
+        // Установка CSS-оформления
     _style = set_css_style();
 
-    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
+        // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
     QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
+    if(_appconfig.show_splash_screen())splash.show();
+        //    // Подключение перевода интерфейса
+        //    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
+        //    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
+        //    qDebug() << "Use language file " << langFileName;
 
-    if(_appconfig.show_splash_screen()) splash.show();
-
-    //    // Подключение перевода интерфейса
-    //    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
-    //    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
-    //    qDebug() << "Use language file " << langFileName;
-
-    //    //QTranslator langTranslator;
-    //    //langTranslator.load(langFileName);
-    //    application.installTranslator(
-    //        langFileName    //&langTranslator
-    //    );
+        //    //QTranslator langTranslator;
+        //    //langTranslator.load(langFileName);
+        //    application.installTranslator(
+        //        langFileName    //&langTranslator
+        //    );
 
 
-    // Создание объекта главного окна
-    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig, _profile, _style); // std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
+        // Создание объекта главного окна
+    _window = new MainWindow(_globalparameters, _appconfig, _databaseconfig, _profile, _style);	// std::make_shared<MainWindow>(_globalparameters, _appconfig, _databaseconfig);
 
     _globalparameters.mainwindow(_window);
 
     _window->setWindowTitle(application_name);
-
-    if(_globalparameters.target_os() == "android") _window->show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
-    else {
-        if(_appconfig.run_in_minimized_window() == false) _window->show();
+    if(_globalparameters.target_os() == "android")_window->show();	// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    else{
+        if(_appconfig.run_in_minimized_window() == false)_window->show();
         else _window->hide();
     }
+        // win->setObjectName("mainwindow");
+        // pMainWindow=&win; // Запоминается указатель на основное окно
 
-    // win->setObjectName("mainwindow");
-    // pMainWindow=&win; // Запоминается указатель на основное окно
-
-    // После создания окна восстанавливается вид окна в предыдущий запуск
-    // Эти действия нельзя делать в конструкторе главного окна,
-    // т.к. окно еще не создано
+        // После создания окна восстанавливается вид окна в предыдущий запуск
+        // Эти действия нельзя делать в конструкторе главного окна,
+        // т.к. окно еще не создано
     _globalparameters.window_switcher()->disableSwitch();
     _window->restore_find_in_base_visible();
     _window->restore_geometry();
     _window->restore_tree_position();
-    //    _window->restore_recordtable_position();
+        //    _window->restore_recordtable_position();
     _window->restore_editor_cursor_position();
     _window->restore_editor_scrollbar_position();
     _globalparameters.window_switcher()->enableSwitch();
-
-    if(_appconfig.interface_mode() == "mobile") _globalparameters.window_switcher()->restoreFocusWidget();
-
+    if(_appconfig.interface_mode() == "mobile")_globalparameters.window_switcher()->restoreFocusWidget();
     qDebug() << "Restore session succesfull";
 
-    // После восстановления последней редактируемой записи
-    // история перехода очищается, так как в не может попасть
-    // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
+        // После восстановления последней редактируемой записи
+        // история перехода очищается, так как в не может попасть
+        // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
     walkhistory.clear();
-
-    // Если в конфиге настроено, что нужно синхронизироваться при старте
-    // И задана команда синхронизации
+        // Если в конфиге настроено, что нужно синхронизироваться при старте
+        // И задана команда синхронизации
     if(_appconfig.synchro_on_startup())
-        if(_appconfig.synchro_command().trimmed().length() > 0) _window->synchronization();
-
-    // Если настроено в конфиге, сразу запрашивается пароль доступа
-
-    // к зашифрованным данным
-    // И если есть хоть какие-то зашифрованные данные
+                if(_appconfig.synchro_command().trimmed().length() > 0)_window->synchronization();
+        // Если настроено в конфиге, сразу запрашивается пароль доступа
+        // к зашифрованным данным
+        // И если есть хоть какие-то зашифрованные данные
     if(_appconfig.howpassrequest() == "atStartProgram")
-        if(_globalparameters.crypt_key().length() == 0)
-            if(_databaseconfig.get_crypt_mode() > 0) {
-                // Запрашивается пароль только в том случае, если ветка,
-                // на которую установливается курсор при старте, незашифрована
-                // Если ветка зашифрована, пароль и так будет запрошен автоматически
-                if(_window->is_tree_position_crypt() == false) {
-                    Password password;
-                    password.retrievePassword();
-                }
-            }
-
-    // Если в общем конфиге стоит опция хранения пароля
-
-    // И хранимый пароль (точнее его хеш) заполнен
-    if(_globalparameters.crypt_key().length() == 0) {
-        if(_databaseconfig.get_crypt_mode() > 0) {
-            if(_appconfig.password_save_flag()) {
-                if(_appconfig.password_middle_hash().length() > 0) {
-                    // При запросе пароля ключ шифрования будет восстановлен автоматически
+                if(_globalparameters.crypt_key().length() == 0)
+                        if(_databaseconfig.get_crypt_mode() > 0){
+                                // Запрашивается пароль только в том случае, если ветка,
+                                // на которую установливается курсор при старте, незашифрована
+                                // Если ветка зашифрована, пароль и так будет запрошен автоматически
+                            if(_window->is_tree_position_crypt() == false){
+                                Password password;
+                                password.retrievePassword();
+                            }
+                        }
+        // Если в общем конфиге стоит опция хранения пароля
+        // И хранимый пароль (точнее его хеш) заполнен
+    if(_globalparameters.crypt_key().length() == 0){
+        if(_databaseconfig.get_crypt_mode() > 0){
+            if(_appconfig.password_save_flag()){
+                if(_appconfig.password_middle_hash().length() > 0){
+                        // При запросе пароля ключ шифрования будет восстановлен автоматически
                     Password password;
                     password.retrievePassword();
                 }
             }
         }
     }
+        // Распечатывается дерево сгенерированных объектов
+        // print_object_tree();
 
-    // Распечатывается дерево сгенерированных объектов
-    // print_object_tree();
+        // Проверяется наличие системного трея
+        /*
+           if(!QSystemTrayIcon::isSystemTrayAvailable()) {
+           QMessageBox::critical(0, QObject::tr("Systray"),
+                               QObject::tr("I couldn't detect any system tray on this system."));
+           exit(1);
+           }
+         */
 
-    // Проверяется наличие системного трея
-    /*
-       if(!QSystemTrayIcon::isSystemTrayAvailable()) {
-       QMessageBox::critical(0, QObject::tr("Systray"),
-                           QObject::tr("I couldn't detect any system tray on this system."));
-       exit(1);
-       }
-     */
-
-    // При закрытии окна не выходить из программы.
-    // Окно программы может быть снова открыто из трея
+        // При закрытии окна не выходить из программы.
+        // Окно программы может быть снова открыто из трея
     QApplication::setQuitOnLastWindowClosed(false);
 
 
-    // win->show();
+        // win->show();
     connect(this, &QtSingleApplication::lastWindowClosed, this, &QtSingleApplication::quit);
-
-    // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win->commitData(QSessionManager)));
-
-    // Окно сплеш-скрина скрывается
-    if(_appconfig.show_splash_screen()) splash.finish(_window);
+        // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win->commitData(QSessionManager)));
+        // Окно сплеш-скрина скрывается
+    if(_appconfig.show_splash_screen())splash.finish(_window);
 }
 
 /*!
@@ -620,34 +587,30 @@ void QtSingleApplication::main_window()
 
 QtSingleApplication::QtSingleApplication(
     int &argc
-    , char **argv
-    , GlobalParameters &globalparameters
-    , AppConfig &appconfig
-    , DataBaseConfig &databaseconfig
-    , bool GUIenabled
-    )
+                                        , char * *argv
+                                        , GlobalParameters &globalparameters
+                                        , AppConfig &appconfig
+                                        , DataBaseConfig &databaseconfig
+                                        , bool GUIenabled)
     : QApplication(argc, argv)
-    , _peer(new QtLocalPeer(this, QString()))
-    , _act_window(nullptr)
-    , _gui_enabled(GUIenabled)
-    , _profile(new browser::Profile(profile_storage_name, this))
-    , _localserver(new QLocalServer(this))
-    , _private_profile(nullptr)
-    , _private_browsing(false)
-    , _globalparameters(globalparameters)
-    , _appconfig(appconfig)
-    , _databaseconfig(databaseconfig)
-
-{
+      , _peer(new QtLocalPeer(this, QString()))
+      , _act_window(nullptr)
+      , _gui_enabled(GUIenabled)
+      , _profile(new browser::Profile(profile_storage_name, this))
+      , _localserver(new QLocalServer(this))
+      , _private_profile(nullptr)
+      , _private_browsing(false)
+      , _globalparameters(globalparameters)
+      , _appconfig(appconfig)
+      , _databaseconfig(databaseconfig){
     sys_init();
 
-    //    _app = new ThreadedApplication(argc, argv, GUIenabled);
-    //    boost::thread appThread(boost::ref(*_app));
-    //    _app->waitForApplicationRun();
+        //    _app = new ThreadedApplication(argc, argv, GUIenabled);
+        //    boost::thread appThread(boost::ref(*_app));
+        //    _app->waitForApplicationRun();
     main_window();
 
     browser_init();
-
 }
 
 
@@ -659,24 +622,22 @@ QtSingleApplication::QtSingleApplication(
 
 QtSingleApplication::QtSingleApplication(
     const QString &appId
-    , int &argc
-    , char **argv
-    , GlobalParameters &globalparameters
-    , AppConfig &appconfig
-    , DataBaseConfig &databaseconfig
-    )
+                                        , int &argc
+                                        , char * *argv
+                                        , GlobalParameters &globalparameters
+                                        , AppConfig &appconfig
+                                        , DataBaseConfig &databaseconfig)
     : QApplication(argc, argv)
-    , _peer(new QtLocalPeer(this, appId))
-    , _act_window(nullptr)
-    , _gui_enabled(true)
-    , _profile(new browser::Profile(profile_storage_name, this))
-    , _localserver(new QLocalServer(this))
-    , _private_profile(nullptr)
-    , _private_browsing(false)
-    , _globalparameters(globalparameters)
-    , _appconfig(appconfig)
-    , _databaseconfig(databaseconfig)
-{
+      , _peer(new QtLocalPeer(this, appId))
+      , _act_window(nullptr)
+      , _gui_enabled(true)
+      , _profile(new browser::Profile(profile_storage_name, this))
+      , _localserver(new QLocalServer(this))
+      , _private_profile(nullptr)
+      , _private_browsing(false)
+      , _globalparameters(globalparameters)
+      , _appconfig(appconfig)
+      , _databaseconfig(databaseconfig){
     sys_init();
     main_window();
     browser_init();
@@ -707,8 +668,7 @@ QtSingleApplication::QtSingleApplication(
    and \a cmap are passed on to the QApplication constructor.
  */
 QtSingleApplication::QtSingleApplication(Display *dpy, Qt::HANDLE visual, Qt::HANDLE cmap)
-    : QApplication(dpy, visual, cmap)
-{
+    : QApplication(dpy, visual, cmap){
     sysInit();
 }
 
@@ -719,9 +679,8 @@ QtSingleApplication::QtSingleApplication(Display *dpy, Qt::HANDLE visual, Qt::HA
    argv, \a visual, and \a cmap are passed on to the QApplication
    constructor.
  */
-QtSingleApplication::QtSingleApplication(Display *dpy, int &argc, char **argv, Qt::HANDLE visual, Qt::HANDLE cmap)
-    : QApplication(dpy, argc, argv, visual, cmap)
-{
+QtSingleApplication::QtSingleApplication(Display *dpy, int &argc, char * *argv, Qt::HANDLE visual, Qt::HANDLE cmap)
+    : QApplication(dpy, argc, argv, visual, cmap){
     sysInit();
 }
 
@@ -732,9 +691,8 @@ QtSingleApplication::QtSingleApplication(Display *dpy, int &argc, char **argv, Q
    argv, \a visual, and \a cmap are passed on to the QApplication
    constructor.
  */
-QtSingleApplication::QtSingleApplication(Display *dpy, const QString &appId, int argc, char **argv, Qt::HANDLE visual, Qt::HANDLE cmap)
-    : QApplication(dpy, argc, argv, visual, cmap)
-{
+QtSingleApplication::QtSingleApplication(Display *dpy, const QString &appId, int argc, char * *argv, Qt::HANDLE visual, Qt::HANDLE cmap)
+    : QApplication(dpy, argc, argv, visual, cmap){
     sysInit(appId);
 }
 #endif
@@ -751,8 +709,7 @@ QtSingleApplication::QtSingleApplication(Display *dpy, const QString &appId, int
     \sa sendMessage()
  */
 
-bool QtSingleApplication::isRunning()
-{
+bool QtSingleApplication::isRunning(){
     return _peer->isClient();
 }
 
@@ -770,8 +727,7 @@ bool QtSingleApplication::isRunning()
 
     \sa isRunning(), messageReceived()
  */
-bool QtSingleApplication::sendMessage(const QString &message, int timeout)
-{
+bool QtSingleApplication::sendMessage(const QString &message, int timeout){
     return _peer->sendMessage(message, timeout);
 }
 
@@ -780,8 +736,7 @@ bool QtSingleApplication::sendMessage(const QString &message, int timeout)
     Returns the application identifier. Two processes with the same
     identifier will be regarded as instances of the same application.
  */
-QString QtSingleApplication::id() const
-{
+QString QtSingleApplication::id() const {
     return _peer->applicationId();
 }
 
@@ -798,11 +753,9 @@ QString QtSingleApplication::id() const
    \sa activateWindow(), messageReceived()
  */
 
-void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessage)
-{
+void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessage){
     _act_window = aw;
-
-    if(activateOnMessage) connect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
+    if(activateOnMessage)connect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
     else disconnect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
 }
 
@@ -813,8 +766,7 @@ void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessag
 
     \sa setActivationWindow()
  */
-QWidget *QtSingleApplication::activationWindow() const
-{
+QWidget *QtSingleApplication::activationWindow() const {
     return _act_window;
 }
 
@@ -833,10 +785,9 @@ QWidget *QtSingleApplication::activationWindow() const
 
    \sa setActivationWindow(), messageReceived(), initialize()
  */
-void QtSingleApplication::activateWindow()
-{
-    if(_act_window) {
-        _act_window->setWindowState(_act_window->windowState() & ~Qt::WindowMinimized);
+void QtSingleApplication::activateWindow(){
+    if(_act_window){
+        _act_window->setWindowState(_act_window->windowState() & ~ Qt::WindowMinimized);
         _act_window->raise();
         _act_window->activateWindow();
     }
@@ -860,29 +811,23 @@ void QtSingleApplication::activateWindow()
  */
 
 
-QtSingleApplication *QtSingleApplication::instance()
-{
-    return (static_cast<QtSingleApplication *>(QCoreApplication::instance()));
+QtSingleApplication *QtSingleApplication::instance(){
+    return(static_cast<QtSingleApplication *>(QCoreApplication::instance()));
 }
 
 
 
-void QtSingleApplication::newLocalSocketConnection()
-{
+void QtSingleApplication::newLocalSocketConnection(){
     QLocalSocket *socket = _peer->server()->nextPendingConnection();
-
-    if(!socket) return;
-
+    if(! socket)return;
     socket->waitForReadyRead(1000);
     QTextStream stream(socket);
     QString _url;
     stream >> _url;
+    if(_url.isEmpty()){_url = browser::Browser::_defaulthome;}
+        //    browser::DockedWindow *w = nullptr;
 
-    if(_url.isEmpty()) {_url = browser::Browser::_defaulthome; }
-
-    //    browser::DockedWindow *w = nullptr;
-
-    //if(!url.isEmpty()) {
+        // if(!url.isEmpty()) {
 
     QSettings settings;
     settings.beginGroup(QLatin1String("general"));
@@ -895,19 +840,15 @@ void QtSingleApplication::newLocalSocketConnection()
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto current_item = tree_view->current_item();
     auto parent = current_item->parent();
-
-    if(!parent) throw std::exception();
-
+    if(! parent)throw std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
 //        }));
 //    } catch(std::exception &e) {} //    Record *record = request_record(url);
-
 //    //    std::pair<browser::Browser *, browser::WebView *> dp;
-
-    if(entrance && tree_screen ) {  // && _tree_modelindex
-        if(openLinksIn == 1) {
+    if(entrance && tree_screen){	// && _tree_modelindex
+        if(openLinksIn == 1){
 
 
 
@@ -918,111 +859,97 @@ void QtSingleApplication::newLocalSocketConnection()
             boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-            it = TreeIndex::instance([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item())->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
-                        return it->field<url_type>() == _url;
+            it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item())->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {
+                        return url_equal(it->field<url_type>().toStdString(), _url.toStdString());	// it->field<url_type>() == _url;
                     });
 
 //            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
 //            try {
-            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model(); }, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
+            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
 //            } catch(std::exception &) {}
-
-            if(record_modelindex) {
-                browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1)); // tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
-            } else {
+            if(record_modelindex){
+                browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+            }else{
                 tree_view->index_invoke(tree_view->source_model()->index(it));
             }
-        } else {
+        }else{
 //            boost::intrusive_ptr<TreeIndex> tree_index;
 //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
 
 //            if(tree_index)
-            TreeIndex::instance([&] {return tree_view->source_model(); }, parent, current_item)->item_bind(
-                tree_view->current_item()
-                , _url
-                , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                , [&] (boost::intrusive_ptr<const TreeItem> it) -> bool {
-                    return it->field<url_type>() == _url;
+            TreeIndex::instance([&] {return tree_view->source_model();}, parent, current_item)->item_bind(tree_view->current_item()
+                                                                                                         , _url
+                                                                                                         , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                                                                                         , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {
+                    return url_equal(it->field<url_type>().toStdString(), _url.toStdString());	// it->field<url_type>() == _url;
                 })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-
         }
-
-        //browser_view->mainWindow()->load_record(record);
+        // browser_view->mainWindow()->load_record(record);
     }
+        //    record->active_immediately(true);
 
-    //    record->active_immediately(true);
-
-    //}
+        // }
 
     delete socket;
-    //    dp.first->raise();
-    //    dp.first->activateWindow();
+        //    dp.first->raise();
+        //    dp.first->activateWindow();
 }
 
-QtSingleApplication::~QtSingleApplication()
-{
-    if(_profile) {
-        _profile->deleteLater(); _profile = nullptr;
+QtSingleApplication::~QtSingleApplication(){
+    if(_profile){
+        _profile->deleteLater();_profile = nullptr;
     }
-
-    // delete
+        // delete
     _downloadmanager->deleteLater();
 
-    //    for(int i = 0; i < _mainWindows.size(); ++i) {
-    //        BrowserWindow *window = _mainWindows.at(i);
-    //        delete window;
-    //    }
+        //    for(int i = 0; i < _mainWindows.size(); ++i) {
+        //        BrowserWindow *window = _mainWindows.at(i);
+        //        delete window;
+        //    }
 
-    // delete
+        // delete
     _networkaccessmanager->deleteLater();
-    // delete
+        // delete
     _bookmarksmanager->deleteLater();
-
-    if(_window) {
-        _window->deleteLater(); // delete _window;
+    if(_window){
+        _window->deleteLater();	// delete _window;
         _window = nullptr;
     }
-
-    if(_profile) {_profile->deleteLater(); _profile = nullptr; }
+    if(_profile){_profile->deleteLater();_profile = nullptr;}
 }
 
-//#if defined(Q_OS_OSX)
-//void QtSingleApplication::lastWindowClosed()
-//{
+// #if defined(Q_OS_OSX)
+// void QtSingleApplication::lastWindowClosed()
+// {
 //    clean();
 //    BrowserWindow *mw = globalParameters.getBrowserView()->getBrowserWindow();  //new BrowserWindow;
 //    mw->slotHome();
 //    _mainwindows.prepend(mw);
-//}
-//#endif
+// }
+// #endif
 
-//QtSingleApplication *QtSingleApplication::instance()
-//{
+// QtSingleApplication *QtSingleApplication::instance()
+// {
 //    return (static_cast<QtSingleApplication *>(QCoreApplication::instance()));
-//}
+// }
 
 #if defined(Q_OS_OSX)
 #include <QtWidgets/QMessageBox>
-void QtSingleApplication::quitBrowser()
-{
+void QtSingleApplication::quitBrowser(){
     clean();
     int tabCount = 0;
-
-    for(int i = 0; i < _mainwindows.count(); ++i) {
+    for(int i = 0; i < _mainwindows.count(); ++ i){
         tabCount += _mainwindows.at(i)->tabWidget()->count();
     }
-
-    if(tabCount > 1) {
+    if(tabCount > 1){
         int ret = QMessageBox::warning(mainWindow(), QString(),
                 tr("There are %1 windows and %2 tabs open\n"
-                "Do you want to quit anyway?").arg(_mainwindows.count()).arg(tabCount),
+                   "Do you want to quit anyway?").arg(_mainwindows.count()).arg(tabCount),
                 QMessageBox::Yes | QMessageBox::No,
                 QMessageBox::No);
-
-        if(ret == QMessageBox::No) return;
+        if(ret == QMessageBox::No)return;
     }
-
     exit(0);
 }
 #endif
@@ -1030,12 +957,9 @@ void QtSingleApplication::quitBrowser()
 /*!
     Any actions that can be delayed until the window is visible
  */
-void QtSingleApplication::postLaunch()
-{
-    QString directory = _globalparameters.work_directory();    // QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-
-    if(directory.isEmpty()) directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
-
+void QtSingleApplication::postLaunch(){
+    QString directory = _globalparameters.work_directory();	// QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    if(directory.isEmpty())directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
     QWebEngineSettings::setIconDatabasePath(directory);
     QWebEngineSettings::setOfflineStoragePath(directory);
@@ -1044,34 +968,34 @@ void QtSingleApplication::postLaunch()
     setWindowIcon(QIcon(QLatin1String(":browser.svg")));
 
     loadSettings();
-
-    // newMainWindow() needs to be called in main() for this to happen
-    if(_globalparameters.entrance()->browsers().size() > 0) { // _mainWindows.count()
+        // newMainWindow() needs to be called in main() for this to happen
+    if(_globalparameters.entrance()->browsers().size() > 0){	// _mainWindows.count()
         QStringList args = QCoreApplication::arguments();
-        browser::Browser *browser = _globalparameters.entrance()->activated_browser();
+//        browser::Browser *browser = _globalparameters.entrance()->activated_browser();
         //        assert(browser);
         //        if(!browser) {
         //            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
         //            browser = dp.first;
         //        }
-
-        if(args.count() > 1) browser->loadPage(args.last());  // mainWindow()->loadPage(args.last());
-
+        if(args.count() > 1){
+//            browser->loadPage(args.last());			// mainWindow()->loadPage(args.last());
+            KnowView *tree_view = _globalparameters.tree_screen()->view();
+            auto it = tree_view->session_root_auto();
+            TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it)->item_bind(it, args.last(), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+        }
         //        else
         //            browser->slotHome(); // mainWindow()->slotHome();
     }
-
     QtSingleApplication::historyManager();
 }
 
-void QtSingleApplication::loadSettings()
-{
+void QtSingleApplication::loadSettings(){
     QSettings settings;
 
     settings.beginGroup(QLatin1String("websettings"));
 
     QWebEngineSettings *defaultSettings = QWebEngineSettings::globalSettings();
-    //    QWebEngineProfile *defaultProfile = QWebEngineProfile::defaultProfile();
+        //    QWebEngineProfile *defaultProfile = QWebEngineProfile::defaultProfile();
 
     QString standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
     int standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
@@ -1090,44 +1014,40 @@ void QtSingleApplication::loadSettings()
     defaultSettings->setAttribute(QWebEngineSettings::JavascriptEnabled, settings.value(QLatin1String("enableJavascript"), true).toBool());
     defaultSettings->setAttribute(QWebEngineSettings::ScrollAnimatorEnabled, settings.value(QLatin1String("enableScrollAnimator"), true).toBool());
 
-    //#if defined(QTWEBENGINE_PLUGINS)
+        // #if defined(QTWEBENGINE_PLUGINS)
     defaultSettings->setAttribute(QWebEngineSettings::PluginsEnabled, settings.value(QLatin1String("enablePlugins"), true).toBool());
-    //#endif
+        // #endif
     defaultSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
-
-    if(css == "" && _style != "") {
+    if(css == "" && _style != ""){
         css = _style;
-    } else {
+    }else{
         css = instance()->styleSheet();
     }
-
-    set_user_style_sheet(_profile, css, _globalparameters.entrance()); //->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
+    set_user_style_sheet(_profile, css, _globalparameters.entrance());	// ->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
 
     _profile->setHttpUserAgent(settings.value(QLatin1String("httpUserAgent")).toString());
     settings.endGroup();
 
 
-    // this group lead chrome_odthread deadlock? or initialize failure
+        // this group lead chrome_odthread deadlock? or initialize failure
     settings.beginGroup(QLatin1String("cookies"));
 
     _profile->setHttpCacheType(QWebEngineProfile::HttpCacheType::DiskHttpCache);
-    _profile->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies); // AllowPersistentCookies
+    _profile->setPersistentCookiesPolicy(QWebEngineProfile::PersistentCookiesPolicy::ForcePersistentCookies);	// AllowPersistentCookies
 
     QWebEngineProfile::PersistentCookiesPolicy persistentCookiesPolicy = QWebEngineProfile::PersistentCookiesPolicy(
-        settings.value(QLatin1String("persistentCookiesPolicy")).toInt()            // QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
+        settings.value(QLatin1String("persistentCookiesPolicy")).toInt()		// QWebEngineProfile::ForcePersistentCookies  //vQWebEngineProfile::AllowPersistentCookies   //
         );
     _profile->setPersistentCookiesPolicy(persistentCookiesPolicy);
     QString persistent_data_path = settings.value(QLatin1String("persistentDataPath")).toString();
     QDir cookie_path(persistent_data_path);
-
-    if(!cookie_path.exists()) {
+    if(! cookie_path.exists()){
         //        QDir dir;
         cookie_path.mkpath(persistent_data_path);
     }
-
     _profile->setPersistentStoragePath(persistent_data_path);
 
     settings.endGroup();
@@ -1135,24 +1055,20 @@ void QtSingleApplication::loadSettings()
 
     settings.beginGroup(QLatin1String("proxy"));
     QNetworkProxy proxy;
-
-    if(settings.value(QLatin1String("enabled"), false).toBool()) {
-        if(settings.value(QLatin1String("type"), 0).toInt() == 0) proxy = QNetworkProxy::Socks5Proxy;
+    if(settings.value(QLatin1String("enabled"), false).toBool()){
+        if(settings.value(QLatin1String("type"), 0).toInt() == 0)proxy = QNetworkProxy::Socks5Proxy;
         else proxy = QNetworkProxy::HttpProxy;
-
         proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
         proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
         proxy.setUser(settings.value(QLatin1String("userName")).toString());
         proxy.setPassword(settings.value(QLatin1String("password")).toString());
     }
-
     QNetworkProxy::setApplicationProxy(proxy);
     settings.endGroup();
-
 }
 
-//QList<BrowserWindow *> QtSingleApplication::mainWindows()
-//{
+// QList<BrowserWindow *> QtSingleApplication::mainWindows()
+// {
 //    clean();
 //    QList<BrowserWindow *> list;
 
@@ -1160,21 +1076,19 @@ void QtSingleApplication::loadSettings()
 //        list.append(_mainWindows.at(i));
 
 //    return list;
-//}
+// }
 
-//void QtSingleApplication::clean()
-//{
+// void QtSingleApplication::clean()
+// {
 //    // cleanup any deleted main windows first
 //    for(int i = _mainWindows.count() - 1; i >= 0; --i)
 //        if(_mainWindows.at(i).isNull())
 //            _mainWindows.removeAt(i);
-//}
+// }
 
-void QtSingleApplication::saveSession()
-{
-    if(_private_browsing) return;
-
-    //    globalparameters.entrance()->clean();
+void QtSingleApplication::saveSession(){
+    if(_private_browsing)return;
+        //    globalparameters.entrance()->clean();
 
     QSettings settings;
     settings.beginGroup(QLatin1String("sessions"));
@@ -1187,42 +1101,34 @@ void QtSingleApplication::saveSession()
     auto _browsers = globalparameters.entrance()->browsers();
 
     stream << static_cast<uint>(_browsers.size());
-
-    for(auto &browser : _browsers) stream << browser->save_state();
-
+    for(auto &browser : _browsers)stream << browser->save_state();
     settings.setValue(QLatin1String("lastSession"), data);
     settings.endGroup();
 }
 
-bool QtSingleApplication::canRestoreSession() const
-{
-    return !_last_session.isEmpty();
+bool QtSingleApplication::canRestoreSession() const {
+    return ! _last_session.isEmpty();
 }
 
-void QtSingleApplication::restoreLastSession()
-{
+void QtSingleApplication::restoreLastSession(){
     QList<QByteArray> historywindows;
     QBuffer buffer(&_last_session);
     QDataStream stream(&buffer);
     buffer.open(QIODevice::ReadOnly);
     int windowCount;
     stream >> windowCount;
-
-    for(int i = 0; i < windowCount; ++i) {
+    for(int i = 0; i < windowCount; ++ i){
         QByteArray windowState;
         stream >> windowState;
         historywindows.append(windowState);
     }
-
-    //    QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->browsers();
-
-    //    if(opened_windows.count() == 0) {
-    //        globalparameters.entrance()->new_browser(
-    //            QUrl(browser::Browser::_defaulthome)
-    //        );
-    //    }
-
-    for(int i = 0; i < historywindows.count(); ++i) {
+        //    QList<QPointer<browser::Browser > > opened_windows = globalparameters.entrance()->browsers();
+        //    if(opened_windows.count() == 0) {
+        //        globalparameters.entrance()->new_browser(
+        //            QUrl(browser::Browser::_defaulthome)
+        //        );
+        //    }
+    for(int i = 0; i < historywindows.count(); ++ i){
         //        browser::BrowserWindow *newWindow = 0;
         //        QList<QPointer<browser::DockedWindow > > opened_windows = globalparameters.entrance()->window_list();
 
@@ -1234,29 +1140,26 @@ void QtSingleApplication::restoreLastSession()
         //        }
 
         assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
-
-        if(globalparameters.entrance()->browsers().size() == 1
-            && browser->tabWidget()->count() == 1
-            && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome) //?
-            ) {
-            // newWindow = globalParameters.browsermanager()->main_window();
+        if(  globalparameters.entrance()->browsers().size() == 1
+          && browser->tabWidget()->count() == 1
+          && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome)	// ?
+            ){
+                // newWindow = globalParameters.browsermanager()->main_window();
             globalparameters.entrance()->restore_state(historywindows.at(i));
-        } else {
-            // newWindow =
+        }else{
+                // newWindow =
             globalparameters.entrance()->new_browser()->restore_state(historywindows.at(i));
         }
-
         // newWindow->restoreState(windows.at(i));
     }
 }
 
-//bool QtSingleApplication::isTheOnlyBrowser() const
-//{
+// bool QtSingleApplication::isTheOnlyBrowser() const
+// {
 //    return (_localserver != 0);
-//}
+// }
 
-void QtSingleApplication::installTranslator(const QString &name)
-{
+void QtSingleApplication::installTranslator(const QString &name){
     QTranslator *translator = new QTranslator(this);
 
     translator->load(name, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
@@ -1264,45 +1167,38 @@ void QtSingleApplication::installTranslator(const QString &name)
 }
 
 #if defined(Q_OS_OSX)
-bool QtSingleApplication::event(QEvent *event)
-{
-    switch(event->type()) {
+bool QtSingleApplication::event(QEvent *event){
+    switch(event->type()){
     case QEvent::ApplicationActivate: {
         clean();
-
-        if(!_mainwindows.isEmpty()) {
+        if(! _mainwindows.isEmpty()){
             BrowserWindow *mw = mainWindow();
-
-            if(mw && !mw->isMinimized()) {
+            if(mw && ! mw->isMinimized()){
                 mainWindow()->show();
             }
-
             return true;
         }
     }
 
     case QEvent::FileOpen:
-
-        if(!_mainwindows.isEmpty()) {
+        if(! _mainwindows.isEmpty()){
             mainWindow()->loadPage(static_cast<QFileOpenEvent *>(event)->file());
             return true;
         }
-
     default:
         break;
     }
-
     return QApplication::event(event);
 }
 #endif
 
-//void QtSingleApplication::openUrl(const QUrl &url)
-//{
+// void QtSingleApplication::openUrl(const QUrl &url)
+// {
 //    mainWindow()->loadPage(url.toString());
-//}
+// }
 
-//BrowserWindow *QtSingleApplication::newMainWindow()
-//{
+// BrowserWindow *QtSingleApplication::newMainWindow()
+// {
 //    //BrowserView *browser_view = globalParameters.getBrowserView();
 //    //BrowserWindow *browser = nullptr;
 
@@ -1318,10 +1214,10 @@ bool QtSingleApplication::event(QEvent *event)
 
 //    //this->exec();
 //    return browser;
-//}
+// }
 
-//BrowserWindow *QtSingleApplication::mainWindow()
-//{
+// BrowserWindow *QtSingleApplication::mainWindow()
+// {
 //    clean();
 
 //    if(_mainWindows.isEmpty()) {
@@ -1341,10 +1237,10 @@ bool QtSingleApplication::event(QEvent *event)
 //    }
 
 //    return _mainWindows[0];
-//}
+// }
 
-//void QtSingleApplication::newLocalSocketConnection()
-//{
+// void QtSingleApplication::newLocalSocketConnection()
+// {
 //    QLocalSocket *socket = _localserver->nextPendingConnection();
 
 //    if(!socket)
@@ -1372,10 +1268,9 @@ bool QtSingleApplication::event(QEvent *event)
 //    delete socket;
 //    mainWindow()->raise();
 //    mainWindow()->activateWindow();
-//}
+// }
 
-browser::CookieJar *QtSingleApplication::cookieJar()
-{
+browser::CookieJar *QtSingleApplication::cookieJar(){
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
     return (browser::CookieJar *)networkAccessManager()->cookieJar();
 #else
@@ -1383,126 +1278,100 @@ browser::CookieJar *QtSingleApplication::cookieJar()
 #endif
 }
 
-browser::DownloadManager *QtSingleApplication::downloadManager()
-{
-    //    if(!_downloadmanager) {
-    //        _downloadmanager = new browser::DownloadManager();
-    //    }
+browser::DownloadManager *QtSingleApplication::downloadManager(){
+        //    if(!_downloadmanager) {
+        //        _downloadmanager = new browser::DownloadManager();
+        //    }
 
-    //    return _downloadmanager;
+        //    return _downloadmanager;
 
     return globalparameters.download_manager();
 }
 
-QNetworkAccessManager *QtSingleApplication::networkAccessManager()
-{
-    //#if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
-
-    //    if(!s_networkAccessManager) {
-    //        s_networkAccessManager = new browser::NetworkAccessManager();
-    //        s_networkAccessManager->setCookieJar(new browser::CookieJar);
-    //    }
-
-    //    return s_networkAccessManager;
-    //#else
-
-    //    if(!_networkaccessmanager) {
-    //        _networkaccessmanager = new QNetworkAccessManager();
-    //    }
-
-    //    return _networkaccessmanager;
-    //#endif
-
-    if(!_networkaccessmanager) {
+QNetworkAccessManager *QtSingleApplication::networkAccessManager(){
+        // #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+        //    if(!s_networkAccessManager) {
+        //        s_networkAccessManager = new browser::NetworkAccessManager();
+        //        s_networkAccessManager->setCookieJar(new browser::CookieJar);
+        //    }
+        //    return s_networkAccessManager;
+        // #else
+        //    if(!_networkaccessmanager) {
+        //        _networkaccessmanager = new QNetworkAccessManager();
+        //    }
+        //    return _networkaccessmanager;
+        // #endif
+    if(! _networkaccessmanager){
         _networkaccessmanager = new QNetworkAccessManager();
         connect(_networkaccessmanager, &QNetworkAccessManager::authenticationRequired,
             QtSingleApplication::instance(), &QtSingleApplication::authenticationRequired);
         connect(_networkaccessmanager, &QNetworkAccessManager::proxyAuthenticationRequired,
             QtSingleApplication::instance(), &QtSingleApplication::proxyAuthenticationRequired);
     }
-
     return _networkaccessmanager;
-
 }
 
-browser::HistoryManager *QtSingleApplication::historyManager()
-{
-    if(!_historymanager) _historymanager = new browser::HistoryManager();
-
+browser::HistoryManager *QtSingleApplication::historyManager(){
+    if(! _historymanager)_historymanager = new browser::HistoryManager();
     return _historymanager;
 }
 
-browser::BookmarksManager *QtSingleApplication::bookmarksManager()
-{
-    if(!_bookmarksmanager) {
+browser::BookmarksManager *QtSingleApplication::bookmarksManager(){
+    if(! _bookmarksmanager){
         _bookmarksmanager = new browser::BookmarksManager();
     }
-
     return _bookmarksmanager;
 }
 
-QIcon QtSingleApplication::icon(const QUrl &url) const
-{
+QIcon QtSingleApplication::icon(const QUrl &url) const {
 #if defined(QTWEBENGINE_ICONDATABASE)
     QIcon icon = QWebEngineSettings::iconForUrl(url);
-
-    if(!icon.isNull()) return icon.pixmap(16, 16);
-
+    if(! icon.isNull())return icon.pixmap(16, 16);
 #else
     Q_UNUSED(url);
 #endif
     return defaultIcon();
 }
 
-QIcon QtSingleApplication::defaultIcon() const
-{
-    if(_default_icon.isNull()) _default_icon = QIcon(QLatin1String(":defaulticon.png"));
-
+QIcon QtSingleApplication::defaultIcon() const {
+    if(_default_icon.isNull())_default_icon = QIcon(QLatin1String(":defaulticon.png"));
     return _default_icon;
 }
 
-void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing)
-{
-    if(_private_browsing == privateBrowsing) return;
-
+void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing){
+    if(_private_browsing == privateBrowsing)return;
     _private_browsing = privateBrowsing;
-
-    if(privateBrowsing) {
-        if(!_private_profile) _private_profile = new browser::Profile(profile_storage_name, this);  // new QWebEngineProfile(this);
-
-        for(auto &browser : globalparameters.entrance()->browsers()) {
+    if(privateBrowsing){
+        if(! _private_profile)_private_profile = new browser::Profile(profile_storage_name, this);	// new QWebEngineProfile(this);
+        for(auto &browser : globalparameters.entrance()->browsers()){
             browser->tabWidget()->setProfile(_private_profile);
         }
-    } else {
-        for(auto &browser : globalparameters.entrance()->browsers()) {
-            browser->tabWidget()->setProfile(_profile    // QWebEngineProfile::defaultProfile()
+    }else{
+        for(auto &browser : globalparameters.entrance()->browsers()){
+            browser->tabWidget()->setProfile(_profile	// QWebEngineProfile::defaultProfile()
                 );
             browser->lastsearch() = QString::null;
             browser->tabWidget()->clear();
         }
     }
-
     emit privateBrowsingChanged(privateBrowsing);
 }
 
 // TODO: Remove these functions (QTBUG-47967)
-QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString &realm)
-{
+QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString &realm){
     QUrl copy = url;
 
     copy.setFragment(realm);
     return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
 }
 
-QByteArray QtSingleApplication::proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm)
-{
+QByteArray QtSingleApplication::proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm){
     QString host = QString("%1:%2").arg(proxy.hostName()).arg(proxy.port());
 
     return QtSingleApplication::proxyAuthenticationKey(proxy.user(), host, realm);
 }
 
-QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, const QString &host, const QString &realm)
-{
+QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, const QString &host, const QString &realm){
     QUrl key;
 
     key.setScheme(QLatin1String("proxy-http"));
@@ -1513,41 +1382,31 @@ QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, cons
 }
 
 
-void QtSingleApplication::setLastAuthenticator(QAuthenticator *authenticator)
-{
+void QtSingleApplication::setLastAuthenticator(QAuthenticator *authenticator){
     _last_authenticator = QAuthenticator(*authenticator);
 }
 
-void QtSingleApplication::setLastProxyAuthenticator(QAuthenticator *authenticator)
-{
+void QtSingleApplication::setLastProxyAuthenticator(QAuthenticator *authenticator){
     _last_proxy_authenticator = QAuthenticator(*authenticator);
 }
 
 
 
-void QtSingleApplication::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator)
-{
-    if(_last_authenticator.isNull()) return;
-
+void QtSingleApplication::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator){
+    if(_last_authenticator.isNull())return;
     Q_ASSERT(_last_authenticator.option("key").isValid());
     QByteArray lastKey = _last_authenticator.option("key").toByteArray();
     QByteArray key = QtSingleApplication::authenticationKey(reply->url(), authenticator->realm());
-
-    if(lastKey == key) *authenticator = _last_authenticator;
+    if(lastKey == key)*authenticator = _last_authenticator;
 }
 
-void QtSingleApplication::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator)
-{
-    if(_last_proxy_authenticator.isNull()) return;
-
+void QtSingleApplication::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator){
+    if(_last_proxy_authenticator.isNull())return;
     QNetworkProxy::ProxyType proxyType = proxy.type();
-
-    if(proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy) return;
-
+    if(proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy)return;
     Q_ASSERT(_last_proxy_authenticator.option("host").isValid());
     QByteArray lastKey = _last_proxy_authenticator.option("key").toByteArray();
     QByteArray key = QtSingleApplication::proxyAuthenticationKey(proxy, authenticator->realm());
-
-    if(lastKey == key) *authenticator = _last_authenticator;
+    if(lastKey == key)*authenticator = _last_authenticator;
 }
 

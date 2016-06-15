@@ -279,7 +279,7 @@ protected:
         void update_record(const QUrl &url, const QString &title);
         void update_record_view(boost::intrusive_ptr<TreeItem> item);
         void item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item);
-        void binder_reset();
+//        void binder_reset();
 
 private slots:
 

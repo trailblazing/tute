@@ -3,6 +3,8 @@
 #include "views/browser/webview.h"
 #include "views/browser/entrance.h"
 
+extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
+
 Binder::Binder(
     item_interface_set _item_linker_set
               , page_interface_set _page_linker_set
@@ -111,9 +113,10 @@ Binder::~Binder(){
     std::function<void (boost::intrusive_ptr<TreeItem>)>
     close_tab_recursive
         = [&](boost::intrusive_ptr<TreeItem> it) -> void {
-            if(globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){
-                    return b->host()->field<url_type>() == it->field<url_type>();
-                })){																							// item_to_be_deleted->unique_page()
+            if(globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<url_type>()).toStdString(), it->field<url_type>().toStdString());})){
+                // [&](boost::intrusive_ptr<const ::Binder> b){return b->host()->field<url_type>() == it->field<url_type>();}
+
+                // item_to_be_deleted->unique_page()
                 auto page = it->page();
                 if(page)page->record_controller()->remove(it->id());																						// (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
             }

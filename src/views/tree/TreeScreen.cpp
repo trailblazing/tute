@@ -296,7 +296,7 @@ void TreeScreen::setup_actions(void){
     ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));	// ":/resource/pic/streamline_home.svg"
         // style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
 
-    connect(ac, &QAction::triggered, [&]() mutable -> void {_tree_view->cursor_follow_up(); });
+    connect(ac, &QAction::triggered, [&]() mutable -> void {_tree_view->cursor_follow_up();});
     _actionlist[action_cursor_follow_up] = ac;
 
 
@@ -319,7 +319,7 @@ void TreeScreen::setup_actions(void){
     ac = new QAction(tr("Move item up"), this);
     ac->setStatusTip(tr("Move item up"));
     ac->setIcon(QIcon(":/resource/pic/triangl_up.svg"));
-    connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_up); });	// &TreeScreen::item_move_up_branch
+    connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_up);});	// &TreeScreen::item_move_up_branch
 
     _actionlist[action_move_up_branch] = ac;
 
@@ -327,7 +327,7 @@ void TreeScreen::setup_actions(void){
     ac = new QAction(tr("Move item down"), this);
     ac->setStatusTip(tr("Move item down"));
     ac->setIcon(QIcon(":/resource/pic/triangl_dn.svg"));
-    connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_dn); });	// &TreeScreen::item_move_dn_branch
+    connect(ac, &QAction::triggered, this, [&]() mutable -> void {item_move_up_dn_branch(&TreeItem::move_dn);});	// &TreeScreen::item_move_dn_branch
 
     _actionlist[action_move_dn_branch] = ac;
 
@@ -365,7 +365,7 @@ void TreeScreen::setup_actions(void){
 // }, _tree_view->current_item());
 // } catch(std::exception &e) {throw e; }
 
-            _tree_view->view_insert_new(TreeIndex::instance([&]() -> KnowModel * {return _tree_view->source_model(); }, _tree_view->current_item()->parent(), _tree_view->current_item())	// tree_index
+            _tree_view->view_insert_new(TreeIndex::instance([&]() -> KnowModel * {return _tree_view->source_model();}, _tree_view->current_item()->parent(), _tree_view->current_item())	// tree_index
                                        , std::bind(&KnowView::view_add_new, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                                        , [&](boost::intrusive_ptr<TreeIndex> _modelindex, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
                 auto _current_model = _modelindex->current_model();
@@ -375,7 +375,7 @@ void TreeScreen::setup_actions(void){
                 assert(host_parent);
                 QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
                 if(host_parent){
-                    _alternative_items = host_parent->items_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id; });
+                    _alternative_items = host_parent->items_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});
                 }
                 // auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
                 if(_alternative_items.size() > 0){	// && _item_has_no_child_first
@@ -419,8 +419,8 @@ void TreeScreen::setup_actions(void){
                 // QModelIndexList _origin_index_list = _tree_view->selectionModel()->selectedIndexes();
             QModelIndexList _selectitems = KnowView::LocalLizeInitializer(_tree_view)().indexes();	// ->is_index_localized(_origin_index_list) ? _origin_index_list : _tree_view->index_localize(_origin_index_list);    // _tree_view->selectionModel()->selectedIndexes(); //
                 // view_remove(_selectitems, "cut");
-            _tree_view->view_delete_permanent([&] {return _tree_view->source_model(); }
-                                             , [&] {QList<boost::intrusive_ptr<TreeItem> > r; for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix); return r; } (), &KnowModel::model_delete_permanent_single, "cut", false);
+            _tree_view->view_delete_permanent([&] {return _tree_view->source_model();}
+                                             , [&] {QList<boost::intrusive_ptr<TreeItem> > r;for(auto ix : _selectitems)r << _tree_view->source_model()->item(ix);return r;} (), &KnowModel::model_delete_permanent_single, "cut", false);
         });	// , &TreeScreen::del_branch
 
     _actionlist[action_delete_branch] = ac;
@@ -560,7 +560,7 @@ void TreeScreen::setup_actions(void){
     _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
     connect(_edit_field, &QAction::triggered, this, [&](bool checked = false) mutable {
-            Q_UNUSED(checked); edit_field_context(this->_tree_view->current_index());
+            Q_UNUSED(checked);edit_field_context(this->_tree_view->current_index());
         });
     _actionlist[action_edit_field] = _edit_field;
 
@@ -1032,7 +1032,7 @@ void TreeScreen::assembly(){
 }
 
 
-KnowView *TreeScreen::view(){return _tree_view; }
+KnowView *TreeScreen::view(){return _tree_view;}
 
 // void TreeScreen::view_collapse_all_sub(void)
 // {
@@ -1112,7 +1112,7 @@ void TreeScreen::item_move_up_dn_branch(int (TreeItem::*_move)()){	// int direct
 // }));
 // } catch(std::exception &e) {throw e; }
 
-            _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model(); }, it->parent(), it));
+            _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, it->parent(), it));
                 // _tree_view->selectionModel()->select(index_after_move, current_tree_selection_mode);    // QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
                 // _tree_view->selectionModel()->setCurrentIndex(index_after_move, current_tree_current_index_mode);   //  | QItemSelectionModel::Current
         }
@@ -2496,9 +2496,9 @@ void TreeScreen::resizeEvent(QResizeEvent *e){
         // );
 }
 
-TreeScreenViewer *TreeScreen::viewer() const {return _viewer; }
+TreeScreenViewer *TreeScreen::viewer() const {return _viewer;}
 
-void TreeScreen::viewer(TreeScreenViewer *v){_viewer = v; }
+void TreeScreen::viewer(TreeScreenViewer *v){_viewer = v;}
 
 void AdjustingScrollArea::resizeEvent(QResizeEvent *e){
     (void)e;
@@ -2621,22 +2621,13 @@ TreeScreenViewer::TreeScreenViewer(TreeScreen *_tree_screen, RecordScreen *_reco
 }
 
 
-int TreeScreenViewer::tree_screen(TreeScreen *tree){
-    return _layout->addWidget(tree);
-}
+int TreeScreenViewer::tree_screen(TreeScreen *tree){return _layout->addWidget(tree);}
 
-QWidget *TreeScreenViewer::tree_screen() const {
-    return _layout->widget();
-}
+QWidget *TreeScreenViewer::tree_screen() const {return _layout->widget();}
 
-void TreeScreenViewer::record_screen(RecordScreen *rs){
-    _record_screen = rs;
-}
+void TreeScreenViewer::record_screen(RecordScreen *rs){_record_screen = rs;}
 
-
-RecordScreen *TreeScreenViewer::record_screen() const {
-    return _record_screen;
-}
+RecordScreen *TreeScreenViewer::record_screen() const {return _record_screen;}
 
 
 
