@@ -232,6 +232,7 @@ void TreeScreen::setup_actions(void){
             auto sizes = h_right_splitter->sizes();
             QIcon icon;
             QString text = "";
+
             if(0 == sizes[0] || globalparameters.entrance()->browsers().size() == 0){	// h_right_splitter->widget(0)->width()
                 auto shw = globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();// 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
                 // auto h = h_right_splitter->handle(1);
@@ -978,7 +979,7 @@ void TreeScreen::assembly(){
 
     _tools_layout->setSpacing(0);
     _tools_layout->setMargin(0);
-    _tools_layout->setContentsMargins(0, 0, 0, 0);
+    _tools_layout->setContentsMargins(0, 1, 0, 1);
 
         // _treescreenlayout = new QVBoxLayout();
     _treescreenlayout->setObjectName("treescreen_QVBoxLayout");

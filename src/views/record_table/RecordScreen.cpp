@@ -42,7 +42,7 @@ RecordScreen::RecordScreen(TreeScreen           *_tree_screen
                           , browser::Browser    *_browser
                           , MainWindow          *_main_window
                           , browser::Profile    *_profile)
-    : QWidget(_browser)  // _main_window->vtab_record()
+    : QWidget(_browser)	// _main_window->vtab_record()
       , _browser(_browser)
       , _tree_screen(_tree_screen)
       , _main_window(_main_window)
@@ -101,7 +101,6 @@ RecordScreen::~RecordScreen(){
         // delete _recordtree_search;
         // delete
     if(_record_controller)_record_controller->deleteLater();
-
         // delete
     _vertical_scrollarea->deleteLater();
 }
@@ -199,7 +198,9 @@ void RecordScreen::setup_actions(void){
             auto h_left_splitter = _main_window->h_left_splitter();
 
             auto sizes = h_left_splitter->sizes();
-            if(0 == sizes[0]){																														// h_left_splitter->widget(0)->width()
+            auto vtab_tree = _main_window->vtab_tree();
+            auto bar_width = vtab_tree->tabBar()->geometry().width();
+            if(bar_width == sizes[0]){																														// h_left_splitter->widget(0)->width()
                 _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
                 _hide_tree_text = tr("Show tree view");
             }else{
@@ -214,21 +215,21 @@ void RecordScreen::setup_actions(void){
 
     connect(_tree_hide, &QAction::triggered, [&, _hide_tree_text, _hide_tree_icon]() mutable {
             auto h_left_splitter = _main_window->h_left_splitter();
-
                 ////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
                 // if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
                 // else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
-
-
                 // auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
                 // auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
                 // auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
                 // auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
                 // auto rl = h_right_splitter->geometry().left();  // 142
-
+            auto vtab_tree = _main_window->vtab_tree();
+            auto bar_width = vtab_tree->tabBar()->geometry().width();	// same as tabRect(0).width()
+//            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
             auto sizes = h_left_splitter->sizes();
-            if(0 == sizes[0]){																														// h_left_splitter->widget(0)->width()
-                auto vtab_tree_min_width = _main_window->vtab_tree()->minimumSizeHint().width();																																						// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+            if(bar_width == sizes[0]){																														// h_left_splitter->widget(0)->width()
+                auto vtab_tree_min_width = vtab_tree->minimumSizeHint().width();																																						// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+
                 // auto h = h_right_splitter->handle(1);
                 // h->move(lr + shw, h->rect().top());
 
@@ -236,7 +237,9 @@ void RecordScreen::setup_actions(void){
 
                 auto sum = size_memory[0] + size_memory[1];
                 sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-                sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;																																						// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+                sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;
+                vtab_tree->setMaximumWidth(_main_window->maximumWidth());	// just a very big number
+                vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 
 // sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
 // sizes[1] = size_memory[0] + size_memory[1] - sizes[0];      // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
@@ -251,8 +254,11 @@ void RecordScreen::setup_actions(void){
 
                 // h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
 
-                sizes[1] = sizes[0] + sizes[1];
-                sizes[0] = 0;
+                sizes[1] = sizes[0] + sizes[1] - bar_width;
+                sizes[0] = bar_width;	// 0;
+
+                vtab_tree->setMaximumWidth(bar_width);
+                vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 // _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
 // _hide_tree_text = tr("Show tree view");
             }
@@ -653,7 +659,7 @@ void RecordScreen::assembly(void){
     {
         _records_toolslayout->setSpacing(0);
         _records_toolslayout->setMargin(0);
-        _records_toolslayout->setContentsMargins(0, 0, 0, 0);
+        _records_toolslayout->setContentsMargins(0, 1, 0, 1);
 
         _toolsline->setContentsMargins(0, 0, 0, 0);
         _records_toolslayout->addWidget(_toolsline);

@@ -1415,9 +1415,7 @@ boost::intrusive_ptr<Linker> TreeItem::dangle(){
     auto parent_ = _linker->host_parent();
     if(parent_){
 
-        parent_->delete_permanent([&](boost::intrusive_ptr<const Linker> il){
-                return il->host()->id() == this->id() && il == _linker;
-            });
+        parent_->delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});
 // p->_child_linkers.removeOne(_linker);
     }
     if(_linker->host_parent())_linker->host_parent().reset();
@@ -1428,12 +1426,6 @@ boost::intrusive_ptr<Linker> TreeItem::dangle(){
 void TreeItem::clear(){
     ItemsFlat::clear();
 }
-
-// void TreeItem::children_clear(void)
-// {
-// ItemsFlat::clear();
-// }
-
 
 
 boost::intrusive_ptr<TreeItem> TreeItem::operator <<(boost::intrusive_ptr<TreeItem> _item){
@@ -1703,10 +1695,12 @@ boost::intrusive_ptr<TreeItem> TreeItem::operator <<(boost::intrusive_ptr<TreeIt
 // position - позиция в списке подчиненных элементов для вставки элементов
 // count - сколько новых элементов будет вставлено
 // columns - сколько колонок содержит добавляемый элемент
-bool TreeItem::children_insert_new(int position, int count, int columns){
+QList<boost::intrusive_ptr<TreeItem> >  TreeItem::children_insert_new(int position, int count, int columns){
     Q_UNUSED(columns);
+//    bool result = false;
         // if(position < 0 || position > _child_linkers.size())
         // return false;
+    QList<boost::intrusive_ptr<TreeItem> > result_list;
     if(position >= 0 && position < _child_linkers.size()){
         for(int row = 0; row < count; ++ row){
             QMap<QString, QString> data;
@@ -1717,9 +1711,11 @@ bool TreeItem::children_insert_new(int position, int count, int columns){
                 //// new TreeItem(boost::intrusive_ptr<TreeItem>(const_cast<TreeItem *>(this)))
                 //// );    // Создается объект item
                 // item->parent(this, position, ADD_NEW_RECORD_AFTER); //_child_items.insert(position, item);        // Вставка item в нужную позицию массива childItems
+//            result = true;	// not a precise solution
+            result_list << item;
         }
     }
-    return true;
+    return result_list;	// result;
 }
 
 
@@ -1728,9 +1724,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::sibling() const {
     boost::intrusive_ptr<TreeItem> r(nullptr);
     auto p = parent();
     if(p){
-        auto sibling_order_this = p->sibling_order([&](boost::intrusive_ptr<const Linker> il){
-                    return il == this->linker() && il->host() == this && il->host_parent() == p;
-                });
+        auto sibling_order_this = p->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == this->linker() && il->host() == this && il->host_parent() == p;});
         if(sibling_order_this != 0 && sibling_order_this != - 1){
             r = p->item_direct(sibling_order_this - 1);
         }
@@ -1799,14 +1793,12 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
             auto r = found_item_keep->merge(found_item_remove);
             if(r)merge_count ++;
         }
-        // for(auto j : _child_items) {
-        // if(i->id() == j->id()) {
-        // j->merge(i);
-        // count++;
-        // } else {
-        // }
-        // }
-
+//	for(auto j : _child_items){
+//	    if(i->id() == j->id()){
+//		j->merge(i);
+//		count ++;
+//	    }else{}
+//	}
         assert(merge_count <= linkers_count);							// ?
         // }
     }
@@ -1817,19 +1809,9 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
             _linker->parent(cut->linker()->host_parent(), 0);
         }
     }
-    auto try_cut_page_rebind
-        = [&](boost::intrusive_ptr<TreeItem> _this, boost::intrusive_ptr<TreeItem> cut){
+    auto try_cut_page_rebind = [&](boost::intrusive_ptr<TreeItem> _this, boost::intrusive_ptr<TreeItem> cut){
             if(cut->binder()){
                 if(cut->binder()->page() && cut->parent()){
-                        // _binder = cut->binder();
-                        // _binder->item() = this;
-
-                        // boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
-
-                        // try {
-                        // record_index = new RecordModel::ModelIndex([&] {return cut->binder()->page()->record_controller()->source_model();}, cut->binder()->page()->record_controller()->source_model()->sibling(_this), _this);
-                        // } catch(std::exception &e) {throw e;}
-
                     cut->binder()->page()->item_bind(_this);
                 }
             }

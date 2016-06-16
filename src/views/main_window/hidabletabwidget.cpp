@@ -8,6 +8,7 @@
 extern GlobalParameters globalparameters;
 const char *custom_hidabletabwidget_style =
     "QTabWidget::pane {"
+//    "width: 250px;"	// content space, can not change easily if set here
     "border: 0 px;"
     "}"
     "QTabBar::tab {"
@@ -19,9 +20,9 @@ const char *custom_hidabletabwidget_style =
     "border-style: solid;"
     "alignment: bottom;"
     "max-height: 100px;"
-    "width: 16 px;"
-    "max-width: 20px;"
-    "qproperty-alignment: AlignBottom;"             //  AlignCenter | AlignVCenter;*/
+    "width: 26 px;"	// 16
+    "max-width: 28px;"
+    "qproperty-alignment: AlignBottom;"			//  AlignCenter | AlignVCenter;*/
     "qproperty-wordWrap: false;"
     "padding-bottom: 5px;"
 //    "padding: 0 px;"
@@ -36,17 +37,19 @@ const char *custom_hidabletabwidget_style =
     "border-style: solid;"
     "background-color: transparent;"
     "alignment: bottom;"
-    "width: 16px;"
-    "max-width : 20 px;"
+    "width: 28px;"	// 16
+    "max-width : 30 px;"
     "text-align: left;"
     "qproperty-alignment: AlignBottom;"
     "qproperty-wordWrap: false;"
-    "padding-bottom: 0px;"
-    "margin-left : 0 px;"
     "padding : 0 px;"
-    "margin-right : 0 px;"
+    "padding-bottom: 0px;"
+//    "padding-left: 0px;"
+    "margin-left : 0 px;"	// 0
+    "margin-right : 0 px;"	// 0
     "}"
     "QTabWidget{"
+//    "width: 250px;" // nake fiexed size
     "background: transparent;"
     "border-color: transparent;"
     "}"
@@ -56,11 +59,11 @@ const char *custom_hidabletabwidget_style =
     "}"
     "QTabBar::tab:selected {"
     "border-color: #9B9B9B;"
-    "border-bottom-color: white;" // #C2C7CB         /* same as pane color */
+    "border-bottom-color: white;"	// #C2C7CB         /* same as pane color */
     "background-color: white;"
     "}"
     "QTabBar::tab:!selected {"
-    "margin-left: 0px;"         /* make non-selected tabs look smaller */
+    "margin-left: 0px;"		/* make non-selected tabs look smaller */
     "background-color: transparent;"
     "border-bottom-color: transparent;"
     "}"
@@ -70,9 +73,8 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
     QTabWidget(parent)
     , _hide_action(new QAction(tr("▾"), this))
     , _layout(new QStackedLayout(this))
-    , _style(style_source)
+    , _style(style_source){
 //    , _delegate_tab(_delegate_tab)
-{
     _hide_action->setCheckable(true);
     _hide_action->setToolTip("Hide Panels");
     QToolButton *hide_button = new QToolButton();
@@ -81,7 +83,7 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
     this->setCornerWidget(hide_button);
 
 
-    setWindowFlags(     //Qt::Window |
+    setWindowFlags(	// Qt::Window |
         Qt::FramelessWindowHint
         // |Qt::Popup
         | Qt::CustomizeWindowHint
@@ -94,9 +96,9 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
     adjustSize();
 
 
-    setTabPosition(TabPosition::West);     // South
+    setTabPosition(TabPosition::West);		// South
     setTabShape(TabShape::Triangular);
-    //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
+        //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
 //    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
 //    setStyleSheet("QTabWidget::pane { border: 0 px; }");
 
@@ -106,7 +108,7 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
 //    settings.endGroup();
 //    QString style_source = globalparameters.entrance()->style_source();
 
-    setStyleSheet(custom_hidabletabwidget_style);  // _style
+    setStyleSheet(custom_hidabletabwidget_style);	// _style
 
     connect(_hide_action, &QAction::toggled, this, &HidableTabWidget::onHideAction);
     connect(this, &HidableTabWidget::tabBarClicked, this, &HidableTabWidget::onTabBarClicked);
@@ -132,45 +134,40 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
     _layout->setContentsMargins(0, 0, 0, 0);
     _layout->setSpacing(0);
     setLayout(_layout);
-
 }
 
-void HidableTabWidget::onHideAction(bool checked)
-{
-    if(checked) {
-        if(this->tabPosition() == North || tabPosition() == South) { // , West, East
+void HidableTabWidget::onHideAction(bool checked){
+    if(checked){
+        if(this->tabPosition() == North || tabPosition() == South){	// , West, East
             this->setMaximumHeight(this->tabBar()->height());
-        } else {
+        }else{
             this->setMaximumWidth(this->tabBar()->width());
         }
-
         this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
-    } else {
-        if(this->tabPosition() == North || tabPosition() == South) { // , West, East
+    }else{
+        if(this->tabPosition() == North || tabPosition() == South){	// , West, East
             this->setMaximumHeight(
-                std::numeric_limits<int>::max() // 100000
-                ); // just a very big number
-                   //            setContentsMargins(0, 0, 0, 0);
-        } else {
+                std::numeric_limits<int>::max()	// 100000
+                );	// just a very big number
+                        //            setContentsMargins(0, 0, 0, 0);
+        }else{
             this->setMaximumWidth(
-                std::numeric_limits<int>::max() // 100000
-                ); // just a very big number
-                   //            setContentsMargins(0, 0, 0, 0);
+                std::numeric_limits<int>::max()	// 100000
+                );	// just a very big number
+                        //            setContentsMargins(0, 0, 0, 0);
         }
-
         this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     }
 }
 
-void HidableTabWidget::onTabBarClicked()
-{
+void HidableTabWidget::onTabBarClicked(){
     _hide_action->setChecked(false);
 }
 
-//HidableTabWidget *HidableTabWidget::delegate_tab(){
+// HidableTabWidget *HidableTabWidget::delegate_tab(){
 //    HidableTabWidget *r = nullptr;
 //    if(_delegate_tab) r = _delegate_tab;
 //    return r;
-//}
+// }
 
 

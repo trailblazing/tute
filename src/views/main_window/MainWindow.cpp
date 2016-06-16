@@ -124,8 +124,8 @@ MainWindow::MainWindow(GlobalParameters     &_globalparameters
 // _h_splitter->setHandleWidth(0);
 
     _vtab_record->tabBar()->hide();
-    _globalparameters.vtab_record(_vtab_record);
-    _globalparameters.vtab_tree(_vtab_tree);
+//    _globalparameters.vtab_record(_vtab_record);// in initialize list
+//    _globalparameters.vtab_tree(_vtab_tree);	// in initialize list
 
     extern QObject *mainwindow;
     mainwindow = this;

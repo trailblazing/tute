@@ -675,7 +675,7 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &_index_par
 
         // Добавляются строки начиная с указанной позиции, в количестве rows
         // с числом столбцов равным единице
-    success = parent_item->children_insert_new(position, rows, 1);
+    success = parent_item->children_insert_new(position, rows, 1).size() == rows;
 
     endInsertRows();
 

@@ -866,14 +866,13 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
                 // _it->break_linker();    // recursive calling removeOne!!!
                 // result |=
             _child_linkers.removeOne(il);
-                // assert(result);
-
-                // if(it->binder()) {
-                // auto page = it->binder()->page();
-                // auto tab_manager = page->tabmanager();
-                // tab_manager->closeTab(tab_manager->webViewIndex(page->view()));
-                ////                    it->binder()->page()->on_close_requested(); // it->binder()->break_page();  // it->page_break();
-                // }
+//	    assert(result);
+//	    if(it->binder()){
+//		auto page = it->binder()->page();
+//		auto tab_manager = page->tabmanager();
+//		tab_manager->closeTab(tab_manager->webViewIndex(page->view()));
+////		it->binder()->page()->on_close_requested();			// it->binder()->break_page();  // it->page_break();
+//	    }
             browser::WebView *web_view = nullptr;
             if((web_view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
                 if(it->binder()){
@@ -883,17 +882,13 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
             }
                 // if(_it->integrity_internal())
 
-                // if(il) {
-                // il->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));                 // il.reset();
-                // il->host_parent(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));
-                // }
 
             result = it;
-// if(results.find(il) == results.end()) results.insert(il);
+//	    if(results.find(il) == results.end()) results.insert(il);
             if(il){
-// il->host(boost::intrusive_ptr<TreeItem>(nullptr));
-// il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
-// il.reset();
+//		il->host(boost::intrusive_ptr<TreeItem>(nullptr));
+//		il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
+//		il.reset();
             }
             break;
         }

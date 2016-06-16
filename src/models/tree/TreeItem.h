@@ -287,7 +287,7 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
         // position - после какой позиции массива childItems вставить
         // count - сколько потомков вставить (обычно 1, но можно и несколько)
         // columns - сколько столбцов должен содержать потомок
-        bool children_insert_new(int position, int count, int columns);
+        QList<boost::intrusive_ptr<TreeItem> > children_insert_new(int position, int count, int columns);
 
 
         void binder_reset();
