@@ -553,15 +553,16 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
                 view->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                 // addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
             }
+            assert(view);
             return selected_position = PosSource(pages_container::_tabmanager->indexOf(view));
         };
+
+    browser::WebView *view = nullptr;
     if(_item){
         PosSource source_insert_pos = _record_controller->index<PosSource>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
         Q_UNUSED(mode)	// to be used
         if(- 1 == (int)source_insert_pos)source_insert_pos = 0;
         beginResetModel();	// Подумать, возможно нужно заменить на beginInsertRows
-
-        browser::WebView *view = nullptr;
         if(_item->binder()){
 //            if(_item->binder()->page()){
 //            view = _item->binder()->page()->view();	// activate();
@@ -572,21 +573,26 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
 //		    if(selected_position == - 1)
                     selected_position = insert_new_tab(view, source_insert_pos);
                 }else selected_position = PosSource(pages_container::_tabmanager->indexOf(view));// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+            }else{
+                selected_position = insert_new_tab(view, source_insert_pos);
             }
                 // Вставка новых данных в таблицу конечных записей
                 // accomplished by TabWidget::addTab in TabWidget::newTab?
 
 //            }
             assert(selected_position != - 1);
+            assert(view);
         }else{
 
             selected_position = insert_new_tab(view, source_insert_pos);
             assert(selected_position != - 1);
+            assert(view);
         }
         assert(item(selected_position) == _item);
         assert(view);
         endResetModel();// Подумать, возможно нужно заменить на endInsertRows
     }
+    assert(view);
     return selected_position;
 }
 

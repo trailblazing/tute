@@ -1204,13 +1204,10 @@ PosSource RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item,
         // Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
     QString directory = DiskHelper::create_temp_directory();	//
         // addNewRecordWin.getImagesDirectory();
-
         // todo: сделать заполнение таблицы приаттаченных файлов
-
         // Record record;
-
         // if(record.isLite())record.switchToFat();
-
+    if(item->is_lite())item->to_fat();	// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
     assert(! item->is_lite());
 
         // record.setText(addNewRecordWin.getField("text"));

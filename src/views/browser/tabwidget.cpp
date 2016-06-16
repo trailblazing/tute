@@ -241,7 +241,7 @@ namespace browser {
 
         QSize TabBar::sizeHint() const {
             int xMax = 0, yMax = 0;
-            foreach(QAbstractButton * button, buttonGroup->buttons() ){
+            foreach(QAbstractButton * button, buttonGroup->buttons()){
                 xMax = qMax(xMax, button->sizeHint().width());
                 yMax = qMax(yMax, button->sizeHint().height());
             }
@@ -282,18 +282,18 @@ namespace browser {
 
 // Set label
             QString label = title;
-            if(label.isEmpty() ){
+            if(label.isEmpty()){
                 label = QApplication::translate(((QObject *)parent())->objectName().toLatin1().constData(),
                         titleList.value(index).toLatin1().constData());
-                if(label.isEmpty() )label = tr("Page %1").arg(index);
+                if(label.isEmpty())label = tr("Page %1").arg(index);
             }
             page->setWindowTitle(label);
 
 // Set icon
             QIcon pix = icon;
-            if(pix.isNull() ){
+            if(pix.isNull()){
                 pix = QIcon(iconList.value(index));
-                if(pix.isNull() ){
+                if(pix.isNull()){
                     pix = QApplication::style()->standardIcon(QStyle::SP_ArrowUp);
                     page->setWindowIcon(pix);
                 }
@@ -309,8 +309,8 @@ namespace browser {
         }
 
         void TabBar::setCurrentIndex(int index){
-            if(index < 0 || index >= count() )index = 0;
-            if(index != currentIndex() ){
+            if(index < 0 || index >= count())index = 0;
+            if(index != currentIndex()){
                 stackWidget->setCurrentIndex(index);
                 buttonGroup->button(index)->setChecked(true);
                 emit currentIndexChanged(index);
@@ -372,7 +372,7 @@ namespace browser {
             titleList = newTitleList;
 // we have to force translation here
             for(int i = 0; i < titleList.count(); ++ i)titleList[i] = tr(titleList[i].toLatin1());
-            if(! count() )return;
+            if(! count())return;
             for(int i = 0; i < stackWidget->count() && i < titleList.count(); i ++){
                 buttonGroup->button(i)->setText(titleList.at(i));
                 stackWidget->widget(i)->setWindowTitle(titleList.at(i));
@@ -380,14 +380,14 @@ namespace browser {
         }
 
         void TabBar::setPageTitle(QString const &newTitle){
-            if(! count() )return;
+            if(! count())return;
             buttonGroup->button(currentIndex())->setText(newTitle);
             if(QWidget *currentWidget = stackWidget->currentWidget())currentWidget->setWindowTitle(newTitle);
             emit pageTitleChanged(newTitle);
         }
 
         void TabBar::setPageTitle(int index, QString const &newTitle){
-            if(index < 0 || index >= count() )return;
+            if(index < 0 || index >= count())return;
             buttonGroup->button(index)->setText(newTitle);
             if(QWidget *currentWidget = stackWidget->widget(index))currentWidget->setWindowTitle(newTitle);
             emit pageTitleChanged(newTitle);
@@ -395,7 +395,7 @@ namespace browser {
 
         void TabBar::setPageIconList(QStringList const &newIconList){
             iconList = newIconList;
-            if(! count() )return;
+            if(! count())return;
             for(int i = 0; i < stackWidget->count() && i < newIconList.count(); i ++){
                 buttonGroup->button(i)->setIcon(QIcon(newIconList.at(i)));
                 stackWidget->widget(i)->setWindowIcon(QIcon(newIconList.at(i)));
@@ -1751,13 +1751,6 @@ namespace browser {
             auto current_item = tree_view->current_item();
             auto parent = current_item->parent();
             if(! parent)throw std::exception();
-// boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
-// try {
-// modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-// return il->host() == current_item && il == current_item->linker() && parent == il->host_parent();
-// }));
-// } catch(std::exception &e) {}
-// if(modelindex) {
             if(! url.isEmpty() && url.isValid() && ! url.scheme().isEmpty()){
                 TreeIndex::instance([&] {return tree_view->source_model();}, parent, current_item)->item_bind(current_item
                                                                                                              , url
@@ -1765,7 +1758,6 @@ namespace browser {
                                                                                                              , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
                     )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
             }
-// }
         }
     }
 
@@ -1797,6 +1789,12 @@ namespace browser {
         int next = currentIndex() + 1;
         if(next == count())next = 0;
         setCurrentIndex(next);
+    }
+
+    WebView *TabWidget::sibling(WebView *v) const {
+        int index = webViewIndex(v) - 1;
+        if(index < 0)index = count() - 1;
+        return webView(index);
     }
 
     void TabWidget::previousTab(){
@@ -1988,8 +1986,9 @@ namespace browser {
     boost::intrusive_ptr<TreeItem> TabWidget::sibling(boost::intrusive_ptr<TreeItem> it) const {
         boost::intrusive_ptr<TreeItem> r;
         auto v = it->binder()->page()->view();
-        auto index = webViewIndex(v);
-        if(index != - 1 && index > 0)r = webView(index - 1)->page()->binder()->host();
+        auto index = webViewIndex(v) - 1;
+        if(index < 0)index = count() - 1;// if(index != - 1 && index > 0)
+        r = webView(index)->page()->binder()->host();
         return r;
     }
 

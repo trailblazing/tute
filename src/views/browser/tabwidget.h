@@ -532,6 +532,7 @@ namespace browser {
             boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it) const;
             void current_download_acceptance(std::pair<QUrl, bool> policy);
             std::pair<QUrl, bool> current_download_acceptance() const;
+            WebView *sibling(WebView *v) const;
 
 // int insertTab(int index, QWidget *w, const QIcon& icon, const QString &label);
         protected:

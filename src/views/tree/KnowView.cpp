@@ -2681,8 +2681,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
 }
 
 
-QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
-    const std::function<KnowModel *()>       &_current_model
+QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(const std::function<KnowModel *()>       &_current_model
                                                                       , QList<boost::intrusive_ptr<TreeItem> >  _items
                                                                       , delete_strategy _delete_strategy
                                                                       , const QString &_mode
@@ -2854,74 +2853,81 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
 
                         QModelIndex setto;
                         boost::intrusive_ptr<TreeItem> left_sibling_item(nullptr);
-                        if(_item_common_parent && _know_root->index(_item_common_parent).isValid()){													// _item_common_parent->field("name") != clipboard_items_root
-                            int new_count = _item_common_parent->count_direct();
-                                // Одноранговая ветка
-                            if(new_count > 0){
-                                int new_position = 0;
-                                if((deleted_position_first - 1) >= 0){
-                                    new_position = deleted_position_first - 1;
-                                }else{
-                                    new_position = deleted_position_first;
-                                }
-                                // else
-                                //// if(deleted_position_last + 1 < new_count)
-                                // {
-                                // new_position = 0;   //deleted_position_last + 1;
-                                // }
-
-                                // int new_pos = (deleted_position_first > new_count - 1) ? new_count - 1 : ((deleted_position_first - 1) >= 0) ? deleted_position_first : 0;
-
-                                setto = _current_model()->index(new_position, 0, index_to_be_delete_first.parent());
-                                left_sibling_item = _item_common_parent->item_direct(new_position);
-                                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, left_sibling_item->parent(), left_sibling_item->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-                                // {return il == left_sibling_item->linker() && il->host() == left_sibling_item && left_sibling_item->parent() == il->host_parent();})); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                                select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));																	// setto
-
-
-                                // selectionModel()->select(setto, current_tree_selection_mode);   // current_tree_selection_mode
-                                // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // current_tree_selection_mode    // ClearAndSelect
-                            }else{
-                                ////        setto = _root_model->index_child(_current_index, current_item->direct_children_count() - 1);
-                                // setto = static_cast<TreeModel *>(_current_know_branch)->index(index.parent().row(), 0, index.parent().parent());
-                                // selectionModel()->setCurrentIndex(setto, QItemSelectionModel::ClearAndSelect);
-                                while(_item_common_parent && _item_common_parent != _know_model_board->root_item()){
-                                    if(_item_common_parent != _current_model()->root_item() && _current_model()->index(_item_common_parent).isValid()){
-
-                                        left_sibling_item = _item_common_parent;
-                                        setto = _current_model()->index(left_sibling_item);
-
-                                        // select_and_current(setto);
-
-                                        // selectionModel()->select(_source_model->index(_item_parent), current_tree_selection_mode);
-                                        // selectionModel()->setCurrentIndex(_source_model->index(_item_parent), current_tree_current_index_mode);   // ClearAndSelect
-
-                                        break;
-                                    }else{																																																							// if(_parent != _know_model_board->root_item())
-                                        cursor_follow_up();
-                                        _item_common_parent = _item_common_parent->parent();
-                                        if(_item_common_parent){
-                                            left_sibling_item = _item_common_parent;
-                                            setto = _current_model()->index(left_sibling_item);
+                        auto get_left_sibling_from_tree = [&]() -> boost::intrusive_ptr<TreeItem> {
+                                boost::intrusive_ptr<TreeItem> left_sibling_item(nullptr);
+                                assert(_item_common_parent && _know_root->index(_item_common_parent).isValid());
+                                if(_item_common_parent && _know_root->index(_item_common_parent).isValid()){												// _item_common_parent->field("name") != clipboard_items_root
+                                    int new_count = _item_common_parent->count_direct();
+                                        // Одноранговая ветка
+                                    if(new_count > 0){
+                                        int new_position = 0;
+                                        if((deleted_position_first - 1) >= 0){
+                                            new_position = deleted_position_first - 1;
                                         }else{
-                                            tree_empty_controll();
-                                            left_sibling_item = source_model()->root_item()->item_direct(0);
-                                            setto = _current_model()->index(left_sibling_item);
+                                            new_position = deleted_position_first;
                                         }
+                                        setto = _current_model()->index(new_position, 0, index_to_be_delete_first.parent());
+                                        left_sibling_item = _item_common_parent->item_direct(new_position);
+                                        assert(left_sibling_item);
+                                        assert(! result_items.contains(left_sibling_item));
+                                        setto = _current_model()->index(left_sibling_item);
+                                        assert(setto.isValid());
+//                                    select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));
+                                    }else{
+                                        while(_item_common_parent && _item_common_parent != _know_model_board->root_item()){
+                                            if(_item_common_parent != _current_model()->root_item() && _current_model()->index(_item_common_parent).isValid()){
+
+                                                left_sibling_item = _item_common_parent;
+                                                setto = _current_model()->index(left_sibling_item);
+
+                                                break;
+                                            }else{																																																						// if(_parent != _know_model_board->root_item())
+                                                cursor_follow_up();
+                                                _item_common_parent = _item_common_parent->parent();
+                                                if(_item_common_parent){
+                                                    left_sibling_item = _item_common_parent;
+                                                    setto = _current_model()->index(left_sibling_item);
+                                                }else{
+                                                    tree_empty_controll();
+                                                    left_sibling_item = source_model()->root_item()->item_direct(0);
+                                                    setto = _current_model()->index(left_sibling_item);
+                                                }
+                                            }
+                                        }
+                                        assert(left_sibling_item);
+                                        assert(! result_items.contains(left_sibling_item));
+                                        setto = _current_model()->index(left_sibling_item);
+                                        assert(setto.isValid());
+
+//                                    select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));
                                     }
                                 }
+                                return left_sibling_item;
+                            };
+                        if(globalparameters.entrance()->browsers().size() > 0){
+                            browser::Browser *browser = globalparameters.entrance()->activated_browser();
+                            auto tabmanager = browser->tabmanager();
+                            QList<boost::intrusive_ptr<TreeItem> > good_list;
+                            for(int i = 0; i < tabmanager->count(); i ++){
+                                auto v = tabmanager->webView(i);
+                                auto it = v->page()->binder()->host();
+                                if(! result_items.contains(it))good_list << it;
+                            }
+                            if(good_list.size() > 0){
+                                //                            auto v = tabmanager->currentWebView();
+                                auto sibling = good_list[0];		// tabmanager->sibling(v);
+                                left_sibling_item = sibling->page()->binder()->host();
                                 assert(left_sibling_item);
+                                assert(! result_items.contains(left_sibling_item));
                                 setto = _current_model()->index(left_sibling_item);
                                 assert(setto.isValid());
-
-                                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, left_sibling_item->parent(), left_sibling_item->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-                                // {return il == left_sibling_item->linker() && il->host() == left_sibling_item && left_sibling_item->parent() == il->host_parent();})); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                                select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));																		// setto
-
-                                // if(index.parent().parent().isValid()) {view_up_one_level();}
-                                // else {view_return_to_root();}
+                            }else{
+                                left_sibling_item = get_left_sibling_from_tree();
                             }
+                        }else{
+                            left_sibling_item = get_left_sibling_from_tree();
                         }
+                        select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));
                         qDebug() << "Delete finish";
 
                         // update_model(_current_know_branch);
@@ -2959,13 +2965,8 @@ void KnowView::view_cut(bool _cut_branch_confirm){
         // copy_result
     auto index_list = view_copy();
     if(index_list.size() > 0){					// copy_result
-        view_delete_permanent([&](){
-                return source_model();
-            }, [&](){
-                QList<boost::intrusive_ptr<TreeItem> > r;
-                for(auto ix : index_list)r << source_model()->item(ix);
-                return r;
-            } ()
+        view_delete_permanent([&](){return source_model();}
+                             , [&](){QList<boost::intrusive_ptr<TreeItem> > r;for(auto ix : index_list)r << source_model()->item(ix);return r;} ()
                              , &KnowModel::model_delete_permanent_recursive
                              , "cut", _cut_branch_confirm);
         // view_remove(index_list, "cut", _cut_branch_confirm); //this->_know_branch,
