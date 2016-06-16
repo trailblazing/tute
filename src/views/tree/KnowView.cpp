@@ -65,13 +65,13 @@ extern const char *action_editor_switch;
 
 
 #ifdef QT_DEBUG
-const char *index_xml_file_name = "mytetra.xml";  // "mytetra_debug.xml";
+const char *index_xml_file_name = "mytetra.xml";	// "mytetra_debug.xml";
 #else
 const char *index_xml_file_name = "mytetra.xml";
 #endif
 
-enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;   // ClearAndSelect   Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
-enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemSelectionModel::SelectionFlag::SelectCurrent;    // Select   // SelectCurrent
+enum QItemSelectionModel::SelectionFlag current_tree_selection_mode = QItemSelectionModel::SelectionFlag::Select;	// ClearAndSelect   Current       // ClearAndSelect //  | QItemSelectionModel::SelectionFlag::Rows
+enum QItemSelectionModel::SelectionFlag current_tree_current_index_mode = QItemSelectionModel::SelectionFlag::SelectCurrent;	// Select   // SelectCurrent
 
 const char *knowtreeview_singleton_name = "knowtreeview";
 
@@ -80,61 +80,61 @@ KnowView::KnowView(QString _name, TreeScreen *_tree_screen)
       , _tree_screen(_tree_screen)
       , _know_model_board(new KnowModel(index_xml_file_name, this))
       , _know_root(new KnowModel(_know_model_board->root_item(), this))
-      // create custom delegate
+        // create custom delegate
       , _delegate(new HtmlDelegate(this)){
 
     setModel(_know_root);
-    // _know_model_board->init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);  // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
-    // int all_count = _know_model_board->count_records_all();
-    // assert(all_count > 0);
+        // _know_model_board->init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);  // _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
+        // int all_count = _know_model_board->count_records_all();
+        // assert(all_count > 0);
 
-    // _know_model_board->synchronized(true);
+        // _know_model_board->synchronized(true);
 
-    // source_model(_know_model_board->root_item());
+        // source_model(_know_model_board->root_item());
 
-    // азрешение принимать Drop-события
+        // азрешение принимать Drop-события
     setAcceptDrops(true);
     setDropIndicatorShown(true);
 
     setObjectName(_name);
 
-    setMinimumSize(1, 1);                                     // 150, 250
+    setMinimumSize(1, 1);					// 150, 250
 
     setWordWrap(true);
 
-    // Временно сделан одинарный режим выбора пунктов
-    // todo: Множественный режим надо выставить тогда, когда
-    // станет ясно, как удалять несколько произвольных веток так, чтобы
-    // в процессе удаления QModelIndex нижестоящих еще не удаленных
-    // веток не менялся
-    // Time to do single mode select items
-    // todo: Multi Mode should be exposed when
-    // it will be clear how to remove some arbitrary branches so that the
-    // in the removal of the lower QModelIndex not yet deleted
-    // branches has not changed
-    // knowTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        // Временно сделан одинарный режим выбора пунктов
+        // todo: Множественный режим надо выставить тогда, когда
+        // станет ясно, как удалять несколько произвольных веток так, чтобы
+        // в процессе удаления QModelIndex нижестоящих еще не удаленных
+        // веток не менялся
+        // Time to do single mode select items
+        // todo: Multi Mode should be exposed when
+        // it will be clear how to remove some arbitrary branches so that the
+        // in the removal of the lower QModelIndex not yet deleted
+        // branches has not changed
+        // knowTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
-    setSelectionMode(QAbstractItemView::ExtendedSelection);                                     // SingleSelection //// MultiSelection  //
+    setSelectionMode(QAbstractItemView::ExtendedSelection);					// SingleSelection //// MultiSelection  //
 
     setSelectionBehavior(QAbstractItemView::SelectRows);
 
-    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);                                        // ScrollBarAlwaysOn
+    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);					// ScrollBarAlwaysOn
 
 
-    // Нужно установить правила показа контекстного самодельного меню
-    // чтобы оно могло вызываться
+        // Нужно установить правила показа контекстного самодельного меню
+        // чтобы оно могло вызываться
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    // Представление не должно позволять редактировать элементы обычным путем
+        // Представление не должно позволять редактировать элементы обычным путем
     setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 
-    // азрешение принимать жест QTapAndHoldGesture
+        // азрешение принимать жест QTapAndHoldGesture
     grabGesture(Qt::TapAndHoldGesture);
     setDragDropMode(QAbstractItemView::InternalMove);
 
     setMinimumSize(size());
-    // Настройка области виджета для кинетической прокрутки
+        // Настройка области виджета для кинетической прокрутки
     set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));
 
     setItemDelegate(_delegate);
@@ -143,39 +143,39 @@ KnowView::KnowView(QString _name, TreeScreen *_tree_screen)
 
 
 
-    // deleted after introduce intercept method
-    // connect(static_cast<QTreeView *>(const_cast<KnowView *>(this)), &QTreeView::setModel, this, [&](QAbstractItemModel * model) {   // does not work
-    // _know_root = static_cast<KnowModel *>(model);
-    // });
+        // deleted after introduce intercept method
+        // connect(static_cast<QTreeView *>(const_cast<KnowView *>(this)), &QTreeView::setModel, this, [&](QAbstractItemModel * model) {   // does not work
+        // _know_root = static_cast<KnowModel *>(model);
+        // });
 
 
 
 
 
 
-    // void clearSelection();
-    // virtual void clearCurrentIndex();
+        // void clearSelection();
+        // virtual void clearCurrentIndex();
 
-    // Q_SIGNALS:
-    // void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
+        // Q_SIGNALS:
+        // void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 
-    // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+        // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
     assert(_tree_screen);
 
-    // QScrollArea* qscrollarea = new QScrollArea(this);
-    ////        qscrollarea->setWidget(this);
-    // auto l = new QVBoxLayout();
-    // l->addWidget(qscrollarea);
-    // this->setLayout(l);
+        // QScrollArea* qscrollarea = new QScrollArea(this);
+        ////        qscrollarea->setWidget(this);
+        // auto l = new QVBoxLayout();
+        // l->addWidget(qscrollarea);
+        // this->setLayout(l);
 
-    // qscrollarea->show();
+        // qscrollarea->show();
 
-    // Сигналы для обновления панели инструментов при изменении в selectionModel()
+        // Сигналы для обновления панели инструментов при изменении в selectionModel()
     connect(this->selectionModel(), &QItemSelectionModel::currentChanged, this, &KnowView::on_current_changed);
     connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, this, &KnowView::on_selection_changed);
-    // Соединение сигнал-слот что ветка выбрана мышкой или стрелками на клавиатуре
-    if(appconfig.interface_mode() == "desktop")connect(selectionModel(), &QItemSelectionModel::currentRowChanged, this, &KnowView::on_current_row_changed);                                                                  // &TreeScreen::step_into_sub_branch
-    // connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
+        // Соединение сигнал-слот что ветка выбрана мышкой или стрелками на клавиатуре
+    if(appconfig.interface_mode() == "desktop")connect(selectionModel(), &QItemSelectionModel::currentRowChanged, this, &KnowView::on_current_row_changed);									// &TreeScreen::step_into_sub_branch
+        // connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
     if(appconfig.interface_mode() == "mobile")connect(this, &KnowView::clicked, this, &KnowView::cursor_step_into);
     if(appconfig.interface_mode() == "desktop"){
         connect(this, &KnowView::clicked, this, &KnowView::index_invoke);
@@ -188,15 +188,15 @@ KnowView::KnowView(QString _name, TreeScreen *_tree_screen)
         // if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
         // }//&TreeScreen::candidate_from_knowtree_item)
 
-        connect(this, &KnowView::doubleClicked, this, &KnowView::cursor_step_into);                                                                                 // index_invoke_in_sub_branch
+        connect(this, &KnowView::doubleClicked, this, &KnowView::cursor_step_into);											// index_invoke_in_sub_branch
     }
 }
 
 
 KnowView::~KnowView(){
-    if(_know_root){                                    // && is_owner()
+    if(_know_root){					// && is_owner()
         // delete
-        _know_root->deleteLater(); _know_root = nullptr;
+        _know_root->deleteLater();_know_root = nullptr;
     }
     if(_know_model_board){
         // delete
@@ -227,29 +227,29 @@ void KnowView::setModel(QAbstractItemModel *model){
 
 void KnowView::sychronize(){
 
-    // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+        // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
     assert(_tree_screen);
     auto tree_view = _tree_screen->view();
-    if(_know_root                                 // && is_owner()
-        ){                                // _know_root != _tree_screen->know_branch() // KnowView is the owner of _know_root
+    if(_know_root					// && is_owner()
+        ){					// _know_root != _tree_screen->know_branch() // KnowView is the owner of _know_root
         browser::Entrance *_entrance = globalparameters.entrance();
         assert(_entrance);
         if(_tree_screen && _entrance && _know_root->root_item()->count_direct() > 0){
 
             QMap<QString, QString> data;
-            // auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
-            data["id"] = get_unical_id();                                                                                                                                 // _know_root->root_item()->id();
-            data["name"] = "current session branch item";                                                                                                                                 // _know_root->root_item()->item_direct(0)->name();
+                // auto _source_model = [&]() {return _tree_screen->tree_view()->source_model();};
+            data["id"] = get_unical_id();																	// _know_root->root_item()->id();
+            data["name"] = "current session branch item";																	// _know_root->root_item()->item_direct(0)->name();
 
-            // assert(_know_root->root_item()->parent());
+                // assert(_know_root->root_item()->parent());
 
-            boost::intrusive_ptr<TreeItem> branch_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));                                                   // _know_root->root_item()
+            boost::intrusive_ptr<TreeItem> branch_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));							// _know_root->root_item()
 
 
 
             bool modified = false;
             for(auto &browser : _entrance->browsers()){
-                auto tabmanager = browser->tabmanager();                                                                                                                                                                                 // record_controller()->source_model();  // ->record_table();
+                auto tabmanager = browser->tabmanager();																						// record_controller()->source_model();  // ->record_table();
                 for(int i = 0; i < tabmanager->count(); i ++){
                     auto page_item = tabmanager->webView(i)->page()->item();
                     if(! _know_model_board->item([=](boost::intrusive_ptr<const TreeItem> t){
@@ -268,7 +268,7 @@ void KnowView::sychronize(){
                 // new_branch_item->field("name", _know_root->root_item()->name());
                 assert(_know_model_board->item([=](boost::intrusive_ptr<const TreeItem> t){
                         return t->id() == _know_root->root_item()->id();
-                    }));                                                                                                                                                                                                                                                               // _know_root->root_item()->id()
+                    }));																																// _know_root->root_item()->id()
 
                 //// || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
 
@@ -284,7 +284,7 @@ void KnowView::sychronize(){
                 // if(tree_index) {
                 view_paste_children_from_children(TreeIndex::instance([&]() -> KnowModel * {
                         return _know_root;
-                    }, tree_view->session_root_auto()->parent(), tree_view->session_root_auto())                                                                                                                                                                                                                                                                                              // tree_index
+                    }, tree_view->session_root_auto()->parent(), tree_view->session_root_auto())																																				// tree_index
                                                  , branch_item
                                                  , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {
                         return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();
@@ -296,7 +296,7 @@ void KnowView::sychronize(){
 
                 // tree_screen->to_candidate_screen(entrance->shadow_branch()->index(tree_item));
             }
-            _know_root->update_index(_know_root->index(tree_view->session_root_auto()));                                                                                                                                 // _know_root->update_index(current_index());  // selectionModel()->currentIndex()    // _tree_screen->view_index()
+            _know_root->update_index(_know_root->index(tree_view->session_root_auto()));																// _know_root->update_index(current_index());  // selectionModel()->currentIndex()    // _tree_screen->view_index()
         }
     }
 }
@@ -383,7 +383,7 @@ KnowModel *KnowView::source_model(){
 // }
 
 void KnowView::resizeEvent(QResizeEvent *e){
-    // (void)e;
+        // (void)e;
     resize(_tree_screen->width(), height());
     QTreeView::resizeEvent(e);
 }
@@ -419,12 +419,12 @@ void KnowView::tapAndHoldGestureTriggered(QTapAndHoldGesture *gesture){
 }
 
 
-void KnowView::mousePressEvent(QMouseEvent *event){ // Q_DECL_OVERRIDE
-    // get the buttons type
+void KnowView::mousePressEvent(QMouseEvent *event){	// Q_DECL_OVERRIDE
+        // get the buttons type
     Qt::MouseButtons mouse_button = event->buttons();
     QModelIndex _index = indexAt(event->pos());
     assert(_index.isValid());
-    // only the right mouse buton
+        // only the right mouse buton
     if(mouse_button == Qt::RightButton){
         // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
         // select item at cursor position
@@ -432,25 +432,25 @@ void KnowView::mousePressEvent(QMouseEvent *event){ // Q_DECL_OVERRIDE
         QModelIndex next_index = indexAt(event->pos());
         if(next_index.isValid()){
 
-            ////            //        // Получение списка индексов QModelIndex выделенных элементов
-            ////            //        qSort(_selectitems.begin(), _selectitems.end());
+                ////            //        // Получение списка индексов QModelIndex выделенных элементов
+                ////            //        qSort(_selectitems.begin(), _selectitems.end());
 
-            ////            selectionModel()->clear();
-            // auto selection = LocalLizeInitializer(this)();
-            // selectionModel()->select(selection, current_tree_selection_mode);
+                ////            selectionModel()->clear();
+                // auto selection = LocalLizeInitializer(this)();
+                // selectionModel()->select(selection, current_tree_selection_mode);
             auto it = _know_root->item(next_index);
-            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-            // {
-            // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
-            // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            select_as_current(TreeIndex::instance([&] {return _know_root; }, it->parent(), it));
+                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
+                // {
+                // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+                // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
+            select_as_current(TreeIndex::instance([&] {return _know_root;}, it->parent(), it));
 
-            //// start the context menu
-            // QModelIndexList select_indexes(selectedIndexes());
+                //// start the context menu
+                // QModelIndexList select_indexes(selectedIndexes());
 
-            // if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
-            // _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
-            // }
+                // if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
+                // _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
+                // }
         }
     }else{
 
@@ -541,7 +541,7 @@ void KnowView::dropEvent(QDropEvent *event){
                 ////            auto tree_item_drag = _know_root->item(index_from);
                 // Если перенос происходит в ту же самую ветку
                 if(tree_item_drag != tree_item_drop){
-                    // Если перенос происходит из не зашифрованной ветки в зашифрованную, а пароль не установлен
+                        // Если перенос происходит из не зашифрованной ветки в зашифрованную, а пароль не установлен
                     if(tree_item_drag->field<crypt_type>() != "1" &&
                         tree_item_drop->field<crypt_type>() == "1" &&
                         globalparameters.crypt_key().length() == 0){
@@ -554,7 +554,7 @@ void KnowView::dropEvent(QDropEvent *event){
 
                         result = false;
                     }
-                }else{result = false; }
+                }else{result = false;}
                 return result;
             };
 
@@ -565,7 +565,7 @@ void KnowView::dropEvent(QDropEvent *event){
 
         int worked = 0;
         for(int i = 0; i < clipboard_records->size(); i ++){
-            // Полные данные записи
+                // Полные данные записи
             boost::intrusive_ptr<TreeItem> tree_item_drag = clipboard_records->record(i);
 
             auto item_on_tree = _know_root->item([&](boost::intrusive_ptr<const TreeItem> it){
@@ -573,18 +573,18 @@ void KnowView::dropEvent(QDropEvent *event){
                     });
             assert(item_on_tree);
             if(item_on_tree)tree_item_drag = item_on_tree;
-            RecordController *_record_controller = tree_item_drag->page()->record_controller();                                                                                                                                 // find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
+            RecordController *_record_controller = tree_item_drag->page()->record_controller();																	// find_object<RecordController>("table_screen_controller"); // Указатель на контроллер таблицы конечных записей
 
             browser::TabWidget *_tabmanager = tree_item_drag->page()->view()->tabmanager();
             if(check_crypt(tree_item_drag)){
                 // Удаление записи из исходной ветки, удаление должно быть вначале, чтобы сохранился ID записи
                 // В этот момент вид таблицы конечных записей показывает таблицу, из которой совершается Drag
                 // TreeItem *treeItemFrom=parentPointer->knowTreeModel->getItem(indexFrom);
-                if(tree_item_drag->binder())_tabmanager->closeTab(_tabmanager->indexOf(tree_item_drag->page()->view()));                                                                                                                                                                                                                 // _record_controller->remove_child(record->field("id"));
+                if(tree_item_drag->binder())_tabmanager->closeTab(_tabmanager->indexOf(tree_item_drag->page()->view()));																										// _record_controller->remove_child(record->field("id"));
                 // Если таблица конечных записей после удаления перемещенной записи стала пустой
                 if(_record_controller->row_count() == 0){
-                    // find_object<MetaEditor>(meta_editor_singleton_name)
-                    globalparameters.meta_editor()->clear_all();                                                                                                                                                                                                                                 // Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
+                        // find_object<MetaEditor>(meta_editor_singleton_name)
+                    globalparameters.meta_editor()->clear_all();																												// Нужно очистить поле редактирования чтобы не видно было текста последней удаленной записи
                 }
                 // find_object<RecordScreen>(table_screen_singleton_name)
                 _record_controller->record_screen()->tools_update();
@@ -593,7 +593,7 @@ void KnowView::dropEvent(QDropEvent *event){
                 // Добавление записи в базу
                 _know_root->model_move_as_child(TreeIndex::instance([&](){
                         return _know_root;
-                    }, tree_item_drop->parent(), tree_item_drop), tree_item_drag);                                                                                                                                                                                                                                                              // tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
+                    }, tree_item_drop->parent(), tree_item_drop), tree_item_drag);																																// tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
 
                 QModelIndex index_from = _know_root->index(tree_item_drag);
                 // Обновление исходной ветки чтобы было видно что записей убавилось
@@ -607,16 +607,16 @@ void KnowView::dropEvent(QDropEvent *event){
             }
         }
         if(worked > 0){
-            // static_cast<TreeScreen *>(this->parent())->tree_view()->
+                // static_cast<TreeScreen *>(this->parent())->tree_view()->
             know_model_save();
 
 
-            // Обновлении конечной ветки чтобы было видно что записей прибавилось
+                // Обновлении конечной ветки чтобы было видно что записей прибавилось
             _know_root->update_index(index_to);
 
             update(index_to);
 
-            // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
+                // В модели данных обнуляется элемент, который подсвечивался при Drag And Drop
             _know_root->setData(QModelIndex(), QVariant(false), Qt::UserRole);
 
             synchronized(false);
@@ -670,40 +670,40 @@ boost::intrusive_ptr<TreeItem> KnowView::session_root_auto(){
 
     auto _current_model = [&](){
             return _know_root;
-        };                                                                                                                      // KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model; // std::bind(_source_model_func, _tree_screen->tree_view());
+        };															// KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model; // std::bind(_source_model_func, _tree_screen->tree_view());
 
     auto view_session_id_defined = [&](){
             return _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
-                        return t->id() == _current_model()->session_id();
-                    });
+                           return t->id() == _current_model()->session_id();
+                       });
         };
 
     auto board_session_id_defined = [&](){
             return _know_model_board->session_id() != "" && _know_model_board->item([=](boost::intrusive_ptr<const TreeItem> t){
-                        return t->id() == _know_model_board->session_id();
-                    });
+                           return t->id() == _know_model_board->session_id();
+                       });
         };
 
-    // (void)board_session_id_defined;
+        // (void)board_session_id_defined;
     auto fix_root = [&] {
         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, find_root()); } catch(std::exception &e) {throw e; } return tree_index; } ();
         _current_model()->session_id(TreeIndex::instance(_current_model, find_root()->parent(), find_root()));
         know_model_save();
         assert(view_session_id_defined());
     };
-    if(! board_session_id_defined()){                                    // if manual setted, cancel this
+    if(! board_session_id_defined()){					// if manual setted, cancel this
         fix_root();
     }
     if(! view_session_id_defined()){
         fix_root();
     }
-    // while(!view_session_id_defined() && _current_model()->root_item() != know_model_board()->root_item()) {
-    // auto new_root = this->cursor_follow_up_one_level();
+        // while(!view_session_id_defined() && _current_model()->root_item() != know_model_board()->root_item()) {
+        // auto new_root = this->cursor_follow_up_one_level();
 
-    // assert(new_root->count_direct() != 0);
+        // assert(new_root->count_direct() != 0);
 
-    // _current_model()->session_id(TreeIndex(_current_model, find_root()));
-    // }
+        // _current_model()->session_id(TreeIndex(_current_model, find_root()));
+        // }
 
     assert(_current_model()->session_id() != "");
     assert(view_session_id_defined());
@@ -716,7 +716,7 @@ void KnowView::session_root_manual(bool checked){
     auto _source_model = [&](){
             return source_model();
         };
-    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_source_model, _source_model()->item(current_index())); } catch(std::exception &e) {throw e; } return tree_index; } ();
+        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_source_model, _source_model()->item(current_index())); } catch(std::exception &e) {throw e; } return tree_index; } ();
     auto it = _source_model()->item(current_index());
     _source_model()->session_id(TreeIndex::instance(_source_model, it->parent(), it));
 }
@@ -724,47 +724,42 @@ void KnowView::session_root_manual(bool checked){
 boost::intrusive_ptr<TreeItem> KnowView::current_item(){
     boost::intrusive_ptr<TreeItem> item_result(nullptr);
     auto index_result = current_index();
-    if(index_result.isValid())item_result = _know_root->item(index_result);                                                                  // selectionModel()->currentIndex()
+    if(index_result.isValid())item_result = _know_root->item(index_result);									// selectionModel()->currentIndex()
     else{
         item_result = _know_root->item(_previous_index);
         if(! item_result && selectionModel()->selectedIndexes().size() > 0){
             item_result = _know_root->item(selectionModel()->selectedIndexes().last());
-            // boost::intrusive_ptr<TreeIndex> tree_index;
-            // try {tree_index = new TreeIndex([&] {return _know_root; }, r->parent(), r->linker()->sibling_order()); } catch(std::exception &e) {}
+                // boost::intrusive_ptr<TreeIndex> tree_index;
+                // try {tree_index = new TreeIndex([&] {return _know_root; }, r->parent(), r->linker()->sibling_order()); } catch(std::exception &e) {}
 
-            // if(tree_index)
-            index_result = select_as_current(TreeIndex::instance([&] {return _know_root; }, item_result->parent(), item_result));
+                // if(tree_index)
+            index_result = select_as_current(TreeIndex::instance([&] {return _know_root;}, item_result->parent(), item_result));
         }
         if(! index_result.isValid()){
             boost::intrusive_ptr<TreeItem> it = session_root_auto();
             assert(it);
-            if(it == _know_model_board->root_item()){                                                                                                                                  // !result.isValid()
+            if(it == _know_model_board->root_item()){																	// !result.isValid()
                 // it = _know_root->item(result);
                 // } else {
                 if(_know_root->root_item()->count_direct() == 0){
-                    ////            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
-                    ////        } else {
-                    ////                TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
-                    ////                auto view = _tree_screen->tree_view();
+                        ////            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
+                        ////        } else {
+                        ////                TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
+                        ////                auto view = _tree_screen->tree_view();
 
-                    // boost::intrusive_ptr<TreeIndex> tree_root_index;
+                        // boost::intrusive_ptr<TreeIndex> tree_root_index;
 
-                    // try {
-                    // tree_root_index = new TreeIndex([&] () -> KnowModel* {return _know_root;}, _know_root->root_item(), 0);
-                    // } catch(std::exception &e) {throw e; }
+                        // try {
+                        // tree_root_index = new TreeIndex([&] () -> KnowModel* {return _know_root;}, _know_root->root_item(), 0);
+                        // } catch(std::exception &e) {throw e; }
 
-                    it = TreeIndex::instance([&]() -> KnowModel * {
-                                return _know_root;
-                            }, _know_root->root_item(), 0)->item_bind(
-                            nullptr
-                                                                     , QUrl(browser::Browser::_defaulthome)
-                                                                     , std::bind(&KnowView::view_paste_child, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                                                                     , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                                return it_->field<url_type>() == browser::Browser::_defaulthome;
-                            });
+                    it = TreeIndex::instance([&]() -> KnowModel * {return _know_root;}, _know_root->root_item(), 0)->item_bind(nullptr
+                                                                                                                              , QUrl(browser::Browser::_defaulthome)
+                                                                                                                              , std::bind(&KnowView::view_paste_child, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+                                                                                                                              , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(),  browser::Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(),  browser::Browser::_defaulthome);});
 
 
-                    // new_item = _know_root->root_item()->item_direct(0); // _know_root->root_item()->count_direct() - 1
+                        // new_item = _know_root->root_item()->item_direct(0); // _know_root->root_item()->count_direct() - 1
                 }
                 // else if(_know_root->root_item()->parent()) {
                 ////            auto parent_tree_screen_pointer = globalparameters.tree_screen();
@@ -784,37 +779,37 @@ boost::intrusive_ptr<TreeItem> KnowView::current_item(){
 
                 it = _know_root->root_item()->item_direct(0);
             }
-            // else {
-            // auto entrance = globalparameters.entrance();
-            // auto browser = entrance->activated_browser();
+                // else {
+                // auto entrance = globalparameters.entrance();
+                // auto browser = entrance->activated_browser();
 
-            ////        if(!browser) {
-            ////            browser = entrance->new_browser();
-            ////        }
+                ////        if(!browser) {
+                ////            browser = entrance->new_browser();
+                ////        }
 
-            // if(browser->tabmanager()->count() > 0) {
-            // it = browser->tabmanager()->currentWebView()->page()->binder()->item();
-            // } else {
-            // RecordModel::ModelIndex record_modelindex([&] {return browser->record_screen()->record_controller()->source_model();}, nullptr, it);
-            // it = browser->item_bind(record_modelindex);
-            // }
+                // if(browser->tabmanager()->count() > 0) {
+                // it = browser->tabmanager()->currentWebView()->page()->binder()->item();
+                // } else {
+                // RecordModel::ModelIndex record_modelindex([&] {return browser->record_screen()->record_controller()->source_model();}, nullptr, it);
+                // it = browser->item_bind(record_modelindex);
+                // }
 
 
-            // result = select_as_current(TreeIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+                // result = select_as_current(TreeIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
-            ////        if(selectionModel()->selectedIndexes().size() > 1) {
-            ////            result = selectionModel()->selectedIndexes().first();
-            ////        }
-            // }
+                ////        if(selectionModel()->selectedIndexes().size() > 1) {
+                ////            result = selectionModel()->selectedIndexes().first();
+                ////        }
+                // }
 
-            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-            // {
-            // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
-            // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            index_result = select_as_current(TreeIndex::instance([&] {return _know_root; }, it->parent(), it));
-            // result = selectionModel()->currentIndex();
+                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
+                // {
+                // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
+                // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
+            index_result = select_as_current(TreeIndex::instance([&] {return _know_root;}, it->parent(), it));
+                // result = selectionModel()->currentIndex();
 
-            assert(index_result.isValid());                                                                                                                                 // this line is to be recovery
+            assert(index_result.isValid());																	// this line is to be recovery
         }
     }
     return item_result;
@@ -841,166 +836,166 @@ boost::intrusive_ptr<TreeItem> KnowView::current_item(){
 // Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
 QModelIndex KnowView::current_index(void) const {
     QModelIndex result = selectionModel()->currentIndex();
-    // if(!selectionModel()->currentIndex().isValid()) {
+        // if(!selectionModel()->currentIndex().isValid()) {
 
-    // boost::intrusive_ptr<TreeItem> _item = nullptr;
-    // TreeKnowModel *current_model = static_cast<TreeKnowModel *>(model());
+        // boost::intrusive_ptr<TreeItem> _item = nullptr;
+        // TreeKnowModel *current_model = static_cast<TreeKnowModel *>(model());
 
-    // if(0 == current_model->root_item()->current_count()) {
-    // return_to_root();   //
-    // current_model = static_cast<TreeKnowModel *>(model());
-    // _item = current_model->root_item()->add_child();
-    // } else {
-    // _item = current_model->root_item()->child(0);  // _know_branch->root_item()->current_count() - 1
+        // if(0 == current_model->root_item()->current_count()) {
+        // return_to_root();   //
+        // current_model = static_cast<TreeKnowModel *>(model());
+        // _item = current_model->root_item()->add_child();
+        // } else {
+        // _item = current_model->root_item()->child(0);  // _know_branch->root_item()->current_count() - 1
 
-    // }
+        // }
 
-    // assert(_item);
+        // assert(_item);
 
-    // QModelIndex cur_index;
-
-
-
-    ////        reset();
-    ////        setModel(current_model);
-
-    // if(_item) {
-    // cur_index = current_model->index(_item);    // item->parent()->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
-
-    // assert(cur_index.isValid());
-    // assert(current_model->item(cur_index) == _item);
-    ////            candidate_from_knowtree_item(cur_index);
-
-    // assert(model());
-
-    // selectionModel()->setCurrentIndex(cur_index // , current_tree_selection_mode    //
-    // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-    // );
-    // selectionModel()->select(cur_index  //, current_tree_selection_mode
-    // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
-    // );
-    ////            clicked(cur_index);
-    // }
-
-    ////        else {
-    ////            //            cur_index = _knowtreemodel->index_child(
-    ////            //                            _knowtreemodel->index(_knowtreemodel->_root_item)   // does not work!
-    ////            //                            , _knowtreemodel->_root_item->child_count() - 1);
-
-    ////            cur_index = _knowtreemodel->index(
-    ////                            _knowtreemodel->_root_item->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
-    ////                        );
-
-    ////            assert(cur_index.isValid());
-    ////            _knowtreeview->selectionModel()->setCurrentIndex(
-    ////                cur_index
-    ////                //                _knowtreemodel->index_child(
-    ////                //                    _knowtreemodel->index(_knowtreemodel->_root_item)
-    ////                //                    , _knowtreemodel->_root_item->child_count() - 1)
+        // QModelIndex cur_index;
 
 
 
-    ////                //                _knowtreemodel->index(
-    ////                //                    _knowtreemodel->_root_item->child
-    ////                //                    (
-    ////                //                        _knowtreemodel->_root_item->child_count() - 1
-    ////                //                    )
-    ////                //                )
-    ////                //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
-    ////                //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
-    ////                , current_tree_selection_mode
-    ////            );
-    ////        }
-    // }
+        ////        reset();
+        ////        setModel(current_model);
 
-    // auto v = _treeknowview->selectionModel()->currentIndex();
-    // candidate_from_knowtree_item(cur_index);
+        // if(_item) {
+        // cur_index = current_model->index(_item);    // item->parent()->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
 
+        // assert(cur_index.isValid());
+        // assert(current_model->item(cur_index) == _item);
+        ////            candidate_from_knowtree_item(cur_index);
 
+        // assert(model());
 
-    // if(!result.isValid()) {
-    // boost::intrusive_ptr<TreeItem> it = session_root_auto();
-    // assert(it);
+        // selectionModel()->setCurrentIndex(cur_index // , current_tree_selection_mode    //
+        // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+        // );
+        // selectionModel()->select(cur_index  //, current_tree_selection_mode
+        // , QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Current
+        // );
+        ////            clicked(cur_index);
+        // }
 
-    // if(!it || it == _know_model_board->root_item()) { // !result.isValid()
+        ////        else {
+        ////            //            cur_index = _knowtreemodel->index_child(
+        ////            //                            _knowtreemodel->index(_knowtreemodel->_root_item)   // does not work!
+        ////            //                            , _knowtreemodel->_root_item->child_count() - 1);
 
-    ////            it = _know_root->item(result);
-    ////        } else {
+        ////            cur_index = _knowtreemodel->index(
+        ////                            _knowtreemodel->_root_item->child_count() - 1, 0, _knowtreemodel->index(item->parent()) // _knowtreemodel->_root_item->child(_knowtreemodel->_root_item->child_count() - 1)
+        ////                        );
 
-    // if(_know_root->root_item()->count_direct() == 0) {
-    ////            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
-    ////        } else {
-    ////                TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
-    ////                auto view = _tree_screen->tree_view();
-
-    // if(_know_root->root_item()->parent()) {
-    ////            auto parent_tree_screen_pointer = globalparameters.tree_screen();
-    // do {
-    // if(!_know_root->root_item()->parent())break;
-
-    //// _tree_screen->tree_view()->reset();
-    //// KnowModel*(KnowView::*source_model_)() = &KnowView::source_model;
-    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&]()->KnowModel* {return source_model();}, _know_root->root_item()->parent());} catch(std::exception &e) {throw e;} return tree_index;}();
-    // intercept(tree_index);    // std::bind(source_model_, this)
-
-    // } while(_know_root->root_item()->parent() && _know_root->root_item()->parent()->count_direct() == 0);
-
-    ////                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
-    // } else if(_know_root->root_item()->count_direct() == 0) {
-    // boost::intrusive_ptr<TreeIndex> tree_root_index;
-
-    // try {
-    // tree_root_index = new TreeIndex([&]()->KnowModel* {return _know_root;}, _know_root->root_item(), 0);
-    // } catch(std::exception &e) {throw e;}
-
-    // item_bind(
-    // nullptr
-    // , QUrl(browser::Browser::_defaulthome)
-    // , std::bind(&KnowView::view_paste_child, this, tree_root_index, std::placeholders::_2, std::placeholders::_3)
-    // );
-    // }
-
-    ////            new_item = _know_root->root_item()->item_direct(0); // _know_root->root_item()->count_direct() - 1
-    // }
-
-    ////            else {
-    // it = _know_root->root_item()->item_direct(0);
-    ////            }
-
-    // }
-
-    ////        else {
-    ////            auto entrance = globalparameters.entrance();
-    ////            auto browser = entrance->activated_browser();
-
-    ////            //        if(!browser) {
-    ////            //            browser = entrance->new_browser();
-    ////            //        }
-
-    ////            if(browser->tabmanager()->count() > 0) {
-    ////                it = browser->tabmanager()->currentWebView()->page()->binder()->item();
-    ////            } else {
-    ////                RecordModel::ModelIndex record_modelindex([&] {return browser->record_screen()->record_controller()->source_model();}, nullptr, it);
-    ////                it = browser->item_bind(record_modelindex);
-    ////            }
+        ////            assert(cur_index.isValid());
+        ////            _knowtreeview->selectionModel()->setCurrentIndex(
+        ////                cur_index
+        ////                //                _knowtreemodel->index_child(
+        ////                //                    _knowtreemodel->index(_knowtreemodel->_root_item)
+        ////                //                    , _knowtreemodel->_root_item->child_count() - 1)
 
 
-    ////            result = select_as_current(TreeIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
 
-    ////            //        if(selectionModel()->selectedIndexes().size() > 1) {
-    ////            //            result = selectionModel()->selectedIndexes().first();
-    ////            //        }
-    ////        }
-    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;} return tree_index;}();
-    // result = select_as_current(tree_index);
-    ////        result = selectionModel()->currentIndex();
+        ////                //                _knowtreemodel->index(
+        ////                //                    _knowtreemodel->_root_item->child
+        ////                //                    (
+        ////                //                        _knowtreemodel->_root_item->child_count() - 1
+        ////                //                    )
+        ////                //                )
+        ////                //            _knowtreemodel->createIndex(0, 0, static_cast<void *>(_knowtreemodel->_root_item.get())), QItemSelectionModel::ClearAndSelect);
+        ////                //        _knowtreemodel->indexChildren(_knowtreemodel->index_from_item(_knowtreemodel->_root_item), 0)
+        ////                , current_tree_selection_mode
+        ////            );
+        ////        }
+        // }
 
-    // assert(result.isValid());    // this line is to be recovery
-    // }
+        // auto v = _treeknowview->selectionModel()->currentIndex();
+        // candidate_from_knowtree_item(cur_index);
 
-    // assert(cur_index.isValid());
-    return result;                                  // cur_index;   // temporary setting???   //
-    // selectionModel()->currentIndex();
+
+
+        // if(!result.isValid()) {
+        // boost::intrusive_ptr<TreeItem> it = session_root_auto();
+        // assert(it);
+
+        // if(!it || it == _know_model_board->root_item()) { // !result.isValid()
+
+        ////            it = _know_root->item(result);
+        ////        } else {
+
+        // if(_know_root->root_item()->count_direct() == 0) {
+        ////            selection_to_pos(_know_root->root_item()->item_direct(0));    //_know_root->root_item()->count_direct() - 1
+        ////        } else {
+        ////                TreeScreen *_tree_screen = qobject_cast<TreeScreen *>(parent());
+        ////                auto view = _tree_screen->tree_view();
+
+        // if(_know_root->root_item()->parent()) {
+        ////            auto parent_tree_screen_pointer = globalparameters.tree_screen();
+        // do {
+        // if(!_know_root->root_item()->parent())break;
+
+        //// _tree_screen->tree_view()->reset();
+        //// KnowModel*(KnowView::*source_model_)() = &KnowView::source_model;
+        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&]()->KnowModel* {return source_model();}, _know_root->root_item()->parent());} catch(std::exception &e) {throw e;} return tree_index;}();
+        // intercept(tree_index);    // std::bind(source_model_, this)
+
+        // } while(_know_root->root_item()->parent() && _know_root->root_item()->parent()->count_direct() == 0);
+
+        ////                _tree_screen->tree_view()->source_model(_know_root->root_item()->parent());
+        // } else if(_know_root->root_item()->count_direct() == 0) {
+        // boost::intrusive_ptr<TreeIndex> tree_root_index;
+
+        // try {
+        // tree_root_index = new TreeIndex([&]()->KnowModel* {return _know_root;}, _know_root->root_item(), 0);
+        // } catch(std::exception &e) {throw e;}
+
+        // item_bind(
+        // nullptr
+        // , QUrl(browser::Browser::_defaulthome)
+        // , std::bind(&KnowView::view_paste_child, this, tree_root_index, std::placeholders::_2, std::placeholders::_3)
+        // );
+        // }
+
+        ////            new_item = _know_root->root_item()->item_direct(0); // _know_root->root_item()->count_direct() - 1
+        // }
+
+        ////            else {
+        // it = _know_root->root_item()->item_direct(0);
+        ////            }
+
+        // }
+
+        ////        else {
+        ////            auto entrance = globalparameters.entrance();
+        ////            auto browser = entrance->activated_browser();
+
+        ////            //        if(!browser) {
+        ////            //            browser = entrance->new_browser();
+        ////            //        }
+
+        ////            if(browser->tabmanager()->count() > 0) {
+        ////                it = browser->tabmanager()->currentWebView()->page()->binder()->item();
+        ////            } else {
+        ////                RecordModel::ModelIndex record_modelindex([&] {return browser->record_screen()->record_controller()->source_model();}, nullptr, it);
+        ////                it = browser->item_bind(record_modelindex);
+        ////            }
+
+
+        ////            result = select_as_current(TreeIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();})));
+
+        ////            //        if(selectionModel()->selectedIndexes().size() > 1) {
+        ////            //            result = selectionModel()->selectedIndexes().first();
+        ////            //        }
+        ////        }
+        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root;}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;} return tree_index;}();
+        // result = select_as_current(tree_index);
+        ////        result = selectionModel()->currentIndex();
+
+        // assert(result.isValid());    // this line is to be recovery
+        // }
+
+        // assert(cur_index.isValid());
+    return result;					// cur_index;   // temporary setting???   //
+        // selectionModel()->currentIndex();
 }
 
 //// Получение индекса текущего элемента на котором стоит курсор
@@ -1053,31 +1048,32 @@ QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeIndex> _modelin
                                        , select_strategy _select_strategy
                                        , current_strategy _current_strategy){
     QModelIndex _result;
-    // QModelIndex _current_index = _modelindex.parent_index();
-    // auto _current_model = _modelindex->current_model();
-    QModelIndex _host_index = _modelindex->host_index();                  // index(_modelindex->host());
-    // QModelIndex _host_parent_index = _modelindex->host_parent_index();
+        // QModelIndex _current_index = _modelindex.parent_index();
+        // auto _current_model = _modelindex->current_model();
+    QModelIndex _host_index = _modelindex->host_index();			// index(_modelindex->host());
+        // QModelIndex _host_parent_index = _modelindex->host_parent_index();
 
-    // if(_host_parent_index.isValid()) {
+        // if(_host_parent_index.isValid()) {
 
     auto _item = _modelindex->host();
 
 
-    // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
+        // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());                   // globalparameters.tree_screen();   //find_object<TreeScreen>(tree_screen_singleton_name);
     assert(_tree_screen);
 
-    // auto _item = _know_root->item(_parent_index);
+        // auto _item = _know_root->item(_parent_index);
 
-
-    _item->binder() ? _item->binder()->page() ? _item->binder()->page()->record_controller() ? [&] {
-        auto record_controller = _item->binder()->page()->record_controller();
-        // if(_record_controller->view()->selection_first<IdType>() != _item->field("id")) {
-        // _record_controller->cursor_to_index(_record_controller->index<PosProxy>(_item));                                                                                                                                                         // IdType(it->field("id"))
-        // }
-        return record_controller->synchronize_record_view(_item);
-        // return c->cursor_to_index(c->index<PosProxy>(_item));
-    } () : nullptr : nullptr : nullptr;
-    if(_host_index.isValid() && _host_index != selectionModel()->currentIndex()){                                        // _index_current //
+    auto v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
+    if(v)v->tabmanager()->record_controller()->synchronize_record_view(_item);
+//    _item->binder() ? _item->binder()->page() ? _item->binder()->page()->record_controller() ? [&] {
+//	auto record_controller = _item->binder()->page()->record_controller();
+//	// if(_record_controller->view()->selection_first<IdType>() != _item->field("id")) {
+//	// _record_controller->cursor_to_index(_record_controller->index<PosProxy>(_item));                                                                                                                                                         // IdType(it->field("id"))
+//	// }
+//	return record_controller->synchronize_record_view(_item);
+//	// return c->cursor_to_index(c->index<PosProxy>(_item));
+//    } () : nullptr : nullptr : nullptr;
+    if(_host_index.isValid() && _host_index != selectionModel()->currentIndex()){					// _index_current //
 
 
         // int pos = index.row();
@@ -1118,14 +1114,14 @@ QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeIndex> _modelin
         // Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
         // In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
         // Therefore, the recording must be made a virtual click to fill the final table of records
-        if(appconfig.interface_mode() == "mobile")emit this->clicked(_host_index);                                                                                                                 // QModelIndex selIdx = recordSourceModel->index(pos, 0);
+        if(appconfig.interface_mode() == "mobile")emit this->clicked(_host_index);															// QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
 #endif
 
         // emit this->clicked(index);
         // _result = currentIndex();
 
-        scrollTo(_host_index);                                                                                 // QAbstractItemView::PositionAtCenter
+        scrollTo(_host_index);											// QAbstractItemView::PositionAtCenter
 
         // this->setFocus();   // ?
 
@@ -1135,13 +1131,13 @@ QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeIndex> _modelin
     }else{
         _result = _host_index;
     }
-    // assert(_aim_to_be_current_index == selectionModel()->currentIndex());
+        // assert(_aim_to_be_current_index == selectionModel()->currentIndex());
     assert(_result == selectionModel()->currentIndex());
 
-    // }else{
-    // qDebug() << "index to root item";
-    // throw std::exception();
-    // }
+        // }else{
+        // qDebug() << "index to root item";
+        // throw std::exception();
+        // }
 
     return _result;
 }
@@ -1300,9 +1296,9 @@ QModelIndex KnowView::select_as_current(boost::intrusive_ptr<TreeIndex> _modelin
 
 
 void KnowView::update_selected_indexes(void){
-    // Получение списка выделенных Item-элементов
+        // Получение списка выделенных Item-элементов
     QModelIndexList selectitems = selectionModel()->selectedIndexes();
-    // Обновление на экране
+        // Обновление на экране
     for(int i = 0; i < selectitems.size(); ++ i){
         update(selectitems.at(i));
     }
@@ -1311,9 +1307,9 @@ void KnowView::update_selected_indexes(void){
 
 KnowView::LocalLizeInitializer::LocalLizeInitializer(KnowView *_tree_view)
     : _tree_view(_tree_view){
-    // , _index_list(_index_list)
-    // , _index(_index)
-    // assert(_index == _tree_view->current_index());
+        // , _index_list(_index_list)
+        // , _index(_index)
+        // assert(_index == _tree_view->current_index());
     if(- 1 == _tree_view->selectionModel()->selectedIndexes().indexOf(_tree_view->current_index()))throw std::exception();
     assert(_tree_view->selectionModel()->selectedIndexes().indexOf(_tree_view->current_index()) != - 1);
 }
@@ -1324,7 +1320,7 @@ QItemSelection KnowView::LocalLizeInitializer::operator()(){
     std::function<bool (const QModelIndex &, const QModelIndex &)> find_in_ancestor = [](const QModelIndex &_i, const QModelIndex &_p){
             bool result = false;
             QModelIndex _i_copy = _i;
-            while(_i_copy.parent().isValid()){                                                                                                                                                                       // && _i_copy.parent().column() >= _p.column()?
+            while(_i_copy.parent().isValid()){																						// && _i_copy.parent().column() >= _p.column()?
                 _i_copy = _i_copy.parent();
                 if(_i_copy == _p){
                     result = true;
@@ -1347,13 +1343,13 @@ QItemSelection KnowView::LocalLizeInitializer::operator()(){
 
                 ////        assert(_origin_index_list.last() == current_index()); // means duplicated item found
                 // preparations
-                auto _index_current = _tree_view->current_index();                                                                                                                                                             // _origin_index_list.last();    //     //
+                auto _index_current = _tree_view->current_index();																				// _origin_index_list.last();    //     //
                 if(_index_current.isValid()){
                     auto _index_common_parent = _index_current.parent();
                     for(int i = 0; i < _origin_index_list.size(); ++ i){
                         QModelIndex index = _origin_index_list.at(i);
-                        if(index.isValid() && (index.parent() != _index_common_parent || ! find_in_ancestor(index, _index_common_parent))){                                                                                                                                                                                                                                                              // || index.column() != deepest_column
-                            result = false; break;
+                        if(index.isValid() && (index.parent() != _index_common_parent || ! find_in_ancestor(index, _index_common_parent))){																																// || index.column() != deepest_column
+                            result = false;break;
                         }
                     }
                 }
@@ -1372,33 +1368,33 @@ QItemSelection KnowView::LocalLizeInitializer::operator()(){
                 ////    find_object<MainWindow>("mainwindow")
                 // globalparameters.mainwindow()->blockSignals(true);
                 // assert(_origin_index_list.first() == current_index());
-                if(! _origin_index_list.contains(_tree_view->current_index())){                                                                                  // ?
+                if(! _origin_index_list.contains(_tree_view->current_index())){											// ?
 
-                    // KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
+                        // KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
                     auto _source_model = [&](){
                             return _tree_view->_know_root;
-                        };                                                                                                                                 // std::bind(_source_model_func, _tree_view);
+                        };																	// std::bind(_source_model_func, _tree_view);
 
-                    // QModelIndex _current_index;
+                        // QModelIndex _current_index;
                     boost::intrusive_ptr<TreeItem> duplicated_item = _tree_view->current_item();
                     boost::intrusive_ptr<TreeItem> found;
                     for(int i = 0; i < _origin_index_list.size(); ++ i){
                         auto _index = _origin_index_list.at(i);
                         if(_index.column() > deepest_column)deepest_column = _index.column();
                         if(duplicated_item->id() == _source_model()->item(_index)->id()){
-                            // _current_index = _index;
+                                // _current_index = _index;
                             found = _source_model()->item(_index);
                             break;
                         }
                     }
-                    // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
+                        // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
                     if(found && duplicated_item && found != duplicated_item){
 
                         found = static_cast<KnowModel *>(_source_model())->model_merge(
-                                TreeIndex::instance(_source_model, found->parent(), found)
+                            TreeIndex::instance(_source_model, found->parent(), found)
                                                                                       , duplicated_item
-                                                                                      , std::bind(&KnowView::view_delete_permanent, _tree_view, std::placeholders::_1, std::placeholders::_2, &KnowModel::model_delete_permanent_recursive, "cut", false)                                                                                                                                                                                                                                                                     // , std::placeholders::_4, std::placeholders::_5
-                                );
+                                                                                      , std::bind(&KnowView::view_delete_permanent, _tree_view, std::placeholders::_1, std::placeholders::_2, &KnowModel::model_delete_permanent_recursive, "cut", false)																																	// , std::placeholders::_4, std::placeholders::_5
+                            );
                     }
                 }
                 std::set<QModelIndex> indexes;
@@ -1410,21 +1406,21 @@ QItemSelection KnowView::LocalLizeInitializer::operator()(){
                     new_list << i;
                 }
                 // preparations
-                auto _index_current = _tree_view->current_index();                                                                                                                                                            // _origin_index_list.first();
+                auto _index_current = _tree_view->current_index();																				// _origin_index_list.first();
                 if(_index_current.isValid()){
                     auto _index_common_parent = _index_current.parent();
-                    // auto index_to_be_delete_last = _index_list.last();
-                    // auto _item_to_be_deleted_first = _source_model->item(index_to_be_delete_first);
-                    // auto deleted_position_first = _item_to_be_deleted_first->sibling_order(); // items_update_selected();
-                    // auto deleted_position_last = _source_model->item(index_to_be_delete_last)->sibling_order();
-                    // auto _item_parent = _item_to_be_deleted_first->parent();
-                    //// Список имен веток, которые нужно удалить
-                    // QStringList branches_name;
+                        // auto index_to_be_delete_last = _index_list.last();
+                        // auto _item_to_be_deleted_first = _source_model->item(index_to_be_delete_first);
+                        // auto deleted_position_first = _item_to_be_deleted_first->sibling_order(); // items_update_selected();
+                        // auto deleted_position_last = _source_model->item(index_to_be_delete_last)->sibling_order();
+                        // auto _item_parent = _item_to_be_deleted_first->parent();
+                        //// Список имен веток, которые нужно удалить
+                        // QStringList branches_name;
                     for(int i = 0; i < new_list.size(); ++ i){
                         QModelIndex index = new_list.at(i);
-                        if(index.isValid() && (index.parent() == _index_common_parent || find_in_ancestor(index, _index_common_parent))){                                                                                                                                                                                                                                                          // && index.column() == deepest_column
-                            // auto it = _source_model->item(index);
-                            // branches_name << it->field("name");
+                        if(index.isValid() && (index.parent() == _index_common_parent || find_in_ancestor(index, _index_common_parent))){																																// && index.column() == deepest_column
+                                // auto it = _source_model->item(index);
+                                // branches_name << it->field("name");
                             _selectitems.push_back(index);
                         }
                     }
@@ -1437,13 +1433,13 @@ QItemSelection KnowView::LocalLizeInitializer::operator()(){
             QModelIndexList _index_list;
             std::set<int> row_list;
             for(auto idx : _origin_index_list){
-                if(row_list.find(idx.row()) == row_list.end()){row_list.insert(idx.row()); if(idx.column() == 0)_index_list << idx; }
+                if(row_list.find(idx.row()) == row_list.end()){row_list.insert(idx.row());if(idx.column() == 0)_index_list << idx;}
             }
             return _index_list;
         };
 
     auto _index_list = _tree_view->selectionModel()->selectedIndexes();
-    // Получение списка индексов QModelIndex выделенных элементов
+        // Получение списка индексов QModelIndex выделенных элементов
     auto _selectitems = is_index_localized(_index_list) ? remove_multi_columns(_index_list) : remove_multi_columns(index_localize(_index_list));
 
     qSort(_selectitems.begin(), _selectitems.end());
@@ -1563,7 +1559,7 @@ HtmlDelegate::HtmlDelegate(KnowView *_tree_view) : _tree_view(_tree_view)
 
 // http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    // QStyleOptionViewItemV4
+        // QStyleOptionViewItemV4
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
 
@@ -1581,12 +1577,12 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     }
     doc.setHtml(optionV4.text);
 
-    /// Painting item without text
+        /// Painting item without text
     optionV4.text = QString();
     style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
     QAbstractTextDocumentLayout::PaintContext ctx;
-    // Highlighting text if item is selected
+        // Highlighting text if item is selected
     if(optionV4.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
     if(0 == current_item->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
     QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
@@ -1599,7 +1595,7 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
 }
 
 QSize HtmlDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    // QStyleOptionViewItemV4
+        // QStyleOptionViewItemV4
     QStyleOptionViewItem optionV4 = option;
     initStyleOption(&optionV4, index);
 
@@ -1637,16 +1633,16 @@ void KnowView::view_encrypt(void){
                 _know_root->update_index(_index);
             }
         };
-    // Если пароль в данной сессии не вводился
+        // Если пароль в данной сессии не вводился
     if(globalparameters.crypt_key().size() == 0){
         // Запрашивается пароль
         Password password;
-        if(password.retrievePassword() == true)                                                                                 // Если пароль введен правильно
-            item_encrypt();                                                                                                                 // Ветка шифруется
+        if(password.retrievePassword() == true)											// Если пароль введен правильно
+                item_encrypt();															// Ветка шифруется
     }else{
         // Иначе считается, что шифрующий ключ уже был задан и он правильный
 
-        item_encrypt();                                                                                 // Ветка шифруется
+        item_encrypt();											// Ветка шифруется
     }
 }
 
@@ -1679,16 +1675,16 @@ void KnowView::view_decrypt(void){
                 tree_crypt_control();
             }
         };
-    // Если пароль в данной сессии не вводился
+        // Если пароль в данной сессии не вводился
     if(globalparameters.crypt_key().size() == 0){
         // Запрашивается пароль
         Password password;
-        if(password.retrievePassword() == true)                                                                                 // Если пароль введен правильно
-            item_decrypt();                                                                                                                 // Ветка расшифровывается
+        if(password.retrievePassword() == true)											// Если пароль введен правильно
+                item_decrypt();															// Ветка расшифровывается
     }else{
         // Иначе пароль в данной сессии вводился и он правильный
 
-        item_decrypt();                                                                                 // Ветка расшифровывается
+        item_decrypt();											// Ветка расшифровывается
     }
 }
 
@@ -1704,7 +1700,7 @@ void KnowView::view_expand_selected(bool expand){
             }
         };
 
-    // Получение индексов выделенных строк
+        // Получение индексов выделенных строк
     QModelIndexList selectitems = selectionModel()->selectedIndexes();
     for(int i = 0; i < selectitems.size(); ++ i)expand_or_collapse_recurse(selectitems.at(i), expand);
 }
@@ -1712,19 +1708,19 @@ void KnowView::view_expand_selected(bool expand){
 
 
 // template<>
-boost::intrusive_ptr<TreeItem> KnowView::view_add_new(boost::intrusive_ptr<TreeIndex> _modelindex   // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+boost::intrusive_ptr<TreeItem> KnowView::view_add_new(boost::intrusive_ptr<TreeIndex> _modelindex	// std::function<KnowModel *()> _current_model, QModelIndex _current_index
                                                      , QString _name
                                                      , const add_new &_branch_add_new_impl){
     auto _current_model = _modelindex->current_model();
-    // auto _current_index = _modelindex.current_index();
+        // auto _current_index = _modelindex.current_index();
     boost::intrusive_ptr<TreeItem> result(nullptr);
-    // Получение ссылки на узел, который соответствует выделенной строке
-    // auto item = _current_model->item(_current_index);
+        // Получение ссылки на узел, который соответствует выделенной строке
+        // auto item = _current_model->item(_current_index);
 
-    // find_object<MainWindow>("mainwindow")
+        // find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->setDisabled(true);
 
-    auto current_item = _modelindex->host();                                   // _current_model()->item(_current_index);
+    auto current_item = _modelindex->host();					// _current_model()->item(_current_index);
     auto host_parent = current_item->parent();
     QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
     if(host_parent){
@@ -1732,8 +1728,8 @@ boost::intrusive_ptr<TreeItem> KnowView::view_add_new(boost::intrusive_ptr<TreeI
                     return il->host()->name() == _name;
                 });
     }
-    // auto _name_same_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _items_with_same_name) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
-    ////    QModelIndex setto;
+        // auto _name_same_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _items_with_same_name) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
+        ////    QModelIndex setto;
     if(_alternative_items.size() > 0){
 
         // for(int i = 1; i < _items_with_same_name.size(); i++) {
@@ -1743,7 +1739,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_add_new(boost::intrusive_ptr<TreeI
         result = it.next();
         while(it.hasNext()){
             auto _it = it.next();
-            if(_it->id() == result->id()){                                                                                                                                  // prevent error merge
+            if(_it->id() == result->id()){																	// prevent error merge
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
                 result = view_merge(TreeIndex::instance(_current_model, result->parent(), result), _it);
             }
@@ -1762,33 +1758,33 @@ boost::intrusive_ptr<TreeItem> KnowView::view_add_new(boost::intrusive_ptr<TreeI
         // Подветка
 
         // Вставка новых данных в модель дерева записей
-        result = _branch_add_new_impl(_modelindex, id, _name);                                                                                 // _current_model->lock_child_add(_current_index, id, _name);
+        result = _branch_add_new_impl(_modelindex, id, _name);											// _current_model->lock_child_add(_current_index, id, _name);
     }
-    // Установка курсора на только что созданную позицию
-    ////        QModelIndex
-    ////    setto = _current_model()->index(result);  //index_child(_current_index, item->current_count() - 1);
-    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-    // {
-    // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
-    // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-    select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));
-    // selectionModel()->select(setto, current_tree_selection_mode);
-    // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
+        // Установка курсора на только что созданную позицию
+        ////        QModelIndex
+        ////    setto = _current_model()->index(result);  //index_child(_current_index, item->current_count() - 1);
+        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
+        // {
+        // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
+        // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
+    select_as_current(TreeIndex::instance([&] {return _know_root;}, result->parent(), result));
+        // selectionModel()->select(setto, current_tree_selection_mode);
+        // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
-    // А можно было установить курсор на нужную позицию и так
-    // knowTreeView->selectionModel()->setCurrentIndex(kntrmodel->index(item->childCount() - 1, 0, index), QItemSelectionModel::ClearAndSelect);
+        // А можно было установить курсор на нужную позицию и так
+        // knowTreeView->selectionModel()->setCurrentIndex(kntrmodel->index(item->childCount() - 1, 0, index), QItemSelectionModel::ClearAndSelect);
 
 
     _know_model_board->synchronized(false);
-    // Сохранение дерева веток
-    // find_object<TreeScreen>(tree_screen_singleton_name)->
-    _know_model_board->save();                                  // know_model_save();
+        // Сохранение дерева веток
+        // find_object<TreeScreen>(tree_screen_singleton_name)->
+    _know_model_board->save();					// know_model_save();
 
-    // find_object<MainWindow>("mainwindow")
+        // find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->setEnabled(true);
     assert(result->name() == _name);
-    // assert(result == _current_model()->item(setto));
-    return result;                                  // _current_model->item(setto);
+        // assert(result == _current_model()->item(setto));
+    return result;					// _current_model->item(setto);
 }
 
 
@@ -1814,8 +1810,8 @@ void KnowView::tree_empty_controll(void){
         // std::function<KnowModel *()> _know_model_board_functor = [&]() {return _know_model_board;};
         view_add_new(TreeIndex::instance([&]() -> KnowModel * {
                 return source_model();
-            }, source_model()->root_item()), tr("Rename me")                                                                                                                                                            // TreeIndex([&]()->KnowModel* { return source_model();}, source_model()->root_item())
-                    , std::bind(&KnowModel::model_new_child, _know_root, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)                                 // std::placeholders::_1    // std::placeholders::_3
+            }, source_model()->root_item()), tr("Rename me")																				// TreeIndex([&]()->KnowModel* { return source_model();}, source_model()->root_item())
+                    , std::bind(&KnowModel::model_new_child, _know_root, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1    // std::placeholders::_3
             );
     }
 }
@@ -1824,7 +1820,7 @@ void KnowView::tree_empty_controll(void){
 // Метод, следящий, не стало ли дерево содержать только незашифрованные записи
 // Если в дереве нет шифрования, задается вопрос, нужно ли сбросить пароль
 void KnowView::tree_crypt_control(void){
-    // Если в дереве нет шифрования
+        // Если в дереве нет шифрования
     if(_know_model_board->is_contains_crypt_branches() == false){
         // Запускается диалог сброса пароля шифрования
         Password pwd;
@@ -1839,35 +1835,35 @@ void KnowView::tree_crypt_control(void){
 // Helper function is used when you add branches
 // Eli is branch = true, the branch is added to the same level
 // If is_branch = false, then added podvetka
-boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(boost::intrusive_ptr<TreeIndex> _modelindex  // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(boost::intrusive_ptr<TreeIndex> _modelindex	// std::function<KnowModel *()> _current_model, QModelIndex _current_index
                                                         , const KnowView::add_new_delegate &_branch_add_new
                                                         , const KnowView::add_new &_branch_add_new_impl
-    // , const std::function < boost::intrusive_ptr<TreeItem> (TreeIndex, QString
-    // , const std::function < boost::intrusive_ptr<TreeItem>(TreeIndex, QString, QString) >&) > &_branch_add_new
-    // , const std::function < boost::intrusive_ptr<TreeItem> (TreeIndex, QString, QString) > &_branch_add_new_impl
-    ){                                                                                                            // bool insert_sibling_branch
+        // , const std::function < boost::intrusive_ptr<TreeItem> (TreeIndex, QString
+        // , const std::function < boost::intrusive_ptr<TreeItem>(TreeIndex, QString, QString) >&) > &_branch_add_new
+        // , const std::function < boost::intrusive_ptr<TreeItem> (TreeIndex, QString, QString) > &_branch_add_new_impl
+    ){															// bool insert_sibling_branch
     auto _current_model = _modelindex->current_model();
     auto _current_index = _modelindex->host_parent_index();
     boost::intrusive_ptr<TreeItem> result(nullptr);
-    //// Получение списка индексов QModelIndex выделенных элементов
-    // QModelIndexList selectitems = selectionModel()->selectedIndexes();
-    ////    QModelIndex _current_index;
-    //// Если выбрано более одной ветки
-    // if(selectitems.size() > 1) {
-    ////        QMessageBox messageBox(this);
-    ////        messageBox.setWindowTitle(tr("Unavailable action"));
-    ////        messageBox.setText(tr("You've selected ") + QString::number(selectitems.size()) + tr(" items.\nPlease select single item for enabling insert operation."));
-    ////        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
-    ////        messageBox.exec();
-    ////        //        current_index = selectitems.first();
-    ////        return nullptr;
-    // _current_index = selectitems.last();
-    // } else {
-    ////    else if(selectitems.size() == 0) {
-    ////        current_index = last_index();
-    ////    } else {
-    // _current_index = current_index();
-    // }
+        //// Получение списка индексов QModelIndex выделенных элементов
+        // QModelIndexList selectitems = selectionModel()->selectedIndexes();
+        ////    QModelIndex _current_index;
+        //// Если выбрано более одной ветки
+        // if(selectitems.size() > 1) {
+        ////        QMessageBox messageBox(this);
+        ////        messageBox.setWindowTitle(tr("Unavailable action"));
+        ////        messageBox.setText(tr("You've selected ") + QString::number(selectitems.size()) + tr(" items.\nPlease select single item for enabling insert operation."));
+        ////        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
+        ////        messageBox.exec();
+        ////        //        current_index = selectitems.first();
+        ////        return nullptr;
+        // _current_index = selectitems.last();
+        // } else {
+        ////    else if(selectitems.size() == 0) {
+        ////        current_index = last_index();
+        ////    } else {
+        // _current_index = current_index();
+        // }
     if(_current_index.isValid()){
         // }
 
@@ -1889,16 +1885,16 @@ boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(boost::intrusive_ptr<Tr
         // }
 
         QString _name = QInputDialog::getText(this, title, text, QLineEdit::Normal, "", &ok);
-        if(ok && ! _name.isEmpty()){                                                                                  // return nullptr;    // Если была нажата отмена
+        if(ok && ! _name.isEmpty()){											// return nullptr;    // Если была нажата отмена
 
-            auto current_item = _modelindex->host_parent();                                                                                                                                 // _current_model()->item(_current_index);
+            auto current_item = _modelindex->host_parent();																	// _current_model()->item(_current_index);
             auto current_parent = current_item->parent();
             QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
             if(current_parent)
-                _alternative_items = current_parent->items_direct([&](boost::intrusive_ptr<const Linker> il){
-                            return il->host()->name() == _name;
-                        });
-            // auto _name_same_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _items_with_same_name) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
+                        _alternative_items = current_parent->items_direct([&](boost::intrusive_ptr<const Linker> il){
+                                    return il->host()->name() == _name;
+                                });
+                // auto _name_same_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _items_with_same_name) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
             if(_alternative_items.size() > 0){
 
                 // result = _name_same_no_child_first ? _name_same_no_child_first : _items_with_same_name[0];
@@ -1907,7 +1903,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(boost::intrusive_ptr<Tr
                 result = it.next();
                 while(it.hasNext()){
                     auto _it = it.next();
-                    if(_it->id() == result->id()){                                                                                                                                                                                                                                  // prevent error merge
+                    if(_it->id() == result->id()){																													// prevent error merge
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
                         result = view_merge(TreeIndex::instance(_current_model, result->parent(), result), _it);
                     }
@@ -1921,22 +1917,22 @@ boost::intrusive_ptr<TreeItem> KnowView::view_insert_new(boost::intrusive_ptr<Tr
                 // KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
                 // auto _source_model = [&]() {return source_model();}; // std::bind(_source_model_func, _tree_view);
                 result = _branch_add_new(_modelindex
-                                        , _name                                                                                                                                                                                                                        // source_model()->item(_current_index)->name()
-                                        , _branch_add_new_impl);                                                                                                                                                                                                                          // nonsense
+                                        , _name																												// source_model()->item(_current_index)->name()
+                                        , _branch_add_new_impl);																												// nonsense
             }
-            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-            // {
-            // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
-            // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));
-            // , insert_sibling_branch
+                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
+                // {
+                // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
+                // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
+            select_as_current(TreeIndex::instance([&] {return _know_root;}, result->parent(), result));
+                // , insert_sibling_branch
         }
     }
-    // Введенные данные добавляются
+        // Введенные данные добавляются
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost::intrusive_ptr<TreeIndex> _parent_modelindex  // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost::intrusive_ptr<TreeIndex> _parent_modelindex	// std::function<KnowModel *()> _current_model, QModelIndex _current_index
                                                                           , boost::intrusive_ptr<TreeItem>            _blank_header
                                                                           , const KnowView::substitute_condition_double &_substitute_condition){
     auto _current_model = _parent_modelindex->current_model();
@@ -1944,14 +1940,14 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost
     auto host_parent = _parent_modelindex->host_parent();
     auto host = _parent_modelindex->host();
     boost::intrusive_ptr<TreeItem>  result(nullptr);
-    // std::vector<boost::intrusive_ptr<TreeItem>> results;
+        // std::vector<boost::intrusive_ptr<TreeItem>> results;
     if(  _current_model()->index(_blank_header).isValid()
       && _current_model()->index(_blank_header) != _current_model()->index(host)
       && _substitute_condition(_blank_header->linker(), host->linker())
         // && _know_root->index(_blank_header).isValid()   // _blank_header->field("name") != clipboard_items_root
         ){
-        view_merge(_parent_modelindex, _blank_header);                                                                                 // TreeIndex(_current_model, _current_parent)
-    }                                                 // ? should this function ignore the _blank_header?
+        view_merge(_parent_modelindex, _blank_header);											// TreeIndex(_current_model, _current_parent)
+    }							// ? should this function ignore the _blank_header?
     if(_blank_header->count_direct() > 0){
         // for(int i = 0; i < it->current_count(); i++) {
         // auto current_item = it->child(i);
@@ -1959,49 +1955,49 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost
         // return add_branch(_current_model->index(it), it, insert_sibling_branch, _current_model);
         // auto _current_index = index_current(); //selectionModel()->currentIndex(); //_current_model->index(it);
         if(host_parent_index.isValid()){
-            // Получение ссылки на узел, который соответствует выделенной строке
-            // auto current_item = _current_model->item(_current_index);
+                // Получение ссылки на узел, который соответствует выделенной строке
+                // auto current_item = _current_model->item(_current_index);
 
-            // if(!_current_index.isValid()) {
-            // selectionModel()->setCurrentIndex(_current_model->index(0, 0, QModelIndex()), QItemSelectionModel::ClearAndSelect);
-            // assert(_current_index.isValid());
-            // }
+                // if(!_current_index.isValid()) {
+                // selectionModel()->setCurrentIndex(_current_model->index(0, 0, QModelIndex()), QItemSelectionModel::ClearAndSelect);
+                // assert(_current_index.isValid());
+                // }
 
-            // find_object<MainWindow>("mainwindow")
+                // find_object<MainWindow>("mainwindow")
             globalparameters.mainwindow()->setDisabled(true);
 
-            // if(new_branch_root->id() == "") {
-            //// Получение уникального идентификатора
-            // QString id = get_unical_id();
-            // new_branch_root->field("id", id);
-            // }
+                // if(new_branch_root->id() == "") {
+                //// Получение уникального идентификатора
+                // QString id = get_unical_id();
+                // new_branch_root->field("id", id);
+                // }
 
             QModelIndex setto;
             int current_count = 0;
-            ////            auto begin_item = _blank_header->item_direct(0);
+                ////            auto begin_item = _blank_header->item_direct(0);
 
-            // int reserved = 0;
-            ////            _current_model->beginInsertRows(_current_index.parent()
-            ////                                            , _current_index.row()   // parent->count_direct()
-            ////                                            , _current_index.row()   // parent->count_direct()
-            ////                                           );
+                // int reserved = 0;
+                ////            _current_model->beginInsertRows(_current_index.parent()
+                ////                                            , _current_index.row()   // parent->count_direct()
+                ////                                            , _current_index.row()   // parent->count_direct()
+                ////                                           );
 
-            //// Вставка данных и установка курсора
-            // while(( // current_count =
-            // _blank_header->count_direct()) > 0)
-            _blank_header->traverse_direct([&](boost::intrusive_ptr<Linker> il){                                                                                                                                    // != reserved
+                //// Вставка данных и установка курсора
+                // while(( // current_count =
+                // _blank_header->count_direct()) > 0)
+            _blank_header->traverse_direct([&](boost::intrusive_ptr<Linker> il){																	// != reserved
 
-                    // for(int index = 0; index < _blank_root->direct_count(); index++) {
-                    auto candidate = il->host();                                                                                                                                    // _blank_header->item_direct(0);
+                        // for(int index = 0; index < _blank_root->direct_count(); index++) {
+                    auto candidate = il->host();																	// _blank_header->item_direct(0);
                     if(candidate){
                         auto found_item = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t) -> bool {
-                                    return t->name() == candidate->name() && t->id() == candidate->id();
-                                });
+                            return t->name() == candidate->name() && t->id() == candidate->id();
+                        });
                         // Подветка
-                        if(found_item){                                                                                                                                  // candidate->id()
-                            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, found_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                        if(found_item){																	// candidate->id()
+                                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, found_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
                             found_item = view_merge(TreeIndex::instance(_current_model, found_item->parent(), found_item), candidate);
-                            // reserved++;
+                                // reserved++;
                         }else{
                             found_item = candidate;
                         }
@@ -2023,15 +2019,15 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost
                         ////                                             QItemSelectionModel::ClearAndSelect);
                     }
                 });
-            if(current_count > 0)result = host_parent;                                                                                                                                                                 // _current_model()->item(_current_parent_index);    // _blank_header;
-            if(result){                                                                                                                                  // && _blank_header->field("name") != clipboard_items_root
+            if(current_count > 0)result = host_parent;																					// _current_model()->item(_current_parent_index);    // _blank_header;
+            if(result){																	// && _blank_header->field("name") != clipboard_items_root
                 // _current_model->endInsertRows();
 
                 // Установка курсора на только что созданную позицию
                 // QModelIndex
                 setto = _current_model()->index(
-                        std::bind(_substitute_condition, std::placeholders::_1, result->linker())                                                                                                                                                                                                 // [&](boost::intrusive_ptr<const TreeItem> it)->bool{return it->id() == begin_item->id();}
-                        );                                                                                                                                                              // TreeModel::delegater(begin_item->id())
+                    std::bind(_substitute_condition, std::placeholders::_1, result->linker())																										// [&](boost::intrusive_ptr<const TreeItem> it)->bool{return it->id() == begin_item->id();}
+                    );																					// TreeModel::delegater(begin_item->id())
 
                 // index_child(_current_index.parent(), _current_index.row() + 1);   // current_item->current_count() - 1
 
@@ -2041,7 +2037,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost
                 // {
                 // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
                 // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));                                                                                                                                                                                 // setto
+                select_as_current(TreeIndex::instance([&] {return _know_root;}, result->parent(), result));																							// setto
                 // selectionModel()->select(setto, current_tree_selection_mode);
                 // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -2054,7 +2050,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost
                 // return
                 result = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){
                             return it->id() == result->id();
-                        });                                                                                                                                                                                                                                                 // setto
+                        });																															// setto
 
                 assert(result);
                 // assert(results[0] == result);
@@ -2073,30 +2069,30 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_children_from_children(boost
 }
 
 
-void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex){ // std::function<QString(const QModelIndex &, ClipboardBranch *)>  _model_paste_from_clipboard
+void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex){	// std::function<QString(const QModelIndex &, ClipboardBranch *)>  _model_paste_from_clipboard
 
-    // Добавление подветки из буфера обмена относительно указанного элемента
-    // Функция возвращает новый идентификатор стартовой добавленной подветки
-    auto paste_children_from_clipboard = [](boost::intrusive_ptr<TreeItem> _blank_header, ClipboardBranch *_sub_branch                         // , int _sibling_order
+        // Добавление подветки из буфера обмена относительно указанного элемента
+        // Функция возвращает новый идентификатор стартовой добавленной подветки
+    auto paste_children_from_clipboard = [](boost::intrusive_ptr<TreeItem> _blank_header, ClipboardBranch *_sub_branch				// , int _sibling_order
             ) -> boost::intrusive_ptr<TreeItem> {
             qDebug() << "In paste_subbranch()";
             boost::intrusive_ptr<TreeItem> _result(nullptr);
-            // assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == _target_item->id();}));  // maybe a dangling pointer, for further operations
+                // assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == _target_item->id();}));  // maybe a dangling pointer, for further operations
 
 
 
             auto move_as_child_from_clipboard_object = [](boost::intrusive_ptr<TreeItem> _parent, boost::intrusive_ptr<TreeItem> _source_item, int _pos, int _mode = add_new_record_after) -> boost::intrusive_ptr<TreeItem> {
 
-                    // auto item_from_model = item([&](boost::intrusive_ptr<const TreeItem> it)->bool{return it->id() == _source_item->id();});  // clipboard implementation have no model
+                        // auto item_from_model = item([&](boost::intrusive_ptr<const TreeItem> it)->bool{return it->id() == _source_item->id();});  // clipboard implementation have no model
 
-                    // if(item_from_model) {
-                    // _source_item = item_from_model;
-                    // }
+                        // if(item_from_model) {
+                        // _source_item = item_from_model;
+                        // }
                     assert(_parent);
-                    boost::intrusive_ptr<TreeItem> result(nullptr);                                                                                                                                                                                                                         // 1-1?
-                    // auto _index_parent = index(_parent);
-                    // auto _index_origin = index(_source_item);
-                    // assert(!_index_origin.isValid());
+                    boost::intrusive_ptr<TreeItem> result(nullptr);																												// 1-1?
+                        // auto _index_parent = index(_parent);
+                        // auto _index_origin = index(_source_item);
+                        // assert(!_index_origin.isValid());
                     if(  _parent
                       && ! (
                             _source_item->parent() == _parent
@@ -2107,9 +2103,9 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
 
                         ////        assert(!_index_parent.isValid());
 
-                        result = _source_item->parent(_parent, _pos, _mode)->host();                                                                                                                                                                                                                                                                         // 1-3?  // *_parent << _source_item; //
+                        result = _source_item->parent(_parent, _pos, _mode)->host();																																		// 1-3?  // *_parent << _source_item; //
                         if(_parent->field<crypt_type>() == "1" && result){
-                            // Новая ветка превращается в зашифрованную
+                                // Новая ветка превращается в зашифрованную
                             result->to_encrypt();
                         }
                         // assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == _parent->id();}));
@@ -2121,20 +2117,20 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                         //// в конец списка подчиненных элементов
                         ////    boost::intrusive_ptr<TreeItem> current =
                     }
-                    return result;                                                                                                                                                                                                                         // return model_move_as_child_impl(_parent, _source, _pos, _mode);
+                    return result;																												// return model_move_as_child_impl(_parent, _source, _pos, _mode);
                 };
 
             int record_move_times = 0;
 
-            std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>, ClipboardBranch *                                                                                                                         // , const int
-            )>                                                                                                                                                                                                             // , const QString &
+            std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem>, ClipboardBranch *																// , const int
+            )>																											// , const QString &
             child_assembly_recursive
                 = [&](boost::intrusive_ptr<TreeItem>    _current_clip_parent_parent
-                     , boost::intrusive_ptr<TreeItem>  _current_clip_parent                                                                                                                             // , const QString &_current_clip_records_parent_id
+                     , boost::intrusive_ptr<TreeItem>  _current_clip_parent																// , const QString &_current_clip_records_parent_id
                      , ClipboardBranch                 *_sub_branch
-                    // , const int                       _sibling_order
+                        // , const int                       _sibling_order
                     ) -> boost::intrusive_ptr<TreeItem> {
-                    // QString id = _current_clip_parent->id();
+                        // QString id = _current_clip_parent->id();
                     boost::intrusive_ptr<TreeItem> contain_current_parent(nullptr);
                     if(_current_clip_parent_parent){
                         contain_current_parent = _current_clip_parent_parent->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(_current_clip_parent->linker()));
@@ -2147,23 +2143,23 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
 
                         // Выясняются данные конечных записей
                         QList< boost::intrusive_ptr<TreeItem> > records = _sub_branch->records_by_parent_id(_current_clip_parent->id());
-                        for(int i = 0; i < records.size(); i ++){                                                                                                                                                                                                                                  // foreach(boost::intrusive_ptr<TreeItem> record, records) {
+                        for(int i = 0; i < records.size(); i ++){																													// foreach(boost::intrusive_ptr<TreeItem> record, records) {
                             auto record = records.at(i);
                             if(record && _current_clip_parent != record){
                                 boost::intrusive_ptr<TreeItem> contain_current_record(nullptr);
                                 contain_current_record = _current_clip_parent->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(record->linker()));
                                 // _new_item
                                 if(! contain_current_record){
-                                    auto record_shadow = move_as_child_from_clipboard_object(_current_clip_parent, record, i                                                                                                                                                                                                                                                                                                                                                                                 // _sibling_order + i
-                                            );                                                                                                                                                                                                                                                                                                                                                                                                                                                         // _clip_parent->count_direct()
+                                    auto record_shadow = move_as_child_from_clipboard_object(_current_clip_parent, record, i																																															// _sibling_order + i
+                                            );																																																								// _clip_parent->count_direct()
                                     qDebug() << "Add table record : " + record->field<name_type>() + " to " + _current_clip_parent->name();
-                                    // assert(record->parent_id() == _current_clip_parent->id());
+                                        // assert(record->parent_id() == _current_clip_parent->id());
                                     assert(record_shadow->id() == record->id());
                                     assert(record->id() != _current_clip_parent->id());
                                     record_move_times ++;
-                                    // _clip_parent->child_move(_clip_parent->count_direct(), record, ADD_NEW_RECORD_TO_END);    // _new_item
-                                    // assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == record_shadow->id();})); // dangling parent lead all do not exist in model
-                                    if(record_shadow){                                                                                                                                                                                                                                                                                                                                                                                  // you can not use result->count_direct() because there are no children there
+                                        // _clip_parent->child_move(_clip_parent->count_direct(), record, ADD_NEW_RECORD_TO_END);    // _new_item
+                                        // assert(item([ = ](boost::intrusive_ptr<TreeItem> it) {return it->id() == record_shadow->id();})); // dangling parent lead all do not exist in model
+                                    if(record_shadow){																																															// you can not use result->count_direct() because there are no children there
                                         // QList< boost::intrusive_ptr<TreeItem> > record_children = _sub_branch->records_by_parent_id(record_shadow->id());
 
                                         // for(int i = 0; i < record_children.size(); i++) { //foreach(QString current_subbranch_id, subbranch_id_list) {
@@ -2171,7 +2167,7 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                                         // assert(record_children[i]->parent_id() == record_shadow->id());
 
                                         // assert(0 == record_shadow->count_direct());
-                                        child_assembly_recursive(_current_clip_parent, record_shadow, _sub_branch                                                                                                                                                                                                                                                                                                                                                                                                                                 // , 0
+                                        child_assembly_recursive(_current_clip_parent, record_shadow, _sub_branch																																																					// , 0
                                             );
 
                                         // }
@@ -2180,42 +2176,42 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                             }
                         }
                     }
-                    // }
+                        // }
 
-                    // assert(id != "");
-                    return _current_clip_parent;                                                                                                                                                                                 // id;
+                        // assert(id != "");
+                    return _current_clip_parent;																						// id;
                 };
 
-            ////    // Выясняется линейная структура добавляемого дерева
-            ////    QList<CLIPB_TREE_ONE_LINE> tree = subbranch->id_tree_get();
+                ////    // Выясняется линейная структура добавляемого дерева
+                ////    QList<CLIPB_TREE_ONE_LINE> tree = subbranch->id_tree_get();
 
-            ////    // Идентификатор стартовой ветки лежит в первом элементе списка
-            ////    QString start_branch_id = tree[0]._branch_id;
+                ////    // Идентификатор стартовой ветки лежит в первом элементе списка
+                ////    QString start_branch_id = tree[0]._branch_id;
 
-            ////    auto _clip_root_items_parent_id_list = subbranch->clip_root_items_parent_id_list();
-            // auto _clip_blank_header_id = _sub_branch->clip_blank_header_id();
+                ////    auto _clip_root_items_parent_id_list = subbranch->clip_root_items_parent_id_list();
+                // auto _clip_blank_header_id = _sub_branch->clip_blank_header_id();
 
-            ////        //    int offset = 0;
-            ////        if(_clip_blank_header_id.size() > 0)
-            ////        {
-            ////            size_t calling_count = 0;
+                ////        //    int offset = 0;
+                ////        if(_clip_blank_header_id.size() > 0)
+                ////        {
+                ////            size_t calling_count = 0;
 
-            // for(auto id_iterator = _clip_blank_header_id.begin(); id_iterator != _clip_blank_header_id.end(); id_iterator++) {
-            _blank_header->field<id_type>(_sub_branch->clip_blank_header_id());    // "id",
-            _result = child_assembly_recursive(nullptr, _blank_header, _sub_branch);                                                                                 // , _clip_blank_header_id // *id_iterator
-            // , _sibling_order  // + offset
+                // for(auto id_iterator = _clip_blank_header_id.begin(); id_iterator != _clip_blank_header_id.end(); id_iterator++) {
+            _blank_header->field<id_type>(_sub_branch->clip_blank_header_id());		// "id",
+            _result = child_assembly_recursive(nullptr, _blank_header, _sub_branch);											// , _clip_blank_header_id // *id_iterator
+                // , _sibling_order  // + offset
 
 
-            ////        offset++;
-            // calling_count++;
-            ////            }
+                ////        offset++;
+                // calling_count++;
+                ////            }
 
-            // assert(calling_count == _clip_blank_header_id.size());
+                // assert(calling_count == _clip_blank_header_id.size());
             assert(record_move_times <= _blank_header->count_children_all());
-            // _result = _blank_header;
-            // }
+                // _result = _blank_header;
+                // }
 
-            return _result;                                                                                                                         // _target_item->id();
+            return _result;																// _target_item->id();
         };
 
 
@@ -2225,25 +2221,25 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
     auto _current_model = _sibling_modelindex->current_model();
     auto host_parent_index = _sibling_modelindex->host_parent_index();
     boost::intrusive_ptr<TreeItem> _result(nullptr);
-    // Проверяется, содержит ли буфер обмена данные нужного формата
+        // Проверяется, содержит ли буфер обмена данные нужного формата
     const QMimeData *mime_data = QApplication::clipboard()->mimeData();
     if(mime_data == nullptr)return;
     if(! (mime_data->hasFormat("mytetra/branch")))return;
-    ////    // Получение списка индексов QModelIndex выделенных элементов
-    ////    QModelIndexList selectitems = selectionModel()->selectedIndexes();
-    // QModelIndex _current_index;
-    ////    // Если выбрано более одной ветки
-    ////    if(selectitems.size() > 1) {
-    ////        //        QMessageBox messageBox(this);
-    ////        //        messageBox.setWindowTitle(tr("Unavailable action"));
-    ////        //        messageBox.setText(tr("You've selected ") + QString::number(selectitems.size()) + tr(" items.\nPlease select single item for enabling paste operation."));
-    ////        //        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
-    ////        //        messageBox.exec();
-    ////        //        return;
-    ////        _current_index = selectitems.first();
-    ////    } else {
-    // _current_index = current_index();
-    ////    }
+        ////    // Получение списка индексов QModelIndex выделенных элементов
+        ////    QModelIndexList selectitems = selectionModel()->selectedIndexes();
+        // QModelIndex _current_index;
+        ////    // Если выбрано более одной ветки
+        ////    if(selectitems.size() > 1) {
+        ////        //        QMessageBox messageBox(this);
+        ////        //        messageBox.setWindowTitle(tr("Unavailable action"));
+        ////        //        messageBox.setText(tr("You've selected ") + QString::number(selectitems.size()) + tr(" items.\nPlease select single item for enabling paste operation."));
+        ////        //        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
+        ////        //        messageBox.exec();
+        ////        //        return;
+        ////        _current_index = selectitems.first();
+        ////    } else {
+        // _current_index = current_index();
+        ////    }
     if(host_parent_index.isValid()){
         // Блокируется главное окно, чтобы при продолжительном выполнении
         // небыло возможности сделать другие действия
@@ -2312,37 +2308,37 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
         QDateTime ctime_dt = QDateTime::currentDateTime();
         QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
         // data["id"]      = get_unical_id();
-        data["name"] = clipboard_items_root;                                                                                 // "Clipboard items root";
+        data["name"] = clipboard_items_root;											// "Clipboard items root";
         data["ctime"] = ctime;
         data["dir"] = data["id"];
         data["file"] = "text.html";
 
         boost::intrusive_ptr<TreeItem> blank_header(new TreeItem(nullptr, data));
-        blank_header = paste_children_from_clipboard(blank_header, (ClipboardBranch *)_sub_branch);                                                                                  // , 0
+        blank_header = paste_children_from_clipboard(blank_header, (ClipboardBranch *)_sub_branch);											// , 0
         // _current_model()->
         QList<boost::intrusive_ptr<TreeItem> > buffer;
         blank_header->traverse_direct([&](boost::intrusive_ptr<Linker> il_in_clipboard){
                 auto index = static_cast<KnowModel *>(_current_model())->index([&](boost::intrusive_ptr<const Linker> link_in_tree){
-                            return link_in_tree->host()->id() == il_in_clipboard->host()->id();
-                        });
+                    return link_in_tree->host()->id() == il_in_clipboard->host()->id();
+                });
                 if(index.isValid()){
                     auto it_on_tree = _current_model()->item(index);
                     if(index.parent().isValid()){
                         auto parent_item = _current_model()->item(index.parent());
-                        assert(_know_root->index(parent_item).isValid());                                                 // assert(parent_item->field("name") != clipboard_items_root);
+                        assert(_know_root->index(parent_item).isValid());							// assert(parent_item->field("name") != clipboard_items_root);
                         if(  (static_cast<KnowModel *>(_current_model())->item([&](boost::intrusive_ptr<const TreeItem> t){
                             return t->id() == parent_item->id();
-                        }))                                                                                                                                                                                                                                                                                                           // if(it_on_tree->up_linker()->host_parent()->field("name") == clipboard_items_root)it_on_tree->parent(parent_item);
-                          && ! buffer.contains(it_on_tree)){buffer << it_on_tree; }
+                        }))																																						// if(it_on_tree->up_linker()->host_parent()->field("name") == clipboard_items_root)it_on_tree->parent(parent_item);
+                          && ! buffer.contains(it_on_tree)){buffer << it_on_tree;}
                     }
                 }
             });
-        if(buffer.size() > 0){                                                                                  // == blank_header->count_direct()
+        if(buffer.size() > 0){											// == blank_header->count_direct()
             blank_header->clear();
             for(auto it_on_tree : buffer){
                 view_paste_child(_sibling_modelindex, it_on_tree, [&](boost::intrusive_ptr<const Linker> il){
                         return il->host()->field<name_type>() == it_on_tree->field<name_type>();
-                    });                                                                                                                                                                                                                                                                                             // it->parent(blank_header);
+                    });																																					// it->parent(blank_header);
             }
             _result = _current_model()->item(host_parent_index);
         }else if(blank_header){
@@ -2351,31 +2347,31 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                     });
         }
         if(_result){
-            // Добавление ветки
-            QString pasted_branch_id = _result->id();                                                                                                                                 // _model_paste_from_clipboard(_current_index, (ClipboardBranch *)_sub_branch);
-            // if(is_branch)
-            // pasted_branch_id = source_model()->lock_paste_as_sibling(index, (ClipboardBranch *)branch);
-            // else
-            // pasted_branch_id = source_model()->lock_paste_as_child(index, (ClipboardBranch *)branch);
-            // update indexes
+                // Добавление ветки
+            QString pasted_branch_id = _result->id();																	// _model_paste_from_clipboard(_current_index, (ClipboardBranch *)_sub_branch);
+                // if(is_branch)
+                // pasted_branch_id = source_model()->lock_paste_as_sibling(index, (ClipboardBranch *)branch);
+                // else
+                // pasted_branch_id = source_model()->lock_paste_as_child(index, (ClipboardBranch *)branch);
+                // update indexes
             if(host_parent_index.parent().isValid())_current_model()->update_index(host_parent_index.parent());
             setExpanded(host_parent_index, true);
 
-            // Установка курсора на новую созданную ветку
+                // Установка курсора на новую созданную ветку
             auto pasted_branch_item = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){
                         return it->id() == pasted_branch_id;
                     });
             QStringList pasted_branch_path = pasted_branch_item->path_list();
-            // find_object<MainWindow>("mainwindow")
+                // find_object<MainWindow>("mainwindow")
             globalparameters.mainwindow()->set_tree_position(source_model()->root_item()->id(), pasted_branch_path);
 
             _know_model_board->synchronized(false);
-            // Сохранение дерева веток
-            // find_object<TreeScreen>(tree_screen_singleton_name)->
+                // Сохранение дерева веток
+                // find_object<TreeScreen>(tree_screen_singleton_name)->
             know_model_save();
 
 
-            // }
+                // }
         }
         // азблокируется главное окно
         // find_object<MainWindow>("mainwindow")
@@ -2385,27 +2381,27 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
 
 
 
-boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<TreeIndex>   _treeindex   // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<TreeIndex>   _treeindex	// std::function<KnowModel *()> _current_model, QModelIndex _current_index
                                                          , boost::intrusive_ptr<TreeItem>              _source_item
                                                          , const KnowView::substitute_condition        &_substitute_condition){
 
 
-    auto view_paste_sibling = [&](                                   // boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_sibling(
-        boost::intrusive_ptr<TreeIndex>   _modelindex                                                                                                                // std::function<KnowModel *()> _current_model, QModelIndex _current_index
+    auto view_paste_sibling = [&](					// boost::intrusive_ptr<TreeItem> TreeScreen::view_paste_sibling(
+        boost::intrusive_ptr<TreeIndex>   _modelindex															// std::function<KnowModel *()> _current_model, QModelIndex _current_index
                                  , boost::intrusive_ptr<TreeItem>              _source_item
                                  , const KnowView::substitute_condition      &substitute_condition_
         ) -> boost::intrusive_ptr<TreeItem> {
             boost::intrusive_ptr<TreeItem>  result(nullptr);
             auto current_model = _modelindex->current_model();
 // auto host_parent_index = _modelindex->host_parent_index();
-            auto host = _modelindex->host();                                                                                                             // _current_model()->item(_current_index);
+            auto host = _modelindex->host();														// _current_model()->item(_current_index);
 
-            assert(host);                                                                                                             // make it automatically?
-            assert(host != _source_item);                                                                                                             // mayb be equal because integrity is false
+            assert(host);														// make it automatically?
+            assert(host != _source_item);														// mayb be equal because integrity is false
             auto current_parent = host->parent();
-            // auto current_parent_    = _current_model()->item(_current_index.parent());
+                // auto current_parent_    = _current_model()->item(_current_index.parent());
             assert(current_parent);
-            // assert(_current_parent == current_parent_);
+                // assert(_current_parent == current_parent_);
             if(current_parent && current_parent->id() != ""){
 
                 ////            bool current_parent_valid = [&]() {
@@ -2451,7 +2447,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                 // find_object<MainWindow>("mainwindow")
                 globalparameters.mainwindow()->setDisabled(true);
                 if((QString)_source_item->id() == ""){
-                    // Получение уникального идентификатора
+                        // Получение уникального идентификатора
                     QString id = get_unical_id();
                     _source_item->field<id_type>(id);
                 }
@@ -2475,17 +2471,17 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                 // if(current_parent_valid) {
                 _alternative_items = current_parent->items_direct(substitute_condition_);
                 // auto _alternative_item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _alternative_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
-                if(_alternative_items.size() > 0){                                                                                                                                                                                                                  // && same->is_empty()
-                    ////            if(_alternative_item_has_no_child_first) {
-                    ////                assert(_alternative_item_has_no_child_first->name() == _source_item->name());
-                    ////                result = view_merge_to_left(_current_model, _alternative_item_has_no_child_first, _source_item);
-                    ////            } else
-                    // for(int i = 1; i < _alternative_items.size(); i++) {
-                    // result = view_merge_to_left(_current_model, _alternative_items[0], _alternative_items[i]);
-                    // }
+                if(_alternative_items.size() > 0){																											// && same->is_empty()
+                        ////            if(_alternative_item_has_no_child_first) {
+                        ////                assert(_alternative_item_has_no_child_first->name() == _source_item->name());
+                        ////                result = view_merge_to_left(_current_model, _alternative_item_has_no_child_first, _source_item);
+                        ////            } else
+                        // for(int i = 1; i < _alternative_items.size(); i++) {
+                        // result = view_merge_to_left(_current_model, _alternative_items[0], _alternative_items[i]);
+                        // }
 
                     QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
-                    result = it.next();                                                                                                                                                                                                                                                                 // _source_item;  // _source_item might be a clipboard item
+                    result = it.next();																																	// _source_item;  // _source_item might be a clipboard item
                     assert(result);
                     while(it.hasNext()){
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
@@ -2495,7 +2491,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                                 return t->id() == result->id();
                             }));
                     }
-                    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
                     result = view_merge(TreeIndex::instance(current_model, result->parent(), result), _source_item);
                     assert(result);
                     if(result){
@@ -2503,24 +2499,24 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                                 return t->id() == result->id();
                             }));
                     }
-                    ////                        assert(result == _source_item);
-                    ////                    if(result != _source_item) {
-                    ////                        result = view_merge_to_left(_current_model, result, _source_item);
-                    ////                        assert(result);
-                    ////                        assert(_current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
+                        ////                        assert(result == _source_item);
+                        ////                    if(result != _source_item) {
+                        ////                        result = view_merge_to_left(_current_model, result, _source_item);
+                        ////                        assert(result);
+                        ////                        assert(_current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == result->id();}));
 
-                    ////                    }
-                    // boost::intrusive_ptr<TreeIndex> tree_index_ = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-                    // {
-                    // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
-                    // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                        ////                    }
+                        // boost::intrusive_ptr<TreeIndex> tree_index_ = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
+                        // {
+                        // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
+                        // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
 
-                    // view_paste_from_children_move(_modelindex, _source_item, [&](boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source)->bool {return target->field("url") == source->field("url") && target->field("name") == source->field("name");});  // , _substitute_condition
+                        // view_paste_from_children_move(_modelindex, _source_item, [&](boost::intrusive_ptr<TreeItem> target, boost::intrusive_ptr<TreeItem> source)->bool {return target->field("url") == source->field("url") && target->field("name") == source->field("name");});  // , _substitute_condition
 
                     assert(result != _know_model_board->root_item());
                 }else{
-                    // Вставка новых данных в модель дерева записей
-                    result = static_cast<KnowModel *>(current_model())->model_move_as_child(TreeIndex::instance(current_model, current_parent->parent(), current_parent), _source_item);                                                                                                                         // TreeIndex(current_model, current_parent, _modelindex.sibling_order())
+                        // Вставка новых данных в модель дерева записей
+                    result = static_cast<KnowModel *>(current_model())->model_move_as_child(TreeIndex::instance(current_model, current_parent->parent(), current_parent), _source_item);															// TreeIndex(current_model, current_parent, _modelindex.sibling_order())
 
                     assert(current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
                             return t->id() == result->id();
@@ -2550,7 +2546,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                 select_as_current(TreeIndex::instance(current_model, result->parent(), result));
                 assert(
                     (_source_item == result) ||
-                    substitute_condition_(result->linker())                                                                                                                                                                                                                 // (_source_item->name() == result->name())
+                    substitute_condition_(result->linker())																											// (_source_item->name() == result->name())
                     );
 
                 // } else if(_current_model->root_item()->id() == it->id()) {
@@ -2583,26 +2579,26 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
     auto host_parent_index = _treeindex->host_parent_index();
     auto host = _treeindex->host();
     assert(host_parent_index.isValid() ? current_model()->item(host_parent_index) != nullptr : true);
-    // for(int i = 0; i < it->current_count(); i++) {
-    // auto current_item = it->child(i);
-    // if(_current_model->is_item_id_exists(it->id())) {
-    // return add_branch(_current_model->index(it), it, insert_sibling_branch, _current_model);
-    // auto _current_index = index_current(); //selectionModel()->currentIndex(); //_current_model->index(it);
-    if(host && _source_item){                                   // current_index.isValid()
+        // for(int i = 0; i < it->current_count(); i++) {
+        // auto current_item = it->child(i);
+        // if(_current_model->is_item_id_exists(it->id())) {
+        // return add_branch(_current_model->index(it), it, insert_sibling_branch, _current_model);
+        // auto _current_index = index_current(); //selectionModel()->currentIndex(); //_current_model->index(it);
+    if(host && _source_item){					// current_index.isValid()
         // boost::intrusive_ptr<TreeItem> current_item = _modelindex.parent(); // _current_model()->item(_current_index);
         // assert(!current_item->contains_direct(std::forward<const boost::intrusive_ptr<Linker>>(_source_item->linker())));
         // assert(!current_item->contains_direct(std::forward<const boost::intrusive_ptr<TreeItem>>(_source_item)));
-        if(! host->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(_source_item->linker()))){                                                                                  // current_item->contains_direct(_source_item->linker()) ||
+        if(! host->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(_source_item->linker()))){											// current_item->contains_direct(_source_item->linker()) ||
             if(host->count_direct() > 0){
 
-                auto _child = host->item_direct(0);  // _treeindex->sibling_order()   // current_item->count_direct() - 1
+                auto _child = host->item_direct(0);	// _treeindex->sibling_order()   // current_item->count_direct() - 1
 
-                assert(_child != _source_item);                                                                                                                                                                                 // may be equal because integrity is false
+                assert(_child != _source_item);																							// may be equal because integrity is false
 
                 // if(current_item->count_direct() > 0) {
                 // assert(current_item->item_direct(0) != _source_item);
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, _child); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                result = view_paste_sibling(TreeIndex::instance(current_model, _child->parent(), _child), _source_item, _substitute_condition);                                                                  // _current_model, _current_model()->index(current_item->item_direct(0))
+                result = view_paste_sibling(TreeIndex::instance(current_model, _child->parent(), _child), _source_item, _substitute_condition);									// _current_model, _current_model()->index(current_item->item_direct(0))
                 assert(result);
             }else{
 
@@ -2617,7 +2613,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                 // find_object<MainWindow>("mainwindow")
                 globalparameters.mainwindow()->setDisabled(true);
                 if((QString)_source_item->id() == ""){
-                    // Получение уникального идентификатора
+                        // Получение уникального идентификатора
                     QString id = get_unical_id();
                     _source_item->field<id_type>(id);
                 }
@@ -2645,7 +2641,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
                 // {
                 // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
                 // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                select_as_current(TreeIndex::instance(current_model, result->parent(), result));                                                                                                                                                                                 // setto
+                select_as_current(TreeIndex::instance(current_model, result->parent(), result));																						// setto
                 // selectionModel()->select(setto, current_tree_selection_mode);
                 // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -2673,7 +2669,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
 
                 // }
             }
-        }else{                                                                                                   // for current_item->contains_direct(_source_item->linker()) != nullptr, maybe just some merge, go view_paste_sibling upon
+        }else{													// for current_item->contains_direct(_source_item->linker()) != nullptr, maybe just some merge, go view_paste_sibling upon
 
             result = _source_item;
         }
@@ -2693,23 +2689,23 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                                                                       , const bool _cut_branch_confirm){
     QList<boost::intrusive_ptr<TreeItem> > items_candidate;
     QList<boost::intrusive_ptr<TreeItem> > result_items;
-    // auto _tree_screen = static_cast<TreeScreen *>(parent());
-    // QModelIndexList _index_list = is_index_localized(_origin_index_list) ? _origin_index_list : index_localize(_origin_index_list);
+        // auto _tree_screen = static_cast<TreeScreen *>(parent());
+        // QModelIndexList _index_list = is_index_localized(_origin_index_list) ? _origin_index_list : index_localize(_origin_index_list);
     if(_items.size() > 0){
 
         std::function<bool (QList<boost::intrusive_ptr<TreeItem> >)>
         has_encrypt = [&](QList<boost::intrusive_ptr<TreeItem> > _result){
                 bool disableFlag = false;
                 // Перебираются удаляемые ветки
-                for(auto it : _result){                                                                                                                                                  // for(int i = 0; i < _index_list.size(); ++i) {
-                    // QModelIndex index = _index_list.at(i);
-                    // auto it = _current_model()->item(index);
-                    // Если у ветки установлен флаг шифрования
+                for(auto it : _result){																			// for(int i = 0; i < _index_list.size(); ++i) {
+                        // QModelIndex index = _index_list.at(i);
+                        // auto it = _current_model()->item(index);
+                        // Если у ветки установлен флаг шифрования
                     if(it->field<crypt_type>() == "1"){
                         disableFlag = true;
                         break;
                     }
-                    // Проверяется наличие флага шифрования у всех подветок
+                        // Проверяется наличие флага шифрования у всех подветок
                     QList<QStringList> cryptFlagsList = it->path_children_all(boost::mpl::c_str < crypt_type >::value);
 
                     foreach(QStringList cryptFlags, cryptFlagsList){
@@ -2719,7 +2715,7 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                         }
                     }
                     if(disableFlag)break;
-                }                                                                                                                                                                 // Закрылся цикл перебора всех выделенных для удаления веток
+                }																					// Закрылся цикл перебора всех выделенных для удаления веток
                 // Если в какой-то ветке обнаружено шифрование
                 if(disableFlag){
                     QMessageBox messageBox(this);
@@ -2728,13 +2724,13 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                     messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
                     messageBox.exec();
 
-                    // азблокируется главное окно
-                    // find_object<MainWindow>("mainwindow")
+                        // азблокируется главное окно
+                        // find_object<MainWindow>("mainwindow")
                     globalparameters.mainwindow()->setEnabled(true);
-                    // find_object<MainWindow>("mainwindow")
+                        // find_object<MainWindow>("mainwindow")
                     globalparameters.mainwindow()->blockSignals(false);
 
-                    // return _result;
+                        // return _result;
                 }
                 return disableFlag;
             };
@@ -2758,34 +2754,34 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
 
         // auto index_to_be_delete_last = _index_list.last();
         auto _item_to_be_deleted_first = _items.first();
-        auto _item_common_parent = _item_to_be_deleted_first->parent();                                                                                 // may be a clipboard root item : blank header
+        auto _item_common_parent = _item_to_be_deleted_first->parent();											// may be a clipboard root item : blank header
         assert(_item_common_parent);
-        if(_know_root->index(_item_common_parent).isValid()                                 // _item_common_parent->field("name") != clipboard_items_root
+        if(_know_root->index(_item_common_parent).isValid()					// _item_common_parent->field("name") != clipboard_items_root
             ){
             auto deleted_position_first = _item_common_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){
                         return il->host()->id() == _item_to_be_deleted_first->id() && _item_to_be_deleted_first->linker() == il && _item_to_be_deleted_first->parent() == il->host_parent();
-                    });                                                                                                                                                                                                                                                                                                                                                                                  // items_update_selected();
-            // auto deleted_position_last = _source_model->item(index_to_be_delete_last)->sibling_order();
+                    });																																															// items_update_selected();
+                // auto deleted_position_last = _source_model->item(index_to_be_delete_last)->sibling_order();
 
 
 
-            // Список имен веток, которые нужно удалить
+                // Список имен веток, которые нужно удалить
             QStringList branches_name;
             for(auto it : _items){
                 // QModelIndex index = _index_list.at(i);
-                if(it->parent() == _item_common_parent){                                                                                                                                                                                  // if(index.isValid() && index.parent() == _index_common_parent) {
+                if(it->parent() == _item_common_parent){																							// if(index.isValid() && index.parent() == _index_common_parent) {
                     if(it->id() == _current_model()->session_id()){
                         ////        keep = source; remove = target;
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, _item_common_parent); } catch(std::exception &e) {throw e; } return tree_index; } ();
                         _current_model()->session_id(TreeIndex::instance(_current_model, _item_common_parent->parent(), _item_common_parent));
                     }
-                    // auto it = _current_model()->item(index);
+                        // auto it = _current_model()->item(index);
                     branches_name << it->field<name_type>();
-                    // _index_list.push_back(index);
+                        // _index_list.push_back(index);
                     items_candidate << it;
                 }
             }
-            // Если системный пароль не установлен, зашифрованные ветки удалять нельзя
+                // Если системный пароль не установлен, зашифрованные ветки удалять нельзя
             if(! ((globalparameters.crypt_key().size() == 0) && has_encrypt(items_candidate))){
                 // Создается окно с вопросом, нужно удалять ветки или нет
                 QString title, text, del_button;
@@ -2819,35 +2815,35 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                 }
                 // Если удаление подтверждено
                 if(enable_delete){
-                    // Сохраняется текст в окне редактирования
-                    // Нужно, чтобы нормально удалилась текущая редактируемая запись,
-                    // если она находится в удаляемой ветке
-                    // find_object<MainWindow>("mainwindow")
+                        // Сохраняется текст в окне редактирования
+                        // Нужно, чтобы нормально удалилась текущая редактируемая запись,
+                        // если она находится в удаляемой ветке
+                        // find_object<MainWindow>("mainwindow")
                     globalparameters.mainwindow()->save_text_area();
-                    // Сортировка списка индексов по вложенности методом пузырька
-                    // Индексы с длинным путем перемещаются в начало списка
+                        // Сортировка списка индексов по вложенности методом пузырька
+                        // Индексы с длинным путем перемещаются в начало списка
                     for(int i = 0; i < items_candidate.size(); i ++){
                         for(int j = items_candidate.size() - 1; j > i; j --){
-                            QStringList path_1 = items_candidate.at(j - 1)->path_list();                                                                                                                                                                                                                                                                                                                                // (_current_model()->item(  // ))
-                            QStringList path_2 = items_candidate.at(j)->path_list();                                                                                                                                                                                                                                                                                                                                 // (_current_model()->item(  // ))
+                            QStringList path_1 = items_candidate.at(j - 1)->path_list();																																								// (_current_model()->item(  // ))
+                            QStringList path_2 = items_candidate.at(j)->path_list();																																									// (_current_model()->item(  // ))
                             if(path_1.size() < path_2.size())items_candidate.swap(j - 1, j);
                         }
                     }
                     qDebug() << "Path for delete";
-                    for(int i = 0; i < items_candidate.size(); ++ i)qDebug() << items_candidate.at(i)->path_list();                                                                                                                                                                                                                                                                 // (_current_model()->item(  //))
-                    // auto _source_model = source_model();
-                    // _source_model->beginRemoveRows(_index_common_parent, _index_list.first().row(), _index_list.last().row());
-                    // Вызов удаления веток
-                    for(auto it : items_candidate){                                                                                                                                                                                                                                  // for(int i = 0; i < _result.size(); ++i) {
+                    for(int i = 0; i < items_candidate.size(); ++ i)qDebug() << items_candidate.at(i)->path_list();																																	// (_current_model()->item(  //))
+                        // auto _source_model = source_model();
+                        // _source_model->beginRemoveRows(_index_common_parent, _index_list.first().row(), _index_list.last().row());
+                        // Вызов удаления веток
+                    for(auto it : items_candidate){																													// for(int i = 0; i < _result.size(); ++i) {
                         if(it->id() == static_cast<KnowModel *>(_current_model())->session_id()){
-                            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, it->parent()->parent(), it->parent() ); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, it->parent()->parent(), it->parent() ); } catch(std::exception &e) {throw e; } return tree_index; } ();
                             static_cast<KnowModel *>(_current_model())->session_id(TreeIndex::instance(_current_model, it->parent()->parent(), it->parent()));
                         }
                         if(it->linker()->host() && it->linker()->host_parent()){
                             auto result = (static_cast<KnowModel *>(_current_model())->*_delete_strategy)(it->linker());
-                            // just for counting, result.get() == 0 is fine
-                            result_items.append(result);                                                                                                                                                                                                                                                                                             // model_delete_one( // just for counting, 0 is fine
-                            // _current_model()->model_delete_item(it)
+                                // just for counting, result.get() == 0 is fine
+                            result_items.append(result);																																				// model_delete_one( // just for counting, 0 is fine
+                                // _current_model()->model_delete_item(it)
                         }
                     }
                     if(result_items.size() > 0){
@@ -2858,9 +2854,9 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
 
                         QModelIndex setto;
                         boost::intrusive_ptr<TreeItem> left_sibling_item(nullptr);
-                        if(_item_common_parent && _know_root->index(_item_common_parent).isValid()){                                                                                                    // _item_common_parent->field("name") != clipboard_items_root
+                        if(_item_common_parent && _know_root->index(_item_common_parent).isValid()){													// _item_common_parent->field("name") != clipboard_items_root
                             int new_count = _item_common_parent->count_direct();
-                            // Одноранговая ветка
+                                // Одноранговая ветка
                             if(new_count > 0){
                                 int new_position = 0;
                                 if((deleted_position_first - 1) >= 0){
@@ -2880,7 +2876,7 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                                 left_sibling_item = _item_common_parent->item_direct(new_position);
                                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, left_sibling_item->parent(), left_sibling_item->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
                                 // {return il == left_sibling_item->linker() && il->host() == left_sibling_item && left_sibling_item->parent() == il->host_parent();})); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                                select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));                                                                                                                                  // setto
+                                select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));																	// setto
 
 
                                 // selectionModel()->select(setto, current_tree_selection_mode);   // current_tree_selection_mode
@@ -2901,7 +2897,7 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                                         // selectionModel()->setCurrentIndex(_source_model->index(_item_parent), current_tree_current_index_mode);   // ClearAndSelect
 
                                         break;
-                                    }else{                                                                                                                                                                                                                                                                                                                                                                                                                                                   // if(_parent != _know_model_board->root_item())
+                                    }else{																																																							// if(_parent != _know_model_board->root_item())
                                         cursor_follow_up();
                                         _item_common_parent = _item_common_parent->parent();
                                         if(_item_common_parent){
@@ -2920,7 +2916,7 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
 
                                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, left_sibling_item->parent(), left_sibling_item->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
                                 // {return il == left_sibling_item->linker() && il->host() == left_sibling_item && left_sibling_item->parent() == il->host_parent();})); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                                select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));                                                                                                                                    // setto
+                                select_as_current(TreeIndex::instance(_current_model, left_sibling_item->parent(), left_sibling_item));																		// setto
 
                                 // if(index.parent().parent().isValid()) {view_up_one_level();}
                                 // else {view_return_to_root();}
@@ -2952,17 +2948,17 @@ QList<boost::intrusive_ptr<TreeItem> > KnowView::view_delete_permanent(
                 tree_empty_controll();
                 tree_crypt_control();
             }
-        }                                                                                                 // Закрылось условие что системный пароль не установлен
+        }													// Закрылось условие что системный пароль не установлен
     }
     return result_items;
 }
 
 void KnowView::view_cut(bool _cut_branch_confirm){
-    // bool copy_result = false;
-    // auto _tree_screen = static_cast<TreeScreen *>(parent());
-    // copy_result
+        // bool copy_result = false;
+        // auto _tree_screen = static_cast<TreeScreen *>(parent());
+        // copy_result
     auto index_list = view_copy();
-    if(index_list.size() > 0){                                 // copy_result
+    if(index_list.size() > 0){					// copy_result
         view_delete_permanent([&](){
                 return source_model();
             }, [&](){
@@ -2980,51 +2976,51 @@ void KnowView::view_cut(bool _cut_branch_confirm){
 
 
 
-QModelIndexList KnowView::view_copy(void){   // const
+QModelIndexList KnowView::view_copy(void){	// const
 
-    // bool copy_result = false;
-    // auto _tree_screen = static_cast<TreeScreen *>(parent());
-    //// Вспомогательная функция при копировании ветки в буфер
-    // std::function<void(ClipboardBranch *, QStringList)> //  , bool    //void TreeScreen::
-    // branch_add_to_clipboard
-    // = [&](ClipboardBranch * branch_clipboard_data, QStringList path) {  // , bool is_root
+        // bool copy_result = false;
+        // auto _tree_screen = static_cast<TreeScreen *>(parent());
+        //// Вспомогательная функция при копировании ветки в буфер
+        // std::function<void(ClipboardBranch *, QStringList)> //  , bool    //void TreeScreen::
+        // branch_add_to_clipboard
+        // = [&](ClipboardBranch * branch_clipboard_data, QStringList path) {  // , bool is_root
 
-    //// boost::intrusive_ptr<TreeItem> curr_item;
-    //// QMap<QString, QString> curr_item_fields;
-    //// QString branch_id;
-    ////    std::shared_ptr<RecordTable> curr_item_record_table;
+        //// boost::intrusive_ptr<TreeItem> curr_item;
+        //// QMap<QString, QString> curr_item_fields;
+        //// QString branch_id;
+        ////    std::shared_ptr<RecordTable> curr_item_record_table;
 
-    //// Добавление ветки
-    // boost::intrusive_ptr<TreeItem> curr_item = _know_model_board->item(path);
-    // QMap<QString, QString> curr_item_fields = curr_item->fields_all(); // Раньше было getAllFieldsDirect()
-    // QString branch_id = curr_item_fields["id"];
+        //// Добавление ветки
+        // boost::intrusive_ptr<TreeItem> curr_item = _know_model_board->item(path);
+        // QMap<QString, QString> curr_item_fields = curr_item->fields_all(); // Раньше было getAllFieldsDirect()
+        // QString branch_id = curr_item_fields["id"];
 
-    ////        if(is_root)
-    ////            branch_clipboard_data->branch_add(curr_item->parent_id(), curr_item_fields);
-    ////        else
-    // branch_clipboard_data->branch_add(curr_item->parent_id(), curr_item_fields);
-    // branch_clipboard_data->record_add(curr_item->parent_id(), curr_item);
-    //// Добавление конечных записей
-    ////    auto curr_item_record_table = curr_item->record_table();
+        ////        if(is_root)
+        ////            branch_clipboard_data->branch_add(curr_item->parent_id(), curr_item_fields);
+        ////        else
+        // branch_clipboard_data->branch_add(curr_item->parent_id(), curr_item_fields);
+        // branch_clipboard_data->record_add(curr_item->parent_id(), curr_item);
+        //// Добавление конечных записей
+        ////    auto curr_item_record_table = curr_item->record_table();
 
-    // for(int i = 0; i < curr_item->count_direct(); i++) {
-    //// Полный образ записи (с файлами и текстом)
-    // boost::intrusive_ptr<TreeItem> record = curr_item->item_fat(i);
-    // branch_clipboard_data->branch_add(branch_id, record->fields_all());
-    // branch_clipboard_data->record_add(branch_id, record);
-    // }
-    // };
+        // for(int i = 0; i < curr_item->count_direct(); i++) {
+        //// Полный образ записи (с файлами и текстом)
+        // boost::intrusive_ptr<TreeItem> record = curr_item->item_fat(i);
+        // branch_clipboard_data->branch_add(branch_id, record->fields_all());
+        // branch_clipboard_data->record_add(branch_id, record);
+        // }
+        // };
 
     qDebug() << "In branch_copy()";
 
-    // Сохраняется текст в окне редактирования
-    // find_object<MainWindow>("mainwindow")
+        // Сохраняется текст в окне редактирования
+        // find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->save_text_area();
 
-    // Получение списка индексов QModelIndex выделенных элементов
-    // QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
-    QModelIndexList _selectitems = LocalLizeInitializer(this)().indexes();                                  // selectionModel()->selectedIndexes(); //
-    // is_index_localized(_origin_index_list) ? _origin_index_list : index_localize(_origin_index_list);
+        // Получение списка индексов QModelIndex выделенных элементов
+        // QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
+    QModelIndexList _selectitems = LocalLizeInitializer(this)().indexes();					// selectionModel()->selectedIndexes(); //
+        // is_index_localized(_origin_index_list) ? _origin_index_list : index_localize(_origin_index_list);
 
     QModelIndex _index_current;
     bool indexs_valid = true;
@@ -3032,7 +3028,7 @@ QModelIndexList KnowView::view_copy(void){   // const
     auto _source_model = [&](){
             return source_model();
         };
-    // Если выбрано более одной ветки
+        // Если выбрано более одной ветки
     if(_selectitems.size() >= 1){
         // QMessageBox messageBox(this);
         // messageBox.setWindowTitle(tr("Unavailable action"));
@@ -3042,17 +3038,17 @@ QModelIndexList KnowView::view_copy(void){   // const
         // return copy_result;
         for(auto i : _selectitems){
             if(! i.isValid()){
-                indexs_valid = false; break;
+                indexs_valid = false;break;
             }else{
                 auto it = static_cast<KnowModel *>(_source_model())->item(i);
                 if(! items.contains(it))items << it;
             }
         }
-        if(indexs_valid)_index_current = static_cast<KnowModel *>(_source_model())->index(items[0]);                                                                                                                 // _selectitems[0];
+        if(indexs_valid)_index_current = static_cast<KnowModel *>(_source_model())->index(items[0]);															// _selectitems[0];
     }
-    // Получение индекса выделенной ветки
-    // _index_current = index_current();
-    if(indexs_valid){                                  // _index_current.isValid()
+        // Получение индекса выделенной ветки
+        // _index_current = index_current();
+    if(indexs_valid){					// _index_current.isValid()
 
 
         // -------------------
@@ -3156,7 +3152,7 @@ QModelIndexList KnowView::view_copy(void){   // const
 
         // item->field("id", _clipboard_root_parent_id);
         // Добавление корневой ветки
-        _sub_branch->branch_push(TreeIndex::instance(_source_model, current_item()->parent(), current_item()), items);                                                                                // , _clipboard_root_parent_id
+        _sub_branch->branch_push(TreeIndex::instance(_source_model, current_item()->parent(), current_item()), items);											// , _clipboard_root_parent_id
         // _current_item_absolute_path
         // branch_add_to_clipboard(branch_clipboard_data, _source_model_cur_item_absolute_path);   // , true
 
@@ -3177,14 +3173,14 @@ QModelIndexList KnowView::view_copy(void){   // const
         _tree_screen->_actionlist[action_paste_sub_branch]->setEnabled(true);
         // }
         // Объект с ветками помещается в буфер обмена
-        if(_sub_branch->clip_blank_header_id() != ""){cbuf->setMimeData(_sub_branch); }                                                                                 // copy_result = true;
-        else{delete _sub_branch; }
+        if(_sub_branch->clip_blank_header_id() != ""){cbuf->setMimeData(_sub_branch);}											// copy_result = true;
+        else{delete _sub_branch;}
     }else{
         _tree_screen->_actionlist[action_paste_branch]->setEnabled(false);
         _tree_screen->_actionlist[action_paste_sub_branch]->setEnabled(false);
         // copy_result = false;
     }
-    return _selectitems;                                    // copy_result;
+    return _selectitems;					// copy_result;
 }
 
 
@@ -3193,24 +3189,24 @@ QModelIndexList KnowView::view_copy(void){   // const
 void KnowView::view_edit(void){
     qDebug() << "In edit_branch()";
 
-    // Получение списка индексов QModelIndex выделенных элементов
-    QModelIndexList selectitems = selectionModel()->selectedIndexes();
+        // Получение списка индексов QModelIndex выделенных элементов
+//    QModelIndexList selectitems = selectionModel()->selectedIndexes();
     QModelIndex _current_index;
 
-    //// Если выбрано более одной ветки
-    // if(selectitems.size() > 1) {
-    ////        QMessageBox messageBox(this);
-    ////        messageBox.setWindowTitle(tr("Unavailable action"));
-    ////        messageBox.setText(tr("You've selected ") + QString::number(selectitems.size()) + tr(" items.\nPlease select single item for enabling edit operation."));
-    ////        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
-    ////        messageBox.exec();
-    ////        return;
-    // _current_index = selectitems.first();
-    // } else {
+        //// Если выбрано более одной ветки
+        // if(selectitems.size() > 1) {
+        ////        QMessageBox messageBox(this);
+        ////        messageBox.setWindowTitle(tr("Unavailable action"));
+        ////        messageBox.setText(tr("You've selected ") + QString::number(selectitems.size()) + tr(" items.\nPlease select single item for enabling edit operation."));
+        ////        messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
+        ////        messageBox.exec();
+        ////        return;
+        // _current_index = selectitems.first();
+        // } else {
 
-    // Получение индекса выделенной строки
+        // Получение индекса выделенной строки
     _current_index = current_index();
-    // }
+        // }
     if(_current_index.isValid()){
         // Получение ссылки на узел, который соответствует выделенной строке
         auto item = source_model()->item(_current_index);
@@ -3222,12 +3218,12 @@ void KnowView::view_edit(void){
 
         // Создается окно ввода данных
         bool ok;
-        QString newname = QInputDialog::getText(this,
-                tr("Edit item name"),
-                tr("Item name:"),
-                QLineEdit::Normal,
-                name,
-                &ok);
+        QString newname = QInputDialog::getText(this
+                                               , tr("Edit item name")
+                                               , tr("Item name:")
+                                               , QLineEdit::Normal
+                                               , name
+                                               , &ok);
         // Если была нажата отмена
         if(! (ok && ! newname.isEmpty()))return;
         // find_object<MainWindow>("mainwindow")
@@ -3246,84 +3242,79 @@ void KnowView::view_edit(void){
 
 
 
-boost::intrusive_ptr<TreeItem> KnowView::view_merge(
-    boost::intrusive_ptr<TreeIndex> modelindex        // const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> target
+boost::intrusive_ptr<TreeItem> KnowView::view_merge(boost::intrusive_ptr<TreeIndex> modelindex			// const std::function<KnowModel *()> &_current_model, boost::intrusive_ptr<TreeItem> target
                                                    , boost::intrusive_ptr<TreeItem> source){
     boost::intrusive_ptr<TreeItem> result(nullptr);
     auto _current_model = modelindex->current_model();
-    // auto target = modelindex->host();   // host_parent();
-    // boost::intrusive_ptr<TreeItem> keep;
-    // boost::intrusive_ptr<TreeItem> remove;
+        // auto target = modelindex->host();   // host_parent();
+        // boost::intrusive_ptr<TreeItem> keep;
+        // boost::intrusive_ptr<TreeItem> remove;
 
-    auto check_source = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
-                return t->id() == source->id();
-            });
+    auto check_source = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == source->id();});
 
-    // if(target->id() == _session_id) {keep = target; remove = source;}
-    // else
-    auto target_on_tree = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
-                return t->id() == modelindex->host()->id();
-            });
-    // if(!check_source ) {
-    // }else
-    if(check_source->is_ancestor_of(target_on_tree)){
-        auto temp = target_on_tree;
-        target_on_tree = source;
-        source = temp;
-        modelindex = TreeIndex::instance(modelindex->current_model(), target_on_tree->parent(), target_on_tree);
-    }
-    if(target_on_tree){
-        if(target_on_tree != source){                                                                                  // && target_on_tree
-            if(source->id() == static_cast<KnowModel *>(_current_model())->session_id()){
-                // keep = source; remove = target;
-                if(target_on_tree->parent()){
-                    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, target_on_tree->parent()); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                    static_cast<KnowModel *>(_current_model())->session_id(TreeIndex::instance(_current_model, target_on_tree->parent(), target_on_tree));
-                }else{
-                    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, target_on_tree); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                    static_cast<KnowModel *>(_current_model())->session_id(TreeIndex::instance(_current_model, target_on_tree, 0));
-                }
-            }
-            // else {keep = target; remove = source;}
-
-            ////    //    KnowModel *(TreeScreen::*_know_model_board)() = &TreeScreen::know_model_board;
-            ////    //    KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
-            ////    auto _source_model = [&]() {return source_model();}; // std::bind(_source_model_func, _tree_view);
-
-            globalparameters.mainwindow()->setDisabled(true);
-            result = static_cast<KnowModel *>(_current_model())->model_merge(
-                    modelindex                                                           // target_on_tree  // keep
-                                                                            , source                                                                 // remove   // std::bind(_know_model_board, this)
-                                                                            , std::bind(&KnowView::view_delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &KnowModel::model_delete_permanent_recursive, "cut", false)                                                                                                                                                       //
-                    );
-            assert(_current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
-                    return t->id() == result->id();
-                }));
-            know_model_save();
-
-            // find_object<MainWindow>("mainwindow")
-            globalparameters.mainwindow()->setEnabled(true);
-        }else{                                                                                                   // if(target_on_tree)
-            result = target_on_tree;
+        // if(target->id() == _session_id) {keep = target; remove = source;}
+        // else
+    auto target_on_tree = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == modelindex->host()->id();});
+    if(check_source){
+        if(check_source->is_ancestor_of(target_on_tree)){
+            auto temp = target_on_tree;
+            target_on_tree = source;
+            source = temp;
+            modelindex = TreeIndex::instance(modelindex->current_model(), target_on_tree->parent(), target_on_tree);
         }
-    }
+        if(target_on_tree){
+            if(target_on_tree != source){										// && target_on_tree
+                if(source->id() == static_cast<KnowModel *>(_current_model())->session_id()){
+                        // keep = source; remove = target;
+                    if(target_on_tree->parent()){
+                        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, target_on_tree->parent()); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                        static_cast<KnowModel *>(_current_model())->session_id(TreeIndex::instance(_current_model, target_on_tree->parent(), target_on_tree));
+                    }else{
+                        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, target_on_tree); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                        static_cast<KnowModel *>(_current_model())->session_id(TreeIndex::instance(_current_model, target_on_tree, 0));
+                    }
+                }
+                // else {keep = target; remove = source;}
+
+                ////    //    KnowModel *(TreeScreen::*_know_model_board)() = &TreeScreen::know_model_board;
+                ////    //    KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
+                ////    auto _source_model = [&]() {return source_model();}; // std::bind(_source_model_func, _tree_view);
+
+                globalparameters.mainwindow()->setDisabled(true);
+                result = static_cast<KnowModel *>(_current_model())->model_merge(
+                    modelindex								// target_on_tree  // keep
+                                                                                , source								// remove   // std::bind(_know_model_board, this)
+                                                                                , std::bind(&KnowView::view_delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &KnowModel::model_delete_permanent_recursive, "cut", false)																			//
+                    );
+                assert(_current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
+                        return t->id() == result->id();
+                    }));
+                know_model_save();
+
+                // find_object<MainWindow>("mainwindow")
+                globalparameters.mainwindow()->setEnabled(true);
+            }else{												// if(target_on_tree)
+                result = target_on_tree;
+            }
+        }
+    }else result = target_on_tree;
     return result;
 }
 
 
 void KnowView::on_current_changed(const QModelIndex &current, const QModelIndex &previous){
-    // Q_UNUSED(previous);
+        // Q_UNUSED(previous);
     if(previous.isValid()){
         _previous_index = previous;
     }
-    // selectionModel()->select(previous, current_tree_selection_mode);
+        // selectionModel()->select(previous, current_tree_selection_mode);
     auto result = _know_root->item(current);
     if(currentIndex() != current){
         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
         // {
         // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
         // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));
+        select_as_current(TreeIndex::instance([&] {return _know_root;}, result->parent(), result));
     }
 }
 
@@ -3334,20 +3325,20 @@ void KnowView::on_selection_changed(const QItemSelection &selected, const QItemS
 
 void KnowView::on_current_row_changed(const QModelIndex &current, const QModelIndex &previous){
     Q_UNUSED(current);
-    // Q_UNUSED(previous);
-    // auto index_list = selectionModel()->selectedIndexes();
-    // for(auto _i : index_list) { // always one element
-    // selectionModel()->select(_i, current_tree_selection_mode);
-    // }
+        // Q_UNUSED(previous);
+        // auto index_list = selectionModel()->selectedIndexes();
+        // for(auto _i : index_list) { // always one element
+        // selectionModel()->select(_i, current_tree_selection_mode);
+        // }
     if(previous.isValid() && _previous_index != previous){
         _previous_index = previous;
     }
-    // selectionModel()->select(previous, current_tree_selection_mode);    // dangerous
+        // selectionModel()->select(previous, current_tree_selection_mode);    // dangerous
 
-    // auto it = source_model()->item(current);
+        // auto it = source_model()->item(current);
 
-    // if(it && it != source_model()->root_item()) {
-    // if(current.isValid() && current_index() != current && !it->is_activated()) {
+        // if(it && it != source_model()->root_item()) {
+        // if(current.isValid() && current_index() != current && !it->is_activated()) {
 
     auto result = _know_root->item(current);
     if(currentIndex() != current){
@@ -3355,12 +3346,12 @@ void KnowView::on_current_row_changed(const QModelIndex &current, const QModelIn
         // {
         // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
         // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));
+        select_as_current(TreeIndex::instance([&] {return _know_root;}, result->parent(), result));
     }
-    // index_invoke(current_index());    // current
+        // index_invoke(current_index());    // current
 
-    // }
-    // }
+        // }
+        // }
 }
 
 
@@ -3393,10 +3384,10 @@ void KnowView::on_current_row_changed(const QModelIndex &current, const QModelIn
 
 // Сохранение дерева веток на диск
 void KnowView::know_model_save(void){
-    // if(!_know_branch->synchronized())
-    // know_root_holder::know_root()->synchronize(_know_branch->root_item());
+        // if(!_know_branch->synchronized())
+        // know_root_holder::know_root()->synchronize(_know_branch->root_item());
 
-    // know_root_holder::know_root()->save();
+        // know_root_holder::know_root()->save();
     sychronize();
     _know_model_board->save();
 }
@@ -3404,8 +3395,8 @@ void KnowView::know_model_save(void){
 
 // Перечитывание дерева веток с диска
 void KnowView::know_model_reload(void){
-    _know_model_board->reload();                                 // do not do this if xml_file_name of this object is null
-    // know_root_holder::know_root()->reload();
+    _know_model_board->reload();				// do not do this if xml_file_name of this object is null
+        // know_root_holder::know_root()->reload();
 }
 
 
@@ -3414,15 +3405,15 @@ void KnowView::know_model_reload(void){
 
 // Действия при клике на ветку дерева
 void KnowView::cursor_step_into(const QModelIndex &_index){
-    // auto _tree_screen = static_cast<TreeScreen *>(parent());
-    if(_index.isValid() &&                 // !source_model()->item(_index)->is_activated()
+        // auto _tree_screen = static_cast<TreeScreen *>(parent());
+    if(_index.isValid() &&			// !source_model()->item(_index)->is_activated()
         ! globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {
             bool result = false;
             auto ref_it = source_model()->item(_index);
             if(ref_it->binder()){
-                if(b->host()->field<url_type>() == ref_it->field<url_type>()){
+                if(url_equal(b->host()->field<home_type>().toStdString(), ref_it->field<home_type>().toStdString())){
                     if(ref_it->binder()->page())
-                        if(ref_it->binder()->page()->view()->load_finished())result = true;
+                                if(ref_it->binder()->page()->view()->load_finished())result = true;
                 }
             }
             return result;
@@ -3438,18 +3429,18 @@ void KnowView::cursor_step_into(const QModelIndex &_index){
             };
         // Получаем указатель на текущую выбранную ветку дерева
         auto selected_item = _soure_model()->item(_index);
-        if(selected_item->count_direct() > 0){                                                                                  // && (result_item->field("url") != "" || result_item->field("url") == "" )
-            // Вначале все инструменты работы с веткой включаются
+        if(selected_item->count_direct() > 0){											// && (result_item->field("url") != "" || result_item->field("url") == "" )
+                // Вначале все инструменты работы с веткой включаются
             QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
             while(i.hasNext()){
                 i.next();
                 i.value()->setEnabled(true);
             }
-            // Проверяется, происходит ли клик по зашифрованной ветке
+                // Проверяется, происходит ли клик по зашифрованной ветке
             if(selected_item->field<crypt_type>() == "1"){
                 // Если пароль доступа к зашифрованным данным не вводился в этой сессии
                 if(globalparameters.crypt_key().length() == 0){
-                    // Запрашивается пароль
+                        // Запрашивается пароль
                     Password password;
                     if(password.retrievePassword() == false){
                         // Устанавливаем пустые данные для отображения таблицы конечных записей
@@ -3461,7 +3452,7 @@ void KnowView::cursor_step_into(const QModelIndex &_index){
                         // boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_soure_model, boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()))); } catch(std::exception &e) {throw e; } return tree_index; } ();
                         auto parent = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
                         auto host = boost::intrusive_ptr<TreeItem>(new TreeItem(parent, QMap<QString, QString>()));
-                        intercept(TreeIndex::instance(_soure_model, parent, host));                                                                                                    // _know_branch->clear();  // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
+                        intercept(TreeIndex::instance(_soure_model, parent, host));													// _know_branch->clear();  // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
 
 
 
@@ -3483,42 +3474,42 @@ void KnowView::cursor_step_into(const QModelIndex &_index){
                             i.next();
                             i.value()->setEnabled(false);
                         }
-                        return;                                                                                                                                                                                                                                                                                 // Программа дальше не идет, доделать...
+                        return;																																			// Программа дальше не идет, доделать...
                     }
                 }
             }
             if(_soure_model()->root_item() != selected_item){
                 // boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_soure_model, selected_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
                 intercept(TreeIndex::instance(_soure_model, selected_item->parent(), selected_item));
-            }                                                                                                                                                 // _know_branch->intercept(result_item);     //? never do this!!!
+            }																			// _know_branch->intercept(result_item);     //? never do this!!!
 
             setExpanded(QModelIndex(), true);
-            // _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
-            // _shadow_candidate_model->_root_item->field("name", result_item->field("name"));
+                // _shadow_candidate_model->_root_item->field("id", result_item->field("id"));
+                // _shadow_candidate_model->_root_item->field("name", result_item->field("name"));
 
-            // Получаем указатель на данные таблицы конечных записей
-            // std::shared_ptr<TableData> record_tabledata = item->tabledata();
-            // std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+                // Получаем указатель на данные таблицы конечных записей
+                // std::shared_ptr<TableData> record_tabledata = item->tabledata();
+                // std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
 
 
 
-            // setup_model(_know_branch);
+                // setup_model(_know_branch);
 
-            _tree_screen->enable_up_action();                                                                                                                                 // _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(model())->root_item()->id()   // _know_branch->root_item()->id() != know_root()->root_item()->id()
-            // for(int i = 0; i < item->tabledata()->size(); i++) {
-            // _shadow_candidate_model->_root_item->tabledata()->shadow_record_lite(
-            // _shadow_candidate_model->_root_item->tabledata()->size()
-            // , item->tabledata()->record(i)
-            // );
-            // }
-            // std::shared_ptr<TableData> record_tabledata = item->tabledata();
-            // std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-            // _shadow_candidate_model->_root_item = result_item; // ->record_table(item->record_table()->export_to_dom());
-            //// Устанавливаем данные таблицы конечных записей
-            // find_object<RecordController>(table_controller_singleton_name)->source_model()->tree_item(_shadow_candidate_model->_root_item);
-            //// need lock?
-            // reset_tabledata(std::make_shared<RecordTable>(_shadow_candidate_model->_root_item, item->tabledata()->export_to_dom(doc)));
-            // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
+            _tree_screen->enable_up_action();																	// _know_branch->root_item()->id() != static_cast<TreeKnowModel *>(model())->root_item()->id()   // _know_branch->root_item()->id() != know_root()->root_item()->id()
+                // for(int i = 0; i < item->tabledata()->size(); i++) {
+                // _shadow_candidate_model->_root_item->tabledata()->shadow_record_lite(
+                // _shadow_candidate_model->_root_item->tabledata()->size()
+                // , item->tabledata()->record(i)
+                // );
+                // }
+                // std::shared_ptr<TableData> record_tabledata = item->tabledata();
+                // std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+                // _shadow_candidate_model->_root_item = result_item; // ->record_table(item->record_table()->export_to_dom());
+                //// Устанавливаем данные таблицы конечных записей
+                // find_object<RecordController>(table_controller_singleton_name)->source_model()->tree_item(_shadow_candidate_model->_root_item);
+                //// need lock?
+                // reset_tabledata(std::make_shared<RecordTable>(_shadow_candidate_model->_root_item, item->tabledata()->export_to_dom(doc)));
+                // Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
             if(appconfig.interface_mode() == "mobile"){
 
                 QStringList path = selected_item->path_list("name");
@@ -3530,10 +3521,10 @@ void KnowView::cursor_step_into(const QModelIndex &_index){
                 // find_object<RecordScreen>(table_screen_singleton_name)
                 globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
             }
-            // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
+                // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
             resizeColumnToContents(0);
 
-            // if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
+                // if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
         }
         // else {      //        if(result_item->field("url") != browser::Browser::_defaulthome)
         ////        if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
@@ -3541,7 +3532,7 @@ void KnowView::cursor_step_into(const QModelIndex &_index){
         ////        globalparameters.window_switcher()->switchFromTreeToRecordtable();
         // }
 
-#ifdef _with_record_table   // deprecated, just for transform old data
+#ifdef _with_record_table	// deprecated, just for transform old data
         _know_model_board->record_to_item();
 #endif
 
@@ -3553,7 +3544,7 @@ void KnowView::cursor_step_into(const QModelIndex &_index){
 }
 
 void KnowView::index_invoke(const QModelIndex &_index){
-    if(_index.isValid()){                                  // && index_current() != _index
+    if(_index.isValid()){					// && index_current() != _index
 
         // KnowModel *(TreeScreen::*_source_model_func)() = &TreeScreen::know_model_board;
         // auto _source_model = std::bind(_source_model_func, this);
@@ -3561,7 +3552,7 @@ void KnowView::index_invoke(const QModelIndex &_index){
         // KnowModel *(KnowView::*_source_model_func)() = &KnowView::source_model;
         auto _source_model = [&](){
                 return source_model();
-            };                                                                                                                                                                                                                                                                     // std::bind(_source_model_func, _tree_view);
+            };																																		// std::bind(_source_model_func, _tree_view);
 
         // auto tree_screen = dynamic_cast<TreeScreen *>(static_cast<QObject *>(this)->parent());
         // auto name = tree_screen->objectName();
@@ -3574,13 +3565,13 @@ void KnowView::index_invoke(const QModelIndex &_index){
 
         auto merge_by_url = [&](){
                 auto duplicated_items_list_on_board_by_url = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it){
-                            return (it->field<url_type>() == result_item->field<url_type>()) && (it->field<url_type>() != browser::Browser::_defaulthome);
-                        });                                                                                                                                                                                                                                                                                                                                  // source_model()
+                            return (url_equal(it->field<home_type>().toStdString(), result_item->field<home_type>().toStdString())) && (it->field<home_type>() != browser::Browser::_defaulthome);
+                        });																																									// source_model()
                 if(duplicated_items_list_on_board_by_url.size() > 1){
                     for(auto _i : duplicated_items_list_on_board_by_url){
                         auto duplicated_item = _i;
-                        if(duplicated_item != result_item){                                                                                                                                                                                                                                                          // (duplicated_item->id() != result_item->id()) ||
-                            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                        if(duplicated_item != result_item){																																// (duplicated_item->id() != result_item->id()) ||
+                                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
                             result_item = view_merge(TreeIndex::instance(_source_model, result_item->parent(), result_item), duplicated_item);
                         }
                     }
@@ -3590,40 +3581,38 @@ void KnowView::index_invoke(const QModelIndex &_index){
         (void)merge_by_url;
 
         // auto duplicated_item_index_list_on_view = _source_model()->indexes([&](boost::intrusive_ptr<TreeItem> it) {return it->field("url") == result_item->field("url");});
-        auto duplicated_items_list_on_board_by_id = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it){
-                    return it->id() == result_item->id();
-                });
+        auto duplicated_items_list_on_board_by_id = _source_model()->items([&](boost::intrusive_ptr<const TreeItem> it){return it->id() == result_item->id();});
         if(duplicated_items_list_on_board_by_id.size() > 1){
             for(auto _i : duplicated_items_list_on_board_by_id){
                 auto duplicated_item = _i;
-                if(duplicated_item != result_item){                                                                                                                                                                                  // (duplicated_item->id() != result_item->id()) ||
-                    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
+                if(duplicated_item != result_item){																							// (duplicated_item->id() != result_item->id()) ||
+                        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
                     result_item = view_merge(TreeIndex::instance(_source_model, result_item->parent(), result_item), duplicated_item);
                 }
             }
         }
         browser::WebView *v = nullptr;
-        if(                                // !result_item->is_activated()
+        if(					// !result_item->is_activated()
             ! globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){
                 bool result = false;
                 // auto result_item = source_model()->item(_index);
                 if(result_item->binder()){
-                    if(b->host()->field<url_type>() == result_item->field<url_type>()){
+                    if(url_equal(b->host()->field<home_type>().toStdString(), result_item->field<home_type>().toStdString())){
                         if(result_item->binder()->page())
-                            if(result_item->binder()->page()->view()->load_finished())result = true;
+                                if(result_item->binder()->page()->view()->load_finished())result = true;
                     }
                 }
                 return result;
             })
             ){
-            // QModelIndex index = nodetreeview->selectionModel()->currentIndex();
+                // QModelIndex index = nodetreeview->selectionModel()->currentIndex();
 
-            // Сохраняется текст в окне редактирования в соответсвующий файл
-            // find_object<MainWindow>("mainwindow")
+                // Сохраняется текст в окне редактирования в соответсвующий файл
+                // find_object<MainWindow>("mainwindow")
             globalparameters.mainwindow()->save_text_area();
 
-            setExpanded(_index.parent(), true);                                                                                                                                 // (isExpanded(_index)) ? setExpanded(_index, false) : setExpanded(_index, true);
-            if(result_item->count_direct() > 0){                                                                                                                                  // && (result_item->field("url") != "" || result_item->field("url") == "" )
+            setExpanded(_index.parent(), true);																	// (isExpanded(_index)) ? setExpanded(_index, false) : setExpanded(_index, true);
+            if(result_item->count_direct() > 0){																	// && (result_item->field("url") != "" || result_item->field("url") == "" )
                 // Вначале все инструменты работы с веткой включаются
                 QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
                 while(i.hasNext()){
@@ -3631,42 +3620,42 @@ void KnowView::index_invoke(const QModelIndex &_index){
                     i.value()->setEnabled(true);
                 }
                 // Проверяется, происходит ли клик по зашифрованной ветке
-                if(result_item->field<url_type>() == "1"){
-                    // Если пароль доступа к зашифрованным данным не вводился в этой сессии
+                if(result_item->field<crypt_type>() == "1"){
+                        // Если пароль доступа к зашифрованным данным не вводился в этой сессии
                     if(globalparameters.crypt_key().length() == 0){
                         // Запрашивается пароль
                         Password password;
                         if(password.retrievePassword() == false){
-                            //// Устанавливаем пустые данные для отображения таблицы конечных записей
-                            //// find_object<RecordController>("table_screen_controller")
+                                //// Устанавливаем пустые данные для отображения таблицы конечных записей
+                                //// find_object<RecordController>("table_screen_controller")
 
-                            ////                    result_item->unique_page()->view()->record_controller()->source_model()->clear();
-
-
-
-                            // setup_model(boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>())));   // _know_branch->clear();  // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
+                                ////                    result_item->unique_page()->view()->record_controller()->source_model()->clear();
 
 
 
+                                // setup_model(boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>())));   // _know_branch->clear();  // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
 
-                            ////                    init_source_model(
-                            ////                        nullptr
-                            ////                        , result_item->unique_page()->view()->record_controller()
-                            ////                        , result_item->unique_page()->view()->record_controller()->record_screen()
-                            ////                        , globalparameters.mainwindow()
-                            ////                        , globalparameters.meta_editor()
-                            ////                        // , globalparameters.record_screens()
-                            ////                    );
 
-                            ////                        reset_tabledata(nullptr);
 
-                            //// Все инструменты работы с веткой отключаются
+
+                                ////                    init_source_model(
+                                ////                        nullptr
+                                ////                        , result_item->unique_page()->view()->record_controller()
+                                ////                        , result_item->unique_page()->view()->record_controller()->record_screen()
+                                ////                        , globalparameters.mainwindow()
+                                ////                        , globalparameters.meta_editor()
+                                ////                        // , globalparameters.record_screens()
+                                ////                    );
+
+                                ////                        reset_tabledata(nullptr);
+
+                                //// Все инструменты работы с веткой отключаются
                             QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
                             while(i.hasNext()){
                                 i.next();
                                 i.value()->setEnabled(false);
                             }
-                            return;                                                                                                                                                                                                                                                                                                                                 // Программа дальше не идет, доделать...
+                            return;																																									// Программа дальше не идет, доделать...
                         }
                     }
                 }
@@ -3696,11 +3685,11 @@ void KnowView::index_invoke(const QModelIndex &_index){
 
                     QStringList path = result_item->path_list("name");
 
-                    // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+                        // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
                     int emptyStringIndex = path.indexOf("");
                     path.removeAt(emptyStringIndex);
 
-                    // find_object<RecordScreen>(table_screen_singleton_name)
+                        // find_object<RecordScreen>(table_screen_singleton_name)
                     globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
                 }
                 // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
@@ -3708,12 +3697,12 @@ void KnowView::index_invoke(const QModelIndex &_index){
 
                 // if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
             }
-            // else {      //        if(result_item->field("url") != browser::Browser::_defaulthome)
-            ////        if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
-            //// Переключаются окна (используется для мобильного интерфейса)
-            ////        globalparameters.window_switcher()->switchFromTreeToRecordtable();
-            // }
-            if(result_item->field<url_type>() != ""){
+                // else {      //        if(result_item->field("url") != browser::Browser::_defaulthome)
+                ////        if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
+                //// Переключаются окна (используется для мобильного интерфейса)
+                ////        globalparameters.window_switcher()->switchFromTreeToRecordtable();
+                // }
+            if(result_item->field<home_type>() != ""){
 
                 // TreeIndex modelindex([&] {return _know_root;}, current_item()->parent(), current_item()->parent()->sibling_order(current_item()));
                 ////            select_and_current(result_item);
@@ -3721,29 +3710,29 @@ void KnowView::index_invoke(const QModelIndex &_index){
                 auto browser = globalparameters.entrance()->activated_browser();
                 // auto previous_item = _know_root->item(_previous_index);
                 auto record_previous_item = browser->record_screen()->record_controller()->source_model()->item(PosSource(browser->record_screen()->record_controller()->view()->previous_index().row()));
-                boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model(); }, record_previous_item, result_item);;
+                boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, result_item);;
 
                 // try {
                 // record_modelindex = new RecordIndex([&] {return browser->record_screen()->record_controller()->source_model(); }, record_previous_item, result_item);
                 // } catch(std::exception &) {}
 
                 auto activate = [&](boost::intrusive_ptr<RecordIndex> record_modelindex) -> browser::WebView * {
-                        return browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));                                                                                                                                                                                                                                                     // item_bind_();
+                        return browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));																															// item_bind_();
                     };
                 if(record_modelindex && ! result_item->binder()){
-                    v = activate(record_modelindex);                                                                                                                                                                                                                                  // browser->item_bind(record_modelindex)->activate();   // item_bind_();
-                }else if(record_modelindex && result_item->binder() && ! result_item->binder()->page()){                                                                                                                                                                                                  // !result_item->binder()->integrity_internal()){
-                    v = activate(record_modelindex);                                                                                                                                                                                                                                 // browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                    v = activate(record_modelindex);																													// browser->item_bind(record_modelindex)->activate();   // item_bind_();
+                }else if(record_modelindex && result_item->binder() && ! result_item->binder()->page()){																									// !result_item->binder()->integrity_internal()){
+                    v = activate(record_modelindex);																													// browser->item_bind(record_modelindex)->activate();   // item_bind_();
                 }else{
                     v = result_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                 }
             }
         }else{
-            // auto c = _binder->page()->record_controller();
+                // auto c = _binder->page()->record_controller();
             v = result_item->binder()->page()->view();
             auto browser_tab = v->tabmanager();
             auto index = browser_tab->webViewIndex(v);
-            if(index != browser_tab->currentIndex()){                                                                                                                                  // c->index<PosSource>(c->source_model()->index(_binder->item()))
+            if(index != browser_tab->currentIndex()){																	// c->index<PosSource>(c->source_model()->index(_binder->item()))
                 browser_tab->setCurrentIndex(index);
             }
         }
@@ -3761,41 +3750,41 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(boost::intrusive_ptr<T
     auto _current_item = current_item();
 
     boost::intrusive_ptr<TreeItem> result = _new_session_root_item;
-    while(  _new_session_root_item->is_ancestor_of(_current_item)  // current_root
-         && _new_session_root_item->id() != _current_item->id()   // current_root->id()
+    while(  _new_session_root_item->is_ancestor_of(_current_item)	// current_root
+         && _new_session_root_item->id() != _current_item->id()		// current_root->id()
         ){
         // reset();
         // source_model(_new_session_root_item->parent());
 // current_root =
-        _current_item = cursor_follow_up(); // current_item();
+        _current_item = cursor_follow_up();	// current_item();
         result = _current_item;
     }
-    // auto result = _new_session_root_item;
-    // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;} return tree_index;}();
-    // select_as_current(tree_index);
+        // auto result = _new_session_root_item;
+        // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;} return tree_index;}();
+        // select_as_current(tree_index);
 
-    return result;                                    // _new_session_root_item;
+    return result;					// _new_session_root_item;
 }
 
 
 
 boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
     boost::intrusive_ptr<TreeItem> root_updated;
-    // auto _tree_screen = static_cast<TreeScreen *>(parent());
+        // auto _tree_screen = static_cast<TreeScreen *>(parent());
     std::function<bool (boost::intrusive_ptr<const TreeItem>)>
     _check_crypt_conflict = [&](boost::intrusive_ptr<const TreeItem> current_root){
             bool _result = false;
-            // Вначале все инструменты работы с веткой включаются
+                // Вначале все инструменты работы с веткой включаются
             QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
             while(i.hasNext()){
                 i.next();
                 i.value()->setEnabled(true);
             }
-            // Проверяется, происходит ли клик по зашифрованной ветке
+                // Проверяется, происходит ли клик по зашифрованной ветке
             if(current_root->field<url_type>() == "1"){
                 // Если пароль доступа к зашифрованным данным не вводился в этой сессии
                 if(globalparameters.crypt_key().length() == 0){
-                    // Запрашивается пароль
+                        // Запрашивается пароль
                     Password password;
                     if(password.retrievePassword() == false){
                         // Устанавливаем пустые данные для отображения таблицы конечных записей
@@ -3806,7 +3795,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
 
                         // _know_branch
                         // current_treemodel
-                        source_model()->clear();                                                                                                                                                                                                                                                             // root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
+                        source_model()->clear();																																// root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
 
                         // init_source_model(
                         // nullptr
@@ -3826,13 +3815,13 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
                             i.value()->setEnabled(false);
                         }
                         // return current_root; // Программа дальше не идет, доделать...
-                    }else{_result = true; }
+                    }else{_result = true;}
                 }
             }
             return _result;
         };
 
-    // Сохраняется текст в окне редактирования в соответсвующий файл
+        // Сохраняется текст в окне редактирования в соответсвующий файл
     globalparameters.mainwindow()->save_text_area();
 
     auto current_model = [&](){
@@ -3847,9 +3836,9 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
     auto root_up_impl = [&](boost::intrusive_ptr<TreeItem> root_item){
             boost::intrusive_ptr<TreeItem> r;
             auto _root_up = root_item->parent();
-            if(_root_up && ! _check_crypt_conflict(_root_up)){                                                                                                          // && _root_item->parent() != _know_model_board->root_item()
+            if(_root_up && ! _check_crypt_conflict(_root_up)){														// && _root_item->parent() != _know_model_board->root_item()
                 r = root_item = _root_up;
-                if(0 == _root_up->count_direct()){tree_empty_controll(); }
+                if(0 == _root_up->count_direct()){tree_empty_controll();}
                 // boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, _root_up); } catch(std::exception &e) {throw e; } return tree_index; } ();
                 intercept(TreeIndex::instance(current_model, _root_up->parent(), _root_up));
                 auto it = _current_item->parent();
@@ -3857,7 +3846,7 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
                 // {
                 // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
                 // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                select_as_current(TreeIndex::instance([&] {return _know_root; }, it->parent(), it));
+                select_as_current(TreeIndex::instance([&] {return _know_root;}, it->parent(), it));
 
                 // Получаем указатель на данные таблицы конечных записей
 
@@ -3867,11 +3856,11 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
 
                     QStringList path = _root_up->path_list("name");
 
-                    // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+                        // Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
                     int emptyStringIndex = path.indexOf("");
                     path.removeAt(emptyStringIndex);
 
-                    // find_object<RecordScreen>(table_screen_singleton_name)
+                        // find_object<RecordScreen>(table_screen_singleton_name)
                     globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
                 }
                 // Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
@@ -3882,81 +3871,81 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_up(void){
     if(_current_item){
         if(_current_item->parent() && _current_item->parent() != root_updated && _current_item->parent()->path_list().size() > root_updated->path_list().size()){
             auto result = _current_item->parent();
-            // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
-            // {
-            // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
-            // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            select_as_current(TreeIndex::instance([&] {return _know_root; }, result->parent(), result));
+                // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, result->parent(), result->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
+                // {
+                // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
+                // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
+            select_as_current(TreeIndex::instance([&] {return _know_root;}, result->parent(), result));
         }else if(_current_item->parent() == root_updated){
             root_updated = root_up_impl(root_updated);
         }
     }else if(root_updated->count_direct() == root_updated->count_children_all()){
         root_updated = root_up_impl(root_updated);
     }
-    // auto try_root_up    = current_model()->root_item()->parent();
-    // boost::intrusive_ptr<TreeItem> _root_up = try_root_up ? try_root_up : current_model()->root_item();
-    // assert(_root_up);
+        // auto try_root_up    = current_model()->root_item()->parent();
+        // boost::intrusive_ptr<TreeItem> _root_up = try_root_up ? try_root_up : current_model()->root_item();
+        // assert(_root_up);
 
-    // if(!_check_crypt_conflict(_root_up)) {
-    // resetup_model(_root_item);  // _know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
+        // if(!_check_crypt_conflict(_root_up)) {
+        // resetup_model(_root_item);  // _know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
 
-    // if(_root_up != _know_model_board->root_item()) {
+        // if(_root_up != _know_model_board->root_item()) {
 
-    // if(!_check_crypt_conflict(_root_up)) {
+        // if(!_check_crypt_conflict(_root_up)) {
 
 
-    //// Получаем указатель на данные таблицы конечных записей
+        //// Получаем указатель на данные таблицы конечных записей
 
-    // assert(source_model()->count_records_all() >= origin_count);
+        // assert(source_model()->count_records_all() >= origin_count);
 
-    //// Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
-    // if(appconfig.interface_mode() == "mobile") {
+        //// Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
+        // if(appconfig.interface_mode() == "mobile") {
 
-    // QStringList path = _root_up->path_absolute_as_name();
+        // QStringList path = _root_up->path_absolute_as_name();
 
-    //// Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
-    // int emptyStringIndex = path.indexOf("");
-    // path.removeAt(emptyStringIndex);
+        //// Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+        // int emptyStringIndex = path.indexOf("");
+        // path.removeAt(emptyStringIndex);
 
-    ////            find_object<RecordScreen>(table_screen_singleton_name)
-    // globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+        ////            find_object<RecordScreen>(table_screen_singleton_name)
+        // globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
 
-    // }
+        // }
 
-    //// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
-    // resizeColumnToContents(0);
-    // }
+        //// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
+        // resizeColumnToContents(0);
+        // }
 
-    // } else if(current_item->parent()) { // _root_item == _know_model_board->root_item()
-    // current_item = current_item->parent();
+        // } else if(current_item->parent()) { // _root_item == _know_model_board->root_item()
+        // current_item = current_item->parent();
 
-    // if(current_item->parent()) {
-    // _root_up = current_item->parent();
+        // if(current_item->parent()) {
+        // _root_up = current_item->parent();
 
-    // if(!_check_crypt_conflict(_root_up)) {
-    // resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
-    // }
-    // } else {
-    // _root_up = _know_model_board->root_item();
+        // if(!_check_crypt_conflict(_root_up)) {
+        // resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
+        // }
+        // } else {
+        // _root_up = _know_model_board->root_item();
 
-    // if(!_check_crypt_conflict(_root_up)) {
-    // resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
-    // }
-    // }
+        // if(!_check_crypt_conflict(_root_up)) {
+        // resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
+        // }
+        // }
 
-    // select_as_current(current_item);
+        // select_as_current(current_item);
 
-    // } else {    // _root_item == _know_model_board->root_item() && (current_item->parent() == _know_model_board->root_item())?
-    // if(!_check_crypt_conflict(_root_up)) {
-    // _root_up = cursor_follow_up_to_root();
-    // }
-    // }
+        // } else {    // _root_item == _know_model_board->root_item() && (current_item->parent() == _know_model_board->root_item())?
+        // if(!_check_crypt_conflict(_root_up)) {
+        // _root_up = cursor_follow_up_to_root();
+        // }
+        // }
 
-    // enable_up_action();
-    // }
+        // enable_up_action();
+        // }
 
     _tree_screen->enable_up_action();
-    return current_item();    // root_updated;
+    return current_item();	// root_updated;
 }
 
 
@@ -3967,20 +3956,20 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_root(void){
             return source_model();
         };
     auto _current_item = current_item();
-    // auto _tree_screen = static_cast<TreeScreen *>(parent());
+        // auto _tree_screen = static_cast<TreeScreen *>(parent());
 
     absolute_root = _know_model_board->root_item();
     if(_source_model()->root_item() != absolute_root){
         // boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, absolute_root); } catch(std::exception &e) {throw e; } return tree_index; } ();
         intercept(TreeIndex::instance(_source_model, absolute_root->parent(), absolute_root));
-    }                                                 // _know_branch->intercept(know_root()->root_item());
+    }							// _know_branch->intercept(know_root()->root_item());
     if(_current_item){
-        while(_current_item->parent()->parent()){_current_item = _current_item->parent(); }
+        while(_current_item->parent()->parent()){_current_item = _current_item->parent();}
         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root; }, _current_item->parent(), _current_item->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il)
         // {
         // return il == _current_item->linker() && il->host() == _current_item && _current_item->parent() == il->host_parent();
         // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        select_as_current(TreeIndex::instance([&] {return _know_root; }, _current_item->parent(), _current_item));
+        select_as_current(TreeIndex::instance([&] {return _know_root;}, _current_item->parent(), _current_item));
     }
     _tree_screen->enable_up_action();
     return absolute_root;
@@ -3988,31 +3977,31 @@ boost::intrusive_ptr<TreeItem> KnowView::cursor_follow_root(void){
 
 
 
-boost::intrusive_ptr<TreeItem> KnowView::intercept(boost::intrusive_ptr<TreeIndex> modelindex    // boost::intrusive_ptr<TreeItem> _item    // QString id
+boost::intrusive_ptr<TreeItem> KnowView::intercept(boost::intrusive_ptr<TreeIndex> modelindex	// boost::intrusive_ptr<TreeItem> _item    // QString id
     ){
-    // auto prepared = know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id)));
-    auto result = modelindex->host();                                  // _item;    // _know_model_board->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;});     // _know_model_board->index(KnowModel::delegater(id))
-    ////    auto absolute_source_model = []() {return globalparameters.tree_screen()->know_model_board();};
-    ////    assert(_item == absolute_source_model()->root_item() || absolute_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _item->id();}));
+        // auto prepared = know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id)));
+    auto result = modelindex->host();					// _item;    // _know_model_board->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;});     // _know_model_board->index(KnowModel::delegater(id))
+        ////    auto absolute_source_model = []() {return globalparameters.tree_screen()->know_model_board();};
+        ////    assert(_item == absolute_source_model()->root_item() || absolute_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == _item->id();}));
 
-    ////    // _know_branch->intercept(prepared);    //item(_know_branch->index(prepared));
+        ////    // _know_branch->intercept(prepared);    //item(_know_branch->index(prepared));
 
-    // resetup_model(result);   //    return _know_branch->intercept(know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id))));
+        // resetup_model(result);   //    return _know_branch->intercept(know_root_holder::know_root()->item(know_root_holder::know_root()->index(TreeKnowModel::delegater(id))));
 
-    // reset();
+        // reset();
 
 
     sychronize();
     _know_model_board->save();
 
-    // if(_know_root && is_owner()) {
-    // delete _know_root;  // dangerous!
-    // _know_root = nullptr;
-    // }
+        // if(_know_root && is_owner()) {
+        // delete _know_root;  // dangerous!
+        // _know_root = nullptr;
+        // }
 
-    // reset();
-    // Модель подключется к виду
-    _know_root->intercept(result);                                  // source_model(result);
+        // reset();
+        // Модель подключется к виду
+    _know_root->intercept(result);					// source_model(result);
     reset();
     setModel(_know_root);
     cursor_follow_up(result);

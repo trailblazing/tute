@@ -875,9 +875,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<b
                 ////                    it->binder()->page()->on_close_requested(); // it->binder()->break_page();  // it->page_break();
                 // }
             browser::WebView *web_view = nullptr;
-            if((web_view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){
-                    return url_equal((b->host()->field<url_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();
-                }))){
+            if((web_view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
                 if(it->binder()){
                     assert(web_view->page() == it->page());
                     it->page()->record_controller()->remove(it->id());

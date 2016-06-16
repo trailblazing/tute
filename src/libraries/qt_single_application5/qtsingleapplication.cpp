@@ -859,9 +859,7 @@ void QtSingleApplication::newLocalSocketConnection(){
             boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-            it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item())->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {
-                        return url_equal(it->field<url_type>().toStdString(), _url.toStdString());	// it->field<url_type>() == _url;
-                    });
+            it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item())->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
 
 //            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
 
@@ -881,9 +879,8 @@ void QtSingleApplication::newLocalSocketConnection(){
             TreeIndex::instance([&] {return tree_view->source_model();}, parent, current_item)->item_bind(tree_view->current_item()
                                                                                                          , _url
                                                                                                          , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                                                                                                         , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {
-                    return url_equal(it->field<url_type>().toStdString(), _url.toStdString());	// it->field<url_type>() == _url;
-                })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                                                                                                         , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
+                )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
         }
         // browser_view->mainWindow()->load_record(record);
     }
@@ -981,7 +978,7 @@ void QtSingleApplication::postLaunch(){
 //            browser->loadPage(args.last());			// mainWindow()->loadPage(args.last());
             KnowView *tree_view = _globalparameters.tree_screen()->view();
             auto it = tree_view->session_root_auto();
-            TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it)->item_bind(it, args.last(), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+            TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it)->item_bind(it, args.last(), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
         }
         //        else
         //            browser->slotHome(); // mainWindow()->slotHome();

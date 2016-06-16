@@ -196,9 +196,8 @@ namespace browser {
                     tree_index->item_bind(tree_view->current_item()
                                          , url
                                          , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-                                         , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                            return url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());
-                        })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                                         , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+                        )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
                     assert(_lineedits);
                     if(_lineedits){
@@ -235,7 +234,8 @@ namespace browser {
                     url.setQuery(url_query);
                     url.setFragment("q=" + search_text);
 //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-                    tree_index->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                    tree_index->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+                        )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
                 }
             }
         }else if(result_item != tree_view->current_item()){

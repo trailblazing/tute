@@ -35,15 +35,14 @@ extern const char *tree_screen_viewer_name;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
-RecordScreen::RecordScreen(
-    TreeScreen          *_tree_screen
-                          , FindScreen        *_find_screen
-                          , MetaEditor        *_editor_screen
-                          , browser::Entrance *_entrance
-                          , browser::Browser  *_browser
-                          , MainWindow        *_main_window
-                          , browser::Profile  *_profile)
-    : QWidget(_main_window->vtab_record())
+RecordScreen::RecordScreen(TreeScreen           *_tree_screen
+                          , FindScreen          *_find_screen
+                          , MetaEditor          *_editor_screen
+                          , browser::Entrance   *_entrance
+                          , browser::Browser    *_browser
+                          , MainWindow          *_main_window
+                          , browser::Profile    *_profile)
+    : QWidget(_browser)  // _main_window->vtab_record()
       , _browser(_browser)
       , _tree_screen(_tree_screen)
       , _main_window(_main_window)
@@ -102,7 +101,7 @@ RecordScreen::~RecordScreen(){
         // delete _recordtree_search;
         // delete
     if(_record_controller)_record_controller->deleteLater();
-    if(_tabmanager)_tabmanager->deleteLater();
+
         // delete
     _vertical_scrollarea->deleteLater();
 }
@@ -114,9 +113,7 @@ void RecordScreen::save_in_new_branch(bool checked){
     assert(_tree_screen);
     auto _entrance = globalparameters.entrance();
     assert(_entrance);
-    auto _tree_source_model = [&](){
-            return _tree_screen->view()->source_model();
-        };																				// static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
+    auto _tree_source_model = [&](){return _tree_screen->view()->source_model();};																						// static_cast<TreeKnowModel *>(tree_screen->tree_view()->model());
 
     auto _index = _tree_screen->view()->current_index();
     if(_index.isValid()){
@@ -161,8 +158,8 @@ void RecordScreen::save_in_new_branch(bool checked){
                 ////            into_know_branch->field("name", objectName());
 
                 ////            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
-            auto _record_model = [&](){return this->record_controller()->source_model(); };																																									// ->record_table();
-            auto know_model_board = [&](){return _tree_screen->view()->know_model_board(); };
+            auto _record_model = [&](){return this->record_controller()->source_model();};																																									// ->record_table();
+            auto know_model_board = [&](){return _tree_screen->view()->know_model_board();};
             for(int i = 0; i < _record_model()->size(); i ++){
                 auto it = _record_model()->item(PosSource(i));
                 if(! know_model_board()->item([=](boost::intrusive_ptr<const TreeItem> t){
@@ -330,7 +327,7 @@ void RecordScreen::setup_actions(void){
                     tree_view->view_paste_children_from_children(																																																// view_paste_sibling
                         TreeIndex::instance(_source_model, tree_view->session_root_auto()->parent(), tree_view->session_root_auto())																																																								// _tree_screen->tree_view()->current_index() //,
                                                                 , branch_item
-                                                                , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>(); }
+                                                                , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}
                         );
 
                         // _tree_screen->resetup_model(_source_model()->root_item());
@@ -855,7 +852,6 @@ void RecordScreen::tools_update(){
         // Удаление записи
         // Пункт активен только если запись (или записи) выбраны в списке
     if(has_selection){											// item_selection_model->hasSelection()
-
         _cut->setEnabled(true);
         _copy->setEnabled(true);
         _close->setEnabled(true);
@@ -993,10 +989,10 @@ QString RecordScreen::tree_path(void){
     return _treepath;
 }
 
-RecordController *RecordScreen::record_controller(){return _record_controller; }
+RecordController *RecordScreen::record_controller(){return _record_controller;}
 
-browser::TabWidget *RecordScreen::tabmanager(){return _tabmanager; }
+browser::TabWidget *RecordScreen::tabmanager(){return _tabmanager;}
 
-browser::Browser *RecordScreen::browser(){return _browser; }
+browser::Browser *RecordScreen::browser(){return _browser;}
 
-TreeScreen *RecordScreen::tree_screen(){return _tree_screen; }
+TreeScreen *RecordScreen::tree_screen(){return _tree_screen;}

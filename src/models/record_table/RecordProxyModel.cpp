@@ -5,17 +5,13 @@
 
 
 // Конструктор модели
-RecordProxyModel::RecordProxyModel(// QString screen_name,
-                                   QObject *pobj) : QSortFilterProxyModel(pobj)
-{
-    // setObjectName(screen_name + "_proxymodel");
-    // this->setSourceModel(this);
-
+RecordProxyModel::RecordProxyModel(QObject *pobj) : QSortFilterProxyModel(pobj){// QString screen_name,
+        // setObjectName(screen_name + "_proxymodel");
+        // this->setSourceModel(this);
 }
 
 // Деструктор модели
-RecordProxyModel::~RecordProxyModel()
-{
+RecordProxyModel::~RecordProxyModel(){
     return;
 }
 

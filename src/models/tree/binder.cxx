@@ -113,7 +113,7 @@ Binder::~Binder(){
     std::function<void (boost::intrusive_ptr<TreeItem>)>
     close_tab_recursive
         = [&](boost::intrusive_ptr<TreeItem> it) -> void {
-            if(globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<url_type>()).toStdString(), it->field<url_type>().toStdString());})){
+            if(globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), it->field<home_type>().toStdString());})){
                 // [&](boost::intrusive_ptr<const ::Binder> b){return b->host()->field<url_type>() == it->field<url_type>();}
 
                 // item_to_be_deleted->unique_page()

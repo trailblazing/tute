@@ -85,9 +85,9 @@ public:
     // this design make a long time compiling!!!
     template<typename T>
     inline Binder(std::shared_ptr<T> ar)
-        : _item_linker_set(item_interface_set(&T::item, ar))
+        : _item_linker_set(item_interface_set(&T::host, ar))
         , _page_linker_set(page_interface_set(&T::page, ar))
-        , _item_linker(item_interface(&T::item, ar))
+        , _item_linker(item_interface(&T::host, ar))
         , _page_linker(page_interface(&T::page, ar))
         , _bind_helper(bind_interface(&T::bind, ar))
         , _activate_helper(activate_interface(&T::activator, ar))

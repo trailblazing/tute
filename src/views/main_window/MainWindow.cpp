@@ -47,37 +47,37 @@ const char *find_screen_singleton_name = "find_screen";
 const char *download_manager_singleton_name = "download_manager";
 const char *windowswitcher_singleton_name = "window_switcher";
 const char *entrance_singleton_name = "entrance";
-const char *record_controller_multi_instance_name = "record_controller";   // std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
+const char *record_controller_multi_instance_name = "record_controller";	// std::string(std::string(table_screen_singleton_name) + std::string("_controller")).c_str();
 const char *record_view_multi_instance_name = "record_view";
 extern const char *tree_screen_viewer_name;
 extern const char *action_find_in_base;
 
-MainWindow::MainWindow(GlobalParameters    &_globalparameters
-                      , AppConfig         &_appconfig
-                      , DataBaseConfig    &_databaseconfig
-                      , browser::Profile *_profile
+MainWindow::MainWindow(GlobalParameters     &_globalparameters
+                      , AppConfig           &_appconfig
+                      , DataBaseConfig      &_databaseconfig
+                      , browser::Profile    *_profile
                       , QString style_source)
     : QMainWindow()
       , _style(style_source)
       , _globalparameters(_globalparameters)
       , _appconfig(_appconfig)
       , _databaseconfig(_databaseconfig)
-      , _v_right_splitter([&]() -> QSplitter * {auto _v_r_s = new QSplitter(Qt::Vertical); _v_r_s->setSizes(_appconfig.v_right_splitter_sizelist()); _globalparameters.v_right_splitter(_v_r_s); return _v_r_s; } ())
-      , _v_find_splitter([&]() -> QSplitter * {auto _v_f_s = new QSplitter(Qt::Vertical); _v_f_s->setSizes(_appconfig.findsplitter_sizelist()); _globalparameters.find_splitter(_v_f_s); return _v_f_s; } ())
-      , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(style_source_, this); _globalparameters.vtab_record(vr); return vr; } (_style))
-      , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this); _globalparameters.vtab_tree(vt); return vt; } (_style))
-      , _h_right_splitter([&]() -> QSplitter * {auto _h_r_s = new QSplitter(Qt::Horizontal); _h_r_s->setSizes(_appconfig.h_right_splitter_sizelist()); _globalparameters.h_right_splitter(_h_r_s); return _h_r_s; } ())
+      , _v_right_splitter([&]() -> QSplitter * {auto _v_r_s = new QSplitter(Qt::Vertical);_v_r_s->setSizes(_appconfig.v_right_splitter_sizelist());_globalparameters.v_right_splitter(_v_r_s);return _v_r_s;} ())
+      , _v_find_splitter([&]() -> QSplitter * {auto _v_f_s = new QSplitter(Qt::Vertical);_v_f_s->setSizes(_appconfig.findsplitter_sizelist());_globalparameters.find_splitter(_v_f_s);return _v_f_s;} ())
+      , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(style_source_, this);_globalparameters.vtab_record(vr);return vr;} (_style))
+      , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);_globalparameters.vtab_tree(vt);return vt;} (_style))
+      , _h_right_splitter([&]() -> QSplitter * {auto _h_r_s = new QSplitter(Qt::Horizontal);_h_r_s->setSizes(_appconfig.h_right_splitter_sizelist());_globalparameters.h_right_splitter(_h_r_s);return _h_r_s;} ())
       , _h_left_splitter([&]() -> QSplitter * {
-              if(_globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);                                                                                                                                                                      // Для Андроида окно просто разворачивается на весь экран
+              if(_globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);																					// Для Андроида окно просто разворачивается на весь экран
               else{
                   QRect rect = _appconfig.mainwin_geometry();
                   resize(rect.size());
                   move(rect.topLeft());
               }
-              auto _h_l_s = new QSplitter(Qt::Horizontal); _h_l_s->setSizes(_appconfig.h_left_splitter_sizelist());
+              auto _h_l_s = new QSplitter(Qt::Horizontal);_h_l_s->setSizes(_appconfig.h_left_splitter_sizelist());
               _globalparameters.h_left_splitter(_h_l_s);
               return _h_l_s;
-          } ())                                                      // Qt::Vertical
+          } ())								// Qt::Vertical
 // , _h_splitter(new QSplitter(Qt::Horizontal))
       , _filemenu(new QMenu(tr("&File"), this))
       , _editmenu(new QMenu(tr("&Edit"), this))
@@ -87,32 +87,32 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
       , _windowmenu(new QMenu(tr("&Window"), this))
       , _toolsmenu(new QMenu(tr("&Tools"), this))
       , _helpmenu(new QMenu(tr("&Help"), this))
-      , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this))                // _vtabwidget
+      , _tree_screen(new TreeScreen(tree_screen_singleton_name, _appconfig, _filemenu, _toolsmenu, this))		// _vtabwidget
       , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
-      , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))                // _find_screen -> for find_text
-      , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))                                            // Qt::MaximizeUsingFullscreenGeometryHint
+      , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))		// _find_screen -> for find_text
+      , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))							// Qt::MaximizeUsingFullscreenGeometryHint
       , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_tree))
       , _statusbar(new QStatusBar(this))
       , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
       , _enable_real_close(false){
-    // _page_screen->setVisible(false);
-    // _page_screen->hide();
+        // _page_screen->setVisible(false);
+        // _page_screen->hide();
 
     _globalparameters.mainwindow(this);
 
 
 
-    // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
-    // int vtab_g_width = _vtabwidget->geometry().width();         // 100
-    // int this_width = geometry().width();                        // 640
-    // int download_width = _download->geometry().width();         // 1089
-    // int tree_screen_width = _tree_screen->geometry().width();   // 100
-    // int find_splitter_width = _v_find_splitter->geometry().width(); // 640
-    // int left_splitter_width = _h_left_splitter->geometry().width(); // 640
+        // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
+        // int vtab_g_width = _vtabwidget->geometry().width();         // 100
+        // int this_width = geometry().width();                        // 640
+        // int download_width = _download->geometry().width();         // 1089
+        // int tree_screen_width = _tree_screen->geometry().width();   // 100
+        // int find_splitter_width = _v_find_splitter->geometry().width(); // 640
+        // int left_splitter_width = _h_left_splitter->geometry().width(); // 640
 
-    // if(_vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()) {
-    // _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
-    // }
+        // if(_vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()) {
+        // _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
+        // }
 
 
     _v_right_splitter->setHandleWidth(0);
@@ -138,29 +138,29 @@ MainWindow::MainWindow(GlobalParameters    &_globalparameters
     append_quit_menu();
 
     init_tools_menu();
-    // initHelpMenu();
+        // initHelpMenu();
     QMainWindow::menuBar()->hide();
 
     setup_ui();
     setup_signals();
     assembly();
 
-    // initFileMenu();
-    // initToolsMenu();
-    // initHelpMenu();
+        // initFileMenu();
+        // initToolsMenu();
+        // initHelpMenu();
 
     setup_icon_actions();
     create_tray_icon();
     set_icon();
     if(QSystemTrayIcon::isSystemTrayAvailable())_tray_icon->show();
-    //// Инициализируется объект слежения за корзиной
-    // trashmonitoring.init(_appconfig.get_trashdir());
-    // trashmonitoring.update();
+        //// Инициализируется объект слежения за корзиной
+        // trashmonitoring.init(_appconfig.get_trashdir());
+        // trashmonitoring.update();
 
-    // Закрывать ли по-настоящему окно при обнаружении сигнала closeEvent
+        // Закрывать ли по-настоящему окно при обнаружении сигнала closeEvent
     _enable_real_close = false;
 
-    // Инициализация генератора случайных чисел
+        // Инициализация генератора случайных чисел
     init_random();
 }
 
@@ -175,154 +175,154 @@ void MainWindow::append_quit_menu(){
 MainWindow::~MainWindow(){
     save_all_state();
 
-    _entrance->deleteLater(); _entrance = nullptr;
-    // delete
+    _entrance->deleteLater();_entrance = nullptr;
+        // delete
     _switcher->deleteLater();
-    // delete
+        // delete
     _statusbar->deleteLater();
-    // delete
+        // delete
     _editor_screen->deleteLater();
-    // delete
+        // delete
     _find_screen->deleteLater();
-    // delete  _download;
-    // if(_page_screen)delete  _page_screen;
-    // delete  _table_screen;
+        // delete  _download;
+        // if(_page_screen)delete  _page_screen;
+        // delete  _table_screen;
     if(_tree_screen){
         // delete
         _tree_screen->deleteLater();
         _tree_screen = nullptr;
     }
-    // delete  _vtabwidget;
+        // delete  _vtabwidget;
 
-    // delete
+        // delete
     _v_right_splitter->deleteLater();
-    // delete
+        // delete
     _v_find_splitter->deleteLater();
-    // delete  _vtabwidget;
-    // delete
+        // delete  _vtabwidget;
+        // delete
     _h_right_splitter->deleteLater();
-    // delete
+        // delete
     _h_left_splitter->deleteLater();
-    // delete
+        // delete
 // _h_splitter->deleteLater();
 
-    // delete
+        // delete
     _filemenu->deleteLater();
-    // delete
+        // delete
     _editmenu->deleteLater();
-    // delete
+        // delete
     _viewmenu->deleteLater();
-    // delete
+        // delete
     _histrymenu->deleteLater();
-    // delete
+        // delete
     _bookmarkmenu->deleteLater();
-    // delete
+        // delete
     _windowmenu->deleteLater();
-    // delete
+        // delete
     _toolsmenu->deleteLater();
-    // delete
+        // delete
     _helpmenu->deleteLater();
 }
 
 
 void MainWindow::setup_ui(void){
-    // При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
+        // При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
 
-    // _tree_screen = new TreeScreen(_appconfig, this);
-    // _tree_screen->setObjectName(tree_screen_singleton_name);  // "treeScreen"
+        // _tree_screen = new TreeScreen(_appconfig, this);
+        // _tree_screen->setObjectName(tree_screen_singleton_name);  // "treeScreen"
     _globalparameters.tree_screen(_tree_screen);
-    // _treetable_hidden = treeScreen->isHidden();
-    // connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
-    // connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
+        // _treetable_hidden = treeScreen->isHidden();
+        // connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
+        // connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
 
-    // _table_screen = new TableScreen(this);
-    // _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
-
-
-    // _globalparameters.push_record_screen(_table_screen);
+        // _table_screen = new TableScreen(this);
+        // _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
 
 
-    // _recordtable_hidden = recordTableScreen->isHidden();
-    // connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
-    // connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
+        // _globalparameters.push_record_screen(_table_screen);
 
-    // _page_screen = new TableScreen(this);
-    // _page_screen->setObjectName("page_screen");
-    // _globalparameters.page_screen(_page_screen);
 
-    // _download = new browser::DownloadManager(this);
-    // _download->setObjectName(download_manager_singleton_name);
+        // _recordtable_hidden = recordTableScreen->isHidden();
+        // connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
+        // connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
+
+        // _page_screen = new TableScreen(this);
+        // _page_screen->setObjectName("page_screen");
+        // _globalparameters.page_screen(_page_screen);
+
+        // _download = new browser::DownloadManager(this);
+        // _download->setObjectName(download_manager_singleton_name);
     _globalparameters.download_manager(_download);
 
 
-    // _editor_screen = new MetaEditor();
-    // _editor_screen->setObjectName(meta_editor_singleton_name);  // "editorScreen"
+        // _editor_screen = new MetaEditor();
+        // _editor_screen->setObjectName(meta_editor_singleton_name);  // "editorScreen"
     _globalparameters.meta_editor(_editor_screen);
 
 
-    // _find_screen = new FindScreen(this);
-    // _find_screen->setObjectName(find_screen_singleton_name);  // "findScreenDisp"
+        // _find_screen = new FindScreen(this);
+        // _find_screen->setObjectName(find_screen_singleton_name);  // "findScreenDisp"
     _globalparameters.find_screen(_find_screen);
-    // findScreenDisp->hide();
+        // findScreenDisp->hide();
     if(! _appconfig.editor_show())_editor_screen->hide();
-    // _statusbar = new QStatusBar(this);
-    _statusbar->setObjectName("status_bar");             // "statusBar"
+        // _statusbar = new QStatusBar(this);
+    _statusbar->setObjectName("status_bar");		// "statusBar"
     setStatusBar(_statusbar);
     _globalparameters.status_bar(_statusbar);
 
-    // Вспомогательный объект переключения окон, используется в мобильном интерфейсе
-    // _switcher = new WindowSwitcher(this);
-    // _switcher->setObjectName(windowswitcher_singleton_name); // "windowSwitcher"
+        // Вспомогательный объект переключения окон, используется в мобильном интерфейсе
+        // _switcher = new WindowSwitcher(this);
+        // _switcher->setObjectName(windowswitcher_singleton_name); // "windowSwitcher"
     _globalparameters.window_switcher(_switcher);
-    // windowSwitcher->findInBaseClick();
+        // windowSwitcher->findInBaseClick();
 
-    // if(_table_screen) {
-    // _entrance = new browser::Entrance(
-    // _record_ontroller
-    // = _table_screen->getRecordTableController()
-    // , _globalparameters.style_source()
-    // , this
-    // , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
-    // );
-    ////    browsermanager->adjustSize();
+        // if(_table_screen) {
+        // _entrance = new browser::Entrance(
+        // _record_ontroller
+        // = _table_screen->getRecordTableController()
+        // , _globalparameters.style_source()
+        // , this
+        // , Qt::Widget  // Qt::MaximizeUsingFullscreenGeometryHint
+        // );
+        ////    browsermanager->adjustSize();
     _entrance->set_scrollbars(true);
-    // _entrance->setObjectName(entrance_singleton_name);
+        // _entrance->setObjectName(entrance_singleton_name);
     _globalparameters.entrance(_entrance);
-    // }
+        // }
 
-    // todo: Для проверки, почему то в этом месте поиск объекта по имени не работает, разобраться.
-    // MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name);
+        // todo: Для проверки, почему то в этом месте поиск объекта по имени не работает, разобраться.
+        // MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name);
 }
 
 
 void MainWindow::setup_signals(void){
     connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &MainWindow::on_expand_edit_area);
 
-    // Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
+        // Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
     connect(QtSingleApplication::instance(), &QApplication::commitDataRequest, this, &MainWindow::commit_data);
 
     connect(QtSingleApplication::instance(), &QApplication::focusChanged, this, &MainWindow::on_focus_changed);
 
-    // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
+        // Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
     connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
-    // connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
-    // connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+        // connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
+        // connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-    // if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+        // if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
     connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-    // auto hide_others = [this](int index) {
-    // if(-1 != index) {
-    // auto count = _vtabwidget->count();
+        // auto hide_others = [this](int index) {
+        // if(-1 != index) {
+        // auto count = _vtabwidget->count();
 
-    // for(int i = 0; i < count; i++) {
-    // if(i != index)_vtabwidget->widget(i)->hide();
-    // }
+        // for(int i = 0; i < count; i++) {
+        // if(i != index)_vtabwidget->widget(i)->hide();
+        // }
 
-    // _vtabwidget->widget(index)->show();
-    // }
-    // };
+        // _vtabwidget->widget(index)->show();
+        // }
+        // };
 
 
     connect(_vtab_record, &HidableTabWidget::currentChanged, this, [&](int index){
@@ -382,7 +382,7 @@ void MainWindow::setup_signals(void){
 
     auto tree_viewer_integrity = [&, this](MainWindow *_this, HidableTabWidget *_vtab_tree, int index) -> void {
             auto tree_view_curr = _vtab_tree->widget(index);
-            if(tree_view_curr->objectName() == tree_screen_viewer_name){                                                                                                                                       // if(real_index < _vtab_record->count()) {
+            if(tree_view_curr->objectName() == tree_screen_viewer_name){																	// if(real_index < _vtab_record->count()) {
                 // for(int i = 0; i < _vtab_record->count(); i++) {
                 // if(i != real_index) {
                 // auto current_widget = _vtab_record->widget(i);
@@ -397,7 +397,7 @@ void MainWindow::setup_signals(void){
                 // }
                 // }
 
-                auto current_tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_view_curr);                                                                                                                                                  // auto current_widget = _vtab_record->widget(real_index);
+                auto current_tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(tree_view_curr);																			// auto current_widget = _vtab_record->widget(real_index);
                 if(current_tree_screen_viewer){
                     QWidget *tree_screen = current_tree_screen_viewer->tree_screen();
                     if(! tree_screen){
@@ -420,13 +420,13 @@ void MainWindow::setup_signals(void){
                             v->setFocus();
                             v->activateWindow();
                             v->raise();
-                            v->adjustSize();                                                                                                                                                                                      // v->repaint();
+                            v->adjustSize();																								// v->repaint();
 // v->layout()->update();  // activate();
                         }
                     }
-                    // else{
-                    // _tree_screen->restore_menubar();
-                    // }
+                        // else{
+                        // _tree_screen->restore_menubar();
+                        // }
                 }
             }
         };
@@ -438,14 +438,14 @@ void MainWindow::setup_signals(void){
                 if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name)tree_viewer_count ++;
             }
 // auto count = _vtab_tree->count();
-            if(0 == tree_viewer_count){                                                                                                       // if(1 >= count) {    // self and download
+            if(0 == tree_viewer_count){														// if(1 >= count) {    // self and download
 // _this->_tree_screen->restore_menubar();
                 index = _vtab_tree->insertTab(0, static_cast<QWidget *>(new TreeScreenViewer(_this->_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
                 _vtab_tree->setCurrentIndex(index);
             }
         };
 
-    // hide_others(_vtabwidget->currentIndex());
+        // hide_others(_vtabwidget->currentIndex());
     connect(_vtab_tree, &HidableTabWidget::currentChanged, this, [&, this](int index){
             if(- 1 != index){
 
@@ -509,70 +509,82 @@ void MainWindow::setup_signals(void){
 // }
 // }   // &AppConfig::setFindScreenTreeSearchArea
 // );      // , findScreenDisp, &FindScreen::changedTreeSearchArea
+    _vtab_tree->tabBar()->setUsesScrollButtons(true);
 }
 
+std::vector<TreeScreenViewer *> MainWindow::tree_viewers() const {
+    std::vector<TreeScreenViewer *> tsvs;
+    int tree_viewer_count = 0;
+    for(int i = 0; i < _vtab_tree->count(); i ++){
+        if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name){
+            tsvs.push_back(dynamic_cast<TreeScreenViewer *>(_vtab_tree->widget(i)));
+            tree_viewer_count ++;
+        }
+    }
+    return tsvs;
+}
 
 void MainWindow::assembly(void){
-    // v_right_splitter = new QSplitter(Qt::Vertical);
+        // v_right_splitter = new QSplitter(Qt::Vertical);
     _v_right_splitter->addWidget(_entrance);
-    _v_right_splitter->addWidget(_editor_screen);                       // Text entries // Текст записи
-    _v_right_splitter->setCollapsible(0,  true);                         // if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
-    _v_right_splitter->setCollapsible(1,  false);                         // The contents of the recording can not link up    // Содержимое записи не может смыкаться
+    _v_right_splitter->addWidget(_editor_screen);			// Text entries // Текст записи
+    _v_right_splitter->setCollapsible(0,  true);			// if true, make editor can overload it    // The list of final entries can not link up    // Список конечных записей не может смыкаться
+    _v_right_splitter->setCollapsible(1,  false);				// The contents of the recording can not link up    // Содержимое записи не может смыкаться
     _v_right_splitter->setObjectName("v_right_splitter");
 
-    // find_splitter = new QSplitter(Qt::Vertical);
-    _v_find_splitter->addWidget(_v_right_splitter);                     // findSplitter->addWidget(hSplitter);
+        // find_splitter = new QSplitter(Qt::Vertical);
+    _v_find_splitter->addWidget(_v_right_splitter);			// findSplitter->addWidget(hSplitter);
     _v_find_splitter->addWidget(_find_screen);
-    _v_find_splitter->setCollapsible(0,  false);                         // Верхняя часть не должна смыкаться
-    _v_find_splitter->setCollapsible(1,  false);                         // Часть для поиска не должна смыкаться
+    _v_find_splitter->setCollapsible(0,  false);			// Верхняя часть не должна смыкаться
+    _v_find_splitter->setCollapsible(1,  false);			// Часть для поиска не должна смыкаться
     _v_find_splitter->setObjectName("find_splitter");
 
-    // _qtabwidget = new QTabWidget(this);
+        // _qtabwidget = new QTabWidget(this);
 
-    _vtab_tree->setTabPosition(QTabWidget::West);                      // sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
-
-
-
-
-
-    // _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
+    _vtab_tree->setTabPosition(QTabWidget::West);			// sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
 
 
 
 
-    // _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
 
-    // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
+        // _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
+
+
+
+
+        // _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
+
+        // if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
     auto index = _vtab_tree->addTab(static_cast<QWidget *>(new TreeScreenViewer(_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
-    _vtab_tree->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");                                // QIcon(":/resource/pic/holly.svg")
+    _vtab_tree->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");				// QIcon(":/resource/pic/holly.svg")
 
     _vtab_tree->setCurrentIndex(index);
 
 
-    _appconfig.find_screen_tree_search_area(0);              // force to root_item of global tree
+    _appconfig.find_screen_tree_search_area(0);			// force to root_item of global tree
 
 
 
 
-    // v_left_splitter = new QSplitter(
-    // Qt::Horizontal  // Qt::Vertical
-    // );
+        // v_left_splitter = new QSplitter(
+        // Qt::Horizontal  // Qt::Vertical
+        // );
 
 
 
 
-    // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
-    // int vtab_g_width = _vtabwidget->geometry().width();         // 100
-    // int this_width = geometry().width();                        // 640
-    // int download_width = _download->geometry().width();         // 1089
-    // int tree_screen_width = _tree_screen->geometry().width();   // 100
-    // int find_splitter_width = _v_find_splitter->geometry().width(); // 640
-    // int left_splitter_width = _h_left_splitter->geometry().width(); // 640
+        // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
+        // int vtab_g_width = _vtabwidget->geometry().width();         // 100
+        // int this_width = geometry().width();                        // 640
+        // int download_width = _download->geometry().width();         // 1089
+        // int tree_screen_width = _tree_screen->geometry().width();   // 100
+        // int find_splitter_width = _v_find_splitter->geometry().width(); // 640
+        // int left_splitter_width = _h_left_splitter->geometry().width(); // 640
 
-    // if(_vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()) {
-    // _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
-    // }
+        // if(_vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()) {
+        // _vtabwidget->resize(_vtabwidget->geometry().width() * 15 / 100, _vtabwidget->geometry().height());
+        // }
 
     _h_right_splitter->setObjectName("h_right_splitter");
     _h_right_splitter->addWidget(_vtab_record);
@@ -596,11 +608,11 @@ void MainWindow::assembly(void){
 
 
 
-    // v_left_splitter->addWidget(treeScreen);
-    // v_left_splitter->addWidget(recordTableScreen);
+        // v_left_splitter->addWidget(treeScreen);
+        // v_left_splitter->addWidget(recordTableScreen);
     _h_left_splitter->setCollapsible(0,  true);
     _h_left_splitter->setCollapsible(1,  false);
-    // v_left_splitter->setCollapsible(1, false);
+        // v_left_splitter->setCollapsible(1, false);
     _h_left_splitter->setObjectName("h_left_splitter");
 
     _globalparameters.find_splitter(_v_find_splitter);
@@ -614,14 +626,14 @@ void MainWindow::assembly(void){
 
 
 
-    // hSplitter = new QSplitter(Qt::Horizontal);
+        // hSplitter = new QSplitter(Qt::Horizontal);
 // _h_splitter->addWidget(_h_left_splitter);
-    // hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
-    // hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
+        // hSplitter->addWidget(treeScreen);             // Tree branches    // Дерево веток
+        // hSplitter->addWidget(recordTableScreen);      // The list of final entries    // Список конечных записей
 
 
 
-    // _h_splitter->addWidget(_find_splitter);             //hSplitter->addWidget(vSplitter);
+        // _h_splitter->addWidget(_find_splitter);             //hSplitter->addWidget(vSplitter);
 
 
 
@@ -630,31 +642,31 @@ void MainWindow::assembly(void){
 // _h_splitter->setCollapsible(1, false);            // Столбец со списком и содержимым записи не может смыкаться
 // _h_splitter->setObjectName("hsplitter");
 
-    // connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &browser::Entrance::on_splitter_moved);
-    // connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen, &RecordTableScreen::on_splitter_moved);
+        // connect(find_splitter, &QSplitter::splitterMoved, browser_entrance, &browser::Entrance::on_splitter_moved);
+        // connect(find_splitter, &QSplitter::splitterMoved, recordTableScreen, &RecordTableScreen::on_splitter_moved);
 
-    // findSplitter=new QSplitter(Qt::Vertical);
-    // findSplitter->addWidget(hSplitter);
-    // findSplitter->addWidget(findScreenDisp);
-    // findSplitter->setCollapsible(0,false);        // Верхняя часть не должна смыкаться
-    // findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
-    // findSplitter->setObjectName("find_splitter");
+        // findSplitter=new QSplitter(Qt::Vertical);
+        // findSplitter->addWidget(hSplitter);
+        // findSplitter->addWidget(findScreenDisp);
+        // findSplitter->setCollapsible(0,false);        // Верхняя часть не должна смыкаться
+        // findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
+        // findSplitter->setObjectName("find_splitter");
 
-    setCentralWidget(_h_left_splitter);             // setCentralWidget(_h_splitter);                    //setCentralWidget(findSplitter);
+    setCentralWidget(_h_left_splitter);			// setCentralWidget(_h_splitter);                    //setCentralWidget(findSplitter);
 
 
 
     auto sizes = _h_left_splitter->sizes();
 // auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
-    if(0 == sizes[0]){              // _h_left_splitter->widget(0)->width()
-        auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();           // _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+    if(0 == sizes[0]){			// _h_left_splitter->widget(0)->width()
+        auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
         // auto h = h_right_splitter->handle(1);
         // h->move(lr + shw, h->rect().top());
 
         auto size_memory = appconfig.h_left_splitter_sizelist();
         auto sum = size_memory[0] + size_memory[1];
         sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-        sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;                          // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+        sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;				// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 // h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
         _h_left_splitter->setSizes(sizes);
 
@@ -671,45 +683,45 @@ void MainWindow::assembly(void){
 
 
 void MainWindow::save_all_state(void){
-    // Сохранение данных в поле редактирования
+        // Сохранение данных в поле редактирования
     save_text_area();
 
-    // Сохраняются данные сеанса работы
+        // Сохраняются данные сеанса работы
     save_geometry();
     save_tree_position();
-    // save_recordtable_position();
+        // save_recordtable_position();
     save_editor_cursor_position();
     save_editor_scrollbar_position();
 
-    // Синхронизируется с диском конфиг программы
+        // Синхронизируется с диском конфиг программы
     appconfig.sync();
 }
 
-HidableTabWidget *MainWindow::vtab_record(){return _vtab_record; }
+HidableTabWidget *MainWindow::vtab_record(){return _vtab_record;}
 
-HidableTabWidget *MainWindow::vtab_tree(){return _vtab_tree; }
+HidableTabWidget *MainWindow::vtab_tree(){return _vtab_tree;}
 
-QMenu *MainWindow::file_menu(){return _filemenu; }
+QMenu *MainWindow::file_menu(){return _filemenu;}
 
-QMenu *MainWindow::edit_menu(){return _editmenu; }
+QMenu *MainWindow::edit_menu(){return _editmenu;}
 
-QMenu *MainWindow::view_menu(){return _viewmenu; }
+QMenu *MainWindow::view_menu(){return _viewmenu;}
 
-browser::HistoryMenu *MainWindow::histry_menu(){return _histrymenu; }
+browser::HistoryMenu *MainWindow::histry_menu(){return _histrymenu;}
 
-browser::BookmarksMenu *MainWindow::bookmark_menu(){return _bookmarkmenu; }
+browser::BookmarksMenu *MainWindow::bookmark_menu(){return _bookmarkmenu;}
 
-QMenu *MainWindow::window_menu(){return _windowmenu; }
+QMenu *MainWindow::window_menu(){return _windowmenu;}
 
-QMenu *MainWindow::tools_menu(){return _toolsmenu; }
+QMenu *MainWindow::tools_menu(){return _toolsmenu;}
 
-QMenu *MainWindow::help_menu(){return _helpmenu; }
+QMenu *MainWindow::help_menu(){return _helpmenu;}
 
-QSplitter *MainWindow::find_splitter(){return _v_find_splitter; }
+QSplitter *MainWindow::find_splitter(){return _v_find_splitter;}
 
-QSplitter *MainWindow::h_right_splitter(){return _h_right_splitter; }
+QSplitter *MainWindow::h_right_splitter(){return _h_right_splitter;}
 
-QSplitter *MainWindow::h_left_splitter(){return _h_left_splitter; }
+QSplitter *MainWindow::h_left_splitter(){return _h_left_splitter;}
 
 
 // Слот, срабатывающий когда происходит выход из оконной системы
@@ -723,14 +735,14 @@ void MainWindow::commit_data(QSessionManager &manager){
 
 // Восстанавливается геометрия окна и позиции основных разделителей
 void MainWindow::restore_geometry(void){
-    if(globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);                         // Для Андроида окно просто разворачивается на весь экран
+    if(globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);				// Для Андроида окно просто разворачивается на весь экран
     else{
         QRect rect = appconfig.mainwin_geometry();
         resize(rect.size());
         move(rect.topLeft());
     }
-    // move(rect.topLeft());
-    // resize(rect.size());
+        // move(rect.topLeft());
+        // resize(rect.size());
 
 
     _v_right_splitter->setSizes(appconfig.v_right_splitter_sizelist());
@@ -741,20 +753,20 @@ void MainWindow::restore_geometry(void){
 // auto size_v_find_splitter = _v_find_splitter->size();           // (792, 646)
 // auto sizelist_v_find_splitter = _v_find_splitter->sizes();      // (614, 32)
 
-    // _h_splitter->setSizes(appconfig.hspl_sizelist());
+        // _h_splitter->setSizes(appconfig.hspl_sizelist());
     _h_right_splitter->setSizes(appconfig.h_right_splitter_sizelist());
 // auto size_h_right_splitter = _h_right_splitter->size();         // (851, 646)
 // auto sizelist_h_right_splitter = _h_right_splitter->sizes();    // (0, 851)
 
-    auto sizelist_h_left_splitter = appconfig.h_left_splitter_sizelist();       // (146, 494)?
-    _h_left_splitter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);        // ShrinkFlag  // Minimum
+    auto sizelist_h_left_splitter = appconfig.h_left_splitter_sizelist();	// (146, 494)?
+    _h_left_splitter->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);		// ShrinkFlag  // Minimum
     _h_left_splitter->setSizes(sizelist_h_left_splitter);
 // auto size_h_left_splitter = _h_left_splitter->size();           // (1366, 646)
-    sizelist_h_left_splitter = _h_left_splitter->sizes();               // (312, 1054)
+    sizelist_h_left_splitter = _h_left_splitter->sizes();		// (312, 1054)
 
-    // int vtab_base = _vtabwidget->baseSize().width();            // 0
-    // int vtab_frame = _vtabwidget->frameSize().width();          // 1118
-    // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 1118
+        // int vtab_base = _vtabwidget->baseSize().width();            // 0
+        // int vtab_frame = _vtabwidget->frameSize().width();          // 1118
+        // int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 1118
 
 
 
@@ -767,42 +779,42 @@ void MainWindow::restore_geometry(void){
 
 
 
-    // int this_width = geometry().width();                        // 1366
-    // int download_width = _download->geometry().width();         // 1089
-    // int tree_screen_width = _tree_screen->geometry().width();   // 236
-    // int find_splitter_width = _v_find_splitter->geometry().width(); // 0
-    // int left_splitter_size_width = _h_left_splitter->size().width();            // 1124
-    // int left_splitter_geometry_width = _h_left_splitter->geometry().width();    // 1124
-    // int right_splitter_width = _h_right_splitter->geometry().width();           // 0
+        // int this_width = geometry().width();                        // 1366
+        // int download_width = _download->geometry().width();         // 1089
+        // int tree_screen_width = _tree_screen->geometry().width();   // 236
+        // int find_splitter_width = _v_find_splitter->geometry().width(); // 0
+        // int left_splitter_size_width = _h_left_splitter->size().width();            // 1124
+        // int left_splitter_geometry_width = _h_left_splitter->geometry().width();    // 1124
+        // int right_splitter_width = _h_right_splitter->geometry().width();           // 0
 
-    // if(0 == find_splitter_width // _vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()
-    // ) {
-    // _download->resize(vtab_g_width * 15 / 100, _vtabwidget->geometry().height());
-    // _vtabwidget->resize(vtab_g_width * 15 / 100, _vtabwidget->geometry().height());
-    // _entrance->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
-    // _editor_screen->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
-    // _find_screen->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
-    // _v_find_splitter->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());   //
-    // _h_right_splitter->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());   //
+        // if(0 == find_splitter_width // _vtabwidget->frameGeometry().width() == _h_left_splitter->geometry().width()
+        // ) {
+        // _download->resize(vtab_g_width * 15 / 100, _vtabwidget->geometry().height());
+        // _vtabwidget->resize(vtab_g_width * 15 / 100, _vtabwidget->geometry().height());
+        // _entrance->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
+        // _editor_screen->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
+        // _find_screen->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());
+        // _v_find_splitter->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());   //
+        // _h_right_splitter->resize(vtab_g_width * 85 / 100, _v_find_splitter->geometry().height());   //
 
-    // }
+        // }
 
-    // download_width = _download->geometry().width();         // 1089
-    // vtab_g_width = _vtabwidget->geometry().width();                 // 167
-    // find_splitter_width = _v_find_splitter->geometry().width();     // 950
-    // right_splitter_width = _h_right_splitter->geometry().width();   // 950
-    // _h_right_splitter->move(_h_right_splitter->x() - vtab_g_width * 85 / 100, _h_right_splitter->y());
+        // download_width = _download->geometry().width();         // 1089
+        // vtab_g_width = _vtabwidget->geometry().width();                 // 167
+        // find_splitter_width = _v_find_splitter->geometry().width();     // 950
+        // right_splitter_width = _h_right_splitter->geometry().width();   // 950
+        // _h_right_splitter->move(_h_right_splitter->x() - vtab_g_width * 85 / 100, _h_right_splitter->y());
 
 
-    // _h_right_splitter->repaint();
-    // _h_left_splitter->repaint();
+        // _h_right_splitter->repaint();
+        // _h_left_splitter->repaint();
 
     auto sizes = _h_left_splitter->sizes();
 // QList<int> new_sizes;
     auto sum = sizes[0] + sizes[1];
-    auto vtab_tree_min = _vtab_tree->minimumSizeHint();       // (146, 146) // _tree_screen->minimumSizeHint().width();
+    auto vtab_tree_min = _vtab_tree->minimumSizeHint();		// (146, 146) // _tree_screen->minimumSizeHint().width();
     if(sizes[0] == sum){
-        sizes[0] = vtab_tree_min.width(); sizes[1] = sum                      // vtab_tree_max_width
+        sizes[0] = vtab_tree_min.width();sizes[1] = sum				// vtab_tree_max_width
             - sizes[0];
     }
 // for(auto sz : sizes) {
@@ -815,13 +827,13 @@ void MainWindow::restore_geometry(void){
 // new_sizes << sz;
 // }
 
-    _h_left_splitter->setSizes(sizes);      // new_sizes
+    _h_left_splitter->setSizes(sizes);		// new_sizes
 
-    // _v_right_splitter->setSizes(appconfig.vspl_sizelist());
-    // _h_splitter->setSizes(appconfig.hspl_sizelist());
-    // _h_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
-    // _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
-    // this->repaint();
+        // _v_right_splitter->setSizes(appconfig.vspl_sizelist());
+        // _h_splitter->setSizes(appconfig.hspl_sizelist());
+        // _h_left_splitter->setSizes(appconfig.v_leftsplitter_sizelist());
+        // _v_find_splitter->setSizes(appconfig.findsplitter_sizelist());
+        // this->repaint();
 }
 
 
@@ -834,27 +846,27 @@ void MainWindow::save_geometry(void){
     appconfig.mainwin_geometry(geom.x(), geom.y(),
         geom.width(), geom.height());
 
-    // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
-    // geometry().width(), geometry().height());
+        // mytetraconfig.set_mainwingeometry(geometry().x(), geometry().y(),
+        // geometry().width(), geometry().height());
 
     appconfig.v_right_splitter_sizelist(_v_right_splitter->sizes());
 // appconfig.hspl_sizelist(_h_splitter->sizes());
     appconfig.h_right_splitter_sizelist(_h_right_splitter->sizes());
     appconfig.h_left_splitter_sizelist(_h_left_splitter->sizes());
-    // Запоминается размер сплиттера только при видимом виджете поиска,
-    // т.к. если виджета поиска невидно, будет запомнен нуливой размер
-    // if(findScreenDisp->isVisible()) - так делать нельзя, т.к.
-    // данный метод вызывается из декструктора главного окна, и к этому моменту
-    // виджет уже невиден
+        // Запоминается размер сплиттера только при видимом виджете поиска,
+        // т.к. если виджета поиска невидно, будет запомнен нуливой размер
+        // if(findScreenDisp->isVisible()) - так делать нельзя, т.к.
+        // данный метод вызывается из декструктора главного окна, и к этому моменту
+        // виджет уже невиден
     if(appconfig.findscreen_show())appconfig.findsplitter_sizelist(_v_find_splitter->sizes());
 }
 
 
 void MainWindow::restore_tree_position(void){
-    // Путь к последнему выбранному в дереве элементу
+        // Путь к последнему выбранному в дереве элементу
     auto pair = appconfig.tree_position();
     QString current_root_id = pair.first;
-    QStringList current_item_absolute_path = pair.second;            // appconfig.get_tree_position();
+    QStringList current_item_absolute_path = pair.second;		// appconfig.get_tree_position();
 
     qDebug() << "MainWindow::restoreTreePosition() : " << current_item_absolute_path;
 
@@ -866,17 +878,17 @@ void MainWindow::save_tree_position(void){
     auto _current_source_model = [&](){
             return _tree_screen->view()->source_model();
         };
-    // if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
-    auto item = _tree_screen->view()->session_root_auto();               // item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
-    //// Получение QModelIndex выделенного в дереве элемента
-    // const QModelIndex index = _tree_screen->tree_view()->current_index();
+        // if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
+    auto item = _tree_screen->view()->session_root_auto();		// item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
+        //// Получение QModelIndex выделенного в дереве элемента
+        // const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->view()->current_item();
     if(current_item){
         appconfig.tree_position(
-            _current_source_model()->root_item()->id()                            // _tree_screen->know_model_board()->root_item()->id()
+            _current_source_model()->root_item()->id()					// _tree_screen->know_model_board()->root_item()->id()
                                , current_item->path_list()
             );
-    }else if(item){               // if(index.isValid()) {
+    }else if(item){			// if(index.isValid()) {
 
         ////    if(index.isValid()) {   // this line is to be remove
         //// Получаем указатель вида TreeItem
@@ -884,7 +896,7 @@ void MainWindow::save_tree_position(void){
 
         // Сохраняем путь к элементу item
         appconfig.tree_position(
-            _current_source_model()->root_item()->id()                            // _tree_screen->know_model_board()->root_item()->id()
+            _current_source_model()->root_item()->id()					// _tree_screen->know_model_board()->root_item()->id()
                                , item->path_list()
             );
         // }
@@ -893,7 +905,7 @@ void MainWindow::save_tree_position(void){
 
 // set
 void MainWindow::set_tree_position(QString current_root_id, QStringList current_item_absolute_path){
-    // _tree_screen->session_root_id(current_item_absolute_path.last());
+        // _tree_screen->session_root_id(current_item_absolute_path.last());
 
     auto source_model = [&](){
             return _tree_screen->view()->source_model();
@@ -909,11 +921,11 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
                 });
         _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
     }
-    // if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
-    // return;
+        // if(!_tree_screen->know_model_board()->item(current_item_absolute_path))   // on know_root semantic
+        // return;
 
-    // Получаем указатель на элемент вида TreeItem, используя путь
-    auto it = know_model_board()->item(current_item_absolute_path);                        // on know_root semantic
+        // Получаем указатель на элемент вида TreeItem, используя путь
+    auto it = know_model_board()->item(current_item_absolute_path);				// on know_root semantic
     if(! source_model()->index(it).isValid()){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
         _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
@@ -923,24 +935,24 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
         if(it != know_model_board()->root_item()){
             qDebug() << "Set tree position to " << it->field<name_type>() << " id " << it->field<id_type>();
 
-            //// Из указателя на элемент TreeItem получаем QModelIndex
-            // QModelIndex setto = source_model()->index(item);
+                //// Из указателя на элемент TreeItem получаем QModelIndex
+                // QModelIndex setto = source_model()->index(item);
 
-            // Курсор устанавливается в нужную позицию
+                // Курсор устанавливается в нужную позицию
 
-            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model(); }, it->parent(), it);
+            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
 // })); } catch(std::exception &e) {throw e; }
 
             tree_view->select_as_current(tree_index);
-            tree_view->source_model()->session_id(tree_index);                                     // TreeIndex(source_model, it)
+            tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
         }else{
-            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model(); }, it, 0);
+            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, it, 0);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it, 0); } catch(std::exception &e) {throw e; }
 
             tree_view->select_as_current(tree_index);
-            tree_view->source_model()->session_id(tree_index);                                     // TreeIndex(source_model, it)
+            tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
         }
     }
 }
@@ -964,9 +976,9 @@ bool MainWindow::is_tree_position_crypt(){
 
         _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
     }
-    // if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
+        // if(_tree_screen->know_model_board()->is_item_valid(path) == false) return false;
 
-    // Получаем указатель на элемент вида TreeItem, используя путь
+        // Получаем указатель на элемент вида TreeItem, используя путь
     auto item = know_model_board()->item(path);
     if(item){
         if(item->field<crypt_type>() == "1")result = true;
@@ -1031,8 +1043,8 @@ void MainWindow::restore_editor_scrollbar_position(void){
 void MainWindow::restore_find_in_base_visible(void){
     bool n = appconfig.findscreen_show();
 
-    // Определяется ссылка на виджет поиска
-    FindScreen *find_screen = globalparameters.find_screen();             // find_object<FindScreen>(find_screen_singleton_name);
+        // Определяется ссылка на виджет поиска
+    FindScreen *find_screen = globalparameters.find_screen();			// find_object<FindScreen>(find_screen_singleton_name);
     if(n)find_screen->show();
     else find_screen->hide();
 }
@@ -1040,52 +1052,52 @@ void MainWindow::restore_find_in_base_visible(void){
 
 // Создание раздела меню File
 void MainWindow::init_file_menu(void){
-    // Создание меню
-    // _filemenu = new QMenu(tr("&File"), this);
+        // Создание меню
+        // _filemenu = new QMenu(tr("&File"), this);
     _filemenu->clear();
     menuBar()->addMenu(_filemenu);
 
-    //// Создание тулбара
-    ///*
-    // QToolBar *tb = new QToolBar(this);
-    // tb->setWindowTitle(tr("File Actions"));
-    // addToolBar(tb);
-    // */
+        //// Создание тулбара
+        /// *
+        // QToolBar *tb = new QToolBar(this);
+        // tb->setWindowTitle(tr("File Actions"));
+        // addToolBar(tb);
+        // */
 
     QAction *a;
 
-    ///*
-    // a = new QAction(tr("&New"), this);
-    // a->setShortcut(QKeySequence::New);
-    // connect(a, SIGNAL(triggered()), this, SLOT(fileNew()));
-    //// tb->addAction(a);
-    // menu->addAction(a);
+        /// *
+        // a = new QAction(tr("&New"), this);
+        // a->setShortcut(QKeySequence::New);
+        // connect(a, SIGNAL(triggered()), this, SLOT(fileNew()));
+        //// tb->addAction(a);
+        // menu->addAction(a);
 
-    // a = new QAction(tr("&Open..."), this);
-    // a->setShortcut(QKeySequence::Open);
-    // connect(a, SIGNAL(triggered()), this, SLOT(fileOpen()));
-    //// tb->addAction(a);
-    // menu->addAction(a);
+        // a = new QAction(tr("&Open..."), this);
+        // a->setShortcut(QKeySequence::Open);
+        // connect(a, SIGNAL(triggered()), this, SLOT(fileOpen()));
+        //// tb->addAction(a);
+        // menu->addAction(a);
 
-    // menu->addSeparator();
+        // menu->addSeparator();
 
-    // a = new QAction(tr("&Save"), this);
-    // a->setShortcut(QKeySequence::Save);
-    // connect(a, SIGNAL(triggered()), this, SLOT(fileSave()));
-    // a->setEnabled(false);
-    //// tb->addAction(a);
-    // menu->addAction(a);
+        // a = new QAction(tr("&Save"), this);
+        // a->setShortcut(QKeySequence::Save);
+        // connect(a, SIGNAL(triggered()), this, SLOT(fileSave()));
+        // a->setEnabled(false);
+        //// tb->addAction(a);
+        // menu->addAction(a);
 
-    // a = new QAction(tr("Save &As..."), this);
-    // connect(a, SIGNAL(triggered()), this, SLOT(fileSaveAs()));
-    // menu->addAction(a);
-    // menu->addSeparator();
-    // */
+        // a = new QAction(tr("Save &As..."), this);
+        // connect(a, SIGNAL(triggered()), this, SLOT(fileSaveAs()));
+        // menu->addAction(a);
+        // menu->addSeparator();
+        // */
 
     a = new QAction(tr("&Print..."), this);
     a->setShortcut(QKeySequence::Print);
     connect(a, &QAction::triggered, this, &MainWindow::file_print);
-    // tb->addAction(a);
+        // tb->addAction(a);
     _filemenu->addAction(a);
 
     a = new QAction(tr("Print Preview..."), this);
@@ -1095,23 +1107,23 @@ void MainWindow::init_file_menu(void){
     a = new QAction(tr("&Export PDF..."), this);
     a->setShortcut(Qt::CTRL + Qt::Key_D);
     connect(a, &QAction::triggered, this, &MainWindow::file_print_pdf);
-    // tb->addAction(a);
+        // tb->addAction(a);
     _filemenu->addAction(a);
 
     _filemenu->addSeparator();
 
-    // a = new QAction(tr("&Quit"), this);
-    // a->setShortcut(Qt::CTRL + Qt::Key_Q);
-    // connect(a, SIGNAL(triggered()), this, SLOT(applicationExit()));
-    // _filemenu->addAction(a);
+        // a = new QAction(tr("&Quit"), this);
+        // a->setShortcut(Qt::CTRL + Qt::Key_Q);
+        // connect(a, SIGNAL(triggered()), this, SLOT(applicationExit()));
+        // _filemenu->addAction(a);
 }
 
 
 // Создание раздела меню Tools
 void MainWindow::init_tools_menu(void){
     _toolsmenu->clear();
-    // Создание меню
-    // _toolsmenu = new QMenu(tr("&Tools"), this);
+        // Создание меню
+        // _toolsmenu = new QMenu(tr("&Tools"), this);
     menuBar()->addMenu(_toolsmenu);
 
     QAction *a;
@@ -1142,23 +1154,23 @@ void MainWindow::init_preferences_menu(QMenu *menu){
     QAction *a;
 
     a = new QAction(tr("Main"), this);
-    // connect(a, SIGNAL(triggered()), this, SLOT(toolsFind()));
+        // connect(a, SIGNAL(triggered()), this, SLOT(toolsFind()));
     menu->addAction(a);
 
     a = new QAction(tr("Crypt"), this);
-    // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+        // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
     menu->addAction(a);
 
     a = new QAction(tr("Synchro"), this);
-    // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+        // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
     menu->addAction(a);
 
     a = new QAction(tr("RecordTable"), this);
-    // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+        // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
     menu->addAction(a);
 
     a = new QAction(tr("Misc"), this);
-    // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+        // connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
     menu->addAction(a);
 }
 
@@ -1166,8 +1178,8 @@ void MainWindow::init_preferences_menu(QMenu *menu){
 // Создание раздела меню Help
 void MainWindow::init_help_menu(void){
     _helpmenu->clear();
-    // Создание меню
-    // _helpmenu = new QMenu(tr("&Help"), this);
+        // Создание меню
+        // _helpmenu = new QMenu(tr("&Help"), this);
     menuBar()->addMenu(_helpmenu);
 
     QAction *a;
@@ -1189,10 +1201,10 @@ void MainWindow::file_new(void){}
 void MainWindow::file_open(void){}
 
 // Сохранить текущую статью
-bool MainWindow::file_save(void){return true; }
+bool MainWindow::file_save(void){return true;}
 
 // Сохранить текущую статью как файл
-bool MainWindow::file_save_as(void){return true; }
+bool MainWindow::file_save_as(void){return true;}
 
 // Напечатать текущую статью
 void MainWindow::file_print(void){
@@ -1237,11 +1249,11 @@ void MainWindow::file_print_pdf(void){
 // Слот - Нормальный выход из программы
 void MainWindow::application_exit(void){
     save_all_state();
-    // Если в конфиге настроено, что нужно синхронизироваться при выходе
-    // И задана команда синхронизации
+        // Если в конфиге настроено, что нужно синхронизироваться при выходе
+        // И задана команда синхронизации
     if(appconfig.synchro_on_exit())
-        if(appconfig.synchro_command().trimmed().length() > 0)synchronization();
-    // Запуск выхода из программы
+                if(appconfig.synchro_command().trimmed().length() > 0)synchronization();
+        // Запуск выхода из программы
     _enable_real_close = true;
     emit close();
 }
@@ -1251,22 +1263,22 @@ void MainWindow::application_exit(void){
 void MainWindow::application_fast_exit(void){
     save_all_state();
 
-    // Запуск выхода из программы
+        // Запуск выхода из программы
     _enable_real_close = true;
     emit close();
 }
 
 
 void MainWindow::tools_find(void){
-    // Определяется ссылка на виджет поиска
-    FindScreen *findScreenRel = globalparameters.find_screen();             // find_object<FindScreen>(find_screen_singleton_name);
+        // Определяется ссылка на виджет поиска
+    FindScreen *findScreenRel = globalparameters.find_screen();			// find_object<FindScreen>(find_screen_singleton_name);
     if(! (findScreenRel->isVisible()))findScreenRel->show();
     else findScreenRel->hide();
 }
 
 void MainWindow::editor_switch(void){
 
-    MetaEditor *editorScreen = globalparameters.meta_editor();              // find_object<MetaEditor>(meta_editor_singleton_name);
+    MetaEditor *editorScreen = globalparameters.meta_editor();			// find_object<MetaEditor>(meta_editor_singleton_name);
     if(! (editorScreen->isVisible())){
         editorScreen->show();
         appconfig.editor_show(true);
@@ -1277,7 +1289,7 @@ void MainWindow::editor_switch(void){
 }
 
 void MainWindow::tools_preferences(void){
-    // Создается окно настроек, после выхода из этой функции окно удалится
+        // Создается окно настроек, после выхода из этой функции окно удалится
     AppConfigDialog dialog(_entrance->activated_browser()->record_screen()->record_controller(), "");
 
     dialog.show();
@@ -1289,14 +1301,14 @@ void MainWindow::tools_preferences(void){
 // true - распахнуть область отводимую редактору
 // false - сделать область, отводимую редактору, обычной
 void MainWindow::on_expand_edit_area(bool flag){
-    // static QSize entrance_size = globalparameters.entrance()->size();
-    // static QSize tree_size = globalparameters.entrance()->size();
-    // static QSize recordtable_size = globalparameters.entrance()->size();
-    // static QSize vtab_size = globalparameters.entrance()->size();
-    // static bool _treetable_hidden;     // = globalparameters.getTreeScreen()->isHidden();
-    // static bool recordtable_hidden; // = globalparameters.getRecordTableScreen()->isHidden();
+        // static QSize entrance_size = globalparameters.entrance()->size();
+        // static QSize tree_size = globalparameters.entrance()->size();
+        // static QSize recordtable_size = globalparameters.entrance()->size();
+        // static QSize vtab_size = globalparameters.entrance()->size();
+        // static bool _treetable_hidden;     // = globalparameters.getTreeScreen()->isHidden();
+        // static bool recordtable_hidden; // = globalparameters.getRecordTableScreen()->isHidden();
     if(flag){
-        globalparameters.entrance()->hide();                            // resize(QSize(0, 0)); //
+        globalparameters.entrance()->hide();				// resize(QSize(0, 0)); //
 
         // if(!globalparameters.getTreeScreen()->isHidden()) {
         // _treetable_hidden = false;
@@ -1328,7 +1340,7 @@ void MainWindow::on_expand_edit_area(bool flag){
 
         // resize(QSize(0, v_left_splitter->height())); // hide();
     }else{
-        globalparameters.entrance()->show();                            // resize(entrance_size); //
+        globalparameters.entrance()->show();				// resize(entrance_size); //
 
         // if(!_treetable_hidden) {
         // globalparameters.getTreeScreen()->show();    // resize(tree_size); //
@@ -1406,18 +1418,18 @@ void MainWindow::on_click_help_about_qt(void){
 
 
 void MainWindow::synchronization(void){
-    // Сохраняются данные в поле редактирования
+        // Сохраняются данные в поле редактирования
     save_text_area();
 
-    // Сохраняются данные о курсорах в дереве и таблице конечных записей
+        // Сохраняются данные о курсорах в дереве и таблице конечных записей
     save_tree_position();
-    // save_recordtable_position();
+        // save_recordtable_position();
     save_editor_cursor_position();
     save_editor_scrollbar_position();
 
-    // Считывается команда синхронизации
+        // Считывается команда синхронизации
     QString command = appconfig.synchro_command();
-    // Если команда синхронизации пуста
+        // Если команда синхронизации пуста
     if(command.trimmed().length() == 0){
         QMessageBox::warning(this,
             tr("MyTetra: can't synchronization"),
@@ -1425,14 +1437,14 @@ void MainWindow::synchronization(void){
             QMessageBox::Close);
         return;
     }
-    // Макрос %a заменяется на путь к директории базы данных
-    // QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
+        // Макрос %a заменяется на путь к директории базы данных
+        // QString databasePath=globalParameters.getWorkDirectory()+"/"+mytetraConfig.get_tetradir();
     QDir databaseDir(appconfig.tetra_dir());
     QString databasePath = databaseDir.canonicalPath();
 
     command.replace("%a", databasePath);
 
-    // Запуск команды синхронизации
+        // Запуск команды синхронизации
     ExecuteCommand cons;
     cons.setWindowTitle(tr("MyTetra synchronization"));
     cons.setMessageText(tr("Synchronization in progress, please wait..."));
@@ -1440,17 +1452,17 @@ void MainWindow::synchronization(void){
     cons.setCommand(command);
     cons.run();
 
-    // Блокируется история
+        // Блокируется история
     walkhistory.set_drop(true);
 
-    // Заново считываются данные в дерево
+        // Заново считываются данные в дерево
     _tree_screen->view()->know_model_reload();
     restore_tree_position();
-    // restore_recordtable_position();
+        // restore_recordtable_position();
     restore_editor_cursor_position();
     restore_editor_scrollbar_position();
 
-    // азблокируется история посещений элементов
+        // азблокируется история посещений элементов
     walkhistory.set_drop(false);
 }
 
@@ -1491,7 +1503,7 @@ void MainWindow::set_icon(void){
     _tray_icon->setIcon(icon);
     setWindowIcon(icon);
 
-    // tray_icon->setToolTip(iconComboBox->itemText(index));
+        // tray_icon->setToolTip(iconComboBox->itemText(index));
 }
 
 
@@ -1530,14 +1542,14 @@ void MainWindow::closeEvent(QCloseEvent *event){
 
 bool MainWindow::eventFilter(QObject *o, QEvent *e){
     Q_UNUSED(o);
-    // qDebug() << "Event: " << e->type();
-    // Отлавливание потери фокуса
-    // QEvent::ActivationChange
+        // qDebug() << "Event: " << e->type();
+        // Отлавливание потери фокуса
+        // QEvent::ActivationChange
     if(e->type() == QEvent::WindowDeactivate){
         qDebug() << "Main window focus deactivate, save all state.";
         save_all_state();
     }
-    return false;             // Продолжать оработку событий дальше
+    return false;		// Продолжать оработку событий дальше
 }
 
 
@@ -1570,26 +1582,26 @@ void MainWindow::go_walk_history_next(void){
 
 
 void MainWindow::go_walk_history(void){
-    // QString tree_root_id = walkhistory.tree_root_id();
+        // QString tree_root_id = walkhistory.tree_root_id();
 
-    // if(_tree_screen->know_root()->root_item()->id() != tree_root_id) {
-    // _tree_screen->intercept(tree_root_id);
-    // }
+        // if(_tree_screen->know_root()->root_item()->id() != tree_root_id) {
+        // _tree_screen->intercept(tree_root_id);
+        // }
 
-    // Выясняется идентификатор записи, на которую надо переключиться
+        // Выясняется идентификатор записи, на которую надо переключиться
     QString record_id = walkhistory.record_id();
 
-    // if(record_id.length() == 0) {
-    // walkhistory.set_drop(false);
-    // return;
-    // }
+        // if(record_id.length() == 0) {
+        // walkhistory.set_drop(false);
+        // return;
+        // }
 
     auto know_model_board = [&](){
             return _tree_screen->view()->know_model_board();
         };
     if(record_id.length() > 0){
         // Выясняется путь к ветке, где находится данная запись
-        QStringList absolute_path = know_model_board()->record_path(record_id);                            // on know_root semantic
+        QStringList absolute_path = know_model_board()->record_path(record_id);					// on know_root semantic
 
         //// Проверяем, есть ли такая ветка
         // if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
@@ -1599,13 +1611,13 @@ void MainWindow::go_walk_history(void){
 
 
         // Выясняется позицию записи в таблице конечных записей
-        auto item = know_model_board()->item(absolute_path);                            // on know_root semantic
+        auto item = know_model_board()->item(absolute_path);				// on know_root semantic
         if(item){
-            //// Проверяем, есть ли такая позиция
-            // if(!item->item_direct(record_id)) {  // == false
-            // walkhistory.set_drop(false);
-            // return;
-            // }
+                //// Проверяем, есть ли такая позиция
+                // if(!item->item_direct(record_id)) {  // == false
+                // walkhistory.set_drop(false);
+                // return;
+                // }
             if(item->item_direct(record_id)){
                 set_tree_position(global_root_id, absolute_path);
                 // select_id(id);
@@ -1614,7 +1626,7 @@ void MainWindow::go_walk_history(void){
                     _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
                 }
             }
-            // walkhistory.set_drop(false);
+                // walkhistory.set_drop(false);
         }
         // else {
         // walkhistory.set_drop(false);
@@ -1646,7 +1658,7 @@ void MainWindow::on_focus_changed(QWidget *widgetFrom, QWidget *widgetTo){
     if(widgetTo == nullptr)return;
     qDebug() << "MainWindow::onFocusChanged() to " << widgetTo->objectName();
 
-    return;             // Временно ничего не делает
+    return;		// Временно ничего не делает
 }
 
 

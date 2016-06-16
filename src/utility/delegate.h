@@ -1,7 +1,7 @@
 #ifndef DELEGATE_H_INCLUDED
 #define DELEGATE_H_INCLUDED
 
-#include <cstddef> // nullptr_t
+#include <cstddef>	// nullptr_t
 #include <iostream>
 #include <map>
 #include <memory>
@@ -11,16 +11,16 @@
 // #include <mpllibs/metaparse/string.hpp> // https://github.com/sabel83/mpllibs
 #include <boost/mpl/string.hpp>
 #include <vector>
-#include <limits> // error: ‘numeric_limits’ is not a member of ‘std’
+#include <limits>	// error: ‘numeric_limits’ is not a member of ‘std’
 
 #include <vector>
 #include <memory>
 // #include <boost/archive/text_oarchive.hpp>            // for serialization
 // #include <boost/archive/text_iarchive.hpp>            // for serialization
-#include <boost/serialization/vector.hpp> // for serialization
-#include <boost/serialization/shared_ptr.hpp> // for serialization
-#include <boost/serialization/scoped_ptr.hpp> // for serialization
-#include <boost/serialization/tracking.hpp> // for serialization
+#include <boost/serialization/vector.hpp>	// for serialization
+#include <boost/serialization/shared_ptr.hpp>	// for serialization
+#include <boost/serialization/scoped_ptr.hpp>	// for serialization
+#include <boost/serialization/tracking.hpp>	// for serialization
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
@@ -47,7 +47,7 @@ using boost::static_pointer_cast;
 #include <string>
 #include <limits>
 #include <memory>
-#include <cstddef> // std::size_t
+#include <cstddef>	// std::size_t
 
 #undef max
 // #pragma warning(disable : 4003)   // warning C4003 : not enough actual parameters for macro 'max'
@@ -57,31 +57,31 @@ using boost::static_pointer_cast;
 namespace sd {
 
 // http://stackoverflow.com/questions/20616958/stdforward-without-perfect-forwarding
-    template<bool do_move, typename T>struct helper {auto operator()(T &&t) const->decltype(std::move(t)){return(std::move(t)); }
+    template<bool do_move, typename T>struct helper {auto operator()(T &&t) const->decltype(std::move(t)){return(std::move(t));}
     };
 
-    template<typename T>struct helper<false, T> {T &operator()(T &&t) const {return t; }
+    template<typename T>struct helper<false, T> {T &operator()(T &&t) const {return t;}
     };
 
-    template<bool do_move, typename T>auto conditional_move(T && t)->decltype(helper<do_move, T>()(std::forward<T>(t))){return(helper<do_move, T>()(std::forward<T>(t))); }
+    template<bool do_move, typename T>auto conditional_move(T && t)->decltype(helper<do_move, T>()(std::forward<T>(t))){return(helper<do_move, T>()(std::forward<T>(t)));}
 
-    template <typename A, typename B>struct STATIC_SAME {enum {value = false}; };
-    template <typename A>struct STATIC_SAME<A, A> {enum {value = true}; };
+    template <typename A, typename B>struct STATIC_SAME {enum {value = false};};
+    template <typename A>struct STATIC_SAME<A, A> {enum {value = true};};
 
-    template <bool, typename T, typename F> struct static_if {typedef F type; }; // static const bool value = false;
+    template <bool, typename T, typename F> struct static_if {typedef F type;};	// static const bool value = false;
 
-    template <typename T, typename F> struct static_if < true, T, F > {typedef T type; }; // static const bool value = true;
+    template <typename T, typename F> struct static_if < true, T, F > {typedef T type;};	// static const bool value = true;
 
-    template <int factorial> struct _ {operator char(){return factorial + std::numeric_limits<int>::max(); }
-    }; // always overflow?
+    template <int factorial> struct _ {operator char(){return factorial + std::numeric_limits<int>::max();}
+    };	// always overflow?
 
     template<typename T, typename shared_type>struct static_if_shared;
 
-    template<typename T>struct static_if_shared <T, void *> {typedef typename static_if<std::is_pointer<T>::value, T, T *>::type type; }; // object "this" pointer
+    template<typename T>struct static_if_shared <T, void *> {typedef typename static_if<std::is_pointer<T>::value, T, T *>::type type;};	// object "this" pointer
 
-    template<typename T>struct static_if_shared <T, boost::shared_ptr<void> > {typedef boost::shared_ptr<T> type; };
+    template<typename T>struct static_if_shared <T, boost::shared_ptr<void> > {typedef boost::shared_ptr<T> type;};
 
-    template<typename T>struct static_if_shared <T, std::shared_ptr<void> > {typedef std::shared_ptr<T> type; };
+    template<typename T>struct static_if_shared <T, std::shared_ptr<void> > {typedef std::shared_ptr<T> type;};
 
 // template<typename T>
 // struct static_if_shared <T, boost::intrusive_ptr<void>> {
@@ -95,11 +95,11 @@ namespace sd {
 
     template<typename T, typename shared_type>typename static_if_shared<T, shared_type>::type static_if_shared_pointer_cast(shared_type obj);
 
-    template<typename T>typename static_if_shared<T, void *>::type static_if_shared_pointer_cast(void *obj){return static_cast<T *>(obj); } // <T, void *>
+    template<typename T>typename static_if_shared<T, void *>::type static_if_shared_pointer_cast(void *obj){return static_cast<T *>(obj);}	// <T, void *>
 
-    template<typename T>typename static_if_shared<T, boost::shared_ptr<void> >::type static_if_shared_pointer_cast(boost::shared_ptr<void> obj){return boost::static_pointer_cast<T>(obj); } // <T, boost::shared_ptr<void>>
+    template<typename T>typename static_if_shared<T, boost::shared_ptr<void> >::type static_if_shared_pointer_cast(boost::shared_ptr<void> obj){return boost::static_pointer_cast<T>(obj);}	// <T, boost::shared_ptr<void>>
 
-    template<typename T>typename static_if_shared<T, std::shared_ptr<void> >::type static_if_shared_pointer_cast(std::shared_ptr<void> obj){return std::static_pointer_cast<T>(obj); } // <T, std::shared_ptr<void>>
+    template<typename T>typename static_if_shared<T, std::shared_ptr<void> >::type static_if_shared_pointer_cast(std::shared_ptr<void> obj){return std::static_pointer_cast<T>(obj);}	// <T, std::shared_ptr<void>>
 
 
 // you need boost::intrusive_ref_counter<typename, boost::thread_safe_counter> act as the target class rather than void*
@@ -342,24 +342,24 @@ namespace sd {
 
     template <int x> struct __;
 
-    template <typename A, typename B> struct StaticAssert {static const bool value = false; };
+    template <typename A, typename B> struct StaticAssert {static const bool value = false;};
 
-    template <typename A> struct StaticAssert < A, A > {static const bool value = true; };
+    template <typename A> struct StaticAssert < A, A > {static const bool value = true;};
 
-    template <std::size_t sa, std::size_t sb> struct StaticAssertSize {static const bool value = false; };
+    template <std::size_t sa, std::size_t sb> struct StaticAssertSize {static const bool value = false;};
 
-    template <std::size_t sz> struct StaticAssertSize < sz, sz > {static const bool value = true; };
+    template <std::size_t sz> struct StaticAssertSize < sz, sz > {static const bool value = true;};
 
 // python zip alternative
     template <class ContainerA> unsigned common_length(unsigned len, const ContainerA &first){
         unsigned firstLen = first.size();
-        if(len > firstLen){len = firstLen; }
+        if(len > firstLen){len = firstLen;}
         return len;
     }
 
     template <class ContainerA, class ... Containers>unsigned common_length(unsigned len, const ContainerA &first, const Containers & ... rest){
         unsigned firstLen = first.size();
-        if(len > firstLen){len = firstLen; }
+        if(len > firstLen){len = firstLen;}
         return common_length(len, rest ...);
     }
 
@@ -387,7 +387,7 @@ namespace sd {
 // using aliases for cleaner syntax
     template <class T> using invoke = typename T::type;
 
-    template <std::size_t ...> struct sequence {using type = sequence; };
+    template <std::size_t ...> struct sequence {using type = sequence;};
 
     template <class S1, class S2> struct concat;
 
@@ -407,11 +407,11 @@ namespace sd {
 
     template <typename bound> struct method;
 
-    template <typename object_type, typename ... Args> std::unique_ptr<object_type> make_unique(Args && ... args){return std::unique_ptr<object_type>(new object_type(std::forward<Args>(args) ...)); }
+    template <typename object_type, typename ... Args> std::unique_ptr<object_type> make_unique(Args && ... args){return std::unique_ptr<object_type>(new object_type(std::forward<Args>(args) ...));}
 
     template<typename T>struct meta_info;
 
-    template <size_t sz> struct size_type_value_trait {static const size_t value = sz; };
+    template <size_t sz> struct size_type_value_trait {static const size_t value = sz;};
 
     template <typename _object_type, typename ... _Arg> struct lazy_functor {
         // for serialize
@@ -440,19 +440,19 @@ namespace sd {
 
     template <size_t I, typename T> struct remove_ith_type {};
 
-    template <typename T, typename ... Ts> struct remove_ith_type < 0, std::tuple<T, Ts ...> > {typedef std::tuple<Ts ...> type; };
+    template <typename T, typename ... Ts> struct remove_ith_type < 0, std::tuple<T, Ts ...> > {typedef std::tuple<Ts ...> type;};
 
     template <size_t I, typename T, typename ... Ts> struct remove_ith_type < I, std::tuple<T, Ts ...> > {
         typedef decltype (tuple_cat (std::declval<std::tuple<T> >(), std::declval < typename remove_ith_type < I - 1, std::tuple<Ts ...> >::type > ())) type;
     };
 
-    template <typename T> struct remove_first_type {typedef std::tuple<T> type; };
+    template <typename T> struct remove_first_type {typedef std::tuple<T> type;};
 
-    template <typename T, typename ... Ts> struct remove_first_type < std::tuple<T, Ts ...> > {typedef std::tuple<Ts ...> type; };
+    template <typename T, typename ... Ts> struct remove_first_type < std::tuple<T, Ts ...> > {typedef std::tuple<Ts ...> type;};
 
-    template <typename ... Arg> struct sizeof_variadic {static const size_t value = 1 + sizeof_variadic<typename remove_first_type<std::tuple<Arg ...> >::type>::value; };
+    template <typename ... Arg> struct sizeof_variadic {static const size_t value = 1 + sizeof_variadic<typename remove_first_type<std::tuple<Arg ...> >::type>::value;};
 
-    template <typename Arg> struct sizeof_variadic < Arg > {static const size_t value = 1; }; // <Arg, Arg>
+    template <typename Arg> struct sizeof_variadic < Arg > {static const size_t value = 1;};	// <Arg, Arg>
 
     template <typename object_type> static std::string data_transmit(void *t){
         std::ostringstream os;
@@ -494,28 +494,28 @@ namespace sd {
             std::string _object_type;
             std::string _object_name;
 
-            // friend ::boost::serialization::access;
-            // template<class Archive>
-            // void serialize(Archive & ar, const unsigned int version)
-            // {
-            //// ** note that this is empty **
-            // }
+                // friend ::boost::serialization::access;
+                // template<class Archive>
+                // void serialize(Archive & ar, const unsigned int version)
+                // {
+                //// ** note that this is empty **
+                // }
         public:
 
-            // void(*_save_transmit)(remote::archive::text_oarchive ar, const shared_ptr<void> _obj, const unsigned int file_version);
-            // void(*_load_transmit)(remote::archive::text_iarchive ar, shared_ptr<void> _obj, const unsigned int file_version);
+                // void(*_save_transmit)(remote::archive::text_oarchive ar, const shared_ptr<void> _obj, const unsigned int file_version);
+                // void(*_load_transmit)(remote::archive::text_iarchive ar, shared_ptr<void> _obj, const unsigned int file_version);
 
             template <typename real_object_pointer_type>meta_info(real_object_pointer_type o, std::string object_name = "")
                 : _object(static_pointer_cast<void>(o))
                   , _object_type(typeid(real_object_pointer_type).name())
-                  , _object_name(object_name) // , _save_transmit(save_transmit<object_type>)  //, _load_transmit(load_transmit<object_type>)
+                  , _object_name(object_name)	// , _save_transmit(save_transmit<object_type>)  //, _load_transmit(load_transmit<object_type>)
             {}
 
-            const std::string object_type() const {return _object_type; }
+            const std::string object_type() const {return _object_type;}
 
-            const std::string object_name() const {return _object_name; }
-            T object(){return _object; }
-            T object() const {return _object; }
+            const std::string object_name() const {return _object_name;}
+            T object(){return _object;}
+            T object() const {return _object;}
     };
 
 
@@ -560,19 +560,19 @@ namespace sd {
 // wrap a trivial data type, or a serialize-able composite object?
     struct data {
         // useless, never get out, atomic data
-        void *_value; // ?   // do not need name, name further in map<string, common_data>
+        void *_value;	// ?   // do not need name, name further in map<string, common_data>
         // void * _type_router;
         std::string _data_type;
-        std::string _data_name; // not true, it need a name, and a unique name here, others are references of this one
+        std::string _data_name;	// not true, it need a name, and a unique name here, others are references of this one
 
         // void (* _delete_type_route)(void *);
         std::string (*_funct)(void *);
 
-        const std::string data_name() const {return _data_name; }
+        const std::string data_name() const {return _data_name;}
 
-        const std::string data_type() const {return _data_type; }
+        const std::string data_type() const {return _data_type;}
 
-        template <typename object_type> // for local using, not a distributed one
+        template <typename object_type>	// for local using, not a distributed one
         data(object_type *value, std::string data_name = "")
             : _value(value)
               , _data_type(typeid(typename std::remove_reference<typename std::remove_pointer<decltype(value)>::type>::type).name())
@@ -592,10 +592,10 @@ namespace sd {
         // return *this;
         // }
 
-        std::string operator()(){return _funct(_value); } // not good, maybe lost precision
+        std::string operator()(){return _funct(_value);}	// not good, maybe lost precision
 
 
-        ~data(){} // _delete_type_route(_type_router);
+        ~data(){}	// _delete_type_route(_type_router);
     };
 
 // struct bound{};
@@ -603,25 +603,25 @@ namespace sd {
 
     template <typename _meta_info> struct method;
 
-    template <typename _meta_info = meta_info<boost::shared_ptr<void> > > // meta_info<void *>
+    template <typename _meta_info = meta_info<boost::shared_ptr<void> > >	// meta_info<void *>
     struct method : public _meta_info {
         typedef _meta_info meta_info;
         typedef typename _meta_info::object_pointer_type object_pointer_type;
         protected:
-            // std::string _method_name;
-            // std::string _return_type_name;    //, typeid(typename std::remove_reference<return_type>::type).name()    // always can get, nerver output
+                // std::string _method_name;
+                // std::string _return_type_name;    //, typeid(typename std::remove_reference<return_type>::type).name()    // always can get, nerver output
 
             std::shared_ptr<void> _transmitter;
             void (*_transmit)(std::shared_ptr<void> transmitter_, void *return_, object_pointer_type object_);
             void *_rt;
-            // const size_t _parameter_num;
-            // const char* arguments_types;
-            // friend ::boost::serialization::access;
-            // template<class Archive>
-            // void serialize(Archive & ar, const unsigned int version)
-            // {
-            //// ** note that this is empty **
-            // }
+                // const size_t _parameter_num;
+                // const char* arguments_types;
+                // friend ::boost::serialization::access;
+                // template<class Archive>
+                // void serialize(Archive & ar, const unsigned int version)
+                // {
+                //// ** note that this is empty **
+                // }
 
             template <typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg>struct transmitter {
                 typedef _object_pointer_type object_pointer_type;
@@ -632,9 +632,9 @@ namespace sd {
                 protected:
 
                     std::string _method_name;
-                    // std::string _return_type_name;
+                        // std::string _return_type_name;
 
-                    // static constexpr size_t parameter_number = { sizeof...(_Arg) };
+                        // static constexpr size_t parameter_number = { sizeof...(_Arg) };
 
                     return_type (object_type::*_func)(_Arg ...);
 
@@ -642,10 +642,10 @@ namespace sd {
 
                 public:
 
-                    transmitter(std::string _method_name // , std::string _return_type_name
+                    transmitter(std::string _method_name// , std::string _return_type_name
                                , return_type(object_type::*func)(_Arg ...)
                                , _Arg && ... arg)
-                        : _method_name(_method_name) // , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
+                        : _method_name(_method_name)	// , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
                           , _func(func)
                           , _arg(std::make_shared<std::tuple<_Arg ...> >(std::forward<_Arg>(arg) ...))
                     {}
@@ -707,25 +707,25 @@ namespace sd {
 
 
         public:
-            // std::string method_name()
-            // {
-            // return _method_name;
-            // }
-            // std::string return_type_name()
-            // {
-            // return _return_type_name;
-            // }
+                // std::string method_name()
+                // {
+                // return _method_name;
+                // }
+                // std::string return_type_name()
+                // {
+                // return _return_type_name;
+                // }
             template <typename object_type, typename return_type, typename ... Arg>
             method(std::string _method_name
                   , return_type(object_type::*f)(Arg ...)
                   , return_type *r
-                  , typename static_if_shared<object_type, object_pointer_type>::type o // shared_ptr<object_type> o // = (object_type *const)0  //nullptr
-                  , Arg && ... arg // use std::forward<Type> to supply
-                ) : meta_info(o, "") // arguments_types(typeid(std::tuple<Arg ...>).name())  //(typeid(std::tuple<std::nullptr_t>).name())
-                    // , _method_name(_method_name)
-                    // , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name()) // r != (return_type *)0? typeid(typename std::remove_reference<return_type>::type).name() : "void"
+                  , typename static_if_shared<object_type, object_pointer_type>::type o	// shared_ptr<object_type> o // = (object_type *const)0  //nullptr
+                  , Arg && ... arg	// use std::forward<Type> to supply
+                ) : meta_info(o, "")	// arguments_types(typeid(std::tuple<Arg ...>).name())  //(typeid(std::tuple<std::nullptr_t>).name())
+                        // , _method_name(_method_name)
+                        // , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name()) // r != (return_type *)0? typeid(typename std::remove_reference<return_type>::type).name() : "void"
                     , _transmitter(std::static_pointer_cast<void>(std::make_shared<transmitter<object_pointer_type, object_type, return_type, Arg ...> >
-                            (_method_name // , typeid(typename std::remove_reference<return_type>::type).name()
+                            (_method_name	// , typeid(typename std::remove_reference<return_type>::type).name()
                             , f
                             , std::forward<Arg>(arg) ...)))
                     , _transmit(transmitter<object_pointer_type, object_type, return_type, Arg ...>::transmit)
@@ -734,18 +734,18 @@ namespace sd {
             }
             method &operator =(const method &) = delete;
 
-            void operator()() const {_transmit(_transmitter, _rt, meta_info::_object); } // std::ostream& out
+            void operator()() const {_transmit(_transmitter, _rt, meta_info::_object);}	// std::ostream& out
 
-            void operator()(){_transmit(_transmitter, _rt, meta_info::_object); }
+            void operator()(){_transmit(_transmitter, _rt, meta_info::_object);}
 
-            // auto test() -> decltype(_transmit(0, 0, 0))   //, _parameter_num
-            // {
-            // return _transmit(_transmitter, _rt, meta_info::_object);
-            //// return 0;
-            // }
+                // auto test() -> decltype(_transmit(0, 0, 0))   //, _parameter_num
+                // {
+                // return _transmit(_transmitter, _rt, meta_info::_object);
+                //// return 0;
+                // }
     };
 
-    template <typename _meta_info, typename return_type, typename ... Arg> struct _interface; // = meta_info
+    template <typename _meta_info, typename return_type, typename ... Arg> struct _interface;	// = meta_info
 
 
 // template <
@@ -792,7 +792,7 @@ namespace sd {
 // }
 // };
 
-    template <typename _meta_info, typename return_type, typename ... Arg> // = meta_info
+    template <typename _meta_info, typename return_type, typename ... Arg>	// = meta_info
     struct _interface<return_type(Arg ...), _meta_info> : public _meta_info {
         typedef _meta_info meta_info;
         typedef typename _meta_info::object_pointer_type object_pointer_type;
@@ -801,9 +801,9 @@ namespace sd {
             std::string _return_type_name;
 
             boost::shared_ptr<void> _transmitter;
-            return_type (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
+            return_type (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg && ...);
 
-            template <typename _object_type, typename _object_pointer_type = object_pointer_type> // typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg
+            template <typename _object_type, typename _object_pointer_type = object_pointer_type>	// typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg
             struct transmitter {
                 typedef _object_pointer_type object_pointer_type;
                 // typedef _return_type return_type;
@@ -814,7 +814,7 @@ namespace sd {
                 transmitter(return_type(object_type::*func)(Arg ...)) : _func(func){}
 
                 static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg ... arg){
-                    return (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(arg ...);
+                    return (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(std::forward<Arg>(arg) ...);
                 }
                 private:
                     transmitter(const transmitter &);
@@ -827,9 +827,9 @@ namespace sd {
 
                 transmitter(return_type(*func)(Arg ...)) : _func(func){}
 
-                static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg ... arg){
+                static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg && ... arg){
                     (void)_object;
-                    return (static_if_shared_pointer_cast<transmitter>(_functor)->_func)(arg ...);
+                    return (static_if_shared_pointer_cast<transmitter>(_functor)->_func)(std::forward<Arg>(arg) ...);
                 }
                 private:
                     transmitter(const transmitter &);
@@ -837,8 +837,8 @@ namespace sd {
 
 
         public:
-            std::string method_name(){return _method_name; }
-            std::string return_type_name(){return _return_type_name; }
+            std::string method_name(){return _method_name;}
+            std::string return_type_name(){return _return_type_name;}
 
             template <typename object_type>_interface(return_type(object_type::*f)(Arg ...)
                                                      , typename static_if_shared<object_type, object_pointer_type>::type o
@@ -859,16 +859,16 @@ namespace sd {
                   , _transmit(transmitter<nullptr_t, object_pointer_type>::transmit)
             {}
 
-            _interface &operator =(const _interface &) = delete; // because of deep copy
+            _interface &operator =(const _interface &) = delete;// because of deep copy
 
-            auto operator()(Arg ... arg)->return_type {return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...); } // const // for serialize()
+            auto operator()(Arg && ... arg)->return_type {return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...);}	// const // for serialize()
     };
 
 
 
 // template <typename _meta_info, typename return_type, typename ... Arg> struct _interface;
 
-    template <typename _meta_info, typename return_type, typename ... Arg> // = meta_info
+    template <typename _meta_info, typename return_type, typename ... Arg>	// = meta_info
     struct _interface<return_type(Arg ...) const, _meta_info> : public _meta_info {
         typedef _meta_info meta_info;
         typedef typename _meta_info::object_pointer_type object_pointer_type;
@@ -877,7 +877,7 @@ namespace sd {
             std::string _return_type_name;
 
             boost::shared_ptr<void> _transmitter;
-            return_type (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
+            return_type (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg && ...);
 
 
             template <typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg>struct transmitter {
@@ -889,9 +889,9 @@ namespace sd {
 
                 transmitter(return_type(object_type::*func)(_Arg ...) const) : _func(func){}
 
-                static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg ... arg){
-                    return // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
-                           (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(arg ...);
+                static return_type transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg && ... arg){
+                    return	// static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
+                           (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(std::forward<Arg>(arg) ...);
                 }
                 private:
                     transmitter(const transmitter &fun);
@@ -916,10 +916,10 @@ namespace sd {
             }
             _interface &operator=(const _interface &) = delete;
 
-            return_type operator()(Arg ... arg) const {return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...); }
+            return_type operator()(Arg && ... arg) const {return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...);}
     };
 
-    template <typename _meta_info, typename ... Arg> // = meta_info
+    template <typename _meta_info, typename ... Arg>	// = meta_info
     struct _interface<void (Arg ...), _meta_info> : public _meta_info {
         typedef _meta_info meta_info;
         typedef typename _meta_info::object_pointer_type object_pointer_type;
@@ -928,11 +928,11 @@ namespace sd {
             std::string _return_type_name;
 
             boost::shared_ptr<void> _transmitter;
-            void (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
-            // const size_t _parameter_num;
-            // const char* arguments_types;
-            // template <typename _object_type>       // typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg
-            // struct transmitter;
+            void (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg && ...);
+                // const size_t _parameter_num;
+                // const char* arguments_types;
+                // template <typename _object_type>       // typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg
+                // struct transmitter;
 
             template <typename _object_type, typename _object_pointer_type = object_pointer_type>struct transmitter {
                 typedef _object_pointer_type object_pointer_type;
@@ -942,26 +942,26 @@ namespace sd {
 
                 transmitter(void(object_type::*func)(Arg ...)) : _func(func){}
 
-                static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg ... arg){
-                    return (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(arg ...);
+                static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg && ... arg){
+                    (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(std::forward<Arg>(arg) ...);
                 }
                 private:
                     transmitter(const transmitter &);
             };
 
-            // template <typename _return_type, typename ... _Arg>
-            // struct transmitter_static;
+                // template <typename _return_type, typename ... _Arg>
+                // struct transmitter_static;
 
-            template <typename _object_pointer_type> // typename ... _Arg
-            struct transmitter<nullptr_t, _object_pointer_type> { // <void, Arg ...>
+            template <typename _object_pointer_type>	// typename ... _Arg
+            struct transmitter<nullptr_t, _object_pointer_type> {	// <void, Arg ...>
                 typedef _object_pointer_type object_pointer_type;
                 void (*_func)(Arg ...);
 
                 transmitter(void(*func)(Arg ...)) : _func(func){}
 
-                static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg ... arg){
-                    (void)_object; // return    // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
-                    return (static_if_shared_pointer_cast<transmitter>(_functor)->_func)(arg ...);
+                static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, Arg && ... arg){
+                    (void)_object;	// return    // static_cast<typename static_if<std::is_void<return_type>::value, void*, return_type*>::type>(_return)    // return_
+                    (static_if_shared_pointer_cast<transmitter>(_functor)->_func)(std::forward<Arg>(arg) ...);
                 }
                 private:
                     transmitter(const transmitter &);
@@ -993,13 +993,13 @@ namespace sd {
                   , _transmit(transmitter<nullptr_t, object_pointer_type>::transmit)
             {}
 
-            _interface &operator=(const _interface &) = delete; // because of deep copy
+            _interface &operator=(const _interface &) = delete;	// because of deep copy
 
-            auto operator()(Arg ... arg)->void {return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...); } // const // for serialize()
+            auto operator()(Arg && ... arg)->void {return _transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...);}	// const // for serialize()
     };
 
 
-    template <typename _meta_info, typename ... Arg> // = meta_info
+    template <typename _meta_info, typename ... Arg>	// = meta_info
     struct _interface<void (Arg ...) const, _meta_info> : public _meta_info {
         typedef _meta_info meta_info;
         typedef typename _meta_info::object_pointer_type object_pointer_type;
@@ -1008,9 +1008,9 @@ namespace sd {
             std::string _return_type_name;
 
             boost::shared_ptr<void> _transmitter;
-            void (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg ...);
-            // const size_t _parameter_num;
-            // const char* arguments_types;
+            void (*_transmit)(boost::shared_ptr<void> transmitter_, object_pointer_type object_, Arg && ...);
+                // const size_t _parameter_num;
+                // const char* arguments_types;
 
             template <typename _object_pointer_type, typename _object_type, typename _return_type, typename ... _Arg>struct transmitter;
 
@@ -1022,8 +1022,8 @@ namespace sd {
 
                 transmitter(void(object_type::*func)(_Arg ...) const) : _func(func){}
 
-                static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg ... arg){
-                    (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(arg ...);
+                static void transmit(boost::shared_ptr<void> _functor, object_pointer_type _object, _Arg && ... arg){
+                    (*static_if_shared_pointer_cast<object_type>(_object).*static_if_shared_pointer_cast<transmitter>(_functor)->_func)(std::forward<Arg>(arg) ...);
                 }
                 private:
                     transmitter(const transmitter &fun);
@@ -1048,7 +1048,7 @@ namespace sd {
             }
             _interface &operator=(const _interface &) = delete;
 
-            void operator()(Arg ... arg) const {_transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...); }
+            void operator()(Arg && ... arg) const {_transmit(_transmitter, meta_info::_object, std::forward<Arg>(arg) ...);}
     };
 
 // template <typename return_type, typename ... Arg> struct _interface_static;
@@ -1171,12 +1171,12 @@ namespace sd {
         sd::method<> method_object;
         template <typename object_type, typename ... Arg>
         get_return(std::string _method_name
-                  , return_type(object_type::*f)(Arg ...) // , return_type *r// = (return_type *)0
+                  , return_type(object_type::*f)(Arg ...)	// , return_type *r// = (return_type *)0
                   , object_type *const o
                   , Arg && ... arg) : method_object(sd::method<>(_method_name, f, &rt, o, arg ...))
         {}
 
-        return_type operator()(){method_object(); return rt; }
+        return_type operator()(){method_object();return rt;}
     };
 
 #include <functional>
@@ -1194,23 +1194,23 @@ namespace sd {
         template <typename object_type>
         record(typename static_if_shared<object_type, object_pointer_type>::type o
               , const std::string object_name = "") : meta_info(o, object_name)
-                                                      // , method_field(o->memethod_field())   // this->push_back(...) do it
-                                                      // , data_field(o->data_field())
+                                                        // , method_field(o->memethod_field())   // this->push_back(...) do it
+                                                        // , data_field(o->data_field())
         {}
 
-        method_type &operator[](const std::string method_name){return *method_field[method_name]; } // read/write! from/to common_data
+        method_type &operator[](const std::string method_name){return *method_field[method_name];}	// read/write! from/to common_data
 
         template <typename object_type, typename return_type = void, typename ... Arg>
         method_type &push_back(const std::string _method_name
                               , return_type (object_type::*funct)(Arg ...)
-                              , return_type *rt // = (return_type *)0
+                              , return_type *rt	// = (return_type *)0
                               , Arg && ... arg){
-            // assert(static_cast<object_type*>(meta_info::_object) != nullptr);
+                // assert(static_cast<object_type*>(meta_info::_object) != nullptr);
             assert(typeid(object_type).name() == meta_info::object_type());
             return *(
-                method_field[_method_name] = new method_type(_method_name, funct, rt, static_cast<object_type *>(meta_info::_object), std::forward<Arg>(arg) ...)); // fatal dangerous?
+                method_field[_method_name] = new method_type(_method_name, funct, rt, static_cast<object_type *>(meta_info::_object), std::forward<Arg>(arg) ...));	// fatal dangerous?
         }
-        ~record(){for(auto i : method_field){if(i.second)delete i.second; }}
+        ~record(){for(auto i : method_field){if(i.second)delete i.second;}}
         std::ostream &operator <<(std::ostream &out);
 
         template<typename meta_info_>friend std::ostream &operator <<(std::ostream &out, const record<meta_info_> &dt);
@@ -1307,27 +1307,27 @@ namespace sd {
     template <typename> struct table;
 
 // template <typename _meta_info, template <typename> class _element>
-    template <typename _element>struct table { // : public _element::meta_info
+    template <typename _element>struct table {	// : public _element::meta_info
         protected:
             friend ::boost::serialization::access;
-            template<class Archive>void serialize(Archive &ar, const unsigned int version){} // ** note that this is empty **
+            template<class Archive>void serialize(Archive &ar, const unsigned int version){}	// ** note that this is empty **
 
         public:
-            // for already defined object prototype, not all objects container with same name
-            // typedef typename _element::meta_info meta_info;
+                // for already defined object prototype, not all objects container with same name
+                // typedef typename _element::meta_info meta_info;
             typedef _element element_type;
             std::map<std::string, std::shared_ptr<element_type> > _object_map;
 
-            table(std::string name_){} // : meta_info(boost::shared_ptr<table>(this), name_)   // dangerous
+            table(std::string name_){}	// : meta_info(boost::shared_ptr<table>(this), name_)   // dangerous
 
 
             table(std::map<std::string, std::shared_ptr<element_type> > &&object_map_) : _object_map(object_map_){}
 
-            element_type &operator[](std::string name){return *_object_map[name]; } // may be nothing!!!    // read/write! from/to
+            element_type &operator[](std::string name){return *_object_map[name];}	// may be nothing!!!    // read/write! from/to
 
-            element_type &push_back(std::shared_ptr<element_type> _record){return *(_object_map[_record->object_name()] = _record); }
+            element_type &push_back(std::shared_ptr<element_type> _record){return *(_object_map[_record->object_name()] = _record);}
 
-            ~table(){_object_map.clear(); }
+            ~table(){_object_map.clear();}
     };
 }
 
@@ -1413,4 +1413,4 @@ namespace boost {
     namespace serialization {}
 }
 
-#endif // DELEGATE_H_INCLUDED
+#endif	// DELEGATE_H_INCLUDED

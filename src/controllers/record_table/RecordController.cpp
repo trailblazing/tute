@@ -50,16 +50,12 @@ extern AppConfig appconfig;
 extern WalkHistory walkhistory;
 
 
-RecordController::RecordController(
-        // TreeScreen           *_tree_screen
-        // , FindScreen         *_find_screen
-        // ,
-    MetaEditor         *_editor_screen
-                                  , browser::TabWidget *_tabmanager
-                                  , RecordScreen       *_record_screen
-                                  , MainWindow         *_main_window)
+RecordController::RecordController(MetaEditor           *_editor_screen		// TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
+                                  , browser::TabWidget  *_tabmanager
+                                  , RecordScreen        *_record_screen
+                                  , MainWindow          *_main_window)
     : QObject(_record_screen)
-      , _source_model(new RecordModel(this, _record_screen, _tabmanager))
+      , _source_model(new RecordModel(this, _tabmanager))
       , _proxy_model(new RecordProxyModel(this))
       , _view(new RecordView(_record_screen, this))	// , qobject_cast<QWidget * >(RecordTableScreen)
       , _tabmanager(_tabmanager)
@@ -1688,7 +1684,7 @@ void RecordController::remove(QVector<IdType> delete_ids){
                     auto item = _source_model->item(id);
                     if(item){
                         browser::WebView *v = nullptr;
-                        if((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->field<url_type>() == item->field<url_type>();}))){	// "url"
+                        if((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item->field<url_type>().toStdString()) && b->host()->id() == item->id();}))){	// "url"
                                 // item_to_be_deleted->unique_page()
                                 ////            int index = _tabmanager->indexOf(item->unique_page()->view());
                                 ////            if(index != -1)_tabmanager->closeTab(index);

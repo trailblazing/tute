@@ -473,7 +473,7 @@ RecordView::~RecordView(){
 // }
 
 
-RecordController *RecordView::record_controller(){return _record_controller; }
+RecordController *RecordView::record_controller(){return _record_controller;}
 
 
 QModelIndex RecordView::previous_index() const {
@@ -868,7 +868,7 @@ void RecordView::mousePressEvent(QMouseEvent *event){
 // boost::intrusive_ptr<TreeIndex> tree_index;
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
-        tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model(); }, it->parent(), it));
+        tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
         assert(tree_view->current_item() == it);
         assert(current_item() == it);
     }
@@ -1079,8 +1079,8 @@ void RecordView::resizeEvent(QResizeEvent *e){
     int adjust_width = 60;
         // auto size_width = size().width();
     auto show_fields = appconfig.record_table_show_fields();
-    int sum_width = 0; int i = 0;
-    for(auto f:show_fields){
+    int sum_width = 0;int i = 0;
+    for(auto f : show_fields){
         sum_width += columnWidth(i);
     }
     for(int i = 0; i < show_fields.size(); i ++){
@@ -1092,11 +1092,11 @@ void RecordView::resizeEvent(QResizeEvent *e){
             if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 25);
             if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 30);
             real_capacity = this->contentsRect().width();
-            if(real_capacity >= 300){
-                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
-            }else{
-                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, (real_capacity >= adjust_width) ? real_capacity - adjust_width : columnWidth(i));
-            }
+//            if(real_capacity >= 300){
+//                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
+//            }else{
+            if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)) setColumnWidth(i, (real_capacity >= adjust_width) ? real_capacity - adjust_width : columnWidth(i));
+//            }
         }
     }
     QTableView::resizeEvent(e);

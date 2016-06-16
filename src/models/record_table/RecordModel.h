@@ -84,7 +84,7 @@ class RecordModel : public QAbstractTableModel
 
 
         RecordModel(RecordController        *_record_controller
-                   , RecordScreen          *_record_screen
+//                   , RecordScreen          *_record_screen
                    , browser::TabWidget    *_tabmanager);
 
         ~RecordModel();

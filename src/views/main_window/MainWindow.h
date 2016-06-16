@@ -46,9 +46,9 @@
 #include <QStatusBar>
 #include "hidabletabwidget.h"
 
-//#include "libraries/GlobalParameters.h"
-//#include "models/app_config/AppConfig.h"
-//#include "models/database_config/DataBaseConfig.h"
+// #include "libraries/GlobalParameters.h"
+// #include "models/app_config/AppConfig.h"
+// #include "models/database_config/DataBaseConfig.h"
 
 
 extern const char *meta_editor_singleton_name;
@@ -60,7 +60,7 @@ namespace browser {
     class HistoryMenu;
     class BookmarksMenu;
     class Profile;
-    }
+}
 
 class TreeScreen;
 class MetaEditor;
@@ -72,7 +72,7 @@ class RecordController;
 class GlobalParameters;
 class AppConfig;
 class DataBaseConfig;
-
+class TreeScreenViewer;
 
 
 class MainWindow :
@@ -122,7 +122,7 @@ class MainWindow :
         QSplitter *find_splitter();
         QSplitter *h_right_splitter();
         QSplitter *h_left_splitter();
-
+        std::vector<TreeScreenViewer *> tree_viewers() const;
     public slots:
         void application_exit(void);
         void application_fast_exit(void);
@@ -232,13 +232,12 @@ class MainWindow :
 
         void closeEvent(QCloseEvent *event);
 
-        bool eventFilter(QObject *o, QEvent *e);         // Отслеживание прочих событий
+        bool eventFilter(QObject *o, QEvent *e);	// Отслеживание прочих событий
 
         void go_walk_history(void);
 
         bool _enable_real_close;
 
         friend class browser::Browser;
-
 };
 #endif

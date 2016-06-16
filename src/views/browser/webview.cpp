@@ -39,7 +39,7 @@
 **
 ****************************************************************************/
 
-
+#include <thread>
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 
 #include "browser.h"
@@ -385,62 +385,60 @@ namespace browser {
 
         _binder = [&]()->boost::intrusive_ptr<::Binder> {
             if(item->is_lite())item->to_fat();
-//            if(item->binder()){	// !_item->binder() ||
-
-
+            if(item->binder()){	// !_item->binder() ||
 //                if(! item->binder()->integrity_internal()){
-//                        // 6
+                // 6
 
 
-//                        ////            //            auto state = _item->binder()->state();
+                ////            //            auto state = _item->binder()->state();
 
-//                        ////            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
+                ////            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
 
-//                        ////                assert(!_item->binder()->page_link()->binder());
-//                        ////                _item->binder()->page_link()->item_break(_item->binder()->item_link());
+                ////                assert(!_item->binder()->page_link()->binder());
+                ////                _item->binder()->page_link()->item_break(_item->binder()->item_link());
 
-//                        ////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-//                        ////                //                assert(_item->record_binder());
-//                        ////                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
-//                        ////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-//                        ////                //                assert(!_item->record_binder());
+                ////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+                ////                //                assert(_item->record_binder());
+                ////                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
+                ////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+                ////                //                assert(!_item->record_binder());
 
-//                        ////                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-//                        ////                assert(_item->binder()->page_link()->binder());
-//                        ////                assert(_item->binder());
-//                        ////            }
-//                        // } else {
-
-
-
-
-//                    binder_reset();	// item->binder().reset(); //->break_page();
+                ////                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+                ////                assert(_item->binder()->page_link()->binder());
+                ////                assert(_item->binder());
+                ////            }
+                // } else {
 
 
 
 
-
-//                        // if(!_item->binder()->page_link()) {
-//                        // _item->binder()->page_link() = this;
-//                        // _item->binder()->item_link() = _item;
-//                        // assert(_item->binder()->page_link());
-//                        // assert(_item->binder()->item_link());
-
-//                        ////                if(!_binder)  { // 0x0000000000009?
-//                        ////                _binder = _item->binder();
-//                        ////                }
-//                        // }
+                binder_reset();		// item->binder().reset(); //->break_page();
 
 
 
 
 
-//                        // item_registered_setup_binder(_item);
+                // if(!_item->binder()->page_link()) {
+                // _item->binder()->page_link() = this;
+                // _item->binder()->item_link() = _item;
+                // assert(_item->binder()->page_link());
+                // assert(_item->binder()->item_link());
 
-//                        // _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-//                        // _binder = _item->binder();    // from return
+                ////                if(!_binder)  { // 0x0000000000009?
+                ////                _binder = _item->binder();
+                ////                }
+                // }
+
+
+
+
+
+                // item_registered_setup_binder(_item);
+
+                // _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+                // _binder = _item->binder();    // from return
 //                }
-//            }
+            }
                 // else {
                 // item_bind(_item);
                 // }
@@ -502,7 +500,7 @@ namespace browser {
 
         connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::titleChanged, this, &WebPage::onTitleChanged);
         connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::urlChanged, this, &WebPage::onUrlChanged);
-//        connect(this, &WebPage::close_requested, &WebPage::binder_reset);
+        connect(this, &WebPage::close_requested, &WebPage::binder_reset);
 
         connect(this, &WebPage::linkHovered, [&](const QString &url) mutable {
                 _hovered_url = url;
@@ -814,16 +812,15 @@ namespace browser {
 // boost::intrusive_ptr<TreeIndex> tree_modelindex(nullptr);
 
 
-        boost::intrusive_ptr<TreeIndex> tree_index = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent_parent, parent)
-            : TreeIndex::instance([&] {return tree_view->source_model();}, this->binder()->host()->parent(), this->binder()->host());
+        boost::intrusive_ptr<TreeIndex> tree_index = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent_parent, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->binder()->host()->parent(), this->binder()->host());
         if(type == QWebEnginePage::WebBrowserWindow){
-            WebView *v = _entrance->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
+            WebView *v = _entrance->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
             if(v)v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
             Browser *_browser = _entrance->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 // auto tree_index = create_tree_index();
 // assert(tree_index);
             auto it = tree_index->item_register(target_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                        return url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());	// return it_->field<url_type>() == target_url.toString();
+                        return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());	// return it_->field<url_type>() == target_url.toString();
                     });																																// Browser::_defaulthome
 
 
@@ -844,7 +841,7 @@ namespace browser {
                 // QUrl current = url();
                 // QUrl requestedurl = requestedUrl(); //equal to current page url
 
-            WebView *view = _entrance->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
+            WebView *view = _entrance->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
                 // return b->host()->field<url_type>() == target_url.toString();
 
 
@@ -870,9 +867,8 @@ namespace browser {
 // assert(tree_index);
                 page = tree_index->item_bind(this->_binder->host(), target_url
                                             , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
-                                            , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
-                            return url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());
-                        })->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
+                                            , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
+                        )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
                 assert(page);
             }
             assert(page);
@@ -1152,11 +1148,11 @@ namespace browser {
             };
         if(result->binder() && result->binder() == _binder){
             if(! result->binder()->integrity_external(result, this)){
-//                if(_binder)binder_reset();
+                if(_binder)binder_reset();
                 create_coupler(result);
             }
         }else{
-//            if(_binder)binder_reset();
+            if(_binder)binder_reset();
             create_coupler(result);
         }
         // std::make_shared<WebPage::Coupler>(this, item);
@@ -1807,26 +1803,35 @@ namespace browser {
         }
     }
 
-//    // deprecated
-//    void WebPage::binder_reset(){
-//        _record_controller->on_recordtable_configchange();
-//        // _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
-//        if(_binder){
-//            auto _host_binder = _binder->host()->binder();
-//            if(_host_binder){
-////		if(_host_binder->page()) _host_binder->page(nullptr);
-////		if(_host_binder->host()){_host_binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));}
-//                _binder->host()->binder(std::move<boost::intrusive_ptr<::Binder> >(nullptr));
-//            }
-//                // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
-//            auto _page_binder = _binder->page()->binder();
+        // deprecated
+    void WebPage::binder_reset(){
+        _record_controller->on_recordtable_configchange();
+        // _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
+        if(_binder){
+            auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
+            if(_host_binder){
+                if(_host_binder->page())_host_binder->page(nullptr);
+                if(_host_binder->host()){_host_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
+//		if(_binder->host()){
+//		    _binder->host()->binder(nullptr);
+//		    _binder->host(nullptr);
+//		}
+            }
+                // _binder->break_page();   // item_break(_binder->item_link());  // break_items();
+            assert(_host_binder == _binder);
+            _host_binder.reset(nullptr);
+//            auto _page_binder = _binder->page() ? _binder->page()->binder() : nullptr;
 //            if(_page_binder){
-////		if(_page_binder->page()) _page_binder->page(nullptr);
-////		if(_page_binder->host()){_page_binder->host(std::move(boost::intrusive_ptr<TreeItem>(nullptr)));}
-//                _binder->page()->binder(std::move<boost::intrusive_ptr<::Binder> >(nullptr));
+//                assert(_page_binder == _binder);
+//                if(_page_binder->page())_page_binder->page(nullptr);
+//                if(_page_binder->host()){_page_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
+////		_binder->page()->binder(nullptr);
+////		_binder->page(nullptr);
+//                _page_binder = nullptr;
 //            }
-//        }
-//    }
+            _binder.reset(nullptr);
+        }
+    }
 
     void WebPage::update_record(const QUrl &url, const QString &title){
         // Q_UNUSED(make_current)
@@ -1889,9 +1894,7 @@ namespace browser {
             }
             if(data_changed){
                 update_record_view(_binder->host());
-                auto source_model = [&](){
-                        return _tree_screen->view()->source_model();
-                    };
+                auto source_model = [&](){return _tree_screen->view()->source_model();};
                 source_model()->emit_datachanged_signal(source_model()->index(_binder->host()));
             }
             if(_editor_screen->item() != _binder->host() && is_current)sychronize_metaeditor_to_item();	// metaeditor->bind(_record);
@@ -1909,25 +1912,14 @@ namespace browser {
                 // if(make_current && recordtableview) {
                 // recordtableview->setSelectionToPos(position); // work
 
-
-
-
-
-
             _view->setFocus();	// make upate validate
-
 
                 // auto _tree_screen = globalparameters.tree_screen();
             auto it = _binder->host();
             auto tree_view = _tree_screen->view();
-// boost::intrusive_ptr<TreeIndex> tree_index;
-// try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-// return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
-// })); } catch(std::exception &e) {throw e; }
             if(is_current){	// globalparameters.mainwindow()
-                tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
-// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field("id"))
-// _record_controller->cursor_to_index(_record_controller->index<PosProxy>(_binder->host()));  // IdType(_binder->item()->field("id"))
+                if(tree_view->current_item() != it)tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
+                if(_record_controller->view()->current_item() != it)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(it));	// IdType(_binder->item()->field("id"))
             }
                 // if(_record->_active_request) {
                 // if(_record->_openlinkinnewwindow == 1) {
@@ -2157,6 +2149,21 @@ namespace browser {
                 // }
 
             recovery_global_consistency();
+            auto it = _page->binder()->host();
+            auto v = _page->_tree_screen->view();
+            auto items = v->source_model()->items([&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<url_type>().toStdString(), it->field<url_type>().toStdString());});
+            if(it && items.size() > 1){
+                QList<boost::intrusive_ptr<TreeItem> > olds;
+                for(auto i_ : items){
+                    if(i_ != it){
+                        olds << i_;
+                    }
+                }
+                for(auto j_ : olds){
+                    auto it_ = v->view_merge(TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_);
+//                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
+                }
+            }
             _load_finished = true;
         }
         _progress = 0;
@@ -2703,20 +2710,19 @@ namespace browser {
         ////        //                }
         // _bounded_item = item;
         if(_item){
-//                // if((_bounded_item && _bounded_item.get() != item.get())) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
-//                // _bounded_page->item_break(_bounded_item);
-//                // }
-//                // _bounded_item = item;
-//            if(_item->binder() != _page->binder()){
-//                assert(_item->binder());
-//                _page->binder_reset();
-//                // _page->binder(// std::forward<boost::intrusive_ptr<TreeItem::Coupler>&>(
-//                // _item->binder()
-//                //// )
-//                // )
-//                // ;
-//            }
-
+                // if((_bounded_item && _bounded_item.get() != item.get())) { // || (_item && !_item->page_valid())    // bug, they may all are nullptr, conflict with upon
+                // _bounded_page->item_break(_bounded_item);
+                // }
+                // _bounded_item = item;
+            if(_item->binder() != _page->binder()){
+                assert(_item->binder());
+                _page->binder_reset();
+                // _page->binder(// std::forward<boost::intrusive_ptr<TreeItem::Coupler>&>(
+                // _item->binder()
+                //// )
+                // )
+                // ;
+            }
             _page->item_bind(_item);
             if(_page->url().toString() != _item->field<url_type>()){_page->setUrl(QUrl(_item->field<url_type>()));}
                 // _bounded_page = view->page();
@@ -2770,7 +2776,15 @@ namespace browser {
 
     const boost::intrusive_ptr<::Binder> && WebPage::binder() const {return std::forward<const boost::intrusive_ptr<::Binder> >(_binder);}
 
-    void WebPage::binder(boost::intrusive_ptr<::Binder> &&binder_){if(binder_ != _binder)this->_binder = binder_;}
+    void WebPage::binder(boost::intrusive_ptr<::Binder> &&binder_){
+        if(binder_){
+            binder_->page(this);
+            if(binder_ != _binder)this->_binder = std::forward<boost::intrusive_ptr<::Binder> >(binder_);
+        }else{
+            _binder->host(boost::intrusive_ptr<TreeItem>(nullptr));
+            _binder = nullptr;
+        }
+    }
 
     WebView *WebPage::view(){return _view;}		// assert(_view);
 
