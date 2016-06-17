@@ -10,39 +10,39 @@
 
 
 class RecordProxyModel;
-
+class RecordScreen;
 
 class RecordPrint : public QDialog {
     Q_OBJECT
 
-public:
-    RecordPrint(QWidget *parent=0);
-    virtual ~RecordPrint();
+    public:
+        RecordPrint(RecordScreen *_record_screen = 0);
+        virtual ~RecordPrint();
 
-    void setModel(RecordProxyModel *iModel);
-    void generateHtmlTableFromModel(void);
-    void setTitleToHtml(QString title);
+        void setModel(RecordProxyModel *iModel);
+        void generateHtmlTableFromModel(void);
+        void setTitleToHtml(QString title);
 
-protected slots:
+    protected slots:
 
-    void print(void);
-    void save(void);
+        void print(void);
+        void save(void);
 
-private:
+    private:
 
-    QTextEdit *textArea; // Отображение текста с таблицей, выводимой на печать
-    QDialogButtonBox *buttonBox; // Линейка с кнопками
+        QTextEdit *textArea;	// Отображение текста с таблицей, выводимой на печать
+        QDialogButtonBox *buttonBox;	// Линейка с кнопками
 
-    QPushButton *printButton;
-    QPushButton *saveButton;
-    QPushButton *cancelButton;
+        QPushButton *printButton;
+        QPushButton *saveButton;
+        QPushButton *cancelButton;
 
-    RecordProxyModel *model;
+        RecordProxyModel *model;
 
-    void setup_ui(void);
-    void setup_signals(void);
-    void assembly(void);
+        void setup_ui(void);
+        void setup_signals(void);
+        void assembly(void);
 };
 
-#endif	/* _RECORD_TABLE_PRINT_H_ */
+#endif /* _RECORD_TABLE_PRINT_H_ */
 

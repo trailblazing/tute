@@ -1121,7 +1121,7 @@ void RecordController::paste(void){
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-void RecordController::addnew_blank(int mode){
+browser::WebView *RecordController::addnew_blank(int mode){
     qDebug() << "In add_new_record()";
 
         //// Создается окно ввода данных
@@ -1180,14 +1180,14 @@ void RecordController::addnew_blank(int mode){
     DiskHelper::remove_directory(directory);
 
         // Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    addnew_item(item, mode);
+    return addnew_item(item, mode);
 }
 
 
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-PosSource RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode){
+browser::WebView *RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode){
     qDebug() << "In add_new_record()";
 
         //// Создается окно ввода данных
@@ -1244,11 +1244,12 @@ PosSource RecordController::addnew_item_fat(boost::intrusive_ptr<TreeItem> item,
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-PosSource RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_, const int mode){
+browser::WebView *RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_target, const int mode){
     qDebug() << "In add_new()";
+    browser::WebView *v = nullptr;
 
         // Получение Source-индекса первой выделенной строки
-    IndexSource source_position_index = _view->selection_first<IndexSource>();
+    IndexSource source_position_index = index<IndexSource>(_view->current_item());	// selection_first<IndexSource>();
         // if(!position_index.isValid()) {
         // position_index = _view->currentIndex();   // very wrong!
         // }
@@ -1275,14 +1276,16 @@ PosSource RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_, co
 
     PosSource selected_source_position(- 1);
         // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    if(! _source_model->item(item_)){
-        selected_source_position = _source_model->insert_new_item(source_position_index, item_, mode);
+    if(! _source_model->item(item_target)){
+        v = _source_model->insert_new_item(source_position_index, item_target, mode);
+        selected_source_position = _tabmanager->webViewIndex(v);
     }else{
-        selected_source_position = _source_model->position(item_->id());
+        selected_source_position = _source_model->position(item_target->id());
+        v = _tabmanager->webView(static_cast<int>(selected_source_position));
     }
     assert(selected_source_position != - 1);
-    assert(_source_model->item(selected_source_position) == item_);
-    assert(_source_model->position(item_->id()) == selected_source_position);
+    assert(_source_model->item(selected_source_position) == item_target);
+    assert(_source_model->position(item_target->id()) == selected_source_position);
         // assert(_source_model->child(selected_position) == item);
 
     cursor_to_index(index<PosProxy>(selected_source_position));	// , mode // modify _source_model? yeah
@@ -1309,11 +1312,11 @@ PosSource RecordController::addnew_item(boost::intrusive_ptr<TreeItem> item_, co
         // find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
         // }
 
-    selected_source_position = _source_model->position(item_->id());
+    selected_source_position = _source_model->position(item_target->id());
     assert(selected_source_position != - 1);
-    assert(_source_model->item(selected_source_position) == item_);
-
-    return selected_source_position;
+    assert(_source_model->item(selected_source_position) == item_target);
+    assert(v);
+    return v;	// selected_source_position;
 }
 
 
@@ -1915,20 +1918,21 @@ void RecordController::on_recordtable_configchange(void){
 
 
 void RecordController::on_print_click(void){
-    RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
+//    RecordScreen *parentPointer = qobject_cast<RecordScreen *>(parent());
 
-    RecordPrint printDialog(parentPointer);
-    printDialog.setModel(_proxy_model);
-    printDialog.generateHtmlTableFromModel();
-    printDialog.setTitleToHtml(
+    RecordPrint print_dialog(_record_screen);		// parentPointer
+    print_dialog.setModel(_proxy_model);
+    print_dialog.generateHtmlTableFromModel();
+    print_dialog.setTitleToHtml(
         record_screen()->objectName()	// _source_model->_browser_pages->path_as_name_with_delimiter(" / ")
         );
-    printDialog.exec();
+    print_dialog.exec();
 }
 
 
 boost::intrusive_ptr<TreeItem> RecordController::synchronize_record_view(boost::intrusive_ptr<TreeItem> item){
     boost::intrusive_ptr<TreeItem> _item = _source_model->item(item);
+    browser::WebView *v = nullptr;
     PosSource source_position(- 1);
     if(! _item){
         ////    assert(record_controller);
@@ -1940,32 +1944,29 @@ boost::intrusive_ptr<TreeItem> RecordController::synchronize_record_view(boost::
         // assert(!item->is_lite());
         if(item->is_lite())item->to_fat();
         // item->is_registered_to_record_controller_and_tabmanager(true);
-        source_position = this->addnew_item_fat(item, add_new_record_after);	// recordTableController->autoAddNewAfterContext();
+        v = this->addnew_item_fat(item, add_new_record_after);
+        source_position = _tabmanager->webViewIndex(v);	// recordTableController->autoAddNewAfterContext();
         assert(source_position != - 1);
-        _item = _source_model->item(source_position);
-        ////    assert(source_position == source_model()->_shadow_branch_root->size() - 1);
 
-        ////    Record *_record = nullptr;
-        ////    _record = recordtabledata->record(_url);    // does not work every time? still not update now?
-
-        ////                int pos = _record_controller->getFirstSelectionPos();
         // _source_model->on_table_config_changed();
     }else{
         source_position = _source_model->position(_item->id());
+        v = _tabmanager->webView(static_cast<int>(source_position));
     }
+    _item = v->page()->binder()->host();
+    assert(_item == _source_model->item(source_position));
     assert(_item);
 
 
     PosSource pos = _source_model->position(_item->id());
 
     assert(pos == source_position);	// maybe duplicated
-    _item = _source_model->item(source_position);
-        // int source_position_ = item->sibling_order();   // from treemodelknow->_root_item
-        // auto _item_ = _shadow_branch_root->item(source_position_);
+//    _item = _source_model->item(source_position);
+
     assert(_item.get() == item.get());
         // assert(_item_.get() == item.get());
         // assert(record == _record);
-    assert(_item->field<url_type>() == item->field<url_type>());
+    assert(url_equal(_item->field<url_type>().toStdString(), item->field<url_type>().toStdString()));
         // }
         // assert(_record);
     if(_item->is_lite())_item->to_fat();

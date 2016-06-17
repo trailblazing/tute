@@ -55,6 +55,7 @@ namespace browser {
     class Entrance;
     class Browser;
     class TabWidget;
+    class WebView;
 }
 
 
@@ -181,7 +182,7 @@ class RecordModel : public QAbstractTableModel
         void on_table_config_changed(void);
 
         // Добавление записей
-        PosSource insert_new_item(IndexSource source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
+        browser::WebView *insert_new_item(const IndexSource source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
         bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
         void remove_child(boost::intrusive_ptr<TreeItem> it);
 

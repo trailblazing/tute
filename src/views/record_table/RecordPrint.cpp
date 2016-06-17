@@ -7,20 +7,18 @@
 
 #include "views/print_preview/PrintPreview.h"
 #include "models/record_table/RecordProxyModel.h"
-
+#include "views/record_table/RecordScreen.h"
 #include "RecordPrint.h"
 
 
-RecordPrint::RecordPrint(QWidget *parent) : QDialog(parent)
-{
+RecordPrint::RecordPrint(RecordScreen *_record_screen) : QDialog(_record_screen){
     setup_ui();
     setup_signals();
     assembly();
 }
 
 
-RecordPrint::~RecordPrint()
-{
+RecordPrint::~RecordPrint(){
     delete textArea;
 
     delete printButton;
@@ -31,15 +29,14 @@ RecordPrint::~RecordPrint()
 }
 
 
-void RecordPrint::setup_ui()
-{
+void RecordPrint::setup_ui(){
     setModal(true);
 
     QSizePolicy sizePolicy;
     sizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
     sizePolicy.setVerticalPolicy(QSizePolicy::Expanding);
 
-    // Область отображения распечатываемой таблицы
+        // Область отображения распечатываемой таблицы
     textArea = new QTextEdit(this);
     textArea->setAcceptRichText(true);
     textArea->setSizePolicy(sizePolicy);
@@ -48,15 +45,14 @@ void RecordPrint::setup_ui()
     saveButton = new QPushButton(tr("Save"));
     cancelButton = new QPushButton(tr("Cancel"));
 
-    // Линейка с кнопками управления
+        // Линейка с кнопками управления
     buttonBox = new QDialogButtonBox(Qt::Horizontal);
     buttonBox->addButton(printButton,  QDialogButtonBox::AcceptRole);
     buttonBox->addButton(saveButton,   QDialogButtonBox::AcceptRole);
     buttonBox->addButton(cancelButton, QDialogButtonBox::RejectRole);
-
-    // Устанавливается размер окна, равный виджету, из которого
-    // этот виджет был вызван
-    if(this->parent()->isWidgetType()) {
+        // Устанавливается размер окна, равный виджету, из которого
+        // этот виджет был вызван
+    if(this->parent()->isWidgetType()){
         QWidget *parentWidget = qobject_cast<QWidget *>(this->parent());
         QRect geom(parentWidget->pos(), parentWidget->size());
 
@@ -64,16 +60,14 @@ void RecordPrint::setup_ui()
 
         setMinimumSize(parentWidget->size());
     }
-
-    // Устанавливается заголовок окна
+        // Устанавливается заголовок окна
     this->setWindowTitle(tr("Print notes table"));
 }
 
 
-void RecordPrint::setup_signals()
-{
-    // connect(buttonBox, SIGNAL(accepted()), this, SLOT(print()));
-    // connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
+void RecordPrint::setup_signals(){
+        // connect(buttonBox, SIGNAL(accepted()), this, SLOT(print()));
+        // connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
     connect(printButton,  &QPushButton::clicked, this, &RecordPrint::print);
     connect(saveButton,   &QPushButton::clicked, this, &RecordPrint::save);
@@ -81,58 +75,48 @@ void RecordPrint::setup_signals()
 }
 
 
-void RecordPrint::assembly()
-{
+void RecordPrint::assembly(){
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
-    // Добавляется область текста
+        // Добавляется область текста
     mainLayout->addWidget(textArea);
 
-    // Добавляется линейка кнопок Print и Cancel
+        // Добавляется линейка кнопок Print и Cancel
     mainLayout->addWidget(buttonBox);
 }
 
 
 // Метод установки модели данных, из которой будет формироваться таблица
-void RecordPrint::setModel(RecordProxyModel *iModel)
-{
+void RecordPrint::setModel(RecordProxyModel *iModel){
     model = iModel;
 }
 
 
 // Формирование HTML-кода таблицы
-void RecordPrint::generateHtmlTableFromModel(void)
-{
+void RecordPrint::generateHtmlTableFromModel(void){
     QString html = "<table border='1' style='border-style:solid; margin-top:0; margin-bottom:0; margin-left:0; margin-right:0;' cellspacing='0' cellpadding='0'>";
 
-    // Заголовок таблицы
+        // Заголовок таблицы
     html += "<tr>";
-
-    for(int nColumn = 0; nColumn < model->columnCount(); nColumn++) {
+    for(int nColumn = 0; nColumn < model->columnCount(); nColumn ++){
         QVariant cellTextVariant = model->headerData(nColumn, Qt::Horizontal, Qt::DisplayRole);
         QString cellText = cellTextVariant.toString();
 
         html += "<td style='padding: 10px;'><b>" + cellText + "</b></td>";
     }
-
     html += "</tr>";
-
-
-    // Данные из модели сразу преобразуются в HTML
-    for(int nRow = 0; nRow < model->rowCount(); nRow++) {
+        // Данные из модели сразу преобразуются в HTML
+    for(int nRow = 0; nRow < model->rowCount(); nRow ++){
         html += "<tr>";
+        for(int nColumn = 0; nColumn < model->columnCount(); nColumn ++)
+                if(model->index(nRow, nColumn).isValid()){
+                    QVariant cellTextVariant = model->index(nRow, nColumn).data(Qt::DisplayRole);
+                    QString cellText = cellTextVariant.toString();
 
-        for(int nColumn = 0; nColumn < model->columnCount(); nColumn++)
-            if(model->index(nRow, nColumn).isValid()) {
-                QVariant cellTextVariant = model->index(nRow, nColumn).data(Qt::DisplayRole);
-                QString cellText = cellTextVariant.toString();
-
-                html += "<td style='padding: 10px;'>" + cellText + "</td>";
-            }
-
+                    html += "<td style='padding: 10px;'>" + cellText + "</td>";
+                }
         html += "</tr>";
     }
-
     html += "</table>";
 
     qDebug() << html;
@@ -141,16 +125,14 @@ void RecordPrint::generateHtmlTableFromModel(void)
 }
 
 
-void RecordPrint::setTitleToHtml(QString title)
-{
+void RecordPrint::setTitleToHtml(QString title){
     textArea->setHtml("<p>" + title + "</p>" + textArea->toHtml());
 }
 
 
 // Слот в котором происходит вызов служебного окна предпросмотра тачатаемой таблицы
-void RecordPrint::print(void)
-{
-    QTextDocument doc; // Документ, который будет отправлен на печать
+void RecordPrint::print(void){
+    QTextDocument doc;	// Документ, который будет отправлен на печать
 
     doc.setHtml(textArea->toHtml());
 
@@ -162,21 +144,18 @@ void RecordPrint::print(void)
 }
 
 
-void RecordPrint::save(void)
-{
+void RecordPrint::save(void){
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save File"), "", tr("HTML Files (*.html)"));
-
-    if(fileName != "") {
+    if(fileName != ""){
         QFile file(fileName);
-
-        if(!file.open(QIODevice::WriteOnly)) {
+        if(! file.open(QIODevice::WriteOnly)){
             QMessageBox msgBox;
             msgBox.setText(tr("The file has been write only."));
             msgBox.exec();
-        } else {
+        }else{
             QTextStream stream(&file);
             stream.setCodec("UTF-8");
-            stream << textArea->document()->toHtml("UTF-8"); // Команда stream << textArea->toHtml() не подходит, так как не выствляет в заголовках charset
+            stream << textArea->document()->toHtml("UTF-8");	// Команда stream << textArea->toHtml() не подходит, так как не выствляет в заголовках charset
             stream.flush();
             file.close();
         }

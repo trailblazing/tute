@@ -541,10 +541,10 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode){
+browser::WebView *RecordModel::insert_new_item(const IndexSource source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode){
     PosSource selected_position(- 1);
-
-    auto insert_new_tab = [&](browser::WebView *view, PosSource source_insert_pos){
+    browser::WebView *view = nullptr;
+    auto insert_new_tab = [&](PosSource &selected_position, const PosSource source_insert_pos){
                 // if(selected_position == -1) {
             boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return this;}, pages_container::_tabmanager->count() > 0 ? pages_container::_tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
             if(record_modelindex)view = pages_container::_tabmanager->newTab(record_modelindex);	// , _item->field("name")
@@ -554,10 +554,9 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
                 // addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
             }
             assert(view);
-            return selected_position = PosSource(pages_container::_tabmanager->indexOf(view));
+            selected_position = PosSource(pages_container::_tabmanager->indexOf(view));
+            return view;
         };
-
-    browser::WebView *view = nullptr;
     if(_item){
         PosSource source_insert_pos = _record_controller->index<PosSource>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
         Q_UNUSED(mode)	// to be used
@@ -571,10 +570,12 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
                 if(v->tabmanager() != pages_container::_tabmanager){
                     v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 //		    if(selected_position == - 1)
-                    selected_position = insert_new_tab(view, source_insert_pos);
+//		    selected_position =
+                    view = insert_new_tab(selected_position, source_insert_pos);
                 }else selected_position = PosSource(pages_container::_tabmanager->indexOf(view));// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
             }else{
-                selected_position = insert_new_tab(view, source_insert_pos);
+//		selected_position =
+                view = insert_new_tab(selected_position, source_insert_pos);
             }
                 // Вставка новых данных в таблицу конечных записей
                 // accomplished by TabWidget::addTab in TabWidget::newTab?
@@ -584,7 +585,7 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
             assert(view);
         }else{
 
-            selected_position = insert_new_tab(view, source_insert_pos);
+            view = insert_new_tab(selected_position, source_insert_pos);
             assert(selected_position != - 1);
             assert(view);
         }
@@ -593,7 +594,7 @@ PosSource RecordModel::insert_new_item(IndexSource source_pos_index, boost::intr
         endResetModel();// Подумать, возможно нужно заменить на endInsertRows
     }
     assert(view);
-    return selected_position;
+    return view;// selected_position;
 }
 
 
