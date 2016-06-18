@@ -1811,7 +1811,7 @@ namespace browser {
             auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
             if(_host_binder){
                 if(_host_binder->page())_host_binder->page(nullptr);
-                if(_host_binder->host()){_host_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
+                if(_host_binder->host())_host_binder->host(nullptr);
 //		if(_binder->host()){
 //		    _binder->host()->binder(nullptr);
 //		    _binder->host(nullptr);
@@ -2781,7 +2781,8 @@ namespace browser {
             binder_->page(this);
             if(binder_ != _binder)this->_binder = std::forward<boost::intrusive_ptr<::Binder> >(binder_);
         }else{
-            _binder->host(boost::intrusive_ptr<TreeItem>(nullptr));
+            _binder->host(nullptr);
+            _binder->page(nullptr);
             _binder = nullptr;
         }
     }

@@ -752,26 +752,19 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
 
 //// Удаление записи с указанным индексом
 //// todo: добавить удаление приаттаченных файлов и очистку таблицы приаттаченных файлов
-// bool ItemsFlat::remove(int i)
-// {
-// bool result = false;
-// qDebug() << "Try delete record num " << i << " table count " << _child_items.size();
-
+// bool ItemsFlat::remove(int i){
+//    bool result = false;
+//    qDebug() << "Try delete record num " << i << " table count " << _child_items.size();
 //// Нельзя удалять с недопустимым индексом
-// if(i >= _child_items.size())
-// return result;
-
+//    if(i >= _child_items.size()) return result;
 //// Удаление директории и файлов внутри, с сохранением в резервной директории
-// QString dirForDelete = appconfig.tetra_dir() + "/base/" + field(i, "dir");
-// qDebug() << "Remove dir " << dirForDelete;
-// DiskHelper::remove_directory_to_trash(dirForDelete);
+//    QString dirForDelete = appconfig.tetra_dir() + "/base/" + field(i, "dir");
+//    qDebug() << "Remove dir " << dirForDelete;
+//    DiskHelper::remove_directory_to_trash(dirForDelete);
 
 //// Удаление позиции курсора из истории
-// QString id = field(i, "id");
-
-// if(id.length() > 0)
-// walkhistory.remove_history_data(id);
-
+//    QString id = field(i, "id");
+//    if(id.length() > 0) walkhistory.remove_history_data(id);
 ////    //
 ////    Record record = tableData.at(i);
 ////    browser::PageView *view = record.view();
@@ -781,10 +774,10 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
 //// beginRemoveRows(QModelIndex(),i,i);
 
 //// Удаляется элемент
-// _child_items.removeAt(i); // Было takeAt
+//    _child_items.removeAt(i);	// Было takeAt
 
-// result = true;
-// qDebug() << "Delete record succesfull";
+//    result = true;
+//    qDebug() << "Delete record succesfull";
 
 ////    //
 ////    browser::TabManager *tabmanager = view->tabmanager();
@@ -796,18 +789,15 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
 // return result;
 // }
 
-// bool ItemsFlat::remove(QString id)
-// {
-// bool result = false;
-
-// for(int i = 0; i < count_direct(); i++) {
-// if(field(i, "id") == id) {
-// result = remove(i); // Так как id уникальный, удаляться будет только одна запись
-// break;
-// }
-// }
-
-// return result;
+// bool ItemsFlat::remove(QString id){
+//    bool result = false;
+//    for(int i = 0; i < count_direct(); i ++){
+//        if(field(i, "id") == id){
+//            result = remove(i);	// Так как id уникальный, удаляться будет только одна запись
+//            break;
+//        }
+//    }
+//    return result;
 // }
 
 boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const boost::intrusive_ptr<TreeItem> &&_item) const {
@@ -1279,5 +1269,14 @@ QList<boost::intrusive_ptr<Linker> > ItemsFlat::child_linkers(){
 void ItemsFlat::traverse(const std::function<void (boost::intrusive_ptr<Linker>)> &operation){
     for(auto il : ItemsFlat::_child_linkers){
         operation(il);
+    }
+}
+
+void ItemsFlat::release(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal){
+    QList<boost::intrusive_ptr<Linker> >::Iterator pos = _child_linkers.begin();
+    while(pos != _child_linkers.end()){
+        auto link = *pos;
+        if(_equal(link))_child_linkers.erase(pos);
+        pos ++;
     }
 }

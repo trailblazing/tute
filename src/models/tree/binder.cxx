@@ -110,54 +110,52 @@ Binder::Binder(
 }
 
 Binder::~Binder(){
-    std::function<void (boost::intrusive_ptr<TreeItem>)>
-    close_tab_recursive
-        = [&](boost::intrusive_ptr<TreeItem> it) -> void {
-            if(globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), it->field<home_type>().toStdString());})){
-                // [&](boost::intrusive_ptr<const ::Binder> b){return b->host()->field<url_type>() == it->field<url_type>();}
-
-                // item_to_be_deleted->unique_page()
-                auto page = it->page();
-                if(page)page->record_controller()->remove(it->id());																						// (*reocrd_controller)()->remove_child(item_to_be_deleted->id());
-            }
-            if(it->count_direct() > 0){
-                for(int i = 0; i < it->count_direct(); i ++){
-                    close_tab_recursive(it->item_direct(i));
-                }
-            }
-        };
-        //    //
-        //    browser::WebView *view = bounded_page()->view();    //_page->view();
-        //    browser::TabWidget *tabmanager = nullptr;
-        //    if(view) {
-        //        tabmanager = view->tabmanager();
-        //    }
-    if(host()){
+//    std::function<void (boost::intrusive_ptr<TreeItem>)>
+//    close_tab_recursive
+//        = [&](boost::intrusive_ptr<TreeItem> it) -> void {
+//            browser::WebView *v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return b->host() == it;});
+//            if(v){
+//                v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
+//            }
+//            for(int i = 0; i < it->count_direct(); i ++){
+//                close_tab_recursive(it->item_direct(i));
+//            }
+//        };
+//        //    //
+//        //    browser::WebView *view = bounded_page()->view();    //_page->view();
+//        //    browser::TabWidget *tabmanager = nullptr;
+//        //    if(view) {
+//        //        tabmanager = view->tabmanager();
+//        //    }
+//    if(host()){
 
 
-        // multi record to one page:
-        // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
-        // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
-        // assert(_page->record().get() == this);
+//        // multi record to one page:
+//        // assert(_page->record()->getNaturalFieldSource("id") == this->getNaturalFieldSource("id"));
+//        // assert(_page->record()->getNaturalFieldSource("url") == this->getNaturalFieldSource("url"));
+//        // assert(_page->record().get() == this);
 
-        //        bool is_holder = (_bounded_item.get() == this);     // _page->record() may mean some other record
+//        //        bool is_holder = (_bounded_item.get() == this);     // _page->record() may mean some other record
 
-        //            page_to_nullptr();
+//        //            page_to_nullptr();
 
-        //        _page->record(nullptr);
-        //        _page = nullptr;
+//        //        _page->record(nullptr);
+//        //        _page = nullptr;
 
-        //        if(view && tabmanager // && is_holder
-        //          ) {
-        // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
+//        //        if(view && tabmanager // && is_holder
+//        //          ) {
+//        // && check_register_record(QUrl(browser::DockedWindow::_defaulthome)) != this
 
-        //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
+//        //                assert(_record_binder->bounded_page() == _record_binder->bounded_item()->unique_page());   // _page->rebind_record() make sure of this statement
 
-        // I want to reuse it // close_tab_recursive(item_link());  // if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
-        host().reset();
+//        // I want to reuse it // close_tab_recursive(item_link());  // if(tabmanager->webViewIndex(view) != -1)tabmanager->closeTab(tabmanager->webViewIndex(view));
+////        close_tab_recursive(host());
+//        host().reset(nullptr);
 
-        //        }
-    }
+//        //        }
+//    }
+    host(nullptr);
+    page(nullptr);
 }
 
 

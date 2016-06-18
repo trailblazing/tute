@@ -8,6 +8,7 @@
 #include "TreeModel.h"
 #include "XmlTree.h"
 
+#include "models/tree/binder.hxx"
 #include "libraries/ClipboardRecords.h"
 #include "libraries/ClipboardBranch.h"
 #include "models/app_config/AppConfig.h"
@@ -21,7 +22,7 @@
 #include "views/browser/webview.h"
 #include "views/tree/KnowView.h"
 #include "views/tree/TreeScreen.h"
-
+#include "views/browser/entrance.h"
 
 
 extern GlobalParameters globalparameters;
@@ -806,12 +807,10 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(boost::intrusive_p
 //                //            bool remove_result = false;
 //            if(_index_origin.isValid()){
 //                // auto original_parent = source_item->parent();
-
 //                int sibling_order = - 1;
 //                if(original_parent){
 //                    sibling_order = original_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == source_item->linker() && il->host() == source_item && source_item->parent() == il->host_parent();});
 //                    assert(_index_origin.row() == sibling_order);
-
 //                    beginRemoveRows(_index_parent, _index_origin.row(), _index_origin.row());
 //                    deleted_item = original_parent->delete_permanent([&](boost::intrusive_ptr<const Linker> il){
 //                                return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent && source_item->parent() == il->host_parent();
@@ -826,14 +825,11 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(boost::intrusive_p
 //            }
 //                //            else
 //                //                remove_result = true;
-
 //                //            else if(_source_item->parent()) {   // should not use
 //                //                //            _source_item->self_remove_from_parent();    //
 //                //                deleted_linker = _source_item->parent()->remove(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
 //                //            }
-
 //                //            assert(!deleted_linker);  // means always does not work!? no, eg. _source_item->parent() == nullptr, so some time it is nullptr, not always
-
 ////            assert(!deleted_item);
 ////            assert(!deleted_item->linker());
 //        }
@@ -1242,14 +1238,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_permanent_single(boost::i
             if(parent_of_delete){
                 QModelIndex parent_index = index(parent_of_delete);
                 //    bool success = false;
-                auto equal_linker = [&](boost::intrusive_ptr<const Linker> il){
-                        return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker;
-                    };
+                auto equal_linker = [&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker;};
                 int position = parent_of_delete->sibling_order(equal_linker);
                 beginRemoveRows(parent_index, position, position);																	// + rows - 1
 
                 //            remove_target->self_remove_from_parent();
                 result = parent_of_delete->delete_permanent(equal_linker);
+                browser::WebView *v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
+                if(v)v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
                 auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
                 update_index(parent_index);
                 view->update(parent_index);
@@ -1267,19 +1263,20 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_permanent_single(boost::i
 //            assert(tree_index);
 
 //            if(tree_index) {
-            auto result = view->view_paste_child(TreeIndex::instance([&] {return view->source_model();}, host_parent->parent(), host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {
-                        return il->host()->id() == linker_first->host()->id();
-                    });
-            assert(result == linker_first->host());
+            auto result = view->view_paste_child(TreeIndex::instance([&] {return view->source_model();}, host_parent->parent(), host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
+            assert(result->id() == linker_first->host()->id());
+            if(result != linker_first->host()){
+                KnowView *tree_view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
+                assert(tree_view);
+                result = model_merge(TreeIndex::instance([&] {return this;}, linker_first->host()->parent(), linker_first->host()), result, std::bind(&KnowView::view_delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << result, &KnowModel::model_delete_permanent_single, "cut", false));
+            }
             assert(result->linker()->integrity_external(result, delete_linker->host_parent()));
 //            bTreeIndex([&] {return view->source_model(); }, result)oost::intrusive_ptr<TreeIndex> tree_index_first;
 //            try {tree_index_first = new TreeIndex([&] {return view->source_model(); }, result); } catch(std::exception &e) {}
 //            assert(tree_index_first);
 //            if(tree_index_first) {
             for(auto &il : host->child_linkers()){
-                view->view_paste_child(TreeIndex::instance([&] {return view->source_model();}, result->parent(), result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {
-                        return il->host()->id() == link->host()->id();
-                    });
+                view->view_paste_child(TreeIndex::instance([&] {return view->source_model();}, result->parent(), result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
             }
 //            }
 //            }
@@ -1517,36 +1514,32 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_permanent_recursive(boost
 
 
 
-boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeIndex> modelindex	// boost::intrusive_ptr<TreeItem> target
+boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeIndex> tree_index	// boost::intrusive_ptr<TreeItem> target
                                                      , boost::intrusive_ptr<TreeItem> source
                                                      , const view_delete_permantent_strategy &_view_delete_permantent){
     boost::intrusive_ptr<TreeItem> result(nullptr);
 
 
 
-    auto _current_model = modelindex->current_model();
+    auto _current_model = tree_index->current_model();
 //    auto target = modelindex->host();   // host_parent();
         //    boost::intrusive_ptr<TreeItem> keep;
         //    boost::intrusive_ptr<TreeItem> remove;
 
-    auto check_source = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){
-                return t->id() == source->id();
-            });
+    auto check_source = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == source->id();});
 
         //    if(target->id() == _session_id) {keep = target; remove = source;}
         // else
 
         //    boost::intrusive_ptr<TreeItem> target = modelindex->host();
-    auto target_on_tree = item([=](boost::intrusive_ptr<const TreeItem> t){
-                return t->id() == modelindex->host()->id();
-            });
+    auto target_on_tree = item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == tree_index->host()->id();});
 //    if(!check_source ) {
 //    }else
     if(check_source->is_ancestor_of(target_on_tree)){
         auto temp = target_on_tree;
         target_on_tree = source;
         source = temp;
-        modelindex = TreeIndex::instance(modelindex->current_model(), target_on_tree->parent(), target_on_tree);
+        tree_index = TreeIndex::instance(tree_index->current_model(), target_on_tree->parent(), target_on_tree);
     }
     if(target_on_tree && target_on_tree != source){
         auto old_source_parent = source->parent();
@@ -1561,11 +1554,9 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeI
 
         result = target_on_tree->merge(source);			// not a pure insertion, move removerows to below: _view_delete_permantent
 
-        auto r = item([=](boost::intrusive_ptr<const TreeItem> t){
-                    return t->id() == result->id();
-                });
+        auto r = item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();});
         assert(r);
-        assert(modelindex->current_model()()->index(r).isValid());
+        assert(tree_index->current_model()()->index(r).isValid());
 //        assert(item([ = ] (boost::intrusive_ptr<const TreeItem> t) {
 //            return t->id() == result->id();
 //        }));
@@ -1587,27 +1578,24 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeI
         //    if(_index_result.parent().isValid())update_index(_index_result.parent());
         if(result->parent()){
                 //        emit_datachanged_signal(index(result->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> it) {return it->host()->id() == result->id();}), 0, _index_result.parent()));
-            emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const Linker> il){
-                    return il->host()->id() == result->id() && il == result->linker() && result->parent() == il->host_parent();
-                }), 0, _index_result));
+            emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == result->id() && il == result->linker() && result->parent() == il->host_parent();}), 0, _index_result));
             emit layoutChanged(QList<QPersistentModelIndex>() << _index_result);
         }
         endInsertColumns();
         assert(source->count_direct() == 0);
         if(_index_origin_source.isValid()){
-            if(  index(source).isValid()			// source->parent()->field("name") != clipboard_items_root
-              && source->count_direct() == 0){
-                //    beginRemoveRows(_index.parent(), _index.row(), _index.row());
-                if(source->linker()->host() && source->linker()->host_parent()){
-                    QList<boost::intrusive_ptr<TreeItem> > delete_list = _view_delete_permantent([&]() -> KnowModel * {
-                                return this;
-                            }, QList<boost::intrusive_ptr<TreeItem> >() << source);																																													// , _delete_strategy, "cut", false
+            auto index_ = index(source);
+            if(index_.isValid()){				// source->parent()->field("name") != clipboard_items_root
+                if(source->count_direct() == 0){
+                        //    beginRemoveRows(_index.parent(), _index.row(), _index.row());
+                    if(source->linker()->host() && source->linker()->host_parent()){
+                        QList<boost::intrusive_ptr<TreeItem> > delete_list = _view_delete_permantent([&]() -> KnowModel * {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << source);																																																				// , _delete_strategy, "cut", false
 
                         //    auto removed = record_remove(source);
                         //    assert(removed == source);
                         //    assert(removed->count_direct() == 0);
 
-                    assert(delete_list.size() <= 1);						// ?
+                        assert(delete_list.size() <= 1);					// ?
 
                         //    endRemoveRows();
 
@@ -1617,9 +1605,14 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeI
                         //        globalparameters.tree_screen()->tree_view()->reset();
                         //        globalparameters.tree_screen()->tree_view()->source_model(model->root_item());
                         //    }
+                    }
                 }
+//                else{
+//                    source->traverse();
+//                    source->parent()->delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host() == source && il == source->linker();});
+//                }
             }else{
-                source->dangle();
+                source->parent()->delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host() == source && il == source->linker();});
             }
         }
     }else if(target_on_tree){

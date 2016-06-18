@@ -96,7 +96,7 @@ public:
     void synchronized(bool _sysynchronized) {this->_synchronized = _sysynchronized;}
     bool synchronized() {return _synchronized;}
 
-    boost::intrusive_ptr<TreeItem> model_merge(boost::intrusive_ptr<TreeIndex> modelindex    // boost::intrusive_ptr<TreeItem> target
+    boost::intrusive_ptr<TreeItem> model_merge(boost::intrusive_ptr<TreeIndex> tree_index    // boost::intrusive_ptr<TreeItem> target
                                                        , boost::intrusive_ptr<TreeItem> source
                                                        , const view_delete_permantent_strategy &_view_delete_permantent
                                                       );
