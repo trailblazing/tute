@@ -16,7 +16,7 @@ const char *custom_hidabletabwidget_style =
 //    "background: transparent;"
 //    "background-color: transparent;"
     "border-color: white;"
-    "border-width: 1 px;"
+    "border-width: 0 px;"
     "border-style: solid;"
     "alignment: bottom;"
     "max-height: 100px;"

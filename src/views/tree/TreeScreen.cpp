@@ -232,7 +232,6 @@ void TreeScreen::setup_actions(void){
             auto sizes = h_right_splitter->sizes();
             QIcon icon;
             QString text = "";
-
             if(0 == sizes[0] || globalparameters.entrance()->browsers().size() == 0){	// h_right_splitter->widget(0)->width()
                 auto shw = globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();// 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
                 // auto h = h_right_splitter->handle(1);

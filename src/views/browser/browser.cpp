@@ -1453,7 +1453,7 @@ namespace browser {
 
         auto current_item = tree_view->current_item();
         auto parent = current_item->parent();
-        if(! parent){qDebug() << "!parent";throw std::exception();}
+        if(! parent){throw std::runtime_error(formatter() << "! parent");}
         TreeIndex::instance([&] {return tree_view->source_model();}, parent, current_item)->item_bind(
             tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
             )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));

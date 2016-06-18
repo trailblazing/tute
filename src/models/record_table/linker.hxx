@@ -8,6 +8,7 @@
 
 
 #include <QList>
+#include "utility/util.hxx"
 #include "utility/delegate.h"
 
 
@@ -81,7 +82,7 @@ struct Linker : public boost::intrusive_ref_counter<Linker, boost::thread_safe_c
         std::function<boost::intrusive_ptr<Linker> (boost::intrusive_ptr<TreeItem>, int, int)> child_move_unique;	// , boost::intrusive_ptr<TreeItem>   _self_host
 
         //        status_type state_impl();   // is_closure
-        std::function<bool()>   integrity;//        bool integrity();
+        std::function<bool()>   integrity_fix_up;//        bool integrity();
 
         std::unique_ptr<status_type>    _status;
         friend class TreeItem;

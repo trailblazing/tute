@@ -348,7 +348,6 @@ static void set_user_style_sheet(QWebEngineProfile *profile
         //        QMetaObject::invokeMethod(browsemanager, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, source));
     }
 }
-
 void QtSingleApplication::sys_init(){
 
         // Инициализация глобальных параметров,
@@ -413,7 +412,6 @@ void QtSingleApplication::sys_init(){
         //    peer = new QtLocalPeer(this, appId);
     connect(_peer, &QtLocalPeer::messageReceived, &QtLocalPeer::messageReceived);
 }
-
 void QtSingleApplication::browser_init(){
 
         // QtSingleApplication::QtSingleApplication(int &argc, char **argv)
@@ -455,7 +453,6 @@ void QtSingleApplication::browser_init(){
 
         // }
 }
-
 void QtSingleApplication::main_window(){
         // Do not run another copy    // Не запущен ли другой экземпляр
     if(isRunning()){
@@ -574,7 +571,6 @@ void QtSingleApplication::main_window(){
         // Окно сплеш-скрина скрывается
     if(_appconfig.show_splash_screen())splash.finish(_window);
 }
-
 /*!
     Creates a QtSingleApplication object. The application identifier
     will be QCoreApplication::applicationFilePath(). \a argc, \a
@@ -612,8 +608,6 @@ QtSingleApplication::QtSingleApplication(
 
     browser_init();
 }
-
-
 /*!
     Creates a QtSingleApplication object with the application
     identifier \a appId. \a argc and \a argv are passed on to the
@@ -642,8 +636,6 @@ QtSingleApplication::QtSingleApplication(
     main_window();
     browser_init();
 }
-
-
 /*!
     Creates a QtSingleApplication object. The application identifier
     will be QCoreApplication::applicationFilePath(). \a argc, \a
@@ -671,7 +663,6 @@ QtSingleApplication::QtSingleApplication(Display *dpy, Qt::HANDLE visual, Qt::HA
     : QApplication(dpy, visual, cmap){
     sysInit();
 }
-
 /*!
    Special constructor for X11, ref. the documentation of
    QApplication's corresponding constructor. The application identifier
@@ -683,7 +674,6 @@ QtSingleApplication::QtSingleApplication(Display *dpy, int &argc, char * *argv, 
     : QApplication(dpy, argc, argv, visual, cmap){
     sysInit();
 }
-
 /*!
    Special constructor for X11, ref. the documentation of
    QApplication's corresponding constructor. The application identifier
@@ -712,8 +702,6 @@ QtSingleApplication::QtSingleApplication(Display *dpy, const QString &appId, int
 bool QtSingleApplication::isRunning(){
     return _peer->isClient();
 }
-
-
 /*!
     Tries to send the text \a message to the currently running
     instance. The QtSingleApplication object in the running instance
@@ -730,8 +718,6 @@ bool QtSingleApplication::isRunning(){
 bool QtSingleApplication::sendMessage(const QString &message, int timeout){
     return _peer->sendMessage(message, timeout);
 }
-
-
 /*!
     Returns the application identifier. Two processes with the same
     identifier will be regarded as instances of the same application.
@@ -739,8 +725,6 @@ bool QtSingleApplication::sendMessage(const QString &message, int timeout){
 QString QtSingleApplication::id() const {
     return _peer->applicationId();
 }
-
-
 /*!
    Sets the activation window of this application to \a aw. The
    activation window is the widget that will be activated by
@@ -758,8 +742,6 @@ void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessag
     if(activateOnMessage)connect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
     else disconnect(_peer, &QtLocalPeer::messageReceived, this, &QtSingleApplication::activateWindow);
 }
-
-
 /*!
     Returns the applications activation window if one has been set by
     calling setActivationWindow(), otherwise returns 0.
@@ -769,8 +751,6 @@ void QtSingleApplication::setActivationWindow(QWidget *aw, bool activateOnMessag
 QWidget *QtSingleApplication::activationWindow() const {
     return _act_window;
 }
-
-
 /*!
    De-minimizes, raises, and activates this application's activation window.
    This function does nothing if no activation window has been set.
@@ -792,8 +772,6 @@ void QtSingleApplication::activateWindow(){
         _act_window->activateWindow();
     }
 }
-
-
 /*!
     \fn void QtSingleApplication::messageReceived(const QString& message)
 
@@ -814,9 +792,6 @@ void QtSingleApplication::activateWindow(){
 QtSingleApplication *QtSingleApplication::instance(){
     return(static_cast<QtSingleApplication *>(QCoreApplication::instance()));
 }
-
-
-
 void QtSingleApplication::newLocalSocketConnection(){
     QLocalSocket *socket = _peer->server()->nextPendingConnection();
     if(! socket)return;
@@ -840,7 +815,7 @@ void QtSingleApplication::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto current_item = tree_view->current_item();
     auto parent = current_item->parent();
-    if(! parent)throw std::exception();
+    if(! parent)throw std::runtime_error(formatter() << "! parent");	// std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
@@ -892,7 +867,6 @@ void QtSingleApplication::newLocalSocketConnection(){
         //    dp.first->raise();
         //    dp.first->activateWindow();
 }
-
 QtSingleApplication::~QtSingleApplication(){
     if(_profile){
         _profile->deleteLater();_profile = nullptr;
@@ -915,7 +889,6 @@ QtSingleApplication::~QtSingleApplication(){
     }
     if(_profile){_profile->deleteLater();_profile = nullptr;}
 }
-
 // #if defined(Q_OS_OSX)
 // void QtSingleApplication::lastWindowClosed()
 // {
@@ -985,7 +958,6 @@ void QtSingleApplication::postLaunch(){
     }
     QtSingleApplication::historyManager();
 }
-
 void QtSingleApplication::loadSettings(){
     QSettings settings;
 
@@ -1063,7 +1035,6 @@ void QtSingleApplication::loadSettings(){
     QNetworkProxy::setApplicationProxy(proxy);
     settings.endGroup();
 }
-
 // QList<BrowserWindow *> QtSingleApplication::mainWindows()
 // {
 //    clean();
@@ -1102,11 +1073,9 @@ void QtSingleApplication::saveSession(){
     settings.setValue(QLatin1String("lastSession"), data);
     settings.endGroup();
 }
-
 bool QtSingleApplication::canRestoreSession() const {
     return ! _last_session.isEmpty();
 }
-
 void QtSingleApplication::restoreLastSession(){
     QList<QByteArray> historywindows;
     QBuffer buffer(&_last_session);
@@ -1150,7 +1119,6 @@ void QtSingleApplication::restoreLastSession(){
         // newWindow->restoreState(windows.at(i));
     }
 }
-
 // bool QtSingleApplication::isTheOnlyBrowser() const
 // {
 //    return (_localserver != 0);
@@ -1162,7 +1130,6 @@ void QtSingleApplication::installTranslator(const QString &name){
     translator->load(name, QLibraryInfo::location(QLibraryInfo::TranslationsPath));
     QApplication::installTranslator(translator);
 }
-
 #if defined(Q_OS_OSX)
 bool QtSingleApplication::event(QEvent *event){
     switch(event->type()){
@@ -1274,7 +1241,6 @@ browser::CookieJar *QtSingleApplication::cookieJar(){
     return 0;
 #endif
 }
-
 browser::DownloadManager *QtSingleApplication::downloadManager(){
         //    if(!_downloadmanager) {
         //        _downloadmanager = new browser::DownloadManager();
@@ -1284,7 +1250,6 @@ browser::DownloadManager *QtSingleApplication::downloadManager(){
 
     return globalparameters.download_manager();
 }
-
 QNetworkAccessManager *QtSingleApplication::networkAccessManager(){
         // #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
         //    if(!s_networkAccessManager) {
@@ -1307,19 +1272,16 @@ QNetworkAccessManager *QtSingleApplication::networkAccessManager(){
     }
     return _networkaccessmanager;
 }
-
 browser::HistoryManager *QtSingleApplication::historyManager(){
     if(! _historymanager)_historymanager = new browser::HistoryManager();
     return _historymanager;
 }
-
 browser::BookmarksManager *QtSingleApplication::bookmarksManager(){
     if(! _bookmarksmanager){
         _bookmarksmanager = new browser::BookmarksManager();
     }
     return _bookmarksmanager;
 }
-
 QIcon QtSingleApplication::icon(const QUrl &url) const {
 #if defined(QTWEBENGINE_ICONDATABASE)
     QIcon icon = QWebEngineSettings::iconForUrl(url);
@@ -1329,12 +1291,10 @@ QIcon QtSingleApplication::icon(const QUrl &url) const {
 #endif
     return defaultIcon();
 }
-
 QIcon QtSingleApplication::defaultIcon() const {
     if(_default_icon.isNull())_default_icon = QIcon(QLatin1String(":defaulticon.png"));
     return _default_icon;
 }
-
 void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing){
     if(_private_browsing == privateBrowsing)return;
     _private_browsing = privateBrowsing;
@@ -1353,7 +1313,6 @@ void QtSingleApplication::setPrivateBrowsing(bool privateBrowsing){
     }
     emit privateBrowsingChanged(privateBrowsing);
 }
-
 // TODO: Remove these functions (QTBUG-47967)
 QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString &realm){
     QUrl copy = url;
@@ -1361,13 +1320,11 @@ QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString
     copy.setFragment(realm);
     return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
 }
-
 QByteArray QtSingleApplication::proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm){
     QString host = QString("%1:%2").arg(proxy.hostName()).arg(proxy.port());
 
     return QtSingleApplication::proxyAuthenticationKey(proxy.user(), host, realm);
 }
-
 QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, const QString &host, const QString &realm){
     QUrl key;
 
@@ -1377,18 +1334,12 @@ QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, cons
     key.setFragment(realm);
     return "auth:" + key.toEncoded();
 }
-
-
 void QtSingleApplication::setLastAuthenticator(QAuthenticator *authenticator){
     _last_authenticator = QAuthenticator(*authenticator);
 }
-
 void QtSingleApplication::setLastProxyAuthenticator(QAuthenticator *authenticator){
     _last_proxy_authenticator = QAuthenticator(*authenticator);
 }
-
-
-
 void QtSingleApplication::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator){
     if(_last_authenticator.isNull())return;
     Q_ASSERT(_last_authenticator.option("key").isValid());
@@ -1396,7 +1347,6 @@ void QtSingleApplication::authenticationRequired(QNetworkReply *reply, QAuthenti
     QByteArray key = QtSingleApplication::authenticationKey(reply->url(), authenticator->realm());
     if(lastKey == key)*authenticator = _last_authenticator;
 }
-
 void QtSingleApplication::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator){
     if(_last_proxy_authenticator.isNull())return;
     QNetworkProxy::ProxyType proxyType = proxy.type();
@@ -1406,4 +1356,3 @@ void QtSingleApplication::proxyAuthenticationRequired(const QNetworkProxy &proxy
     QByteArray key = QtSingleApplication::proxyAuthenticationKey(proxy, authenticator->realm());
     if(lastKey == key)*authenticator = _last_authenticator;
 }
-

@@ -112,12 +112,9 @@ FindScreen::FindScreen(QString object_name
 
     setup_signals();
 }
-
-
 FindScreen::~FindScreen(void){
         // delete _selected_branch_as_pages;
 }
-
 void FindScreen::setup_navigate(void){
         // assert(globalparameters.entrance());
         // assert(globalparameters.entrance()->activebrowser());
@@ -180,13 +177,11 @@ void FindScreen::setup_navigate(void){
         );
     insert_action_as_button<QToolButton>(_navigater, _stopreload);				// _navigater->addAction(_stopreload);
 }
-
 void FindScreen::assembly_navigate(void){
         // _navigater = new QHBoxLayout();
         // _navigater->addWidget(_container);
         // _navigater->addStretch();
 }
-
 // Текст поиска и кнопка "Поиск"
 void FindScreen::setup_findtext_and_button(void){
         // Поле текста для поиска
@@ -207,8 +202,6 @@ void FindScreen::setup_findtext_and_button(void){
     _tools_expand->setEnabled(true);
     _tools_expand->setAutoRaise(true);
 }
-
-
 // Текст поиска и кнопка "Поиск"
 void FindScreen::assembly_findtext_and_button(void){
     _find_text_and_button_tools_area = new QHBoxLayout();
@@ -233,8 +226,6 @@ void FindScreen::assembly_findtext_and_button(void){
         // toolsAreaFindTextAndButton->addStretch();
         // toolsAreaFindTextAndButton->setContentsMargins(0, 0, 0, 0);
 }
-
-
 // Набор опций поиска в виде выпадающих списков
 void FindScreen::setup_combooption(void){
         // Выбор "Любое слово" - "Все слова"
@@ -282,8 +273,6 @@ void FindScreen::setup_combooption(void){
         _tree_search_area->setSizeAdjustPolicy(QComboBox::AdjustToMinimumContentsLengthWithIcon);
     }
 }
-
-
 // Набор опций поиска в виде выпадающих списков
 void FindScreen::assembly_combooption(void){
     _combo_option_tools_area = new QHBoxLayout();
@@ -292,8 +281,6 @@ void FindScreen::assembly_combooption(void){
         // toolsAreaComboOption->addWidget(treeSearchArea);
         // toolsAreaComboOption->addStretch();
 }
-
-
 void FindScreen::setup_closebutton(void){
         // Кнопка закрытия виджета
     _close_button = new FlatToolButton(this);
@@ -310,8 +297,6 @@ void FindScreen::setup_closebutton(void){
         _close_button->resize(x, x);
     }
 }
-
-
 void FindScreen::assembly_closebutton(void){
         // Вертикальная область с кнопкой закрытия и распоркой
         // чтобы кнопка была вверху
@@ -320,8 +305,6 @@ void FindScreen::assembly_closebutton(void){
     _close_button_tools_area->addWidget(_close_button);
     _close_button_tools_area->addStretch();
 }
-
-
 void FindScreen::setup_wherefind_line(void){
     _where_find_label = new QLabel(tr("Find in: "));
 
@@ -349,8 +332,6 @@ void FindScreen::setup_wherefind_line(void){
     _find_in_text = new QCheckBox(tr("Text"));
     _find_in_text->setChecked(appconfig.findscreen_find_in_field("text"));
 }
-
-
 void FindScreen::assembly_wherefind_line(void){
     _where_find_line = new QHBoxLayout();
     _where_find_line->setEnabled(false);
@@ -371,8 +352,6 @@ void FindScreen::assembly_wherefind_line(void){
 
     _where_find_line->setContentsMargins(3, 0, 0, 0);				// Устанавливаются границы
 }
-
-
 void FindScreen::setup_signals(void){
         // При каждом изменении текста в строке запроса
     connect(_toolbarsearch, &browser::ToolbarSearch::textChanged, this, &FindScreen::enable_findbutton);
@@ -450,16 +429,12 @@ void FindScreen::setup_signals(void){
         // ) = &KnowView::item_bind;
         // connect(_toolbarsearch, &browser::ToolbarSearch::search, _tree_screen->tree_view(), _item_bind);
 }
-
-
 void FindScreen::setup_ui(void){
         // _findtable = new FindTableWidget();
         // _findtable->hide();
         // _progress = new QProgressDialog(this);
     _progress->hide();
 }
-
-
 void FindScreen::assembly(void){
     _central_desktop_layout = new QVBoxLayout(this);
     if(appconfig.interface_mode() == "desktop"){
@@ -497,7 +472,6 @@ void FindScreen::assembly(void){
 
     switch_tools_expand(appconfig.find_in_base_expand());
 }
-
 void FindScreen::adjust_size(){
         // int height = toolsLine->isEnabled() ? toolsLine->sizeHint().height() : 0 + whereFindLine->isEnabled() ? whereFindLine->sizeHint().height() : 0;
         // setMinimumHeight(height);
@@ -506,7 +480,6 @@ void FindScreen::adjust_size(){
         // setMaximumWidth(width());
     QWidget::adjustSize();
 }
-
 void FindScreen::resizeEvent(QResizeEvent *e){
         // adjustSize();
         // auto hint = whereFindLine->sizeHint();
@@ -515,12 +488,9 @@ void FindScreen::resizeEvent(QResizeEvent *e){
     setMaximumHeight(_tools_line->sizeHint().height() + _where_find_line->sizeHint().height());
     QWidget::resizeEvent(e);
 }
-
 void FindScreen::enable_findbutton(const QString &text){
     _find_start_button->setEnabled(! text.isEmpty());
 }
-
-
 // Слот, с помощью которого другие виджеты могут устанавливать
 // текст для поиска
 void FindScreen::find_text(QString text){
@@ -530,8 +500,6 @@ void FindScreen::find_text(QString text){
     emit text_changed_from_another(text);
     emit find_clicked_after_another_text_changed();
 }
-
-
 // Слот, срабатывающий при нажатии на кнопку начала поиска
 boost::intrusive_ptr<TreeItem> FindScreen::find_clicked(void){
         // Поля, где нужно искать (Заголовок, текст, теги...)
@@ -569,8 +537,6 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_clicked(void){
     }
     return find_start();
 }
-
-
 boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 
 //// deprecated:
@@ -695,7 +661,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
                 // search_start_item->tabledata(dommodel);
                 // QMap<QString, QString> field_data;
 
-            _start_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
+            _start_item = TreeItem::dangle_instance(QMap<QString, QString>());	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
                 // boost::intrusive_ptr<TreeItem> _parent_item
                 // resultset_item;
             browser::Entrance *_entrance = globalparameters.entrance();
@@ -872,8 +838,6 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
     if(_result_list.size() > 0)final_result = _result_list.at(0)->host();
     return final_result;			// ->record_table();
 }
-
-
 QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::intrusive_ptr<Linker> > &_result_list, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> _start_item){
         // auto tree_view = _tree_screen->tree_view();
         ////    // Если была нажата отмена поиска
@@ -972,10 +936,10 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                             auto browser = globalparameters.entrance()->activated_browser();
                             auto record_controller = browser->record_screen()->record_controller();
                             auto tab_brother = record_controller->view()->current_item();
-                            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return record_controller->source_model(); }, tab_brother, candidate);
+                            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
                             if(record_modelindex){
                                 if(  (candidate->parent() != _session_root_item->parent())	// _current_item->parent())
-                                  && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker(); })
+                                  && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
                                     ){
 
                                     auto result = browser->item_bind(record_modelindex);
@@ -999,7 +963,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                                 // find_recursive(_start_item->child(i), _result_item);
                                 // }
                         }
-                        if(candidate){if(candidate->count_direct() > 0)find_recursive(_result_list, _session_root_item, candidate); }
+                        if(candidate){if(candidate->count_direct() > 0)find_recursive(_result_list, _session_root_item, candidate);}
                     }else{
                         // if(_progress->wasCanceled()) {
                         _cancel_flag = 1;
@@ -1019,8 +983,6 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
     }
     return _result_list;				// _result_item;
 }
-
-
 // Поиск в переданном тексте
 // Учитываются состояния переключателей wordregard и howextract
 bool FindScreen::find_in_text_process(const QString &text){
@@ -1051,62 +1013,42 @@ bool FindScreen::find_in_text_process(const QString &text){
         else    return false;
     }
 }
-
-
 void FindScreen::word_regard(int pos){
     appconfig.findscreen_wordregard(pos);
 }
-
-
 void FindScreen::how_extract(int pos){
     appconfig.findscreen_howextract(pos);
 }
-
-
 void FindScreen::tree_search_area(int pos){
     appconfig.find_screen_tree_search_area(pos);
 }
-
 void FindScreen::if_find_in_pin(int state){
     if_find_in_field("pin", state);
 }
-
 void FindScreen::if_find_in_name(int state){
     if_find_in_field("name", state);
 }
-
-
 void FindScreen::if_find_in_author(int state){
     if_find_in_field("author", state);
 }
-
 void FindScreen::if_find_in_home(int state){
     if_find_in_field("home", state);
 }
-
 void FindScreen::if_find_in_url(int state){
     if_find_in_field("url", state);
 }
-
-
 void FindScreen::if_find_in_tags(int state){
     if_find_in_field("tags", state);
 }
-
-
 void FindScreen::if_find_in_text(int state){
     if_find_in_field("text", state);
 }
-
-
 void FindScreen::if_find_in_field(QString fieldname, int state){
     bool i;
     if(state == Qt::Checked)i = true;
     else i = false;
     appconfig.findscreen_find_in_field(fieldname, i);
 }
-
-
 void FindScreen::widget_show(void){
     appconfig.findscreen_show(true);
     this->show();
@@ -1115,8 +1057,6 @@ void FindScreen::widget_show(void){
         // _findtext
     _toolbarsearch->setFocus();
 }
-
-
 // Полное сокрытие виджета
 void FindScreen::widget_hide(void){
         // Запоминается размер сплиттера перед скрытием виджета
@@ -1127,8 +1067,6 @@ void FindScreen::widget_hide(void){
     appconfig.findscreen_show(false);
     this->close();
 }
-
-
 // Слот, срабатывающий при клике на кнопку expand
 void FindScreen::tools_expand_clicked(void){
         // Если нужно сомкнуть инструменты
@@ -1140,8 +1078,6 @@ void FindScreen::tools_expand_clicked(void){
         appconfig.find_in_base_expand(true);
     }
 }
-
-
 void FindScreen::switch_tools_expand(bool flag){
         // toolsAreaComboOption->setVisible(flag);
         // whereFindLine->setVisible(flag);
@@ -1171,7 +1107,6 @@ void FindScreen::switch_tools_expand(bool flag){
     _where_find_line->setEnabled(flag);
     this->adjust_size();
 }
-
 //// dangerous!
 // void FindScreen::remove_child(const QString &id)
 // {

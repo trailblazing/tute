@@ -356,21 +356,17 @@ namespace sd {
         if(len > firstLen){len = firstLen;}
         return len;
     }
-
     template <class ContainerA, class ... Containers>unsigned common_length(unsigned len, const ContainerA &first, const Containers & ... rest){
         unsigned firstLen = first.size();
         if(len > firstLen){len = firstLen;}
         return common_length(len, rest ...);
     }
-
     template <template <typename ...> class Container, typename TypeA>std::tuple<TypeA> get_tuple_from(unsigned index, Container<TypeA> const &first){
         return std::tuple<TypeA>(first[index]);
     }
-
     template <template <typename ...> class Container, typename TypeA, typename ... Types>std::tuple<TypeA, Types ...>get_tuple_from(unsigned index, Container<TypeA> const &first, Container<Types> const & ... rest){
         return std::tuple_cat(std::tuple<TypeA>(first[index]), get_tuple_from<Container, Types ...>(index, rest ...));
     }
-
     template <template <typename ...> class Container, typename ... Types>Container<std::tuple<Types ...> > zip(Container<Types> const & ... args){
         unsigned len = common_length(std::numeric_limits<unsigned>::max(), args ...);
         Container<std::tuple<Types ...> > res;
@@ -381,7 +377,6 @@ namespace sd {
         }
         return res;
     }
-
 // struct some_name {};
 
 // using aliases for cleaner syntax
@@ -459,7 +454,6 @@ namespace sd {
         os << *static_cast<object_type *>(t);
         return os.str();
     }
-
     template <typename object_type> struct type_router {
         object_type *t;
         type_router(object_type *t) : t(t){}
@@ -468,7 +462,6 @@ namespace sd {
     template <typename object_type> void delete_type_route(void *f){
         if(static_cast<type_router<object_type> *>(f) != (type_router<object_type> *) 0)delete static_cast<type_router<object_type> *>(f);
     }
-
     struct data;
 
 // template<typename object_type_>
@@ -848,7 +841,7 @@ namespace sd {
                   , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
                   , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<object_type, object_pointer_type> >(f)))
                   , _transmit(transmitter<object_type, object_pointer_type>::transmit){
-                if(! o)throw std::exception();
+                if(! o)throw std::runtime_error("nullptr error");
             }
             _interface(return_type(*f)(Arg ...)
                       , std::string _method_name = "")
@@ -912,7 +905,7 @@ namespace sd {
                   , _return_type_name(typeid(typename std::remove_reference<return_type>::type).name())
                   , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<object_pointer_type, object_type, return_type, Arg ...> >(f)))
                   , _transmit(transmitter<object_pointer_type, object_type, return_type, Arg ...>::transmit){
-                if(! o)throw std::exception();
+                if(! o)throw std::runtime_error("nullptr error");
             }
             _interface &operator=(const _interface &) = delete;
 
@@ -982,7 +975,7 @@ namespace sd {
                   , _return_type_name(typeid(typename std::remove_reference<void>::type).name())
                   , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<object_type, object_pointer_type> >(f)))
                   , _transmit(transmitter<object_type, object_pointer_type>::transmit){
-                if(! o)throw std::exception();
+                if(! o)throw std::runtime_error("nullptr error");
             }
             _interface(void(*f)(Arg ...)
                       , std::string _method_name = "")
@@ -1044,7 +1037,7 @@ namespace sd {
                   , _return_type_name(typeid(typename std::remove_reference<void>::type).name())
                   , _transmitter(static_if_shared_pointer_cast<void>(boost::make_shared<transmitter<object_pointer_type, object_type, void, Arg ...> >(f)))
                   , _transmit(transmitter<object_pointer_type, object_type, void, Arg ...>::transmit){
-                if(! o)throw std::exception();
+                if(! o)throw std::runtime_error("nullptr error");
             }
             _interface &operator=(const _interface &) = delete;
 
@@ -1329,6 +1322,18 @@ namespace sd {
 
             ~table(){_object_map.clear();}
     };
+
+//        // http://stackoverflow.com/questions/12261915/howto-throw-stdexceptions-with-variable-messages
+//        // throw std::runtime_error(sd::to_string("Error..." , fileName, " (pos: ",  position, ").", '!'));
+//        // *The '!' char (not string) in the end is for demonstration purposes.*
+//        // To archive this, I use variadic templates in the following manner:
+
+//    template<typename T, typename ... Args>inline std::string to_string(const T &prefix, const Args & ... args){return std::to_string(prefix) + to_string(args ...);}
+//    template<typename ... Args>inline std::string to_string(const char *prefix, const Args & ... args){return std::string(prefix) + to_string(args ...);}
+//    template<typename ... Args>inline std::string to_string(const std::string &prefix, const Args & ... args){return prefix + to_string(args ...);}
+//    template<typename ... Args>inline std::string to_string(char ch, const Args & ... args){return (std::string() += ch) + to_string(args ...);}
+//    template <typename T>inline std::string to_string(const T &value){return std::to_string(value);}
+//    inline std::string to_string(const std::string &value){return value;}
 }
 
 // how about boost::shared_ptr<template<...>class>:
@@ -1412,5 +1417,9 @@ namespace boost {
 namespace boost {
     namespace serialization {}
 }
+
+
+
+
 
 #endif	// DELEGATE_H_INCLUDED

@@ -39,9 +39,9 @@ RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, bo
     : _current_model(current_model), _sibling_item(sibling_item), _target_item(target_item)
 {
     try {
-        if(!_sibling_item ? false : !_sibling_item->binder() ?  false : !((QModelIndex)_current_model()->index(_sibling_item)).isValid()) {throw std::exception(); } // assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
+        if(!_sibling_item ? false : !_sibling_item->binder() ?  false : !((QModelIndex)_current_model()->index(_sibling_item)).isValid()) {throw std::runtime_error(formatter() << "!((QModelIndex)_current_model()->index(_sibling_item)).isValid())"); } // assert(_sibling_item ? _sibling_item->binder() ? _current_model()->index(_sibling_item).isValid() : true : true);
 
-        if(_sibling_item == _target_item) throw std::exception();   // assert(_sibling_item != _target_item);
+        if(_sibling_item == _target_item) throw std::runtime_error(formatter() << "_sibling_item == _target_item");	// std::exception();   // assert(_sibling_item != _target_item);
     } catch(std::exception &e) {throw e; }
 }
 

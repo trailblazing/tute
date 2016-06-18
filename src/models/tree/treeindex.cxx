@@ -26,13 +26,11 @@
 boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order){
     return new TreeIndex(current_model, parent_item, sibling_order);
 }
-
 boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, boost::intrusive_ptr<TreeItem> current_item){
     return new TreeIndex(current_model, parent_item, parent_item->sibling_order([&](boost::intrusive_ptr<const Linker> il){
                    return il->host() == current_item && il == current_item->linker() && current_item->parent() == parent_item;
                }));
 }
-
 TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::intrusive_ptr<TreeItem> parent_item, int sibling_order)
     : _current_model(current_model), _host_parent(parent_item), _sibling_order(sibling_order){	// , _current_index(_current_model()->index(_parent->item_direct(_sibling_order)))
     bool current_parent_valid = [&](){
@@ -41,7 +39,7 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
             auto current_root = [&](){
                     return static_cast<KnowModel *>(current_model())->root_item();
                 };
-            if(parent_item->is_ancestor_of(current_root())){
+            if(parent_item->is_ancestor_of([&](boost::intrusive_ptr<const TreeItem> it){return it == current_root();})){
                 auto new_root = (parent_item == absolute_root) ? parent_item : parent_item->parent();
                 static_cast<KnowModel *>(current_model())->intercept(new_root);
                 if(parent_item == absolute_root){
@@ -69,61 +67,51 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
         } ();
 
     try{
-        if(! _host_parent){qDebug() << "!_host_parent";throw std::exception();}
-        if(! current_parent_valid){qDebug() << "!current_parent_valid";throw std::exception();}		// assert(current_parent_valid);
+        if(! _host_parent){throw std::runtime_error(formatter() << "! _host_parent");}
+        if(! current_parent_valid){throw std::runtime_error(formatter() << "! current_parent_valid");}		// assert(current_parent_valid);
         // assert(sibling_order >= 0);
-        if(sibling_order < 0){qDebug() << "sibling_order < 0";throw std::exception();}
+        if(sibling_order < 0){throw std::runtime_error(formatter() << "sibling_order < 0");}
         auto count_direct = _host_parent->count_direct();
         count_direct = (count_direct == 0) ? 1 : count_direct;
         // assert(sibling_order < count_direct);
-        if(sibling_order >= count_direct){qDebug() << "sibling_order >= count_direct";throw std::exception();}
+        if(sibling_order >= count_direct){throw std::runtime_error(formatter() << "sibling_order >= count_direct");}
         _host_parent_index = _current_model()->index(_host_parent);
 
 
         auto link = _host_parent->linker_direct(sibling_order);
-        if(! link){qDebug() << "!host_linker";throw std::exception();}
+        if(! link){throw std::runtime_error(formatter() << "! host_linker");}
         _host = link->host();
-        if(! _host){qDebug() << "!_host";throw std::exception();}
+        if(! _host){throw std::runtime_error(formatter() << "! _host");}
         _host_index = _current_model()->index(_host);
-        if(! _host_index.isValid()){qDebug() << "!_host_index.isValid()";throw std::exception();}
+        if(! _host_index.isValid()){throw std::runtime_error(formatter() << "! _host_index.isValid()");}
         // assert(_current_index.isValid());
     }catch(std::exception &e){
         throw e;
     }
 }
-
 std::function<KnowModel *()> TreeIndex::current_model() const {
     return _current_model;
 }
-
 boost::intrusive_ptr<TreeItem> TreeIndex::host_parent() const {
     return _host_parent;
 }
-
 boost::intrusive_ptr<TreeItem> TreeIndex::host() const {
     return _host_parent->item_direct(_sibling_order);
 }
-
 QModelIndex TreeIndex::host_parent_index() const {
     return _host_parent_index;	// _current_model()->index(_parent);
 }
-
 QModelIndex TreeIndex::host_index() const {
     return _host_index;	// _current_model()->index(current_item())
 }
-
 int TreeIndex::sibling_order() const {
     return _sibling_order;
 }
-
-
-
 // boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(const QUrl &_url);
 
 boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              &_find_url
                                                        , const paste_strategy  &_view_paste_strategy
                                                        , equal_url _equal){
-
     auto tree_view = static_cast<KnowView *>(static_cast<QObject *>(_current_model())->parent());
     auto view_paste_strategy_preparation = [&](boost::intrusive_ptr<TreeIndex>                              _treeindex
                                               , boost::intrusive_ptr<TreeItem>                              _result
@@ -165,7 +153,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
                 tree_view->synchronized(false);
                 // assert(_result == it->child(pos));
             }else if(_current_item != _result){
-                if(_result->is_ancestor_of(_current_item)){
+                if(_result->is_ancestor_of([&](boost::intrusive_ptr<const TreeItem> it){return it == _current_item;})){
                         // _tree_screen->session_root_id(_result->id());
                     assert(_result != tree_view->know_model_board()->root_item());
                         // if(_result != _current_item->parent()) {
@@ -189,6 +177,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
                 // }
             assert(_result != tree_view->know_model_board()->root_item());
             assert(_result);
+
             return _result;
         };
 
@@ -243,8 +232,6 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
     }else{
         item_is_brand_new = true;
         if(! in_browser){
-
-
                 // record.generator(generator);
 
 
@@ -262,8 +249,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
             data["dir"] = data["id"];
             data["file"] = "text.html";
 
-            boost::intrusive_ptr<TreeItem> new_item
-                = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+            boost::intrusive_ptr<TreeItem> new_item = TreeItem::dangle_instance(data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
 
                 // if(record.isLite())
             new_item->to_fat();
@@ -333,8 +319,6 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
     if(_result->field<home_type>() == "")_result->field<home_type>(_result->field<url_type>());	// for history reason
     return _result;
 }
-
-
 // boost::intrusive_ptr<TreeItem> KnowView::item_register(boost::intrusive_ptr<TreeItem> target
 // , const KnowView::paste_strategy &_view_paste_strategy
 // , equal_t _equal
@@ -649,9 +633,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
 boost::intrusive_ptr<TreeItem> TreeIndex::item_bind(boost::intrusive_ptr<TreeItem>  tab_brother
                                                    , const QUrl                    &_find_url
                                                    , const paste_strategy          &_view_paste_strategy
-                                                   , equal_url _equal
-                                                    ){
-
+                                                   , equal_url _equal){
 //    equal_url _equal = [&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<home_type>().toStdString(),  _find_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(),  _find_url.toString().toStdString());};
     boost::intrusive_ptr<TreeItem> re;
     auto it = item_register(_find_url, _view_paste_strategy, _equal);
@@ -672,10 +654,6 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_bind(boost::intrusive_ptr<TreeIte
     }
     return re;
 }
-
-
-
-
 // boost::intrusive_ptr<TreeItem> KnowView::item_bind(
 // boost::intrusive_ptr<RecordModel::ModelIndex> modelindex   //
 // , const KnowView::paste_strategy &_view_paste_strategy

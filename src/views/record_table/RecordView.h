@@ -141,7 +141,7 @@ class RecordView : public QTableView {
         // IndexSource selection_first_source_index(void) const;
 
 
-        boost::intrusive_ptr<TreeItem> current_item();
+        boost::intrusive_ptr<TreeItem> current_item()const;
 
         bool is_selected_set_to_top(void);
         bool is_selected_set_to_bottom(void);

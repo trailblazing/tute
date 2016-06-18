@@ -56,8 +56,8 @@ namespace browser {
 // TreeItem = {item |record + items }
 // Record = {record | { id, name, url, dir,file, home, pin ...} }
 // ItemsFlat = { item[i] | i = 0,1,2,3 ... }
-class TreeItem  // : public std::enable_shared_from_this<TreeItem>
-    : // boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
+class TreeItem	// : public std::enable_shared_from_this<TreeItem>
+    :	// boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter>
       public Record
       , public ItemsFlat {
 
@@ -76,7 +76,7 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
 
 
 
-        typedef boost::sp_adl_block::thread_safe_counter counter_type; // boost::intrusive_ref_counter<TreeItem>::counter_type
+        typedef boost::sp_adl_block::thread_safe_counter counter_type;	// boost::intrusive_ref_counter<TreeItem>::counter_type
 
         typedef boost::intrusive_ref_counter<TreeItem, boost::thread_safe_counter> counter;
 
@@ -153,14 +153,15 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
         // , boost::intrusive_ptr<TreeItem>   _child_items_root // copy semantic, not good
         // );
 
-        TreeItem(boost::intrusive_ptr<TreeItem>     _host_parent    // = nullptr
-                , QMap<QString, QString>           _field_data = QMap<QString, QString>()
-                , const QDomElement                &_dom_element = QDomElement()
-                , int pos = 0, int mode = add_new_record_before);
+        TreeItem(boost::intrusive_ptr<TreeItem> _host_parent	// = nullptr
+                , QMap<QString, QString>        _field_data = QMap<QString, QString>()
+                , const QDomElement             &_dom_element = QDomElement()
+                , int pos = 0
+                , int mode = add_new_record_before);
 
 #ifdef _with_record_table
-        TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item    // = nullptr
-                , boost::intrusive_ptr<Record>     _record              // = nullptr
+        TreeItem(boost::intrusive_ptr<TreeItem>     _parent_item	// = nullptr
+                , boost::intrusive_ptr<Record>     _record		// = nullptr
                 , const QDomElement                &_dom_element = QDomElement());
 #endif
 
@@ -169,6 +170,7 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
 
         ~TreeItem();
 
+        static boost::intrusive_ptr<TreeItem> dangle_instance(QMap<QString, QString> _field_data, const QDomElement &_dom_element = QDomElement());
         //// Возвращение ссылки на потомка, который хранится в списке childItems
         //// под указанным номером
         // boost::intrusive_ptr<TreeItem> item_direct(int number);
@@ -181,85 +183,11 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
         int field_count() const;
 
         // Получение значения поля по имени
-        template<typename field_type>   // , typename field_type_switch = typename switch_type<field_type>::type
-        QString field() const {
-// QString _name = boost::mpl::c_str<typename boost::mpl::at<field_type, field_type_>::type>::value;
-// QString field_content = "";                          // QString item_name(QString::null)
-// bool field_found = false;
-//// Если запрашивается динамическое имя из имени и количества потомков
-// if(_name == "dynamicname"){
-//// Имя ветки
-//// QString
-// field_content = _field_data["name"];
-//// Если есть шифрование в этой ветке
-//// и поле является зашифрованным
-// if(_field_data.contains(boost::mpl::c_str < crypt_type > ::value)){
-// if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1"){
-// if(globalparameters.crypt_key().length() > 0){
-// field_content = CryptService::decryptString(globalparameters.crypt_key(), field_content);
-// field_found = true;
-// }else{
-// field_content = QString(QObject::tr("Closed"));
-// field_found = true;
-// }
-// }
-// }
-//// Выясняется, есть ли у текущего элемента конечные записи
-// int record_count = this->count_direct();
-//// Если конечных элементов нет, возвращатся просто имя
-// if(record_count == 0){
-//// return itemName;
-// field_found = true;
-// }else{
-//// Иначе конечные элементы есть, возвращается имя записи
-//// и количество конечных элементов
-// QString r, i;
-// r = field_content + " [" + i.setNum(record_count) + "]";
-// field_content = r;                                                                         // return r;
-// field_found = true;
-// }
-// }
-            //// Если имя поля допустимо
-            // if(is_field_name_available(name) && field_found == false) {
-            //// Если поле с таким именем существует
-            // if(_field_data.contains(name)) {
-            // QString value = _field_data[name];
-            //// Если есть шифрование
-            //// и поле является зашифрованным
-            // if(_field_data.contains(boost::mpl::c_str < crypt_type > ::value)) {
-            // if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1") {
-            // if(field_name_for_crypt_list().contains(name)) {
-            // if(globalparameters.crypt_key().length() > 0
-            // && value != ""
-            // )
-            // value = CryptService::decryptString(globalparameters.crypt_key(), value);
-            // else
-            // value = "";
-            // }
-            // }
-            // }
-            // item_name = value;   // return value;
-            // field_found = true;
-            // }
-            ////        else {
-            ////            //            return QString(""); // Если поле не существует, возвращается пустая строка
-            ////        }
-            // }
-            // else {
-            // critical_error("In TreeItem::get_field() unavailable name '" + name + "'");
-            // exit(1);
-            ////        return "";
-            // }
-// if("" == field_content && field_found == false){
-// if(_name != ""){
-// field_content = Record::field<field_type_>();   // _name
-// if("" != field_content) field_found = true;
-// }
-// }
-            return Record::field<field_type>(); // , field_type_switch   // field_content;
-        }
-        template<typename field_type>   // , typename field_type_switch = typename switch_type<field_type>::type
-        void field(const QString &value){Record::field<field_type>(value); }    // , field_type_switch
+        template<typename field_type>QString field() const {return Record::field<field_type>();}	// , typename field_type_switch = typename switch_type<field_type>::type
+        // , field_type_switch   // field_content;
+
+        template<typename field_type>void field(const QString &value){Record::field<field_type>(value);}	// , typename field_type_switch = typename switch_type<field_type>::type
+        // , field_type_switch
 
         // Получение всех полей данных
         QMap<QString, QString> fields_all();
@@ -313,12 +241,8 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
 
         int move_up(void);
         int move_dn(void);
-        void move_up(int pos){
-            ItemsFlat::move_up(pos);
-        }
-        void move_dn(int pos){
-            ItemsFlat::move_dn(pos);
-        }
+        void move_up(int pos){ItemsFlat::move_up(pos);}
+        void move_dn(int pos){ItemsFlat::move_dn(pos);}
         //// Возвращает id путь (список идентификаторов от корня до текущего элемента)
         // QStringList path_absolute(void) const;
 
@@ -380,13 +304,13 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
         //// Первичное заполнение таблицы конечных записей, "промежуточный" метод
         // void record_table(QDomElement i_dom_element);
 
-#ifdef _with_record_table   // deprecated
+#ifdef _with_record_table	// deprecated
         void records_to_children();
 #endif
 
         // void children_clear(void);
 
-        browser::WebPage *page() const;   // const; // {return _page;}
+        browser::WebPage *page() const;		// const; // {return _page;}
         boost::intrusive_ptr<TreeItem> item() const;
         browser::WebView *bind();
         // boost::intrusive_ptr<TreeItem> bind(browser::WebPage *page);  // {_page = page; _page->record(this);}
@@ -411,7 +335,7 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
 
 
         bool is_empty() const;
-        bool is_ancestor_of(boost::intrusive_ptr<const TreeItem> it) const;
+        boost::intrusive_ptr<const TreeItem> is_ancestor_of(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const;
         boost::intrusive_ptr<TreeItem> delete_permanent(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal);
         boost::intrusive_ptr<TreeItem> delete_permanent_recursive(std::function<bool (boost::intrusive_ptr<const TreeItem>)> condition);
 // boost::intrusive_ptr<TreeItem> delete_permanent_recursive_empty();
@@ -485,9 +409,8 @@ class TreeItem  // : public std::enable_shared_from_this<TreeItem>
         friend class ItemsFlat;
         friend class KnowModel;
         // friend class TreeScreen;
-        friend inline boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right){
-            return *it_left << it_right;
-        }
+        friend inline boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right){return *it_left << it_right;}
+        TreeItem(QMap<QString, QString> _field_data, const QDomElement &_dom_element = QDomElement());
 };
 
 

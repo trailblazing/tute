@@ -235,7 +235,8 @@ HEADERS     =   \
     src/models/record_table/linker.hxx \
     src/models/tree/binder.hxx \
     src/models/tree/treeindex.hxx \
-    src/models/record_table/recordindex.hxx
+    src/models/record_table/recordindex.hxx \
+    src/utility/util.hxx
 #    src/views/browser/cookiejar.h \
 
 

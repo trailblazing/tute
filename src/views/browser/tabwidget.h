@@ -43,7 +43,11 @@
 #define TABWIDGET_H
 
 
+#include "boost/format.hpp"
+#include <exception>
+
 #include <utility>
+#include "utility/util.hxx"
 #include "utility/delegate.h"
 #include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
 #include <QtWidgets/QTabBar>

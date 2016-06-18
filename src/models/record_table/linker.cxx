@@ -11,7 +11,6 @@ extern GlobalParameters globalparameters;
 Linker::~Linker(){
         // boost::intrusive_ptr<TreeItem> result(nullptr);
 //    if(_host_parent){
-
 //        auto r = _host_parent->release(this);
 //        assert(! r);
 ////        for(auto it : _host_parent->_child_linkers){
@@ -23,7 +22,7 @@ Linker::~Linker(){
 ////            }
 ////        }
 //    }
-    _host_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->host()->id() && il == this;});
+    if(_host_parent)_host_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->host()->id() && il == this;});
     _host_parent = nullptr;
         // self_remove_from_parent_as_empty();
     if(_host){
@@ -42,10 +41,6 @@ Linker::~Linker(){
     }
         // return result;
 }
-
-
-
-
 Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusive_ptr<TreeItem> host_item)	// , int pos, int mode
     : boost::intrusive_ref_counter<Linker, boost::thread_safe_counter>()
       , _host_parent([&]() -> boost::intrusive_ptr<TreeItem> {assert(host_parent_item != host_item);return host_parent_item;} ())																					// _new_parent
@@ -92,7 +87,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
                   int count = 0;
                   int found = 0;
                   if(_host_parent != _parent || ! integrity_external(this->_host, _parent)){
-                      _host_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->host()->id() && il == this;});
+                      if(_host_parent)_host_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->host()->id() && il == this;});
                       for(auto il : _parent->_child_linkers){				//= _parent->_child_linkers.begin(); it != _parent->_child_linkers.end(); it++) {
                           if(il == this){
                               found ++;
@@ -100,6 +95,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
                                   result = this;
                                   this->_host_parent = _parent;
                                   actually_insert_position = count;
+                                  integrity_external(_host, _host_parent);
                               }else{
                                   _parent->_child_linkers.removeOne(il);
                               }
@@ -110,7 +106,8 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
                         // Запись добавляется в таблицу конечных записей
                         // get shadow_branch
                         // TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
-                      if(0 == found){						// !item_direct(_source_item)
+                      if(0 == found){	// !item_direct(_source_item)
+                          _host_parent = _parent;
                                 // && !shadow_branch->is_record_id_exists(item->field("id"))
                                 //// deprecated by _parent_target->remove
                                 // auto _origin_parent = _source_item->parent();
@@ -166,7 +163,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
                           bool is_crypt = false;
                                 // if(_tree_item) {
                                 // if(_is_crypt) { //
-                          if(_parent->field<crypt_type>() == "1"){
+                          if(_host_parent->field<crypt_type>() == "1"){
                               if(globalparameters.crypt_key().length() > 0)is_crypt = true;
                               else critical_error("Linker::child_move_unique() : Can not insert data to crypt branch. Password not setted.");
                           }
@@ -185,24 +182,25 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
                                 ////        int insertPos = -1;
                                 // item->is_registered_to_record_controller_and_tabmanager(true);
                           if(mode == add_new_record_to_end){					// В конец списка           // mode == 0
-                              _parent->_child_linkers << this;					// _self;
+                              _host_parent->_child_linkers << this;					// _self;
 //			      result_should_be_position = _parent->_child_linkers.size() - 1;	// parent may be empty before
                           }else if(mode == add_new_record_before){													// Перед указанной позицией // mode == 1
-                              _parent->_child_linkers.insert(pos, this);
+                              _host_parent->_child_linkers.insert(pos, this);
 //			      result_should_be_position = pos < 0 ? 0 : pos;
                           }else if(mode == add_new_record_after){													// После указанной позиции  // mode == 2
 //			      auto last = _parent->_child_linkers.size() - 1;
-                              _parent->_child_linkers.insert(pos + 1, this);
+                              _host_parent->_child_linkers.insert(pos + 1, this);
 //			      result_should_be_position = pos + 1 > last + 1 ? last + 1 : pos + 1 < 0 ? 0 : pos + 1;	// parent may be empty before
                           }
 //                          if(this->_host_parent != _parent)
-                          this->_host_parent = _parent;
+//			  this->_host_parent = _parent;
                                 // insert_position =  _parent->sibling_order(_self);  //_child_item->record_linker()->sibling_order();   // ItemsFlat::
                                 // _parent_target->sibling_order(_source_item);
                                 // qDebug() << "ItemsFlat::insert_new_item() : New record pos" << QString::number(insert_position);
 
                                 // Возвращается номера строки, на которую должна быть установлена засветка после выхода из данного метода
                           actually_insert_position = _host_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == this && il == _host->linker() && il->host() == _host;});
+                          integrity_external(_host, _host_parent);
                       }
                         // else {
                         // insert_position = _parent->sibling_order(_self);  // _child_item->sibling_order();    // ItemsFlat::
@@ -243,14 +241,16 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
                           if(_host->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1")_host->to_decrypt();
                       }
                   }
+              }else{
+                  throw std::runtime_error("nullptr == parent");	// std::exception();
               }
                 // else {
                 // result = boost::intrusive_ptr<TreeItem>(this);
                 // }
-
+              integrity_external(_host, _host_parent);
               return result;				// insert_position;
           })
-      , integrity([&]() -> bool {
+      , integrity_fix_up([&]() -> bool {
               bool result = true;
               if(! std::get<0>(*_status)()){result = false;assert(result);}
               if(! std::get<1>(*_status)()){if(_host_parent)result = false;assert(result);}
@@ -424,7 +424,6 @@ int Linker::sibling_order() const {
 
     return result;
 }
-
 int Linker::move_up(void){
     int row = 0;
         // Выясняется номер данного элемента в списке родителя
@@ -436,7 +435,6 @@ int Linker::move_up(void){
     }
     return row;
 }
-
 int Linker::move_dn(void){
     int row = 0;
         // Выясняется номер данного элемента в списке родителя
@@ -450,8 +448,6 @@ int Linker::move_dn(void){
     }
     return row;
 }
-
-
 boost::intrusive_ptr<TreeItem> Linker::host_parent() const {return _host_parent;}
 boost::intrusive_ptr<TreeItem> Linker::host() const {return _host;}
 
@@ -486,8 +482,8 @@ boost::intrusive_ptr<Linker> Linker::parent(boost::intrusive_ptr<TreeItem> _pare
 //            }
 //            }
         // _host_parent = new_host_parent;
-    assert(integrity());
-    assert(integrity_external(this->_host, _host_parent) || ! _parent);
+    assert(integrity_fix_up());
+    assert(integrity_external(this->_host, _host_parent));	// || ! _parent
 
         // int actually_insert_position = _host_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == _host->linker() && il->host() == _host;});
         // int result_should_be_position = pos;
@@ -500,7 +496,6 @@ boost::intrusive_ptr<Linker> Linker::parent(boost::intrusive_ptr<TreeItem> _pare
 //    }
     return result;
 }
-
 void Linker::remove(){
         // if(_host_parent->up_linker())_host_parent->up_linker(nullptr);    // pretty wrong semantic!
     _host->dangle();
@@ -511,19 +506,12 @@ void Linker::remove(){
         // _host->up_linker().reset();
         // }
 }
-
-
-
 bool Linker::integrity_internal() const {
     return std::get<0>(*_status)() && std::get<1>(*_status)() && std::get<2>(*_status)() && std::get<3>(*_status)() && std::get<4>(*_status)() && std::get<5>(*_status)();
 }
-
 bool Linker::integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_) const {
     return std::get<0>(*_status)() && std::get<1>(*_status)() && std::get<2>(*_status)() && std::get<3>(*_status)() && std::get<4>(*_status)() && std::get<5>(*_status)() && std::get<6>(*_status)(host_) && std::get<7>(*_status)(host_parent_);
 }
-
-
-
 // Linker::status_type Linker::state_impl()
 // {
 // status_type status;

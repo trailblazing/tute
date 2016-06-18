@@ -95,8 +95,6 @@ RecordScreen::RecordScreen(TreeScreen           *_tree_screen
         // _inited = true;
     tools_update();
 }
-
-
 RecordScreen::~RecordScreen(){
         // delete _recordtree_search;
         // delete
@@ -104,7 +102,6 @@ RecordScreen::~RecordScreen(){
         // delete
     _vertical_scrollarea->deleteLater();
 }
-
 void RecordScreen::save_in_new_branch(bool checked){
 
     Q_UNUSED(checked)
@@ -131,7 +128,7 @@ void RecordScreen::save_in_new_branch(bool checked){
             data["dir"] = data["id"];
             data["file"] = "text.html";
 
-            boost::intrusive_ptr<TreeItem> _blank_header = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
+            boost::intrusive_ptr<TreeItem> _blank_header = TreeItem::dangle_instance(data);// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
                 // = tree_screen->branch_add(tree_source_model, _index
                 // , objectName()    // tree_screen->know_branch()->root_item()   // ->field("name") // ""
                 // , [&](KnowModel * _current_model, QModelIndex _current_index, QString _id, QString _name) {
@@ -179,7 +176,6 @@ void RecordScreen::save_in_new_branch(bool checked){
         }
     }
 }
-
 // Настройка возможных действий
 void RecordScreen::setup_actions(void){
 
@@ -303,7 +299,7 @@ void RecordScreen::setup_actions(void){
                 data["id"] = get_unical_id();																																							// current_root_item->id();     // source_model->root_item()->id();     //
                 data["name"] = "current session branch item";																																							// this->tabmanager()->webView(0)->page()->item_link()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
 
-                boost::intrusive_ptr<TreeItem> branch_item = boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));																																							// current_root_item
+                boost::intrusive_ptr<TreeItem> branch_item = TreeItem::dangle_instance(data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));																																							// current_root_item
 
 
                 bool modified = false;
@@ -566,8 +562,6 @@ void RecordScreen::setup_actions(void){
         // Сразу после создания все действия запрещены
     disable_all_actions();
 }
-
-
 void RecordScreen::setup_ui(void){
         // _toolsline = new QToolBar(this);
 // QSize toolBarIconSize(16,16);
@@ -628,8 +622,6 @@ void RecordScreen::setup_ui(void){
         // , this
         // );
 }
-
-
 void RecordScreen::setup_signals(void){
         // connect(this, &RecordTableScreen::resizeEvent, _treepath_button
         //// , &QLabel::resizeEvent
@@ -648,8 +640,6 @@ void RecordScreen::setup_signals(void){
         // );
     connect(this->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 }
-
-
 void RecordScreen::assembly(void){
         // _recordtable_toolslayout = new QHBoxLayout();
 
@@ -748,8 +738,6 @@ void RecordScreen::assembly(void){
     lt->setContentsMargins(0, 0, 0, 0);											// setContentsMargins(0, 2, 0, 0);
     lt->setSpacing(0);
 }
-
-
 void RecordScreen::resizeEvent(QResizeEvent *e){
 
     _record_controller->view()->resizeEvent(e);
@@ -773,7 +761,6 @@ void RecordScreen::resizeEvent(QResizeEvent *e){
         // contentsRect().width() - 1
         // );
 }
-
 // Отключение всех действий над записями
 // (но не всех действий на панели инструментов, так как на панели инструментов есть действия, не оказывающие воздействия на записи)
 void RecordScreen::disable_all_actions(void){
@@ -792,7 +779,6 @@ void RecordScreen::disable_all_actions(void){
     _action_move_up->setEnabled(false);
     _action_move_dn->setEnabled(false);
 }
-
 // void RecordScreen::restore_menubar(){
 // auto menubar = _tree_screen->menubar();
 // if(_records_toolslayout->indexOf(menubar) == -1)
@@ -850,7 +836,7 @@ void RecordScreen::tools_update(){
         // }
         // едактирование записи
         // едактировать можно только тогда, когда выбрана только одна строка
-    if(  has_selection											// item_selection_model->hasSelection()
+    if(  has_selection									// item_selection_model->hasSelection()
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
         ){
         _edit_field->setEnabled(true);
@@ -894,7 +880,7 @@ void RecordScreen::tools_update(){
         // Пункт возможен только когда выбрана одна строка
         // и указатель стоит не на начале списка
         // и не включена сортировка
-    if(  has_selection											// item_selection_model->hasSelection()
+    if(  has_selection									// item_selection_model->hasSelection()
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && view->is_selected_set_to_top() == false
@@ -905,7 +891,7 @@ void RecordScreen::tools_update(){
         // Пункт возможен только когда выбрана одна строка
         // и указатель стоит не в конце списка
         // и не включена сортировка
-    if(  has_selection											// item_selection_model->hasSelection()
+    if(  has_selection									// item_selection_model->hasSelection()
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && view->is_selected_set_to_bottom() == false
@@ -913,7 +899,7 @@ void RecordScreen::tools_update(){
         _action_move_dn->setEnabled(true);
     }
         // Обновляется состояние области редактирования текста
-    if(  has_selection											// item_selection_model->hasSelection()
+    if(  has_selection									// item_selection_model->hasSelection()
       && _record_controller->row_count() > 0
         ){
         qDebug() << "In table select present";
@@ -926,8 +912,6 @@ void RecordScreen::tools_update(){
         globalparameters.meta_editor()->textarea_editable(false);
     }
 }
-
-
 //// Получение номера первого выделенного элемента в таблице записи на экране
 // int RecordScreen::first_selection_pos(void)
 // {
@@ -964,37 +948,26 @@ void RecordScreen::on_syncro_click(void){
         // find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->synchronization();
 }
-
-
 void RecordScreen::on_walkhistory_previous_click(void){
         // find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->go_walk_history_previous();
 }
-
-
 void RecordScreen::on_walkhistory_next_click(void){
         // find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->go_walk_history_next();
 }
-
-
 // Возвращение к дереву разделов в мобильном интерфейсе
 void RecordScreen::on_back_click(void){
     globalparameters.window_switcher()->switchFromRecordtableToTree();
 }
-
-
 void RecordScreen::tree_path(QString path){
     _treepath = path;											// Запоминается путь к ветке в виде строки
     _treepathlabel->setText(tr("<b>Path:</b> ") + _treepath);
         // _treepath_button->setText(tr("<b>Path:</b> ") + _treepath);
 }
-
-
 QString RecordScreen::tree_path(void){
     return _treepath;
 }
-
 RecordController *RecordScreen::record_controller(){return _record_controller;}
 
 browser::TabWidget *RecordScreen::tabmanager(){return _tabmanager;}
