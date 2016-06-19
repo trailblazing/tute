@@ -176,7 +176,7 @@ KnowView::KnowView(QString _name, TreeScreen *_tree_screen)
         // Соединение сигнал-слот что ветка выбрана мышкой или стрелками на клавиатуре
     if(appconfig.interface_mode() == "desktop")connect(selectionModel(), &QItemSelectionModel::currentRowChanged, this, &KnowView::on_current_row_changed);									// &TreeScreen::step_into_sub_branch
         // connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
-    if(appconfig.interface_mode() == "mobile")connect(this, &KnowView::clicked, this, &KnowView::cursor_step_into);
+    if(appconfig.interface_mode() == "mobile")connect(this, &KnowView::clicked, this, [&](const QModelIndex &index){cursor_step_into(index_tree(index));});
     if(appconfig.interface_mode() == "desktop"){
         connect(this, &KnowView::clicked, this, [&](const QModelIndex &index){index_invoke(index_tree(index));});
         // [&](const QModelIndex index) {
@@ -188,7 +188,7 @@ KnowView::KnowView(QString _name, TreeScreen *_tree_screen)
         // if(result_item->field("url") != "") globalparameters.entrance()->activate(result_item);
         // }//&TreeScreen::candidate_from_knowtree_item)
 
-        connect(this, &KnowView::doubleClicked, this, &KnowView::cursor_step_into);											// index_invoke_in_sub_branch
+        connect(this, &KnowView::doubleClicked, this, [&](const QModelIndex &index){cursor_step_into(index_tree(index));});	// index_invoke_in_sub_branch
     }
 }
 KnowView::~KnowView(){
@@ -3447,9 +3447,9 @@ void KnowView::know_model_reload(void){
         // know_root_holder::know_root()->reload();
 }
 // Действия при клике на ветку дерева
-void KnowView::cursor_step_into(const QModelIndex &_index){
+void KnowView::cursor_step_into(const index_tree &_index){
         // auto _tree_screen = static_cast<TreeScreen *>(parent());
-    if(_index.isValid() &&			// !source_model()->item(_index)->is_activated()
+    if(static_cast<QModelIndex>(_index).isValid() &&			// !source_model()->item(_index)->is_activated()
         ! globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {
             bool result = false;
             auto ref_it = source_model()->item(_index);

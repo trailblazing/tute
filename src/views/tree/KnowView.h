@@ -165,7 +165,7 @@ class KnowView : public QTreeView {
         void know_model_reload(void);
         void session_root_manual(bool checked = true);
         // Действия при клике на ветку дерева
-        void cursor_step_into(const QModelIndex &_index);
+        void cursor_step_into(const index_tree &_index);
         void index_invoke(const index_tree &_index);
         boost::intrusive_ptr<TreeItem> cursor_follow_up(boost::intrusive_ptr<TreeItem> _new_session_root_item);
         boost::intrusive_ptr<TreeItem> cursor_follow_up(void);

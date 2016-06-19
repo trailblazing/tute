@@ -111,8 +111,6 @@ extern AppConfig appconfig;
 extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 namespace browser {
-
-
 #ifdef USE_POPUP_WINDOW
 
     PopupPage::PopupPage(Profile *profile, QObject *parent)
@@ -155,9 +153,11 @@ namespace browser {
                                          "Do you wish to override the security check and continue?"));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
+
             return _certificate_ignored = (msgBox.exec() == QMessageBox::Yes);
         }
         // QMessageBox::critical(view(), tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
+
         // return false;
         return _certificate_ignored;
     }
@@ -185,6 +185,7 @@ namespace browser {
         Q_UNUSED(paramNames);
         Q_UNUSED(paramValues);
         QUiLoader loader;
+
         return loader.createWidget(classId, view());
     }
 #endif	// !defined(QT_NO_UITOOLS)
@@ -196,6 +197,7 @@ namespace browser {
                 // sub resource of this page
             qWarning() << "Resource" << reply->url().toEncoded() << "has unknown Content-Type, will be ignored.";
             reply->deleteLater();
+
             return;
         }
         if(reply->error() == QNetworkReply::NoError && ! reply->header(QNetworkRequest::ContentTypeHeader).isValid()){
@@ -226,6 +228,7 @@ namespace browser {
             QWebEngineFrame *frame = frames.takeFirst();
             if(frame->url() == reply->url()){
                 frame->setHtml(html, reply->url());
+
                 return;
             }
             QList<QWebEngineFrame *> children = frame->childFrames();
@@ -538,6 +541,7 @@ namespace browser {
         // return mw;
 
         // w = w->parent();
+
         // }
         return _browser;
         // return _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
@@ -561,7 +565,6 @@ namespace browser {
 
 
     WebView *WebPage::load(boost::intrusive_ptr<TreeItem> item, bool checked){
-
         // Q_UNUSED(checked)
         assert(item);
 
@@ -649,7 +652,6 @@ namespace browser {
             QWebEnginePage::load(_url);
         }
         if(_binder->host()){	// ->_active_request
-
                 // if(_record_binder->bounded_item()->_open_link_in_new_window == 1) { }
             assert(_browser);
             if(! _browser->isActiveWindow() || ! _browser->isVisible()){
@@ -712,9 +714,11 @@ namespace browser {
                                          "Do you wish to override the security check and continue?"));
             msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
             msgBox.setDefaultButton(QMessageBox::No);
+
             return _certificate_ignored = (msgBox.exec() == QMessageBox::Yes);
         }
         // QMessageBox::critical(_view, tr("Certificate Error"), error.errorDescription(), QMessageBox::Ok, QMessageBox::NoButton);
+
         // return false;
         return _certificate_ignored;
     }
@@ -829,8 +833,6 @@ namespace browser {
 
             auto tree_view = _tree_screen->view();
             if(view){
-// auto c = view->page()->record_controller();
-// page = c->item_click(c->index<IndexProxy>(PosSource(_tabmanager->webViewIndex(view))))->binder()->page();       //activate()->page();
                 page = view->page();
                 auto item_view = view->page()->item();
                 if(item_view){
@@ -841,12 +843,10 @@ namespace browser {
                 assert(page->binder() && page->binder()->integrity_external(page->binder()->host(), page));
                 assert(page);
             }else{
-
                 // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                 // already create window, why do this? -- refer to demo browser
                 assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
-// auto tree_index = create_tree_index();
-// assert(tree_index);
+
                 page = tree_index->item_bind(this->_binder->host(), target_url
                                             , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
                                             , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
@@ -859,7 +859,6 @@ namespace browser {
 
 #ifdef USE_POPUP_WINDOW
         else{
-
             PopupWindow *popup = new PopupWindow(
                 // view()->tabmanager()
                 // ,
@@ -873,6 +872,7 @@ namespace browser {
             popup->setAttribute(Qt::WA_DeleteOnClose);
             popup->show();
                 // return
+
                 // page =
             return popup->page();
         }
@@ -916,6 +916,7 @@ namespace browser {
         Q_UNUSED(paramNames);
         Q_UNUSED(paramValues);
         QUiLoader loader;
+
         return loader.createWidget(classId, _view);
     }
 #endif	// !defined(QT_NO_UITOOLS)
@@ -927,6 +928,7 @@ namespace browser {
                 // sub resource of this page
             qWarning() << "Resource" << reply->url().toEncoded() << "has unknown Content-Type, will be ignored.";
             reply->deleteLater();
+
             return;
         }
         if(reply->error() == QNetworkReply::NoError && ! reply->header(QNetworkRequest::ContentTypeHeader).isValid()){
@@ -957,6 +959,7 @@ namespace browser {
             QWebEngineFrame *frame = frames.takeFirst();
             if(frame->url() == reply->url()){
                 frame->setHtml(html, reply->url());
+
                 return;
             }
             QList<QWebEngineFrame *> children = frame->childFrames();
@@ -971,7 +974,6 @@ namespace browser {
 #endif
 
     void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
-
         // if(_entrance->browsers().count() == 0) {
         // _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
         // }
@@ -1159,6 +1161,7 @@ namespace browser {
         // ));
 
         assert(result->binder());
+
         return result;
     }
 #ifdef USE_POPUP_WINDOW
@@ -1227,6 +1230,7 @@ namespace browser {
             int numSteps = numDegrees / 15;
             setTextSizeMultiplier(textSizeMultiplier() + numSteps * 0.1);
             event->accept();
+
             return;
         }
 #endif
@@ -1587,7 +1591,6 @@ namespace browser {
               && url() == _loadingurl
               && url().toString() == _binder->host()->field<url_type>()
                 ){
-
                 // if(//_state_check[_record->getNaturalFieldSource("pin")] == Qt::Unchecked &&
                 // url().toString() == _record->getNaturalFieldSource("url")
                 // ) {
@@ -1602,7 +1605,6 @@ namespace browser {
                 if(  title != ""
                   && title != _binder->host()->field<name_type>()	// && !QUrl(title).isValid()
                     ){
-
 // _binder->host()->field("name", title);
 // auto source_model = [&] () {
 // return _tree_screen->tree_view()->source_model();
@@ -1644,7 +1646,6 @@ namespace browser {
                 // && url != _loadingurl
               && url.toString() != _binder->host()->field<url_type>()
                 ){
-
                 // if(!_record) {
                 // Record *record = nullptr;
                 ////            RecordTableData *data = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
@@ -1831,7 +1832,6 @@ namespace browser {
               && title != _binder->host()->field<name_type>()
                 // && !QUrl(title).isValid()
                 ){
-
                 _binder->host()->field<name_type>(title);	// "name",
                 data_changed = true;
 
@@ -1981,6 +1981,7 @@ namespace browser {
           && _editor_screen->file_name() == current_file
             ){
             globalparameters.window_switcher()->switchFromRecordtableToRecord();
+
             return;
         }
         // Перед открытием редактора происходит попытка получения текста записи
@@ -2098,9 +2099,11 @@ namespace browser {
             recovery_global_consistency();
             auto ti = _page->binder()->host();
             auto v = _page->_tree_screen->view();
-            auto items = v->source_model()->items([&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<url_type>().toStdString(), ti->field<url_type>().toStdString())
+            auto items = v->source_model()->items([&](boost::intrusive_ptr<const TreeItem> it_){
+                        return url_equal(it_->field<url_type>().toStdString(), ti->field<url_type>().toStdString())
 //                    || (it_->field<home_type>() != "" && ti->field<home_type>() != "" && url_equal(it_->field<home_type>().toStdString(), ti->field<home_type>().toStdString()))
-                    || it_->id() == ti->id() || it_ == ti;});
+                        || it_->id() == ti->id() || it_ == ti;
+                    });
             if(ti && items.size() > 1){
                 QList<boost::intrusive_ptr<TreeItem> > others_same;
                 for(auto it_ : items){
@@ -2240,7 +2243,6 @@ namespace browser {
                 // , _initialurl(record ? record->getNaturalFieldSource("url") : QUrl())
           , _progress(0)
           , _iconreply(0){
-
         settings()->setAttribute(QWebEngineSettings::JavascriptEnabled, true);
         settings()->setAttribute(QWebEngineSettings::JavascriptCanOpenWindows, true);
         settings()->setAttribute(QWebEngineSettings::LocalContentCanAccessFileUrls, true);
@@ -2381,6 +2383,7 @@ namespace browser {
             menu.addAction(pageAction(QWebEnginePage::CopyLinkToClipboard));
             if(page()->settings()->testAttribute(QWebEngineSettings::DeveloperExtrasEnabled))menu.addAction(pageAction(QWebEnginePage::InspectElement));
             menu.exec(mapToGlobal(event->pos()));
+
             return;
         }
 #endif
@@ -2405,6 +2408,7 @@ namespace browser {
             int numSteps = numDegrees / 15;
             setTextSizeMultiplier(textSizeMultiplier() + numSteps * 0.1);
             event->accept();
+
             return;
         }
 #endif
@@ -2554,7 +2558,6 @@ namespace browser {
         return v;
     }
     void WebView::recovery_global_consistency(){
-
         RecordScreen *_record_screen = _browser->record_screen();
         MainWindow *_mainwindow = globalparameters.mainwindow();
         HidableTabWidget *_vtab_tree = _mainwindow->vtab_tree();

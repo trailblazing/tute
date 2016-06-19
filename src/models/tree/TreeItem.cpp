@@ -2962,9 +2962,9 @@ void TreeItem::binder_reset(){
 //                _binder->page()->binder(nullptr);
 //                _binder->page(nullptr);
 //            }
+            assert(_page_binder == _binder);
+            _page_binder.reset(nullptr);
         }
-        assert(_page_binder == _binder);
-        _page_binder.reset(nullptr);
 //        auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
 //        if(_host_binder){
 //            assert(_host_binder == _binder);
