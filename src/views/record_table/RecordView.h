@@ -31,11 +31,11 @@ class ClipboardRecords;
 class RecordController;
 class RecordScreen;
 class TreeItem;
-struct PosProxy;
-struct PosSource;
-struct IndexProxy;
-struct IndexSource;
-struct IdType;
+struct pos_proxy;
+struct pos_source;
+struct index_proxy;
+struct index_source;
+struct id_value;
 class RecordView;
 class QStyleOptionButton;
 
@@ -231,11 +231,11 @@ class RecordView : public QTableView {
 };
 
 
-template<>PosProxy RecordView::selection_first<PosProxy>() const;
-template<>PosSource RecordView::selection_first<PosSource>() const;
-template<>IdType RecordView::selection_first<IdType>() const;
-template<>IndexProxy RecordView::selection_first<IndexProxy>() const;
-template<>IndexSource RecordView::selection_first<IndexSource>() const;
+template<>pos_proxy RecordView::selection_first<pos_proxy>() const;
+template<>pos_source RecordView::selection_first<pos_source>() const;
+template<>id_value RecordView::selection_first<id_value>() const;
+template<>index_proxy RecordView::selection_first<index_proxy>() const;
+template<>index_source RecordView::selection_first<index_source>() const;
 template<>boost::intrusive_ptr<TreeItem> RecordView::selection_first<boost::intrusive_ptr<TreeItem> >() const;
 
 #endif // RECORDLISTSCREEN_H_

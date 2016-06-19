@@ -19,6 +19,7 @@
 #include "models/tree/TreeItem.h"
 #include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 
 extern enum QItemSelectionModel::SelectionFlag current_tree_selection_mode;
@@ -37,6 +38,11 @@ class RecordModel;
 struct Linker;
 struct RecordIndex;
 class AdjustingScrollArea;
+
+struct index_tree;
+
+
+
 // http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 class HtmlDelegate : public QStyledItemDelegate {
     public:
@@ -160,7 +166,7 @@ class KnowView : public QTreeView {
         void session_root_manual(bool checked = true);
         // Действия при клике на ветку дерева
         void cursor_step_into(const QModelIndex &_index);
-        void index_invoke(const QModelIndex &_index);
+        void index_invoke(const index_tree &_index);
         boost::intrusive_ptr<TreeItem> cursor_follow_up(boost::intrusive_ptr<TreeItem> _new_session_root_item);
         boost::intrusive_ptr<TreeItem> cursor_follow_up(void);
         boost::intrusive_ptr<TreeItem> cursor_follow_root(void);

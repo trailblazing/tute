@@ -81,6 +81,7 @@
 #include "main.h"
 #include "models/record_table/ItemsFlat.h"
 #include "models/record_table/Record.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/linker.hxx"
 #include "models/record_table/recordindex.hxx"
@@ -1627,14 +1628,14 @@ namespace browser {
 
     QStatusBar *Browser::status_bar() const {return globalparameters.status_bar();}
 
-    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<RecordIndex> record_modelindex){
+    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<RecordIndex> record_index){
         boost::intrusive_ptr<TreeItem> result(nullptr);
-        boost::intrusive_ptr<TreeItem> tab_brother = record_modelindex->sibling();
-        boost::intrusive_ptr<TreeItem> target = record_modelindex->target();
+//        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
+        boost::intrusive_ptr<TreeItem> target = record_index->target();
         if(target->is_lite())target->to_fat();
         // clean();
         // assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
-        assert(tab_brother != target);
+//        assert(tab_brother != target);
 
         WebView *view = nullptr;
 //        TabWidget *const _tabmanager = _tabmanager;
@@ -1691,7 +1692,7 @@ namespace browser {
                 ////            }
                 // else {
 
-            view = _tabmanager->newTab(record_modelindex);	// , false
+            view = _tabmanager->newTab(record_index);	// , false
             result = view->page()->binder()->host();
                 //// auto load
                 // }

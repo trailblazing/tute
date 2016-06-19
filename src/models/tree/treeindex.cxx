@@ -45,7 +45,7 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
                 if(parent_item == absolute_root){
                     result = true;
                 }else{	// if(!current_model()->item([ = ](boost::intrusive_ptr<const TreeItem> it) {return it->id() == parent_item->id();}) && parent_item->id() != "")
-                    result = (current_model()->index(parent_item).isValid())
+                    result = (static_cast<QModelIndex>(current_model()->index(parent_item)).isValid())
                         && (current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){
                             return it->id() == parent_item->id();
                         }));
@@ -57,7 +57,7 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
                 result = true;
             }else{
                 // assert(_current_index.isValid());
-                result = (current_model()->index(parent_item).isValid())
+                result = (static_cast<QModelIndex>(current_model()->index(parent_item)).isValid())
                     && (current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){
                         return it->id() == parent_item->id();
                     }));
@@ -86,27 +86,21 @@ TreeIndex::TreeIndex(const std::function<KnowModel *()> &current_model, boost::i
         if(! _host_index.isValid()){throw std::runtime_error(formatter() << "! _host_index.isValid()");}
         // assert(_current_index.isValid());
     }catch(std::exception &e){
+        qDebug() << e.what();
         throw e;
     }
 }
-std::function<KnowModel *()> TreeIndex::current_model() const {
-    return _current_model;
-}
-boost::intrusive_ptr<TreeItem> TreeIndex::host_parent() const {
-    return _host_parent;
-}
-boost::intrusive_ptr<TreeItem> TreeIndex::host() const {
-    return _host_parent->item_direct(_sibling_order);
-}
-QModelIndex TreeIndex::host_parent_index() const {
-    return _host_parent_index;	// _current_model()->index(_parent);
-}
-QModelIndex TreeIndex::host_index() const {
-    return _host_index;	// _current_model()->index(current_item())
-}
-int TreeIndex::sibling_order() const {
-    return _sibling_order;
-}
+std::function<KnowModel *()> TreeIndex::current_model() const {return _current_model;}
+
+boost::intrusive_ptr<TreeItem> TreeIndex::host_parent() const {return _host_parent;}
+
+boost::intrusive_ptr<TreeItem> TreeIndex::host() const {return _host_parent->item_direct(_sibling_order);}
+
+QModelIndex TreeIndex::host_parent_index() const {return _host_parent_index;}		// _current_model()->index(_parent);
+
+QModelIndex TreeIndex::host_index() const {return _host_index;}		// _current_model()->index(current_item())
+
+int TreeIndex::sibling_order() const {return _sibling_order;}
 // boost::intrusive_ptr<TreeItem> item_request_from_tree_impl(const QUrl &_url);
 
 boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              &_find_url
@@ -635,7 +629,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_bind(boost::intrusive_ptr<TreeIte
                                                    , const paste_strategy          &_view_paste_strategy
                                                    , equal_url _equal){
 //    equal_url _equal = [&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<home_type>().toStdString(),  _find_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(),  _find_url.toString().toStdString());};
-    boost::intrusive_ptr<TreeItem> re;
+    boost::intrusive_ptr<TreeItem> result;
     auto it = item_register(_find_url, _view_paste_strategy, _equal);
         // assert(tab_brother != it);
     browser::WebView *view = nullptr;
@@ -646,13 +640,15 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_bind(boost::intrusive_ptr<TreeIte
     }
     auto browser = view ? view->page()->browser() : globalparameters.entrance()->activated_browser();
 
-    boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, tab_brother, it);	// tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() :   // tab_brother does not guarantee the browser exists
-    if(record_modelindex){
-        re = browser->item_bind(record_modelindex);
-    }else{
-        re = tab_brother;
-    }
-    return re;
+    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, tab_brother, it);	// tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() :   // tab_brother does not guarantee the browser exists
+    assert(record_index);
+        //    if(record_index){
+    result = browser->item_bind(record_index);
+//    }else{
+//        result = tab_brother;	// ?
+
+//    }
+    return result;
 }
 // boost::intrusive_ptr<TreeItem> KnowView::item_bind(
 // boost::intrusive_ptr<RecordModel::ModelIndex> modelindex   //

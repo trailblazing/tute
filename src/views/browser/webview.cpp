@@ -85,6 +85,7 @@
 #include <QtCore/QBuffer>
 
 #include "main.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "models/record_table/Record.h"
@@ -610,7 +611,7 @@ namespace browser {
         // tree_modelindex = new TreeIndex([&] {return tree_view->source_model();}, item->parent(), item->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il->host() == item && il == item->linker() && item->parent() == il->host_parent();}));
         // } catch(std::exception &e) {}
 
-        // if(record_modelindex) {
+        // if(record_index) {
 
         boost::intrusive_ptr<TreeItem> it;
         if(item->binder()){	// && item->binder() == _binder
@@ -679,7 +680,7 @@ namespace browser {
                     if(line_edit)line_edit->setText(_url_str);
                         // }
                     if(_record_controller->view()->current_item() != _binder->host()){	// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field<id_type>()){
-                        _record_controller->cursor_to_index(_record_controller->index<PosProxy>(_binder->host()));	// IdType(_binder->item()->field("id"))
+                        _record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_binder->host()));	// IdType(_binder->item()->field("id"))
                     }
                 }
             }
@@ -786,7 +787,7 @@ namespace browser {
 
         auto tree_view = _tree_screen->view();
 
-        assert(tree_view->source_model()->index(this->binder()->host()).isValid());
+        assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->binder()->host())).isValid());
         auto parent = this->binder()->host()->parent();
         auto parent_parent = parent->parent();
 // auto create_tree_index = [&] {
@@ -834,16 +835,16 @@ namespace browser {
                 auto item_view = view->page()->item();
                 if(item_view){
                     auto index_view = tree_view->source_model()->index(item_view);
-                    if(index_view.isValid()){tree_view->index_invoke(index_view);}
+                    if(static_cast<QModelIndex>(index_view).isValid()){tree_view->index_invoke(index_view);}
                 }
-                assert(tree_view->source_model()->index(page->binder()->host()).isValid());
+                assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->binder()->host())).isValid());
                 assert(page->binder() && page->binder()->integrity_external(page->binder()->host(), page));
                 assert(page);
             }else{
 
                 // WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
                 // already create window, why do this? -- refer to demo browser
-                assert(tree_view->source_model()->index(this->_binder->host()).isValid());
+                assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 // auto tree_index = create_tree_index();
 // assert(tree_index);
                 page = tree_index->item_bind(this->_binder->host(), target_url
@@ -1103,7 +1104,7 @@ namespace browser {
 
         // if(!item->is_registered_to_browser() && !item->record_binder()) {
         auto tree_view = _tree_screen->view();
-        assert(tree_view->source_model()->index(item).isValid());
+        assert(static_cast<QModelIndex>(tree_view->source_model()->index(item)).isValid());
 
         // if(!tree_view->source_model()->index(item).isValid())
         // result = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3));
@@ -1390,7 +1391,7 @@ namespace browser {
             RecordModel *source_model = _record_controller->source_model();	// tab_manager->source_model();
             assert(item);
                 // assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
-            if(source_model->item(IdType(item->field<id_type>()))){	// && record->unique_page() == this
+            if(source_model->item(id_value(item->field<id_type>()))){	// && record->unique_page() == this
                 _record_controller->remove(item->id());
             }
         }
@@ -1872,7 +1873,7 @@ namespace browser {
             auto tree_view = _tree_screen->view();
             if(is_current){	// globalparameters.mainwindow()
                 if(tree_view->current_item() != it)tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
-                if(_record_controller->view()->current_item() != it)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(it));	// IdType(_binder->item()->field("id"))
+                if(_record_controller->view()->current_item() != it)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(it));	// IdType(_binder->item()->field("id"))
             }
                 // if(_record->_active_request) {
                 // if(_record->_openlinkinnewwindow == 1) {
@@ -2438,7 +2439,7 @@ namespace browser {
         ////        _record_ontroller->getView()->setSelectionToPos(position);
         setFocus();
         // globalparameters.mainwindow()
-        if(_record_controller->view()->selection_first<IdType>() != _page->item()->field<id_type>())_record_controller->cursor_to_index(_record_controller->index<PosProxy>(_page->item()));	// IdType(_page->item()->field("id"))
+        if(_record_controller->view()->selection_first<id_value>() != _page->item()->field<id_type>())_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_page->item()));	// IdType(_page->item()->field("id"))
 
         // }
     }
@@ -2589,7 +2590,7 @@ namespace browser {
         }
         auto _current_item_in_browser = _page->binder()->host();
         if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser->parent(), _current_item_in_browser));
-        if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(_current_item_in_browser));
+        if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_current_item_in_browser));
     }
         // void WebView::switch_show()
         // {

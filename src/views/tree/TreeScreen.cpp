@@ -14,6 +14,7 @@
 
 #include "models/record_table/linker.hxx"
 #include "models/record_table/ItemsFlat.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordScreen.h"

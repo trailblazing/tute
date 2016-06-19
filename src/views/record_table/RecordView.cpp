@@ -13,6 +13,7 @@
 #include "libraries/ClipboardRecords.h"
 #include "RecordView.h"
 #include "views/record_table/RecordScreen.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/RecordProxyModel.h"
 #include "models/app_config/AppConfig.h"
@@ -155,7 +156,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 //        QStyledItemDelegate::paint(painter, option, index);
 //    }
         //
-    auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
+    auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     auto header_title = _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();		// DisplayRole?UserRole
     auto rating_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
     if(it && header_title == rating_field_description){		// index.column() == 0
@@ -180,7 +181,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
     painter->restore();
 }
 QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
+    auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     if(it){
         StarRating *star_rating = it->star_rating();			// StarRating star_rating = qvariant_cast<StarRating>(index.data());
         return star_rating->sizeHint();
@@ -189,7 +190,7 @@ QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelI
     }
 }
 QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {
-    auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
+    auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     if(it){
 // StarRating *star_rating = it->star_rating();
         FlatToolButtonRating *editor = new FlatToolButtonRating(parent);
@@ -208,7 +209,7 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 // return editor;
 }
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
-    auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
+    auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     if(it){
 // StarRating *star_rating = it->star_rating();
         FlatToolButtonRating *star_editor = qobject_cast<FlatToolButtonRating *>(editor);
@@ -218,7 +219,7 @@ void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, co
     }
 }
 void ViewDelegation::setEditorData(QWidget *editor, const QModelIndex &index) const {
-    auto it = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())));
+    auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     if(it){
         StarRating *star_rating = it->star_rating();			// StarRating star_rating = qvariant_cast<StarRating>(index.data());
         FlatToolButtonRating *starEditor = qobject_cast<FlatToolButtonRating *>(editor);
@@ -491,7 +492,7 @@ void RecordView::restore_header_state(void){
 void RecordView::on_click(const QModelIndex &proxy_index){
     if(proxy_index.isValid() && _previous_index != proxy_index){
         _previous_index = proxy_index;
-        _record_controller->item_click(IndexProxy(proxy_index));
+        _record_controller->item_click(index_proxy(proxy_index));
     }
 }
 // Слот, срабатывающий при нажатии кнопки редактирования записи
@@ -509,7 +510,7 @@ void RecordView::on_doubleclick(const QModelIndex &index){
 
         // Нужно перерисовать окно редактирования чтобы обновились инфополя
         // делается это путем "повторного" выбора текущего пункта
-        _record_controller->item_click(IndexProxy(index), true);		// аньше было select()
+        _record_controller->item_click(index_proxy(index), true);		// аньше было select()
         globalparameters.mainwindow()->editor_switch();
     }
 }
@@ -595,9 +596,9 @@ void RecordView::edit_field_context(void){
 
         // Получение индекса выделенного элемента
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    IndexProxy proxy_index;
+    index_proxy proxy_index;
     for(auto &si : selectItems){
-        if(0 == si.column())proxy_index = IndexProxy(si);			// selectItems.at(0);
+        if(0 == si.column())proxy_index = index_proxy(si);			// selectItems.at(0);
     }
     auto current_index = currentIndex();
 
@@ -671,18 +672,18 @@ void RecordView::edit_field_context(void){
 boost::intrusive_ptr<TreeItem> RecordView::current_item() const {
     auto it = _record_controller->source_model()->current_item();
     if(it){
-        auto posproxy = _record_controller->index<PosProxy>(it);
-        auto index = static_cast<QModelIndex>(_record_controller->index<IndexProxy>(it));
+        auto posproxy = _record_controller->index<pos_proxy>(it);
+        auto index = static_cast<QModelIndex>(_record_controller->index<index_proxy>(it));
         if(index != selectionModel()->currentIndex())_record_controller->cursor_to_index(posproxy);
     }
     return it;
 }
 bool RecordView::is_selected_set_to_top(void){
-    if(selection_first<PosProxy>() == PosProxy(0))return true;
+    if(selection_first<pos_proxy>() == pos_proxy(0))return true;
     else return false;
 }
 bool RecordView::is_selected_set_to_bottom(void){
-    if((int)selection_first<PosProxy>() == model()->rowCount() - 1)return true;
+    if((int)selection_first<pos_proxy>() == model()->rowCount() - 1)return true;
     else return false;
 }
 //// mode - режим в котором добавлялась новая запись
@@ -800,9 +801,9 @@ void RecordView::mousePressEvent(QMouseEvent *event){
         selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);			// Select
         selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
         assert(next_index == currentIndex());
-        _record_controller->item_click(IndexProxy(next_index));			// .row()
+        _record_controller->item_click(index_proxy(next_index));			// .row()
 
-        auto it = _record_controller->source_model()->item(_record_controller->index<PosSource>(_record_controller->index<PosProxy>(IndexProxy(next_index))));			// .row()
+        auto it = _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index))));			// .row()
         assert(it);
         auto tree_view = _tree_screen->view();
 // boost::intrusive_ptr<TreeIndex> tree_index;
@@ -843,7 +844,7 @@ void RecordView::mouseReleaseEvent(QMouseEvent *event){
 ////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
 ////            _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
 //            auto cur = current_item();
-            auto pos = _record_controller->source_model()->item(_record_controller->index<PosSource>(_record_controller->index<PosProxy>(IndexProxy(next_index))));
+            auto pos = _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index))));
 //            assert(cur == pos);
             _record_controller->remove(pos->id());
         }
@@ -1022,40 +1023,40 @@ void RecordView::resizeEvent(QResizeEvent *e){
     }
     QTableView::resizeEvent(e);
 }
-template<>PosProxy RecordView::selection_first<PosProxy>() const {
+template<>pos_proxy RecordView::selection_first<pos_proxy>() const {
         // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty())return PosProxy(- 1);		// Если ничего не выделено
-    else return PosProxy((selectItems.at(0)).row());		// Номер первого выделенного элемента
+    if(selectItems.isEmpty())return pos_proxy(- 1);		// Если ничего не выделено
+    else return pos_proxy((selectItems.at(0)).row());		// Номер первого выделенного элемента
 }
-template<>PosSource RecordView::selection_first<PosSource>() const {
-    PosProxy pos_proxy_ = selection_first<PosProxy>();
+template<>pos_source RecordView::selection_first<pos_source>() const {
+    pos_proxy pos_proxy_ = selection_first<pos_proxy>();
 
-    return _record_controller->index<PosSource>(pos_proxy_);
+    return _record_controller->index<pos_source>(pos_proxy_);
 }
-template<>IdType RecordView::selection_first<IdType>() const {
+template<>id_value RecordView::selection_first<id_value>() const {
         // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty())return IdType("");		// Если ничего не выделено
+    if(selectItems.isEmpty())return id_value("");		// Если ничего не выделено
 
-    return IdType(selectItems.at(0).data(RECORD_ID_ROLE).toString());
+    return id_value(selectItems.at(0).data(RECORD_ID_ROLE).toString());
 }
-template<>IndexProxy RecordView::selection_first<IndexProxy>() const {
-    PosProxy pos_proxy_ = selection_first<PosProxy>();
-    if(pos_proxy_ == - 1)return IndexProxy(QModelIndex());
+template<>index_proxy RecordView::selection_first<index_proxy>() const {
+    pos_proxy pos_proxy_ = selection_first<pos_proxy>();
+    if(pos_proxy_ == - 1)return index_proxy(QModelIndex());
         // QModelIndex index = recordProxyModel->index( pos, 0 );
-    IndexProxy index = _record_controller->index<IndexProxy>(PosProxy(pos_proxy_));
+    index_proxy index = _record_controller->index<index_proxy>(pos_proxy(pos_proxy_));
 
     return index;
 }
-template<>IndexSource RecordView::selection_first<IndexSource>() const {
-    IndexProxy proxy_index = selection_first<IndexProxy>();
-    if(! ((QModelIndex)proxy_index).isValid())return IndexSource(QModelIndex());
+template<>index_source RecordView::selection_first<index_source>() const {
+    index_proxy proxy_index = selection_first<index_proxy>();
+    if(! ((QModelIndex)proxy_index).isValid())return index_source(QModelIndex());
         // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
-    IndexSource index = _record_controller->index<IndexSource>(proxy_index);
+    index_source index = _record_controller->index<index_source>(proxy_index);
 
     return index;
 }
 template<>boost::intrusive_ptr<TreeItem> RecordView::selection_first<boost::intrusive_ptr<TreeItem> >() const {
-    return _record_controller->source_model()->item(selection_first<PosSource>());
+    return _record_controller->source_model()->item(selection_first<pos_source>());
 }

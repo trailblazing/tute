@@ -813,7 +813,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(boost::intrusive_p
 ////            assert(!deleted_item);
 ////            assert(!deleted_item->linker());
 //        }
-        if(_index_parent.isValid() || host == _root_item){
+        if(static_cast<QModelIndex>(_index_parent).isValid() || host == _root_item){
             beginInsertRows(_index_parent
                            , pos				// parent->count_direct()
                            , pos				// (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
@@ -823,21 +823,21 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(boost::intrusive_p
             if(result && item([&](boost::intrusive_ptr<const TreeItem> it) -> bool {return it->id() == result->id();})){
                 emit_datachanged_signal(index(host->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == result->id() && result->linker() == il && il->host_parent() == result->parent();}), 0, _index_parent));
             }
-            assert(index(result).isValid());
+            assert(static_cast<QModelIndex>(index(result)).isValid());
             assert(result->linker()->integrity_external(result, host));
 
             update_index(_index_parent);
             view->update(_index_parent);
 
-            emit layoutChanged(QList<QPersistentModelIndex>() << _index_parent);
+            emit layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(_index_parent));
             if(_index_original_parent.isValid()){
                 update_index(_index_original_parent);
                 view->update(_index_original_parent);
                 emit layoutChanged(QList<QPersistentModelIndex>() << _index_original_parent);
-            }else if(_index_origin.isValid()){
+            }else if(static_cast<QModelIndex>(_index_origin).isValid()){
                 update_index(_index_origin);
                 view->update(_index_origin);
-                emit layoutChanged(QList<QPersistentModelIndex>() << _index_origin);
+                emit layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(_index_origin));
             }
             endInsertRows();
         }else{				// should not use
@@ -1229,7 +1229,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_permanent_single(boost::i
             }
             return result;
         };
-    if(host && index(host).isValid()){
+    if(host && static_cast<QModelIndex>(index(host)).isValid()){
         if(host && host->count_direct() > 0){
             auto linker_first = host->child_linkers().at(0);
             auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());
@@ -1301,7 +1301,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_permanent_recursive(boost
 
             auto host = [&] {return delete_target_linker->host();};
             auto host_parent = [&] {return delete_target_linker->host_parent();};																																										// item(parent);
-            if(host() && index(host()).isValid()){
+            if(host() && static_cast<QModelIndex>(index(host())).isValid()){
                 if(host()->count_direct() > 0){
                     for(auto &il : host()->child_linkers()){
                         model_delete_permantent_impl(il);
@@ -1327,7 +1327,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_delete_permanent_recursive(boost
             }
             return result;
         };
-    if(host && index(host).isValid()){
+    if(host && static_cast<QModelIndex>(index(host)).isValid()){
         //        qDebug() << "Label 1";
 
         //        //        // Получение узла, который соответствует обрабатываемому индексу
@@ -1527,7 +1527,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeI
 
         auto r = item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();});
         assert(r);
-        assert(tree_index->current_model()()->index(r).isValid());
+        assert(static_cast<QModelIndex>(tree_index->current_model()()->index(r)).isValid());
 //        assert(item([ = ] (boost::intrusive_ptr<const TreeItem> t) {
 //            return t->id() == result->id();
 //        }));
@@ -1535,12 +1535,12 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeI
 
         //    if(_index_origin.isValid())update_index(_index_origin.parent());
         auto old_source_parent_index = index(old_source_parent);
-        if(old_source_parent_index.isValid()){
+        if(static_cast<QModelIndex>(old_source_parent_index).isValid()){
             update_index(old_source_parent_index);
             view->update(old_source_parent_index);
         }
         auto _index_result = index(result);
-        if(_index_result.isValid()){
+        if(static_cast<QModelIndex>(_index_result).isValid()){
             update_index(_index_result);
             view->update(_index_result);
         }
@@ -1548,13 +1548,13 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_merge(boost::intrusive_ptr<TreeI
         if(result->parent()){
                 //        emit_datachanged_signal(index(result->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> it) {return it->host()->id() == result->id();}), 0, _index_result.parent()));
             emit_datachanged_signal(index(result->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == result->id() && il == result->linker() && result->parent() == il->host_parent();}), 0, _index_result));
-            emit layoutChanged(QList<QPersistentModelIndex>() << _index_result);
+            emit layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(_index_result));
         }
         endInsertColumns();
         assert(source->count_direct() == 0);
-        if(_index_origin_source.isValid()){
+        if(static_cast<QModelIndex>(_index_origin_source).isValid()){
             auto index_ = index(source);
-            if(index_.isValid()){				// source->parent()->field("name") != clipboard_items_root
+            if(static_cast<QModelIndex>(index_).isValid()){				// source->parent()->field("name") != clipboard_items_root
                 if(source->count_direct() == 0){
                         //    beginRemoveRows(_index.parent(), _index.row(), _index.row());
                     if(source->linker()->host() && source->linker()->host_parent()){

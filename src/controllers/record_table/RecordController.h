@@ -5,6 +5,7 @@
 #include <QModelIndexList>
 #include "utility/delegate.h"
 #include <boost/serialization/strong_typedef.hpp>
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/tree/TreeItem.h"
 
@@ -42,11 +43,11 @@ namespace browser {
         // extern constexpr const char * DockedWindow::_defaulthome;
 }
 
-struct PosProxy;
-struct PosSource;
-struct IndexProxy;
-struct IndexSource;
-struct IdType;
+struct pos_proxy;
+struct pos_source;
+struct index_proxy;
+struct index_source;
+struct id_value;
 
 
 
@@ -68,7 +69,7 @@ class RecordController : public QObject {
         RecordModel *source_model();	// {return _source_model;}
         RecordProxyModel *proxy_model();
         browser::TabWidget *tabmanager(){return _tabmanager;}
-        boost::intrusive_ptr<TreeItem> item_click(const IndexProxy &index_proxy_, bool force_update = false);
+        boost::intrusive_ptr<TreeItem> item_click(const index_proxy &index_proxy_, bool force_update = false);
 
         //    bool is_tree_item_exists(void);
         //    void reset_tabledata_test(TableData *rtData);
@@ -81,7 +82,7 @@ class RecordController : public QObject {
 
         //    void url_load(IndexProxy proxyIndex);
         // Действия при редактировании инфополей записи из контекстного меню
-        bool edit_field_context(IndexProxy proxyIndex);
+        bool edit_field_context(index_proxy proxyIndex);
 
         template<typename return_type, typename parameter_type>  inline return_type index(const parameter_type &) const;
 
@@ -108,8 +109,8 @@ class RecordController : public QObject {
         //    void    select(IdType id);
 
 
-        void remove(IdType delete_id);
-        void remove(QVector<IdType> delete_ids);
+        void remove(id_value delete_id);
+        void remove(QVector<id_value> delete_ids);
 
         boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
@@ -122,7 +123,7 @@ class RecordController : public QObject {
         //    boost::intrusive_ptr<TreeItem> tree_item();
 
         //    void sychronize_metaeditor_to_item(const PosSource pos_source_);
-        void sychronize_attachtable_to_item(const PosSource pos);
+        void sychronize_attachtable_to_item(const pos_source pos);
 
         browser::WebView *addnew_blank(int mode);
 
@@ -180,7 +181,7 @@ class RecordController : public QObject {
         // Печать таблицы конечных записей
         void on_print_click(void);
 
-        void cursor_to_index(PosProxy pos_proxy_);	// , const int mode = add_new_record_after
+        void cursor_to_index(pos_proxy pos_proxy_);	// , const int mode = add_new_record_after
         //    void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
     protected:
 
@@ -199,7 +200,7 @@ class RecordController : public QObject {
         browser::WebView *addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after);	// add_new_record_after
         browser::WebView *addnew_item(boost::intrusive_ptr<TreeItem> item_target, const int mode = add_new_record_after);
 
-        void edit_field(PosSource pos
+        void edit_field(pos_source pos
                        , QString pin
                        , QString name
                        , QString author
@@ -221,41 +222,41 @@ class RecordController : public QObject {
 };
 
 
-template<>PosProxy RecordController::index<PosProxy>(const PosSource &) const;
-template<>PosProxy RecordController::index<PosProxy>(const IndexProxy &) const;
-template<>PosProxy RecordController::index<PosProxy>(const IndexSource &) const;
-template<>PosProxy RecordController::index<PosProxy>(const IdType &) const;
-template<>PosProxy RecordController::index<PosProxy>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>pos_proxy RecordController::index<pos_proxy>(const pos_source &) const;
+template<>pos_proxy RecordController::index<pos_proxy>(const index_proxy &) const;
+template<>pos_proxy RecordController::index<pos_proxy>(const index_source &) const;
+template<>pos_proxy RecordController::index<pos_proxy>(const id_value &) const;
+template<>pos_proxy RecordController::index<pos_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>PosSource RecordController::index<PosSource>(const PosProxy &) const;
-template<>PosSource RecordController::index<PosSource>(const IndexProxy &) const;
-template<>PosSource RecordController::index<PosSource>(const IndexSource &) const;
-template<>PosSource RecordController::index<PosSource>(const IdType &) const;
-template<>PosSource RecordController::index<PosSource>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>pos_source RecordController::index<pos_source>(const pos_proxy &) const;
+template<>pos_source RecordController::index<pos_source>(const index_proxy &) const;
+template<>pos_source RecordController::index<pos_source>(const index_source &) const;
+template<>pos_source RecordController::index<pos_source>(const id_value &) const;
+template<>pos_source RecordController::index<pos_source>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>IndexProxy RecordController::index<IndexProxy>(const PosSource &) const;
-template<>IndexProxy RecordController::index<IndexProxy>(const PosProxy &) const;
-template<>IndexProxy RecordController::index<IndexProxy>(const IndexSource &) const;
-template<>IndexProxy RecordController::index<IndexProxy>(const IdType &) const;
-template<>IndexProxy RecordController::index<IndexProxy>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>index_proxy RecordController::index<index_proxy>(const pos_source &) const;
+template<>index_proxy RecordController::index<index_proxy>(const pos_proxy &) const;
+template<>index_proxy RecordController::index<index_proxy>(const index_source &) const;
+template<>index_proxy RecordController::index<index_proxy>(const id_value &) const;
+template<>index_proxy RecordController::index<index_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>IndexSource RecordController::index<IndexSource>(const PosSource &) const;
-template<>IndexSource RecordController::index<IndexSource>(const IndexProxy &) const;
-template<>IndexSource RecordController::index<IndexSource>(const PosProxy &) const;
-template<>IndexSource RecordController::index<IndexSource>(const IdType &) const;
-template<>IndexSource RecordController::index<IndexSource>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>index_source RecordController::index<index_source>(const pos_source &) const;
+template<>index_source RecordController::index<index_source>(const index_proxy &) const;
+template<>index_source RecordController::index<index_source>(const pos_proxy &) const;
+template<>index_source RecordController::index<index_source>(const id_value &) const;
+template<>index_source RecordController::index<index_source>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>IdType RecordController::index<IdType>(const PosSource &) const;
-template<>IdType RecordController::index<IdType>(const IndexProxy &) const;
-template<>IdType RecordController::index<IdType>(const PosProxy &) const;
-template<>IdType RecordController::index<IdType>(const IndexSource &) const;
-template<>IdType RecordController::index<IdType>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>id_value RecordController::index<id_value>(const pos_source &) const;
+template<>id_value RecordController::index<id_value>(const index_proxy &) const;
+template<>id_value RecordController::index<id_value>(const pos_proxy &) const;
+template<>id_value RecordController::index<id_value>(const index_source &) const;
+template<>id_value RecordController::index<id_value>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const PosSource &) const;
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IndexProxy &) const;
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const PosProxy &) const;
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IndexSource &) const;
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IdType &) const;
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const pos_source &) const;
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const index_proxy &) const;
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const pos_proxy &) const;
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const index_source &) const;
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const id_value &) const;
 
 
 #endif	// __RECORDTABLECONTROLLER_H__

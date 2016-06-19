@@ -108,6 +108,7 @@
 #include "libraries/GlobalParameters.h"
 #include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "controllers/record_table/RecordController.h"
@@ -349,7 +350,6 @@ static void set_user_style_sheet(QWebEngineProfile *profile
     }
 }
 void QtSingleApplication::sys_init(){
-
         // Инициализация глобальных параметров,
         // внутри происходит установка рабочей директории
         // Initialize global parameters,
@@ -384,6 +384,7 @@ void QtSingleApplication::sys_init(){
         else stream << QString();
         stream.flush();
         socket.waitForBytesWritten();
+
         return;
     }
         //    _localserver = new QLocalServer(this);
@@ -413,7 +414,6 @@ void QtSingleApplication::sys_init(){
     connect(_peer, &QtLocalPeer::messageReceived, &QtLocalPeer::messageReceived);
 }
 void QtSingleApplication::browser_init(){
-
         // QtSingleApplication::QtSingleApplication(int &argc, char **argv)
         //        : QApplication(argc, argv)
         //          //, _localServer(0)
@@ -824,9 +824,6 @@ void QtSingleApplication::newLocalSocketConnection(){
 //    //    std::pair<browser::Browser *, browser::WebView *> dp;
     if(entrance && tree_screen){	// && _tree_modelindex
         if(openLinksIn == 1){
-
-
-
             auto browser = entrance->new_browser();
 //            boost::intrusive_ptr<TreeIndex> tree_index;
 //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
@@ -836,16 +833,17 @@ void QtSingleApplication::newLocalSocketConnection(){
 //            if(tree_index)
             it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item())->item_register(_url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
 
-//            boost::intrusive_ptr<RecordIndex> record_modelindex(nullptr);
+//            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
 //            try {
-            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
+            boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
 //            } catch(std::exception &) {}
-            if(record_modelindex){
-                browser->item_bind(record_modelindex)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
-            }else{
-                tree_view->index_invoke(tree_view->source_model()->index(it));
-            }
+//            if(record_index){
+            browser->item_bind(record_index)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+//            }
+//            else{
+//                tree_view->index_invoke(tree_view->source_model()->index(it));
+//            }
         }else{
 //            boost::intrusive_ptr<TreeIndex> tree_index;
 //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
@@ -1147,6 +1145,7 @@ bool QtSingleApplication::event(QEvent *event){
     case QEvent::FileOpen:
         if(! _mainwindows.isEmpty()){
             mainWindow()->loadPage(static_cast<QFileOpenEvent *>(event)->file());
+
             return true;
         }
     default:
@@ -1236,8 +1235,10 @@ bool QtSingleApplication::event(QEvent *event){
 
 browser::CookieJar *QtSingleApplication::cookieJar(){
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
+
     return (browser::CookieJar *)networkAccessManager()->cookieJar();
 #else
+
     return 0;
 #endif
 }
@@ -1289,6 +1290,7 @@ QIcon QtSingleApplication::icon(const QUrl &url) const {
 #else
     Q_UNUSED(url);
 #endif
+
     return defaultIcon();
 }
 QIcon QtSingleApplication::defaultIcon() const {
@@ -1318,6 +1320,7 @@ QByteArray QtSingleApplication::authenticationKey(const QUrl &url, const QString
     QUrl copy = url;
 
     copy.setFragment(realm);
+
     return "auth:" + copy.toEncoded(QUrl::RemovePassword | QUrl::RemovePath | QUrl::RemoveQuery);
 }
 QByteArray QtSingleApplication::proxyAuthenticationKey(const QNetworkProxy &proxy, const QString &realm){
@@ -1332,6 +1335,7 @@ QByteArray QtSingleApplication::proxyAuthenticationKey(const QString &user, cons
     key.setUserName(user);
     key.setHost(host);
     key.setFragment(realm);
+
     return "auth:" + key.toEncoded();
 }
 void QtSingleApplication::setLastAuthenticator(QAuthenticator *authenticator){

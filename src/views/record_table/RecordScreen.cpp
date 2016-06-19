@@ -22,6 +22,7 @@
 #include "views/tree/KnowView.h"
 #include "views/tree/TreeScreen.h"
 #include "views/browser/entrance.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
@@ -157,7 +158,7 @@ void RecordScreen::save_in_new_branch(bool checked){
             auto _record_model = [&](){return this->record_controller()->source_model();};																																									// ->record_table();
             auto know_model_board = [&](){return _tree_screen->view()->know_model_board();};
             for(int i = 0; i < _record_model()->size(); i ++){
-                auto it = _record_model()->item(PosSource(i));
+                auto it = _record_model()->item(pos_source(i));
                 if(! know_model_board()->item([=](boost::intrusive_ptr<const TreeItem> t){
                         return t->id() == it->field<id_type>();
                     })){																																																// source_model->item(i)->field("id")
@@ -467,16 +468,16 @@ void RecordScreen::setup_actions(void){
             qDebug() << "In moveup()";
 
                 // Получение номера первой выделенной строки
-            PosProxy pos_proxy_ = _record_controller->view()->selection_first<PosProxy>();
+            pos_proxy pos_proxy_ = _record_controller->view()->selection_first<pos_proxy>();
 
                 // Выясняется ссылка на таблицу конечных данных
                 // auto item = _source_model->browser_pages();
 
                 // Перемещение текущей записи вверх
-            _record_controller->source_model()->move_up(_record_controller->index<PosSource>(pos_proxy_));
+            _record_controller->source_model()->move_up(_record_controller->index<pos_source>(pos_proxy_));
 
                 // Установка засветки на перемещенную запись
-            _record_controller->cursor_to_index(PosProxy((int)pos_proxy_ - 1));
+            _record_controller->cursor_to_index(pos_proxy((int)pos_proxy_ - 1));
 
                 // Сохранение дерева веток
                 // find_object<TreeScreen>(tree_screen_singleton_name)
@@ -493,16 +494,16 @@ void RecordScreen::setup_actions(void){
             qDebug() << "In movedn()";
 
                 // Получение номера первой выделенной строки
-            PosProxy pos_proxy_ = _record_controller->view()->selection_first<PosProxy>();
+            pos_proxy pos_proxy_ = _record_controller->view()->selection_first<pos_proxy>();
 
                 // Выясняется ссылка на таблицу конечных данных
                 // auto item = _source_model->browser_pages();
 
                 // Перемещение текущей записи вниз
-            _record_controller->source_model()->move_dn(_record_controller->index<PosSource>(pos_proxy_));
+            _record_controller->source_model()->move_dn(_record_controller->index<pos_source>(pos_proxy_));
 
                 // Установка засветки на перемещенную запись
-            _record_controller->cursor_to_index(PosProxy((int)pos_proxy_ + 1));
+            _record_controller->cursor_to_index(pos_proxy((int)pos_proxy_ + 1));
 
                 // Сохранение дерева веток
                 // find_object<TreeScreen>(tree_screen_singleton_name)

@@ -1,5 +1,6 @@
 #include "linker.hxx"
 #include "models/tree/TreeItem.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "libraries/GlobalParameters.h"
 #include "main.h"

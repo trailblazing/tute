@@ -27,11 +27,11 @@ class MainWindow;
 class AppConfig;
 class HidableTabWidget;
 
-struct PosProxy;
-struct PosSource;
-struct IndexProxy;
-struct IndexSource;
-struct IdType;
+struct pos_proxy;
+struct pos_source;
+struct index_proxy;
+struct index_source;
+struct id_value;
 
 
 namespace browser {

@@ -4,7 +4,7 @@
 #include <functional>
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
-
+#include <boost/serialization/strong_typedef.hpp>
 #include <QUrl>
 #include <QModelIndex>
 
@@ -13,6 +13,8 @@ class TreeItem;
 struct Binder;
 struct Linker;
 class KnowModel;
+
+BOOST_STRONG_TYPEDEF(QModelIndex, index_tree)
 
 struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_safe_counter> {
     public:

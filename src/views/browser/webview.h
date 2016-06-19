@@ -56,6 +56,7 @@
 #include "controllers/record_table/RecordController.h"
 #include "libraries/GlobalParameters.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "views/browser/featurepermissionbar.h"
 #include "views/record_table/RecordScreen.h"

@@ -523,6 +523,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_clicked(void){
         messageBox.setText(tr("Verify that you selected fields for search for starting find process."));
         messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
         messageBox.exec();
+
         return nullptr;
     }
         // Выясняется список слов, которые нужно искать
@@ -533,12 +534,12 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_clicked(void){
         messageBox.setText(tr("The search request is too short. Enter at least one word."));
         messageBox.addButton(tr("OK"), QMessageBox::AcceptRole);
         messageBox.exec();
+
         return nullptr;
     }
     return find_start();
 }
 boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
-
 //// deprecated:
 // if(globalparameters.vtab_tree()->currentWidget()->objectName() == record_screen_multi_instance_name
 // && !_tree_screen->tree_view()->current_index().isValid()
@@ -630,7 +631,6 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
                                     , int                              &_candidate_records
                 // , boost::intrusive_ptr<TreeItem>   &_result_item
             ){
-
                 //// Индекс текущей выбранной ветки
                 // QModelIndex current_item_index =    // find_object<TreeScreen>(tree_screen_singleton_name)
                 // _tree_screen->tree_view()->index_current();
@@ -742,6 +742,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 //// std::future<QList<boost::intrusive_ptr<Linker> > >
 // _result_list
 // = std::async(std::launch::async, [&] {return find_recursive(_result_list, _session_root_item, _start_item); }).get();
+
 ////                                                        std::thread(&FindScreen::find_recursive, this, _result_list, _session_root_item, _start_item).detach();// find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
             return find_recursive(_result_list, _session_root_item, _start_item);				// _result_list;
         };
@@ -791,7 +792,6 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
                 }
                 // stage 3
                 if(0 == _result_list.size()){													// (_result_item->count_direct() - original_count)
-
                         // auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
                         // tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -936,29 +936,24 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                             auto browser = globalparameters.entrance()->activated_browser();
                             auto record_controller = browser->record_screen()->record_controller();
                             auto tab_brother = record_controller->view()->current_item();
-                            boost::intrusive_ptr<RecordIndex> record_modelindex = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
-                            if(record_modelindex){
-                                if(  (candidate->parent() != _session_root_item->parent())	// _current_item->parent())
-                                  && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
-                                    ){
-
-                                    auto result = browser->item_bind(record_modelindex);
-
-                                    result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-                                    _result_list << result->linker();																												//
-                                }else{
-                                        // auto previous_item = _source_model()->item(tree_view->previous_index());
-                                    boost::intrusive_ptr<TreeItem> result;
-
-                                    result = browser->item_bind(record_modelindex);
-
-                                    result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-                                    _result_list << result->linker();
-                                }
-                            }else{
-                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-                                _result_list << candidate->linker();
-                            }
+                            boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
+//                            if(record_index){
+//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
+//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
+//                                ){
+//                                auto result = browser->item_bind(record_index);
+//                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+//                                _result_list << result->linker();																												//
+//                            }else{
+                                // auto previous_item = _source_model()->item(tree_view->previous_index());
+                            auto result = browser->item_bind(record_index);
+                            result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+                            _result_list << result->linker();
+//                            }
+//                            }else{
+//                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+//                                _result_list << candidate->linker();
+//                            }
                                 // else {
                                 // find_recursive(_start_item->child(i), _result_item);
                                 // }

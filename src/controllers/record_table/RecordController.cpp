@@ -19,6 +19,7 @@
 #include "models/tree/binder.hxx"
 #include "models/record_table/Record.h"
 #include "models/record_table/ItemsFlat.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/RecordProxyModel.h"
 #include "models/app_config/AppConfig.h"
@@ -107,16 +108,16 @@ RecordView *RecordController::view(void){
 }
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &index_proxy_, bool force_update){
+boost::intrusive_ptr<TreeItem> RecordController::item_click(const index_proxy &index_proxy_, bool force_update){
     boost::intrusive_ptr<TreeItem> result;
         // Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
-    IndexSource source_index = index<IndexSource>(index_proxy_);
+    index_source source_index = index<index_source>(index_proxy_);
 
         // Позиция записи в списке
-    PosSource pos_source_ = index<PosSource>(index_proxy_);	// (((QModelIndex)source_index).row());
+    pos_source pos_source_ = index<pos_source>(index_proxy_);	// (((QModelIndex)source_index).row());
     qDebug() << "RecordController::item_click() : current item num " << pos_source_;
 
-    cursor_to_index(index<PosProxy>(index_proxy_));	// ?
+    cursor_to_index(index<pos_proxy>(index_proxy_));	// ?
     auto _tree_screen = globalparameters.tree_screen();
     auto tree_view = _tree_screen->view();
     result = source_model()->item(pos_source_);
@@ -449,7 +450,7 @@ boost::intrusive_ptr<TreeItem> RecordController::item_click(const IndexProxy &in
 // }
 
 
-void RecordController::sychronize_attachtable_to_item(const PosSource pos){
+void RecordController::sychronize_attachtable_to_item(const pos_source pos){
         // Выясняется ссылка на таблицу конечных данных
         // auto table = _source_model->tree_item();
 
@@ -686,10 +687,10 @@ void RecordController::add_items_to_clipboard(ClipboardRecords *clipboardRecords
         // auto table = _source_model->tree_item();
         // Перебираются записи и вносятся в буфер обмена
     for(int i = 0; i < items_copy.size(); ++ i){
-        IndexSource index_ = index<IndexSource>(IndexProxy(items_copy.at(i)));
+        index_source index_ = index<index_source>(index_proxy(items_copy.at(i)));
 
         // The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-        boost::intrusive_ptr<TreeItem> record = _source_model->item_fat(PosSource(((QModelIndex)index_).row()));
+        boost::intrusive_ptr<TreeItem> record = _source_model->item_fat(pos_source(((QModelIndex)index_).row()));
 
         clipboardRecords->add_record(record);
     }
@@ -711,7 +712,7 @@ int RecordController::row_count(void) const {
 // }
 
 // Установка засветки в нужную строку на экране
-void RecordController::cursor_to_index(PosProxy pos_proxy_){	// , const int mode
+void RecordController::cursor_to_index(pos_proxy pos_proxy_){	// , const int mode
         ////    IdType id;
         ////    PosSource pos_source_ = _source_model->position(id);
         ////    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
@@ -728,8 +729,8 @@ void RecordController::cursor_to_index(PosProxy pos_proxy_){	// , const int mode
         // }
 
         // PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
-    IndexProxy index_proxy_ = index<IndexProxy>(pos_proxy_);	// Модельный индекс в Proxy модели
-    PosProxy pos_proxy_real(((QModelIndex)index_proxy_).row());
+    index_proxy index_proxy_ = index<index_proxy>(pos_proxy_);	// Модельный индекс в Proxy модели
+    pos_proxy pos_proxy_real(((QModelIndex)index_proxy_).row());
         // todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
     if((int)pos_proxy_real != (int)pos_proxy_){
         QMessageBox msg_box;
@@ -946,13 +947,13 @@ void RecordController::cut(void){
 
         return;
     }
-    QVector<IdType>    delete_ids;
+    QVector<id_value>    delete_ids;
         // QVector<int>        del_rows;
     for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it ++){
         QModelIndex curr_idx;
         curr_idx = *it;
 
-        IdType append_id(curr_idx.data(RECORD_ID_ROLE).toString());
+        id_value append_id(curr_idx.data(RECORD_ID_ROLE).toString());
         // Если идентификатор не содержится в перечне удаляемых идентификаторов
         // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
         if(! delete_ids.contains(append_id)){
@@ -1220,7 +1221,7 @@ browser::WebView *RecordController::addnew_item(boost::intrusive_ptr<TreeItem> i
     browser::WebView *v = nullptr;
 
         // Получение Source-индекса первой выделенной строки
-    IndexSource source_position_index = index<IndexSource>(_view->current_item());	// selection_first<IndexSource>();
+    index_source source_position_index = index<index_source>(_view->current_item());	// selection_first<IndexSource>();
         // if(!position_index.isValid()) {
         // position_index = _view->currentIndex();   // very wrong!
         // }
@@ -1231,7 +1232,7 @@ browser::WebView *RecordController::addnew_item(boost::intrusive_ptr<TreeItem> i
 
         source_position_index = _source_model->createIndex(_source_model->size() - 1
                                                           , 0
-                                                          , static_cast<void *>(_source_model->item(PosSource(_source_model->size() - 1)).get())
+                                                          , static_cast<void *>(_source_model->item(pos_source(_source_model->size() - 1)).get())
                 );
     }
     assert(((QModelIndex)source_position_index).row() < _source_model->size());
@@ -1245,7 +1246,7 @@ browser::WebView *RecordController::addnew_item(boost::intrusive_ptr<TreeItem> i
         ////       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
         // ) {
 
-    PosSource selected_source_position(- 1);
+    pos_source selected_source_position(- 1);
         // Вставка новых данных, возвращаемая позиция - это позиция в Source данных
     if(! _source_model->item(item_target)){
         v = _source_model->insert_new_item(source_position_index, item_target, mode);
@@ -1259,7 +1260,7 @@ browser::WebView *RecordController::addnew_item(boost::intrusive_ptr<TreeItem> i
     assert(_source_model->position(item_target->id()) == selected_source_position);
         // assert(_source_model->child(selected_position) == item);
 
-    cursor_to_index(index<PosProxy>(selected_source_position));	// , mode // modify _source_model? yeah
+    cursor_to_index(index<pos_proxy>(selected_source_position));	// , mode // modify _source_model? yeah
 
         // Сохранение дерева веток
         // find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1406,11 +1407,11 @@ void RecordController::on_edit_fieldcontext(void){
         // view->loadUrl();
 }
 // Действия при нажатии кнопки редактирования записи
-bool RecordController::edit_field_context(IndexProxy proxyIndex){
+bool RecordController::edit_field_context(index_proxy proxyIndex){
     qDebug() << "RecordController::edit_field_context()";
     bool result = false;
-    IndexSource sourceIndex = index<IndexSource>(proxyIndex);
-    PosSource pos_source_(((QModelIndex)sourceIndex).row());	// Номер строки в базе
+    index_source sourceIndex = index<index_source>(proxyIndex);
+    pos_source pos_source_(((QModelIndex)sourceIndex).row());	// Номер строки в базе
 
         // Создается окно ввода данных, после выхода из этой функции окно должно удалиться
     InfoFieldsEditor edit_record_dialog;
@@ -1448,7 +1449,7 @@ bool RecordController::edit_field_context(IndexProxy proxyIndex){
     return result;
 }
 // Функция сохранения отредактированных полей записи в таблицу конечных записей
-void RecordController::edit_field(PosSource pos
+void RecordController::edit_field(pos_source pos
                                  , QString pin
                                  , QString name
                                  , QString author
@@ -1517,13 +1518,13 @@ void RecordController::close_context(void){
 
         return;
     }
-    QVector<IdType>    delete_ids;
+    QVector<id_value>    delete_ids;
         // QVector<int>        del_rows;
     for(auto it = items_for_delete.begin(); it != items_for_delete.end(); it ++){
         QModelIndex curr_idx;
         curr_idx = *it;
 
-        IdType append_id(curr_idx.data(RECORD_ID_ROLE).toString());
+        id_value append_id(curr_idx.data(RECORD_ID_ROLE).toString());
         // Если идентификатор не содержится в перечне удаляемых идентификаторов
         // это может произойти если видно несколько столбцов - у каждой ячейки будет один и тот же идентификатор записи
         if(! delete_ids.contains(append_id)){
@@ -1533,11 +1534,11 @@ void RecordController::close_context(void){
         }
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex()){cursor_to_index(PosProxy(_tabmanager->currentIndex()));}
+    if(_view->currentIndex().row() != _tabmanager->currentIndex()){cursor_to_index(pos_proxy(_tabmanager->currentIndex()));}
         // }
 }
-void RecordController::remove(IdType delete_id){
-    QVector<IdType> delete_ids;
+void RecordController::remove(id_value delete_id){
+    QVector<id_value> delete_ids;
     delete_ids.append(delete_id);
     remove(delete_ids);
 }
@@ -1624,20 +1625,20 @@ void RecordController::remove(IdType delete_id){
 
 
 // Удаление одной записи по идентификатору
-void RecordController::remove(QVector<IdType> delete_ids){
+void RecordController::remove(QVector<id_value> delete_ids){
         // Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
     auto
     pages_remove_from_browser
-        = [&](QVector<IdType> delete_ids) -> browser::WebView * {
+        = [&](QVector<id_value> delete_ids) -> browser::WebView * {
             browser::WebView *_new_view = nullptr;
             qDebug() << "Remove rows by ID list: " << delete_ids;
-            QVector<IdType> real_delete_ids;
+            QVector<id_value> real_delete_ids;
                 // Выясняется ссылка на таблицу конечных данных
                 // auto _browser_pages = _source_model->browser_pages();
             if(_source_model->count() > 0){	// return nullptr;	// if(!_browser_pages)
                 bool changed = false;
                 for(int i = 0; i < delete_ids.count(); i ++){
-                    IdType id = delete_ids[i];
+                    id_value id = delete_ids[i];
                         // QModelIndex idx = id_to_proxyindex(id);
                     auto item = _source_model->item(id);
                     if(item){
@@ -1668,7 +1669,7 @@ void RecordController::remove(QVector<IdType> delete_ids){
                         auto v = _tabmanager->currentWebView();
                         if(v){
                             auto it = v->page()->binder()->host();
-                            auto index_ = index<PosProxy>(it->id());
+                            auto index_ = index<pos_proxy>(it->id());
                             if(_view->current_item() != it){
                                 cursor_to_index(index_);
                             }
@@ -1698,7 +1699,7 @@ void RecordController::remove(QVector<IdType> delete_ids){
         // QModelIndexList::iterator it;
     for(auto del_id : delete_ids){	// for(it = items_for_delete.begin(); it != items_for_delete.end(); it++) {
         QModelIndex curr_idx;
-        curr_idx = index<IndexSource>(del_id);	// index<IndexProxy>(del_id);                                                        //*it;
+        curr_idx = index<index_source>(del_id);	// index<IndexProxy>(del_id);                                                        //*it;
 
         // QString append_id = curr_idx.data(RECORD_ID_ROLE).toString();
 
@@ -1729,7 +1730,7 @@ void RecordController::remove(QVector<IdType> delete_ids){
         auto binder = v->page()->binder();
         if(binder){
             if(binder->host() != _view->current_item()){
-                cursor_to_index(index<PosProxy>(binder->host()));
+                cursor_to_index(index<pos_proxy>(binder->host()));
             }
         }
     }
@@ -1885,7 +1886,7 @@ void RecordController::on_print_click(void){
 boost::intrusive_ptr<TreeItem> RecordController::synchronize_record_view(boost::intrusive_ptr<TreeItem> item){
     boost::intrusive_ptr<TreeItem> _item = _source_model->item(item);
     browser::WebView *v = nullptr;
-    PosSource source_position(- 1);
+    pos_source source_position(- 1);
     if(! _item){
         ////    assert(record_controller);
         // auto browser_pages = this->_source_model->browser_pages();
@@ -1910,7 +1911,7 @@ boost::intrusive_ptr<TreeItem> RecordController::synchronize_record_view(boost::
     assert(_item);
 
 
-    PosSource pos = _source_model->position(_item->id());
+    pos_source pos = _source_model->position(_item->id());
 
     assert(pos == source_position);	// maybe duplicated
 //    _item = _source_model->item(source_position);
@@ -1927,10 +1928,10 @@ boost::intrusive_ptr<TreeItem> RecordController::synchronize_record_view(boost::
         // auto current_item = _view->current_item();
     _source_model->on_table_config_changed();
 
-    IndexProxy proxy_index = index<IndexProxy>(index<PosProxy>(source_position));
+    index_proxy proxy_index = index<index_proxy>(index<pos_proxy>(source_position));
     _view->dataChanged((QModelIndex)proxy_index, (QModelIndex)proxy_index);
 
-    cursor_to_index(index<PosProxy>(_item));
+    cursor_to_index(index<pos_proxy>(_item));
 // }item
 
     return _item;	// _record;
@@ -2390,7 +2391,7 @@ boost::intrusive_ptr<TreeItem> RecordController::find(const QUrl &_url){
 // return _result;
 // }
 
-template<>PosProxy RecordController::index<PosProxy>(const PosSource &source_pos) const {
+template<>pos_proxy RecordController::index<pos_proxy>(const pos_source &source_pos) const {
     assert((int)source_pos != - 1);
     QModelIndex source_index = _source_model->index((int)source_pos, 0, QModelIndex());
 //    auto it = _source_model->item(source_pos);
@@ -2399,127 +2400,127 @@ template<>PosProxy RecordController::index<PosProxy>(const PosSource &source_pos
     QModelIndex proxy_index = _proxy_model->mapFromSource(source_index);
 
 //    assert(proxy_index.row() != - 1);
-    return PosProxy(proxy_index.row());
+    return pos_proxy(proxy_index.row());
 }
-template<>PosProxy RecordController::index<PosProxy>(const IndexProxy &index_) const {
-    if(! ((QModelIndex)index_).isValid())return PosProxy(- 1);
-    return PosProxy(((QModelIndex)index_).row());
+template<>pos_proxy RecordController::index<pos_proxy>(const index_proxy &index_) const {
+    if(! ((QModelIndex)index_).isValid())return pos_proxy(- 1);
+    return pos_proxy(((QModelIndex)index_).row());
 }
-template<>PosProxy RecordController::index<PosProxy>(const IndexSource &is) const {
-    PosSource ps(((QModelIndex)is).row());return index<PosProxy>(ps);
+template<>pos_proxy RecordController::index<pos_proxy>(const index_source &is) const {
+    pos_source ps(((QModelIndex)is).row());return index<pos_proxy>(ps);
 }
-template<>PosProxy RecordController::index<PosProxy>(const IdType &id) const {
-    PosSource source_pos = _source_model->position(id);
+template<>pos_proxy RecordController::index<pos_proxy>(const id_value &id) const {
+    pos_source source_pos = _source_model->position(id);
 
-    return index<PosProxy>(source_pos);
+    return index<pos_proxy>(source_pos);
 }
-template<>PosProxy RecordController::index<PosProxy>(const boost::intrusive_ptr<TreeItem> &it) const {
-    return index<PosProxy>(it->id());
+template<>pos_proxy RecordController::index<pos_proxy>(const boost::intrusive_ptr<TreeItem> &it) const {
+    return index<pos_proxy>(it->id());
 }
-template<>PosSource RecordController::index<PosSource>(const PosProxy &pos_proxy_) const {
+template<>pos_source RecordController::index<pos_source>(const pos_proxy &pos_proxy_) const {
     QModelIndex sourceIndex = _proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0));
 
-    return PosSource(sourceIndex.row());
+    return pos_source(sourceIndex.row());
 }
-template<>PosSource RecordController::index<PosSource>(const IndexProxy &ip) const {
-    PosProxy pp(((QModelIndex)ip).row());
+template<>pos_source RecordController::index<pos_source>(const index_proxy &ip) const {
+    pos_proxy pp(((QModelIndex)ip).row());
 
-    return index<PosSource>(pp);
+    return index<pos_source>(pp);
 }
-template<>PosSource RecordController::index<PosSource>(const IndexSource &index_) const {
-    if(! ((QModelIndex)index_).isValid())return PosSource(- 1);
-    return PosSource(((QModelIndex)index_).row());
+template<>pos_source RecordController::index<pos_source>(const index_source &index_) const {
+    if(! ((QModelIndex)index_).isValid())return pos_source(- 1);
+    return pos_source(((QModelIndex)index_).row());
 }
-template<>PosSource RecordController::index<PosSource>(const IdType &id) const {
+template<>pos_source RecordController::index<pos_source>(const id_value &id) const {
     return _source_model->position(id);
 }
-template<>PosSource RecordController::index<PosSource>(const boost::intrusive_ptr<TreeItem> &it) const {
-    return index<PosSource>(it->id());
+template<>pos_source RecordController::index<pos_source>(const boost::intrusive_ptr<TreeItem> &it) const {
+    return index<pos_source>(it->id());
 }
-template<>IndexProxy RecordController::index<IndexProxy>(const PosSource &pos_source_) const {
-    return index<IndexProxy>(index<PosProxy>(pos_source_));
+template<>index_proxy RecordController::index<index_proxy>(const pos_source &pos_source_) const {
+    return index<index_proxy>(index<pos_proxy>(pos_source_));
 }
-template<>IndexProxy RecordController::index<IndexProxy>(const PosProxy &pos_proxy_) const {
-    if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())return IndexProxy(QModelIndex());
+template<>index_proxy RecordController::index<index_proxy>(const pos_proxy &pos_proxy_) const {
+    if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())return index_proxy(QModelIndex());
     QModelIndex index = _proxy_model->index((int)pos_proxy_, 0);
 
-    return IndexProxy(index);
+    return index_proxy(index);
 }
-template<>IndexProxy RecordController::index<IndexProxy>(const IndexSource &sourceIndex) const {
-    if(! ((QModelIndex)sourceIndex).isValid())return IndexProxy(QModelIndex());
+template<>index_proxy RecordController::index<index_proxy>(const index_source &sourceIndex) const {
+    if(! ((QModelIndex)sourceIndex).isValid())return index_proxy(QModelIndex());
     QModelIndex index_ = _proxy_model->mapFromSource(_source_model->index(((QModelIndex)sourceIndex).row(), 0));// (QModelIndex)sourceIndex
 
-    return IndexProxy(index_);
+    return index_proxy(index_);
 }
-template<>IndexProxy RecordController::index<IndexProxy>(const IdType &id) const// Выясняется ссылка на таблицу конечных данных
+template<>index_proxy RecordController::index<index_proxy>(const id_value &id) const// Выясняется ссылка на таблицу конечных данных
 {
         // auto table = _source_model->tree_item();
 
         // Номер записи в Source данных
-    PosSource source_pos = _source_model->position(id);
-    PosProxy proxy_pos = index<PosProxy>(source_pos);
+    pos_source source_pos = _source_model->position(id);
+    pos_proxy proxy_pos = index<pos_proxy>(source_pos);
 
-    return index<IndexProxy>(proxy_pos);
+    return index<index_proxy>(proxy_pos);
 }
-template<>IndexProxy RecordController::index<IndexProxy>(const boost::intrusive_ptr<TreeItem> &it) const {
-    return index<IndexProxy>(it->id());
+template<>index_proxy RecordController::index<index_proxy>(const boost::intrusive_ptr<TreeItem> &it) const {
+    return index<index_proxy>(it->id());
 }
-template<>IndexSource RecordController::index<IndexSource>(const PosSource &pos_source_) const {
-    PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
+template<>index_source RecordController::index<index_source>(const pos_source &pos_source_) const {
+    pos_proxy proxy_pos_ = index<pos_proxy>(pos_source_);
 
-    return index<IndexSource>(proxy_pos_);
+    return index<index_source>(proxy_pos_);
 }
-template<>IndexSource RecordController::index<IndexSource>(const IndexProxy &proxyIndex) const {
-    if(! ((QModelIndex)proxyIndex).isValid())return IndexSource(QModelIndex());
+template<>index_source RecordController::index<index_source>(const index_proxy &proxyIndex) const {
+    if(! ((QModelIndex)proxyIndex).isValid())return index_source(QModelIndex());
     QModelIndex index = _proxy_model->mapToSource(_proxy_model->index(((QModelIndex)proxyIndex).row(), 0));
 
-    return IndexSource(index);
+    return index_source(index);
 }
-template<>IndexSource RecordController::index<IndexSource>(const PosProxy &pos_proxy_) const {
-    if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())return IndexSource(QModelIndex());
+template<>index_source RecordController::index<index_source>(const pos_proxy &pos_proxy_) const {
+    if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount())return index_source(QModelIndex());
         // IndexProxy proxyIndex = index<IndexProxy>(pos_proxy_);
-    IndexSource index_(_proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0)));
+    index_source index_(_proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0)));
 
     return index_;
 }
-template<>IndexSource RecordController::index<IndexSource>(const IdType &id) const	// Выясняется ссылка на таблицу конечных данных
+template<>index_source RecordController::index<index_source>(const id_value &id) const	// Выясняется ссылка на таблицу конечных данных
 {
         // Номер записи в Source данных
-    PosSource pos_source_ = _source_model->position(id);
+    pos_source pos_source_ = _source_model->position(id);
 
 // PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
-    return IndexSource(_source_model->index((int)pos_source_, 0));
+    return index_source(_source_model->index((int)pos_source_, 0));
 }
-template<>IndexSource RecordController::index<IndexSource>(const boost::intrusive_ptr<TreeItem> &it) const {
-    return index<IndexSource>(it->id());
+template<>index_source RecordController::index<index_source>(const boost::intrusive_ptr<TreeItem> &it) const {
+    return index<index_source>(it->id());
 }
-template<>IdType RecordController::index<IdType>(const PosSource &ps) const {
+template<>id_value RecordController::index<id_value>(const pos_source &ps) const {
     return _source_model->item(ps)->id();
 }
-template<>IdType RecordController::index<IdType>(const IndexProxy &ip) const {
-    return _source_model->item(index<PosSource>(ip))->id();
+template<>id_value RecordController::index<id_value>(const index_proxy &ip) const {
+    return _source_model->item(index<pos_source>(ip))->id();
 }
-template<>IdType RecordController::index<IdType>(const PosProxy &pp) const {
-    return _source_model->item(index<PosSource>(pp))->id();
+template<>id_value RecordController::index<id_value>(const pos_proxy &pp) const {
+    return _source_model->item(index<pos_source>(pp))->id();
 }
-template<>IdType RecordController::index<IdType>(const IndexSource &is) const {
-    return _source_model->item(index<PosSource>(is))->id();
+template<>id_value RecordController::index<id_value>(const index_source &is) const {
+    return _source_model->item(index<pos_source>(is))->id();
 }
-template<>IdType RecordController::index<IdType>(const boost::intrusive_ptr<TreeItem> &it) const {
-    return index<IdType>(index<PosSource>(it->id()));
+template<>id_value RecordController::index<id_value>(const boost::intrusive_ptr<TreeItem> &it) const {
+    return index<id_value>(index<pos_source>(it->id()));
 }
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const PosSource &ps) const {
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const pos_source &ps) const {
     return _source_model->item(ps);
 }
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IndexProxy &ip) const {
-    return _source_model->item(index<PosSource>(ip));
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const index_proxy &ip) const {
+    return _source_model->item(index<pos_source>(ip));
 }
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const PosProxy &pp) const {
-    return _source_model->item(index<PosSource>(pp));
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const pos_proxy &pp) const {
+    return _source_model->item(index<pos_source>(pp));
 }
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IndexSource &is) const {
-    return _source_model->item(index<PosSource>(is));
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const index_source &is) const {
+    return _source_model->item(index<pos_source>(is));
 }
-template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const IdType &it) const {
-    return _source_model->item(index<PosSource>(it));
+template<>boost::intrusive_ptr<TreeItem> RecordController::index<boost::intrusive_ptr<TreeItem> >(const id_value &it) const {
+    return _source_model->item(index<pos_source>(it));
 }

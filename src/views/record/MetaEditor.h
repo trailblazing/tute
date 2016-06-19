@@ -11,6 +11,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 #include "libraries/wyedit/Editor.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 
 extern QMap<Qt::CheckState, QString> _string_from_check_state;

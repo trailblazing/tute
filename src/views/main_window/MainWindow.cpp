@@ -926,7 +926,7 @@ void MainWindow::set_tree_position(QString current_root_id, QStringList current_
 
         // Получаем указатель на элемент вида TreeItem, используя путь
     auto it = know_model_board()->item(current_item_absolute_path);				// on know_root semantic
-    if(! source_model()->index(it).isValid()){
+    if(! static_cast<QModelIndex>(source_model()->index(it)).isValid()){
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
         _tree_screen->view()->intercept(TreeIndex::instance(know_model_board, it->parent(), it));
     }

@@ -18,6 +18,7 @@
 #include "models/tree/KnowModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "views/main_window/MainWindow.h"
 #include "views/record_table/RecordScreen.h"
@@ -161,7 +162,7 @@ QModelIndex TreeModel::index(int row, int column, const QModelIndex &current_ind
 }
 
 // does not must be succeeded
-QModelIndex TreeModel::index(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const {
+index_tree TreeModel::index(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const {
         // QModelIndex result;
 
     std::function<QModelIndex(QModelIndex, std::function<bool (boost::intrusive_ptr<const Linker>)>)>
@@ -192,7 +193,7 @@ QModelIndex TreeModel::index(const std::function<bool (boost::intrusive_ptr<cons
 
         // result = index_recursive(QModelIndex(), _equal);
 
-    return index_recursive(QModelIndex(), _equal);;
+    return index_tree(index_recursive(QModelIndex(), _equal));
 }
 
 
@@ -333,8 +334,8 @@ QModelIndex TreeModel::index(const std::function<bool (boost::intrusive_ptr<cons
 
 
 
-QModelIndex TreeModel::index(boost::intrusive_ptr<const TreeItem> _item) const {
-    QModelIndex result;
+index_tree TreeModel::index(boost::intrusive_ptr<const TreeItem> _item) const {
+    index_tree result;
         // assert(!result.isValid());
 
     std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<const TreeItem>)>		// , int
@@ -439,7 +440,7 @@ QModelIndex TreeModel::index(boost::intrusive_ptr<const TreeItem> _item) const {
         // }
         // }
     if(_item){
-        result = index_recursive(QModelIndex(), _item);
+        result = index_tree(index_recursive(QModelIndex(), _item));
     }
         // assert(result.isValid());
         // return index_recursive(QModelIndex(), _item, 1); // from default index?

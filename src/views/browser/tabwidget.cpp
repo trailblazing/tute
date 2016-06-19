@@ -73,6 +73,7 @@
 #include "models/record_table/Record.h"
 #include "models/record_table/recordindex.hxx"
 #include "models/tree/treeindex.hxx"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "views/record_table/RecordView.h"
@@ -881,7 +882,7 @@ namespace browser {
                     assert(index_on_tree.isValid());
                     if(index_on_tree.isValid()){
                         if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser->parent(), _current_item_in_browser));
-                        if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(_current_item_in_browser));
+                        if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_current_item_in_browser));
                     }
 //                    else{
 //                        auto _tree_it_current = _tree_view->current_item();
@@ -1115,20 +1116,18 @@ namespace browser {
 // return index;
 // }
 
-    QAction *TabWidget::newTabAction() const {
-        return _newtabaction;
-    }
-    WebView *TabWidget::newTab(boost::intrusive_ptr<RecordIndex> record_modelindex, bool make_current){	// boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
+    QAction *TabWidget::newTabAction() const {return _newtabaction;}
+    WebView *TabWidget::newTab(boost::intrusive_ptr<RecordIndex> record_index, bool make_current){	// boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
         // , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
         boost::intrusive_ptr<TreeItem> result(nullptr);
         // auto _record_model = modelindex.current_model();
-        boost::intrusive_ptr<TreeItem> tab_brother = record_modelindex->sibling();
-        boost::intrusive_ptr<TreeItem> target = record_modelindex->target();
+//        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
+        boost::intrusive_ptr<TreeItem> target = record_index->target();
 
         assert(target);
-        assert(tab_brother != target);
+//        assert(tab_brother != target);
         // assert(!target->is_lite());
-        if(target->is_lite())target->to_fat();
+//        if(target->is_lite())target->to_fat();
         // if(record == nullptr) {
         // record = register_record(QUrl(DockedWindow::_defaulthome));
         // } else {
@@ -1245,7 +1244,7 @@ namespace browser {
 
                 //
                 QString title = target->field<name_type>().leftJustified(5, '.', true);
-                int pre_index = tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0;
+                int pre_index = record_index->sibling_index().row();	// tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0;
                 QIcon icon;
                 //
                 int index = insertTab(pre_index, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
@@ -1768,10 +1767,10 @@ namespace browser {
                         // webView(0)->load(_record);    //loadUrl(_url);
                         // auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
                         auto it = tree_index->item_register(QUrl(_url), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toStdString());});
-                        // boost::intrusive_ptr<RecordModel::ModelIndex> record_modelindex(nullptr);
+                        // boost::intrusive_ptr<RecordModel::ModelIndex> record_index(nullptr);
 
                         // try {
-                        // record_modelindex = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(it), it);
+                        // record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(it), it);
                         // } catch(std::exception &e) {}
 
                         webView(0)->page()->item_bind(it)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
@@ -1882,13 +1881,15 @@ namespace browser {
 
         // _tree_view->select_and_current(_current);
     }
+        // will fail if count()==0 or it not inside current tabmanager
     boost::intrusive_ptr<TreeItem> TabWidget::sibling(boost::intrusive_ptr<TreeItem> it) const {
         boost::intrusive_ptr<TreeItem> r;
-        auto v = it->binder()->page()->view();
-        auto index = webViewIndex(v) - 1;
-        if(index < 0)index = count() - 1;// if(index != - 1 && index > 0)
-        r = webView(index)->page()->binder()->host();
-
+        if(count() > 0 && it){
+            auto v = it->binder()->page()->view();
+            auto index = webViewIndex(v) - 1;
+            if(index < 0)index = count() - 1;	// if(index != - 1 && index > 0)
+            r = webView(index)->page()->binder()->host();
+        }
         return r;
     }
     Browser *TabWidget::browser(){return _browser;}

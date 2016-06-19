@@ -11,6 +11,7 @@
 #include "views/browser/entrance.h"
 #include "views/tree/TreeScreen.h"
 #include "models/attach_table/AttachTableData.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "binder.hxx"
 #include "models/record_table/linker.hxx"
@@ -1213,8 +1214,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::parent() const {
     if(_linker)result = _linker->host_parent();
     return result;				// _parent_item;
 }
-IdType TreeItem::parent_id() const {
-    IdType id("");
+id_value TreeItem::parent_id() const {
+    id_value id("");
         // if(_parent_item) {
         // return _parent_item->field("id");
         // } else
@@ -1222,13 +1223,13 @@ IdType TreeItem::parent_id() const {
     if(_linker)id = _linker->host_parent()->id();
     return id;
 }
-IdType TreeItem::id() const {
-    if(_field_data.contains("id"))return IdType(_field_data["id"]);
+id_value TreeItem::id() const {
+    if(_field_data.contains("id"))return id_value(_field_data["id"]);
     else{
         // critical_error("In TreeItem data getting field with unavailable name 'id'");
 
         // exit(1);
-        return IdType("");
+        return id_value("");
     }
 }
 QString TreeItem::name() const {

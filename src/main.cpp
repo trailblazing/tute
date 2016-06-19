@@ -46,6 +46,7 @@
 #include "libraries/GlobalParameters.h"
 #include "views/record_table/RecordScreen.h"
 #include "models/database_config/DataBaseConfig.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "controllers/record_table/RecordController.h"

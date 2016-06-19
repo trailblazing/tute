@@ -17,6 +17,7 @@
 #include "models/record_table/Record.h"
 #include "views/record_table/RecordView.h"
 #include "views/record_table/RecordScreen.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "models/record_table/ItemsFlat.h"
 #include "models/tree/TreeItem.h"
@@ -361,7 +362,7 @@ void MetaEditor::switch_pin(){
         RecordModel *source_model = _tabmanager->source_model();
         auto _record_controller = _tabmanager->record_controller();
         RecordView *record_view = _tabmanager->view();
-        PosSource pos_source_(_tabmanager->currentIndex());   // first_selectionpos();
+        pos_source pos_source_(_tabmanager->currentIndex());   // first_selectionpos();
         if(source_model && - 1 != pos_source_){
             // Выясняется ссылка на таблицу конечных данных
             // auto item = source_model->tree_item();  //->record_table();    //getTableData();
@@ -406,7 +407,7 @@ void MetaEditor::switch_pin(){
             // find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
             TreeScreen *treescreen = globalparameters.tree_screen();
             if(treescreen)treescreen->view()->know_model_save();
-            if(record_view)_record_controller->cursor_to_index(_record_controller->index<PosProxy>(pos_source_));
+            if(record_view)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(pos_source_));
         }
     }
     // }

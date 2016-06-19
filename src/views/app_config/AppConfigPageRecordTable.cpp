@@ -8,6 +8,7 @@
 #include "AppConfigPageTable.h"
 #include "models/app_config/AppConfig.h"
 #include "libraries/FixedParameters.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "controllers/record_table/RecordController.h"
 

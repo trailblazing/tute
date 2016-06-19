@@ -13,6 +13,7 @@
 #include "views/tree/TreeScreen.h"
 #include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 
 

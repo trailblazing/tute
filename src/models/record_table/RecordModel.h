@@ -37,19 +37,11 @@ class MetaEditor;
 class AppConfig;
 class RecordScreen;
 
-struct PosProxy;
-struct PosSource;
-struct IndexProxy;
-struct IndexSource;
-struct IdType;
-
-
-
-BOOST_STRONG_TYPEDEF(QString, IdType)
-BOOST_STRONG_TYPEDEF(int, PosSource)
-BOOST_STRONG_TYPEDEF(int, PosProxy)
-BOOST_STRONG_TYPEDEF(QModelIndex, IndexProxy)
-BOOST_STRONG_TYPEDEF(QModelIndex, IndexSource)
+struct pos_proxy;
+struct pos_source;
+struct index_proxy;
+struct index_source;
+struct id_value;
 
 namespace browser {
     class Entrance;
@@ -116,7 +108,8 @@ class RecordModel : public QAbstractTableModel
         void fields(int pos, QMap<QString, QString> data);
 
         QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-        IndexSource index(boost::intrusive_ptr<TreeItem> it) const;
+        index_source index(boost::intrusive_ptr<TreeItem> it) const;
+        index_source fake_index(boost::intrusive_ptr<TreeItem> it) const;
         // for multi items link with unique page
         boost::intrusive_ptr<TreeItem> item_bounded(boost::intrusive_ptr<TreeItem> it) const;
         boost::intrusive_ptr<TreeItem> item(boost::intrusive_ptr<TreeItem> it) const;
@@ -125,12 +118,12 @@ class RecordModel : public QAbstractTableModel
         // bool remove_child(QString find_id);
         // bool remove_child(int index);
         // boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
-        boost::intrusive_ptr<TreeItem> item(const PosSource _index);
-        boost::intrusive_ptr<TreeItem> item(const PosSource _index) const;
-        boost::intrusive_ptr<TreeItem> item(const IdType &id);
-        boost::intrusive_ptr<TreeItem> item(const IdType &id) const;
+        boost::intrusive_ptr<TreeItem> item(const pos_source _index);
+        boost::intrusive_ptr<TreeItem> item(const pos_source _index) const;
+        boost::intrusive_ptr<TreeItem> item(const id_value &id);
+        boost::intrusive_ptr<TreeItem> item(const id_value &id) const;
         boost::intrusive_ptr<TreeItem> item(const QUrl &_url) const;
-        boost::intrusive_ptr<TreeItem> item_fat(PosSource index);
+        boost::intrusive_ptr<TreeItem> item_fat(pos_source index);
         // boost::intrusive_ptr<TreeItem> item(int pos) {return item(pos);}
         // boost::intrusive_ptr<TreeItem> item(int pos)const {return item(pos);}
 
@@ -156,9 +149,9 @@ class RecordModel : public QAbstractTableModel
         boost::intrusive_ptr<TreeItem> sibling(boost::intrusive_ptr<TreeItem> it) const;
         boost::intrusive_ptr<TreeItem> current_item() const;
 
-        void position(PosSource _index);
+        void position(pos_source _index);
         // PosSource position()const;
-        PosSource position(IdType id) const;
+        pos_source position(id_value id) const;
         // PosSource position(boost::intrusive_ptr<TreeItem> item)const;
 
         Qt::ItemFlags flags(const QModelIndex &index) const;
@@ -182,12 +175,12 @@ class RecordModel : public QAbstractTableModel
         void on_table_config_changed(void);
 
         // Добавление записей
-        browser::WebView *insert_new_item(const IndexSource source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
+        browser::WebView *insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
         bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
         void remove_child(boost::intrusive_ptr<TreeItem> it);
 
-        int move_up(const PosSource pos);
-        int move_dn(const PosSource pos);
+        int move_up(const pos_source pos);
+        int move_dn(const pos_source pos);
 
         // protected:
 

@@ -23,11 +23,11 @@ class TreeItem;
 class KnowModel;
 
 struct Binder;
-struct PosProxy;
-struct PosSource;
-struct IndexProxy;
-struct IndexSource;
-struct IdType;
+struct pos_proxy;
+struct pos_source;
+struct index_proxy;
+struct index_source;
+struct id_value;
 
 
 // extern GlobalParameters globalparameters;
@@ -260,11 +260,11 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
         QList<QStringList> path_children_all(QString field_name = "id") const;
 
         // Получение идентификатора элемента
-        IdType id() const;
+        id_value id() const;
         QString name() const;
 
         // Получение идентификатора родительской ветки
-        IdType parent_id() const;
+        id_value parent_id() const;
 
         // Шифрация данной ветки и всех подветок
         void to_encrypt(void);

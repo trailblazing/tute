@@ -240,7 +240,7 @@ namespace browser {
             }
         }else if(result_item != tree_view->current_item()){
             auto index_result = tree_view->source_model()->index(result_item);
-            if(index_result.isValid()){
+            if(static_cast<QModelIndex>(index_result).isValid()){
                 auto it = tree_view->source_model()->item(index_result);
                 tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
                 tree_view->index_invoke(index_result);

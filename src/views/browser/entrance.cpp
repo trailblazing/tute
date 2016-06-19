@@ -42,6 +42,7 @@
 #include "controllers/record_table/RecordController.h"
 #include "views/record_table/RecordView.h"
 #include "models/record_table/ItemsFlat.h"
+#include "models/record_table/recordindex.hxx"
 #include "models/record_table/RecordModel.h"
 #include "libraries/WindowSwitcher.h"
 #include "views/browser/webview.h"
