@@ -243,7 +243,7 @@ namespace browser {
             if(static_cast<QModelIndex>(index_result).isValid()){
                 auto it = tree_view->source_model()->item(index_result);
                 tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
-                tree_view->index_invoke(index_result);
+                tree_view->index_invoke(globalparameters.entrance()->activated_browser()->tabmanager()->currentWebView(), index_result);
             }
         }else{
             tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item->parent(), result_item));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));

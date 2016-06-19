@@ -178,7 +178,7 @@ KnowView::KnowView(QString _name, TreeScreen *_tree_screen)
         // connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
     if(appconfig.interface_mode() == "mobile")connect(this, &KnowView::clicked, this, [&](const QModelIndex &index){cursor_step_into(index_tree(index));});
     if(appconfig.interface_mode() == "desktop"){
-        connect(this, &KnowView::clicked, this, [&](const QModelIndex &index){index_invoke(index_tree(index));});
+        connect(this, &KnowView::clicked, this, [&](const QModelIndex &index){index_invoke(globalparameters.entrance()->activated_browser()->tabmanager()->currentWebView(), index_tree(index));});
         // [&](const QModelIndex index) {
         ////            collapse(index);
         ////            expand(index);
@@ -3584,7 +3584,7 @@ void KnowView::cursor_step_into(const index_tree &_index){
         // , std::placeholders::_2, std::placeholders::_3))->activate();
     }
 }
-void KnowView::index_invoke(const index_tree &_index){
+void KnowView::index_invoke(browser::WebView *view, const index_tree &_index){
     if(static_cast<QModelIndex>(_index).isValid()){					// && index_current() != _index
         // KnowModel *(TreeScreen::*_source_model_func)() = &TreeScreen::know_model_board;
         // auto _source_model = std::bind(_source_model_func, this);
@@ -3745,7 +3745,9 @@ void KnowView::index_invoke(const index_tree &_index){
                 // auto item_bind_ = [&]() {return item_bind(current_item(), result_item, std::bind(&KnowView::view_paste_child, this, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();};
                 auto browser = globalparameters.entrance()->activated_browser();
                 // auto previous_item = _know_root->item(_previous_index);
-                auto record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
+                boost::intrusive_ptr<TreeItem> record_previous_item(nullptr);
+                if(view)record_previous_item = view->page()->binder()->host();
+//                record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
                 boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, result_item);;
 
                 auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {

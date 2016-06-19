@@ -1247,7 +1247,7 @@ namespace browser {
                 int pre_index = record_index->sibling_index().row();	// tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0;
                 QIcon icon;
                 //
-                int index = insertTab(pre_index, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
+                int index = insertTab(pre_index == 0 ? 0 : pre_index + 1, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
 //		_tabbar->setTabButton(index, QTabBar::RightSide, new FlatToolButton(_tabbar));
                 //
 

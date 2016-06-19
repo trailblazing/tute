@@ -837,7 +837,7 @@ namespace browser {
                 auto item_view = view->page()->item();
                 if(item_view){
                     auto index_view = tree_view->source_model()->index(item_view);
-                    if(static_cast<QModelIndex>(index_view).isValid()){tree_view->index_invoke(index_view);}
+                    if(static_cast<QModelIndex>(index_view).isValid()){tree_view->index_invoke(view, index_view);}
                 }
                 assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->binder()->host())).isValid());
                 assert(page->binder() && page->binder()->integrity_external(page->binder()->host(), page));
