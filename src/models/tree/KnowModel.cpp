@@ -50,8 +50,8 @@ KnowModel::KnowModel(const QString &index_xml_file_name, KnowView *parent) : Tre
     if(_root_item){_root_item.reset();}
     _root_item = TreeItem::dangle_instance(root_data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(_root_item_parent, root_data));		// ?
 
-    assert(_root_item->linker()->host().get() == _root_item.get());
-    assert(_root_item->linker()->host_parent().get() != _root_item.get());
+//    assert(_root_item->linker()->host().get() == _root_item.get());
+//    assert(_root_item->linker()->host_parent().get() != _root_item.get());
 
     init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);		// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
@@ -117,8 +117,8 @@ void KnowModel::init(QDomDocument *dom_model){
 
         return;
     }
-    assert(_root_item->linker()->host().get() == _root_item.get());
-    assert(_root_item->linker()->host_parent().get() != _root_item.get());
+//    assert(_root_item->linker()->host().get() == _root_item.get());
+//    assert(_root_item->linker()->host_parent().get() != _root_item.get());
     _root_item->dom_to_records(dom_content_root_as_record);
 
     endResetModel();
@@ -778,7 +778,7 @@ boost::intrusive_ptr<TreeItem> KnowModel::model_move_as_child(boost::intrusive_p
     auto original_parent = source_item->parent();
         //    assert(original_parent);
     auto _index_original_parent = original_parent ? index(original_parent) : QModelIndex();
-    if(! (source_item->parent() == host && host->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(source_item->linker())))){
+    if(! (source_item->parent() == host && host->contains_direct(source_item->linker()))){
         auto _index_parent = index(host);
         //        auto _index_origin = index(source_item);
         auto view = static_cast<KnowView *>(static_cast<QObject *>(this)->parent());

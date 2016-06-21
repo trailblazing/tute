@@ -26,7 +26,7 @@
 
 boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item){
     boost::intrusive_ptr<RecordIndex> result(nullptr);
-    if(sibling_item == target_item)throw std::runtime_error(formatter() << "_sibling_item == _target_item");
+//    if(sibling_item == target_item)throw std::runtime_error(formatter() << "_sibling_item == _target_item");
     index_source sibling_index_ = current_model()->index(sibling_item);
     if(! static_cast<QModelIndex>(sibling_index_).isValid()){sibling_index_ = index_source(current_model()->fake_index(target_item));assert(! static_cast<QModelIndex>(current_model()->index(target_item)).isValid());}	// index(0, 0, QModelIndex())
     if(! static_cast<QModelIndex>(sibling_index_).isValid())throw std::runtime_error(formatter() << "_sibling_index isn\'t valid");
@@ -37,7 +37,7 @@ boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<Reco
 boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model, const index_source &sibling_index, boost::intrusive_ptr<TreeItem>  target_item){
     boost::intrusive_ptr<RecordIndex> result(nullptr);
     boost::intrusive_ptr<TreeItem> sibling_item = current_model()->item(pos_source(static_cast<const QModelIndex>(sibling_index).row()));
-    if(sibling_item == target_item)throw std::runtime_error(formatter() << "_sibling_item == _target_item");
+    if(sibling_item == target_item)throw std::runtime_error(formatter() << "_sibling_item == _target_item; _target_item has already been inside the record view");
     index_source sibling_index_ = sibling_index;
     if(! static_cast<QModelIndex>(sibling_index_).isValid()){sibling_index_ = index_source(current_model()->fake_index(target_item));;assert(! static_cast<QModelIndex>(current_model()->index(target_item)).isValid());}	// index(0, 0, QModelIndex())
     if(! static_cast<QModelIndex>(sibling_index_).isValid())throw std::runtime_error(formatter() << "_sibling_index isn\'t valid");

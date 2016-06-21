@@ -2027,7 +2027,7 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                     if(  _parent
                       && ! (
                             _source_item->parent() == _parent
-                           && _parent->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(_source_item->linker())))
+			   && _parent->contains_direct(_source_item->linker()))
                         ){
                         ////                _source_item->self_remove_from_parent();    //
                         // _source_item->parent()->remove(_source_item->up_linker());    // -> this content is not must a logic error  1-2? // inside in 1-3 _source_item->parent calling
@@ -2060,7 +2060,7 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                         // QString id = _current_clip_parent->id();
                     boost::intrusive_ptr<TreeItem> contain_current_parent(nullptr);
                     if(_current_clip_parent_parent){
-                        contain_current_parent = _current_clip_parent_parent->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(_current_clip_parent->linker()));
+			contain_current_parent = _current_clip_parent_parent->contains_direct(_current_clip_parent->linker());
                     }else{
                         contain_current_parent = _current_clip_parent;
                     }
@@ -2074,7 +2074,7 @@ void KnowView::view_paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex
                             auto record = records.at(i);
                             if(record && _current_clip_parent != record){
                                 boost::intrusive_ptr<TreeItem> contain_current_record(nullptr);
-                                contain_current_record = _current_clip_parent->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(record->linker()));
+				contain_current_record = _current_clip_parent->contains_direct(record->linker());
                                 // _new_item
                                 if(! contain_current_record){
                                     auto record_shadow = move_as_child_from_clipboard_object(_current_clip_parent, record, i);	// _sibling_order + i
@@ -2667,7 +2667,7 @@ boost::intrusive_ptr<TreeItem> KnowView::view_paste_child(boost::intrusive_ptr<T
         // boost::intrusive_ptr<TreeItem> current_item = _modelindex.parent(); // _current_model()->item(_current_index);
         // assert(!current_item->contains_direct(std::forward<const boost::intrusive_ptr<Linker>>(_source_item->linker())));
         // assert(!current_item->contains_direct(std::forward<const boost::intrusive_ptr<TreeItem>>(_source_item)));
-        if(! host->contains_direct(std::forward<const boost::intrusive_ptr<const Linker> >(_source_item->linker()))){											// current_item->contains_direct(_source_item->linker()) ||
+	if(! host->contains_direct(_source_item->linker())){											// current_item->contains_direct(_source_item->linker()) ||
             if(host->count_direct() > 0){
                 auto _child = host->item_direct(0);	// _treeindex->sibling_order()   // current_item->count_direct() - 1
 

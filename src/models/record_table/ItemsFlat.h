@@ -105,8 +105,8 @@ class ItemsFlat {
 
 
         void fields(int pos, QMap<QString, QString> edit_fields);
-        boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<TreeItem> &&_item) const;
-        boost::intrusive_ptr<TreeItem> contains_direct(const boost::intrusive_ptr<const Linker> &&_item_linker) const;
+        boost::intrusive_ptr<TreeItem> contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const;
+        boost::intrusive_ptr<TreeItem> contains_direct(boost::intrusive_ptr<const Linker> &&_item_linker) const;
 
         //    bool remove(int i);
         //    bool remove(QString id);
