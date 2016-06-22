@@ -1200,7 +1200,7 @@ boost::intrusive_ptr<Linker> TreeItem::parent(boost::intrusive_ptr<TreeItem> it,
 	_linker->parent(it, pos, mode);
     }else if(_linker && _linker->host_parent() != it){
 	auto parent = _linker->host_parent();
-	if(parent)parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == this->_linker;});
+	if(parent && parent != it)parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == this->_linker;});
 	if(_linker->host() != this)_linker->host(this);								// std::move(boost::intrusive_ptr<TreeItem>(this))
 	_linker->parent(it, pos, mode);	// _linker->host_parent()->release(this->linker());
     }

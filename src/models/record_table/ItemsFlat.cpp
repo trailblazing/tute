@@ -1241,9 +1241,12 @@ void ItemsFlat::release(const std::function<bool (boost::intrusive_ptr<const Lin
 //	if(_equal(link))_child_linkers.erase(pos);
 //	pos ++;
 //    }
-    QMutableListIterator<boost::intrusive_ptr<Linker> > pos(_child_linkers);
-    while(pos.hasNext()){
-	auto _i = pos.next();
+//    QMutableListIterator<boost::intrusive_ptr<Linker> > pos(_child_linkers);
+//    while(pos.hasNext()){
+//	auto _i = pos.next();
+//	if(_equal(_i))_child_linkers.removeOne(_i);
+//    }
+    for(auto _i : _child_linkers){
 	if(_equal(_i)) _child_linkers.removeOne(_i);
     }
 }
