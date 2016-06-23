@@ -198,10 +198,11 @@ void rs_t:: setup_actions(void){
 	    if(bar_width >= sizes[0]){																														// h_left_splitter->widget(0)->width()
 		_hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
 		_hide_tree_text = tr("Show tree view");
-		vtab_tree->resize(bar_width, vtab_tree->height());
+//		vtab_tree->resize(bar_width, vtab_tree->height());
 //		vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 		vtab_tree->setMinimumWidth(bar_width);
 //		vtab_tree->setMaximumWidth(bar_width);
+
 	    }else{
 		_hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
 		_hide_tree_text = tr("Hide tree view");
@@ -241,7 +242,7 @@ void rs_t:: setup_actions(void){
 		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
 		sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;
 		vtab_tree->setMaximumWidth(_main_window->maximumWidth());	// just a very big number
-//		vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+		vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 
 // sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
 // sizes[1] = size_memory[0] + size_memory[1] - sizes[0];      // sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
@@ -260,7 +261,7 @@ void rs_t:: setup_actions(void){
 //		vtab_tree->resize(bar_width, vtab_tree->height());
 //		vtab_tree->setMaximumWidth(bar_width);
 		vtab_tree->setMinimumWidth(bar_width);
-//		vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+		vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 
 // _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
 // _hide_tree_text = tr("Show tree view");

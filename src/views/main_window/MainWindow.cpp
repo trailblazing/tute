@@ -596,24 +596,20 @@ void wn_t:: assembly(void){
     _h_tree_splitter->addWidget(_vtab_tree);
     _h_tree_splitter->addWidget(_h_record_splitter);
 
-
-
 	// v_left_splitter->addWidget(treeScreen);
 	// v_left_splitter->addWidget(recordTableScreen);
     _h_tree_splitter->setCollapsible(0,  true);
     _h_tree_splitter->setCollapsible(1,  false);
 	// v_left_splitter->setCollapsible(1, false);
     _h_tree_splitter->setObjectName("h_left_splitter");
-
+//    _vtab_tree->setMinimumWidth(_vtab_tree->tabBar()->geometry().width());
+//    _vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     _globalparameters.find_splitter(_v_find_splitter);
     _globalparameters.h_tree_splitter(_h_tree_splitter);
     _globalparameters.v_right_splitter(_v_right_splitter);
 
 
-
-
 // _h_splitter->addWidget(_tree_screen);
-
 
 
 	// hSplitter = new QSplitter(Qt::Horizontal);
