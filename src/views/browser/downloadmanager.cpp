@@ -471,7 +471,7 @@ namespace browser {
         bool remove = false;
 
         if(!widget->downloading()
-            && QtSingleApplication::instance()->privateBrowsing())
+            && sa_t::instance()->privateBrowsing())
             remove = true;
 
         if(widget->downloadedSuccessfully()

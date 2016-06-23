@@ -11,7 +11,7 @@
 #include "views/browser/entrance.h"
 #include "views/record/MetaEditor.h"
 #include "views/browser/tabwidget.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 #include "models/tree/KnowModel.h"
 
 extern const char *record_screen_multi_instance_name;
@@ -70,10 +70,10 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void)
     auto _index = globalparameters.tree_screen()->view()->current_index();
 
     if(_index.isValid()) {
-        auto item = globalparameters.tree_screen()->view()->source_model()->item(_index);
+        auto item = globalparameters.tree_screen()->view()->source_model()->child(_index);
 
         if(item != globalparameters.tree_screen()->view()->source_model()->root_item()) {
-            RecordScreen *record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+            rs_t *record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
             QWidget *object = static_cast<QWidget *>(record_screen);                           // globalparameters.record_screens()[0]
             // temporary setting
             object->show();
@@ -114,10 +114,10 @@ void WindowSwitcher::switchFromRecordToRecordtable(void)
     auto _index = globalparameters.tree_screen()->view()->current_index();
 
     if(_index.isValid()) {
-        auto item = globalparameters.tree_screen()->view()->source_model()->item(_index);
+        auto item = globalparameters.tree_screen()->view()->source_model()->child(_index);
 
         if(item != globalparameters.tree_screen()->view()->source_model()->root_item()) {
-            RecordScreen *record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+            rs_t *record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
             QWidget *object = static_cast<QWidget *>(record_screen                           // globalparameters.record_screens()[0]
                                                     ); // temporary setting
             object->show();
@@ -243,10 +243,10 @@ void WindowSwitcher::restoreFocusWidget()
         auto _index = globalparameters.tree_screen()->view()->current_index();
 
         if(_index.isValid()) {
-            auto item = globalparameters.tree_screen()->view()->source_model()->item(_index);
+            auto item = globalparameters.tree_screen()->view()->source_model()->child(_index);
 
             if(item != globalparameters.tree_screen()->view()->source_model()->root_item()) {
-                RecordScreen *_record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
+                rs_t *_record_screen = item->page()->view()->record_controller()->tabmanager()->browser()->record_screen();
 
 
                 QWidget *object = static_cast<QWidget *>(_record_screen);              // globalparameters.record_screens()[0]

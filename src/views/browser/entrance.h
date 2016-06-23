@@ -23,16 +23,16 @@
 
 
 
-class KnowModel;
+class tkm_t;
 class QNetworkReply;
 class QSslError;
-class QtSingleApplication;
-class RecordController;
+class sa_t;
+class rctl_t;
 class HidableTabWidget;
-class TreeScreen;
+class ts_t;
 class FindScreen;
 class MetaEditor;
-class MainWindow;
+class wn_t;
 class AppConfig;
 class Record;
 class TreeItem;
@@ -82,10 +82,10 @@ public:
 
 
         Entrance(QString object_name
-            , TreeScreen *_tree_screen
+            , ts_t *_tree_screen
             , FindScreen *_find_screen
             , MetaEditor *_editor_screen      // , RecordController *_record_controller
-            , MainWindow *_main_window
+            , wn_t *_main_window
             , AppConfig &_appconfig, const QString &style_source
             , browser::Profile *_profile
             , Qt::WindowFlags flags
@@ -204,11 +204,11 @@ private:
         //        void setupMenu();
         std::set<Browser *>             _browsers;
         //        ItemsFlat                       *_shadow_branch;
-        TreeScreen                      *_tree_screen;
+        ts_t                      *_tree_screen;
         FindScreen                      *_find_screen;
         MetaEditor                      *_editor_screen;
 //        HidableTabWidget                *_vtab_tree;
-        MainWindow                      *_main_window;
+        wn_t                      *_main_window;
         AppConfig                       &_appconfig;
         // RecordController                *_record_controller;
         QString _style_source;
@@ -220,7 +220,7 @@ private:
         //        DockedWindow *_browser;
         QWidget                         *_hidetitlebar;
         QMetaObject::Connection _home_connection;            // for disconnect
-        friend class QtSingleApplication;
+        friend class sa_t;
     };
 
 }

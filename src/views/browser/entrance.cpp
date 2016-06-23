@@ -568,10 +568,10 @@ namespace browser {
     // }
 
     Entrance::Entrance(QString object_name
-                      , TreeScreen *_tree_screen
+                      , ts_t *_tree_screen
                       , FindScreen *_find_screen // browser::ToolbarSearch *toolbarsearch
                       , MetaEditor *_editor_screen
-                      , MainWindow *_main_window
+                      , wn_t *_main_window
                       , AppConfig   &_appconfig
                       , const QString &style_source
                       , browser::Profile *_profile

@@ -16,7 +16,7 @@ extern AppConfig appconfig;
 extern FixedParameters fixedparameters;
 extern GlobalParameters globalparameters;
 
-AppConfigPageTable::AppConfigPageTable(RecordController *_record_controller, QWidget *parent) : ConfigPage(parent),  _record_controller(_record_controller){
+AppConfigPageTable::AppConfigPageTable(rctl_t *_record_controller, QWidget *parent) : ConfigPage(parent),  _record_controller(_record_controller){
     qDebug() << "Create record table config page";
 
     QStringList all_field_names = fixedparameters._record_field;
@@ -81,7 +81,7 @@ void AppConfigPageTable::setupSignals(void){
     // RecordController *_record_controller = find_object<RecordController>("table_screen_controller");
 
     // При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
-    connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &RecordController::on_recordtable_configchange);
+    connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctl_t::on_recordtable_configchange);
     // connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
 }
 

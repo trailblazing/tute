@@ -11,7 +11,7 @@
 #include "RecordPrint.h"
 
 
-RecordPrint::RecordPrint(RecordScreen *_record_screen) : QDialog(_record_screen){
+RecordPrint::RecordPrint(rs_t *_record_screen) : QDialog(_record_screen){
     setup_ui();
     setup_signals();
     assembly();

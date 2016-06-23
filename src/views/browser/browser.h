@@ -71,9 +71,9 @@ QT_END_NAMESPACE
 class HidableTabWidget;
 // extern Record *default_record;
 class FingScreen;
-class TreeModel;
-class TreeScreen;
-class TreeScreenViewer;
+class tm_t;
+class ts_t;
+class tsv_t;
 struct RecordIndex;
 
 extern const char *profile_storage_name;
@@ -122,10 +122,10 @@ namespace browser {
         Q_OBJECT
 
         public:
-            Browser(TreeScreen          *_tree_screen
+            Browser(ts_t          *_tree_screen
                    , FindScreen        *_find_screen
                    , MetaEditor        *_editor_screen
-                   , MainWindow        *_main_window
+                   , wn_t        *_main_window
                    , Entrance          *_entrance
                    , const QString     &style_source
                    , browser::Profile  *_profile
@@ -203,7 +203,7 @@ namespace browser {
             QStatusBar  *status_bar() const;
             boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordIndex> record_index);
                 //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
-            RecordScreen *record_screen();
+            rs_t *record_screen();
             Entrance    *entrance();
         public slots:
 //            void loadPage(const QString &url) = delete;
@@ -293,10 +293,10 @@ namespace browser {
         private:
 
             bool _is_under_construction = true;
-            TreeScreen          *_tree_screen;
+            ts_t          *_tree_screen;
             FindScreen          *_find_screen;
 
-            MainWindow          *_main_window;
+            wn_t          *_main_window;
 
                 // RecordController    *_record_controller;
 
@@ -336,7 +336,7 @@ namespace browser {
             QWidget             *_centralwidget;
             QVBoxLayout         *_layout;
 
-            RecordScreen        *_record_screen;
+            rs_t        *_record_screen;
             TabWidget           *_tabmanager;
             Entrance            *_entrance;
 

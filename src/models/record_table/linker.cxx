@@ -79,7 +79,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 //	      auto integrity_fix_up_impl =
 	  [&](boost::intrusive_ptr<TreeItem> _parent, const int pos, const int mode) -> boost::intrusive_ptr<Linker> {
 	      boost::intrusive_ptr<Linker> _result(nullptr);
-	      auto child_move_unique =
+
 		// Добавление новой записи
 		// Метод только добавляет во внутреннее представление новые данные,
 		// сохраняет текст файла и обновляет данные на экране.
@@ -90,7 +90,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 		// ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 		// Метод принимает "тяжелый" объект записи
 		// Объект для вставки приходит как незашифрованным, так и зашифрованным
-	      [&](boost::intrusive_ptr<TreeItem> _parent, int pos = 0, int mode = add_new_record_after) -> boost::intrusive_ptr<Linker> {					// , boost::intrusive_ptr<TreeItem>   _host   // child_insert? does not set parent pointer?
+	      auto child_move_unique = [&](boost::intrusive_ptr<TreeItem> _parent, int pos = 0, int mode = add_new_record_after) -> boost::intrusive_ptr<Linker> {					// , boost::intrusive_ptr<TreeItem>   _host   // child_insert? does not set parent pointer?
 		  boost::intrusive_ptr<Linker> result(nullptr);
 			// boost::intrusive_ptr<TreeItem> _child_item(this);
 			// assert(_self != _parent);
@@ -258,6 +258,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 				//		      }
 				//		      integrity_fix_up();   // recursive call
 		      }
+		      assert(_parent == _host_parent);
 		      if(! _host_parent)throw std::runtime_error("child_move_unique : nullptr == _host_parent");
 		      if(! _host_parent->contains_direct(this))throw std::runtime_error("child_move_unique : _host_parent && _host_parent->contains_direct(this) failure");
 		      if(! integrity_external(_host, _host_parent))throw std::runtime_error("child_move_unique : integrity_external failure");
@@ -279,13 +280,16 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 		  _host->linker(this);							// change rvalue to lvalue!!!
 		  if(! _host->linker()){result = false;assert(result);}
 	      }
-	      if(! std::get<HOST_PARENT_LINKER_EXIST>(*_status)()){
+	      if(! std::get<HOST_PARENT_LINKER_EXIST>(*_status)() || _parent != _host_parent){	// (_parent != _host_parent)// to merge
 		  _result = child_move_unique(_parent, pos, mode);
+		  assert(_parent == _host_parent);
 		  if(_result && _host_parent){
 		      if(! _host_parent->contains_direct(this)){result = false;assert(result);}
 		      if(! std::get<HOST_LINKER_IS_THIS>(*_status)()){result = false;assert(result);}
 		      if(! std::get<HOST_PARENT_LINKERS_HAS_THIS>(*_status)()){result = false;assert(result);}
 		  }
+	      }else{
+		  assert(_parent == _host_parent);
 	      }
 	      return _result;
 	  }

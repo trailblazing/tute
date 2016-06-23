@@ -52,7 +52,8 @@ CONFIG  +=  qt      \
         console     \
 #        debug       \
 
-CONFIG  +=  c++11
+CONFIG  +=  c++14
+CONFIG  +=  gnu++14
 CONFIG  +=  staticlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets \
@@ -231,12 +232,12 @@ HEADERS     =   \
     src/controllers/record_table/RecordController.h \
     src/models/record_table/ItemsFlat.h \
     src/models/tree/KnowModel.h \
-    src/views/tree/KnowView.h \
     src/models/record_table/linker.hxx \
     src/models/tree/binder.hxx \
     src/models/tree/treeindex.hxx \
     src/models/record_table/recordindex.hxx \
-    src/utility/util.hxx
+    src/utility/util.hxx \
+    src/views/tree/TreeView.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -359,11 +360,11 @@ SOURCES     =   src/main.cpp \
     src/controllers/record_table/RecordController.cpp \
     src/models/record_table/ItemsFlat.cpp \
     src/models/tree/KnowModel.cpp \
-    src/views/tree/KnowView.cpp \
     src/models/tree/binder.cxx \
     src/models/record_table/linker.cxx \
     src/models/tree/treeindex.cxx \
-    src/models/record_table/recordindex.cxx
+    src/models/record_table/recordindex.cxx \
+    src/views/tree/TreeView.cpp
 #    src/views/browser/cookiejar.cpp \
 
 
@@ -428,7 +429,8 @@ DISTFILES   +=          \
     src/views/browser/Info_mac.plist \
     README.md \
     doc/up_linker.png \
-    doc/binder.png
+    doc/binder.png \
+    Makefile
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \

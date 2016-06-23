@@ -64,7 +64,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 #include "main.h"
 #include "views/tree/TreeScreen.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 #include "models/tree/treeindex.hxx"
 #include "models/tree/KnowModel.h"
 
@@ -109,14 +109,14 @@ namespace browser {
     ToolbarSearch::~ToolbarSearch(){
 	_autosaver->saveIfNeccessary();
     }
-    void ToolbarSearch::save(){
+    void ToolbarSearch:: save(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("toolbarsearch"));
 	settings.setValue(QLatin1String("recentSearches"), _stringlistmodel->stringList());
 	settings.setValue(QLatin1String("maximumSaved"), _maxsavedsearches);
 	settings.endGroup();
     }
-    void ToolbarSearch::load(){
+    void ToolbarSearch:: load(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("toolbarsearch"));
 	QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
@@ -124,12 +124,12 @@ namespace browser {
 	_stringlistmodel->setStringList(list);
 	settings.endGroup();
     }
-    void ToolbarSearch::searchNow(){
+    void ToolbarSearch:: searchNow(){
 	QString search_text = lineEdit()->text();
 
-	auto result_item = globalparameters.find_screen()->find_clicked();
-	TreeScreen *_tree_screen = globalparameters.tree_screen();
-	auto tree_view = _tree_screen->view();
+	auto	result_item = globalparameters.find_screen()->find_clicked();
+	ts_t	*_tree_screen = globalparameters.tree_screen();
+	auto	tree_view = _tree_screen->view();
 	if(! result_item){	//  || 0 == result_item->count_direct()
 	    QUrl url = QUrl(search_text);
 
@@ -170,7 +170,7 @@ namespace browser {
 //            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
 //            try {
-	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item()->parent(), tree_view->current_item());
+	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent());
 //            ->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //                return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();
 //            }));
@@ -187,7 +187,7 @@ namespace browser {
 
 		    tree_index->item_bind(tree_view->current_item()
 					 , url
-					 , std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+					 , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 					 , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
@@ -209,12 +209,12 @@ namespace browser {
 		    if(newList.contains(search_text))newList.removeAt(newList.indexOf(search_text));
 		    newList.prepend(search_text);
 		    if(newList.size() >= _maxsavedsearches)newList.removeLast();
-		    if(! QtSingleApplication::instance()->privateBrowsing()){
+		    if(! sa_t::instance()->privateBrowsing()){
 			_stringlistmodel->setStringList(newList);
 			_autosaver->changeOccurred();
 		    }
-		    QUrl url(QLatin1String("https://www.google.com/search"));
-		    QUrlQuery url_query;
+		    QUrl	url(QLatin1String("https://www.google.com/search"));
+		    QUrlQuery	url_query;
 
 			//                url_query.addQueryItem(QLatin1String("q"), searchText);
 		    url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
@@ -225,22 +225,22 @@ namespace browser {
 		    url.setQuery(url_query);
 		    url.setFragment("q=" + search_text);
 //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		    tree_index->item_bind(tree_view->current_item(), url, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+		    tree_index->item_bind(tree_view->current_item(), url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 		}
 	    }
 	}else if(result_item != tree_view->current_item()){
 	    auto index_result = tree_view->source_model()->index(result_item);
 	    if(static_cast<QModelIndex>(index_result).isValid()){
-		auto it = tree_view->source_model()->item(index_result);
-		tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
+		auto it = tree_view->source_model()->child(index_result);
+		tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
 		tree_view->index_invoke(globalparameters.entrance()->activated_browser()->tabmanager()->currentWebView(), index_result);
 	    }
 	}else{
-	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item->parent(), result_item));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
+	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
 	}
     }
-    void ToolbarSearch::aboutToShowMenu(){
+    void ToolbarSearch:: aboutToShowMenu(){
 	lineEdit()->selectAll();
 	QMenu *m = menu();
 	m->clear();
@@ -259,7 +259,7 @@ namespace browser {
 	m->addSeparator();
 	m->addAction(tr("Clear Recent Searches"), this, SLOT(clear()));
     }
-    void ToolbarSearch::triggeredMenuAction(QAction *action){
+    void ToolbarSearch:: triggeredMenuAction(QAction *action){
 	QVariant v = action->data();
 	if(v.canConvert<QString>()){
 	    QString text = v.toString();
@@ -267,14 +267,14 @@ namespace browser {
 	    searchNow();
 	}
     }
-    void ToolbarSearch::clear(){
+    void ToolbarSearch:: clear(){
 	_stringlistmodel->setStringList(QStringList());
 	_autosaver->changeOccurred();;
     }
-    void ToolbarSearch::text(const QString &text){
+    void ToolbarSearch:: text(const QString &text){
 	_findtext->setText(text);
     }
-    QString ToolbarSearch::text() const {
+    QString ToolbarSearch:: text() const {
 	return _findtext->text();
     }
 }

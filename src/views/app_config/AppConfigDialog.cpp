@@ -15,7 +15,7 @@
 extern AppConfig appconfig;
 
 
-AppConfigDialog::AppConfigDialog(RecordController *_record_controller, QString firstPageName = "") : QWidget(), _record_controller(_record_controller)
+AppConfigDialog::AppConfigDialog(rctl_t *_record_controller, QString firstPageName = "") : QWidget(), _record_controller(_record_controller)
 {
     if(appconfig.interface_mode() == "mobile") { // if(true)
         qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();

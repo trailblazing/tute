@@ -8,17 +8,17 @@
 #include "models/tree/binder.hxx"
 
 
-class RecordView;
+class rv_t;
 
 class VerticalScrollArea : public QScrollArea {
     Q_OBJECT
 
     //    std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *> > > _interface;
-    RecordView *_record_view;
+    rv_t *_record_view;
     public:
 
 
-        explicit VerticalScrollArea(RecordView *_record_view, QWidget *parent = 0);
+        explicit VerticalScrollArea(rv_t *_record_view, QWidget *parent = 0);
 
         virtual bool eventFilter(QObject *obj, QEvent *ev);
     protected:

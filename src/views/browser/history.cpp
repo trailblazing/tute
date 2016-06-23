@@ -189,7 +189,7 @@ namespace browser {
 
     void HistoryManager::addHistoryItem(const HistoryItem &item)
     {
-        if(QtSingleApplication::instance()->privateBrowsing())
+        if(sa_t::instance()->privateBrowsing())
             return;
 
         _history.prepend(item);
@@ -480,7 +480,7 @@ namespace browser {
 
             case Qt::DecorationRole:
                 if(index.column() == 0) {
-                    return QtSingleApplication::instance()->icon(item._url);
+                    return sa_t::instance()->icon(item._url);
                 }
         }
 
@@ -667,7 +667,7 @@ namespace browser {
     bool HistoryMenu::prePopulated()
     {
         if(!_history) {
-            _history = QtSingleApplication::historyManager();
+            _history = sa_t::historyManager();
             _historymenumodel = new HistoryMenuModel(_history->historyTreeModel(), this);
             setModel(_historymenumodel);
         }
@@ -732,7 +732,7 @@ namespace browser {
         HistoryManager *history = setHistory;
 
         if(!history)
-            history = QtSingleApplication::historyManager();
+            history = sa_t::historyManager();
 
         setupUi(this);
         tree->setUniformRowHeights(true);

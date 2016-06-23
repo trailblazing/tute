@@ -436,22 +436,22 @@ void GlobalParameters::find_splitter(QSplitter *_find_splitter) {
     this->_find_splitter = _find_splitter;
 }
 
-void GlobalParameters::h_right_splitter(QSplitter *h_right_splitter)
+void GlobalParameters::h_record_splitter(QSplitter *h_right_splitter)
 {
     _h_right_splitter = h_right_splitter;
 }
 
-QSplitter *GlobalParameters::h_right_splitter()
+QSplitter *GlobalParameters::h_record_splitter()
 {
     return _h_right_splitter;
 }
 
-void GlobalParameters::h_left_splitter(QSplitter *vleftsplitter)
+void GlobalParameters::h_tree_splitter(QSplitter *vleftsplitter)
 {
     _v_left_splitter = vleftsplitter;
 }
 
-QSplitter *GlobalParameters::h_left_splitter()
+QSplitter *GlobalParameters::h_tree_splitter()
 {
     return _v_left_splitter;
 }
@@ -494,12 +494,12 @@ browser::DownloadManager *GlobalParameters::download_manager()
     return _download_manager;
 }
 
-void GlobalParameters::tree_screen(TreeScreen *point)
+void GlobalParameters::tree_screen(ts_t *point)
 {
     _tree_screen = point;
 }
 
-TreeScreen *GlobalParameters::tree_screen()
+ts_t *GlobalParameters::tree_screen()
 {
     return _tree_screen;
 }
@@ -516,12 +516,12 @@ void GlobalParameters::entrance(browser::Entrance *&b)
 }
 
 
-void GlobalParameters::push_record_screen(RecordScreen *point)
+void GlobalParameters::push_record_screen(rs_t *point)
 {
     _table_screens.push_back(point);
 }
 
-std::vector<RecordScreen *> GlobalParameters::record_screens()
+std::vector<rs_t *> GlobalParameters::record_screens()
 {
     return _table_screens;
 }

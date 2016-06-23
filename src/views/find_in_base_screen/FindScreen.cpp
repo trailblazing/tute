@@ -30,7 +30,7 @@
 #include "libraries/GlobalParameters.h"
 #include "views/tree/TreeScreen.h"
 #include "libraries/FlatControl.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 #include "views/tree/TreeScreen.h"
 #include "views/browser/entrance.h"
 #include "views/browser/toolbarsearch.h"
@@ -46,7 +46,7 @@ extern GlobalParameters globalparameters;
 extern const char *global_root_id;
 
 FindScreen::FindScreen(QString object_name
-                      , TreeScreen *_tree_screen	// boost::intrusive_ptr<TreeItem> _selected_branch_root
+                      , ts_t *_tree_screen	// boost::intrusive_ptr<TreeItem> _selected_branch_root
                       , QWidget    *parent)
     : QWidget(parent)
       , _tree_screen(_tree_screen)
@@ -555,7 +555,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
         //// Очищается таблица результата поиска
         // _findtable->re_initialize();
 
-    const KnowModel *_global_source_model = _tree_screen->view()->know_model_board();
+    const tkm_t *_global_source_model = _tree_screen->view()->know_model_board();
         // Выясняется ссылка на модель дерева данных
     auto _current_model = [&](){
             return _tree_screen->view()->source_model();
@@ -862,10 +862,10 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                 ////        auto _start_item = _start_item;
                 // Перебираются записи таблицы
                 for(int i = 0; i < _start_item->count_direct(); i ++){
-                    auto candidate = _start_item->item_direct(i);
+                    auto candidate = _start_item->child_direct(i);
                         // Обновляется линейка наполняемости
                     _progress->setValue(++ _total_progress_counter);
-                    QtSingleApplication::instance()->processEvents();
+                    sa_t::instance()->processEvents();
                     if(! _progress->wasCanceled()){
                         // if(_progress->wasCanceled()) {
                         // _cancel_flag = 1;
@@ -895,11 +895,11 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                             if(_search_area[key] == true){
                                 if(key != "text"){
                                         // Поиск в обычном поле
-                                    inspect_text = _start_item->item_direct(i)->_field_data[key];
+                                    inspect_text = _start_item->child_direct(i)->_field_data[key];
                                     iteration_search_result[key] = find_in_text_process(inspect_text);
                                 }else{
                                         // Поиск в тексте записи
-                                    if(_start_item->item_direct(i)->file_exists())inspect_text = _start_item->text(i);
+                                    if(_start_item->child_direct(i)->file_exists())inspect_text = _start_item->text(i);
                                     else inspect_text = QString();
                                     QTextDocument textdoc;
                                     textdoc.setHtml(inspect_text);

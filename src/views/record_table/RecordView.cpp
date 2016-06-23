@@ -25,7 +25,7 @@
 #include "libraries/WindowSwitcher.h"
 #include "controllers/record_table/RecordController.h"
 #include "models/record_table/ItemsFlat.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 #include "views/record_table/verticalscrollarea.h"
 #include "libraries/FixedParameters.h"
 
@@ -108,7 +108,7 @@ void StarRating::paint(QPainter *painter, const QRect &rect, const QPalette &pal
 //! [2]
 //!
 
-ViewDelegation::ViewDelegation(RecordView *view) : QStyledItemDelegate(view), _view(view){
+ViewDelegation::ViewDelegation(rv_t *view) : QStyledItemDelegate(view), _view(view){
     auto column_count = appconfig.record_table_show_fields().size();
     for(int i = 0; i < column_count; i ++){
         auto header_title = _view->record_controller()->source_model()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
@@ -197,9 +197,9 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
         editor->raise();
         editor->show();
         connect(editor, &FlatToolButtonRating::clicked, this, &ViewDelegation::commitAndCloseEditor);
-        connect(editor, &FlatToolButtonRating::clicked, _view->record_controller(), &RecordController::close_context);
+        connect(editor, &FlatToolButtonRating::clicked, _view->record_controller(), &rctl_t::close_context);
         connect(editor, &FlatToolButtonRating::editingFinished, this, &ViewDelegation::commitAndCloseEditor);
-        connect(editor, &FlatToolButtonRating::editingFinished, _view->record_controller(), &RecordController::close_context);
+        connect(editor, &FlatToolButtonRating::editingFinished, _view->record_controller(), &rctl_t::close_context);
 
 //        _view->record_controller()->close_context();
         return editor;
@@ -254,7 +254,7 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 // Виджет, отображащий список записей в ветке
 
 
-RecordView::RecordView(RecordScreen *record_screen, RecordController *record_controller)
+rv_t::rv_t(rs_t *record_screen, rctl_t *record_controller)
     : QTableView(record_screen)
       , _context_menu(new QMenu(this))
       , _record_screen(record_screen)
@@ -280,14 +280,14 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
     auto init = [&](void) -> void {		// RecordView::
             auto setup_signals = [&](void) -> void {				// RecordView::
                         // Сигнал чтобы показать контекстное меню по правому клику на списке записей
-                    connect(this, &RecordView::customContextMenuRequested, this, &RecordView::on_custom_context_menu_requested);
+		    connect(this, &rv_t::customContextMenuRequested, this, &rv_t::on_custom_context_menu_requested);
 
                         // Соединение сигнал-слот чтобы показать контекстное меню по долгому нажатию
-                    connect(this, &RecordView::tap_and_hold_gesture_finished, this, &RecordView::on_custom_context_menu_requested);
+		    connect(this, &rv_t::tap_and_hold_gesture_finished, this, &rv_t::on_custom_context_menu_requested);
 
                         // Сигнал чтобы открыть на редактирование параметры записи при двойном клике
                         // Signal to open for editing the parameters of the recording double click
-                    connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
+		    connect(this, &rv_t::doubleClicked, this, &rv_t::on_doubleclick);
 // connect(this, &RecordView::doubleClicked, _record_controller, &RecordController::close_context); // _tabmanager
 
                         // if(appconfig.interface_mode() == "desktop")
@@ -296,7 +296,7 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
                         // Для мобильного режима должен работать сигнал clicked, так как если засветка уже стоит на строке с записью, должна открыться запись
                         // а в десктопном режиме этого не должно происходить, потому что запись уже видна на экране
                         // if(appconfig.getInterfaceMode() == "mobile")
-                    connect(this, &RecordView::clicked, this, &RecordView::on_click);
+		    connect(this, &rv_t::clicked, this, &rv_t::on_click);
 
                         // RecordScreen *_record_screen = qobject_cast<RecordScreen *>(parent());
 
@@ -313,15 +313,15 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
                         });
 
                         // Сигналы для обновления панели инструментов
-                    connect(this, &RecordView::activated, _record_screen, &RecordScreen::tools_update);
-                    connect(this, &RecordView::clicked, _record_screen, &RecordScreen::tools_update);
-                    connect(this, &RecordView::doubleClicked, _record_screen, &RecordScreen::tools_update);
-                    connect(this, &RecordView::entered, _record_screen, &RecordScreen::tools_update);
-                    connect(this, &RecordView::pressed, _record_screen, &RecordScreen::tools_update);
-                    connect(QApplication::clipboard(), &QClipboard::dataChanged, _record_screen, &RecordScreen::tools_update);
+		    connect(this, &rv_t::activated, _record_screen, &rs_t::tools_update);
+		    connect(this, &rv_t::clicked, _record_screen, &rs_t::tools_update);
+		    connect(this, &rv_t::doubleClicked, _record_screen, &rs_t::tools_update);
+		    connect(this, &rv_t::entered, _record_screen, &rs_t::tools_update);
+		    connect(this, &rv_t::pressed, _record_screen, &rs_t::tools_update);
+		    connect(QApplication::clipboard(), &QClipboard::dataChanged, _record_screen, &rs_t::tools_update);
 
-                    connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &RecordView::on_section_moved);
-                    connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &RecordView::on_section_resized);
+		    connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &rv_t::on_section_moved);
+		    connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &rv_t::on_section_resized);
                 };
 
 
@@ -437,7 +437,7 @@ RecordView::RecordView(RecordScreen *record_screen, RecordController *record_con
 }
 
 
-RecordView::~RecordView(){
+rv_t::~rv_t(){
         // delete
     _context_menu->deleteLater();
         // delete
@@ -449,13 +449,13 @@ RecordView::~RecordView(){
 // }
 
 
-RecordController *RecordView::record_controller(){return _record_controller;}
+rctl_t *rv_t::record_controller(){return _record_controller;}
 
 
-QModelIndex RecordView::previous_index() const {
+QModelIndex rv_t::previous_index() const {
     return _previous_index;
 }
-void RecordView::restore_header_state(void){
+void rv_t::restore_header_state(void){
         // Видимость горизонтальных заголовков
     if(appconfig.record_table_show_horizontal_headers() == false)horizontalHeader()->hide();
     else horizontalHeader()->show();
@@ -489,14 +489,14 @@ void RecordView::restore_header_state(void){
 
 
 // Слот клика по записи. Принимает индекс Proxy модели
-void RecordView::on_click(const QModelIndex &proxy_index){
+void rv_t::on_click(const QModelIndex &proxy_index){
     if(proxy_index.isValid() && _previous_index != proxy_index){
         _previous_index = proxy_index;
         _record_controller->item_click(index_proxy(proxy_index));
     }
 }
 // Слот, срабатывающий при нажатии кнопки редактирования записи
-void RecordView::on_doubleclick(const QModelIndex &index){
+void rv_t::on_doubleclick(const QModelIndex &index){
     qDebug() << "In RecordTableView::editFieldContext";
 
         // Получение индекса выделенного элемента
@@ -515,7 +515,7 @@ void RecordView::on_doubleclick(const QModelIndex &index){
     }
 }
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
-void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex){
+void rv_t::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex){
     Q_UNUSED(logicalIndex);
     if(! _enable_move_section)return;
         // Если была включена сортировка
@@ -553,7 +553,7 @@ void RecordView::on_section_moved(int logicalIndex, int oldVisualIndex, int newV
 
     save_column_width();
 }
-void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize){
+void rv_t::on_section_resized(int logicalIndex, int oldSize, int newSize){
     Q_UNUSED(logicalIndex);
     Q_UNUSED(oldSize);
     Q_UNUSED(newSize);
@@ -571,7 +571,7 @@ void RecordView::on_section_resized(int logicalIndex, int oldSize, int newSize){
 
 
 // Открытие контекстного меню в таблице конечных записей
-void RecordView::on_custom_context_menu_requested(const QPoint &pos){
+void rv_t::on_custom_context_menu_requested(const QPoint &pos){
     qDebug() << "In on_customContextMenuRequested";
         // auto p = parent();
         // RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
@@ -591,7 +591,7 @@ void RecordView::on_custom_context_menu_requested(const QPoint &pos){
     _context_menu->exec(viewport()->mapToGlobal(pos));
 }
 // Слот, срабатывающий при нажатии кнопки редактирования записи
-void RecordView::edit_field_context(void){
+void rv_t::edit_field_context(void){
     qDebug() << "In RecordView::edit_field_context";
 
         // Получение индекса выделенного элемента
@@ -669,7 +669,7 @@ void RecordView::edit_field_context(void){
 // return index;
 // }
 
-boost::intrusive_ptr<TreeItem> RecordView::current_item() const {
+boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
     auto it = _record_controller->source_model()->current_item();
     if(it){
         auto posproxy = _record_controller->index<pos_proxy>(it);
@@ -678,11 +678,11 @@ boost::intrusive_ptr<TreeItem> RecordView::current_item() const {
     }
     return it;
 }
-bool RecordView::is_selected_set_to_top(void){
+bool rv_t::is_selected_set_to_top(void){
     if(selection_first<pos_proxy>() == pos_proxy(0))return true;
     else return false;
 }
-bool RecordView::is_selected_set_to_bottom(void){
+bool rv_t::is_selected_set_to_bottom(void){
     if((int)selection_first<pos_proxy>() == model()->rowCount() - 1)return true;
     else return false;
 }
@@ -722,14 +722,14 @@ bool RecordView::is_selected_set_to_bottom(void){
 
 // }
 
-bool RecordView::eventFilter(QObject *obj, QEvent *event){
+bool rv_t::eventFilter(QObject *obj, QEvent *event){
     if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton){
         on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
     }
     return QTableView::eventFilter(obj, event);
 }
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
-bool RecordView::event(QEvent *event){
+bool rv_t::event(QEvent *event){
     if(event->type() == QEvent::Gesture){
         qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
 
@@ -741,21 +741,21 @@ bool RecordView::event(QEvent *event){
 }
 // Обработчик жестов
 // Вызывается из обработчика событий
-bool RecordView::gesture_event(QGestureEvent *event){
+bool rv_t::gesture_event(QGestureEvent *event){
     qDebug() << "In gestureEvent()" << event;
     if(QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))tap_and_hold_gesture_triggered(static_cast<QTapAndHoldGesture *>(gesture));
     return true;
 }
 // Обработчик жеста TapAndHoldGesture
 // Вызывается из обработчика жестов
-void RecordView::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
+void rv_t::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
     if(gesture->state() == Qt::GestureFinished)
                 if(globalparameters.target_os() == "android")emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
 }
 // еакция на нажатие кнопок мышки
-void RecordView::mousePressEvent(QMouseEvent *event){
-    TreeScreen *_tree_screen = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
+void rv_t::mousePressEvent(QMouseEvent *event){
+    ts_t *_tree_screen = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
 //    // get the buttons type
 //    Qt::MouseButtons mouse_button = event->buttons();
 
@@ -809,7 +809,7 @@ void RecordView::mousePressEvent(QMouseEvent *event){
 // boost::intrusive_ptr<TreeIndex> tree_index;
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
 
-        tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it));
+	tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
         assert(tree_view->current_item() == it);
         assert(current_item() == it);
     }
@@ -821,7 +821,7 @@ void RecordView::mousePressEvent(QMouseEvent *event){
     QTableView::mousePressEvent(event);
 }
 // еакция на движение мышкой
-void RecordView::mouseMoveEvent(QMouseEvent *event){
+void rv_t::mouseMoveEvent(QMouseEvent *event){
         // Если при движении нажата левая кнопка мышки
     if(event->buttons() & Qt::LeftButton){
         // Выясняется расстояние от места начала нажатия
@@ -833,7 +833,7 @@ void RecordView::mouseMoveEvent(QMouseEvent *event){
     QTableView::mouseMoveEvent(event);
 }
 // еакция на отпускание клавиши мышки
-void RecordView::mouseReleaseEvent(QMouseEvent *event){
+void rv_t::mouseReleaseEvent(QMouseEvent *event){
 //    Qt::MouseButtons mouse_button = event->buttons();
     QModelIndex next_index = indexAt(event->pos());
     if(next_index.isValid()){
@@ -852,12 +852,12 @@ void RecordView::mouseReleaseEvent(QMouseEvent *event){
     }
     QTableView::mouseReleaseEvent(event);
 }
-void RecordView::wheelEvent(QWheelEvent *event){	// does not work
+void rv_t::wheelEvent(QWheelEvent *event){	// does not work
     x -= (event->delta() / 120) * 10;
     verticalScrollBar()->setValue(x);
 }
 // Начало переноса записи
-void RecordView::start_drag(){
+void rv_t::start_drag(){
     qDebug() << "Start record drag\n";
         // Если действительно выбрана строка
     if(currentIndex().isValid()){
@@ -886,7 +886,7 @@ void RecordView::start_drag(){
         }
     }
 }
-ClipboardRecords *RecordView::get_selected_records(void){
+ClipboardRecords *rv_t::get_selected_records(void){
         // Получение списка Item-элементов, подлежащих копированию
     QModelIndexList indexes_for_copy = selectionModel()->selectedIndexes();
 
@@ -921,7 +921,7 @@ ClipboardRecords *RecordView::get_selected_records(void){
     return clipboardRecords;
 }
 // Переопределенный сигнал (virtual protected slot)
-void RecordView::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected){
+void rv_t::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected){
         // qDebug() << "RecordView::selectionChanged()";
 
         // emit list_selection_changed(selected, deselected);
@@ -930,7 +930,7 @@ void RecordView::selectionChanged(const QItemSelection &selected, const QItemSel
     QTableView::selectionChanged(selected, deselected);
 }
 // Сохранение ширины колонок в конфигфайл
-void RecordView::save_column_width(void){
+void rv_t::save_column_width(void){
         // Выясняется количество полей
     int count = appconfig.record_table_show_fields().size();
 
@@ -945,7 +945,7 @@ void RecordView::save_column_width(void){
         // qDebug() << "Save column width " << columnWidthList;
 }
 // Восстановление ширины колонок из конфигфайла
-void RecordView::restore_column_width(void){
+void rv_t::restore_column_width(void){
     QStringList columnWidthList = appconfig.record_table_fields_width();
         // qDebug() << "Restore column width " << columnWidthList;
         // Восстанавливается ширина всех колонок без последней
@@ -987,7 +987,7 @@ void RecordView::restore_column_width(void){
 
 
 // if pin and title width beyond container width, when click title item, widget will move left, pin column will disappeared
-void RecordView::resizeEvent(QResizeEvent *e){
+void rv_t::resizeEvent(QResizeEvent *e){
         // Q_UNUSED(e)
 
         // int vscrollbar_width = this->verticalScrollBar()->width();
@@ -1023,25 +1023,25 @@ void RecordView::resizeEvent(QResizeEvent *e){
     }
     QTableView::resizeEvent(e);
 }
-template<>pos_proxy RecordView::selection_first<pos_proxy>() const {
+template<>pos_proxy rv_t::selection_first<pos_proxy>() const {
         // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     if(selectItems.isEmpty())return pos_proxy(- 1);		// Если ничего не выделено
     else return pos_proxy((selectItems.at(0)).row());		// Номер первого выделенного элемента
 }
-template<>pos_source RecordView::selection_first<pos_source>() const {
+template<>pos_source rv_t::selection_first<pos_source>() const {
     pos_proxy pos_proxy_ = selection_first<pos_proxy>();
 
     return _record_controller->index<pos_source>(pos_proxy_);
 }
-template<>id_value RecordView::selection_first<id_value>() const {
+template<>id_value rv_t::selection_first<id_value>() const {
         // Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     if(selectItems.isEmpty())return id_value("");		// Если ничего не выделено
 
     return id_value(selectItems.at(0).data(RECORD_ID_ROLE).toString());
 }
-template<>index_proxy RecordView::selection_first<index_proxy>() const {
+template<>index_proxy rv_t::selection_first<index_proxy>() const {
     pos_proxy pos_proxy_ = selection_first<pos_proxy>();
     if(pos_proxy_ == - 1)return index_proxy(QModelIndex());
         // QModelIndex index = recordProxyModel->index( pos, 0 );
@@ -1049,7 +1049,7 @@ template<>index_proxy RecordView::selection_first<index_proxy>() const {
 
     return index;
 }
-template<>index_source RecordView::selection_first<index_source>() const {
+template<>index_source rv_t::selection_first<index_source>() const {
     index_proxy proxy_index = selection_first<index_proxy>();
     if(! ((QModelIndex)proxy_index).isValid())return index_source(QModelIndex());
         // QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
@@ -1057,6 +1057,6 @@ template<>index_source RecordView::selection_first<index_source>() const {
 
     return index;
 }
-template<>boost::intrusive_ptr<TreeItem> RecordView::selection_first<boost::intrusive_ptr<TreeItem> >() const {
+template<>boost::intrusive_ptr<TreeItem> rv_t::selection_first<boost::intrusive_ptr<TreeItem> >() const {
     return _record_controller->source_model()->item(selection_first<pos_source>());
 }

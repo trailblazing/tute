@@ -7,13 +7,13 @@
 #include <QGroupBox>
 
 #include "ConfigPage.h"
-class  RecordController;
+class  rctl_t;
 
 class AppConfigPageTable : public ConfigPage {
     Q_OBJECT
 
 public:
-    AppConfigPageTable(RecordController *_record_controller, QWidget *parent = 0);
+    AppConfigPageTable(rctl_t *_record_controller, QWidget *parent = 0);
     int apply_changes(void);
 
 signals:
@@ -35,7 +35,7 @@ protected:
 
     void setupSignals(void);
 
-    RecordController *_record_controller;
+    rctl_t *_record_controller;
 };
 
 

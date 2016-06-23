@@ -228,7 +228,7 @@ void ClipboardBranch::branch_push(boost::intrusive_ptr<TreeIndex> _modelindex	//
                 // Флаги на основе состояния подветок
             for(int i = 0; i < item->count_direct(); i ++){	// foreach(QStringList curr_absolute_path, sub_branches_absolute_path)
                 if(	// _know_model_board->item(curr_absolute_path)
-                    item->item_direct(i)->field<crypt_type>() == "1"){	// boost::mpl::c_str < crypt_type > ::value
+                    item->child_direct(i)->field<crypt_type>() == "1"){	// boost::mpl::c_str < crypt_type > ::value
                     encrypt_presence = true;
                 }else{
                     nocrypt_presence = true;

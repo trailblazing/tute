@@ -1354,7 +1354,7 @@ boost::intrusive_ptr<const TreeItem> TreeItem::is_ancestor_of(const std::functio
 
 		return find_item;
 	    }else{
-		for(int i = 0; i < _it->count_direct(); i ++)item_recurse(_it->item_direct(i), _equal, 1);
+		for(int i = 0; i < _it->count_direct(); i ++)item_recurse(_it->child_direct(i), _equal, 1);
 		return find_item;
 	    }
 	};
@@ -1751,7 +1751,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::sibling() const {
     if(p){
 	auto sibling_order_this = p->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == this->linker() && il->host() == this && il->host_parent() == p;});
 	if(sibling_order_this != 0 && sibling_order_this != - 1){
-	    r = p->item_direct(sibling_order_this - 1);
+	    r = p->child_direct(sibling_order_this - 1);
 	}
     }
     return r;
@@ -2088,7 +2088,7 @@ QList<QStringList> TreeItem::path_children_all(QString field_name) const {
 
 	// Возвращает массив указанных полей всех подветок, которые содержит ветка
 	// Внутренняя рекурсивная функция
-    std::function<QList<QStringList> (boost::intrusive_ptr<const TreeItem> item, QString field_name, int mode)> path_children_all_as_field_impl
+    std::function<QList<QStringList> (boost::intrusive_ptr<const TreeItem>, QString, int)> path_children_all_as_field_impl
 	= [&](boost::intrusive_ptr<const TreeItem> item, QString field_name, int mode) -> QList<QStringList>  {				// const
 	    static QList<QStringList> path_list;
 		// Если дана команда очистить список путей
@@ -2098,7 +2098,7 @@ QList<QStringList> TreeItem::path_children_all(QString field_name) const {
 		return QList<QStringList>();
 	    }
 	    for(int i = 0; i < item->count_direct(); i ++){
-		auto it = item->item_direct(i);
+		auto it = item->child_direct(i);
 		QStringList path = it->path_list(field_name);
 		path_list << path;
 		path_children_all_as_field_impl(it, field_name, 1);													// 2?
@@ -2162,7 +2162,7 @@ void TreeItem::to_encrypt(void){
 	// _record_table->
     ItemsFlat::to_encrypt();
 	// Шифрация подветок
-    for(int i = 0; i < count_direct(); i ++)item_direct(i)->to_encrypt();
+    for(int i = 0; i < count_direct(); i ++)child_direct(i)->to_encrypt();
     if(is_lite())Record::to_encrypt_and_save_lite();
     else Record::to_encrypt_and_save_fat();
 }
@@ -2190,7 +2190,7 @@ void TreeItem::to_decrypt(void){
     ItemsFlat::to_decrypt();
 	// Дешифрация подветок
     for(int i = 0; i < count_direct(); i ++){
-	item_direct(i)->to_decrypt();
+	child_direct(i)->to_decrypt();
     }
     if(is_lite())Record::to_decrypt_and_save_lite();
     else Record::to_decrypt_and_save_fat();
@@ -2676,7 +2676,7 @@ QDomElement TreeItem::dom_from_treeitem(){
 // }
 
 
-boost::intrusive_ptr<TreeItem> TreeItem::item() const {
+boost::intrusive_ptr<TreeItem> TreeItem::host() const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     if(_binder){
 	result = _binder->host();

@@ -10,13 +10,13 @@
 
 
 class RecordProxyModel;
-class RecordScreen;
+class rs_t;
 
 class RecordPrint : public QDialog {
     Q_OBJECT
 
     public:
-        RecordPrint(RecordScreen *_record_screen = 0);
+        RecordPrint(rs_t *_record_screen = 0);
         virtual ~RecordPrint();
 
         void setModel(RecordProxyModel *iModel);

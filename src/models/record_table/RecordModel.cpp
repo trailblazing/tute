@@ -25,13 +25,13 @@
 #include "models/record_table/RecordProxyModel.h"
 #include "views/browser/entrance.h"
 
-extern FixedParameters fixedparameters;
-extern AppConfig appconfig;
+extern FixedParameters	fixedparameters;
+extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
 
 pages_container::pages_container(browser::TabWidget *_tabmanager)
     : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
-        // , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
+	// , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
 {}
 
 
@@ -245,119 +245,119 @@ pages_container::~pages_container(){
 // }
 
 // Конструктор модели
-RecordModel::RecordModel(RecordController       *_record_controller	// TreeScreen             *_tree_screen    //, FindScreen           *_find_screen    //,
+RecordModel::RecordModel(rctl_t       *_record_controller	// TreeScreen             *_tree_screen    //, FindScreen           *_find_screen    //,
 //                        , RecordScreen          *_record_screen
-                        , browser::TabWidget    *_tabmanager)
+			, browser::TabWidget    *_tabmanager)
     : QAbstractTableModel(_record_controller)	// _record_screen
       , pages_container(_tabmanager)
       , _record_controller(_record_controller){
-        // _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
-        // _browser_pages->root_item()->field("id", "0");  // get_unical_id()
-        // _browser_pages->root_item()->field("name", "_shadow_branch");
+	// _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
+	// _browser_pages->root_item()->field("id", "0");  // get_unical_id()
+	// _browser_pages->root_item()->field("name", "_shadow_branch");
 
-        // init_source_model(_record_controller, _record_screen, _main_window, _editor_screen);
+	// init_source_model(_record_controller, _record_screen, _main_window, _editor_screen);
 
-        // setObjectName(screen_name + "_source_model");
+	// setObjectName(screen_name + "_source_model");
 
-        // При создании модели она должна брать данные как минимум из
-        // пустой таблицы данных
-        // When you create a model, it has to take the data from at least
-        // Empty data table
-        // table = new RecordTableData();
+	// При создании модели она должна брать данные как минимум из
+	// пустой таблицы данных
+	// When you create a model, it has to take the data from at least
+	// Empty data table
+	// table = new RecordTableData();
 
-        // return;
+	// return;
 }
 // Деструктор модели
 RecordModel::~RecordModel(){
-        // delete _browser_pages;   // current it created from tabmanager
+	// delete _browser_pages;   // current it created from tabmanager
     return;
 }
 // Предоставление данных табличной модели
 // Provide tabular data model
-QVariant RecordModel::data(const QModelIndex &index, int role) const {
-        //// Если таблица данных не создана
-        // if(count() == 0)    // if(!browser_pages())    // if(!_table)
-        // return QVariant();
-        // Если таблица пустая
+QVariant RecordModel:: data(const QModelIndex &index, int role) const {
+	//// Если таблица данных не создана
+	// if(count() == 0)    // if(!browser_pages())    // if(!_table)
+	// return QVariant();
+	// Если таблица пустая
     if(0 == count())	// if(_table->size() == 0)
-                return QVariant();
-        // Если индекс недопустимый, возвращается пустой объект
+		return QVariant();
+	// Если индекс недопустимый, возвращается пустой объект
     if(! index.isValid())return QVariant();
-        // qDebug() << "RecordTableModel::data(), row:" << index.row() << " column " << index.column();
-        // Если запрашивается текст строки для отрисовки или для редактирования
+	// qDebug() << "RecordTableModel::data(), row:" << index.row() << " column " << index.column();
+	// Если запрашивается текст строки для отрисовки или для редактирования
     if(role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE || role == Qt::UserRole){
-        QStringList show_fields = appconfig.record_table_show_fields();
-        // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
-        if(index.column() < show_fields.size()){
-            QString field_name = show_fields.value(index.column());
+	QStringList show_fields = appconfig.record_table_show_fields();
+	// Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
+	if(index.column() < show_fields.size()){
+	    QString field_name = show_fields.value(index.column());
 
-            QString field = item(pos_source(index.row()))->_field_data[field_name];
-                // Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
-                // Преобразование возможно только для отображаемой в таблице информации
-            if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < ctime_type >::value){
-                // Преобразование временного штампа в дату и время
-                QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
-                if(appconfig.enable_custom_datetime_format() == false)return fieldDateTime.toString(Qt::SystemLocaleDate);
-                else return fieldDateTime.toString(appconfig.custom_datetime_format());
-            }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){	// "hasAttach"   // Наличие аттачей
-                if(field == "0")return "";	// Если аттачей нет, выводится пустая строка. Это повышает читабельность
-                else return tr("Yes");	// На русский перевести как "Есть"
-            }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < attach_count_type >::value){	// "attachCount"   // Количество аттачей
-                if(field == "0")return "";	// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
-                else return field;
-            }else if(role == Qt::UserRole || role == Qt::EditRole){	// just a test
-                StarRating star_rating = qvariant_cast<StarRating>(index.data());
+	    QString field = item(pos_source(index.row()))->_field_data[field_name];
+		// Некоторые данные при отрисовке в таблице преобразуются в "экранные" представления
+		// Преобразование возможно только для отображаемой в таблице информации
+	    if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < ctime_type >::value){
+		// Преобразование временного штампа в дату и время
+		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
+		if(appconfig.enable_custom_datetime_format() == false)return fieldDateTime.toString(Qt::SystemLocaleDate);
+		else return fieldDateTime.toString(appconfig.custom_datetime_format());
+	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){	// "hasAttach"   // Наличие аттачей
+		if(field == "0")return "";	// Если аттачей нет, выводится пустая строка. Это повышает читабельность
+		else return tr("Yes");	// На русский перевести как "Есть"
+	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < attach_count_type >::value){	// "attachCount"   // Количество аттачей
+		if(field == "0")return "";	// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
+		else return field;
+	    }else if(role == Qt::UserRole || role == Qt::EditRole){	// just a test
+		StarRating star_rating = qvariant_cast<StarRating>(index.data());
 
-                // pixmap.load(":/resource/pic/butterfly-right.svg");
-                return QVariant::fromValue(star_rating);// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
-            }else return field;
-        }
+		// pixmap.load(":/resource/pic/butterfly-right.svg");
+		return QVariant::fromValue(star_rating);// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
+	    }else return field;
+	}
     }
     if(role == RECORD_ID_ROLE){
-        return item(pos_source(index.row()))->field<id_type>();
+	return item(pos_source(index.row()))->field<id_type>();
     }
-        // Если происходит запрос ссылки на таблицу данных
-        // if(role == TABLE_DATA_ROLE) {
-        // QVariant var;
-        // var.setValue<RecordTableDataPointer>(this->getTableData());
-        // return var;
-        // }
+	// Если происходит запрос ссылки на таблицу данных
+	// if(role == TABLE_DATA_ROLE) {
+	// QVariant var;
+	// var.setValue<RecordTableDataPointer>(this->getTableData());
+	// return var;
+	// }
 
-        // Во всех остальных случаях
+	// Во всех остальных случаях
     return QVariant();
 }
 // Save the input data at the specified index   // Сохранение вводимых данных по указанному индексу
-bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int role){
-        //// Если таблица данных не создана
-        // if(!browser_pages())    // if(!_table)
-        // return false;
-        // Если таблица пустая
+bool RecordModel:: setData(const QModelIndex &index, const QVariant &value, int role){
+	//// Если таблица данных не создана
+	// if(!browser_pages())    // if(!_table)
+	// return false;
+	// Если таблица пустая
     if(0 == count())	// if(_table->size() == 0)
-                return false;
-        // Если индекс недопустимый
+		return false;
+	// Если индекс недопустимый
     if(! index.isValid())return false;
-        // Если происходит редактирование
+	// Если происходит редактирование
     if(role == Qt::EditRole){
-        // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
-        QStringList showFields = appconfig.record_table_show_fields();
-        // Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
-        if(index.column() < showFields.size()){
-            QString field_name = showFields.value(index.column());
+	// QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
+	QStringList showFields = appconfig.record_table_show_fields();
+	// Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
+	if(index.column() < showFields.size()){
+	    QString field_name = showFields.value(index.column());
 
-                // Новое значение ячейки записывается в строковую переменную
-            QString cell_value;
-            cell_value = value.value<QString>();
+		// Новое значение ячейки записывается в строковую переменную
+	    QString cell_value;
+	    cell_value = value.value<QString>();
 
-                // Изменяется поле в таблице конечных записей
-                // _table
-            item(pos_source(index.row()))->_field_data[field_name] = cell_value;
-            if(_record_controller->view()->is_field_type_column<rating_type>(index.column())){
+		// Изменяется поле в таблице конечных записей
+		// _table
+	    item(pos_source(index.row()))->_field_data[field_name] = cell_value;
+	    if(_record_controller->view()->is_field_type_column<rating_type>(index.column())){
 //                _record_controller->view()->edit(index);
 //                _record_controller->close_context();
-            }else emit dataChanged(index, index);	// Посылается сигнал что данные были изменены
+	    }else emit dataChanged(index, index);	// Посылается сигнал что данные были изменены
 
-            return true;
-        }
+	    return true;
+	}
     }
 //// Если происходит запись во всю таблицу данных
 // if(role == TABLE_DATA_ROLE){
@@ -370,62 +370,62 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 // return true;
 // }
     if(role == Qt::UserRole){	// just a test
-        StarRating star_rating = qvariant_cast<StarRating>(index.data());
+	StarRating star_rating = qvariant_cast<StarRating>(index.data());
 // pixmap.load(":/resource/pic/butterfly-right.svg");
-        star_rating.star_count(qvariant_cast<int>(value));
+	star_rating.star_count(qvariant_cast<int>(value));
 
-        return true;	// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
+	return true;	// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
     }
-        // Во всех остальных случаях
+	// Во всех остальных случаях
     return false;
 }
 // Получение заголовков столбцов и строк
-QVariant RecordModel::headerData(int section, Qt::Orientation orientation, int role) const {
-        // QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
+QVariant RecordModel:: headerData(int section, Qt::Orientation orientation, int role) const {
+	// QStringList showFields=fixedParameters.recordFieldAvailableList(); // TODO: Заменить на показываемые поля
     QStringList showFields = appconfig.record_table_show_fields();
 
     QMap<QString, QString> descriptionFields = fixedparameters.record_field_description(showFields);
-        // Если ни один столбец не показывается (чего, впринципе не может быть)
+	// Если ни один столбец не показывается (чего, впринципе не может быть)
     if(showFields.size() == 0)return QVariant();
-        // Если запрашивается заголовок столбца
+	// Если запрашивается заголовок столбца
     if(orientation == Qt::Horizontal && role == Qt::DisplayRole){
-        // Если запрашиваемый номер столбца больше количества показываемых
-        if(section > showFields.size())return QVariant();
-        QString fieldName = showFields.value(section);
+	// Если запрашиваемый номер столбца больше количества показываемых
+	if(section > showFields.size())return QVariant();
+	QString fieldName = showFields.value(section);
 
-        return descriptionFields.value(fieldName);
+	return descriptionFields.value(fieldName);
     }
-        // Если запрашивается заголовок строки
+	// Если запрашивается заголовок строки
     if(orientation == Qt::Vertical && role == Qt::DisplayRole)return section + 1;
     return QAbstractTableModel::headerData(section, orientation, role);
 }
 // Сколько записей в таблице
-int RecordModel::rowCount(const QModelIndex &parent) const {
+int RecordModel:: rowCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
 
-        // if(!browser_pages())    // if(!_table)
-        // return 0;
+	// if(!browser_pages())    // if(!_table)
+	// return 0;
 
     return pages_container::_tabmanager->count();
 }
 // Сколько столбцов в таблице
-int RecordModel::columnCount(const QModelIndex &parent) const {
+int RecordModel:: columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
 
     static int previousColumnCount = 0;
 
     int currentColumnCount = appconfig.record_table_show_fields().size();
     if(currentColumnCount != previousColumnCount){
-        qDebug() << "Column count change. New column count: " << currentColumnCount;
-        previousColumnCount = currentColumnCount;
+	qDebug() << "Column count change. New column count: " << currentColumnCount;
+	previousColumnCount = currentColumnCount;
     }
     return currentColumnCount;
 }
-void RecordModel::remove_child(boost::intrusive_ptr<TreeItem> it){
+void RecordModel:: remove_child(boost::intrusive_ptr<TreeItem> it){
     for(int i = 0; i < size(); i ++){
-        if(item(pos_source(i)) == it){
-            removeRows(i, 1);
-        }
+	if(item(pos_source(i)) == it){
+	    removeRows(i, 1);
+	}
     }
 }
 // Удаление строк в таблице
@@ -434,32 +434,32 @@ void RecordModel::remove_child(boost::intrusive_ptr<TreeItem> it){
 // Delete rows in the table
 // Note: Override removeRows () method affects the removeRow (),
 // Because it simply calls removeRows () to remove a single line
-bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
+bool RecordModel:: removeRows(int row, int count, const QModelIndex &parent){
     Q_UNUSED(parent);
     if(row < 0 || row >= rowCount() || (row + count - 1) < 0 || (row + count - 1) >= rowCount()){
-        critical_error("Bad arguments in RecordModel::removeRows(). row: " + QString::number(row) + " count: " + QString::number(count));
+	critical_error("Bad arguments in RecordModel::removeRows(). row: " + QString::number(row) + " count: " + QString::number(count));
 
-        return false;
+	return false;
     }
-        // QModelIndex index = createIndex(row, 0);
+	// QModelIndex index = createIndex(row, 0);
 
-        // auto view = _reocrd_controller->view();
+	// auto view = _reocrd_controller->view();
 
     beginRemoveRows(	// index   //
-        QModelIndex(), row, row + count - 1);
+	QModelIndex(), row, row + count - 1);
 
-        // QVector<QString> ids;
+	// QVector<QString> ids;
 
-        //// Удаляются строки непосредственно в таблице
-        // for(int i = row; i < row + count; ++i) {
-        // ids.append(child(i)->id());
+	//// Удаляются строки непосредственно в таблице
+	// for(int i = row; i < row + count; ++i) {
+	// ids.append(child(i)->id());
 
-        // }
+	// }
 
-        // _record_controller->remove_children(ids); // recursive called
+	// _record_controller->remove_children(ids); // recursive called
 
-        // view->reset();
-        // view->setModel(this);   // wrong operation! this is not the proxy model
+	// view->reset();
+	// view->setModel(this);   // wrong operation! this is not the proxy model
     endRemoveRows();
 
     return true;
@@ -530,68 +530,68 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-browser::WebView *RecordModel::insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode){
-    pos_source selected_position(- 1);
-    browser::WebView *view = nullptr;
-    auto insert_new_tab = [&](pos_source &selected_position, const pos_source source_insert_pos){
-                // if(selected_position == -1) {
-            boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, pages_container::_tabmanager->count() > 0 ? pages_container::_tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
+browser::WebView *RecordModel:: insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode){
+    pos_source		selected_position(- 1);
+    browser::WebView	*view = nullptr;
+    auto		insert_new_tab = [&](pos_source &selected_position, const pos_source source_insert_pos){
+		// if(selected_position == -1) {
+	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, pages_container::_tabmanager->count() > 0 ? pages_container::_tabmanager->webView((int)source_insert_pos)->page()->binder()->host() : nullptr, _item);
 //	    if(record_index)
-            view = pages_container::_tabmanager->newTab(record_index);			// , _item->field("name")
+	    view = pages_container::_tabmanager->newTab(record_index);			// , _item->field("name")
 //	    else{
 //		view = pages_container::_tabmanager->webView((int)source_insert_pos);
 //		view->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 //		// addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
 //	    }
-            assert(view);
-            selected_position = pos_source(pages_container::_tabmanager->indexOf(view));
+	    assert(view);
+	    selected_position = pos_source(pages_container::_tabmanager->indexOf(view));
 
-            return view;
-        };
+	    return view;
+	};
     if(_item){
-        pos_source source_insert_pos = _record_controller->index<pos_source>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
-        Q_UNUSED(mode)	// to be used
-        if(- 1 == (int)source_insert_pos)source_insert_pos = 0;
-        beginResetModel();	// Подумать, возможно нужно заменить на beginInsertRows
-        if(_item->binder()){
+	pos_source source_insert_pos = _record_controller->index<pos_source>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
+	Q_UNUSED(mode)	// to be used
+	if(- 1 == (int)source_insert_pos)source_insert_pos = 0;
+	beginResetModel();	// Подумать, возможно нужно заменить на beginInsertRows
+	if(_item->binder()){
 //            if(_item->binder()->page()){
 //            view = _item->binder()->page()->view();	// activate();
-            auto v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
-            if(v){
-                if(v->tabmanager() != pages_container::_tabmanager){
-                    v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
+	    auto v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
+	    if(v){
+		if(v->tabmanager() != pages_container::_tabmanager){
+		    v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 //		    if(selected_position == - 1)
 //		    selected_position =
-                    view = insert_new_tab(selected_position, source_insert_pos);
-                }else selected_position = pos_source(pages_container::_tabmanager->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
-            }else{
+		    view = insert_new_tab(selected_position, source_insert_pos);
+		}else selected_position = pos_source(pages_container::_tabmanager->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+	    }else{
 //		selected_position =
-                view = insert_new_tab(selected_position, source_insert_pos);
-            }
-                // Вставка новых данных в таблицу конечных записей
-                // accomplished by TabWidget::addTab in TabWidget::newTab?
+		view = insert_new_tab(selected_position, source_insert_pos);
+	    }
+		// Вставка новых данных в таблицу конечных записей
+		// accomplished by TabWidget::addTab in TabWidget::newTab?
 
 //            }
-            assert(selected_position != - 1);
-            assert(view);
-        }else{
-            view = insert_new_tab(selected_position, source_insert_pos);
-            assert(selected_position != - 1);
-            assert(view);
-        }
-        assert(item(selected_position) == _item);
-        assert(view);
-        endResetModel();// Подумать, возможно нужно заменить на endInsertRows
+	    assert(selected_position != - 1);
+	    assert(view);
+	}else{
+	    view = insert_new_tab(selected_position, source_insert_pos);
+	    assert(selected_position != - 1);
+	    assert(view);
+	}
+	assert(item(selected_position) == _item);
+	assert(view);
+	endResetModel();// Подумать, возможно нужно заменить на endInsertRows
     }
     assert(view);
 
     return view;// selected_position;
 }
-void RecordModel::on_table_config_changed(void){
+void RecordModel:: on_table_config_changed(void){
     beginResetModel();
     endResetModel();
 }
-void RecordModel::reset_internal_data(){
+void RecordModel:: reset_internal_data(){
     QAbstractTableModel::resetInternalData();
 }
 // QString RecordModel::field(int pos, QString name){
@@ -602,29 +602,29 @@ void RecordModel::reset_internal_data(){
 // return result;
 // }
 
-void RecordModel::fields(int pos, QMap<QString, QString> data){
+void RecordModel:: fields(int pos, QMap<QString, QString> data){
     if(pos >= 0 && pos < count()){
-        for(	// QMap<QString, QString>::iterator
-            auto i = data.begin(); i != data.end(); i ++){
-            item(pos_source(pos))->_field_data[i.key()] = i.value();
-        }
+	for(	// QMap<QString, QString>::iterator
+	    auto i = data.begin(); i != data.end(); i ++){
+	    item(pos_source(pos))->_field_data[i.key()] = i.value();
+	}
     }
 }
-QModelIndex RecordModel::index(int row, int column, const QModelIndex &parent) const {
+QModelIndex RecordModel:: index(int row, int column, const QModelIndex &parent) const {
     (void)parent;
     auto it = item(pos_source(column));
 
     return it ? createIndex(row, column, static_cast<void *>(it.get())) : QAbstractTableModel::index(row, column, parent);
 //    return QAbstractTableModel::index(row, column, parent);
 }
-index_source RecordModel::index(boost::intrusive_ptr<TreeItem> it) const {
+index_source RecordModel:: index(boost::intrusive_ptr<TreeItem> it) const {
     index_source result;
     if(it){
-        for(int i = 0; i < count(); i ++){
-            if(item(pos_source(i)) == it){
-                result = createIndex(i, 0, static_cast<void *>(it.get()));break;
-            }
-        }
+	for(int i = 0; i < count(); i ++){
+	    if(item(pos_source(i)) == it){
+		result = createIndex(i, 0, static_cast<void *>(it.get()));break;
+	    }
+	}
     }
 //    else{
 //        result = QAbstractTableModel::index(0, 0, QModelIndex());
@@ -632,45 +632,41 @@ index_source RecordModel::index(boost::intrusive_ptr<TreeItem> it) const {
 //    }
     return result;
 }
-index_source RecordModel::fake_index(boost::intrusive_ptr<TreeItem> it) const {
+index_source RecordModel:: fake_index(boost::intrusive_ptr<TreeItem> it) const {
     index_source result;
     if(it){
-        result = createIndex(0, 0, static_cast<void *>(it.get()));
+	result = createIndex(0, 0, static_cast<void *>(it.get()));
     }
-//    else{
-//        result = QAbstractTableModel::index(0, 0, QModelIndex());
-
-//    }
     return result;
 }
 // for multi items link with unique page
-boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<TreeItem> it) const {
+boost::intrusive_ptr<TreeItem> RecordModel:: item_bounded(boost::intrusive_ptr<TreeItem> it) const {
     boost::intrusive_ptr<TreeItem> result = nullptr;
     for(int i = 0; i < count(); i ++){
-        if(it->page_valid() && item(pos_source(i))->page() == it->page()){
-            result = it;break;
-        }
+	if(it->page_valid() && item(pos_source(i))->page() == it->page()){
+	    result = it;break;
+	}
     }
     return result;
 }
-boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it) const {
+boost::intrusive_ptr<TreeItem> RecordModel:: item(boost::intrusive_ptr<TreeItem> it) const {
     boost::intrusive_ptr<TreeItem> result = nullptr;
     for(int i = 0; i < count(); i ++){
-        if(item(pos_source(i)) == it){
-            result = it;break;
-        }
+	if(item(pos_source(i)) == it){
+	    result = it;break;
+	}
     }
     return result;
 }
-boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url) const {
+boost::intrusive_ptr<TreeItem> RecordModel:: item(const QUrl &_url) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     for(int i = 0; i < count(); i ++){
-        auto it = item(pos_source(i));
-        std::string difference = url_difference((it->field<url_type>()).toStdString(), _url.toString().toStdString());
-        if(difference.size() == 0 || difference == "/"){
-            result = it;
-            break;
-        }
+	auto		it = item(pos_source(i));
+	std::string	difference = url_difference((it->field<url_type>()).toStdString(), _url.toString().toStdString());
+	if(difference.size() == 0 || difference == "/"){
+	    result = it;
+	    break;
+	}
     }
     return result;
 }
@@ -688,46 +684,46 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url) const {
 // return pos;
 // }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id){
+boost::intrusive_ptr<TreeItem> RecordModel:: item(const id_value &id){
     boost::intrusive_ptr<TreeItem> r(nullptr);
     for(int pos = 0; pos < pages_container::_tabmanager->count(); pos ++){
-        auto it = pages_container::_tabmanager->webView(pos)->page()->item();
-        if(it->id() == id){
-            r = it;
-            break;
-        }
+	auto it = pages_container::_tabmanager->webView(pos)->page()->item();
+	if(it->id() == id){
+	    r = it;
+	    break;
+	}
     }
     return r;
 }
-boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
+boost::intrusive_ptr<TreeItem> RecordModel:: item(const id_value &id) const {
     boost::intrusive_ptr<TreeItem> r = nullptr;
     for(int pos = 0; pos < pages_container::_tabmanager->count(); pos ++){
-        auto it = pages_container::_tabmanager->webView(pos)->page()->item();
-        if(it->id() == id){
-            r = it;
-            break;
-        }
+	auto it = pages_container::_tabmanager->webView(pos)->page()->item();
+	if(it->id() == id){
+	    r = it;
+	    break;
+	}
     }
     return r;
 }
-boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index){
+boost::intrusive_ptr<TreeItem> RecordModel:: item(const pos_source _index){
     boost::intrusive_ptr<TreeItem> r = nullptr;
     if(_index >= 0 && _index < size()){
-        r = pages_container::_tabmanager->webView((int)_index)->page()->item();
+	r = pages_container::_tabmanager->webView((int)_index)->page()->item();
     }
     return r;
 }
-boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index) const {
+boost::intrusive_ptr<TreeItem> RecordModel:: item(const pos_source _index) const {
     boost::intrusive_ptr<TreeItem> r = nullptr;
     if(_index >= 0 && _index < size()){
-        assert(pages_container::_tabmanager->webView((int)_index)->page()->binder());
-        r = pages_container::_tabmanager->webView((int)_index)->page()->binder()->host();
+	assert(pages_container::_tabmanager->webView((int)_index)->page()->binder());
+	r = pages_container::_tabmanager->webView((int)_index)->page()->binder()->host();
 
-        assert(r);	// if find_recursive get new item from tree, there will be no item_link? because I move it?
+	assert(r);	// if find_recursive get new item from tree, there will be no item_link? because I move it?
     }
     return r;
 }
-boost::intrusive_ptr<TreeItem> RecordModel::item_fat(pos_source index){
+boost::intrusive_ptr<TreeItem> RecordModel:: item_fat(pos_source index){
     boost::intrusive_ptr<TreeItem> item = pages_container::_tabmanager->webView((int)index)->page()->item();
     if(item->is_lite())item->to_fat();
     return item;
@@ -776,19 +772,19 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(pos_source index){
 // }
 
 
-boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it) const {
+boost::intrusive_ptr<TreeItem> RecordModel:: sibling(boost::intrusive_ptr<TreeItem> it) const {
     return pages_container::_tabmanager->sibling(it);
 }
-boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
-    boost::intrusive_ptr<TreeItem> result(nullptr);
-    auto page = pages_container::_tabmanager->currentWebView() ? pages_container::_tabmanager->currentWebView()->page() : nullptr;
+boost::intrusive_ptr<TreeItem> RecordModel:: current_item() const {
+    boost::intrusive_ptr<TreeItem>	result(nullptr);
+    auto				page = pages_container::_tabmanager->currentWebView() ? pages_container::_tabmanager->currentWebView()->page() : nullptr;
     if(page){
-        auto binder = page->binder();
-        if(binder)result = binder->host();
+	auto binder = page->binder();
+	if(binder)result = binder->host();
     }
     return result;	// _tabmanager->currentWebView()->page()->binder()->host();
 }
-void RecordModel::position(pos_source _index){
+void RecordModel:: position(pos_source _index){
     pages_container::_tabmanager->setCurrentIndex((int)_index);
 }
 // PosSource RecordModel::position()const
@@ -796,17 +792,17 @@ void RecordModel::position(pos_source _index){
 // return PosSource(_tabmanager->currentIndex());
 // }
 
-pos_source RecordModel::position(id_value id) const {
+pos_source RecordModel:: position(id_value id) const {
     pos_source result(- 1);
     for(int i = 0; i < pages_container::_tabmanager->count(); i ++){
-        if(pages_container::_tabmanager->webView(i)->page()->item()->id() == id){
-            result = pos_source(i);
-            break;
-        }
+	if(pages_container::_tabmanager->webView(i)->page()->item()->id() == id){
+	    result = pos_source(i);
+	    break;
+	}
     }
     return result;
 }
-Qt::ItemFlags RecordModel::flags(const QModelIndex &index) const {
+Qt::ItemFlags RecordModel:: flags(const QModelIndex &index) const {
     if(! index.isValid())return Qt::ItemIsEnabled;
     return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
 }
@@ -825,31 +821,31 @@ Qt::ItemFlags RecordModel::flags(const QModelIndex &index) const {
 // }
 
 
-int RecordModel::count() const {
+int RecordModel:: count() const {
     return pages_container::_tabmanager->count();
 }
-int RecordModel::size() const {
+int RecordModel:: size() const {
     return pages_container::_tabmanager->count();
 }
-int RecordModel::move_up(const pos_source pos){
+int RecordModel:: move_up(const pos_source pos){
     beginResetModel();
 
     pos_source new_pos = pos;
     if(pos > 0){
-        new_pos = pos_source((int)pos - 1);
-        pages_container::_tabmanager->tabbar()->moveTab((int)pos, (int)new_pos);	// moveTab(pos, new_pos);
+	new_pos = pos_source((int)pos - 1);
+	pages_container::_tabmanager->tabbar()->moveTab((int)pos, (int)new_pos);	// moveTab(pos, new_pos);
     }
     endResetModel();
 
     return new_pos;
 }
-int RecordModel::move_dn(const pos_source pos){
+int RecordModel:: move_dn(const pos_source pos){
     beginResetModel();
 
     pos_source new_pos = pos;
     if(pos < count() - 1){
-        new_pos = pos_source((int)pos + 1);
-        pages_container::_tabmanager->tabbar()->moveTab((int)pos, (int)new_pos);	// moveTab(pos, new_pos);
+	new_pos = pos_source((int)pos + 1);
+	pages_container::_tabmanager->tabbar()->moveTab((int)pos, (int)new_pos);	// moveTab(pos, new_pos);
     }
     endResetModel();
 

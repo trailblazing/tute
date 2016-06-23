@@ -249,12 +249,12 @@ namespace browser {
         settings.setValue(QLatin1String("password"), proxyPassword->text());
         settings.endGroup();
 
-        QtSingleApplication::instance()->loadSettings();
+        sa_t::instance()->loadSettings();
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
         QtSingleApplication::networkAccessManager()->loadSettings();
         QtSingleApplication::cookieJar()->loadSettings();
 #endif
-        QtSingleApplication::historyManager()->loadSettings();
+        sa_t::historyManager()->loadSettings();
     }
 
     void SettingsDialog::accept()

@@ -27,7 +27,7 @@
 #include "views/find_in_base_screen/FindScreen.h"
 #include "views/browser/entrance.h"
 #include "views/browser/tabwidget.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 
 
 
@@ -338,7 +338,7 @@ void MetaEditor::switch_pin(){
     if(_tabmanager){
 	RecordModel *source_model = _tabmanager->source_model();
 	auto _record_controller = _tabmanager->record_controller();
-	RecordView *record_view = _tabmanager->view();
+	rv_t *record_view = _tabmanager->view();
 	pos_source pos_source_(_tabmanager->currentIndex());	// first_selectionpos();
 	if(source_model && - 1 != pos_source_){
 		// Выясняется ссылка на таблицу конечных данных
@@ -382,7 +382,7 @@ void MetaEditor::switch_pin(){
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
-	    TreeScreen *treescreen = globalparameters.tree_screen();
+	    ts_t *treescreen = globalparameters.tree_screen();
 	    if(treescreen)treescreen->view()->know_model_save();
 	    if(record_view)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(pos_source_));
 	}

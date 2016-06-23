@@ -14,12 +14,12 @@ namespace browser {
     class Profile;
 }
 
-class TreeScreen;
+class ts_t;
 class MetaEditor;
-class RecordScreen;
+class rs_t;
 class FindScreen;
 class WindowSwitcher;
-class MainWindow;
+class wn_t;
 class QTabWidget;
 class QSplitter;
 class EditorConfigDialog;
@@ -54,11 +54,11 @@ public:
     QSplitter *find_splitter();
     void find_splitter(QSplitter *_find_splitter);
 
-    void h_right_splitter(QSplitter *vrightsplitter);
-    QSplitter *h_right_splitter();
+    void h_record_splitter(QSplitter *vrightsplitter);
+    QSplitter *h_record_splitter();
 
-    void h_left_splitter(QSplitter *vleftsplitter);
-    QSplitter *h_left_splitter();
+    void h_tree_splitter(QSplitter *vleftsplitter);
+    QSplitter *h_tree_splitter();
 
     void v_right_splitter(QSplitter *vrightsplitter);
     QSplitter *v_right_splitter();
@@ -69,14 +69,14 @@ public:
     void vtab_tree(QTabWidget *point);
     QTabWidget *vtab_tree();
 
-    void tree_screen(TreeScreen *point);
-    TreeScreen *tree_screen();
+    void tree_screen(ts_t *point);
+    ts_t *tree_screen();
 
     browser::Entrance *entrance();
     void entrance(browser::Entrance *&b);
 
-    void push_record_screen(RecordScreen *point);
-    std::vector<RecordScreen *> record_screens();
+    void push_record_screen(rs_t *point);
+    std::vector<rs_t *> record_screens();
 
     //    void page_screen(RecordScreen *page);
     //    RecordScreen *page_screen();
@@ -93,10 +93,10 @@ public:
     void window_switcher(WindowSwitcher *point);
     WindowSwitcher *window_switcher();
 
-    MainWindow *mainwindow() {
+    wn_t *mainwindow() {
         return _mainwindow;
     }
-    void mainwindow(MainWindow *mainwindow) {
+    void mainwindow(wn_t *mainwindow) {
         _mainwindow = mainwindow;
     }
 
@@ -142,9 +142,9 @@ private:
     void create_first_programfiles(QString dirName);
 
     browser::Profile            *_profile;
-    TreeScreen                  *_tree_screen;
+    ts_t                  *_tree_screen;
     browser::Entrance           *_entrance;
-    std::vector<RecordScreen *> _table_screens;
+    std::vector<rs_t *> _table_screens;
     EditorConfig                *_editor_config;
     FindScreen                  *_find_screen;
     MetaEditor                  *_meta_editor;
@@ -156,7 +156,7 @@ private:
     QSplitter                   *_v_right_splitter;
     QTabWidget                  *_vtab_record;
     QTabWidget                  *_vtab_tree;
-    MainWindow                  *_mainwindow;
+    wn_t                  *_mainwindow;
     browser::DownloadManager    *_download_manager;
     QString _main_program_file;
     QString _work_directory;

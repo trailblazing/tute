@@ -21,14 +21,14 @@ class QCheckBox;
 class QProgressDialog;
 class ItemsFlat;
 class TreeItem;
-class KnowModel;
+class tkm_t;
 class FindTableWidget;
 class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
 
-class RecordController;
-class TreeScreen;
+class rctl_t;
+class ts_t;
 struct Linker;
 
 namespace browser {
@@ -47,7 +47,7 @@ class FindScreen : public QWidget
 
 public:
         static const constexpr char *_find_in_base_expand = "findInBaseExpand";     // "find_in_base_expand";
-        FindScreen(QString object_name, TreeScreen *_tree_screen, QWidget *parent = 0);
+        FindScreen(QString object_name, ts_t *_tree_screen, QWidget *parent = 0);
         virtual ~FindScreen(void);
         //QToolBar *navigater() {return _navigater;}
 
@@ -155,7 +155,7 @@ private:
 
         //    QIcon _reloadicon;
         //    QIcon _stopicon;
-        TreeScreen      *_tree_screen;
+        ts_t      *_tree_screen;
         QToolBar        *_navigater;
         //    //    QHBoxLayout *_navigater;
 

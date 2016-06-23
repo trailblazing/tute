@@ -5,13 +5,13 @@
 
 class ConfigDialog;
 class QListWidgetItem;
-class RecordController;
+class rctl_t;
 
 class AppConfigDialog : public QWidget {
     Q_OBJECT
 
 public:
-    AppConfigDialog(RecordController *_record_controller, QString firstPageName);
+    AppConfigDialog(rctl_t *_record_controller, QString firstPageName);
 
 private:
     ConfigDialog *configDialog;
@@ -21,7 +21,7 @@ private:
     QListWidgetItem *pageSynchro;
     QListWidgetItem *pageRecordTable;
     QListWidgetItem *pageMisc;
-    RecordController *_record_controller;
+    rctl_t *_record_controller;
     void changePage(QString name);
 };
 

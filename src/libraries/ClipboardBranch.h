@@ -12,7 +12,7 @@
 #include "libraries/ClipboardRecords.h"
 //#include "models/tree/TreeModel.h"
 
-class TreeModel;
+class tm_t;
 struct TreeIndex;
 
 // Определяется структура данных

@@ -23,7 +23,6 @@ EditorConfigFont::EditorConfigFont(QWidget *parent) : ConfigPage(parent)
     qDebug() << "Create editor config font widget";
 
     // Устанавливается указатель на объект работы с конфигфайлом
-    // conf=this->parent()->parent()->parent()->editorconfig;
     conf = globalparameters.editor_config();    // find_object<EditorConfig>("editorconfig");
 
     setup_ui();

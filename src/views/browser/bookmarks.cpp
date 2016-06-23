@@ -512,7 +512,7 @@ namespace browser {
                     if(bookmarkNode->type() == BookmarkNode::Folder)
                         return QApplication::style()->standardIcon(QStyle::SP_DirIcon);
 
-                    return QtSingleApplication::instance()->icon(bookmarkNode->url);
+                    return sa_t::instance()->icon(bookmarkNode->url);
                 }
         }
 
@@ -750,7 +750,7 @@ namespace browser {
         setWindowFlags(Qt::Sheet);
 
         if(!_bookmarksmanager)
-            _bookmarksmanager = QtSingleApplication::bookmarksManager();
+            _bookmarksmanager = sa_t::bookmarksManager();
 
         setupUi(this);
         QTreeView *view = new QTreeView(this);
@@ -807,7 +807,7 @@ namespace browser {
 
     bool BookmarksMenu::prePopulated()
     {
-        _bookmarksmanager = QtSingleApplication::bookmarksManager();
+        _bookmarksmanager = sa_t::bookmarksManager();
         setModel(_bookmarksmanager->bookmarksModel());
         setRootIndex(_bookmarksmanager->bookmarksModel()->index(1, 0));
 
@@ -836,7 +836,7 @@ namespace browser {
         _bookmarksmanager = manager;
 
         if(!_bookmarksmanager)
-            _bookmarksmanager = QtSingleApplication::bookmarksManager();
+            _bookmarksmanager = sa_t::bookmarksManager();
 
         setupUi(this);
 

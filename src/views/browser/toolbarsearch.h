@@ -52,8 +52,8 @@
 #include <QLineEdit>
 
 
-//#include "models/tree/TreeItem.h"
-//#include "models/tree/TreeModel.h"
+// #include "models/tree/TreeItem.h"
+// #include "models/tree/TreeModel.h"
 #include "views/tree/TreeScreen.h"
 
 QT_BEGIN_NAMESPACE
@@ -64,7 +64,7 @@ class QLineEdit;
 QT_END_NAMESPACE
 
 
-QT_BEGIN_NAMESPACE
+    QT_BEGIN_NAMESPACE
 class QCompleter;
 class QLineEdit;
 class QMenu;
@@ -73,13 +73,12 @@ class FindTableWidget;
 QT_END_NAMESPACE
 
 class TreeItem;
-class TreeModel;
-class TreeScreen;
-class KnowModel;
+class tm_t;
+class ts_t;
+class tkm_t;
 
 
 namespace browser {
-
     class ChaseWidget;
 }
 
@@ -87,63 +86,57 @@ QT_BEGIN_NAMESPACE
 
 
 namespace browser {
-
-
-
     class AutoSaver;
 
     class ToolbarSearch : public SearchLineEdit {
-        Q_OBJECT
+	Q_OBJECT
 
-    signals:
-        //        void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
-        //                    , const TreeScreen::paste_strategy &_view_paste_strategy
-        //                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
-        //                   );
+	signals:
+		//        void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
+		//                    , const TreeScreen::paste_strategy &_view_paste_strategy
+		//                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
+		//                   );
 
-        void returnPressed();
-    public:
-        ToolbarSearch(//QStackedWidget *lineedits, QLineEdit *findtext,
-            QWidget *parent = 0);
-        ~ToolbarSearch();
-        void text(const QString &text);
-        QString text() const;
+	    void returnPressed();
+	public:
+	    ToolbarSearch(	// QStackedWidget *lineedits, QLineEdit *findtext,
+		QWidget *parent = 0);
+	    ~ToolbarSearch();
+	    void	text(const QString &text);
+	    QString	text() const;
 
-        QLineEdit *findtext() {return _findtext;}
-        //        void findtext(QLineEdit *findtext) {_findtext = findtext;}
+	    QLineEdit *findtext(){return _findtext;}
+		//        void findtext(QLineEdit *findtext) {_findtext = findtext;}
 
-        QStackedWidget *lineedits() {return _lineedits;}
-        void lineedits(QStackedWidget *lineedits) { _lineedits = lineedits;}
+	    QStackedWidget	*lineedits()				{return _lineedits;}
+	    void		lineedits(QStackedWidget *lineedits)	{_lineedits = lineedits;}
 
-    public slots:
-        void clear();
-        void searchNow();
+	public slots:
+	    void	clear();
+	    void	searchNow();
 
-    private slots:
-        void save();
-        void aboutToShowMenu();
-        void triggeredMenuAction(QAction *action);
+	private slots:
+	    void	save();
+	    void	aboutToShowMenu();
+	    void	triggeredMenuAction(QAction *action);
 
-    private:
-        void load();
+	private:
+	    void load();
 
-        AutoSaver           *_autosaver;
-        int                 _maxsavedsearches;
-        QStringListModel    *_stringlistmodel;
-        QStackedWidget      *_lineedits;
-        QLineEdit           *_findtext;
-        // TabManager           *_tabmanager;
-        // browser::ChaseWidget *_chasewidget;
-
+	    AutoSaver		*_autosaver;
+	    int			_maxsavedsearches;
+	    QStringListModel	*_stringlistmodel;
+	    QStackedWidget	*_lineedits;
+	    QLineEdit		*_findtext;
+		// TabManager           *_tabmanager;
+		// browser::ChaseWidget *_chasewidget;
     };
-
-
 }
 
 
 QT_END_NAMESPACE
 
-#endif // TOOLBARSEARCH_H
+#endif	// TOOLBARSEARCH_H
 
 
 

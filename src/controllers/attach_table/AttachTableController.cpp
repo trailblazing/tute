@@ -18,7 +18,7 @@
 #include "views/tree/TreeScreen.h"
 #include "views/dialog/ReduceMessageBox.h"
 #include "libraries/FlatControl.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 
 extern GlobalParameters globalparameters;
 extern AppConfig appconfig;

@@ -147,7 +147,7 @@ void ExecuteCommand::run(void)
     process->start(commandLine);
 
     // Интерфейс обновляется
-    QtSingleApplication::instance()->processEvents();
+    sa_t::instance()->processEvents();
 
     qDebug() << "Process started";
 
@@ -157,15 +157,15 @@ void ExecuteCommand::run(void)
 
         // Разгружается основной цикл обработки событий приложения
         if((rand() % 10) == 1)
-            QtSingleApplication::instance()->processEvents();
+            sa_t::instance()->processEvents();
     }
 
     Sleeper::sleep(1);
-    QtSingleApplication::instance()->processEvents();
+    sa_t::instance()->processEvents();
     printOutput(process, console); // Считываются остатки из стандартного вывода, если они есть
 
     closeProcess();
-    QtSingleApplication::instance()->processEvents();
+    sa_t::instance()->processEvents();
     printOutput(process, console); // Считываются остатки из стандартного вывода, если они есть
 
     if((isError == false && process->exitCode() == 0) || isManualClose)
@@ -203,7 +203,7 @@ void ExecuteCommand::printOutput(QProcess *process, ConsoleEmulator *console)
 
         if(output.length() > 0) {
             console->addConsoleOutput(output);
-            QtSingleApplication::instance()->processEvents();
+            sa_t::instance()->processEvents();
             qDebug() << "[Console] " << output;
         }
     }

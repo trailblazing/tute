@@ -93,7 +93,7 @@
 #include "views/main_window/MainWindow.h"
 #include "views/record_table/RecordScreen.h"
 #include "views/record_table/RecordView.h"
-#include "views/tree/KnowView.h"
+#include "views/tree/TreeView.h"
 #include "views/tree/TreeScreen.h"
 
 extern GlobalParameters globalparameters;
@@ -197,7 +197,7 @@ namespace browser {
         for(int i = 0; i < vtab_tree->count(); i ++){
             auto wg = vtab_tree->widget(i);
             if(wg->objectName() == tree_screen_viewer_name){
-                auto tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(wg);
+		auto tree_screen_viewer = dynamic_cast<tsv_t *>(wg);
                 if(tree_screen_viewer){
                     if(tree_screen_viewer->record_screen() == _record_screen){
                         if(_main_window->tree_viewers().size() > 1){
@@ -256,9 +256,9 @@ namespace browser {
 
         connect(_tabmanager, &TabWidget::loadPage// , this, &Browser::loadPage
                , [&](const QString &file){
-                KnowView *tree_view = _tree_screen->view();
+		tv_t *tree_view = _tree_screen->view();
                 auto it = tree_view->session_root_auto();
-                TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it)->item_bind(it, file, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->item_bind(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
             }
             );
         connect(_tabmanager, &TabWidget::setCurrentTitle, this, &Browser::slotUpdateWindowTitle);
@@ -292,7 +292,7 @@ namespace browser {
                     for(int i = 0; i < vtab_tree->count(); i ++){
                         auto wg = vtab_tree->widget(i);
                         if(wg->objectName() == tree_screen_viewer_name){
-                            auto tree_screen_viewer = dynamic_cast<TreeScreenViewer *>(wg);
+			    auto tree_screen_viewer = dynamic_cast<tsv_t *>(wg);
                             if(tree_screen_viewer){
                                 if(tree_screen_viewer->record_screen() == _record_screen){
                                     if(_main_window->tree_viewers().size() > 1){
@@ -320,8 +320,8 @@ namespace browser {
         auto vtab_record = _main_window->vtab_record();
         if(vtab_record->indexOf(_record_screen) == - 1){
                 ////        int index = vtab_tree->currentIndex();
-            TreeScreenViewer *tsv = nullptr;
-            std::vector<TreeScreenViewer *> tsvs = _main_window->tree_viewers();
+	    tsv_t *tsv = nullptr;
+	    std::vector<tsv_t *> tsvs = _main_window->tree_viewers();
             int tree_viewer_count = tsvs.size();
 //            for(int i = 0; i < vtab_tree->count(); i ++){
 //                if(vtab_tree->widget(i)->objectName() == tree_screen_viewer_name){
@@ -332,11 +332,11 @@ namespace browser {
             if(1 == tree_viewer_count){
                 tsv = tsvs.back();
                 if(tsv){
-                    RecordScreen *rs = tsv->record_screen();
+                    rs_t *rs = tsv->record_screen();
                     if(rs){
                         vtab_tree->setUpdatesEnabled(false);
 
-                        vtab_tree->insertTab(vtab_tree->indexOf(tsv) + 1, new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(tree_viewer_count)
+			vtab_tree->insertTab(vtab_tree->indexOf(tsv) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(tree_viewer_count)
                         // vtab_tree->setCurrentIndex(index);
                         vtab_tree->setUpdatesEnabled(true);
                     }else{
@@ -347,7 +347,7 @@ namespace browser {
             }else{
                 vtab_tree->setUpdatesEnabled(false);
 
-                vtab_tree->insertTab(vtab_tree->indexOf(tsvs.back()) + 1, new TreeScreenViewer(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(tree_viewer_count)
+		vtab_tree->insertTab(vtab_tree->indexOf(tsvs.back()) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(tree_viewer_count)
                 // vtab_tree->setCurrentIndex(index);
                 vtab_tree->setUpdatesEnabled(true);
             }
@@ -566,13 +566,13 @@ namespace browser {
         // show();
         // }
 
-    Browser::Browser(TreeScreen *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, MainWindow *_main_window, Entrance *_entrance, const QString &style_source, Profile *_profile, Qt::WindowFlags flags)
+    Browser::Browser(ts_t *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, wn_t *_main_window, Entrance *_entrance, const QString &style_source, Profile *_profile, Qt::WindowFlags flags)
         : QMainWindow(0, flags)	// ,  boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>()
           , _tree_screen(_tree_screen)
           , _find_screen(_find_screen)
           , _main_window(_main_window)
                 // , _toolbarsearch(_find_screen->toolbarsearch())
-          , _bookmarkstoolbar(new BookmarksToolBar(QtSingleApplication::bookmarksManager()->bookmarksModel(), this))
+	  , _bookmarkstoolbar(new BookmarksToolBar(sa_t::bookmarksManager()->bookmarksModel(), this))
           , _chasewidget(_find_screen->chasewidget())
           , _autosaver(new AutoSaver(this))
           , _historyhome(_find_screen->historyhome())
@@ -583,7 +583,7 @@ namespace browser {
           , _stopreload(_find_screen->stopreload())
           , _centralwidget(new QWidget(this))
           , _layout(new QVBoxLayout)
-          , _record_screen(new RecordScreen(_tree_screen, _find_screen, _editor_screen, _entrance, this, _main_window, _profile))
+          , _record_screen(new rs_t(_tree_screen, _find_screen, _editor_screen, _entrance, this, _main_window, _profile))
           , _tabmanager(_record_screen->tabmanager())
           , _entrance(_entrance->prepend(this)){// , dock_widget(new QDockWidget(parent, Qt::MaximizeUsingFullscreenGeometryHint))
         init();
@@ -683,7 +683,7 @@ namespace browser {
                 })){
                 auto it = _record_screen->record_controller()->view()->current_item();
                 if(it){
-                    _tree_screen->view()->select_as_current(TreeIndex::instance([&] {return _tree_screen->view()->source_model();}, it->parent(), it));
+		    _tree_screen->view()->select_as_current(TreeIndex::instance([&] {return _tree_screen->view()->source_model();}, it, it->parent()));
                 }
             }
         }
@@ -721,7 +721,7 @@ namespace browser {
     }
 
     void Browser::save(){
-        QtSingleApplication::instance()->saveSession();
+	sa_t::instance()->saveSession();
 
         QSettings settings;
         settings.beginGroup(QLatin1String("browser"));
@@ -837,7 +837,7 @@ namespace browser {
         fileMenu->addAction(tr("&Save As..."), this, SLOT(slotFileSaveAs()), QKeySequence(QKeySequence::Save));
         fileMenu->addSeparator();
 #endif
-        BookmarksManager *bookmarksManager = QtSingleApplication::bookmarksManager();
+	BookmarksManager *bookmarksManager = sa_t::bookmarksManager();
         filemenu->addAction(tr("&Import Bookmarks..."), bookmarksManager, SLOT(importBookmarks()));
         filemenu->addAction(tr("&Export Bookmarks..."), bookmarksManager, SLOT(exportBookmarks()));
         filemenu->addSeparator();
@@ -848,8 +848,8 @@ namespace browser {
 #endif
         QAction *action = filemenu->addAction(tr("Private &Browsing..."), this, SLOT(slotPrivateBrowsing()));
         action->setCheckable(true);
-        action->setChecked(QtSingleApplication::instance()->privateBrowsing());
-        connect(QtSingleApplication::instance(), &QtSingleApplication::privateBrowsingChanged, action, &QAction::setChecked);
+	action->setChecked(sa_t::instance()->privateBrowsing());
+	connect(sa_t::instance(), &sa_t::privateBrowsingChanged, action, &QAction::setChecked);
         filemenu->addSeparator();
 
         // #if defined(Q_OS_OSX)
@@ -1244,7 +1244,7 @@ namespace browser {
 //    }
 
     void Browser::slotDownloadManager(){
-        QtSingleApplication::downloadManager()->show();
+	sa_t::downloadManager()->show();
     }
 
     void Browser::slotSelectLineEdit(){
@@ -1308,9 +1308,9 @@ namespace browser {
                 tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
         if(file.isEmpty())return;
 //        loadPage(file);
-        KnowView *tree_view = _tree_screen->view();
+	tv_t *tree_view = _tree_screen->view();
         auto it = tree_view->session_root_auto();
-        TreeIndex::instance([&] {return tree_view->source_model();}, it->parent(), it)->item_bind(it, file, std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+	TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->item_bind(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
     }
 #define QT_NO_PRINTPREVIEWDIALOG
 
@@ -1343,7 +1343,7 @@ namespace browser {
 #endif
 
     void Browser::slotPrivateBrowsing(){
-        if(! QtSingleApplication::instance()->privateBrowsing()){
+	if(! sa_t::instance()->privateBrowsing()){
             QString title = tr("Are you sure you want to turn on private browsing?");
             QString text = tr("<b>%1</b><br><br>"
                               "This action will reload all open tabs.<br>"
@@ -1360,10 +1360,10 @@ namespace browser {
             QMessageBox::StandardButton button = QMessageBox::question(this, QString(), text,
                     QMessageBox::Ok | QMessageBox::Cancel,
                     QMessageBox::Ok);
-            if(button == QMessageBox::Ok)QtSingleApplication::instance()->setPrivateBrowsing(true);
+	    if(button == QMessageBox::Ok)sa_t::instance()->setPrivateBrowsing(true);
         }else{
                 // TODO: Also ask here
-            QtSingleApplication::instance()->setPrivateBrowsing(false);
+	    sa_t::instance()->setPrivateBrowsing(false);
         }
     }
 
@@ -1455,8 +1455,8 @@ namespace browser {
         auto current_item = tree_view->current_item();
         auto parent = current_item->parent();
         if(! parent){throw std::runtime_error(formatter() << "! parent");}
-        TreeIndex::instance([&] {return tree_view->source_model();}, parent, current_item)->item_bind(
-            tree_view->current_item(), QUrl(home), std::bind(&KnowView::view_paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
+	TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->item_bind(
+	    tree_view->current_item(), QUrl(home), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
             )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 // }
         settings.endGroup();
@@ -1532,7 +1532,7 @@ namespace browser {
             QWebEngineHistoryItem item = history->backItems(history->count()).at(i);
             QAction *action = new QAction(this);
             action->setData(- 1 * (historyCount - i - 1));
-            QIcon icon = QtSingleApplication::instance()->icon(item.url());
+	    QIcon icon = sa_t::instance()->icon(item.url());
             action->setIcon(icon);
             action->setText(item.title());
             _historybackmenu->addAction(action);
@@ -1548,7 +1548,7 @@ namespace browser {
             QWebEngineHistoryItem item = history->forwardItems(historyCount).at(i);
             QAction *action = new QAction(this);
             action->setData(historyCount - i);
-            QIcon icon = QtSingleApplication::instance()->icon(item.url());
+	    QIcon icon = sa_t::instance()->icon(item.url());
             action->setIcon(icon);
             action->setText(item.title());
             _historyforwardmenu->addAction(action);
@@ -1715,7 +1715,7 @@ namespace browser {
         return result;	// _mainWindows[0];
     }
 
-    RecordScreen *Browser::record_screen(){return _record_screen;}
+    rs_t *Browser::record_screen(){return _record_screen;}
 
     Entrance *Browser::entrance(){return _entrance;}
 }
