@@ -61,12 +61,12 @@
 #include "models/record_table/linker.hxx"
 #include "views/browser/tabwidget.h"
 #include "views/browser/entrance.h"
-#include "views/find_in_base_screen/FindScreen.h"
+#include "views/find_in_base_screen/find_screen.h"
 #include "main.h"
-#include "views/tree/TreeScreen.h"
-#include "views/tree/TreeView.h"
-#include "models/tree/treeindex.hxx"
-#include "models/tree/KnowModel.h"
+#include "views/tree/tree_screen.h"
+#include "views/tree/tree_view.h"
+#include "models/tree/tree_index.hxx"
+#include "models/tree/tree_know_model.h"
 
 
 
@@ -185,7 +185,7 @@ namespace browser {
 		    ){
 			// QLineEdit *lineedit =
 
-		    tree_index->item_bind(tree_view->current_item()
+		    tree_index->page_instantiate(tree_view->current_item()
 					 , url
 					 , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 					 , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
@@ -225,7 +225,7 @@ namespace browser {
 		    url.setQuery(url_query);
 		    url.setFragment("q=" + search_text);
 //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		    tree_index->item_bind(tree_view->current_item(), url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+		    tree_index->page_instantiate(tree_view->current_item(), url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 		}
 	    }

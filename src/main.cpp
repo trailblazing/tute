@@ -17,7 +17,7 @@
 
 #include "views/browser/browser.h"
 #include "views/browser/webview.h"
-#include "views/record/InfoFieldEnter.h"
+#include "views/record/info_field_enter.h"
 
 
 #include <qversiontagging.h>
@@ -32,24 +32,24 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #endif
 
-#include "views/main_window/MainWindow.h"
-#include "models/app_config/AppConfig.h"
-#include "libraries/DiskHelper.h"
-#include "libraries/ClipboardRecords.h"
-#include "libraries/TrashMonitoring.h"
-#include "libraries/FixedParameters.h"
-#include "libraries/GlobalParameters.h"
-#include "libraries/WalkHistory.h"
-#include "libraries/WindowSwitcher.h"
-#include "libraries/crypt/RC5Simple.h"
-#include "libraries/crypt/Password.h"
-#include "libraries/GlobalParameters.h"
-#include "views/record_table/RecordScreen.h"
-#include "models/database_config/DataBaseConfig.h"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
-#include "models/record_table/ItemsFlat.h"
-#include "controllers/record_table/RecordController.h"
+#include "views/main_window/main_window.h"
+#include "models/app_config/app_config.h"
+#include "libraries/disk_helper.h"
+#include "libraries/clipboard_records.h"
+#include "libraries/trash_monitoring.h"
+#include "libraries/fixed_parameters.h"
+#include "libraries/global_parameters.h"
+#include "libraries/walk_history.h"
+#include "libraries/window_switcher.h"
+#include "libraries/crypt/rc5simple.h"
+#include "libraries/crypt/password.h"
+#include "libraries/global_parameters.h"
+#include "views/record_table/record_screen.h"
+#include "models/database_config/database_config.h"
+#include "models/record_table/record_index.hxx"
+#include "models/record_table/record_model.h"
+#include "models/record_table/items_flat.h"
+#include "controllers/record_table/record_controller.h"
 
 // const int add_new_record_after = 2;
 using namespace std;

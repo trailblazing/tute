@@ -55,7 +55,7 @@
 #include <QtWidgets/QShortcut>
 #include <QProxyStyle>
 
-#include "models/record_table/recordindex.hxx"
+#include "models/record_table/record_index.hxx"
 // #include "models/record_table/Record.h"
 // #include "models/record_table/ItemsFlat.h"
 // #include "models/tree/TreeItem.h"
@@ -66,8 +66,8 @@
 
 
 
-#include "libraries/GlobalParameters.h"
-#include "libraries/DiskHelper.h"
+#include "libraries/global_parameters.h"
+#include "libraries/disk_helper.h"
 
 #include "views/browser/history.h"
 
@@ -77,9 +77,9 @@
 // #include "models/tree/TreeModel.h"
 
 // #include "views/tree/KnowView.h"
-#include "models/tree/KnowModel.h"
+#include "models/tree/tree_know_model.h"
 
-#include "views/tree/TreeScreen.h"
+#include "views/tree/tree_screen.h"
 
 
 

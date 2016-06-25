@@ -54,7 +54,7 @@
 
 // #include "models/tree/TreeItem.h"
 // #include "models/tree/TreeModel.h"
-#include "views/tree/TreeScreen.h"
+#include "views/tree/tree_screen.h"
 
 QT_BEGIN_NAMESPACE
 class QUrl;

@@ -53,14 +53,14 @@
 
 // #include "models/record_table/Record.h"
 // #include "models/tree/TreeItem.h"
-#include "controllers/record_table/RecordController.h"
-#include "libraries/GlobalParameters.h"
+#include "controllers/record_table/record_controller.h"
+#include "libraries/global_parameters.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
+#include "models/record_table/record_index.hxx"
+#include "models/record_table/record_model.h"
 #include "views/browser/featurepermissionbar.h"
-#include "views/record_table/RecordScreen.h"
-#include "views/record_table/RecordView.h"
+#include "views/record_table/record_screen.h"
+#include "views/record_table/record_view.h"
 // #include "models/tree/TreeItem.h"
 
 QT_BEGIN_NAMESPACE
@@ -232,7 +232,7 @@ namespace browser {
 //                                                 target->id();}
 //                                                );
 
-	    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
+	    boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<TreeItem> item);
 
 	    boost::intrusive_ptr<::Binder>	binder();
 	    const				boost::intrusive_ptr<::Binder> && binder() const;

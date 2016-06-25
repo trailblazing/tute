@@ -41,9 +41,9 @@
 #define QTSINGLEAPPLICATION_H
 
 #include <QApplication>
-#include "libraries/GlobalParameters.h"
-#include "models/app_config/AppConfig.h"
-#include "models/database_config/DataBaseConfig.h"
+#include "libraries/global_parameters.h"
+#include "models/app_config/app_config.h"
+#include "models/database_config/database_config.h"
 #include "views/browser/browser.h"
 #include <memory>
 

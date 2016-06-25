@@ -77,7 +77,7 @@ struct Linker : public boost::intrusive_ref_counter<Linker, boost::thread_safe_c
 	bool integrity_internal() const;
 	bool integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_) const;
 	status_type state() const {return *_status;}
-
+	static boost::intrusive_ptr<Linker> instance(boost::intrusive_ptr<TreeItem> _host, boost::intrusive_ptr<TreeItem> _parent, int pos = 0, int mode = add_new_record_before);
 
     private:
 

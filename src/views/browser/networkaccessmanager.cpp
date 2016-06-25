@@ -59,7 +59,7 @@
 #include <QtNetwork/QNetworkRequest>
 #include <QtNetwork/QNetworkReply>
 #include <QtNetwork/QSslError>
-#include "libraries/GlobalParameters.h"
+#include "libraries/global_parameters.h"
 #include "views/browser/entrance.h"
 #include "main.h"
 

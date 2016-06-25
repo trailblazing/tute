@@ -140,38 +140,6 @@ INSTALLS    +=  icon_48_file
 
 HEADERS     =   \
     src/main.h  \
-    src/views/record/RecordInfoFieldsEditor.h \
-    src/views/record/InfoFieldEnter.h \
-    src/views/record/MetaEditor.h \
-    src/libraries/wyedit/Editor.h \
-    src/libraries/wyedit/EditorConfig.h \
-    src/libraries/wyedit/EditorConfigDialog.h \
-    src/libraries/wyedit/EditorConfigFont.h \
-    src/libraries/wyedit/EditorConfigMisc.h \
-    src/libraries/wyedit/EditorFindDialog.h \
-    src/models/tree/XmlTree.h \
-    src/models/tree/TreeModel.h \
-    src/models/tree/TreeItem.h \
-    src/views/record/AddNewRecord.h \
-    src/libraries/ClipboardRecords.h \
-    src/views/tree/TreeScreen.h \
-    src/libraries/TrashMonitoring.h \
-    src/libraries/wyedit/EditorContextMenu.h \
-    src/libraries/wyedit/EditorTextArea.h \
-    src/libraries/wyedit/indentslider/IndentSlider.h \
-    src/libraries/wyedit/EditorSplitCellForm.h \
-    src/libraries/wyedit/EditorAbsTableCell.h \
-    src/libraries/wyedit/EditorAbsTable.h \
-    src/libraries/wyedit/EditorAddTableForm.h \
-    src/libraries/wyedit/EditorImageProperties.h \
-    src/libraries/wyedit/EditorMultiLineInputDialog.h \
-    src/libraries/FixedParameters.h \
-    src/libraries/WindowSwitcher.h \
-    src/libraries/wyedit/EditorShowText.h \
-    src/views/dialog/ReduceMessageBox.h \
-    src/views/dialog/OverTextToolButton.h \
-    src/libraries/crypt/CryptService.h \
-    src/libraries/DiskHelper.h \
     src/views/browser/autosaver.h \
     src/views/browser/bookmarks.h \
     src/views/browser/chasewidget.h \
@@ -192,52 +160,92 @@ HEADERS     =   \
     src/views/browser/xbel.h \
     src/views/browser/entrance.h \
     src/views/browser/entranceinfo.h \
-    src/libraries/FlatControl.h \
     src/utility/delegate.h \
     src/views/browser/browser.h \
-    src/views/app_config/AppConfigDialog.h \
-    src/views/app_config/AppConfigPageCrypt.h \
-    src/views/app_config/AppConfigPageMain.h \
-    src/views/app_config/AppConfigPageMisc.h \
-    src/views/app_config/AppConfigPageSynchro.h \
-    src/views/app_config/AppConfigPageTable.h \
-    src/views/app_config/ConfigDialog.h \
-    src/views/app_config/ConfigPage.h \
-    src/views/attach_table/AttachTableScreen.h \
-    src/views/attach_table/AttachTableView.h \
-    src/controllers/attach_table/AttachTableController.h \
-    src/models/app_config/AppConfig.h \
-    src/models/app_config/AppConfigUpdater.h \
-    src/models/attach_table/Attach.h \
-    src/models/attach_table/AttachTableData.h \
-    src/models/attach_table/AttachTableModel.h \
-    src/models/database_config/DataBaseConfig.h \
-    src/models/record_table/Record.h \
-    src/views/console_emulator/ConsoleEmulator.h \
-    src/views/console_emulator/ExecuteCommand.h \
-    src/views/enter_password/EnterPassword.h \
-    src/views/find_in_base_screen/FindScreen.h \
-    src/views/main_window/hidabletabwidget.h \
-    src/views/main_window/MainWindow.h \
-    src/views/print_preview/PreviewView.h \
-    src/views/print_preview/PrintPreview.h \
-    src/views/record_table/verticalscrollarea.h \
-    src/views/wait_clock/WaitClock.h \
     src/views/browser/edittableview.hxx \
-    src/models/record_table/RecordModel.h \
-    src/models/record_table/RecordProxyModel.h \
-    src/views/record_table/RecordScreen.h \
-    src/views/record_table/RecordView.h \
-    src/views/record_table/RecordPrint.h \
-    src/controllers/record_table/RecordController.h \
-    src/models/record_table/ItemsFlat.h \
-    src/models/tree/KnowModel.h \
     src/models/record_table/linker.hxx \
     src/models/tree/binder.hxx \
-    src/models/tree/treeindex.hxx \
-    src/models/record_table/recordindex.hxx \
     src/utility/util.hxx \
-    src/views/tree/TreeView.h
+    src/models/tree/tree_know_model.h \
+    src/models/tree/tree_model.h \
+    src/models/tree/tree_item.h \
+    src/models/tree/tree_index.hxx \
+    src/views/tree/tree_view.h \
+    src/views/tree/tree_screen.h \
+    src/controllers/attach_table/attach_table_controller.h \
+    src/controllers/record_table/record_controller.h \
+    src/libraries/clipboard_branch.h \
+    src/libraries/clipboard_records.h \
+    src/libraries/disk_helper.h \
+    src/libraries/fixed_parameters.h \
+    src/libraries/flat_control.h \
+    src/libraries/global_parameters.h \
+    src/libraries/mt_styled_item_delegate.h \
+    src/libraries/mt_table_widget.h \
+    src/libraries/trash_monitoring.h \
+    src/libraries/walk_history.h \
+    src/libraries/window_switcher.h \
+    src/libraries/crypt/crypt_service.h \
+    src/libraries/crypt/password.h \
+    src/libraries/crypt/pbkdf2qt.h \
+    src/libraries/crypt/rc5simple.h \
+    src/libraries/wyedit/indentslider/indent_slider.h \
+    src/libraries/wyedit/editor.h \
+    src/libraries/wyedit/editor_abs_table.h \
+    src/libraries/wyedit/editor_abs_table_cell.h \
+    src/libraries/wyedit/editor_add_table_form.h \
+    src/libraries/wyedit/editor_config.h \
+    src/libraries/wyedit/editor_config_dialog.h \
+    src/libraries/wyedit/editor_config_font.h \
+    src/libraries/wyedit/editor_config_misc.h \
+    src/libraries/wyedit/editor_context_menu.h \
+    src/libraries/wyedit/editor_find_dialog.h \
+    src/libraries/wyedit/deitor_image_properties.h \
+    src/libraries/wyedit/editor_multi_line_input_dialog.h \
+    src/libraries/wyedit/editor_show_text.h \
+    src/libraries/wyedit/editor_split_cell_form.h \
+    src/libraries/wyedit/editor_text_area.h \
+    src/models/app_config/app_config.h \
+    src/models/app_config/app_config_updater.h \
+    src/models/attach_table/attach.h \
+    src/models/attach_table/attach_table_data.h \
+    src/models/attach_table/attach_table_model.h \
+    src/models/database_config/database_config.h \
+    src/models/record_table/items_flat.h \
+    src/models/record_table/record.h \
+    src/models/record_table/record_model.h \
+    src/models/record_table/record_index.hxx \
+    src/models/record_table/record_model_proxy.h \
+    src/models/tree/tree_xml.h \
+    src/views/app_config/app_config_dialog.h \
+    src/views/app_config/app_config_page_crypt.h \
+    src/views/app_config/app_config_page_main.h \
+    src/views/app_config/app_config_page_misc.h \
+    src/views/app_config/app_config_page_synchro.h \
+    src/views/app_config/app_config_page_table.h \
+    src/views/app_config/config_dialog.h \
+    src/views/app_config/config_page.h \
+    src/views/attach_table/attach_table_screen.h \
+    src/views/attach_table/attach_table_view.h \
+    src/views/console_emulator/console_emulator.h \
+    src/views/console_emulator/execute_command.h \
+    src/views/dialog/over_text_tool_button.h \
+    src/views/dialog/reduce_message_box.h \
+    src/views/enter_password/enter_password.h \
+    src/views/find_in_base_screen/find_screen.h \
+    src/views/main_window/main_window.h \
+    src/views/main_window/hidable_tabwidget.h \
+    src/views/print_preview/print_preview.h \
+    src/views/print_preview/view_preview.h \
+    src/views/record/add_new_record.h \
+    src/views/record/info_field_enter.h \
+    src/views/record/meta_editor.h \
+    src/views/record/record_info_fields_editor.h \
+    src/views/record_table/record_print.h \
+    src/views/record_table/record_screen.h \
+    src/views/record_table/record_view.h \
+    src/views/record_table/vertical_scrollarea.h \
+    src/views/wait_clock/wait_clock.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -257,51 +265,11 @@ HEADERS     +=  \
     src/libraries/qt_single_application5/qtsinglecoreapplication.h
 }
 
-HEADERS     +=  \
-    src/libraries/ClipboardBranch.h     \
-    src/libraries/GlobalParameters.h    \
+HEADERS     +=
 #    src/views/console_emulator/ExecuteCommand.h  \
 #    src/views/console_emulator/ConsoleEmulator.h \
-    src/libraries/WalkHistory.h     \
-    src/libraries/crypt/Pbkdf2Qt.h  \
-    src/libraries/crypt/RC5Simple.h \
-    src/libraries/crypt/Password.h  \
-    src/libraries/MtTableWidget.h   \
-    src/libraries/MtStyledItemDelegate.h
 
 SOURCES     =   src/main.cpp \
-    src/views/record/RecordInfoFieldsEditor.cpp \
-    src/views/record/InfoFieldEnter.cpp \
-    src/views/record/MetaEditor.cpp \
-    src/libraries/wyedit/Editor.cpp \
-    src/libraries/wyedit/EditorConfig.cpp \
-    src/libraries/wyedit/EditorConfigDialog.cpp \
-    src/libraries/wyedit/EditorConfigFont.cpp \
-    src/libraries/wyedit/EditorConfigMisc.cpp \
-    src/libraries/wyedit/EditorFindDialog.cpp \
-    src/models/tree/XmlTree.cpp \
-    src/models/tree/TreeModel.cpp \
-    src/models/tree/TreeItem.cpp \
-    src/views/record/AddNewRecord.cpp \
-    src/libraries/ClipboardRecords.cpp \
-    src/views/tree/TreeScreen.cpp \
-    src/libraries/TrashMonitoring.cpp \
-    src/libraries/wyedit/EditorContextMenu.cpp \
-    src/libraries/wyedit/EditorTextArea.cpp \
-    src/libraries/wyedit/indentslider/IndentSlider.cpp \
-    src/libraries/wyedit/EditorSplitCellForm.cpp \
-    src/libraries/wyedit/EditorAbsTableCell.cpp \
-    src/libraries/wyedit/EditorAbsTable.cpp \
-    src/libraries/wyedit/EditorAddTableForm.cpp \
-    src/libraries/wyedit/EditorImageProperties.cpp \
-    src/libraries/wyedit/EditorMultiLineInputDialog.cpp \
-    src/libraries/FixedParameters.cpp \
-    src/libraries/WindowSwitcher.cpp \
-    src/libraries/wyedit/EditorShowText.cpp \
-    src/views/dialog/ReduceMessageBox.cpp \
-    src/views/dialog/OverTextToolButton.cpp \
-    src/libraries/crypt/CryptService.cpp \
-    src/libraries/DiskHelper.cpp \
     src/views/browser/autosaver.cpp \
     src/views/browser/bookmarks.cpp \
     src/views/browser/chasewidget.cpp \
@@ -322,49 +290,89 @@ SOURCES     =   src/main.cpp \
     src/views/browser/webview.cpp \
     src/views/browser/xbel.cpp \
     src/views/browser/entrance.cpp \
-    src/libraries/FlatControl.cpp \
     src/views/browser/browser.cpp \
-    src/views/app_config/AppConfigDialog.cpp \
-    src/views/app_config/AppConfigPageCrypt.cpp \
-    src/views/app_config/AppConfigPageMain.cpp \
-    src/views/app_config/AppConfigPageMisc.cpp \
-    src/views/app_config/AppConfigPageRecordTable.cpp \
-    src/views/app_config/AppConfigPageSynchro.cpp \
-    src/views/app_config/ConfigDialog.cpp \
-    src/views/app_config/ConfigPage.cpp \
-    src/views/attach_table/AttachTableScreen.cpp \
-    src/views/attach_table/AttachTableView.cpp \
-    src/controllers/attach_table/AttachTableController.cpp \
-    src/models/app_config/AppConfig.cpp \
-    src/models/app_config/AppConfigUpdater.cpp \
-    src/models/attach_table/Attach.cpp \
-    src/models/attach_table/AttachTableData.cpp \
-    src/models/attach_table/AttachTableModel.cpp \
-    src/models/database_config/DataBaseConfig.cpp \
-    src/models/record_table/Record.cpp \
-    src/views/console_emulator/ConsoleEmulator.cpp \
-    src/views/console_emulator/ExecuteCommand.cpp \
-    src/views/enter_password/EnterPassword.cpp \
-    src/views/find_in_base_screen/FindScreen.cpp \
-    src/views/main_window/hidabletabwidget.cpp \
-    src/views/main_window/MainWindow.cpp \
-    src/views/print_preview/PreviewView.cpp \
-    src/views/print_preview/PrintPreview.cpp \
-    src/views/record_table/verticalscrollarea.cpp \
-    src/views/wait_clock/WaitClock.cpp \
-    src/models/record_table/RecordModel.cpp \
-    src/models/record_table/RecordProxyModel.cpp \
-    src/views/record_table/RecordPrint.cpp \
-    src/views/record_table/RecordScreen.cpp \
-    src/views/record_table/RecordView.cpp \
-    src/controllers/record_table/RecordController.cpp \
-    src/models/record_table/ItemsFlat.cpp \
-    src/models/tree/KnowModel.cpp \
     src/models/tree/binder.cxx \
     src/models/record_table/linker.cxx \
-    src/models/tree/treeindex.cxx \
-    src/models/record_table/recordindex.cxx \
-    src/views/tree/TreeView.cpp
+    src/models/tree/tree_know_model.cpp \
+    src/models/tree/tree_model.cpp \
+    src/models/tree/tree_item.cpp \
+    src/models/tree/tree_index.cxx \
+    src/views/tree/tree_view.cpp \
+    src/views/tree/tree_screen.cpp \
+    src/controllers/attach_table/attach_table_controller.cpp \
+    src/controllers/record_table/record_controller.cpp \
+    src/libraries/crypt/crypt_service.cpp \
+    src/libraries/crypt/password.cpp \
+    src/libraries/crypt/pbkdf2qt.cpp \
+    src/libraries/crypt/rc5simple.cpp \
+    src/libraries/wyedit/indentslider/indent_slider.cpp \
+    src/libraries/wyedit/editor.cpp \
+    src/libraries/wyedit/editor_abs_table.cpp \
+    src/libraries/wyedit/editor_abs_table_cell.cpp \
+    src/libraries/wyedit/editor_add_table_form.cpp \
+    src/libraries/wyedit/editor_config.cpp \
+    src/libraries/wyedit/editor_config_dialog.cpp \
+    src/libraries/wyedit/editor_config_font.cpp \
+    src/libraries/wyedit/editor_config_misc.cpp \
+    src/libraries/wyedit/editor_context_menu.cpp \
+    src/libraries/wyedit/editor_find_dialog.cpp \
+    src/libraries/wyedit/editor_image_properties.cpp \
+    src/libraries/wyedit/editor_multi_line_input_dialog.cpp \
+    src/libraries/wyedit/editor_show_text.cpp \
+    src/libraries/wyedit/editor_split_cell_form.cpp \
+    src/libraries/wyedit/editor_text_area.cpp \
+    src/libraries/clipboard_branch.cpp \
+    src/libraries/clipboard_records.cpp \
+    src/libraries/disk_helper.cpp \
+    src/libraries/fixed_parameters.cpp \
+    src/libraries/flat_control.cpp \
+    src/libraries/global_parameters.cpp \
+    src/libraries/mt_styled_item_delegate.cpp \
+    src/libraries/mt_table_widget.cpp \
+    src/libraries/trash_monitoring.cpp \
+    src/libraries/walk_history.cpp \
+    src/libraries/window_switcher.cpp \
+    src/models/app_config/app_config.cpp \
+    src/models/app_config/app_config_updater.cpp \
+    src/models/attach_table/attach.cpp \
+    src/models/attach_table/attach_table_data.cpp \
+    src/models/attach_table/attach_table_model.cpp \
+    src/models/database_config/database_config.cpp \
+    src/models/record_table/items_flat.cpp \
+    src/models/record_table/record.cpp \
+    src/models/record_table/record_index.cxx \
+    src/models/record_table/record_model.cpp \
+    src/models/record_table/record_model_proxy.cpp \
+    src/models/tree/tree_xml.cpp \
+    src/views/app_config/app_config_dialog.cpp \
+    src/views/app_config/app_config_page_crypt.cpp \
+    src/views/app_config/app_config_page_main.cpp \
+    src/views/app_config/app_config_page_misc.cpp \
+    src/views/app_config/app_config_page_record_table.cpp \
+    src/views/app_config/app_config_page_synchro.cpp \
+    src/views/app_config/config_dialog.cpp \
+    src/views/app_config/config_page.cpp \
+    src/views/attach_table/attach_table_screen.cpp \
+    src/views/attach_table/attach_table_view.cpp \
+    src/views/console_emulator/console_emulator.cpp \
+    src/views/console_emulator/execute_command.cpp \
+    src/views/dialog/over_text_tool_button.cpp \
+    src/views/dialog/reduce_message_box.cpp \
+    src/views/enter_password/enter_password.cpp \
+    src/views/find_in_base_screen/find_screen.cpp \
+    src/views/main_window/hidable_tabwidget.cpp \
+    src/views/main_window/main_window.cpp \
+    src/views/print_preview/view_preview.cpp \
+    src/views/print_preview/print_preview.cpp \
+    src/views/record/add_new_record.cpp \
+    src/views/record/info_field_enter.cpp \
+    src/views/record/meta_editor.cpp \
+    src/views/record/record_info_fields_editor.cpp \
+    src/views/record_table/record_print.cpp \
+    src/views/record_table/record_screen.cpp \
+    src/views/record_table/record_view.cpp \
+    src/views/record_table/vertical_scrollarea.cpp \
+    src/views/wait_clock/wait_clock.cpp
 #    src/views/browser/cookiejar.cpp \
 
 
@@ -388,15 +396,7 @@ SOURCES     +=  \
 
 }
 
-SOURCES     +=  \
-    src/libraries/ClipboardBranch.cpp \
-    src/libraries/GlobalParameters.cpp \
-    src/libraries/WalkHistory.cpp \
-    src/libraries/crypt/Pbkdf2Qt.cpp \
-    src/libraries/crypt/RC5Simple.cpp \
-    src/libraries/crypt/Password.cpp \
-    src/libraries/MtTableWidget.cpp \
-    src/libraries/MtStyledItemDelegate.cpp
+SOURCES     +=
 
 
 wince* { 

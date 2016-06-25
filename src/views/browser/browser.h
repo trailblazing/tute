@@ -55,11 +55,11 @@
 // #include <QtWebEngine/QQuickWebEngineProfile>
 #include <QWebEngineUrlRequestInterceptor>
 
-#include "controllers/record_table/RecordController.h"
+#include "controllers/record_table/record_controller.h"
 
 // #include "models/tree/TreeItem.h"
-#include "models/tree/TreeModel.h"
-#include "views/tree/TreeScreen.h"
+#include "models/tree/tree_model.h"
+#include "views/tree/tree_screen.h"
 
 
 
@@ -201,7 +201,7 @@ namespace browser {
             QStatusBar  *statusBar() = delete;
             QStatusBar  *status_bar();
             QStatusBar  *status_bar() const;
-            boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordIndex> record_index);
+            boost::intrusive_ptr<TreeItem> page_instantiate(boost::intrusive_ptr<RecordIndex> record_index);
                 //        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
             rs_t *record_screen();
             Entrance    *entrance();

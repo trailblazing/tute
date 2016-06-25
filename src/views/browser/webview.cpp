@@ -51,17 +51,17 @@
 #include "ui_proxy.h"
 #include "tabwidget.h"
 #include "webview.h"
-#include "views/main_window/MainWindow.h"
-#include "views/find_in_base_screen/FindScreen.h"
-#include "libraries/WindowSwitcher.h"
-#include "libraries/WalkHistory.h"
-#include "models/attach_table/AttachTableData.h"
-#include "views/tree/TreeView.h"
-#include "models/tree/treeindex.hxx"
-#include "models/tree/KnowModel.h"
+#include "views/main_window/main_window.h"
+#include "views/find_in_base_screen/find_screen.h"
+#include "libraries/window_switcher.h"
+#include "libraries/walk_history.h"
+#include "models/attach_table/attach_table_data.h"
+#include "views/tree/tree_view.h"
+#include "models/tree/tree_index.hxx"
+#include "models/tree/tree_know_model.h"
 #include "models/tree/binder.hxx"
 #include "models/record_table/linker.hxx"
-#include "models/record_table/recordindex.hxx"
+#include "models/record_table/record_index.hxx"
 
 
 #include <QtGui/QClipboard>
@@ -85,20 +85,20 @@
 #include <QtCore/QBuffer>
 
 #include "main.h"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
-#include "models/record_table/ItemsFlat.h"
-#include "models/record_table/Record.h"
-#include "views/record_table/RecordView.h"
-#include "libraries/GlobalParameters.h"
+#include "models/record_table/record_index.hxx"
+#include "models/record_table/record_model.h"
+#include "models/record_table/items_flat.h"
+#include "models/record_table/record.h"
+#include "views/record_table/record_view.h"
+#include "libraries/global_parameters.h"
 #include "views/browser/entrance.h"
-#include "views/record_table/RecordScreen.h"
-#include "controllers/record_table/RecordController.h"
+#include "views/record_table/record_screen.h"
+#include "controllers/record_table/record_controller.h"
 // #include "browserview.moc"
-#include "libraries/GlobalParameters.h"
-#include "views/record/MetaEditor.h"
-#include "models/tree/TreeItem.h"
-#include "views/tree/TreeScreen.h"
+#include "libraries/global_parameters.h"
+#include "views/record/meta_editor.h"
+#include "models/tree/tree_item.h"
+#include "views/tree/tree_screen.h"
 // #include "views/browser/browser.h"
 
 
@@ -620,7 +620,7 @@ namespace browser {
 	if(item->binder()){	// && item->binder() == _binder
 	    if(! item->binder()->integrity_external(item, this)){
 		// auto it = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_modelindex, std::placeholders::_2, std::placeholders::_3));
-		it = item_bind(item);
+		it = bind(item);
 		// item
 		// , std::bind(&TreeScreen::view_paste_as_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 		// );
@@ -631,7 +631,7 @@ namespace browser {
 // if(checked) item->activate(std::bind(&browser::Entrance::find_activated, globalparameters.entrance(), std::placeholders::_1));
 	    }
 	}else{
-	    it = item_bind(item);
+	    it = bind(item);
 
 // if(checked) it->activate(std::bind(&browser::Entrance::find_activated, globalparameters.entrance(), std::placeholders::_1));
 	}
@@ -810,7 +810,7 @@ namespace browser {
 		    });																																// Browser::_defaulthome
 
 
-	    page = _browser->item_bind(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, nullptr, it))->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
+	    page = _browser->page_instantiate(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, nullptr, it))->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
 
 
 	    assert(page);
@@ -847,7 +847,7 @@ namespace browser {
 		// already create window, why do this? -- refer to demo browser
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
-		page = tree_index->item_bind(this->_binder->host(), target_url
+		page = tree_index->page_instantiate(this->_binder->host(), target_url
 					    , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
 					    , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
 			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
@@ -1089,7 +1089,7 @@ namespace browser {
 	// return re;
 	// }
 
-    boost::intrusive_ptr<TreeItem> WebPage:: item_bind(boost::intrusive_ptr<TreeItem> item){	// , browser::WebPage *page
+    boost::intrusive_ptr<TreeItem> WebPage:: bind(boost::intrusive_ptr<TreeItem> item){	// , browser::WebPage *page
 	boost::intrusive_ptr<TreeItem> result(nullptr);
 
 	// auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
@@ -2109,7 +2109,7 @@ namespace browser {
 		    }
 		}
 		for(auto _it : others_same){
-		    auto it_ = v->merge(TreeIndex::merge_instance(TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it));// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+		    auto it_ = v->merge(TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it));// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 		}
 	    }
@@ -2633,7 +2633,7 @@ namespace browser {
 		// )
 		// ;
 	    }
-	    _page->item_bind(_item);
+	    _page->bind(_item);
 	    if(_page->url().toString() != _item->field<url_type>()){_page->setUrl(QUrl(_item->field<url_type>()));}
 		// _bounded_page = view->page();
 		// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);

@@ -57,7 +57,7 @@
 #include <QtWidgets/QHeaderView>
 #include <QtWidgets/QMessageBox>
 
-#include "libraries/FlatControl.h"
+#include "libraries/flat_control.h"
 
 #include <QtCore/QDebug>
 

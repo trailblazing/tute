@@ -76,25 +76,25 @@
 #include <QWebEngineSettings>
 #include <QtCore/QDebug>
 
-#include "controllers/record_table/RecordController.h"
-#include "libraries/GlobalParameters.h"
+#include "controllers/record_table/record_controller.h"
+#include "libraries/global_parameters.h"
 #include "main.h"
-#include "models/record_table/ItemsFlat.h"
-#include "models/record_table/Record.h"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
+#include "models/record_table/items_flat.h"
+#include "models/record_table/record.h"
+#include "models/record_table/record_index.hxx"
+#include "models/record_table/record_model.h"
 #include "models/record_table/linker.hxx"
-#include "models/record_table/recordindex.hxx"
+#include "models/record_table/record_index.hxx"
 #include "models/tree/binder.hxx"
-#include "models/tree/treeindex.hxx"
+#include "models/tree/tree_index.hxx"
 #include "views/browser/entrance.h"
 #include "views/browser/tabwidget.h"
-#include "views/find_in_base_screen/FindScreen.h"
-#include "views/main_window/MainWindow.h"
-#include "views/record_table/RecordScreen.h"
-#include "views/record_table/RecordView.h"
-#include "views/tree/TreeView.h"
-#include "views/tree/TreeScreen.h"
+#include "views/find_in_base_screen/find_screen.h"
+#include "views/main_window/main_window.h"
+#include "views/record_table/record_screen.h"
+#include "views/record_table/record_view.h"
+#include "views/tree/tree_view.h"
+#include "views/tree/tree_screen.h"
 
 extern GlobalParameters globalparameters;
 // Record *default_record = nullptr;
@@ -258,7 +258,7 @@ namespace browser {
                , [&](const QString &file){
 		tv_t *tree_view = _tree_screen->view();
                 auto it = tree_view->session_root_auto();
-		TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->item_bind(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
             }
             );
         connect(_tabmanager, &TabWidget::setCurrentTitle, this, &Browser::slotUpdateWindowTitle);
@@ -1310,7 +1310,7 @@ namespace browser {
 //        loadPage(file);
 	tv_t *tree_view = _tree_screen->view();
         auto it = tree_view->session_root_auto();
-	TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->item_bind(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+	TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
     }
 #define QT_NO_PRINTPREVIEWDIALOG
 
@@ -1455,7 +1455,7 @@ namespace browser {
         auto current_item = tree_view->current_item();
         auto parent = current_item->parent();
         if(! parent){throw std::runtime_error(formatter() << "! parent");}
-	TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->item_bind(
+	TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(
 	    tree_view->current_item(), QUrl(home), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
             )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 // }
@@ -1628,7 +1628,7 @@ namespace browser {
 
     QStatusBar *Browser::status_bar() const {return globalparameters.status_bar();}
 
-    boost::intrusive_ptr<TreeItem> Browser::item_bind(boost::intrusive_ptr<RecordIndex> record_index){
+    boost::intrusive_ptr<TreeItem> Browser::page_instantiate(boost::intrusive_ptr<RecordIndex> record_index){
         boost::intrusive_ptr<TreeItem> result(nullptr);
 //        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
         boost::intrusive_ptr<TreeItem> target = record_index->target();

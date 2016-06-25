@@ -1,5 +1,5 @@
 #include "binder.hxx"
-#include "models/tree/TreeItem.h"
+#include "models/tree/tree_item.h"
 #include "views/browser/webview.h"
 #include "views/browser/entrance.h"
 

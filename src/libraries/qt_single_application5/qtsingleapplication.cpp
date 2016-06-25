@@ -48,16 +48,16 @@
 #include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
 #include "views/browser/webview.h"
-#include "libraries/GlobalParameters.h"
-#include "views/record_table/RecordScreen.h"
-#include "models/database_config/DataBaseConfig.h"
+#include "libraries/global_parameters.h"
+#include "views/record_table/record_screen.h"
+#include "models/database_config/database_config.h"
 #include "models/record_table/linker.hxx"
-#include "models/record_table/recordindex.hxx"
-#include "models/tree/treeindex.hxx"
-#include "models/record_table/RecordModel.h"
-#include "models/record_table/ItemsFlat.h"
-#include "controllers/record_table/RecordController.h"
-#include "views/tree/TreeView.h"
+#include "models/record_table/record_index.hxx"
+#include "models/tree/tree_index.hxx"
+#include "models/record_table/record_model.h"
+#include "models/record_table/items_flat.h"
+#include "controllers/record_table/record_controller.h"
+#include "views/tree/tree_view.h"
 #include "main.h"
 
 
@@ -95,23 +95,23 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #endif
 
-#include "views/main_window/MainWindow.h"
-#include "models/app_config/AppConfig.h"
-#include "libraries/ClipboardRecords.h"
-#include "libraries/TrashMonitoring.h"
-#include "libraries/FixedParameters.h"
-#include "libraries/GlobalParameters.h"
-#include "libraries/WalkHistory.h"
-#include "libraries/WindowSwitcher.h"
-#include "libraries/crypt/RC5Simple.h"
-#include "libraries/crypt/Password.h"
-#include "libraries/GlobalParameters.h"
-#include "views/record_table/RecordScreen.h"
-#include "models/database_config/DataBaseConfig.h"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
-#include "models/record_table/ItemsFlat.h"
-#include "controllers/record_table/RecordController.h"
+#include "views/main_window/main_window.h"
+#include "models/app_config/app_config.h"
+#include "libraries/clipboard_records.h"
+#include "libraries/trash_monitoring.h"
+#include "libraries/fixed_parameters.h"
+#include "libraries/global_parameters.h"
+#include "libraries/walk_history.h"
+#include "libraries/window_switcher.h"
+#include "libraries/crypt/rc5simple.h"
+#include "libraries/crypt/password.h"
+#include "libraries/global_parameters.h"
+#include "views/record_table/record_screen.h"
+#include "models/database_config/database_config.h"
+#include "models/record_table/record_index.hxx"
+#include "models/record_table/record_model.h"
+#include "models/record_table/items_flat.h"
+#include "controllers/record_table/record_controller.h"
 
 
 // using namespace std;
@@ -274,7 +274,7 @@
 #include "bookmarks.h"
 // #include "views/browser/browser.h"
 #include "views/browser/entrance.h"
-#include "libraries/GlobalParameters.h"
+#include "libraries/global_parameters.h"
 
 #include "cookiejar.h"
 #include "downloadmanager.h"
@@ -839,7 +839,7 @@ void sa_t::newLocalSocketConnection(){
             boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
 //            } catch(std::exception &) {}
 //            if(record_index){
-            browser->item_bind(record_index)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+	    browser->page_instantiate(record_index)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
 //            }
 //            else{
 //                tree_view->index_invoke(tree_view->source_model()->index(it));
@@ -849,7 +849,7 @@ void sa_t::newLocalSocketConnection(){
 //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
 
 //            if(tree_index)
-	    TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->item_bind(tree_view->current_item()
+	    TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(tree_view->current_item()
                                                                                                          , _url
 													 , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
                                                                                                          , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
@@ -949,7 +949,7 @@ void sa_t::postLaunch(){
 //            browser->loadPage(args.last());			// mainWindow()->loadPage(args.last());
 	    tv_t *tree_view = _globalparameters.tree_screen()->view();
             auto it = tree_view->session_root_auto();
-	    TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->item_bind(it, args.last(), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+	    TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, args.last(), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
         }
         //        else
         //            browser->slotHome(); // mainWindow()->slotHome();

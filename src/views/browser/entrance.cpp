@@ -38,27 +38,27 @@
 #include "entrance.h"
 #include "entranceinfo.h"
 #include "toolbarsearch.h"
-#include "views/record_table/RecordScreen.h"
-#include "controllers/record_table/RecordController.h"
-#include "views/record_table/RecordView.h"
-#include "models/record_table/ItemsFlat.h"
-#include "models/record_table/recordindex.hxx"
-#include "models/record_table/RecordModel.h"
-#include "libraries/WindowSwitcher.h"
+#include "views/record_table/record_screen.h"
+#include "controllers/record_table/record_controller.h"
+#include "views/record_table/record_view.h"
+#include "models/record_table/items_flat.h"
+#include "models/record_table/record_index.hxx"
+#include "models/record_table/record_model.h"
+#include "libraries/window_switcher.h"
 #include "views/browser/webview.h"
 #include "libraries/qt_single_application5/qtsingleapplication.h"
-#include "views/find_in_base_screen/FindScreen.h"
+#include "views/find_in_base_screen/find_screen.h"
 #include <utility>
 #include "models/tree/binder.hxx"
-#include "models/tree/KnowModel.h"
-#include "views/tree/TreeScreen.h"
-#include "views/main_window/MainWindow.h"
-#include "models/record_table/Record.h"
-#include "libraries/GlobalParameters.h"
+#include "models/tree/tree_know_model.h"
+#include "views/tree/tree_screen.h"
+#include "views/main_window/main_window.h"
+#include "models/record_table/record.h"
+#include "libraries/global_parameters.h"
 #include "browser.h"
 #include "webview.h"
-#include "views/record/MetaEditor.h"
-#include "models/tree/TreeItem.h"
+#include "views/record/meta_editor.h"
+#include "models/tree/tree_item.h"
 
 
 namespace browser {
@@ -360,7 +360,7 @@ namespace browser {
                                 // try {
                                 // record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
                                 // } catch(std::exception &e) {throw e;}
-                                page->item_bind(_item)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1)); // page->load(record, true);
+                                page->bind(_item)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1)); // page->load(record, true);
                             }
                         }
                     }
