@@ -1,6 +1,10 @@
 #ifndef _CONFIGPAGE_MISC_H_
 #define	_CONFIGPAGE_MISC_H_
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QCheckBox>
 #include <QGroupBox>
@@ -9,27 +13,25 @@
 
 
 class AppConfigPageMisc : public ConfigPage {
-    Q_OBJECT
+    W_OBJECT(AppConfigPageMisc)
 
-public:
-    AppConfigPageMisc(QWidget *parent = 0);
-    int apply_changes(void);
+    public:
+	AppConfigPageMisc(QWidget *parent = 0);
+	int apply_changes(void);
 
-private slots:
+    private slots:
 
-protected:
+    protected:
 
-    QCheckBox *cutBranchConfirm;
-    QCheckBox *printDebugMessages;
-    QCheckBox *runInMinimizedWindow;
+	QCheckBox	*cutBranchConfirm;
+	QCheckBox	*printDebugMessages;
+	QCheckBox	*runInMinimizedWindow;
 
-    // Объединяющая рамка
-    QGroupBox *historyBox;
+	// Объединяющая рамка
+	QGroupBox *historyBox;
 
-    QCheckBox *rememberAtHistoryNavigationCheckBox;
-    QCheckBox *rememberAtOrdinarySelectionCheckBox;
-
-
+	QCheckBox	*rememberAtHistoryNavigationCheckBox;
+	QCheckBox	*rememberAtOrdinarySelectionCheckBox;
 };
 
 

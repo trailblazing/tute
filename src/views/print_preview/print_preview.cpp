@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include <QAbstractScrollArea>
 #include <QPrintDialog>
 #include <QPrinter>
@@ -29,7 +33,7 @@ static inline qreal mm_to_inches(double mm)
     return mm * 0.039370147;
 }
 
-
+W_OBJECT_IMPL(PrintPreview)
 PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     : QDialog(parent), printer(QPrinter::HighResolution)
 {

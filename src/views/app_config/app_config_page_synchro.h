@@ -1,6 +1,9 @@
 #ifndef _CONFIGPAGE_SYNCHRO_H_
 #define	_CONFIGPAGE_SYNCHRO_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QCheckBox>
 #include <QLineEdit>
@@ -10,23 +13,23 @@
 
 
 class AppConfigPageSynchro : public ConfigPage {
-    Q_OBJECT
+    W_OBJECT(AppConfigPageSynchro)
 
-public:
-    AppConfigPageSynchro(QWidget *parent = 0);
-    int apply_changes(void);
+    public:
+	AppConfigPageSynchro(QWidget *parent = 0);
+	int apply_changes(void);
 
-private slots:
+    private slots:
 
-protected:
+    protected:
 
-    QLineEdit *synchroCommand;
+	QLineEdit *synchroCommand;
 
-    QCheckBox *synchroOnStartup;
-    QCheckBox *synchroOnExit;
+	QCheckBox	*synchroOnStartup;
+	QCheckBox	*synchroOnExit;
 
-    // Объединяющая рамка
-    QGroupBox *synchroOnBox;
+	// Объединяющая рамка
+	QGroupBox *synchroOnBox;
 };
 
 

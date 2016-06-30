@@ -1,7 +1,8 @@
 #ifndef VERTICALSCROLLAREA_H
 #define VERTICALSCROLLAREA_H
 
-
+#include <wobjectdefs.h>
+#include <QObject>
 
 #include <QScrollArea>
 #include "utility/delegate.h"
@@ -11,7 +12,7 @@
 class rv_t;
 
 class VerticalScrollArea : public QScrollArea {
-    Q_OBJECT
+    W_OBJECT(VerticalScrollArea)
 
     //    std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *> > > _interface;
     rv_t *_record_view;

@@ -1,4 +1,7 @@
 #include <set>
+
+#include <wobjectimpl.h>
+
 #include <QAbstractItemView>
 #include <QAction>
 #include <QMenu>
@@ -85,6 +88,8 @@ const char *tree_screen_viewer_name = "TreeScreenViewer";
 
 // know_root_holder::~know_root_holder() {delete _know_root;}
 
+W_OBJECT_IMPL(ts_t)
+
 ts_t::ts_t(QString object_name
 	  , const AppConfig   &_appconfig
 	  , QMenu             *_filemenu
@@ -141,6 +146,7 @@ ts_t::ts_t(QString object_name
     assembly();	// menubar_
     assembly_context_menu();
 }
+
 ts_t::~ts_t(){
 	// appconfig.treescreensize(QSize(this->width(), this->height()));
 	// QToolBar        *_menubar; // QMenuBar *_menubar;
@@ -184,6 +190,7 @@ ts_t::~ts_t(){
 	// _know_model_board = nullptr;
 	// }
 }
+
 void ts_t:: setup_actions(void){
     QAction *ac;
 
@@ -364,7 +371,7 @@ void ts_t:: setup_actions(void){
 		    QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
 		    result = it.next();
 		    while(it.hasNext()){
-			result = _tree_view->merge(TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next()));// TreeIndex::instance(_current_model, result, result->parent()), it.next());
+			result = _tree_view->merge(TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next()));	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
 		    }
 			// children_transfer(_new_item, _current_model);
 		}else{
@@ -570,6 +577,7 @@ void ts_t:: setup_actions(void){
     main_menu_action_->setMenu(_main_menu_in_button);
     _actionlist[action_main_menu] = main_menu_action_;
 }
+
 // Действия при нажатии кнопки редактирования записи
 void ts_t:: edit_field_context(QModelIndex index_current){
 	// qDebug() << "RecordTableController::editFieldContext()";
@@ -596,13 +604,14 @@ void ts_t:: edit_field_context(QModelIndex index_current){
     if(i == QDialog::Rejected)return;	// Была нажата отмена, ничего ненужно делать
 
 	// Измененные данные записываются
-    edit_field(edit_record_dialog.getField("pin"),
-	edit_record_dialog.getField("name"),
-	edit_record_dialog.getField("author"),
-	edit_record_dialog.getField("home"),
-	edit_record_dialog.getField("url"),
-	edit_record_dialog.getField("tags"));
+    edit_field(edit_record_dialog.getField("pin")
+	      ,	edit_record_dialog.getField("name")
+	      ,	edit_record_dialog.getField("author")
+	      ,	edit_record_dialog.getField("home")
+	      ,	edit_record_dialog.getField("url")
+	      ,	edit_record_dialog.getField("tags"));
 }
+
 // Функция сохранения отредактированных полей записи в таблицу конечных записей
 void ts_t:: edit_field(QString pin
 		      , QString name
@@ -641,6 +650,7 @@ void ts_t:: edit_field(QString pin
 	// find_object<TreeScreen>(tree_screen_singleton_name)
     _tree_view->know_model_save();
 }
+
 // void TreeScreen::restore_menubar(){
 // if(_tools_layout->indexOf(_main_menu_bar) == -1) {_tools_layout->addWidget(_main_menu_bar); }
 // }
@@ -649,6 +659,7 @@ void ts_t:: edit_field(QString pin
 QMenu *ts_t:: menus_in_button(){
     return _main_menu_in_button;
 }
+
 void ts_t:: setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 	// _toolsline = new QToolBar(this);
 
@@ -734,6 +745,7 @@ void ts_t:: setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 	// QSize size = appconfig.treescreensize();
 	// resize(size);
 }
+
 // void TreeScreen::setup_model(KnowModel *treemodel)
 // {
 //// Создание и первичная настройка модели
@@ -780,6 +792,7 @@ void ts_t:: enable_up_action(){	// bool enable
 	_actionlist[action_cursor_follow_root]->setEnabled(false);
     }
 }
+
 void ts_t:: setup_signals(void){
 	// connect(_recordtree_search, &browser::ToolbarSearch::textChanged, globalparameters.getFindScreen(), &FindScreen::enableFindButton);
 	// connect(_recordtree_search, &browser::ToolbarSearch::returnPressed, globalparameters.getFindScreen(), &FindScreen::findClicked);
@@ -807,6 +820,7 @@ void ts_t:: setup_signals(void){
 	// connect(knowTreeView,SIGNAL(pressed(const QModelIndex &)), this,SLOT(on_knowTreeView_clicked(const QModelIndex &)));
 	// connect(knowTreeView, SIGNAL(clicked(const QModelIndex &)), this, SLOT(on_knowTreeView_clicked(const QModelIndex &)));
 }
+
 // _main_menu_bar [QToolBar *]
 // |___main_menu_action [QWidgetAction *] <==> _main_menu_button [QPushButton *]
 // |___main_menu_in_button [QMenu *]
@@ -878,6 +892,7 @@ void ts_t:: assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu){
 // return _main_menu_bar;
 // }
 }
+
 void ts_t:: assembly_context_menu(){
     _context_menu->addAction(_actionlist[action_show_hide_record_screen]);
     _context_menu->addAction(_actionlist[action_set_as_session_root]);
@@ -916,6 +931,7 @@ void ts_t:: assembly_context_menu(){
 	_context_menu->addAction(_actionlist[action_main_menu]);
     }
 }
+
 void ts_t:: assembly(){
     _tools_layout->addWidget(_tools_line);
     _tools_line->setContentsMargins(0, 0, 0, 0);
@@ -980,6 +996,7 @@ void ts_t:: assembly(){
     lt->setContentsMargins(0, 0, 0, 0);	// setContentsMargins(0, 2, 0, 0);
     lt->setSpacing(0);
 }
+
 tv_t *ts_t:: view(){return _tree_view;}
 
 // void TreeScreen::view_collapse_all_sub(void)
@@ -1059,6 +1076,7 @@ void ts_t:: item_move_up_dn_branch(int (TreeItem::*_move)()){	// int direction
 	_tree_view->know_model_save();
     }
 }
+
 // limit to single selection, deprecated
 bool ts_t:: move_checkenable(void){
 	//// Получение списка индексов QModelIndex выделенных элементов
@@ -1076,6 +1094,7 @@ bool ts_t:: move_checkenable(void){
 	// } else
     return true;
 }
+
 // boost::intrusive_ptr<TreeItem> TreeScreen::branch_insert_sibling(void)
 // {
 // qDebug() << "In ins_branch()";
@@ -2184,6 +2203,7 @@ void ts_t:: on_custom_contextmenu_requested(const QPoint &_position){
 	// menu.exec(event->globalPos());
     _context_menu->exec(_tree_view->viewport()->mapToGlobal(_position));
 }
+
 // bool TreeScreen::is_index_localized(const QModelIndexList _origin_index_list)const
 // {
 // bool result = true;
@@ -2427,6 +2447,7 @@ void ts_t:: resizeEvent(QResizeEvent *e){
 	// contentsRect().width() - 1
 	// );
 }
+
 tsv_t *ts_t:: viewer() const {return _viewer;}
 
 void ts_t:: viewer(tsv_t *v){_viewer = v;}
@@ -2441,6 +2462,7 @@ void AdjustingScrollArea:: resizeEvent(QResizeEvent *e){
     _tree_view->resize(_tree_view->_tree_screen->width(), height());
 	// _tree_view->resizeEvent(e);
 }
+
 bool AdjustingScrollArea:: eventFilter(QObject *obj, QEvent *ev){
 	// This works because QScrollArea::setWidget installs an eventFilter on the widget
     if(obj && obj == widget() && ev->type() == QEvent::Resize){
@@ -2471,6 +2493,7 @@ bool AdjustingScrollArea:: eventFilter(QObject *obj, QEvent *ev){
     }
     return QScrollArea::eventFilter(obj, ev);
 }
+
 AdjustingScrollArea::AdjustingScrollArea(tv_t *_tree_view, QWidget *parent) : QScrollArea(parent), _tree_view(_tree_view){
 // setLayoutDirection(Qt::LayoutDirection::RightToLeft);
 
@@ -2494,6 +2517,7 @@ AdjustingScrollArea::AdjustingScrollArea(tv_t *_tree_view, QWidget *parent) : QS
     this->setWidget(_tree_view);
     _tree_view->viewport()->installEventFilter(this);
 }
+
 void AdjustingScrollArea:: setWidget(tv_t *view){
     QScrollArea::setWidget(view);
 
@@ -2501,6 +2525,7 @@ void AdjustingScrollArea:: setWidget(tv_t *view){
 	// but that's an implementation detail that we shouldn't rely on.
     view->viewport()->installEventFilter(this);
 }
+
 // TreeViewHelpWidget::TreeViewHelpWidget(TreeScreen *_tree_screen)
 // : QWidget(_tree_screen)
 // {
@@ -2528,6 +2553,7 @@ void AdjustingScrollArea:: setWidget(tv_t *view){
 tsv_t::~tsv_t(){
     _tree_screen->viewer(nullptr);
 }
+
 tsv_t::tsv_t(ts_t *_tree_screen, rs_t *_record_screen)
     : _tree_screen(_tree_screen)
       , _record_screen(_record_screen)
@@ -2543,6 +2569,7 @@ tsv_t::tsv_t(ts_t *_tree_screen, rs_t *_record_screen)
 // _tree_screen->setParent(this);
 // _tree_screen->show();
 }
+
 int tsv_t:: tree_screen(ts_t *tree){return _layout->addWidget(tree);}
 
 QWidget *tsv_t:: tree_screen() const {return _layout->widget();}

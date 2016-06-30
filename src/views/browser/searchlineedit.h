@@ -42,6 +42,11 @@
 #ifndef SEARCHLINEEDIT_H
 #define SEARCHLINEEDIT_H
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include "urllineedit.h"
 
 #include <QtWidgets/QLineEdit>
@@ -52,66 +57,62 @@ class QMenu;
 QT_END_NAMESPACE
 
 
-QT_BEGIN_NAMESPACE
+//    QT_BEGIN_NAMESPACE
 
 
 namespace browser {
-
-
-
     class SearchButton;
 
-    /*
-        Clear button on the right hand side of the search widget.
-        Hidden by default
-        "A circle with an X in it"
-     */
+	/*
+	    Clear button on the right hand side of the search widget.
+	    Hidden by default
+	    "A circle with an X in it"
+	 */
     class ClearButton : public QAbstractButton {
-        Q_OBJECT
+	W_OBJECT(ClearButton)
 
-    public:
-        ClearButton(QWidget *parent = 0);
-        void paintEvent(QPaintEvent *event);
+	public:
+	    ClearButton(QWidget *parent = 0);
+	    void paintEvent(QPaintEvent *event);
 
-    public slots:
-        void textChanged(const QString &text);
+	public slots:
+	    void textChanged(const QString &text);
     };
 
 
     class SearchLineEdit : public ExLineEdit {
-        Q_OBJECT
-        Q_PROPERTY(QString inactiveText READ inactiveText WRITE setInactiveText)
+	W_OBJECT(SearchLineEdit)
+//	Q_PROPERTY(QString inactiveText READ inactiveText WRITE setInactiveText)
 
-    signals:
-        void textChanged(const QString &text);
+	signals:
+	    void textChanged(const QString &text) W_SIGNAL(textChanged, (const QString &), text)// ;
 
-    public:
-        SearchLineEdit(QWidget *parent = 0);
+	public:
+	    SearchLineEdit(QWidget *parent = 0);
 
-        QString inactiveText() const;
-        void setInactiveText(const QString &text);
+	    QString	inactiveText() const;
+	    void	setInactiveText(const QString &text);
 
-        QMenu *menu() const;
-        void setMenu(QMenu *menu);
+	    QMenu	*menu() const;
+	    void	setMenu(QMenu *menu);
 
-    protected:
-        void resizeEvent(QResizeEvent *event);
-        void paintEvent(QPaintEvent *event);
+	protected:
+	    void	resizeEvent(QResizeEvent *event);
+	    void	paintEvent(QPaintEvent *event);
 
-    private:
-        void updateGeometries();
+	private:
+	    void updateGeometries();
 
-        SearchButton *_searchbutton;
-        QString _inactivetext;
+	    SearchButton	*_searchbutton;
+	    QString		_inactivetext;
+	    W_PROPERTY(QString, inactiveText, &SearchLineEdit::inactiveText, &SearchLineEdit::setInactiveText)
     };
-
-
 }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
-#endif // SEARCHLINEEDIT_H
+#endif	// SEARCHLINEEDIT_H
 
 
 

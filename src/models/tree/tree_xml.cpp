@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QObject>
 #include <QMessageBox>
 #include <QTextCodec>
@@ -10,7 +11,7 @@
 
 extern TrashMonitoring trashmonitoring;
 
-
+W_OBJECT_IMPL(XmlTree)
 XmlTree::XmlTree(void) : _dom_model(new QDomDocument()){
 	//    _dom_model = new QDomDocument();
 }

@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QPainter>
 #include <QRect>
 #include <QTextCursor>
@@ -15,7 +16,7 @@
 
 extern GlobalParameters globalparameters;
 
-
+W_OBJECT_IMPL(EditorTextArea)
 EditorTextArea::EditorTextArea(QWidget *parent) : QTextEdit(parent)
 {
     flagShowFormatting = false;

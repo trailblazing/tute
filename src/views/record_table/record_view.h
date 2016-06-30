@@ -5,6 +5,8 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
+#include <wobjectdefs.h>
+#include <QObject>
 
 #include <QWidget>
 #include <QTableView>
@@ -38,7 +40,7 @@ struct index_source;
 struct id_value;
 class rv_t;
 class QStyleOptionButton;
-
+class FlatToolButton;
 
 #include <QMetaType>
 #include <QPointF>
@@ -55,9 +57,12 @@ class StarRating {
 
 	void	paint(QPainter *painter, const QRect &rect, const QPalette &palette, EditMode mode) const;
 	QSize	sizeHint() const;
-	int	star_count() const		{return _star_count;}
-	int	max_star_count() const		{return _max_star_count;}
-	void	star_count(int starCount)	{_star_count = starCount;}
+	int	star_count() const {return _star_count;}
+
+	int	max_star_count() const {return _max_star_count;}
+
+	void	star_count(int starCount){_star_count = starCount;}
+
 	void	max_star_count(int maxStarCount){_max_star_count = maxStarCount;}
 
     private:
@@ -73,14 +78,15 @@ Q_DECLARE_METATYPE(StarRating)
 
 
 class FlatToolButtonRating : public FlatToolButton {
-    Q_OBJECT
+    W_OBJECT(FlatToolButtonRating)
     public:
 	FlatToolButtonRating(QWidget *parent = nullptr);
-	void		star_rating(const StarRating &starRating)	{_star_rating = starRating;}
-	StarRating	star_rating()					{return _star_rating;}
+	void		star_rating(const StarRating &starRating){_star_rating = starRating;}
+
+	StarRating	star_rating(){return _star_rating;}
 
     signals:
-	void editingFinished();
+	void editingFinished() W_SIGNAL(editingFinished)// ;
     protected:
 	void	paintEvent(QPaintEvent *event);
 	void	mouseMoveEvent(QMouseEvent *event);
@@ -93,7 +99,7 @@ class FlatToolButtonRating : public FlatToolButton {
 
 class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 {
-    Q_OBJECT
+    W_OBJECT(ViewDelegation)
     public:
 	explicit ViewDelegation(rv_t *view = 0);
 
@@ -117,12 +123,16 @@ class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 
 Q_DECLARE_METATYPE(QStyleOptionButton)
 
+// W_REGISTER_ARGTYPE(rv_t)
+// W_REGISTER_ARGTYPE(rs_t)
+// W_REGISTER_ARGTYPE(rctl_t)
+
 class rv_t : public QTableView {
-    Q_OBJECT
+    W_OBJECT(rv_t)
 
     public:
-	rv_t(rs_t   *record_screen	// QString screen_name,
-	    , rctl_t	*_record_controller);
+	rv_t(rs_t   *record_screen, rctl_t  *_record_controller);// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
+
 
 	virtual ~rv_t();
 
@@ -157,22 +167,22 @@ class rv_t : public QTableView {
     signals:
 
 	// void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
-	void tap_and_hold_gesture_finished(const QPoint &);
+	void tap_and_hold_gesture_finished(const QPoint &p) W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint &), p)	// ;
 
 
     public slots:
 
 	// Открытие контекстного меню
-	void on_custom_context_menu_requested(const QPoint &pos);
+	void on_custom_context_menu_requested(const QPoint &pos);// W_SLOT(on_custom_context_menu_requested)
 
 	// Слот, срабатывающий после перетаскивания колонки
-	void	on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex);
-	void	on_section_resized(int logicalIndex, int oldSize, int newSize);
+	void	on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex);	// W_SLOT(on_section_moved)
+	void	on_section_resized(int logicalIndex, int oldSize, int newSize);	// W_SLOT(on_section_resized)
 
 	// Вызов действий из контекстного меню или из контроллера для редактирования инфополей записи
-	void		edit_field_context(void);
-	void		on_doubleclick(const QModelIndex &index);
-	QModelIndex	previous_index() const;
+	void		edit_field_context(void);// W_SLOT(edit_field_context)
+	void		on_doubleclick(const QModelIndex &index);// W_SLOT(on_doubleclick)
+	QModelIndex	previous_index() const;	// W_SLOT(previous_index)
 
 
     protected slots:
@@ -183,9 +193,9 @@ class rv_t : public QTableView {
 	// Слот, который автоматически срабатыват при изменении selection в списке
 	// Этот слот нигде не надо прописывать через connect(), так как он
 	// является переопределенным, так как его тип virtual protected slot
-	virtual void	selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-	bool		eventFilter(QObject *obj, QEvent *event);
-	void		on_click(const QModelIndex &proxy_index);
+	virtual void	selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);	// W_SLOT(selectionChanged, W_Access::Protected)	// ;
+	bool		eventFilter(QObject *obj, QEvent *event);// W_SLOT(eventFilter, W_Access::Protected)// ;
+	void		on_click(const QModelIndex &proxy_index);// W_SLOT(on_click, W_Access::Protected)	// ;
 
     protected:
 

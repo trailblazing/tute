@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include <QVBoxLayout>
 
 #include "main.h"
@@ -7,64 +11,41 @@
 
 extern GlobalParameters globalparameters;
 
-
-ReduceMessageBox::ReduceMessageBox(QWidget *parent) : QDialog(parent)
-{
+W_OBJECT_IMPL(ReduceMessageBox)
+ReduceMessageBox::ReduceMessageBox(QWidget *parent) : QDialog(parent){
     setupUI();
     setupSignals();
     assembly();
 }
-
-
-void ReduceMessageBox::setupUI(void)
-{
-    int w = // find_object<MainWindow>("mainwindow")
-        globalparameters.mainwindow()->width();
-    int h = // find_object<MainWindow>("mainwindow")
-        globalparameters.mainwindow()->height();
+void ReduceMessageBox:: setupUI(void){
+    int w =	// find_object<MainWindow>("mainwindow")
+	globalparameters.mainwindow()->width();
+    int h =	// find_object<MainWindow>("mainwindow")
+	globalparameters.mainwindow()->height();
 
     this->resize(w * 2 / 3, h / 3);
 }
-
-
-void ReduceMessageBox::setupSignals(void)
-{
+void ReduceMessageBox:: setupSignals(void){
     connect(&buttonBox, &QDialogButtonBox::accepted, this, &ReduceMessageBox::accept);
     connect(&buttonBox, &QDialogButtonBox::rejected, this, &ReduceMessageBox::reject);
 }
-
-
-void ReduceMessageBox::assembly(void)
-{
-    // Размещалка элементов
+void ReduceMessageBox:: assembly(void){
+	// Размещалка элементов
     QVBoxLayout *layout = new QVBoxLayout(this);
 
     layout->addWidget(&text);
     layout->addWidget(&detailedText);
     layout->addWidget(&buttonBox);
 }
-
-
-void ReduceMessageBox::setText(QString iText)
-{
+void ReduceMessageBox:: setText(QString iText){
     text.setText(iText);
 }
-
-
-void ReduceMessageBox::setDetailedText(QString iDetailedText)
-{
+void ReduceMessageBox:: setDetailedText(QString iDetailedText){
     detailedText.setText(iDetailedText);
 }
-
-
-void ReduceMessageBox::setDetailedTextReadOnly(bool iReadOnly)
-{
+void ReduceMessageBox:: setDetailedTextReadOnly(bool iReadOnly){
     detailedText.setReadOnly(iReadOnly);
 }
-
-
-void ReduceMessageBox::setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons)
-{
+void ReduceMessageBox:: setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons){
     buttonBox.setStandardButtons(buttons);
 }
-

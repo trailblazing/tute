@@ -1,13 +1,14 @@
 #ifndef WINDOWSWITCHER_H
 #define WINDOWSWITCHER_H
 
+#include <wobjectdefs.h>
 #include <QObject>
 
 class MetaEditor;
 
 
 class WindowSwitcher : public QObject {
-    Q_OBJECT
+    W_OBJECT(WindowSwitcher)
 
 public:
     explicit WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent = 0);

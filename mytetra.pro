@@ -80,6 +80,8 @@ CODECFORTR      =   utf8
 # QMAKE_LFLAGS  +=  -L/usr/lib/qt4/lib
 INCLUDEPATH     +=  $${_PRO_FILE_PWD_}/src
 
+INCLUDEPATH     += ../../verdigris/src
+
 contains(TARGET_OS, ANY_OS) {
  message(Building the any OS version...)
  SYSTEM_PROGRAM_NAME    =   mytetra
@@ -200,7 +202,6 @@ HEADERS     =   \
     src/libraries/wyedit/editor_config_misc.h \
     src/libraries/wyedit/editor_context_menu.h \
     src/libraries/wyedit/editor_find_dialog.h \
-    src/libraries/wyedit/deitor_image_properties.h \
     src/libraries/wyedit/editor_multi_line_input_dialog.h \
     src/libraries/wyedit/editor_show_text.h \
     src/libraries/wyedit/editor_split_cell_form.h \
@@ -245,7 +246,8 @@ HEADERS     =   \
     src/views/record_table/record_screen.h \
     src/views/record_table/record_view.h \
     src/views/record_table/vertical_scrollarea.h \
-    src/views/wait_clock/wait_clock.h
+    src/views/wait_clock/wait_clock.h \
+    src/libraries/wyedit/editor_image_properties.h
 #    src/views/browser/cookiejar.h \
 
 
@@ -348,7 +350,6 @@ SOURCES     =   src/main.cpp \
     src/views/app_config/app_config_page_crypt.cpp \
     src/views/app_config/app_config_page_main.cpp \
     src/views/app_config/app_config_page_misc.cpp \
-    src/views/app_config/app_config_page_record_table.cpp \
     src/views/app_config/app_config_page_synchro.cpp \
     src/views/app_config/config_dialog.cpp \
     src/views/app_config/config_page.cpp \
@@ -372,7 +373,8 @@ SOURCES     =   src/main.cpp \
     src/views/record_table/record_screen.cpp \
     src/views/record_table/record_view.cpp \
     src/views/record_table/vertical_scrollarea.cpp \
-    src/views/wait_clock/wait_clock.cpp
+    src/views/wait_clock/wait_clock.cpp \
+    src/views/app_config/app_config_page_table.cpp
 #    src/views/browser/cookiejar.cpp \
 
 

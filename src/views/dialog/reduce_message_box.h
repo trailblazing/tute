@@ -1,6 +1,9 @@
 #ifndef __REDUCEMESSAGEBOX_H__
 #define __REDUCEMESSAGEBOX_H__
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QDialog>
 #include <QLabel>
 #include <QTextEdit>
@@ -13,28 +16,26 @@
 
 
 class ReduceMessageBox : public QDialog {
-    Q_OBJECT
+    W_OBJECT(ReduceMessageBox)
 
-public:
-    ReduceMessageBox(QWidget *parent = 0);
+    public:
+	ReduceMessageBox(QWidget *parent = 0);
 
-    void setText(QString iText);
-    void setDetailedText(QString iDetailedText);
-    void setDetailedTextReadOnly(bool iReadOnly);
-    void setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons);
+	void	setText(QString iText);
+	void	setDetailedText(QString iDetailedText);
+	void	setDetailedTextReadOnly(bool iReadOnly);
+	void	setStandardButtons(QFlags<QDialogButtonBox::StandardButton> buttons);
 
-protected:
+    protected:
 
-    void setupSignals(void);
-    void setupUI(void);
-    void assembly(void);
-
-
-    QLabel text;
-    QTextEdit detailedText;
-    QDialogButtonBox buttonBox;
+	void	setupSignals(void);
+	void	setupUI(void);
+	void	assembly(void);
 
 
+	QLabel			text;
+	QTextEdit		detailedText;
+	QDialogButtonBox	buttonBox;
 };
 
-#endif // __REDUCEMESSAGEBOX_H__
+#endif	// __REDUCEMESSAGEBOX_H__

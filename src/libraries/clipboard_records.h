@@ -5,6 +5,10 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QWidget>
 #include <QMimeData>
 #include <QMap>
@@ -28,7 +32,7 @@ Q_DECLARE_METATYPE(CLIPB_RECORDS_STRUCT);
 
 
 class ClipboardRecords : public QMimeData {
-    Q_OBJECT
+    W_OBJECT(ClipboardRecords)
 
 public:
     ClipboardRecords(void);

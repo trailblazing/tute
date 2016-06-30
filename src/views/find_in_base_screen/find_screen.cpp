@@ -1,7 +1,11 @@
+
 #include <cassert>
 #include <thread>
 #include <future>
 #include <utility>
+
+#include <wobjectimpl.h>
+
 #include <QLineEdit>
 #include <QPushButton>
 #include <QHBoxLayout>
@@ -44,7 +48,7 @@
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 extern const char *global_root_id;
-
+W_OBJECT_IMPL(FindScreen)
 FindScreen::FindScreen(QString object_name
                       , ts_t *_tree_screen	// boost::intrusive_ptr<TreeItem> _selected_branch_root
                       , QWidget    *parent)
@@ -865,7 +869,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
                     auto candidate = _start_item->child_direct(i);
                         // Обновляется линейка наполняемости
                     _progress->setValue(++ _total_progress_counter);
-                    sa_t::instance()->processEvents();
+                    sapp_t::instance()->processEvents();
                     if(! _progress->wasCanceled()){
                         // if(_progress->wasCanceled()) {
                         // _cancel_flag = 1;

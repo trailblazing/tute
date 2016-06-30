@@ -1,3 +1,5 @@
+
+#include <wobjectimpl.h>
 #include "main.h"
 #include "record.h"
 #include "record_model.h"
@@ -243,7 +245,7 @@ pages_container::~pages_container(){
 // {
 // init_source_model(tree_item.get(), _record_controller, _record_screen, main_window, _editor_screen);
 // }
-
+W_OBJECT_IMPL(RecordModel)
 // Конструктор модели
 RecordModel::RecordModel(rctl_t       *_record_controller	// TreeScreen             *_tree_screen    //, FindScreen           *_find_screen    //,
 //                        , RecordScreen          *_record_screen

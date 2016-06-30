@@ -1,6 +1,8 @@
 #ifndef RECORDTABLESCREEN_H_
 #define RECORDTABLESCREEN_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
 #include <QWidget>
 #include <QListView>
 #include <QToolButton>
@@ -43,7 +45,7 @@ namespace browser {
 }
 
 class rs_t : public QWidget {
-    Q_OBJECT
+    W_OBJECT(rs_t)
 
     public:
 	rs_t(ts_t *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, browser::Browser *_browser, wn_t *_main_window, browser::Profile *_profile);
@@ -65,18 +67,18 @@ class rs_t : public QWidget {
 	browser::Browser	*browser();
 	ts_t			*tree_screen();
 	QAction			*tree_hide();
-// void restore_menubar();
+//	void			restore_menubar();
     public slots:
 
 	// Обновление панели инструментов
-	void tools_update();
+	void tools_update();	// W_SLOT(tools_update)
 
 
     protected:
 	void resizeEvent(QResizeEvent *e);
     private slots:
 
-	void	on_syncro_click(void);
+	void	on_syncro_click(void);	// W_SLOT(on_syncro_click, W_Access::Private)
 	void	on_walkhistory_previous_click(void);
 	void	on_walkhistory_next_click(void);
 	void	on_back_click(void);
@@ -115,9 +117,9 @@ class rs_t : public QWidget {
 	QToolBar		*_toolsline;
 	QToolBar		*_extra_toolsline;
 
-	QLabel              *_treepathlabel;
-	// FlatToolButton  *_treepath_button;
-	QString _treepath;
+	QLabel			*_treepathlabel;
+//	FlatToolButton		*_treepath_button;
+	QString	_treepath;
 
 
 

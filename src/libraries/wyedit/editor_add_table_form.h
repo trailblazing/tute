@@ -1,6 +1,11 @@
 #ifndef _EDITORADDTABLEFORM_H_
 #define _EDITORADDTABLEFORM_H_
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QDialog>
 
 
@@ -9,7 +14,7 @@ class QSpinBox;
 class QDialogButtonBox;
 
 class EditorAddTableForm : public QDialog {
-    Q_OBJECT
+    W_OBJECT(EditorAddTableForm)
 
 public:
     EditorAddTableForm();

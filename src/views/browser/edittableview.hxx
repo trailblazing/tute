@@ -42,32 +42,37 @@
 #ifndef EDITTABLEVIEW_H
 #define EDITTABLEVIEW_H
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QtWidgets/QTableView>
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 
-//namespace browser {
+// namespace browser {
 
-    class EditTableView : public QTableView {
-        Q_OBJECT
+class EditTableView : public QTableView {
+    W_OBJECT(EditTableView)
 
     public:
-        EditTableView(QWidget *parent = 0);
-        void keyPressEvent(QKeyEvent *event);
+	EditTableView(QWidget *parent = 0);
+	void keyPressEvent(QKeyEvent *event);
 
     public slots:
-        void removeOne();
-        void removeAll();
-    };
+	void	removeOne();
+	void	removeAll();
+};
 
 
-//}
+// }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
-#endif // EDITTABLEVIEW_H
+#endif	// EDITTABLEVIEW_H
 
 
 

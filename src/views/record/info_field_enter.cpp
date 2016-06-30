@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include <QSizePolicy>
 
 #include "info_field_enter.h"
@@ -27,6 +31,7 @@ QMap<QString, Qt::CheckState> _state_check_from_string{
 
 // Виджет ввода инфополей
 
+W_OBJECT_IMPL(InfoFieldEnter)
 
 InfoFieldEnter::InfoFieldEnter(QWidget *parent)
     : QWidget(parent)

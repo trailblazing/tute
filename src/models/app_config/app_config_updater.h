@@ -1,7 +1,10 @@
 #ifndef __APPCONFIGUPDATER_H__
 #define __APPCONFIGUPDATER_H__
 
+#include <wobjectdefs.h>
 #include <QObject>
+
+
 #include <QSettings>
 #include <QDebug>
 #include <QString>
@@ -12,7 +15,7 @@
 
 
 class AppConfigUpdater : public QObject {
-    Q_OBJECT
+    W_OBJECT(AppConfigUpdater)
 
     public:
 	AppConfigUpdater(QObject *pobj = 0);

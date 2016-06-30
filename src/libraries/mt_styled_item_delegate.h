@@ -1,21 +1,25 @@
 #ifndef __MTSTYLEDITEMDELEGATE_H__
 #define __MTSTYLEDITEMDELEGATE_H__
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QStyledItemDelegate>
 
 // Этот класс не используется, скорее всего будет удален
 
 class MtStyledItemDelegate : public QStyledItemDelegate {
-    Q_OBJECT
-public:
-    explicit MtStyledItemDelegate(QObject *parent = 0);
+    W_OBJECT(MtStyledItemDelegate)	//
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    public:
+	explicit MtStyledItemDelegate(QObject *parent = 0);
 
-signals:
+	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
-public slots:
+    signals:
 
+    public slots:
 };
 
-#endif // __MTSTYLEDITEMDELEGATE_H__
+#endif	// __MTSTYLEDITEMDELEGATE_H__

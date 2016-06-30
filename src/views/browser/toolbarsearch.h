@@ -47,6 +47,8 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
+#include <wobjectdefs.h>
+#include <QObject>
 
 #include "searchlineedit.h"
 #include <QLineEdit>
@@ -82,14 +84,14 @@ namespace browser {
     class ChaseWidget;
 }
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 
 namespace browser {
     class AutoSaver;
 
     class ToolbarSearch : public SearchLineEdit {
-	Q_OBJECT
+	W_OBJECT(ToolbarSearch)
 
 	signals:
 		//        void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
@@ -97,7 +99,7 @@ namespace browser {
 		//                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
 		//                   );
 
-	    void returnPressed();
+	    void returnPressed() W_SIGNAL(returnPressed)// ;
 	public:
 	    ToolbarSearch(	// QStackedWidget *lineedits, QLineEdit *findtext,
 		QWidget *parent = 0);
@@ -134,7 +136,7 @@ namespace browser {
 }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
 #endif	// TOOLBARSEARCH_H
 

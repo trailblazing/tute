@@ -40,6 +40,10 @@
 #ifndef QTSINGLEAPPLICATION_H
 #define QTSINGLEAPPLICATION_H
 
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QApplication>
 #include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
@@ -97,25 +101,25 @@ namespace browser {
 
 class wn_t;
 
-class QT_QTSINGLEAPPLICATION_EXPORT sa_t//: public BrowserApplication { //
+class QT_QTSINGLEAPPLICATION_EXPORT sapp_t//: public BrowserApplication { //
     : public QApplication {
-    Q_OBJECT
+    W_OBJECT(QT_QTSINGLEAPPLICATION_EXPORT sapp_t)
 
     public:
 	//    typedef BrowserApplication BaseType;
-	sa_t(int &argc
+	sapp_t(int &argc
 	    , char * *argv
 	    , GlobalParameters &globalparameters
 	    , AppConfig &appconfig
 	    , DataBaseConfig &databaseconfig
 	    , bool _gui_enabled = true);
-	sa_t(const QString &id
+	sapp_t(const QString &id
 	    , int &argc
 	    , char * *argv
 	    , GlobalParameters &globalparameters
 	    , AppConfig &appconfig
 	    , DataBaseConfig &databaseconfig);
-	~sa_t();
+	~sapp_t();
 	// Comment by Xi
 	// QtSingleApplication(int &argc, char **argv, Type type);
 
@@ -145,7 +149,7 @@ class QT_QTSINGLEAPPLICATION_EXPORT sa_t//: public BrowserApplication { //
 
 
 Q_SIGNALS:
-	void messageReceived(const QString &message);
+	void messageReceived(const QString &message) W_SIGNAL(messageReceived, (const QString &), message)	// ;
 
 
     private:
@@ -170,7 +174,7 @@ Q_SIGNALS:
 
 	//    ~BrowserApplication();
 
-	static sa_t	*instance();	// move to derived class
+	static sapp_t	*instance();	// move to derived class
 	void		loadSettings();
 
 	//    bool isTheOnlyBrowser() const;
@@ -219,7 +223,7 @@ Q_SIGNALS:
 	void	proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 
     signals:
-	void privateBrowsingChanged(bool);
+	void privateBrowsingChanged(bool b) W_SIGNAL(privateBrowsingChanged, (bool), b)	// ;
 
     private slots:
 	void postLaunch();

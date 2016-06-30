@@ -1,7 +1,10 @@
 #ifndef __APPCONFIG_H__
 #define __APPCONFIG_H__
 
+#include <wobjectdefs.h>
 #include <QObject>
+
+
 #include <QDir>
 #include <QSettings>
 #include <QDebug>
@@ -10,7 +13,7 @@ class QRect;
 class QStringList;
 
 class AppConfig : public QObject {
-    Q_OBJECT
+    W_OBJECT(AppConfig)
 
     public:
 	AppConfig(QObject *pobj = 0);
@@ -257,7 +260,7 @@ class AppConfig : public QObject {
 //	QStringList	get_parameter_table_25(bool withEndSignature = true);
 //	QStringList	get_parameter_table_26(bool withEndSignature = true);
 //	QStringList	get_parameter_table_27(bool withEndSignature = true);
-	bool		is_init_flag;
+	bool is_init_flag;
 };
 
 template<>QStringList AppConfig::	parameter_table<0>(bool withEndSignature);

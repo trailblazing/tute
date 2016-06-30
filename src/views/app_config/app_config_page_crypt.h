@@ -1,6 +1,11 @@
 #ifndef _APPCONFIGPAGE_CRYPT_H_
 #define	_APPCONFIGPAGE_CRYPT_H_
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QWidget>
 #include <QLabel>
 #include <QGroupBox>
@@ -13,52 +18,51 @@
 
 
 class AppConfigPageCrypt : public ConfigPage {
-    Q_OBJECT
+    W_OBJECT(AppConfigPageCrypt)
 
-public:
-    AppConfigPageCrypt(QWidget *parent = 0);
-    virtual ~AppConfigPageCrypt();
+    public:
+	AppConfigPageCrypt(QWidget *parent = 0);
+	virtual ~AppConfigPageCrypt();
 
-    int apply_changes(void);
+	int apply_changes(void);
 
-private slots:
+    private slots:
 
-    void onPassRetrieveButtonClicked(void);
-    void onAutoClosePasswordEnableToggle(bool checked);
-    void onPasswordSaveEnableToggle(bool checked);
+	void	onPassRetrieveButtonClicked(void);
+	void	onAutoClosePasswordEnableToggle(bool checked);
+	void	onPasswordSaveEnableToggle(bool checked);
 
-protected:
+    protected:
 
-    QGroupBox *passRetrieveBox;
-    QLabel *passRetrieveStatus;
-    QPushButton *passRetrieveButton;
-    QLabel *passRetrieveAnnotation;
+	QGroupBox	*passRetrieveBox;
+	QLabel		*passRetrieveStatus;
+	QPushButton	*passRetrieveButton;
+	QLabel		*passRetrieveAnnotation;
 
-    QGroupBox *howPassRequestBox;
-    QRadioButton *howPassRequestRadio1;
-    QRadioButton *howPassRequestRadio2;
+	QGroupBox	*howPassRequestBox;
+	QRadioButton	*howPassRequestRadio1;
+	QRadioButton	*howPassRequestRadio2;
 
-    QGroupBox *storePassRequestBox;
-    QCheckBox *passwordSaveEnable;
-    QLabel *passwordSaveAnnotation;
+	QGroupBox	*storePassRequestBox;
+	QCheckBox	*passwordSaveEnable;
+	QLabel		*passwordSaveAnnotation;
 
 
-    QGroupBox *autoClosePasswordBox;
-    QCheckBox *autoClosePasswordEnable;
-    QSpinBox  *autoClosePasswordDelay;
+	QGroupBox	*autoClosePasswordBox;
+	QCheckBox	*autoClosePasswordEnable;
+	QSpinBox	*autoClosePasswordDelay;
 
-    QGroupBox *decryptFileToTrashDirectoryBox;
-    QCheckBox *decryptFileToTrashDirectoryEnable;
+	QGroupBox	*decryptFileToTrashDirectoryBox;
+	QCheckBox	*decryptFileToTrashDirectoryEnable;
 
-    QString getRetrieveStatusText(void);
-    QString getRetrieveButtonText(void);
-    QString getRetrieveAnnotationText(void);
+	QString getRetrieveStatusText(void);
+	QString getRetrieveButtonText(void);
+	QString getRetrieveAnnotationText(void);
 
-    void setup_ui(void);
-    void update_ui(void);
-    void setup_signals(void);
-    void assembly(void);
-
+	void	setup_ui(void);
+	void	update_ui(void);
+	void	setup_signals(void);
+	void	assembly(void);
 };
 
 

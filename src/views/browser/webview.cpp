@@ -39,6 +39,10 @@
 **
 ****************************************************************************/
 
+
+#include <wobjectimpl.h>
+
+
 #include <thread>
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 
@@ -112,7 +116,7 @@ extern bool		url_equal(const std::string &url_compare_stored, const std::string 
 
 namespace browser {
 #ifdef USE_POPUP_WINDOW
-
+    W_OBJECT_IMPL(PopupPage)
     PopupPage::PopupPage(Profile *profile, QObject *parent)
 	: QWebEnginePage(profile, parent)
 	  , m_keyboardModifiers(Qt::NoModifier)
@@ -301,7 +305,7 @@ namespace browser {
 #endif	// USE_POPUP_WINDOW
 
 
-
+    W_OBJECT_IMPL(WebPage)
     WebPage::WebPage(Profile                *profile
 		    , boost::intrusive_ptr<TreeItem> item
 		    , ts_t           *tree_screen
@@ -848,8 +852,8 @@ namespace browser {
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
 		page = tree_index->page_instantiate(this->_binder->host(), target_url
-					    , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
-					    , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
+						   , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
+						   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
 			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
 		assert(page);
 	    }
@@ -994,11 +998,11 @@ namespace browser {
 	passwordDialog.introLabel->setText(introMessage);
 	passwordDialog.introLabel->setWordWrap(true);
 	if(dialog.exec() == QDialog::Accepted){
-	    QByteArray key = sa_t::authenticationKey(requestUrl, auth->realm());
+	    QByteArray key = sapp_t::authenticationKey(requestUrl, auth->realm());
 	    auth->setUser(passwordDialog.userNameLineEdit->text());
 	    auth->setPassword(passwordDialog.passwordLineEdit->text());
 	    auth->setOption("key", key);
-	    sa_t::instance()->setLastAuthenticator(auth);
+	    sapp_t::instance()->setLastAuthenticator(auth);
 	}else{
 		// Set authenticator null if dialog is cancelled
 	    *auth = QAuthenticator();
@@ -1028,11 +1032,11 @@ namespace browser {
 	proxyDialog.introLabel->setWordWrap(true);
 	if(dialog.exec() == QDialog::Accepted){
 	    QString	user = proxyDialog.userNameLineEdit->text();
-	    QByteArray	key = sa_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
+	    QByteArray	key = sapp_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
 	    auth->setUser(user);
 	    auth->setPassword(proxyDialog.passwordLineEdit->text());
 	    auth->setOption("key", key);
-	    sa_t::instance()->setLastProxyAuthenticator(auth);
+	    sapp_t::instance()->setLastProxyAuthenticator(auth);
 	}else{
 		// Set authenticator null if dialog is cancelled
 	    *auth = QAuthenticator();
@@ -1165,7 +1169,7 @@ namespace browser {
 	return result;
     }
 #ifdef USE_POPUP_WINDOW
-
+    W_OBJECT_IMPL(PopupView)
     PopupView::PopupView(QWidget *parent)
 	: QWebEngineView(parent)
 	  , m_progress(0)
@@ -1308,6 +1312,33 @@ namespace browser {
     }
     void PopupView:: setStatusBarText(const QString &string){
 	m_statusBarText = string;
+    }
+    W_OBJECT_IMPL(PopupWindow)
+
+    PopupWindow::PopupWindow(Profile *profile)
+	: QWidget(), _addressbar(new QLineEdit(this)),
+	  _view(new PopupView(this)){
+	_view->setPage(new PopupPage(profile, _view));
+	QVBoxLayout *layout = new QVBoxLayout;
+	layout->setMargin(0);
+	setLayout(layout);
+	layout->addWidget(_addressbar);
+	layout->addWidget(_view);
+	_view->setFocus();
+
+	connect(_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
+	connect(_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
+	connect(page(), &PopupPage::geometryChangeRequested, this,
+	    &PopupWindow::adjustGeometry);
+	connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
+    }
+    void PopupWindow:: adjustGeometry(const QRect &newGeometry){
+	const int	x1 = frameGeometry().left() - geometry().left();
+	const int	y1 = frameGeometry().top() - geometry().top();
+	const int	x2 = frameGeometry().right() - geometry().right();
+	const int	y2 = frameGeometry().bottom() - geometry().bottom();
+
+	setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
     }
 #endif	// USE_POPUP_WINDOW
 
@@ -2109,7 +2140,7 @@ namespace browser {
 		    }
 		}
 		for(auto _it : others_same){
-		    auto it_ = v->merge(TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it));// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+		    auto it_ = v->merge(TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it));	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 		}
 	    }
@@ -2214,7 +2245,7 @@ namespace browser {
 	// setFocus();
 	////    _record_controller->addnew_item_fat(requested_item);
 	// }
-
+    W_OBJECT_IMPL(WebView)
     WebView::WebView(boost::intrusive_ptr<TreeItem> item
 		    , Profile          *profile			// , bool openinnewtab
 		    , ts_t       *tree_screen
@@ -2479,11 +2510,11 @@ namespace browser {
 
     QIcon WebView:: icon() const {
 	if(! _icon.isNull())return _icon;
-	return sa_t::instance()->defaultIcon();
+	return sapp_t::instance()->defaultIcon();
     }
     void WebView:: onIconUrlChanged(const QUrl &url){
 	QNetworkRequest iconRequest(url);
-	_iconreply = sa_t::networkAccessManager()->get(iconRequest);
+	_iconreply = sapp_t::networkAccessManager()->get(iconRequest);
 	_iconreply->setParent(this);
 	connect(_iconreply, &QNetworkReply::finished, this, &WebView::iconLoaded);
     }

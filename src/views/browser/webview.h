@@ -42,6 +42,9 @@
 #ifndef WEBVIEW_H
 #define WEBVIEW_H
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QClipboard>
 #include <QIcon>
 #include <QLineEdit>
@@ -81,7 +84,7 @@ class tm_t;
 class ts_t;
 class rctl_t;
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 // #define USE_POPUP_WINDOW
 
@@ -94,10 +97,10 @@ namespace browser {
 #ifdef USE_POPUP_WINDOW
 
     class PopupPage : public QWebEnginePage {
-	Q_OBJECT
+	W_OBJECT(PopupPage)
 
 	signals:
-	    void loadingUrl(const QUrl &url);
+	    void loadingUrl(const QUrl &url) W_SIGNAL(loadingUrl, (const QUrl &), url)	// ;
 
 	public:
 	    PopupPage(Profile *profile, QObject *parent = 0);
@@ -132,12 +135,12 @@ namespace browser {
 #endif	// USE_POPUP_WINDOW
 
     class WebPage : public QWebEnginePage {
-	Q_OBJECT
+	W_OBJECT(WebPage)
 
 	signals:
-	    void loadingUrl(const QUrl &url);
+	    void loadingUrl(const QUrl &url) W_SIGNAL(loadingUrl, (const QUrl &), url)	// ;
 //        void linkHovered(const QString &url, int time_out = 0);
-	    void close_requested();
+	    void close_requested() W_SIGNAL(close_requested)	// ;
 
 	public:
 //        typedef Binder coupler_delegation;
@@ -315,23 +318,19 @@ namespace browser {
 #ifdef USE_POPUP_WINDOW
 
     class PopupView : public QWebEngineView {
-	Q_OBJECT
+	W_OBJECT(PopupView)
 
 	public:
 	    PopupView(QWidget *parent = 0);
-	    PopupPage *webPage() const {
-		return m_page;
-	    }
-	    void setPage(PopupPage *page);
+	    PopupPage	*webPage() const {return m_page;}
+	    void	setPage(PopupPage *page);
 
 	    void	loadUrl(const QUrl &url);
 	    QUrl	url() const;
 	    QIcon	icon() const;
 
 	    QString	lastStatusBarText() const;
-	    inline int	progress() const {
-		return m_progress;
-	    }
+	    inline int	progress() const {return m_progress;}
 	protected:
 	    void	mousePressEvent(QMouseEvent *event);
 	    void	mouseReleaseEvent(QMouseEvent *event);
@@ -339,7 +338,7 @@ namespace browser {
 	    void	wheelEvent(QWheelEvent *event);
 
 	signals:
-	    void iconChanged();
+	    void iconChanged() W_SIGNAL(iconChanged)	// ;
 
 	private slots:
 	    void	setProgress(int progress);
@@ -366,7 +365,7 @@ namespace browser {
 // browserview
 // template<typename T>
     class WebView : public QWebEngineView {
-	Q_OBJECT
+	W_OBJECT(WebView)
 
 	public:
 	    WebView(boost::intrusive_ptr<TreeItem> item
@@ -425,8 +424,8 @@ namespace browser {
 	    void	wheelEvent(QWheelEvent *event);
 
 	signals:
-	    void	iconChanged();
-	    void	close_requested();
+	    void	iconChanged() W_SIGNAL(iconChanged)	// ;
+	    void	close_requested() W_SIGNAL(close_requested)	// ;
 	public slots:
 //    void loadFinished(bool success);
 //    void openLinkInNewTab();
@@ -463,48 +462,46 @@ namespace browser {
 #ifdef USE_POPUP_WINDOW
 
     class PopupWindow : public QWidget {
-	Q_OBJECT
+	W_OBJECT(PopupWindow)
 	public:
-	    PopupWindow(Profile *profile)
-		: QWidget(), _addressbar(new QLineEdit(this)),
-		  _view(new PopupView(this)){
-		_view->setPage(new PopupPage(profile, _view));
-		QVBoxLayout *layout = new QVBoxLayout;
-		layout->setMargin(0);
-		setLayout(layout);
-		layout->addWidget(_addressbar);
-		layout->addWidget(_view);
-		_view->setFocus();
+	    PopupWindow(Profile *profile);
+//		: QWidget(), _addressbar(new QLineEdit(this)),
+//		  _view(new PopupView(this)){
+//		_view->setPage(new PopupPage(profile, _view));
+//		QVBoxLayout *layout = new QVBoxLayout;
+//		layout->setMargin(0);
+//		setLayout(layout);
+//		layout->addWidget(_addressbar);
+//		layout->addWidget(_view);
+//		_view->setFocus();
 
-		connect(_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
-		connect(_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
-		connect(page(), &PopupPage::geometryChangeRequested, this,
-		    &PopupWindow::adjustGeometry);
-		connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
-	    }
-	    QWebEnginePage *page() const {
-		return _view->page();
-	    }
+//		connect(_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
+//		connect(_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
+//		connect(page(), &PopupPage::geometryChangeRequested, this,
+//		    &PopupWindow::adjustGeometry);
+//		connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
+//	    }
+	    QWebEnginePage *page() const {return _view->page();}
 	private Q_SLOTS:
-	    void setUrl(const QUrl &url){
-		_addressbar->setText(url.toString());
-	    }
-	    void adjustGeometry(const QRect &newGeometry){
-		const int	x1 = frameGeometry().left() - geometry().left();
-		const int	y1 = frameGeometry().top() - geometry().top();
-		const int	x2 = frameGeometry().right() - geometry().right();
-		const int	y2 = frameGeometry().bottom() - geometry().bottom();
+	    void	setUrl(const QUrl &url){_addressbar->setText(url.toString());}
+	    void	adjustGeometry(const QRect &newGeometry);
+//	    {
+//		const int	x1 = frameGeometry().left() - geometry().left();
+//		const int	y1 = frameGeometry().top() - geometry().top();
+//		const int	x2 = frameGeometry().right() - geometry().right();
+//		const int	y2 = frameGeometry().bottom() - geometry().bottom();
 
-		setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
-	    }
+//		setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
+//	    }
 	private:
 	    QLineEdit	*_addressbar;
 	    PopupView	*_view;
     };
 
+
 #endif	// USE_POPUP_WINDOW
 }
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
 #endif

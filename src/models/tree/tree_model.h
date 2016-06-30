@@ -2,10 +2,14 @@
 #define TREEMODEL_H
 
 #include <memory>
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
-#include <QObject>
+
 #include <QtXml>
 
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
@@ -27,7 +31,7 @@ struct TreeIndex;
 struct index_tree;
 
 class tm_t : public QAbstractItemModel {
-    Q_OBJECT
+    W_OBJECT(tm_t)
 
     public:
 
@@ -103,6 +107,7 @@ class tm_t : public QAbstractItemModel {
 	// void root_item(boost::intrusive_ptr<TreeItem> it) {_root_item = it;}
 	boost::intrusive_ptr<TreeItem>	root_item() const;	// {return _root_item;}
 	QString				session_id(){return _session_id;}
+
 	void				session_id(boost::intrusive_ptr<TreeIndex> modelindex);
 
 

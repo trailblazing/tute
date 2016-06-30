@@ -1,9 +1,13 @@
+
+#include <wobjectimpl.h>
+
 #include <QHBoxLayout>
 #include <QIcon>
 
 #include "wait_clock.h"
 #include "main.h"
 
+W_OBJECT_IMPL(WaitClock)
 
 WaitClock::WaitClock(QWidget *parent) : QWidget(parent)
 {

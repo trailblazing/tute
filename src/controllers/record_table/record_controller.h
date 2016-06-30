@@ -1,7 +1,10 @@
 #ifndef __RECORDTABLECONTROLLER_H__
 #define __RECORDTABLECONTROLLER_H__
 
+
+#include <wobjectdefs.h>
 #include <QObject>
+
 #include <QModelIndexList>
 #include "utility/delegate.h"
 #include <boost/serialization/strong_typedef.hpp>
@@ -52,15 +55,15 @@ struct id_value;
 
 
 class rctl_t : public QObject {
-    Q_OBJECT
+    W_OBJECT(rctl_t)
     public:
 
 	//    typedef TreeItem::bind_helper       bind_helper;
 	//    typedef TreeItem::activate_helper   active_helper;
-	rctl_t(MetaEditor             *_editor_screen
-	      , browser::TabWidget   *_tabmanager
-	      , rs_t         *_record_screen
-	      , wn_t           *_main_window);
+	rctl_t(MetaEditor           *_editor_screen
+	      , browser::TabWidget  *_tabmanager
+	      , rs_t	*_record_screen
+	      , wn_t	*_main_window);
 	virtual ~rctl_t();
 
 	//    void init(void);
@@ -69,6 +72,7 @@ class rctl_t : public QObject {
 	RecordModel			*source_model();	// {return _source_model;}
 	RecordProxyModel		*proxy_model();
 	browser::TabWidget		*tabmanager(){return _tabmanager;}
+
 	boost::intrusive_ptr<TreeItem>	item_click(const index_proxy &index_proxy_, bool force_update = false);
 
 	//    bool is_tree_item_exists(void);
@@ -138,6 +142,7 @@ class rctl_t : public QObject {
 	//    bool no_view() {return _no_view;}
 	boost::intrusive_ptr<TreeItem>	synchronize_record_view(boost::intrusive_ptr<TreeItem> item);
 	rs_t				*record_screen(){return _record_screen;}
+
 	//    RecordController *reocrd_controller() {return this;}
 	//    RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
 

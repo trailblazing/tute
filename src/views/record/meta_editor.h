@@ -2,6 +2,10 @@
 #define _METAEDITOR_H_
 
 #include <memory>
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QLabel>
 #include <QCheckBox>
@@ -29,16 +33,23 @@ class FindScreen;
 class RecordModel;
 
 class ClickableLabel : public QLabel {
-    Q_OBJECT
+    W_OBJECT(ClickableLabel)
+
     public:
-	ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()) : QLabel(parent, f){}
-	ClickableLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags()) : QLabel(text, parent, f){}
-Q_SIGNALS:
-	void mousePressEvent(QMouseEvent *ev);
+	ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+//	W_CONSTRUCTOR(QWidget *, Qt::WindowFlags)
+	//
+	ClickableLabel(const QString &text, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+//	W_CONSTRUCTOR(const QString &, QWidget *, Qt::WindowFlags)
+// Q_SIGNALS:
+    signals:
+	void mousePressEvent(QMouseEvent *ev) W_SIGNAL(mousePressEvent, (QMouseEvent *), ev)	// ;
 };
 
+
+
 class MetaEditor : public Editor {
-    Q_OBJECT
+    W_OBJECT(MetaEditor)
 
     public slots:
 
@@ -49,7 +60,7 @@ class MetaEditor : public Editor {
 
     signals:
 	// Сигнал вырабатывается при клике на текстовой метке
-	void set_find_text_signal(QString text);
+	void set_find_text_signal(QString text) W_SIGNAL(set_find_text_signal, text)	// ;
 
     public:
 	MetaEditor(QString object_name, FindScreen *_find_screen);

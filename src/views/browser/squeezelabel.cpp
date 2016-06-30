@@ -39,33 +39,29 @@
 **
 ****************************************************************************/
 
+
+#include <wobjectimpl.h>
+
+
 #include "squeezelabel.h"
 
 
 namespace browser {
-
-
-
+    W_OBJECT_IMPL(SqueezeLabel)
     SqueezeLabel::SqueezeLabel(QWidget *parent) : QLabel(parent)
-    {
+    {}
+    void SqueezeLabel:: paintEvent(QPaintEvent *event){
+	QFontMetrics fm = fontMetrics();
+	if(fm.width(text()) > contentsRect().width()){
+	    QString	elided = fm.elidedText(text(), Qt::ElideMiddle, width());
+	    QString	oldText = text();
+	    setText(elided);
+	    QLabel::paintEvent(event);
+	    setText(oldText);
+	}else{
+	    QLabel::paintEvent(event);
+	}
     }
-
-    void SqueezeLabel::paintEvent(QPaintEvent *event)
-    {
-        QFontMetrics fm = fontMetrics();
-
-        if(fm.width(text()) > contentsRect().width()) {
-            QString elided = fm.elidedText(text(), Qt::ElideMiddle, width());
-            QString oldText = text();
-            setText(elided);
-            QLabel::paintEvent(event);
-            setText(oldText);
-        } else {
-            QLabel::paintEvent(event);
-        }
-    }
-
-
 }
 
 

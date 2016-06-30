@@ -1,4 +1,6 @@
 //#include <memory>
+
+#include <wobjectimpl.h>
 #include <QSettings>
 #include <QFile>
 #include <QFileInfo>
@@ -21,6 +23,8 @@
 #include "views/browser/downloadmanager.h"
 
 extern const char *index_xml_file_name;
+
+W_OBJECT_IMPL(GlobalParameters)
 
 GlobalParameters::GlobalParameters(QObject *pobj)
 {

@@ -135,7 +135,7 @@
   <customwidget>
    <class>FlatToolButton</class>
    <extends>QToolButton</extends>
-   <header location="global">libraries/FlatControl.h</header>
+   <header>libraries/flat_control.h</header>
   </customwidget>
   <customwidget>
    <class>SqueezeLabel</class>

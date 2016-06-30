@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QSettings>
 #include <QFile>
 
@@ -6,7 +7,7 @@
 
 #define APPCONFIGUPDATER_VERSION "APPCONFIGUPDATER v.1.0 Build 29.10.2010"
 
-
+W_OBJECT_IMPL(AppConfigUpdater)
 AppConfigUpdater::AppConfigUpdater(QObject *pobj){
     Q_UNUSED(pobj);
 

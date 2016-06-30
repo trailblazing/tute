@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QString>
 
 #include "main.h"
@@ -10,12 +11,13 @@
 
 extern GlobalParameters globalparameters;
 
+W_OBJECT_IMPL(WalkHistory)
 WalkHistory::WalkHistory(void){
     clear();
 }
 WalkHistory::~WalkHistory(void)
 {}
-void WalkHistory::clear(void){
+void WalkHistory:: clear(void){
     qDebug() << "WalkHistory::clear()";
 
     history_id.clear();
@@ -24,10 +26,10 @@ void WalkHistory::clear(void){
     _history_point = - 1;
     _drop_flag = false;
 }
-void WalkHistory::add(const id_value &_record_id
-		     , int _cursor_position
-		     , int _scrollbar_position
-		     , int mode){
+void WalkHistory:: add(const id_value &_record_id
+		      , int _cursor_position
+		      , int _scrollbar_position
+		      , int mode){
 	// qDebug() << "WalkHistory::add() : id " << id;
 	// qDebug() << "WalkHistory::add() : mode " << mode;
 	// qDebug() << "WalkHistory::add() start status:";
@@ -163,43 +165,43 @@ void WalkHistory::add(const id_value &_record_id
 
 	// print();
 }
-void WalkHistory::switch_to_previous(void){
+void WalkHistory:: switch_to_previous(void){
     if(_history_point > 0)_history_point --;
     qDebug() << "WalkHistory::switchToPrevious() :";
 	// print();
 }
-void WalkHistory::switch_to_next(void){
+void WalkHistory:: switch_to_next(void){
     if(_history_point < (history_id.length() - 1))_history_point ++;
     qDebug() << "WalkHistory::switchToNext() :";
 	// print();
 }
-id_value WalkHistory::record_id() const {
+id_value WalkHistory:: record_id() const {
     if(_history_point >= 0 && _history_point <= (history_id.length() - 1))return id_value(history_id[_history_point]);
     else return id_value(QString());
 }
-int WalkHistory::cursor_position(const id_value &id){
+int WalkHistory:: cursor_position(const id_value &id){
     if(_data.contains(id))return _data[id]._cursor_position;
     else return 0;
 }
-int WalkHistory::scrollbar_position(const id_value &id){
+int WalkHistory:: scrollbar_position(const id_value &id){
     if(_data.contains(id))return _data[id]._scrollbar_position;
     else return 0;
 }
-void WalkHistory::remove_history_data(const id_value &id){
+void WalkHistory:: remove_history_data(const id_value &id){
     if(_data.contains(id))_data.remove(id);
 }
-void WalkHistory::print(void){
+void WalkHistory:: print(void){
     qDebug() << "WalkHistory table ---v";
     qDebug() << "WalkHistory pointer: " << _history_point;
     for(int i = 0; i < history_id.size(); i ++)qDebug() << "WalkHistory " << i << ":" << history_id.at(i);
     qDebug() << "WalkHistory table ---^";
 }
-void WalkHistory::set_drop(bool flag){
+void WalkHistory:: set_drop(bool flag){
     _drop_flag = flag;
 }
 // Проверка наличия идентификатора в базе, и его исключение из истории, если
 // идентификатор не обнаружен
-void WalkHistory::check_id(const id_value &id){
+void WalkHistory:: check_id(const id_value &id){
 	// Выясняется ссылка на модель дерева данных
     tkm_t *dataModel = static_cast<tkm_t *>(	// find_object<TreeKnowView>("knowTreeView")
 	globalparameters.tree_screen()->view()->model()

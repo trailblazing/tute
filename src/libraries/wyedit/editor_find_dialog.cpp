@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QPushButton>
 #include <QLineEdit>
 #include <QCheckBox>
@@ -11,19 +12,15 @@
 #include "editor_config.h"
 #include "editor_find_dialog.h"
 
-
-EditorFindDialog::EditorFindDialog(QWidget *parent) : QDialog(parent)
-{
+W_OBJECT_IMPL(EditorFindDialog)
+EditorFindDialog::EditorFindDialog(QWidget *parent) : QDialog(parent){
     setup_ui();
     setup_signals();
     assembly();
 
     showEvent(new QShowEvent());
 }
-
-
-void EditorFindDialog::setup_ui(void)
-{
+void EditorFindDialog:: setup_ui(void){
     lineEdit = new QLineEdit();
     lineEdit->setMinimumWidth(120);
 
@@ -37,18 +34,12 @@ void EditorFindDialog::setup_ui(void)
 
     this->setWindowTitle(tr("Find in the text"));
 }
-
-
-void EditorFindDialog::setup_signals(void)
-{
+void EditorFindDialog:: setup_signals(void){
     connect(lineEdit, &QLineEdit::textChanged, this, &EditorFindDialog::enable_find_button);
 
     connect(findButton, &QPushButton::clicked, this, &EditorFindDialog::find_clicked);
 }
-
-
-void EditorFindDialog::assembly(void)
-{
+void EditorFindDialog:: assembly(void){
     QHBoxLayout *findLineLayout = new QHBoxLayout();
     findLineLayout->addWidget(lineEdit);
     findLineLayout->addWidget(findButton);
@@ -63,76 +54,54 @@ void EditorFindDialog::assembly(void)
 
     this->setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint | Qt::WindowCloseButtonHint);
 }
-
-
 // Действия при нажатии кнопки Find
-void EditorFindDialog::find_clicked(void)
-{
+void EditorFindDialog:: find_clicked(void){
     QString text = lineEdit->text();
 
     QTextDocument::FindFlags flags = 0;
-
-    if(mathCase->isChecked())      flags |= QTextDocument::FindCaseSensitively;
-
-    if(wholeWords->isChecked())    flags |= QTextDocument::FindWholeWords;
-
+    if(mathCase->isChecked())flags |= QTextDocument::FindCaseSensitively;
+    if(wholeWords->isChecked())flags |= QTextDocument::FindWholeWords;
     if(searchBackward->isChecked())flags |= QTextDocument::FindBackward;
-
     emit find_text(text, flags);
 }
-
-
 // Кнопка поиска активна только тогда, когда есть текст для поиска
-void EditorFindDialog::enable_find_button(const QString &text)
-{
-    findButton->setEnabled(!text.isEmpty());
+void EditorFindDialog:: enable_find_button(const QString &text){
+    findButton->setEnabled(! text.isEmpty());
 }
-
-
-void EditorFindDialog::hideEvent(QHideEvent *event)
-{
+void EditorFindDialog:: hideEvent(QHideEvent *event){
     qDebug() << "Hide event of find dialog, window x " << this->x() << " y " << this->y() << " width " << this->width() << " height " << this->height();
+    if(this->width() > 0 && this->height() > 0 && ! (this->x() <= 0 && this->y() <= 0)){
+	// Получение ссылки в parent виджете на нужное поле
+	EditorConfig *edConf = qobject_cast<Editor *>(parent())->_editor_config;
 
-    if(this->width() > 0 && this->height() > 0 && !(this->x() <= 0 && this->y() <= 0)) {
-        // Получение ссылки в parent виджете на нужное поле
-        EditorConfig *edConf = qobject_cast<Editor *>(parent())->_editor_config;
-
-        // Запоминается геометрия
-        QRect g = this->frameGeometry();
-        qDebug() << "Frame geometry X " << g.x() << " Y " << g.y() << " W " << g.width() << " H" << g.height();
-        QString gs = QString::number(g.x()) + "," +
-                     QString::number(g.y()) + "," +
-                     QString::number(g.width()) + "," +
-                     QString::number(g.height());
-        edConf->set_finddialog_geometry(gs);
+	// Запоминается геометрия
+	QRect g = this->frameGeometry();
+	qDebug() << "Frame geometry X " << g.x() << " Y " << g.y() << " W " << g.width() << " H" << g.height();
+	QString gs = QString::number(g.x()) + "," +
+	    QString::number(g.y()) + "," +
+	    QString::number(g.width()) + "," +
+	    QString::number(g.height());
+	edConf->set_finddialog_geometry(gs);
     }
-
     QWidget::hideEvent(event);
 }
-
-
-void EditorFindDialog::showEvent(QShowEvent *event)
-{
+void EditorFindDialog:: showEvent(QShowEvent *event){
     qDebug() << "Show event of find dialog";
 
     lineEdit->setFocus();
 
-    // Получение ссылки в parent виджете на нужное свойство
+	// Получение ссылки в parent виджете на нужное свойство
     EditorConfig *edConf = qobject_cast<Editor *>(parent())->_editor_config;
 
     QString geometry = edConf->get_finddialog_geometry();
-
-    // Если была запомнена геометрия окна, устанавливается прежняя геометрия
-    if(!geometry.isEmpty()) {
-        QStringList geometry_split = geometry.split(",");
-        int x = geometry_split.at(0).toInt();
-        int y = geometry_split.at(1).toInt();
-        // int w=geometry_split.at(2).toInt();
-        // int h=geometry_split.at(3).toInt();
-        this->move(x, y);
-    } else
-        qDebug() << "Previos geometry of find dialog is not setted";
-
+	// Если была запомнена геометрия окна, устанавливается прежняя геометрия
+    if(! geometry.isEmpty()){
+	QStringList	geometry_split = geometry.split(",");
+	int		x = geometry_split.at(0).toInt();
+	int		y = geometry_split.at(1).toInt();
+	// int w=geometry_split.at(2).toInt();
+	// int h=geometry_split.at(3).toInt();
+	this->move(x, y);
+    }else qDebug() << "Previos geometry of find dialog is not setted";
     QWidget::showEvent(event);
 }
-

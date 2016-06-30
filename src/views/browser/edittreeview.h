@@ -42,30 +42,30 @@
 #ifndef EDITTREEVIEW_H
 #define EDITTREEVIEW_H
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QtWidgets/QTreeView>
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 namespace browser {
-
     class EditTreeView : public QTreeView {
-        Q_OBJECT
+	W_OBJECT(EditTreeView)
 
-    public:
-        EditTreeView(QWidget *parent = 0);
-        void keyPressEvent(QKeyEvent *event);
+	public:
+	    EditTreeView(QWidget *parent = 0);
+	    void keyPressEvent(QKeyEvent *event);
 
-    public slots:
-        void removeOne();
-        void removeAll();
+	public slots:
+	    void	removeOne();
+	    void	removeAll();
     };
-
-
 }
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
-#endif // EDITTREEVIEW_H
+#endif	// EDITTREEVIEW_H
 
 
 

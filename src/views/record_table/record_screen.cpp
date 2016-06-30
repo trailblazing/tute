@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QObject>
 #include <QMimeData>
 #include <QProgressBar>
@@ -35,6 +36,8 @@ extern const char	*tree_screen_viewer_name;
 
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
+
+W_OBJECT_IMPL(rs_t)
 
 rs_t::rs_t(ts_t           *_tree_screen
 	  , FindScreen          *_find_screen
@@ -96,6 +99,7 @@ rs_t::rs_t(ts_t           *_tree_screen
 	// _inited = true;
     tools_update();
 }
+
 rs_t::~rs_t(){
 	// delete _recordtree_search;
 	// delete
@@ -103,6 +107,7 @@ rs_t::~rs_t(){
 	// delete
     _vertical_scrollarea->deleteLater();
 }
+
 void rs_t:: save_in_new_branch(bool checked){
     Q_UNUSED(checked)
     ts_t * _tree_screen = globalparameters.tree_screen();											// find_object<TreeScreen>(tree_screen_singleton_name);
@@ -176,6 +181,7 @@ void rs_t:: save_in_new_branch(bool checked){
 	}
     }
 }
+
 // Настройка возможных действий
 void rs_t:: setup_actions(void){
     QList<int>	sizes = _main_window->h_tree_splitter()->sizes();
@@ -202,7 +208,6 @@ void rs_t:: setup_actions(void){
 //		vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 		vtab_tree->setMinimumWidth(bar_width);
 //		vtab_tree->setMaximumWidth(bar_width);
-
 	    }else{
 		_hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
 		_hide_tree_text = tr("Hide tree view");
@@ -559,6 +564,7 @@ void rs_t:: setup_actions(void){
 	// Сразу после создания все действия запрещены
     disable_all_actions();
 }
+
 void rs_t:: setup_ui(void){
 	// _toolsline = new QToolBar(this);
 // QSize toolBarIconSize(16,16);
@@ -619,6 +625,7 @@ void rs_t:: setup_ui(void){
 	// , this
 	// );
 }
+
 void rs_t:: setup_signals(void){
 	// connect(this, &RecordTableScreen::resizeEvent, _treepath_button
 	//// , &QLabel::resizeEvent
@@ -637,6 +644,7 @@ void rs_t:: setup_signals(void){
 	// );
     connect(this->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 }
+
 void rs_t:: assembly(void){
 	// _recordtable_toolslayout = new QHBoxLayout();
 
@@ -735,6 +743,7 @@ void rs_t:: assembly(void){
     lt->setContentsMargins(0, 0, 0, 0);											// setContentsMargins(0, 2, 0, 0);
     lt->setSpacing(0);
 }
+
 void rs_t:: resizeEvent(QResizeEvent *e){
     _record_controller->view()->resizeEvent(e);
 
@@ -757,6 +766,7 @@ void rs_t:: resizeEvent(QResizeEvent *e){
 	// contentsRect().width() - 1
 	// );
 }
+
 // Отключение всех действий над записями
 // (но не всех действий на панели инструментов, так как на панели инструментов есть действия, не оказывающие воздействия на записи)
 void rs_t:: disable_all_actions(void){
@@ -775,6 +785,7 @@ void rs_t:: disable_all_actions(void){
     _action_move_up->setEnabled(false);
     _action_move_dn->setEnabled(false);
 }
+
 // void RecordScreen::restore_menubar(){
 // auto menubar = _tree_screen->menubar();
 // if(_records_toolslayout->indexOf(menubar) == -1)
@@ -908,6 +919,7 @@ void rs_t:: tools_update(){
 	globalparameters.meta_editor()->textarea_editable(false);
     }
 }
+
 //// Получение номера первого выделенного элемента в таблице записи на экране
 // int RecordScreen::first_selection_pos(void)
 // {
@@ -944,26 +956,30 @@ void rs_t:: on_syncro_click(void){
 	// find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->synchronization();
 }
+
 void rs_t:: on_walkhistory_previous_click(void){
 	// find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->go_walk_history_previous();
 }
+
 void rs_t:: on_walkhistory_next_click(void){
 	// find_object<MainWindow>("mainwindow")
     globalparameters.mainwindow()->go_walk_history_next();
 }
+
 // Возвращение к дереву разделов в мобильном интерфейсе
 void rs_t:: on_back_click(void){
     globalparameters.window_switcher()->switchFromRecordtableToTree();
 }
+
 void rs_t:: tree_path(QString path){
     _treepath = path;											// Запоминается путь к ветке в виде строки
     _treepathlabel->setText(tr("<b>Path:</b> ") + _treepath);
 	// _treepath_button->setText(tr("<b>Path:</b> ") + _treepath);
 }
-QString rs_t:: tree_path(void){
-    return _treepath;
-}
+
+QString rs_t:: tree_path(void){return _treepath;}
+
 rctl_t *rs_t:: record_controller(){return _record_controller;}
 
 browser::TabWidget *rs_t:: tabmanager(){return _tabmanager;}
@@ -973,3 +989,4 @@ browser::Browser *rs_t:: browser(){return _browser;}
 ts_t *rs_t:: tree_screen(){return _tree_screen;}
 
 QAction *rs_t:: tree_hide(){return _tree_hide;}
+

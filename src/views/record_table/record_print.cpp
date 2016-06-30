@@ -1,3 +1,6 @@
+
+#include <wobjectimpl.h>
+
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QGroupBox>
@@ -10,6 +13,7 @@
 #include "views/record_table/record_screen.h"
 #include "record_print.h"
 
+W_OBJECT_IMPL(RecordPrint)
 
 RecordPrint::RecordPrint(rs_t *_record_screen) : QDialog(_record_screen){
     setup_ui();

@@ -1,12 +1,15 @@
 #ifndef _PREVIEWVIEW_H_
 #define _PREVIEWVIEW_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QAbstractScrollArea>
 #include <QTextDocument>
 
 
 class PreviewView : public QAbstractScrollArea {
-    Q_OBJECT
+    W_OBJECT(PreviewView)
 
 public:
     PreviewView(QTextDocument *document);

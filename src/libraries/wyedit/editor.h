@@ -1,6 +1,9 @@
 #ifndef _EDITOR_H_
 #define _EDITOR_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QBoxLayout>
 #include <QFontComboBox>
 #include <QSpinBox>
@@ -19,7 +22,7 @@
 #include "editor_show_text.h"
 
 // Fix ugly Qt QSS bug
-// #include "libraries/FlatControl.h"
+// #include "libraries/flat_control.h"
 
 
 // ----------------------------------------------------------
@@ -102,7 +105,7 @@ class FlatFontComboBox;
 class FlatToolButton;
 
 class Editor : public QWidget {
-    Q_OBJECT
+    W_OBJECT(Editor)
 
     public:
 	Editor(QWidget *parent = nullptr);
@@ -258,13 +261,13 @@ class Editor : public QWidget {
 
 	// Сигналы установки отступов на линейке с движками
 	// согласно текущему форматированию
-	void	send_set_textindent_pos(int i);
-	void	send_set_leftindent_pos(int i);
-	void	send_set_rightindent_pos(int i);
+	void	send_set_textindent_pos(int i) W_SIGNAL(send_set_textindent_pos, (int), i)	// ;
+	void	send_set_leftindent_pos(int i) W_SIGNAL(send_set_leftindent_pos, (int), i)	// ;
+	void	send_set_rightindent_pos(int i) W_SIGNAL(send_set_rightindent_pos, (int), i)	// ;
 
-	void send_expand_edit_area(bool flag);
+	void send_expand_edit_area(bool flag) W_SIGNAL(send_expand_edit_area, (bool), flag)	// ;
 
-	void wyedit_find_in_base_clicked();
+	void wyedit_find_in_base_clicked() W_SIGNAL(wyedit_find_in_base_clicked)// ;
 
     public slots:
 

@@ -1,6 +1,9 @@
 #ifndef _RECORD_TABLE_PRINT_H_
 #define	_RECORD_TABLE_PRINT_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QtGlobal>
 #include <QWidget>
 #include <QDialog>
@@ -13,7 +16,7 @@ class RecordProxyModel;
 class rs_t;
 
 class RecordPrint : public QDialog {
-    Q_OBJECT
+    W_OBJECT(RecordPrint)
 
     public:
         RecordPrint(rs_t *_record_screen = 0);

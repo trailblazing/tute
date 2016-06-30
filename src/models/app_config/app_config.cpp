@@ -1,4 +1,6 @@
+
 #include <utility>
+#include <wobjectimpl.h>
 #include <QRect>
 
 #include "main.h"
@@ -10,7 +12,7 @@
 
 extern GlobalParameters globalparameters;
 extern const char	*global_root_id;
-
+W_OBJECT_IMPL(AppConfig)
 // Конструктор объекта настройки программы
 AppConfig::AppConfig(QObject *pobj){
     Q_UNUSED(pobj);

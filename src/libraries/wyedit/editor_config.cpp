@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QFileInfo>
 #include <QtGlobal>
 #include <QtDebug>
@@ -5,7 +6,7 @@
 #include "editor_config.h"
 #include "../../main.h"
 
-
+W_OBJECT_IMPL(EditorConfig)
 // Конструктор объекта хранения настроек редактора
 EditorConfig::EditorConfig(QString config_file_name, QWidget *parent) : QWidget(parent)
 {

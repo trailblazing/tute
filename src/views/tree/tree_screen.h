@@ -2,6 +2,8 @@
 #define _TREESCREEN_H_
 
 #include <memory>
+#include <wobjectdefs.h>
+#include <QObject>
 #include <QtGlobal>
 #include <QWidget>
 #include <QListView>
@@ -120,7 +122,7 @@ class tv_t;
 
 class ts_t
     : public QWidget {		//    , public know_root_holder
-    Q_OBJECT
+    W_OBJECT(ts_t)
 
     public:
 	typedef std::function<bool (boost::intrusive_ptr<const Linker>)> substitute_condition;
@@ -300,7 +302,7 @@ class ts_t
 	//    TreeViewHelpWidget *_treeviewhelpwidget;
 
 	QVBoxLayout		*_treescreenlayout;
-	tsv_t	*_viewer = nullptr;
+	tsv_t			*_viewer = nullptr;
 	const AppConfig		&_appconfig;
 	//    QString         _session_id = global_root_id;
 

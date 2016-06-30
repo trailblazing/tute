@@ -17,7 +17,11 @@
 #include <boost/mpl/set.hpp>
 // #include <boost/mpl/set/set0.hpp>
 // #include <boost/mpl/set/set20.hpp>
+
+#include <wobjectdefs.h>
 #include <QObject>
+
+
 #include <QMap>
 #include <QStringList>
 #include "utility/delegate.h"
@@ -80,7 +84,7 @@ template<typename field_type>struct switch_type {
 // Immutable parameters, ie parameters that are hard-coded in the current version MyTetra
 
 class FixedParameters : public QObject {
-    Q_OBJECT
+    W_OBJECT(FixedParameters)
 
     public:
         FixedParameters(QObject *parent = 0);

@@ -42,48 +42,47 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QtWidgets/QDialog>
 #include "ui_settings.h"
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 
 namespace browser {
-
-
-
     class SettingsDialog : public QDialog, public Ui_Settings {
-        Q_OBJECT
+	W_OBJECT(SettingsDialog)
 
-    public:
-        SettingsDialog(QWidget *parent = 0);
-        void accept();
+	public:
+	    SettingsDialog(QWidget *parent = 0);
+	    void accept();
 
-    private slots:
-        void loadDefaults();
-        void loadFromSettings();
-        void saveToSettings();
+	private slots:
+	    void	loadDefaults();
+	    void	loadFromSettings();
+	    void	saveToSettings();
 
-        void setHomeToCurrentPage();
-        void showCookies();
-        void showExceptions();
+	    void	setHomeToCurrentPage();
+	    void	showCookies();
+	    void	showExceptions();
 
-        void chooseFont();
-        void chooseFixedFont();
+	    void	chooseFont();
+	    void	chooseFixedFont();
 
-    private:
-        QFont standardFont;
-        QFont fixedFont;
+	private:
+	    QFont	standardFont;
+	    QFont	fixedFont;
     };
-
-
 }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
 
-#endif // SETTINGS_H
+#endif	// SETTINGS_H
 
 
 

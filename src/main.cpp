@@ -428,7 +428,7 @@ QString set_css_style(){
 
 	style = replace_css_meta_iconsize(style);
 
-	sa_t::instance()->setStyleSheet(style);
+	sapp_t::instance()->setStyleSheet(style);
 	css.close();
     }
     return style;
@@ -764,7 +764,7 @@ int main(int argc, char * *argv){
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
 	// Установка увеличенного разрешения для дисплеев с большим DPI (Retina)
 	// Set the increased resolution for displays with lots DPI (Retina)
-    if(sa_t::instance()->devicePixelRatio() > 1.0)sa_t::instance()->setAttribute(Qt::AA_UseHighDpiPixmaps);
+    if(sapp_t::instance()->devicePixelRatio() > 1.0)sapp_t::instance()->setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
 
 #if QT_VERSION < 0x050000
@@ -921,5 +921,5 @@ int main(int argc, char * *argv){
 	//    if(mytetraConfig.getShowSplashScreen())
 	//        splash.finish(&win);
 
-    return sa_t(argc, argv, globalparameters, appconfig, databaseconfig).exec();			// application.exec();
+    return sapp_t(argc, argv, globalparameters, appconfig, databaseconfig).exec();			// application.exec();
 }

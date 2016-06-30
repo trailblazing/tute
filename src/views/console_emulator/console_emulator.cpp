@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include <QScrollBar>
 #include <QWidget>
 
@@ -10,7 +14,7 @@
 
 extern AppConfig appconfig;
 
-
+W_OBJECT_IMPL(ConsoleEmulator)
 ConsoleEmulator::ConsoleEmulator(QWidget *parent) : QDialog(parent)
 {
     isError = false;

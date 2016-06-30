@@ -42,6 +42,9 @@
 #ifndef FEATUREPERMISSIONBAR_H
 #define FEATUREPERMISSIONBAR_H
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QWebEnginePage>
 
@@ -50,41 +53,36 @@ class QLabel;
 class QPushButton;
 QT_END_NAMESPACE
 
-QT_BEGIN_NAMESPACE
+//    QT_BEGIN_NAMESPACE
 
 
 namespace browser {
-
-
-
     class FeaturePermissionBar : public QWidget {
-        Q_OBJECT
+	W_OBJECT(FeaturePermissionBar)
 
-    public:
-        FeaturePermissionBar(QWidget *);
-        void requestPermission(const QUrl &, QWebEnginePage::Feature feature);
+	public:
+	    FeaturePermissionBar(QWidget *);
+	    void requestPermission(const QUrl &, QWebEnginePage::Feature feature);
 
-    signals:
-        void featurePermissionProvided(const QUrl &securityOrigin, QWebEnginePage::Feature, QWebEnginePage::PermissionPolicy);
+	signals:
+	    void featurePermissionProvided(const QUrl &securityOrigin, QWebEnginePage::Feature f, QWebEnginePage::PermissionPolicy p) W_SIGNAL(featurePermissionProvided, (const QUrl &, QWebEnginePage::Feature, QWebEnginePage::PermissionPolicy), securityOrigin, f, p)	// ;
 
-    private slots:
-        void permissionDenied();
-        void permissionGranted();
-        void permissionUnknown();
+	private slots:
+	    void	permissionDenied();
+	    void	permissionGranted();
+	    void	permissionUnknown();
 
-    private:
-        QWebEnginePage::Feature _feature;
-        QLabel *_messagelabel;
-        QUrl _securityorigin;
+	private:
+	    QWebEnginePage::Feature	_feature;
+	    QLabel			*_messagelabel;
+	    QUrl			_securityorigin;
     };
-
-
 }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
-#endif // FEATUREPERMISSIONBAR_H
+#endif	// FEATUREPERMISSIONBAR_H
 
 
 

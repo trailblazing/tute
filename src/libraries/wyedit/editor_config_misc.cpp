@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QString>
 #include <QWidget>
 #include <QBoxLayout>
@@ -15,15 +16,15 @@
 
 extern GlobalParameters globalparameters;
 
-EditorConfigMisc::EditorConfigMisc(QWidget *parent) : ConfigPage(parent)
-{
+W_OBJECT_IMPL(EditorConfigMisc)
+EditorConfigMisc::EditorConfigMisc(QWidget *parent) : ConfigPage(parent){
     qDebug() << "Create editor config misc widget";
 
-    // Устанавливается указатель на объект работы с конфигфайлом
-    conf = globalparameters.editor_config(); //find_object<EditorConfig>("editorconfig");
+	// Устанавливается указатель на объект работы с конфигфайлом
+    conf = globalparameters.editor_config();	// find_object<EditorConfig>("editorconfig");
 
 
-    // Шаг изменения отступа
+	// Шаг изменения отступа
     QLabel *indentStepLabel = new QLabel(this);
     indentStepLabel->setText(tr("Indent step"));
 
@@ -36,7 +37,7 @@ EditorConfigMisc::EditorConfigMisc(QWidget *parent) : ConfigPage(parent)
     indentStep->setValue(conf->get_indent_step());
 
 
-    // Сборка всех блоков в окно
+	// Сборка всех блоков в окно
     QGridLayout *configLayout = new QGridLayout();
     configLayout->addWidget(indentStepLabel,   0, 0);
     configLayout->addWidget(indentStep,         0, 1);
@@ -49,21 +50,16 @@ EditorConfigMisc::EditorConfigMisc(QWidget *parent) : ConfigPage(parent)
 
     setLayout(centralLayout);
 }
-
-
-int EditorConfigMisc::apply_changes(void)
-{
+int EditorConfigMisc:: apply_changes(void){
     qDebug() << "Apply changes editor misc";
 
-    // Уровень сложности вносимых изменений
-    // 0 - изменения можно делать на лету
-    // 1 - для принятия изменений нужна перезагрузка
+	// Уровень сложности вносимых изменений
+	// 0 - изменения можно делать на лету
+	// 1 - для принятия изменений нужна перезагрузка
     int difficultChanges = 0;
-
-    // Если был изменен размер основного шрифта
-    if(conf->get_indent_step() != indentStep->value()) {
-        conf->set_indent_step(indentStep->value());
+	// Если был изменен размер основного шрифта
+    if(conf->get_indent_step() != indentStep->value()){
+	conf->set_indent_step(indentStep->value());
     }
-
     return difficultChanges;
 }

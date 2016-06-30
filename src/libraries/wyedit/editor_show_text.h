@@ -1,32 +1,36 @@
 #ifndef EDITORSHOWTEXT_H
 #define EDITORSHOWTEXT_H
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QDialog>
 #include <QTextEdit>
 
 
 // Класс отдельного (открепляемого) окна для просмотра текста записи без возможности редактирования
 class EditorShowText : public QDialog {
-    Q_OBJECT
-public:
-    explicit EditorShowText(QWidget *parent = 0);
-    virtual ~EditorShowText();
+    W_OBJECT(EditorShowText)
+    public:
+	explicit EditorShowText(QWidget *parent = 0);
+	virtual ~EditorShowText();
 
-    void setHtml(QString text);
-    void setDocument(QTextDocument *document);
+	void	setHtml(QString text);
+	void	setDocument(QTextDocument *document);
 
-signals:
+    signals:
 
-public slots:
+    public slots:
 
-private:
+    private:
 
-    QTextEdit *textArea;
+	QTextEdit *textArea;
 
-    void setupUi(void);
-    void setupSignals(void);
-    void assembly(void);
-
+	void	setupUi(void);
+	void	setupSignals(void);
+	void	assembly(void);
 };
 
-#endif // EDITORSHOWTEXT_H
+#endif	// EDITORSHOWTEXT_H

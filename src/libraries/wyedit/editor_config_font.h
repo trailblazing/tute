@@ -1,6 +1,9 @@
 #ifndef _EDITORCONFIGFONT_H_
 #define	_EDITORCONFIGFONT_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QLineEdit>
 #include <QFontComboBox>
@@ -19,7 +22,7 @@ class EditorConfig;
 
 
 class EditorConfigFont : public ConfigPage {
-    Q_OBJECT
+    W_OBJECT(EditorConfigFont)
 
 public:
     EditorConfigFont(QWidget *parent = 0);

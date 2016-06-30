@@ -1,7 +1,9 @@
 #ifndef __XMLTREE_H__
 #define __XMLTREE_H__
 
+#include <wobjectdefs.h>
 #include <QObject>
+
 #include <QtXml>
 #include <QTreeWidgetItem>
 
@@ -9,7 +11,7 @@ class DiskHelper;
 class TrashMonitoring;
 
 class XmlTree : public QObject {
-    Q_OBJECT
+    W_OBJECT(XmlTree)
 
     public:
 	XmlTree(void);

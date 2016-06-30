@@ -1,7 +1,11 @@
 #ifndef __PASSWORD_H__
 #define __PASSWORD_H__
 
+
+#include <wobjectdefs.h>
 #include <QObject>
+
+
 #include <QString>
 
 // Терминология:
@@ -16,7 +20,7 @@
 #define SAVED_PASSWORD_CHECKING_LINE "This string is used for checking middle hash"
 
 class Password : public QObject {
-    Q_OBJECT
+    W_OBJECT(Password)
 
 public:
     Password();

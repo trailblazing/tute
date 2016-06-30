@@ -1,6 +1,9 @@
 #ifndef INFOFIELDENTER_H_
 #define INFOFIELDENTER_H_
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QDialog>
 #include <QWidget>
 #include <QLabel>
@@ -26,7 +29,7 @@ extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
 
 class InfoFieldEnter : public QWidget {
-    Q_OBJECT
+    W_OBJECT(InfoFieldEnter)
 
 public:
     InfoFieldEnter(QWidget *parent = 0);

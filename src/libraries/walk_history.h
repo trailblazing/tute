@@ -1,6 +1,11 @@
 #ifndef _WALKHISTORY_H_
 #define _WALKHISTORY_H_
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QtGlobal>
 #include <QObject>
 #include <QDebug>
@@ -22,7 +27,7 @@ struct WALK_HISTORY_DATA {
 struct id_value;
 
 class WalkHistory : public QObject {
-    Q_OBJECT
+    W_OBJECT(WalkHistory)
 
     public:
 	WalkHistory(void);

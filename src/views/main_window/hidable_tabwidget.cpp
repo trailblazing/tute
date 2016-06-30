@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include "hidable_tabwidget.h"
 #include <QTabBar>
 #include <QToolButton>
@@ -69,6 +73,7 @@ const char *custom_hidabletabwidget_style =
     "}"
 ;
 
+W_OBJECT_IMPL(HidableTabWidget)
 HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
     QTabWidget(parent)
     , _hide_action(new QAction(tr("▾"), this))

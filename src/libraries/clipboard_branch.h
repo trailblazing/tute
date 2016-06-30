@@ -2,6 +2,12 @@
 #define _CLIPBBRANCH_H_
 
 #include <set>
+
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QWidget>
 #include <QMimeData>
 #include <QMap>
@@ -45,7 +51,7 @@ struct CLIPB_TREE_ONE_LINE {
 
 
 class ClipboardBranch : public QMimeData {
-    Q_OBJECT
+    W_OBJECT(ClipboardBranch)
 
 public:
     ClipboardBranch(void);

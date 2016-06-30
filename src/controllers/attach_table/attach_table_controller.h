@@ -1,7 +1,11 @@
 #ifndef __ATTACHTABLECONTROLLER_H__
 #define __ATTACHTABLECONTROLLER_H__
 
+
+#include <wobjectdefs.h>
 #include <QObject>
+
+
 #include <QModelIndexList>
 
 #include "models/attach_table/attach.h"
@@ -15,7 +19,7 @@
 // class AttachTableData;
 
 class AttachTableController : public QObject {
-    Q_OBJECT
+    W_OBJECT(AttachTableController)
 
 public:
 

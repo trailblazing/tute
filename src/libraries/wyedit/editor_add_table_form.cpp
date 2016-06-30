@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QWidget>
 #include <QLabel>
 #include <QSpinBox>
@@ -8,7 +9,7 @@
 
 #include "editor_add_table_form.h"
 
-
+W_OBJECT_IMPL(EditorAddTableForm)
 EditorAddTableForm::EditorAddTableForm()
 {
     this->setWindowTitle(tr("Create a new table"));

@@ -1,4 +1,8 @@
+
 #include <functional>
+
+#include <wobjectimpl.h>
+
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QScrollArea>
@@ -38,6 +42,10 @@ namespace browser {
     class WebPage;
     class Entrance;
 }
+
+W_OBJECT_IMPL(ClickableLabel)
+
+W_OBJECT_IMPL(MetaEditor)
 
 MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
     : Editor()
@@ -535,3 +543,7 @@ void MetaEditor::on_click_to_tag(const QString &link_text){
     if(_find_screen->isVisible() == false)_find_screen->widget_show();
     emit set_find_text_signal(tag);
 }
+
+ClickableLabel::ClickableLabel(QWidget *parent, Qt::WindowFlags f) : QLabel(parent, f){}
+
+ClickableLabel::ClickableLabel(const QString &text, QWidget *parent, Qt::WindowFlags f) : QLabel(text, parent, f){}

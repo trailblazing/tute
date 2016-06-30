@@ -44,34 +44,35 @@
 **
 ****************************************************************************/
 
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 
 #include <QtCore/QCoreApplication>
 
 class QtLocalPeer;
 
 namespace qt4 {
-
-
     class QtSingleCoreApplication : public QCoreApplication {
-        Q_OBJECT
+	W_OBJECT(QtSingleCoreApplication)
 
-    public:
-        QtSingleCoreApplication(int &argc, char **argv);
-        QtSingleCoreApplication(const QString &id, int &argc, char **argv);
+	public:
+	    QtSingleCoreApplication(int &argc, char * *argv);
+	    QtSingleCoreApplication(const QString &id, int &argc, char * *argv);
 
-        bool isRunning();
-        QString id() const;
+	    bool	isRunning();
+	    QString	id() const;
 
-    public Q_SLOTS:
-        bool sendMessage(const QString &message, int timeout = 5000);
-
-
-    Q_SIGNALS:
-        void messageReceived(const QString &message);
+	public Q_SLOTS:
+	    bool sendMessage(const QString &message, int timeout = 5000);
 
 
-    private:
-        QtLocalPeer *peer;
+Q_SIGNALS:
+	    void messageReceived(const QString &message) W_SIGNAL(messageReceived, (const QString &), message)	// ;
+
+
+	private:
+	    QtLocalPeer * peer;
     };
-
 }

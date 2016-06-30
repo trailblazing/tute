@@ -1,6 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QDialog>
 #include <QMainWindow>
 #include <QWidget>
@@ -67,7 +71,7 @@ class MetaEditor;
 class rs_t;
 class FindScreen;
 class WindowSwitcher;
-class sa_t;
+class sapp_t;
 class rctl_t;
 class GlobalParameters;
 class AppConfig;
@@ -75,9 +79,9 @@ class DataBaseConfig;
 class tsv_t;
 
 
-class wn_t :
-	   public QMainWindow {
-    Q_OBJECT
+class wn_t
+    : public QMainWindow {
+    W_OBJECT(wn_t)
 
     public:
 	wn_t(GlobalParameters &_globalparameters

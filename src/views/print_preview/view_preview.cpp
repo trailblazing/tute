@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include <QScrollBar>
 #include <QAbstractScrollArea>
 #include <QTextDocument>
@@ -11,6 +15,7 @@
 
 #include "view_preview.h"
 
+W_OBJECT_IMPL(PreviewView)
 
 PreviewView::PreviewView(QTextDocument *document)
 {

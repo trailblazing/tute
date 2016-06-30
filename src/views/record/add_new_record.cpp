@@ -1,3 +1,7 @@
+
+#include <wobjectimpl.h>
+
+
 #include <QWidget>
 #include <QTextEdit>
 #include <QtDebug>
@@ -20,7 +24,7 @@ extern GlobalParameters globalparameters;
 extern AppConfig appconfig;
 
 // Окно добавления новой записи
-
+W_OBJECT_IMPL(AddNewRecord)
 #if QT_VERSION < 0x050000
 AddNewRecord::AddNewRecord(QWidget *parent, Qt::WFlags f) : QDialog(parent, f)
 #else

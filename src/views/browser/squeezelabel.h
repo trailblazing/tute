@@ -42,34 +42,32 @@
 #ifndef SQUEEZELABEL_H
 #define SQUEEZELABEL_H
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QtWidgets/QLabel>
 
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 
 namespace browser {
-
-
-
     class SqueezeLabel : public QLabel {
-        Q_OBJECT
+	W_OBJECT(SqueezeLabel)
 
-    public:
-        SqueezeLabel(QWidget *parent = 0);
+	public:
+	    SqueezeLabel(QWidget *parent = 0);
 
-    protected:
-        void paintEvent(QPaintEvent *event);
-
+	protected:
+	    void paintEvent(QPaintEvent *event);
     };
-
-
 }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
-#endif // SQUEEZELABEL_H
+#endif	// SQUEEZELABEL_H
 
 
 

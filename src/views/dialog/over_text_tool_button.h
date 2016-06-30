@@ -1,6 +1,8 @@
 #ifndef __OVERTEXTTOOLBUTTON_H__
 #define __OVERTEXTTOOLBUTTON_H__
 
+#include <wobjectdefs.h>
+#include <QObject>
 
 #include <QPaintEvent>
 #include "libraries/flat_control.h"
@@ -11,20 +13,19 @@ class FlatToolButton;
 
 
 class OverTextToolButton : public FlatToolButton {
-    Q_OBJECT
+    W_OBJECT(OverTextToolButton)
 
-public:
-    OverTextToolButton(QWidget *parent = 0);
+    public:
+	OverTextToolButton(QWidget *parent = 0);
 
-    void setOverText(QString iText);
+	void setOverText(QString iText);
 
 
-protected:
+    protected:
 
-    void paintEvent(QPaintEvent *event);
+	void paintEvent(QPaintEvent *event);
 
-    QString overText;
-
+	QString overText;
 };
 
-#endif // __OVERTEXTTOOLBUTTON_H__
+#endif	// __OVERTEXTTOOLBUTTON_H__

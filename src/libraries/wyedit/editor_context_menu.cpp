@@ -1,9 +1,10 @@
+#include <wobjectimpl.h>
 #include <QAction>
 #include <QDebug>
 
 #include "editor_context_menu.h"
 
-
+W_OBJECT_IMPL(EditorContextMenu)
 EditorContextMenu::EditorContextMenu(QWidget *parent) : QMenu(parent)
 {
     setup_actions();

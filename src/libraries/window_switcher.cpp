@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include "window_switcher.h"
 
 #include <QSplitter>
@@ -19,7 +20,7 @@ extern const char *record_screen_multi_instance_name;
 extern AppConfig appconfig;
 extern GlobalParameters globalparameters;
 
-
+W_OBJECT_IMPL(WindowSwitcher)
 WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent) : QObject(parent)
 {
     setObjectName(object_name);

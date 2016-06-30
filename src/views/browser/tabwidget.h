@@ -49,6 +49,10 @@
 #include <utility>
 #include "utility/util.hxx"
 #include "utility/delegate.h"
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QCompleter>
@@ -147,7 +151,7 @@ namespace browser {
 // , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
 // );
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 namespace browser {
     class Browser;
@@ -157,90 +161,97 @@ namespace browser {
 
 
     namespace alter {
-	class TabBar : public QTabBar	// QWidget
-	{
-	    Q_OBJECT Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex STORED true NOTIFY currentIndexChanged)
-	    Q_PROPERTY(QStringList pageTitleList READ pageTitleList WRITE setPageTitleList STORED true)
-	    Q_PROPERTY(QString pageTitle READ pageTitle WRITE setPageTitle STORED false NOTIFY pageTitleChanged)
-	    Q_PROPERTY(QStringList pageIconList READ pageIconList WRITE setPageIconList STORED true)
-	    Q_PROPERTY(QIcon pageIcon READ pageIcon WRITE setPageIcon STORED false NOTIFY pageIconChanged)
+//	class TabBar : public QTabBar	// QWidget
+//	{
+//	    W_OBJECT(TabBar)
+////	    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex STORED true NOTIFY currentIndexChanged)
+////	    Q_PROPERTY(QStringList pageTitleList READ pageTitleList WRITE setPageTitleList STORED true)
+////	    Q_PROPERTY(QString pageTitle READ pageTitle WRITE setPageTitle STORED false NOTIFY pageTitleChanged)
+////	    Q_PROPERTY(QStringList pageIconList READ pageIconList WRITE setPageIconList STORED true)
+////	    Q_PROPERTY(QIcon pageIcon READ pageIcon WRITE setPageIcon STORED false NOTIFY pageIconChanged)
 
-	    public:
-		TabBar(TabWidget *parent = 0);
+//	    public:
+//		TabBar(TabWidget *parent = 0);
 
-		QSize sizeHint() const;
+//		QSize sizeHint() const;
 
-		int	count() const;
-		int	currentIndex() const;
-		QWidget *widget(int index);
-		int	indexOf(QWidget *w);
+//		int	count() const;
+//		int	currentIndex() const;
+//		QWidget *widget(int index);
+//		int	indexOf(QWidget *w);
 
-		QStringList	pageTitleList() const;
-		QString		pageTitle() const;
+//		QStringList	pageTitleList() const;
+//		QString		pageTitle() const;
 
-		QStringList	pageIconList() const;
-		QIcon		pageIcon() const;
+//		QStringList	pageIconList() const;
+//		QIcon		pageIcon() const;
 
-		bool	setVisible(QWidget *w, bool b);
-		bool	setEnabled(QWidget *w, bool b);
+//		bool	setVisible(QWidget *w, bool b);
+//		bool	setEnabled(QWidget *w, bool b);
 
-// For lazy programmers migrating from QTabWidget to this class
-		int	addTab(QWidget *page, const QString &title);
-		int	addTab(QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
+//// For lazy programmers migrating from QTabWidget to this class
+//		int	addTab(QWidget *page, const QString &title);
+//		int	addTab(QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
 
-		void setTabText(int index, const QString &title);
+//		void setTabText(int index, const QString &title);
 
-	    public slots:
-		int	addPage(QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
-		int	insertPage(int index, QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
-		void	removePage(int index);
-		void	setCurrentIndex(int index);
+//	    public slots:
+//		int	addPage(QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
+//		int	insertPage(int index, QWidget *page, const QIcon &icon = QIcon(), const QString &title = QString());
+//		void	removePage(int index);
+//		void	setCurrentIndex(int index);
 
-		void	setPageTitleList(QStringList const &newTitleList);
-		void	setPageTitle(QString const &newTitle);
-		void	setPageTitle(int index, QString const &newTitle);
+//		void	setPageTitleList(QStringList const &newTitleList);
+//		void	setPageTitle(QString const &newTitle);
+//		void	setPageTitle(int index, QString const &newTitle);
 
-		void	setPageIconList(QStringList const &newIconList);
-		void	setPageIcon(QIcon const &newIcon);
-	    private slots:	// cloned from TabBar
-		void	selectTabAction();
-		void	cloneTab();
-		void	closeTab();
-		void	closeOtherTabs();
-		void	reloadTab();
-		void	contextMenuRequested(const QPoint &position);
-	    signals:	// cloned from TabBar
-		void	newTab();
-		void	cloneTabSignal(int index);
-		void	closeTabSignal(int index);
-		void	closeOtherTabsSignal(int index);
-		void	reloadTabSignal(int index);
-		void	reloadAllTabs();
-		void	tabMoveRequested(int fromIndex, int toIndex);
-	    signals:
-		void	currentIndexChanged(int index);
-		void	pageTitleChanged(const QString &title);
-		void	pageIconChanged(const QIcon &icon);
+//		void	setPageIconList(QStringList const &newIconList);
+//		void	setPageIcon(QIcon const &newIcon);
+//	    private slots:	// cloned from TabBar
+//		void	selectTabAction();
+//		void	cloneTab();
+//		void	closeTab();
+//		void	closeOtherTabs();
+//		void	reloadTab();
+//		void	contextMenuRequested(const QPoint &position);
+//	    signals:	// cloned from TabBar
+//		void	newTab();
+//		void	cloneTabSignal(int index);
+//		void	closeTabSignal(int index);
+//		void	closeOtherTabsSignal(int index);
+//		void	reloadTabSignal(int index);
+//		void	reloadAllTabs();
+//		void	tabMoveRequested(int fromIndex, int toIndex);
+//	    signals:
+//		void	currentIndexChanged(int index);
+//		void	pageTitleChanged(const QString &title);
+//		void	pageIconChanged(const QIcon &icon);
 
-	    protected:	// cloned from TabBar
-		void	mousePressEvent(QMouseEvent *event);
-		void	mouseMoveEvent(QMouseEvent *event);
+//	    protected:	// cloned from TabBar
+//		void	mousePressEvent(QMouseEvent *event);
+//		void	mouseMoveEvent(QMouseEvent *event);
 
-	    private:
-		QStringList titleList, iconList;
+//	    private:
+//		QStringList titleList, iconList;
 
-// QStackedWidget *
-		TabWidget	*stackWidget;
-		QButtonGroup	*buttonGroup;
-		QHBoxLayout	*layout;
-		QVBoxLayout	*buttonLayout;
-	    private:	// cloned from TabBar
-		QList<QShortcut *> _tabshortcuts;
-		friend class browser::TabWidget;
+//// QStackedWidget *
+//		TabWidget	*stackWidget;
+//		QButtonGroup	*buttonGroup;
+//		QHBoxLayout	*layout;
+//		QVBoxLayout	*buttonLayout;
+//	    private:	// cloned from TabBar
+//		QList<QShortcut *> _tabshortcuts;
+//		friend class browser::TabWidget;
 
-		QPoint	_dragstartpos;
-		int	_dragcurrentindex;
-	};
+//		QPoint	_dragstartpos;
+//		int	_dragcurrentindex;
+
+//		W_PROPERTY(int, currentIndex, &TabBar::currentIndex, &TabBar::setCurrentIndex, W_Notify, &TabBar::currentIndexChanged)	// , W_Stored, true
+//		w_PROPERTY(QStringList, pageTitleList, &TabBar::pageTitleList, &TabBar::setPageTitleList)// , W_Stored, true
+//		w_PROPERTY(QString, pageTitle, &TabBar::pageTitle, &TabBar::setPageTitle, W_Notify, &TabBar::pageTitleChanged)	// , W_Stored, false
+//		w_PROPERTY(QStringList, pageIconList, &TabBar::pageIconList, &TabBar::setPageIconList)	// , W_Stored, true
+//		w_PROPERTY(QIcon, pageIcon, &TabBar::pageIcon, &TabBar::setPageIcon, W_Notify, &TabBar::pageIconChanged)// , W_Stored, false
+//	};
     }
 
 
@@ -259,16 +270,16 @@ namespace browser {
 	    Tab bar with a few more features such as a context menu and shortcuts
 	 */
 	class TabBar : public QTabBar {
-	    Q_OBJECT
+	    W_OBJECT(TabBar)
 
 	    signals:
-		void	newTab();
-		void	cloneTabSignal(int index);
-		void	closeTabSignal(int index);
-		void	closeOtherTabsSignal(int index);
-		void	reloadTabSignal(int index);
-		void	reloadAllTabs();
-		void	tabMoveRequested(int fromIndex, int toIndex);
+		void	newTab() W_SIGNAL(newTab)// ;
+		void	cloneTabSignal(int index) W_SIGNAL(cloneTabSignal, (int), index)// ;
+		void	closeTabSignal(int index) W_SIGNAL(closeTabSignal, (int), index)// ;
+		void	closeOtherTabsSignal(int index) W_SIGNAL(closeOtherTabsSignal, (int), index)	// ;
+		void	reloadTabSignal(int index) W_SIGNAL(reloadTabSignal, (int), index)	// ;
+		void	reloadAllTabs() W_SIGNAL(reloadAllTabs)	// ;
+		void	tabMoveRequested(int fromIndex, int toIndex) W_SIGNAL(tabMoveRequested, (int, int), fromIndex, toIndex)	// ;
 
 	    public:
 		TabBar(QWidget *parent = 0);
@@ -315,7 +326,7 @@ namespace browser {
 	    the current tabs webview's stop action.
 	 */
     class WebActionMapper : public QObject {
-	Q_OBJECT
+	W_OBJECT(WebActionMapper)
 
 	public:
 	    WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
@@ -356,23 +367,23 @@ namespace browser {
 
 	// browsertabmanager
     class TabWidget : public QTabWidget {
-	Q_OBJECT
+	W_OBJECT(TabWidget)
 
 	signals:
 		// tab widget signals
-	    void	loadPage(const QString &url);
-	    void	tabsChanged();
-	    void	lastTabClosed();
+	    void	loadPage(const QString &url) W_SIGNAL(loadPage, (const QString &), url)	// ;
+	    void	tabsChanged() W_SIGNAL(tabsChanged)	// ;
+	    void	lastTabClosed() W_SIGNAL(lastTabClosed)	// ;
 
 		// current tab signals
-	    void	setCurrentTitle(const QString &url);
-	    void	showStatusBarMessage(const QString &message, int timeout = 0);
-	    void	linkHovered(const QString &link);	// , int timeout = 0);
-	    void	loadProgress(int progress);
-	    void	geometryChangeRequested(const QRect &geometry);
-	    void	menuBarVisibilityChangeRequested(bool visible);
-	    void	statusBarVisibilityChangeRequested(bool visible);
-	    void	toolBarVisibilityChangeRequested(bool visible);
+	    void	setCurrentTitle(const QString &url) W_SIGNAL(setCurrentTitle, (const QString &), url)	// ;
+	    void	showStatusBarMessage(const QString &message, int timeout = 0) W_SIGNAL(showStatusBarMessage, (const QString &, int), message, timeout)	// ;
+	    void	linkHovered(const QString &link) W_SIGNAL(linkHovered, (const QString &), link)	// ;	// , int timeout = 0);
+	    void	loadProgress(int progress) W_SIGNAL(loadProgress, (int), progress)	// ;
+	    void	geometryChangeRequested(const QRect &geometry) W_SIGNAL(geometryChangeRequested, (const QRect &), geometry)	// ;
+	    void	menuBarVisibilityChangeRequested(bool visible) W_SIGNAL(menuBarVisibilityChangeRequested, (bool), visible)	// ;
+	    void	statusBarVisibilityChangeRequested(bool visible) W_SIGNAL(statusBarVisibilityChangeRequested, (bool), visible)	// ;
+	    void	toolBarVisibilityChangeRequested(bool visible) W_SIGNAL(toolBarVisibilityChangeRequested, (bool), visible)	// ;
 
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
 	    void printRequested(QWebEngineFrame *frame);
@@ -694,7 +705,7 @@ namespace browser {
 	// };
 }
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
 #endif	// TABWIDGET_H
 

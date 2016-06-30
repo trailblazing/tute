@@ -1,6 +1,11 @@
 #ifndef _WAITCLOCK_H_
 #define _WAITCLOCK_H_
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
+
 #include <QWidget>
 #include <QHBoxLayout>
 #include <QIcon>
@@ -10,7 +15,7 @@
 
 
 class WaitClock : public QWidget {
-    Q_OBJECT
+    W_OBJECT(WaitClock)
 
 public:
     WaitClock(QWidget *parent=0);

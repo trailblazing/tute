@@ -39,8 +39,13 @@
 **
 ****************************************************************************/
 
+
 #include <functional>
 #include <cassert>
+
+#include <wobjectimpl.h>
+
+
 #include "toolbarsearch.h"
 #include "autosaver.h"
 
@@ -71,6 +76,7 @@
 
 
 namespace browser {
+    W_OBJECT_IMPL(ToolbarSearch)
 	/*
 		ToolbarSearch is a very basic search widget that also contains a small history.
 		Searches are turned into urls that use Google to perform search
@@ -186,9 +192,9 @@ namespace browser {
 			// QLineEdit *lineedit =
 
 		    tree_index->page_instantiate(tree_view->current_item()
-					 , url
-					 , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
-					 , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+						, url
+						, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+						, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 
 		    assert(_lineedits);
@@ -209,7 +215,7 @@ namespace browser {
 		    if(newList.contains(search_text))newList.removeAt(newList.indexOf(search_text));
 		    newList.prepend(search_text);
 		    if(newList.size() >= _maxsavedsearches)newList.removeLast();
-		    if(! sa_t::instance()->privateBrowsing()){
+		    if(! sapp_t::instance()->privateBrowsing()){
 			_stringlistmodel->setStringList(newList);
 			_autosaver->changeOccurred();
 		    }

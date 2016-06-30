@@ -1,10 +1,13 @@
 #ifndef __TREEKNOWMODEL_H__	// __TREENODE_H__
 #define __TREEKNOWMODEL_H__	// __TREENODE_H__
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QAbstractItemModel>
 #include <QModelIndex>
 #include <QVariant>
-#include <QObject>
 #include <QtXml>
 
 #include "tree_model.h"
@@ -30,7 +33,7 @@ struct TreeLevel;
 
 
 class tkm_t : public tm_t {
-    Q_OBJECT
+    W_OBJECT(tkm_t)
 
     public:
 
@@ -98,8 +101,9 @@ class tkm_t : public tm_t {
 
 
 	//    bool is_global_root() {return _is_global_root;}
-	void	synchronized(bool _sysynchronized)	{this->_synchronized = _sysynchronized;}
-	bool	synchronized()				{return _synchronized;}
+	void	synchronized(bool _sysynchronized){this->_synchronized = _sysynchronized;}
+
+	bool	synchronized(){return _synchronized;}
 
 	boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeLevel> _tree_merge	// boost::intrusive_ptr<TreeItem> target
 					    , const view_delete_permantent_strategy &_view_delete_permantent);

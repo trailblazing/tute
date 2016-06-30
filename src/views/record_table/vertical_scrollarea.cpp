@@ -1,10 +1,15 @@
 
+#include <wobjectimpl.h>
+
+
 #include <QEvent>
 #include <QScrollBar>
 #include <QBoxLayout>
 
 #include "vertical_scrollarea.h"
 #include "views/record_table/record_view.h"
+
+W_OBJECT_IMPL(VerticalScrollArea)
 
 VerticalScrollArea::VerticalScrollArea(rv_t *_record_view        // std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *>>> interface
                                       , QWidget *parent)

@@ -1,3 +1,4 @@
+#include <wobjectimpl.h>
 #include <QStackedWidget>
 #include <QDialog>
 
@@ -13,8 +14,8 @@
 
 extern GlobalParameters globalparameters;
 
-EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent)
-{
+W_OBJECT_IMPL(EditorConfigDialog)
+EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent){
     configDialog = new ConfigDialog(this);
 
     configDialog->set_window_title(tr("Editor settings"));
@@ -24,4 +25,3 @@ EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent)
 
     configDialog->exec();
 }
-

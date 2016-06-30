@@ -1,4 +1,4 @@
-
+#include <wobjectimpl.h>
 #include <QString>
 #include <QStringList>
 #include <QMutableMapIterator>
@@ -19,6 +19,8 @@
 //const char *crypt_field = "crypt";
 //const char *has_attach_field = "hstch";     // "hasAttach";
 //const char *attach_count_field = "tchcnt";  // "attachCount";
+
+W_OBJECT_IMPL(FixedParameters)
 
 // Получение описаний набора полей
 QMap<QString, QString> FixedParameters::record_field_description(QStringList list) const {

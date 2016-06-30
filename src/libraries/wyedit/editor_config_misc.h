@@ -1,6 +1,10 @@
 #ifndef _EDITORCONFIGMISC_H_
 #define	_EDITORCONFIGMISC_H_
 
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QLineEdit>
 #include <QFontComboBox>
@@ -12,7 +16,7 @@ class EditorConfig;
 
 
 class EditorConfigMisc : public ConfigPage {
-    Q_OBJECT
+    W_OBJECT(EditorConfigMisc)
 
 public:
     EditorConfigMisc(QWidget *parent = 0);

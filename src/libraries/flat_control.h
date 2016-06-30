@@ -1,7 +1,11 @@
 #ifndef __MTCOMBOBOX_H__
 #define __MTCOMBOBOX_H__
 
+
+#include <wobjectdefs.h>
 #include <QObject>
+
+
 #include <QWidget>
 #include <QComboBox>
 #include <QStyledItemDelegate>
@@ -13,90 +17,91 @@
 
 
 class MtComboBox : public QComboBox {
-    Q_OBJECT
+    W_OBJECT(MtComboBox)
 
     public:
-        void (MtComboBox::*currentindexchanged)(int index);
-        MtComboBox(QWidget *parent = 0);
-        virtual ~MtComboBox();
+	void (MtComboBox::*currentindexchanged)(int index);
+	MtComboBox(QWidget *parent = 0);
+	virtual ~MtComboBox();
 
     private:
 
-        QStyledItemDelegate *itemDelegate;
+	QStyledItemDelegate *itemDelegate;
 };
 
 class FlatComboBox : public QComboBox {
     typedef QComboBox Super;
 
     private:
-        Q_OBJECT
+	W_OBJECT(FlatComboBox)
 
     public:
-        void (FlatComboBox::*currentindexchanged)(int index);
-        FlatComboBox(QWidget *parent = 0);
-        virtual ~FlatComboBox();
-        bool flat() const {return flat_; }
-        void setFlat(bool flat);
+	void (FlatComboBox::*currentindexchanged)(int index);
+	FlatComboBox(QWidget *parent = 0);
+	virtual ~FlatComboBox();
+	bool	flat() const {return flat_;}
+	void	setFlat(bool flat);
 
-        Qt::Alignment arrowAlignment() const {return arrowAlignment_; }
-        void setArrowAlignment(Qt::Alignment a);
+	Qt::Alignment	arrowAlignment() const {return arrowAlignment_;}
+	void		setArrowAlignment(Qt::Alignment a);
 
     protected:
-        virtual void paintEvent(QPaintEvent *e);
-        virtual void mousePressEvent(QMouseEvent *e);
+	virtual void	paintEvent(QPaintEvent *e);
+	virtual void	mousePressEvent(QMouseEvent *e);
 
     signals:
-        void aboutToPullDown();
+	void aboutToPullDown() W_SIGNAL(aboutToPullDown)// ;
 
     private:
-        QStyledItemDelegate *itemDelegate;
-        Qt::Alignment arrowAlignment_;
-        bool flat_;
+	QStyledItemDelegate * itemDelegate;
+	Qt::Alignment	arrowAlignment_;
+	bool		flat_;
 };
 
 class FlatFontComboBox : public QFontComboBox {
     typedef QFontComboBox Super;
-    Q_OBJECT
+    W_OBJECT(FlatFontComboBox)
     public:
-        FlatFontComboBox(QWidget *parent = 0); //: QFontComboBox(parent) {}
+	FlatFontComboBox(QWidget *parent = 0);	//: QFontComboBox(parent) {}
 
-        void (FlatFontComboBox::*currentindexchanged)(int index);
+	void (FlatFontComboBox::*currentindexchanged)(int index);
 
-        virtual ~FlatFontComboBox();
-        bool flat() const {return flat_; }
-        void setFlat(bool flat);
+	virtual ~FlatFontComboBox();
+	bool	flat() const {return flat_;}
+	void	setFlat(bool flat);
 
-        Qt::Alignment arrowAlignment() const {return arrowAlignment_; }
-        void setArrowAlignment(Qt::Alignment a);
+	Qt::Alignment	arrowAlignment() const {return arrowAlignment_;}
+	void		setArrowAlignment(Qt::Alignment a);
 
     protected:
-        virtual void paintEvent(QPaintEvent *e);
-        virtual void mousePressEvent(QMouseEvent *e);
+	virtual void	paintEvent(QPaintEvent *e);
+	virtual void	mousePressEvent(QMouseEvent *e);
 
     signals:
-        void aboutToPullDown();
+	void aboutToPullDown() W_SIGNAL(aboutToPullDown)// ;
 
     private:
-        QStyledItemDelegate *itemDelegate;
-        Qt::Alignment arrowAlignment_;
-        bool flat_;
+	QStyledItemDelegate * itemDelegate;
+	Qt::Alignment	arrowAlignment_;
+	bool		flat_;
 };
 
 class FlatToolButton : public QToolButton {
+    W_OBJECT(FlatToolButton)
     typedef QToolButton Super;
-    Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
+    W_PROPERTY(bool, autoRaise, &FlatToolButton::autoRaise, &FlatToolButton::setAutoRaise)	// Q_PROPERTY(bool autoRaise READ autoRaise WRITE setAutoRaise)
     private:
-        Q_OBJECT
+
     public:
-        FlatToolButton(QWidget *parent = nullptr);
-        // bool flat() const { return flat_; }
-        // void setFlat(bool flat);
-        // void setAutoRaise(bool yes) {QToolButton::setAutoRaise(yes);}
+	FlatToolButton(QWidget *parent = nullptr);
+	// bool flat() const { return flat_; }
+	// void setFlat(bool flat);
+	// void setAutoRaise(bool yes) {QToolButton::setAutoRaise(yes);}
     protected:
-        virtual void paintEvent(QPaintEvent *e);
-        // virtual void mousePressEvent(QMouseEvent *e);
+	virtual void paintEvent(QPaintEvent *e);
+	// virtual void mousePressEvent(QMouseEvent *e);
     private:
-        // bool flat_;
+	// bool flat_;
 };
 
 

@@ -1,6 +1,9 @@
 #ifndef __ADDNEWRECORD_H__
 #define __ADDNEWRECORD_H__
 
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QDialog>
 #include <QLabel>
 #include <QLineEdit>
@@ -13,7 +16,7 @@ class InfoFieldEnter;
 // Окно добавления новой записи
 
 class AddNewRecord : public QDialog {
-    Q_OBJECT
+    W_OBJECT(AddNewRecord)
 
 public:
 

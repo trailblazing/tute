@@ -47,7 +47,7 @@
 #include <QtCore/QXmlStreamWriter>
 
 
-QT_BEGIN_NAMESPACE
+//QT_BEGIN_NAMESPACE
 
 
 namespace browser {
@@ -116,7 +116,7 @@ namespace browser {
 }
 
 
-QT_END_NAMESPACE
+//QT_END_NAMESPACE
 
 
 #endif // XBEL_H

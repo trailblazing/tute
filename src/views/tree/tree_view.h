@@ -2,6 +2,10 @@
 #define __TREEKNOWVIEW_H__	// __KNOWTREEVIEW_H__
 
 #include <memory>
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QWidget>
 #include <QTreeView>
 #include <QDragEnterEvent>
@@ -38,9 +42,11 @@ class AdjustingScrollArea;
 struct index_tree;
 struct TreeLevel;
 
+class HtmlDelegate;
 
 // http://stackoverflow.com/questions/1956542/how-to-make-item-view-render-rich-html-text-in-qt
 class HtmlDelegate : public QStyledItemDelegate {
+//    W_OBJECT(HtmlDelegate)
     public:
 	HtmlDelegate(tv_t *_tree_view);
     protected:
@@ -49,10 +55,10 @@ class HtmlDelegate : public QStyledItemDelegate {
 	tv_t	*_tree_view;
 };
 
-
+W_REGISTER_ARGTYPE(tv_t)
 
 class tv_t : public QTreeView {
-    Q_OBJECT
+    W_OBJECT(tv_t)
 
     public:
 	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, const QUrl &)> equal_url_t;
@@ -109,7 +115,7 @@ class tv_t : public QTreeView {
 	tkm_t				*know_model_board() const;
 	boost::intrusive_ptr<TreeItem>	session_root_auto();
     signals:
-	void tapandhold_gesture_finished(const QPoint &);
+	void tapandhold_gesture_finished(const QPoint &p) W_SIGNAL(tapandhold_gesture_finished, (const QPoint &), p)	// ;
 	//    void zoomChanged();
 
     public slots:
@@ -183,7 +189,7 @@ class tv_t : public QTreeView {
 	void	dragMoveEvent(QDragMoveEvent *event) override;
 	void	dropEvent(QDropEvent *event) override;
 
-	void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
+	void mousePressEvent(QMouseEvent *event) override;	// Q_DECL_OVERRIDE;
 
 	template <class X> bool is_dragable(X *event){
 		// Проверяется, содержит ли объект переноса данные нужного формата
@@ -211,5 +217,7 @@ class tv_t : public QTreeView {
 	friend class AdjustingScrollArea;
 	friend class ts_t;
 };
+
+
 
 #endif	// __TREEKNOWVIEW_H__    // __KNOWTREEVIEW_H__

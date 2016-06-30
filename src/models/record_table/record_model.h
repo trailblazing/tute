@@ -2,6 +2,10 @@
 #define __RECORDTABLEMODEL_H__
 
 #include <memory>
+
+#include <wobjectdefs.h>
+#include <QObject>
+
 #include <QAbstractTableModel>
 #include <QModelIndex>
 #include <QVariant>
@@ -67,7 +71,7 @@ struct pages_container {
 
 class RecordModel : public QAbstractTableModel
 		  , public pages_container {
-    Q_OBJECT
+    W_OBJECT(RecordModel)
 
 	// By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
     friend class rctl_t;
