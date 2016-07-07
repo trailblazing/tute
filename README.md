@@ -47,7 +47,7 @@ Let's say the directory of your current project is named "working":
 
 1.4 clone the repo to your workbench
 
-    git clone https://github.com/BeImprovised/mytetra_webengine.git
+    git clone https://github.com/beimprovised/mytetra_webengine.git
 
 1.5 Compile the Qt project file with Qt-Creator which comes with Qt 5.6
 
