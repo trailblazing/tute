@@ -61,23 +61,23 @@ class tv_t : public QTreeView {
     W_OBJECT(tv_t)
 
     public:
-	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, const QUrl &)> equal_url_t;
-	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)> equal_t;
-	typedef std::function<bool (boost::intrusive_ptr<const Linker>)> substitute_condition;	// , boost::intrusive_ptr<const Linker>
-	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;	//
-	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
-	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, QString, QString)> add_new;
-	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, QString, const add_new &)> add_new_delegate;
-	typedef std::function<QModelIndex(tv_t *const, const QModelIndex &)> select_strategy;
-	typedef std::function<QModelIndex(tv_t *const, const QModelIndex &, const int)> current_strategy;
-	typedef boost::intrusive_ptr<TreeItem>(tkm_t::*delete_strategy)(boost::intrusive_ptr<Linker>);
+	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, const QUrl &)>									equal_url_t;
+	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)>						equal_t;
+	typedef std::function<bool (boost::intrusive_ptr<const Linker>)>											substitute_condition;	// , boost::intrusive_ptr<const Linker>
+	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)>							substitute_condition_double;		//
+	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &)>	paste_strategy;
+	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, QString, QString)>						add_new;
+	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, QString, const add_new &)>					add_new_delegate;
+	typedef std::function<QModelIndex(tv_t *const, const QModelIndex &)>											select_strategy;
+	typedef std::function<QModelIndex(tv_t *const, const QModelIndex &, const int)>										current_strategy;
+	typedef boost::intrusive_ptr<TreeItem>(tkm_t::														*delete_strategy)(boost::intrusive_ptr<Linker>);
 
 
 	struct LocalLizeInitializer {
 	    LocalLizeInitializer(tv_t *_tree_view);
 		//        QModelIndexList index_list() {return _origin_index_list;}
 		//        QModelIndex     index() {return _index;}
-	    QItemSelection operator()();
+	    QItemSelection operator ()();
 	    private:
 		tv_t        *_tree_view;
 		//        QModelIndexList _index_list;
@@ -120,11 +120,11 @@ class tv_t : public QTreeView {
 
     public slots:
 	// private slots:
-	void	encrypt(void);
-	void	decrypt(void);
-	void	expand_selected(bool expand);
-	void	tree_empty_controll(void);
-	void	tree_crypt_control(void);
+	void				encrypt(void);
+	void				decrypt(void);
+	void				expand_selected(bool expand);
+	boost::intrusive_ptr<TreeItem>	tree_empty_controll(void);
+	void				tree_crypt_control(void);
 
 
 	boost::intrusive_ptr<TreeItem> new_child(boost::intrusive_ptr<TreeIndex> _modelindex

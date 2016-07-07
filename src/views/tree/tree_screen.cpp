@@ -50,28 +50,28 @@ extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
 
 
 const char	*action_show_hide_record_screen = "action_show_hide_record_screen";
-const char	*action_set_as_session_root = "set_as_session_root";
-const char	*action_find_in_base = "find_in_base";
-const char	*action_cursor_follow_root = "cursor_follow_root";
-const char	*action_cursor_follow_up = "cursor_follow_up";
-const char	*action_expand_all_subbranch = "expand_all_subbranch";
-const char	*action_collapse_all_subbranch = "collapse_all_subbranch";
-const char	*action_move_up_branch = "move_up_branch";
-const char	*action_move_dn_branch = "move_dn_branch";
-const char	*action_insert_sub_branch = "insert_sub_branch";
-const char	*action_insert_branch = "insert_branch";
-const char	*action_edit_branch = "edit_branch";
-const char	*action_delete_branch = "delete_branch";
-const char	*action_cut_branch = "cut_branch";
-const char	*action_copy_branch = "copy_branch";
-const char	*action_paste_branch = "paste_branch";
-const char	*action_paste_sub_branch = "paste_sub_branch";
-const char	*action_encrypt_branch = "encrypt_branch";
-const char	*action_decrypt_branch = "decrypt_branch";
-const char	*action_freeze_browser_view = "freeze_browser_view";
-const char	*action_edit_field = "edit_field";
-const char	*action_editor_switch = "editor_switch";
-const char	*action_main_menu = "main_menu";
+const char	*action_set_as_session_root	= "set_as_session_root";
+const char	*action_find_in_base		= "find_in_base";
+const char	*action_cursor_follow_root	= "cursor_follow_root";
+const char	*action_cursor_follow_up	= "cursor_follow_up";
+const char	*action_expand_all_subbranch	= "expand_all_subbranch";
+const char	*action_collapse_all_subbranch	= "collapse_all_subbranch";
+const char	*action_move_up_branch		= "move_up_branch";
+const char	*action_move_dn_branch		= "move_dn_branch";
+const char	*action_insert_sub_branch	= "insert_sub_branch";
+const char	*action_insert_branch		= "insert_branch";
+const char	*action_edit_branch		= "edit_branch";
+const char	*action_delete_branch		= "delete_branch";
+const char	*action_cut_branch		= "cut_branch";
+const char	*action_copy_branch		= "copy_branch";
+const char	*action_paste_branch		= "paste_branch";
+const char	*action_paste_sub_branch	= "paste_sub_branch";
+const char	*action_encrypt_branch		= "encrypt_branch";
+const char	*action_decrypt_branch		= "decrypt_branch";
+const char	*action_freeze_browser_view	= "freeze_browser_view";
+const char	*action_edit_field		= "edit_field";
+const char	*action_editor_switch		= "editor_switch";
+const char	*action_main_menu		= "main_menu";
 
 const char *tree_screen_viewer_name = "TreeScreenViewer";
 
@@ -203,9 +203,9 @@ void ts_t:: setup_actions(void){
     butterfly->setIcon(QIcon(":/resource/pic/butterfly-right.svg"));	// globalparameters.h_right_splitter()->sizes()[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg")
 
 
-    connect(_main_window->h_record_splitter(), &QSplitter::splitterMoved,  [&, butterfly](int pos = 0, int index = 0) mutable {
-	    (void)pos;
-	    (void)index;
+    connect(_main_window->h_record_splitter(), &QSplitter::splitterMoved, [&, butterfly](int pos = 0, int index = 0) mutable {
+	    (void) pos;
+	    (void) index;
 
 	    auto h_record_splitter = _main_window->h_record_splitter();
 
@@ -250,9 +250,7 @@ void ts_t:: setup_actions(void){
 		    auto pre_size_0 = shw;	// sizes[1] - sizes[0];
 		    sizes[0] = pre_size_0 > 0 ? pre_size_0 : sum * 15 / 100;
 		    sizes[1] = pre_size_0 > 0 ? (sum - pre_size_0) > 0 ? sum - pre_size_0 : sum * 85 / 100 : sum * 85 / 100;	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-		}else{
-		    sizes[1] = pre_size_1;
-		}
+		}else sizes[1] = pre_size_1;
 // icon = QIcon(":/resource/pic/butterfly-left.svg");
 // text = tr("Hide record screen");
 
@@ -370,9 +368,7 @@ void ts_t:: setup_actions(void){
 
 		    QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
 		    result = it.next();
-		    while(it.hasNext()){
-			result = _tree_view->merge(TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next()));	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
-		    }
+		    while(it.hasNext())result = _tree_view->merge(TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next()));	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
 			// children_transfer(_new_item, _current_model);
 		}else{
 			// Вставка новых данных в модель дерева записей
@@ -592,12 +588,12 @@ void ts_t:: edit_field_context(QModelIndex index_current){
     auto item = _tree_view->source_model()->child(index_current);
 
 	// Поля окна заполняются начальными значениями
-    edit_record_dialog.setField("pin",       item->field<pin_type>());
-    edit_record_dialog.setField("name",      item->field<name_type>());
-    edit_record_dialog.setField("author",    item->field<author_type>());
-    edit_record_dialog.setField("home",      item->field<home_type>());
-    edit_record_dialog.setField("url",       item->field<url_type>());
-    edit_record_dialog.setField("tags",      item->field<tags_type>());
+    edit_record_dialog.setField("pin", item->field<pin_type>());
+    edit_record_dialog.setField("name", item->field<name_type>());
+    edit_record_dialog.setField("author", item->field<author_type>());
+    edit_record_dialog.setField("home", item->field<home_type>());
+    edit_record_dialog.setField("url", item->field<url_type>());
+    edit_record_dialog.setField("tags", item->field<tags_type>());
 
 
     int i = edit_record_dialog.exec();
@@ -626,18 +622,16 @@ void ts_t:: edit_field(QString pin
 
 	// Переданные отредактированные поля преобразуются в вид имя-значение
     QMap<QString, QString> edit_data;
-    edit_data["pin"] = pin;
-    edit_data["name"] = name;
+    edit_data["pin"]	= pin;
+    edit_data["name"]	= name;
     edit_data["author"] = author;
-    edit_data["home"] = home;
-    edit_data["url"] = url;
-    edit_data["tags"] = tags;
+    edit_data["home"]	= home;
+    edit_data["url"]	= url;
+    edit_data["tags"]	= tags;
 
 	// Обновление новых данных в таблице конечных записей
     auto item = _tree_view->current_item();
-    for(auto i = edit_data.begin(); i != edit_data.end(); i ++){
-	item->_field_data[i.key()] = i.value();	// field(i.key(), i.value());
-    }
+    for(auto i = edit_data.begin(); i != edit_data.end(); i ++)item->_field_data[i.key()] = i.value();	// field(i.key(), i.value());
 	// Обновление инфополей в области редактирования записи
     MetaEditor *meta_editor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
     meta_editor->pin(pin);
@@ -2122,9 +2116,7 @@ void ts_t:: on_custom_contextmenu_requested(const QPoint &_position){
 	// QMenu _context_menu(this);
 	// _context_menu->clear();
 
-    auto _current_model = [&](){
-	    return _tree_view->source_model();
-	};
+    auto _current_model = [&](){return _tree_view->source_model();};
 	////select item at cursor position
 	////    QPersistentModelIndex
 	// QModelIndex index = _tree_view->indexAt(_position);
@@ -2134,8 +2126,8 @@ void ts_t:: on_custom_contextmenu_requested(const QPoint &_position){
     QModelIndex index = _tree_view->current_index();
     if(index.isValid()){
 	// Выясняется, зашифрована ли ветка или нет
-	QString cryptFlag = _current_model()->item(index)->field<crypt_type>();
-	auto	current_item = _current_model()->item(index);
+	QString cryptFlag	= _current_model()->item(index)->field<crypt_type>();
+	auto	current_item	= _current_model()->item(index);
 	assert(current_item);
 	auto _parent = _current_model()->item(index)->parent();
 	assert(_parent);
@@ -2145,14 +2137,11 @@ void ts_t:: on_custom_contextmenu_requested(const QPoint &_position){
 	// Или ветка зашифрована, но пароль успешно введен
 	if(cryptFlag != "1" ||
 	    (cryptFlag == "1" && globalparameters.crypt_key().length() > 0)){
-		// Если в буфере есть ветки, соответсвующие пункты становятся активными
-	    bool		is_branch = false;
-	    const QMimeData	*mimeData = QApplication::clipboard()->mimeData();
-	    if(mimeData != nullptr){
-		if(mimeData->hasFormat("mytetra/branch")){
-		    is_branch = true;
-		}
-	    }
+//		// If there is a branch, by appropriate points become active in the buffer  // Если в буфере есть ветки, соответсвующие пункты становятся активными
+//	    bool		is_branch	= false;
+//	    const QMimeData	*mimeData	= QApplication::clipboard()->mimeData();
+//	    if(mimeData != nullptr)
+//			if(mimeData->hasFormat("mytetra/branch")) is_branch = true;
 	    enable_up_action();
 		// ----------------------------
 		// Подсветка пунктов шифрования
@@ -2453,7 +2442,7 @@ tsv_t *ts_t:: viewer() const {return _viewer;}
 void ts_t:: viewer(tsv_t *v){_viewer = v;}
 
 void AdjustingScrollArea:: resizeEvent(QResizeEvent *e){
-    (void)e;
+    (void) e;
 	// auto w = width();
 	// auto vw = viewport()->width() ;
 	// auto ww = widget()->width();

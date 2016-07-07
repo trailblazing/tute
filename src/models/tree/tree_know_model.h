@@ -101,12 +101,12 @@ class tkm_t : public tm_t {
 
 
 	//    bool is_global_root() {return _is_global_root;}
-	void	synchronized(bool _sysynchronized){this->_synchronized = _sysynchronized;}
+	void synchronized(bool _sysynchronized){this->_synchronized = _sysynchronized;}
 
-	bool	synchronized(){return _synchronized;}
+	bool synchronized(){return _synchronized;}
 
-	boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeLevel> _tree_merge	// boost::intrusive_ptr<TreeItem> target
-					    , const view_delete_permantent_strategy &_view_delete_permantent);
+	boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_permantent_strategy &_view_delete_permantent);	// boost::intrusive_ptr<TreeItem> target
+
 
 	boost::intrusive_ptr<TreeItem> move_child(boost::intrusive_ptr<TreeLevel> _tree_level, int mode = add_new_record_after);
 

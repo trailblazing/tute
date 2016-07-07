@@ -1,18 +1,71 @@
 
 mytetra_webengine == mytetra webengine == MyTetra WebEngine
 
-A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A light weight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
+A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
+
+Yes, it is a lightweight web browser.
 
 The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
+
+How to build mytetra_webengine
 _______________________________________________________________________
 
-ENG: Central source repository for MyTetra development. 
+1 Linux
+
+Let's say the directory of your current project is named "working":
+
+working
+    |____verdigris (created by or synchronized with git)
+    |		|____src
+    |
+    |____knowledge management (name is whatever)
+                |____mytetra_webengine (created by or synchronized with git)
+
+
+1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I did not build it)
+
+1.2 Install verdigris (for remove qt::moc, just two header-only files)
+
+    git clone https://github.com/woboq/verdigris.git
+
+1.3 Download and install Qt 5.6
+
+    http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x64-5.6.0-rc.run
+
+    Install it to your Linux distribution
+
+    Default location for administrator installation:
+
+    /opt/Qt5.6.0
+
+    or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
+
+    After installation, you'll get a "MaintenanceTool" under the installation root directory.
+
+1.4 clone the repo to your workbench
+
+    git clone https://github.com/BeImprovised/mytetra_webengine.git
+
+1.5 Compile the Qt project file with Qt-Creator which comes with Qt 5.6
+
+    Open "mytetra.pro" under mytetra_webengine in qtcreator
+
+    "Configure" the project in qtcreator (no additional requirements)
+
+    Build it.
+
+_______________________________________________________________________
+
+mytetra_webengine is forked from MyTetra
+_______________________________________________________________________
+
+ENG: Central source repository for MyTetra development.
 MyTetra official english page: [http://webhamster.ru/site/page/index/articles/projectcode/138](http://webhamster.ru/site/page/index/articles/projectcode/138)
 
-RUS: Основной репозитарий исходников для разработки MyTetra. 
+RUS: Основной репозитарий исходников для разработки MyTetra.
 Официальная русскоязычная страница программы MyTetra: [http://webhamster.ru/site/page/index/articles/projectcode/105](http://webhamster.ru/site/page/index/articles/projectcode/105)
 
 Agreement on the coding (registration code)
@@ -63,38 +116,3 @@ For mytetra_webengine:
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
 Deciding to connect to the development MyTetra, please use the experimental branch for the current code.
-
-
-How to compile the repo
-_______________________________________________________________________
-
-1 Linux
-
-1.1 Install C++ Boost library version 1.60 (for boost::intrusive_ptr<SomeObjectType>, boost::MPL, and some others)
-
-1.2 Download Qt 5.6
-
-http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x64-5.6.0-rc.run
-
-1.3 Install it to your Linux distribution
-
-Default location for administrator installation:
-
-/opt/Qt5.6.0
-
-or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
-
-After installation, you'll get a "MaintenanceTool" under the installation root directory.
-
-1.4 clone the repo to your workbench
-
-git clone https://github.com/BeImprovised/mytetra_webengine.git
-
-1.5 Compile the Qt project file with QtCreator which comes with Qt5.6
-
-Open "mytetra.pro" in QtCreator
-
-Configure the project
-
-Build it.
-
