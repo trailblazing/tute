@@ -17,12 +17,12 @@ _______________________________________________________________________
 
 Let's say the directory of your current project is named "working":
 
-* working
-*   |____verdigris (created by or synchronized with git)
-*   |	    |____src
-*   |
-*   |____knowledge management (name is whatever)
-*	    |____mytetra_webengine (created by or synchronized with git)
+    working
+        |____verdigris (created by or synchronized with git)
+        |	|____src
+        |
+        |____knowledge management (name is whatever)
+                |____mytetra_webengine (created by or synchronized with git)
 
 
 1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
@@ -47,6 +47,12 @@ Let's say the directory of your current project is named "working":
     git clone https://github.com/beimprovised/mytetra_webengine.git
 
 1.5 Compile the Qt project file with Qt-Creator which comes with Qt 5.6
+
+    qmake-qt5 mytetra.pro
+
+    make all
+
+    sudo make install
 
 * Open "mytetra.pro" under mytetra_webengine in qtcreator
 * "Configure" the project in qtcreator (no additional requirements)

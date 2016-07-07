@@ -358,9 +358,7 @@ void ts_t:: setup_actions(void){
 		auto host_parent = _tree_index->host_parent();
 		assert(host_parent);
 		QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
-		if(host_parent){
-		    _alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});
-		}
+		if(host_parent){_alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});}
 		// auto _item_has_no_child_first = [&] {boost::intrusive_ptr<TreeItem> result; for(auto i : _name_same_items) {if(i->count_direct() == 0) {result = i; break;}} return result;}();
 		if(_alternative_items.size() > 0){	// && _item_has_no_child_first
 			// assert(_item_has_no_child_first->name() == _name);
