@@ -112,7 +112,8 @@ For mytetra_webengine:
 
 * mytetra_webengine - the main branch with the latest stable release;
 * develop           - branch to develop.
+* code beautifier   - https://github.com/beimprovised/mytetra_webengine/blob/mytetra_webengine/src/uncrustify.cfg
 
 Besides these two branches have been established in other branches for the implementation of a functional. Upon completion of the changes flow into the branch experimental. After stabilization of the changes in the experimental, the changes flow into the master and release is issued.
 
-Deciding to connect to the development MyTetra, please use the experimental branch for the current code.
+Deciding to connect to the development MyTetra, please use the experimental/develop branch for the current code.
