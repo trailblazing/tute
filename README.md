@@ -25,37 +25,35 @@ Let's say the directory of your current project is named "working":
     //			|____mytetra_webengine (created by or synchronized with git)
 
 
-1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I did not build it)
+1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
-1.2 Install verdigris (for remove qt::moc, just two header-only files)
+1.2 Install verdigris (for remove qt::moc. Just two header-only files)
 
     git clone https://github.com/woboq/verdigris.git
 
 1.3 Download and install Qt 5.6
 
-    http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x64-5.6.0-rc.run
+    wget http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x64-5.6.0-rc.run
 
-    Install it to your Linux distribution
-
-    Default location for administrator installation:
+    // Run the installation. Default location for administrator installation:
 
     /opt/Qt5.6.0
 
-    or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
+    // Or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
 
-    After installation, you'll get a "MaintenanceTool" under the installation root directory.
+    // After installation, you'll get a "MaintenanceTool" under the installation root directory.
 
-1.4 clone the repo to your workbench
+1.4 Clone the repo to your workbench
 
     git clone https://github.com/beimprovised/mytetra_webengine.git
 
 1.5 Compile the Qt project file with Qt-Creator which comes with Qt 5.6
 
-    Open "mytetra.pro" under mytetra_webengine in qtcreator
+    // Open "mytetra.pro" under mytetra_webengine in qtcreator
 
-    "Configure" the project in qtcreator (no additional requirements)
+    // "Configure" the project in qtcreator (no additional requirements)
 
-    Build it.
+    // Build it.
 
 _______________________________________________________________________
 
