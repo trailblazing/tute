@@ -1,8 +1,8 @@
 [Desktop Entry]
-Name=MyTetra
+Name=MyTetra WebEngine
 Comment=Smart manager for information collecting
 Comment[ru]=Менеджер накопления осмысленной информации
-Exec=/opt/ru.webhamster.mytetra/bin/mytetra
+Exec=/opt/ru.webhamster.mytetra/bin/mytetra_webengine
 Icon=mytetra
 Terminal=false
 Type=Application

@@ -58,7 +58,7 @@ class GlobalParameters : public QObject {
 	QSplitter	*find_splitter();
 	void		find_splitter(QSplitter *_find_splitter);
 
-	void		h_record_splitter(QSplitter *vrightsplitter);
+	void		h_record_splitter(QSplitter *h_record_splitter);
 	QSplitter	*h_record_splitter();
 
 	void		h_tree_splitter(QSplitter *vleftsplitter);
@@ -135,7 +135,7 @@ class GlobalParameters : public QObject {
 	WindowSwitcher			*_window_switcher;
 	QSplitter			*_find_splitter;
 	QSplitter			*_v_left_splitter;
-	QSplitter			*_h_right_splitter;
+	QSplitter			*_h_record_splitter;
 	QSplitter			*_v_right_splitter;
 	QTabWidget			*_vtab_record;
 	QTabWidget			*_vtab_tree;

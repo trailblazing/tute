@@ -39,12 +39,12 @@ extern const char	*tree_screen_viewer_name;
 
 W_OBJECT_IMPL(rs_t)
 
-rs_t::rs_t(ts_t           *_tree_screen
+rs_t::rs_t(ts_t			*_tree_screen
 	  , FindScreen          *_find_screen
 	  , MetaEditor          *_editor_screen
 	  , browser::Entrance   *_entrance
 	  , browser::Browser    *_browser
-	  , wn_t          *_main_window
+	  , wn_t		*_main_window
 	  , browser::Profile    *_profile)
     : QWidget(_browser)	// _main_window->vtab_record()
       , _browser(_browser)

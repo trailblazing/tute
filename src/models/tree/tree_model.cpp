@@ -94,24 +94,23 @@ QVariant tm_t:: data(const QModelIndex &_index, int role) const {
     if(! _index.isValid())return QVariant();
 	// Если запрашивается окраска текста элемента
     if(role == Qt::ForegroundRole){
-       boost::intrusive_ptr<TreeItem> it = item(_index);
+	boost::intrusive_ptr<TreeItem> it = item(_index);
 	if(it->id() == _session_id && _index != globalparameters.tree_screen()->view()->current_index())return QColor(Qt::red);
 	else if(it->id() == _session_id && _index == globalparameters.tree_screen()->view()->current_index())return QColor(Qt::cyan);
 	else if(it->count_direct() > 0)return QColor(Qt::black);	// Если узел содержит таблицу конечных записей
 	else return QColor(Qt::darkGray);	// Ветка без таблицы конечных записей
     }
-    if(role == Qt::BackgroundRole){
-	if(_index == _cursor_over_index)return QColor(Qt::gray);
-    }
+    if(role == Qt::BackgroundRole)
+		if(_index == _cursor_over_index)return QColor(Qt::gray);
 	// Если запрашивается содержимое текста элемента
     if(role == Qt::DisplayRole || role == Qt::EditRole){
-       boost::intrusive_ptr<TreeItem> it = item(_index);
+	boost::intrusive_ptr<TreeItem> it = item(_index);
 
 	return QVariant(it->field<dynamic_name_type>());// "dynamicname"  // Запрашивается строка имени с количеством элементов
     }
 	// Если запрашиваются элементы оформления
     if(role == Qt::DecorationRole){
-       boost::intrusive_ptr<TreeItem> it = item(_index);
+	boost::intrusive_ptr<TreeItem> it = item(_index);
 	// Если ветка зашифрована
 	if(it->field<crypt_type>() == "1"){
 		// Если пароль не введен, доступа к ветке нет
@@ -134,20 +133,18 @@ Qt::ItemFlags tm_t:: flags(const QModelIndex &_index) const {
 // Get the index of the element that is defined with parent and Row and column number relative to parent (numbering from zero)
 // Mysterious method, we must also think that he does in fact
 QModelIndex tm_t:: index(int row, int column, const QModelIndex &current_index) const {
-   QModelIndex result;
+    QModelIndex result;
 	// if(current_index.isValid() && current_index.column() != 0) {
 	// return QModelIndex();
 	// }
     if(0 <= current_index.column())assert(current_index.isValid());
 	// if(0 == current_index.column())assert(!current_index.isValid());
     if(! current_index.isValid() || (0 <= current_index.column())){	// if(!current_index.isValid() || (0 == current_index.column())) {
-       boost::intrusive_ptr<TreeItem> current_item = current_index.isValid()	// || 0 < current_index.column()
+	boost::intrusive_ptr<TreeItem> current_item = current_index.isValid()	// || 0 < current_index.column()
 	    ? this->item(current_index) : _root_item;
 	if(row >= 0 && row < current_item->count_direct()){
-	   boost::intrusive_ptr<TreeItem> child_item = current_item->child_direct(row);
-	    if(child_item){
-		result = createIndex(row, column, static_cast<void *>(child_item.get()));
-	    }
+	    boost::intrusive_ptr<TreeItem> child_item = current_item->child_direct(row);
+	    if(child_item)result = createIndex(row, column, static_cast<void *>(child_item.get()));
 		// else {
 		// return QModelIndex();
 		// }
@@ -162,21 +159,18 @@ index_tree tm_t:: index(const std::function<bool (boost::intrusive_ptr<const Lin
 
     std::function<QModelIndex(QModelIndex, std::function<bool (boost::intrusive_ptr<const Linker>)>)>
     index_recursive = [&](QModelIndex _index, std::function<bool (boost::intrusive_ptr<const Linker>)> _equal){
-	   QModelIndex find_index;
+	    QModelIndex find_index;
 
-	   auto it = _index.isValid() ? this->item(_index) : _root_item;	// how about _index itself? as a child of root, it will ever checked
+	    auto it = _index.isValid() ? this->item(_index) : _root_item;	// how about _index itself? as a child of root, it will ever checked
 	    for(int i = 0; i < it->count_direct(); i ++){
-	       auto _index_child = index(i, 0, _index);		// createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
+		auto _index_child = index(i, 0, _index);	// createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
 		if(_equal(it->linker_direct(i))){
 		    find_index = _index_child;
 		    break;
 		}else{
 		    find_index = index_recursive(_index_child, _equal);
-		    if(find_index.isValid()){
-			if(_equal(item(find_index)->linker())){
-			    break;
-			}
-		    }
+		    if(find_index.isValid())
+				if(_equal(item(find_index)->linker())) break;
 		}
 	    }
 	    return find_index;
@@ -324,7 +318,7 @@ index_tree tm_t:: index(const std::function<bool (boost::intrusive_ptr<const Lin
 
 
 index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
-   index_tree result;
+    index_tree result;
 	// assert(!result.isValid());
 
     std::function<QModelIndex(QModelIndex, boost::intrusive_ptr<const TreeItem>)>		// , int
@@ -376,7 +370,7 @@ index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
 	    auto it = _index.isValid() ? this->item(_index) : _root_item;	// TreeItem *index_item = static_cast<TreeItem *>(_index.internalPointer());    // same
 		// assert(_index.row() == it->current_count());  // wrong
 	    for(int i = 0; i < it->count_direct(); i ++){	// _index.row()    //
-	       auto _index_child = index(i, 0, _index);		// createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
+		auto _index_child = index(i, 0, _index);	// createIndex(j, 0, static_cast<void *>(_root_item->child(j).get()));
 		// index_recursive(_idx, item, 1);
 		assert(static_cast<TreeItem *>(_index_child.internalPointer()) == it->child_direct(i).get());
 		if(_item.get() == static_cast<TreeItem *>(_index_child.internalPointer())){
@@ -390,11 +384,7 @@ index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
 			// return
 		    find_index = index_recursive(_index_child, _item);		// , 1
 			// is_find = find_index.isValid();
-		    if(find_index.isValid()){
-			if(_item.get() == static_cast<TreeItem *>(find_index.internalPointer())){	// same as find_index.isValid()
-			    break;
-			}
-		    }
+		    if(find_index.isValid())if(_item.get() == static_cast<TreeItem *>(find_index.internalPointer()))break;		// same as find_index.isValid()
 		}
 	    }
 		// for(int i = 0; i < _index.row(); i++) {
@@ -428,9 +418,7 @@ index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
 	// )break;
 	// }
 	// }
-    if(_item){
-	result = index_tree(index_recursive(QModelIndex(), _item));
-    }
+    if(_item)result = index_tree(index_recursive(QModelIndex(), _item));
 	// assert(result.isValid());
 
 	// return index_recursive(QModelIndex(), _item, 1); // from default index?
@@ -438,10 +426,8 @@ index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
 }
 
 index_tree tm_t:: fake_index(boost::intrusive_ptr<TreeItem> it) const {
-   index_tree result;
-    if(it){
-	result = createIndex(0, 0, static_cast<void *>(it.get()));
-    }
+    index_tree result;
+    if(it)result = createIndex(0, 0, static_cast<void *>(it.get()));
     return result;
 }
 
@@ -459,9 +445,9 @@ void tm_t:: update_index(const index_tree &_index){
 	QList<QStringList> update_pathts = _item->path_children_all();
 
 	foreach(QStringList current_path, update_pathts){
-	   auto current_item = item(current_path);
+	    auto current_item = item(current_path);
 
-	   QModelIndex _current_index = index(current_item);
+	    QModelIndex _current_index = index(current_item);
 
 		// Для подветки дается команда чтобы модель сообщила о своем изменении
 	    emit_datachanged_signal(_current_index);
@@ -503,16 +489,16 @@ void tm_t:: update_index(const index_tree &_index){
 // Get a pointer to the Item-element associated with the specified QModelIndex  // Получение указателя на Item-злемент связанный с заданным QModelIndex
 boost::intrusive_ptr<TreeItem> tm_t:: item(const QModelIndex &_index) const		// ???
 {
-   boost::intrusive_ptr<TreeItem> _result = (nullptr);	// _root_item; //
+    boost::intrusive_ptr<TreeItem> _result = (nullptr);	// _root_item; //
     if(_index.isValid()){
-       boost::intrusive_ptr<TreeItem> _item = boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()));	// item(static_cast<TreeItem *>(_index.internalPointer())->path_absolute());
+	boost::intrusive_ptr<TreeItem> _item = boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()));	// item(static_cast<TreeItem *>(_index.internalPointer())->path_absolute());
 	////boost::const_pointer_cast<TreeItem>(
 	// boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
 	////)
 	// ;
-	if(_item){	// qDebug() << "Get tree item " << item->data("name").toString();
-	    _result = _item;
-	}else{
+	if(_item)	// qDebug() << "Get tree item " << item->data("name").toString();
+		_result = _item;
+	else{
 	    assert(! _index.internalPointer());
 	    qDebug() << "Detect bad castind to TreeItem in item() method ";
 	    _result = nullptr;
@@ -557,13 +543,13 @@ boost::intrusive_ptr<TreeItem> tm_t:: item(QStringList path) const {
 }
 
 boost::intrusive_ptr<TreeItem> tm_t:: item(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
-   std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &, int)>
+    std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &, int)>
     item_recurse	// boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
 	= [&](boost::intrusive_ptr<TreeItem> _it
 	     , const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal
 	     , int mode
 	    ){
-	   static boost::intrusive_ptr<TreeItem> find_item;
+	    static boost::intrusive_ptr<TreeItem> find_item;
 	    if(mode == 0){
 		find_item = nullptr;
 
@@ -664,8 +650,8 @@ QVariant tm_t:: headerData(int section
 
 // Вставка пустых строк с позиции position в количестве rows
 bool tm_t:: insertRows(int position, int rows, const QModelIndex &_index_parent){
-   boost::intrusive_ptr<TreeItem>	parent_item	= item(_index_parent);
-   bool					success		= false;
+    boost::intrusive_ptr<TreeItem>		parent_item	= item(_index_parent);
+    bool					success		= false;
 
     beginInsertRows(_index_parent, position, position + rows - 1);
 
@@ -679,27 +665,23 @@ bool tm_t:: insertRows(int position, int rows, const QModelIndex &_index_parent)
 }
 
 QModelIndex tm_t:: parent(const QModelIndex &_index) const {
-   QModelIndex _result = QModelIndex();
+    QModelIndex _result = QModelIndex();
 	// if(!_index.isValid())
 	// return QModelIndex();
     if(_index.isValid()){
-       boost::intrusive_ptr<TreeItem>	child_item = item(_index);
-       boost::intrusive_ptr<TreeItem>	parent_item;
+	boost::intrusive_ptr<TreeItem>		child_item = item(_index);
+	boost::intrusive_ptr<TreeItem>		parent_item;
 	if(child_item){
 	    parent_item = child_item->parent();
 	    if(parent_item || (parent_item != _root_item)){
 		// return QModelIndex();
 		// } else {
 		if(parent_item){
-		   auto parent_parent = parent_item->parent();
+		    auto parent_parent = parent_item->parent();
 		    if(parent_parent){
 			_result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == parent_item->linker() && il->host() == parent_item && parent_item->parent() == il->host_parent();}), 0, static_cast<void *>(parent_item.get()));
-		    }else{
-			_result = QModelIndex();	// index(0, 0, index(parent_item));
-		    }
-		}else{
-		    _result = QModelIndex();
-		}
+		    }else _result = QModelIndex();		// index(0, 0, index(parent_item));
+		}else _result = QModelIndex();
 	    }
 	}
     }
@@ -707,8 +689,8 @@ QModelIndex tm_t:: parent(const QModelIndex &_index) const {
 }
 
 bool tm_t:: removeRows(int position, int rows, const QModelIndex &parent){
-   boost::intrusive_ptr<TreeItem>	parent_item	= item(parent);
-   bool					success		= false;
+    boost::intrusive_ptr<TreeItem>		parent_item	= item(parent);
+    bool					success		= false;
 
     beginRemoveRows(parent, position, position + rows - 1);
     success = parent_item->delete_permanent_recursive(position, rows).size() > 0 ? true : false;
@@ -718,13 +700,11 @@ bool tm_t:: removeRows(int position, int rows, const QModelIndex &parent){
 }
 
 int tm_t:: rowCount(const QModelIndex &_index) const {
-   int count = 0;
+    int count = 0;
     if(_index.isValid()){
-       boost::intrusive_ptr<TreeItem> it = item(_index);
+	boost::intrusive_ptr<TreeItem> it = item(_index);
 	count = it->count_direct();
-    }else{
-	count = _root_item->count_direct();
-    }
+    }else count = _root_item->count_direct();
     return	// item(_index)->count_direct();    //
 	   count;
 }
@@ -742,7 +722,7 @@ bool tm_t:: setData(const QModelIndex &_index, const QVariant &value, int role){
 	// The Role UserRole currently used to set a flag informing
 	// The cursor over an element in the neahoditsya Drag and Drop
     if(role == Qt::UserRole){
-       QModelIndex previousIndex = _cursor_over_index;
+	QModelIndex previousIndex = _cursor_over_index;
 	if(value.toBool())_cursor_over_index = _index;
 	else _cursor_over_index = QModelIndex();
 	if(previousIndex.isValid())emit_datachanged_signal(previousIndex);

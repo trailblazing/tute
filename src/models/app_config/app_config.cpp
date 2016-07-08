@@ -19,6 +19,7 @@ AppConfig::AppConfig(QObject *pobj){
 
     is_init_flag = false;
 }
+
 // Деструктор объекта настройки программы
 AppConfig::~AppConfig(){
     if(is_init_flag){
@@ -26,6 +27,7 @@ AppConfig::~AppConfig(){
 	_app_conf->sync();
     }
 }
+
 void AppConfig:: init(void){
 	// Создается имя файла конфигурации
     QString configFileName = globalparameters.work_directory() + "/conf.ini";
@@ -44,18 +46,22 @@ void AppConfig:: init(void){
 
 	//    setRecordTableShowVerticalHeaders(true);
 }
+
 bool AppConfig:: is_init(void){
     return is_init_flag;
 }
+
 void AppConfig:: sync(void){
     _app_conf->sync();
 }
+
 // Получение параметра по имени в виде строки с проверкой его существования
 QString AppConfig:: get_parameter(QString name) const {
     if(_app_conf->contains(name))return _app_conf->value(name).toString();
     else critical_error("In config not found parameter " + name);
     return QString();
 }
+
 // Установка имени директории с данными (в которой находится mytetra.xml)
 bool AppConfig:: tetra_dir(QString dirName){
     QDir directory(dirName);
@@ -65,10 +71,12 @@ bool AppConfig:: tetra_dir(QString dirName){
 	return true;
     }else return false;
 }
+
 // Получение имени директории с данными (в которой находится mytetra.xml)
 QString AppConfig:: tetra_dir(void) const {
     return get_parameter("tetradir");
 }
+
 // Установка имени директории с корзиной
 bool AppConfig:: trash_dir(QString dirName){
     QDir directory(dirName);
@@ -78,14 +86,17 @@ bool AppConfig:: trash_dir(QString dirName){
 	return true;
     }else return false;
 }
+
 // Получение имени директории с корзиной
 QString AppConfig:: trash_dir(void) const {
     return get_parameter("trashdir");
 }
+
 // Получение максимального размера директории корзины в мегабайтах
 unsigned int AppConfig:: trash_size(void) const {
     return get_parameter("trashsize").toInt();
 }
+
 // Установка максимального размера директории корзины в мегабайтах
 bool AppConfig:: trash_size(unsigned int mbSize){
     if(mbSize > 0){
@@ -94,10 +105,12 @@ bool AppConfig:: trash_size(unsigned int mbSize){
 	return true;
     }else return false;
 }
+
 // Получение максимально допустимого числа файлов в корзине
 int AppConfig:: trash_max_file_count(void) const {
     return get_parameter("trashmaxfilecount").toInt();
 }
+
 // Установка максимально допустимого числа файлов в корзине
 bool AppConfig:: trash_max_file_count(int count){
     if(count > 0){
@@ -106,40 +119,49 @@ bool AppConfig:: trash_max_file_count(int count){
 	return true;
     }else return false;
 }
+
 bool AppConfig:: cut_branch_confirm(void) const {
     return _app_conf->value("cutbranchconfirm").toBool();
 }
+
 bool AppConfig:: cut_branch_confirm(bool confirm){
     _app_conf->setValue("cutbranchconfirm", confirm);
 
     return true;
 }
+
 bool AppConfig:: print_debug_messages(void) const {
     return _app_conf->value("printdebugmessages").toBool();
 }
+
 bool AppConfig:: print_debug_messages(bool isPrint){
     _app_conf->setValue("printdebugmessages", isPrint);
 
     return true;
 }
+
 QString AppConfig:: interface_language(void) const {
     QString language = get_parameter("interfacelanguage");
     qDebug() << "Get interface language" << language;
 
     return language;
 }
+
 bool AppConfig:: interface_language(QString language){
     _app_conf->setValue("interfacelanguage", language);
 
     return true;
 }
+
 QString AppConfig:: add_new_record_expand_info(void) const {
     return get_parameter("addnewrecord_expand_info");
 }
+
 void AppConfig:: add_new_record_expand_info(QString state){
     if(state == "0" || state == "1")_app_conf->setValue("addnewrecord_expand_info", state);
     else critical_error("Set unavailable value for addnewrecord_expand_info " + state);
 }
+
 // QSize AppConfig::treescreensize(void)const
 // {
 
@@ -177,15 +199,16 @@ QRect AppConfig:: mainwin_geometry(void) const {
 
     rectParameter = rectString.split(",");
 
-    int x = rectParameter[0].toInt();
-    int y = rectParameter[1].toInt();
-    int w = rectParameter[2].toInt();
-    int h = rectParameter[3].toInt();
+    int x	= rectParameter[0].toInt();
+    int y	= rectParameter[1].toInt();
+    int w	= rectParameter[2].toInt();
+    int h	= rectParameter[3].toInt();
 
     rect.setRect(x, y, w, h);
 
     return rect;
 }
+
 void AppConfig:: mainwin_geometry(int x, int y, int w, int h){
     qDebug() << "Save new main window geometry";
 
@@ -193,24 +216,31 @@ void AppConfig:: mainwin_geometry(int x, int y, int w, int h){
 
     _app_conf->setValue("mainwingeometry", result);
 }
+
 void AppConfig:: h_tree_splitter_sizelist(QList<int> list){
-    splitter_sizelist("h_left_splitter", list);
+    splitter_sizelist("h_tree_splitter", list);
 }
+
 QList<int> AppConfig:: h_tree_splitter_sizelist(){
-    return splitter_sizelist("h_left_splitter");
+    return splitter_sizelist("h_tree_splitter");
 }
+
 void AppConfig:: h_record_splitter_sizelist(QList<int> list){
-    splitter_sizelist("h_right_splitter", list);
+    splitter_sizelist("h_record_splitter", list);
 }
+
 QList<int> AppConfig:: h_record_splitter_sizelist(){
-    return splitter_sizelist("h_right_splitter");
+    return splitter_sizelist("h_record_splitter");
 }
+
 QList<int> AppConfig:: v_right_splitter_sizelist(void) const {
     return splitter_sizelist("v_right_splitter");
 }
+
 void AppConfig:: v_right_splitter_sizelist(QList<int> list){
     splitter_sizelist("v_right_splitter", list);
 }
+
 // QList<int> AppConfig::hspl_sizelist(void)const
 // {
 //    return splitter_sizelist("hspl");
@@ -226,10 +256,12 @@ void AppConfig:: v_right_splitter_sizelist(QList<int> list){
 QList<int> AppConfig:: findsplitter_sizelist(void) const {
     return splitter_sizelist("find_splitter");
 }
+
 void AppConfig:: findsplitter_sizelist(QList<int> list){
     qDebug() << "Config set find splitter list to " << list;
     splitter_sizelist("find_splitter", list);
 }
+
 QList<int> AppConfig:: splitter_sizelist(QString name) const {
     QStringList line_list;
     QList<int>	list;
@@ -238,183 +270,238 @@ QList<int> AppConfig:: splitter_sizelist(QString name) const {
     for(int i = 0; i < line_list.size(); ++ i)list.append(line_list.at(i).toInt());
     return list;
 }
+
 void AppConfig:: splitter_sizelist(QString name, QList<int> list){
     QStringList line_list;
     for(int i = 0; i < list.size(); ++ i)line_list.append(QString::number(list.at(i)));
     _app_conf->setValue(name + "_sizelist", line_list.join(","));
 }
+
 std::pair<QString, QStringList> AppConfig:: tree_position(void) const {
     return std::make_pair(
 	_app_conf->value("tree_intercept", global_root_id).toString()
 			 , _app_conf->value("tree_position", "1").toString().split(",")
 	);
 }
+
 void AppConfig:: tree_position(QString view_root_id, QStringList current_item_absolute_path){
     qDebug() << "AppConfig::set_tree_position() : id\t= " << view_root_id << "\t= " << current_item_absolute_path;
     _app_conf->setValue("tree_intercept", view_root_id);
     _app_conf->setValue("tree_position", current_item_absolute_path.join(","));
 }
+
 // ID записи в таблице конечных записей, которая выделена на экране
 QString AppConfig:: recordtable_selected_record_id(void) const {
     return _app_conf->value("recordtableSelectedRecordId", 0).toString();
 }
+
 // ID записи в таблице конечных записей, которая выделена на экране
 void AppConfig:: recordtable_selected_record_id(QString id){
     _app_conf->setValue("recordtableSelectedRecordId", id);
 }
+
 int AppConfig:: findscreen_wordregard(void) const {
     return _app_conf->value("findscreen_wordregard", 0).toInt();
 }
+
 void AppConfig:: findscreen_wordregard(int pos){
     _app_conf->setValue("findscreen_wordregard", pos);
 }
+
 int AppConfig:: findscreen_howextract(void) const {
     return _app_conf->value("findscreen_howextract", 0).toInt();
 }
+
 void AppConfig:: findscreen_howextract(int pos){
     _app_conf->setValue("findscreen_howextract", pos);
 }
+
 int AppConfig:: find_screen_tree_search_area(void) const {
     return _app_conf->value("findScreenTreeSearchArea", 0).toInt();
 }
+
 void AppConfig:: find_screen_tree_search_area(int pos){
     _app_conf->setValue("findScreenTreeSearchArea", pos);
 }
+
 bool AppConfig:: findscreen_find_in_field(QString fieldName) const {
     return _app_conf->value("findscreen_find_in_" + fieldName, 0).toBool();
 }
+
 void AppConfig:: findscreen_find_in_field(QString fieldName, bool isChecked){
     _app_conf->setValue("findscreen_find_in_" + fieldName, isChecked);
 }
+
 bool AppConfig:: findscreen_show(void) const {
     return _app_conf->value("findscreen_show", 0).toBool();
 }
+
 void AppConfig:: findscreen_show(bool isShow){
     _app_conf->setValue("findscreen_show", isShow);
 }
+
 bool AppConfig:: editor_show(void) const {
     return _app_conf->value("editor_show", 0).toBool();
 }
+
 void AppConfig:: editor_show(bool isShow){
     _app_conf->setValue("editor_show", isShow);
 }
+
 QString AppConfig:: howpassrequest(void) const {
     return get_parameter("howpassrequest");
 }
+
 void AppConfig:: howpassrequest(QString mode){
     if(mode == "atClickOnCryptBranch" || mode == "atStartProgram")_app_conf->setValue("howpassrequest", mode);
     else critical_error("Set unavailable value for howpassrequest " + mode);
 }
+
 bool AppConfig:: auto_close_password_enable(void) const {
     return _app_conf->value("autoClosePasswordEnable", 0).toBool();
 }
+
 void AppConfig:: auto_close_password_enable(bool flag){
     _app_conf->setValue("autoClosePasswordEnable", flag);
 }
+
 int AppConfig:: auto_close_password_delay(void) const {
     return _app_conf->value("autoClosePasswordDelay", 0).toInt();
 }
+
 void AppConfig:: auto_close_password_delay(int delay){
     _app_conf->setValue("autoClosePasswordDelay", delay);
 }
+
 bool AppConfig:: run_in_minimized_window(void) const {
     return _app_conf->value("runinminimizedwindow").toBool();
 }
+
 void AppConfig:: run_in_minimized_window(bool flag){
     _app_conf->setValue("runinminimizedwindow", flag);
 }
+
 QString AppConfig:: synchro_command(void) const {
     return get_parameter("synchrocommand");
 }
+
 void AppConfig:: synchro_command(QString command){
     _app_conf->setValue("synchrocommand", command);
 }
+
 bool AppConfig:: synchro_on_startup(void) const {
     return _app_conf->value("synchroonstartup").toBool();
 }
+
 void AppConfig:: synchro_on_startup(bool flag){
     _app_conf->setValue("synchroonstartup", flag);
 }
+
 bool AppConfig:: synchro_on_exit(void) const {
     return _app_conf->value("synchroonexit").toBool();
 }
+
 void AppConfig:: synchro_on_exit(bool flag){
     _app_conf->setValue("synchroonexit", flag);
 }
+
 bool AppConfig:: synchro_console_details(void) const {
     return _app_conf->value("syncroConsoleDetails").toBool();
 }
+
 void AppConfig:: synchro_console_details(bool flag){
     _app_conf->setValue("syncroConsoleDetails", flag);
 }
+
 int AppConfig:: editor_cursor_position(void) const {
     return _app_conf->value("editorCursorPosition", 0).toInt();
 }
+
 void AppConfig:: editor_cursor_position(int n){
     _app_conf->setValue("editorCursorPosition", n);
 }
+
 int AppConfig:: editor_scroll_bar_position(void) const {
     return _app_conf->value("editorScrollBarPosition", 0).toInt();
 }
+
 void AppConfig:: editor_scroll_bar_position(int n){
     _app_conf->setValue("editorScrollBarPosition", n);
 }
+
 QString AppConfig:: password_middle_hash(void) const {
     return get_parameter("passwordMiddleHash");
 }
+
 void AppConfig:: password_middle_hash(QString hash){
     _app_conf->setValue("passwordMiddleHash", hash);
 }
+
 // Нужно ли локально хранить пароль (точнее, промежуточный хеш пароля)
 bool AppConfig:: password_save_flag(void) const {
     return _app_conf->value("passwordSaveFlag").toBool();
 }
+
 void AppConfig:: password_save_flag(bool flag){
     _app_conf->setValue("passwordSaveFlag", flag);
 }
+
 bool AppConfig:: remember_cursor_at_history_navigation(void) const {
     return _app_conf->value("rememberCursorAtHistoryNavigation").toBool();
 }
+
 void AppConfig:: remember_cursor_at_history_navigation(bool flag){
     _app_conf->setValue("rememberCursorAtHistoryNavigation", flag);
 }
+
 bool AppConfig:: remember_cursor_at_ordinary_selection(void) const {
     return _app_conf->value("rememberCursorAtOrdinarySelection").toBool();
 }
+
 void AppConfig:: remember_cursor_at_ordinary_selection(bool flag){
     _app_conf->setValue("rememberCursorAtOrdinarySelection", flag);
 }
+
 int AppConfig:: ugly_qss_replace_height_for_table_view(void) const {
     return _app_conf->value("uglyQssReplaceHeightForTableView", 0).toInt();
 }
+
 void AppConfig:: ugly_qss_replace_height_for_table_view(int n){
     _app_conf->setValue("uglyQssReplaceHeightForTableView", n);
 }
+
 // Перечень полей, отображаемых в таблице конечных записей
 QStringList AppConfig:: record_table_show_fields(void) const {
     return (_app_conf->value("recordTableShowFields", "name")).toString().split(",");
 }
+
 void AppConfig:: record_table_show_fields(QStringList fields){
 	// Не должно быть так, чтобы был пустой список
     if(fields.size() == 0)fields << "name";
     _app_conf->setValue("recordTableShowFields", fields.join(","));
 }
+
 bool AppConfig:: record_table_show_horizontal_headers(void) const {
     return _app_conf->value("recordTableShowHorizontalHeaders").toBool();
 }
+
 void AppConfig:: record_table_show_horizontal_headers(bool flag){
     _app_conf->setValue("recordTableShowHorizontalHeaders", flag);
 }
+
 bool AppConfig:: record_table_show_vertical_headers(void) const {
     return _app_conf->value("recordTableShowVerticalHeaders").toBool();
 }
+
 void AppConfig:: record_table_show_vertical_headers(bool flag){
     _app_conf->setValue("recordTableShowVerticalHeaders", flag);
 }
+
 // Ширина полей, отображаемых в таблице конечных записей
 QStringList AppConfig:: record_table_fields_width(void) const {
     return (_app_conf->value("recordTableFieldsWidth", "256")).toString().split(",");
 }
+
 void AppConfig:: record_table_fields_width(QStringList fields){
 	// В списке с одним элементом должна стоять стандартная величина (всеравно она не влияет, и начнет влиять только после появления второй колонки)
     if(fields.size() == 1)fields[0] = "256";
@@ -422,84 +509,105 @@ void AppConfig:: record_table_fields_width(QStringList fields){
     if(fields.size() == 0)fields << "256";
     _app_conf->setValue("recordTableFieldsWidth", fields.join(","));
 }
+
 // Показывать ли сплешскрин при старте программы
 bool AppConfig:: show_splash_screen(void) const {
     return _app_conf->value("showSplashScreen").toBool();
 }
+
 void AppConfig:: show_splash_screen(bool isShow){
     _app_conf->setValue("showSplashScreen", isShow);
 }
+
 // Режим интерфейса, возможные значения "desktop" и "mobile"
 QString AppConfig:: interface_mode(void) const {
     QString mode = get_parameter("interfaceMode");
 
     return mode;
 }
+
 void AppConfig:: interface_mode(QString mode){
     _app_conf->setValue("interfaceMode", mode);
 }
+
 // Имя последнего активного виджета
 QString AppConfig:: focus_widget(void) const {
     QString widgetName = get_parameter("focusWidget");
 
     return widgetName;
 }
+
 void AppConfig:: focus_widget(QString widgetName){
 	// qDebug() << "AppConfig::setFocusWidget() : " << widgetName;
     _app_conf->setValue("focusWidget", widgetName);
 }
+
 QStringList AppConfig:: hide_editor_tools(void) const {
     return (_app_conf->value("hideEditorTools", "")).toString().split(",");
 }
+
 void AppConfig:: hide_editor_tools(QStringList toolsNames){
     _app_conf->setValue("hideEditorTools", toolsNames.join(","));
 }
+
 bool AppConfig:: find_in_base_expand(void) const {
     return _app_conf->value(
 	FindScreen::_find_in_base_expand		// "findInBaseExpand"
 	).toBool();
 }
+
 void AppConfig:: find_in_base_expand(bool state){
     _app_conf->setValue(
 	FindScreen::_find_in_base_expand	// "findInBaseExpand"
 		       , state
 	);
 }
+
 // Разрешено ли использовать собственный формат вывода даты и времени
 bool AppConfig:: enable_custom_datetime_format(void) const {
     return _app_conf->value("enableCustomDateTimeFormat").toBool();
 }
+
 void AppConfig:: enable_custom_datetime_format(bool state){
     _app_conf->setValue("enableCustomDateTimeFormat", state);
 }
+
 // Строка собственного формата вывода даты и времени
 QString AppConfig:: custom_datetime_format(void) const {
     return get_parameter("customDateTimeFormat");
 }
+
 void AppConfig:: custom_datetime_format(QString format){
     _app_conf->setValue("customDateTimeFormat", format);
 }
+
 // Путь на диске по которому пользователь открывал файлы чтобы приаттачить их к записи
 QString AppConfig:: attach_append_dir(void) const {
     return get_parameter("attachAppendDir");
 }
+
 void AppConfig:: attach_append_dir(QString dir){
     _app_conf->setValue("attachAppendDir", dir);
 }
+
 // Путь на диске по которому пользователь сохранял (Сохранить как...)приаттаченные файлы
 QString AppConfig:: attach_save_as_dir(void) const {
     return get_parameter("attachSaveAsDir");
 }
+
 void AppConfig:: attach_save_as_dir(QString dir){
     _app_conf->setValue("attachSaveAsDir", dir);
 }
+
 // Разрешать ли для просмотра расшифровывать зашифрованные файлы в директорию корзины MyTetra
 bool AppConfig:: enable_decrypt_file_to_trash_directory(void) const {
     return _app_conf->value("enableDecryptFileToTrashDirectory").toBool();
 }
+
 void AppConfig:: enable_decrypt_file_to_trash_directory(bool state){
     _app_conf->setValue("enableDecryptFileToTrashDirectory", state);
 }
+
 // --------------------
 // Номер версии конфига
 // --------------------
@@ -508,9 +616,11 @@ int AppConfig:: config_version(void) const {
     if(_app_conf->contains("version"))return _app_conf->value("version").toInt();
     else return 0;
 }
+
 void AppConfig:: config_version(int i){
     _app_conf->setValue("version", i);
 }
+
 QStringList AppConfig:: remove_parameter_from_table(QString removeName, QStringList table){
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
@@ -526,6 +636,7 @@ QStringList AppConfig:: remove_parameter_from_table(QString removeName, QStringL
     }
     return table;
 }
+
 // Получение типа параметра в виде строки
 QString AppConfig:: parameter_type_from_table(QString parameterName, QStringList table) const {
 	// Перебираются параметры в таблице
@@ -536,6 +647,7 @@ QString AppConfig:: parameter_type_from_table(QString parameterName, QStringList
     }
     return "";
 }
+
 // Получение значения параметра в виде строки
 QString AppConfig:: parameter_value_from_table(QString parameterName, QStringList table) const {
 	// Перебираются параметры в таблице
@@ -546,6 +658,7 @@ QString AppConfig:: parameter_value_from_table(QString parameterName, QStringLis
     }
     return "";
 }
+
 // Замена типа и значения параметра
 QStringList AppConfig:: replace_parameter_in_table(QString replaceName, QString replaceType, QString replaceValue, QStringList table){
 	// Перебираются параметры в таблице
@@ -554,14 +667,15 @@ QStringList AppConfig:: replace_parameter_in_table(QString replaceName, QString 
 	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
 	// Если имя совпадает с заменяемым
 	if(name == replaceName){
-	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1] = replaceType;
-	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2] = replaceValue;
+	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1]	= replaceType;
+	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2]	= replaceValue;
 
 	    break;
 	}
     }
     return table;
 }
+
 // ------------------------------------
 // Методы для обновления версии конфига
 // ------------------------------------
@@ -574,15 +688,15 @@ void AppConfig:: update_version_process(void){
 
     int fromVersion = config_version();
 	// Последняя версия на данный момент - 26
-    if(fromVersion <= 1)updater.update_version(1,  2,  parameter_table<0>(),  parameter_table<1>());
-    if(fromVersion <= 2)updater.update_version(2,  3,  parameter_table<1>(),  parameter_table<2>());
-    if(fromVersion <= 3)updater.update_version(3,  4,  parameter_table<2>(),  parameter_table<3>());
-    if(fromVersion <= 4)updater.update_version(4,  5,  parameter_table<3>(),  parameter_table<4>());
-    if(fromVersion <= 5)updater.update_version(5,  6,  parameter_table<4>(),  parameter_table<5>());
-    if(fromVersion <= 6)updater.update_version(6,  7,  parameter_table<5>(),  parameter_table<6>());
-    if(fromVersion <= 7)updater.update_version(7,  8,  parameter_table<6>(),  parameter_table<7>());
-    if(fromVersion <= 8)updater.update_version(8,  9,  parameter_table<7>(),  parameter_table<8>());
-    if(fromVersion <= 9)updater.update_version(9,  10, parameter_table<8>(),  parameter_table<9>());
+    if(fromVersion <= 1)updater.update_version(1, 2, parameter_table<0>(), parameter_table<1>());
+    if(fromVersion <= 2)updater.update_version(2, 3, parameter_table<1>(), parameter_table<2>());
+    if(fromVersion <= 3)updater.update_version(3, 4, parameter_table<2>(), parameter_table<3>());
+    if(fromVersion <= 4)updater.update_version(4, 5, parameter_table<3>(), parameter_table<4>());
+    if(fromVersion <= 5)updater.update_version(5, 6, parameter_table<4>(), parameter_table<5>());
+    if(fromVersion <= 6)updater.update_version(6, 7, parameter_table<5>(), parameter_table<6>());
+    if(fromVersion <= 7)updater.update_version(7, 8, parameter_table<6>(), parameter_table<7>());
+    if(fromVersion <= 8)updater.update_version(8, 9, parameter_table<7>(), parameter_table<8>());
+    if(fromVersion <= 9)updater.update_version(9, 10, parameter_table<8>(), parameter_table<9>());
     if(fromVersion <= 10)updater.update_version(10, 11, parameter_table<9>(), parameter_table<10>());
     if(fromVersion <= 11)updater.update_version(11, 12, parameter_table<10>(), parameter_table<11>());
     if(fromVersion <= 12)updater.update_version(12, 13, parameter_table<11>(), parameter_table<12>());
@@ -601,6 +715,7 @@ void AppConfig:: update_version_process(void){
     if(fromVersion <= 25)updater.update_version(25, 26, parameter_table<24>(), parameter_table<25>());
     if(fromVersion <= 26)updater.update_version(26, 27, parameter_table<25>(), parameter_table<26>());
 }
+
 template<>QStringList AppConfig:: parameter_table<0>(bool withEndSignature){	// QStringList AppConfig::parameter_table_1(bool withEndSignature) const
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -632,6 +747,7 @@ template<>QStringList AppConfig:: parameter_table<0>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<1>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_2(bool withEndSignature) const {
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -645,6 +761,7 @@ template<>QStringList AppConfig:: parameter_table<1>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<2>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_3(bool withEndSignature) const {
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -658,6 +775,7 @@ template<>QStringList AppConfig:: parameter_table<2>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<3>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_4(bool withEndSignature) const {
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -672,6 +790,7 @@ template<>QStringList AppConfig:: parameter_table<3>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<4>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_5(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -681,12 +800,13 @@ template<>QStringList AppConfig:: parameter_table<4>(bool withEndSignature){	// 
     table << parameter_table<3>(false);
 
 	// Исключаются ненужные в новой версии параметры
-    table = remove_parameter_from_table("lastidnum", table);
-    table = remove_parameter_from_table("lastnotenum", table);
-    table = remove_parameter_from_table("lastprefixnum", table);
+    table	= remove_parameter_from_table("lastidnum", table);
+    table	= remove_parameter_from_table("lastnotenum", table);
+    table	= remove_parameter_from_table("lastprefixnum", table);
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<5>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_6(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -700,6 +820,7 @@ template<>QStringList AppConfig:: parameter_table<5>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<6>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_7(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -713,6 +834,7 @@ template<>QStringList AppConfig:: parameter_table<6>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<7>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_8(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -728,6 +850,7 @@ template<>QStringList AppConfig:: parameter_table<7>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<8>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_9(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -741,6 +864,7 @@ template<>QStringList AppConfig:: parameter_table<8>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<9>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_10(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -755,6 +879,7 @@ template<>QStringList AppConfig:: parameter_table<9>(bool withEndSignature){	// 
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<10>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_11(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -769,6 +894,7 @@ template<>QStringList AppConfig:: parameter_table<10>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<11>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_12(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -783,6 +909,7 @@ template<>QStringList AppConfig:: parameter_table<11>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<12>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_13(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -797,6 +924,7 @@ template<>QStringList AppConfig:: parameter_table<12>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<13>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_14(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -810,6 +938,7 @@ template<>QStringList AppConfig:: parameter_table<13>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<14>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_15(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -823,6 +952,7 @@ template<>QStringList AppConfig:: parameter_table<14>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<15>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_16(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -839,6 +969,7 @@ template<>QStringList AppConfig:: parameter_table<15>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<16>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_17(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -852,6 +983,7 @@ template<>QStringList AppConfig:: parameter_table<16>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<17>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_18(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -865,6 +997,7 @@ template<>QStringList AppConfig:: parameter_table<17>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<18>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_19(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -878,6 +1011,7 @@ template<>QStringList AppConfig:: parameter_table<18>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<19>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_20(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -891,6 +1025,7 @@ template<>QStringList AppConfig:: parameter_table<19>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<20>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_21(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -905,6 +1040,7 @@ template<>QStringList AppConfig:: parameter_table<20>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<21>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_22(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -917,6 +1053,7 @@ template<>QStringList AppConfig:: parameter_table<21>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<22>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_23(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -930,6 +1067,7 @@ template<>QStringList AppConfig:: parameter_table<22>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<23>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_24(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -943,6 +1081,7 @@ template<>QStringList AppConfig:: parameter_table<23>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<24>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_25(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -956,6 +1095,7 @@ template<>QStringList AppConfig:: parameter_table<24>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<25>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_26(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -968,6 +1108,7 @@ template<>QStringList AppConfig:: parameter_table<25>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+
 template<>QStringList AppConfig:: parameter_table<26>(bool withEndSignature){	// QStringList AppConfig:: parameter_table_27(bool withEndSignature){
 	// Таблица параметров
 	// Имя, Тип, Значение на случай когда в конфиге параметра прочему-то нет
@@ -977,8 +1118,8 @@ template<>QStringList AppConfig:: parameter_table<26>(bool withEndSignature){	//
     table << parameter_table<25>(false);
 
 //    table << "v_right_splitter_sizelist"        << "QString" << "614, 0";
-    table << "h_right_splitter_sizelist" << "QString" << "0, 1220";
-    table << "h_left_splitter_sizelist" << "QString" << "312, 1054";
+    table << "h_record_splitter_sizelist" << "QString" << "0, 1220";
+    table << "h_tree_splitter_sizelist" << "QString" << "312, 1054";
 
     table << "vertical_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
     table << "horizontal_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
@@ -987,3 +1128,4 @@ template<>QStringList AppConfig:: parameter_table<26>(bool withEndSignature){	//
     if(withEndSignature)table << "0" << "0" << "0";
     return table;
 }
+

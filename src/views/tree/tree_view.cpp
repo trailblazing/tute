@@ -193,7 +193,7 @@ tv_t::tv_t(QString _name, ts_t *_tree_screen)
     setItemDelegate(_delegate);
 
 
-
+//    setIndentation(0);
 
 
 	// deleted after introduce intercept method
@@ -303,9 +303,7 @@ void tv_t:: sychronize(){
 		auto tabmanager = browser->tabmanager();																						// record_controller()->source_model();  // ->record_table();
 		for(int i = 0; i < tabmanager->count(); i ++){
 		    auto page_item = tabmanager->webView(i)->page()->item();
-		    if(! _know_model_board->child([=](boost::intrusive_ptr<const TreeItem> t){
-			    return t->id() == page_item->field<id_type>();
-			})){
+		    if(! _know_model_board->child([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == page_item->field<id_type>();})){
 			if(page_item->is_lite())page_item->to_fat();
 			// page_item->parent(branch_item);
 			// _source_model()->model_move_as_child_impl(branch_item, page_item, branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
@@ -317,9 +315,7 @@ void tv_t:: sychronize(){
 	    if(modified){
 		// new_branch_item->field("id", _know_root->root_item()->id());
 		// new_branch_item->field("name", _know_root->root_item()->name());
-		assert(_know_model_board->child([=](boost::intrusive_ptr<const TreeItem> t){
-			return t->id() == _know_root->root_item()->id();
-		    }));																																// _know_root->root_item()->id()
+		assert(_know_model_board->child([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == _know_root->root_item()->id();}));																																// _know_root->root_item()->id()
 
 		//// || _know_root->root_item()->id() == _tree_screen->know_branch()->root_item()->id()
 
@@ -350,13 +346,9 @@ void tv_t:: sychronize(){
     }
 }
 
-tkm_t *tv_t:: source_model() const {
-    return _know_root;
-}
+tkm_t *tv_t:: source_model() const {return _know_root;}
 
-tkm_t *tv_t:: source_model(){
-    return _know_root;
-}
+tkm_t *tv_t:: source_model(){return _know_root;}
 
 // void KnowView::source_model(boost::intrusive_ptr<TreeItem> _item)
 // {

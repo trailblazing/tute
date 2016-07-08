@@ -19,7 +19,7 @@ Let's say the directory of your current project is named "working":
 
     working
         |____verdigris (created by or synchronized with git)
-        |	|____src
+        |       |____src
         |
         |____knowledge management (name is whatever)
                 |____mytetra_webengine (created by or synchronized with git)
@@ -48,15 +48,16 @@ Let's say the directory of your current project is named "working":
 
 1.5 Compile the Qt project file with Qt-Creator which comes with Qt 5.6
 
-    qmake-qt5 mytetra.pro
+    qmake-qt5 mytetra_webengine.pro
 
     make all
 
     sudo make install
 
-* Open "mytetra.pro" under mytetra_webengine in qtcreator
-* "Configure" the project in qtcreator (no additional requirements)
-* Build it.
+* Or via GUI:
+        Open "mytetra_webengine.pro" under mytetra_webengine in qtcreator
+        "Configure" the project in qtcreator (no additional requirements)
+        Build it.
 
 _______________________________________________________________________
 

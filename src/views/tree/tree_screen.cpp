@@ -2541,9 +2541,9 @@ tsv_t::~tsv_t(){
     _tree_screen->viewer(nullptr);
 }
 
-tsv_t::tsv_t(ts_t *_tree_screen, rs_t *_record_screen)
+tsv_t::tsv_t(ts_t *_tree_screen, QWidget *widget_right)
     : _tree_screen(_tree_screen)
-      , _record_screen(_record_screen)
+      , _widget_right(widget_right)
       , _layout(new QStackedLayout(this)){
     _tree_screen->viewer(this);
     setObjectName(tree_screen_viewer_name);
@@ -2559,11 +2559,11 @@ tsv_t::tsv_t(ts_t *_tree_screen, rs_t *_record_screen)
 
 int tsv_t:: tree_screen(ts_t *tree){return _layout->addWidget(tree);}
 
-QWidget *tsv_t:: tree_screen() const {return _layout->widget();}
+ts_t *tsv_t:: tree_screen() const {return dynamic_cast<ts_t *>(_layout->widget());}
 
-void tsv_t:: record_screen(rs_t *rs){_record_screen = rs;}
+void tsv_t:: widget_right(QWidget *rs){_widget_right = rs;}
 
-rs_t *tsv_t:: record_screen() const {return _record_screen;}
+QWidget *tsv_t::widget_right() const {return _widget_right;}
 
 
 

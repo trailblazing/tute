@@ -556,12 +556,14 @@ namespace browser {
 	    this->setStyle(new CustomTabStyle());	// QStyle::CT_TabBarTab, new QStyleOption(QStyleOption::Version, QStyleOption::SO_Default), this->size(), this
 	    setStyleSheet(custom_widget_style);
 	}
+
 	void TabBar:: selectTabAction(){
 	    if(QShortcut *shortCut = qobject_cast<QShortcut *>(sender())){
 		int index = _tabshortcuts.indexOf(shortCut);
 		setCurrentIndex(index);
 	    }
 	}
+
 	void TabBar:: contextMenuRequested(const QPoint &position){
 	    QMenu menu;
 
@@ -584,46 +586,49 @@ namespace browser {
 
 		action = menu.addAction(tr("Reload Tab"), this, &TabBar::reloadTab, QKeySequence::Refresh);
 		action->setData(index);
-	    }else{
-		menu.addSeparator();
-	    }
+	    }else menu.addSeparator();
 	    menu.addAction(tr("Reload All Tabs"), this, &TabBar::reloadAllTabs);
 	    menu.exec(QCursor::pos());
 	}
+
 	void TabBar:: cloneTab(){
 	    if(QAction *action = qobject_cast<QAction *>(sender())){
 		int	index = action->data().toInt();
 		emit	cloneTabSignal(index);
 	    }
 	}
+
 	void TabBar:: closeTab(){
 	    if(QAction *action = qobject_cast<QAction *>(sender())){
 		int	index = action->data().toInt();
 		emit	closeTabSignal(index);
 	    }
 	}
+
 	void TabBar:: closeOtherTabs(){
 	    if(QAction *action = qobject_cast<QAction *>(sender())){
 		int	index = action->data().toInt();
 		emit	closeOtherTabsSignal(index);
 	    }
 	}
+
 	void TabBar:: mousePressEvent(QMouseEvent *event){
 	    if(event->button() == Qt::LeftButton)_dragstartpos = event->pos();
 	    QTabBar::mousePressEvent(event);
 	}
+
 	void TabBar:: mouseMoveEvent(QMouseEvent *event){
 	    if(event->buttons() == Qt::LeftButton){
-		int	diffX = event->pos().x() - _dragstartpos.x();
-		int	diffY = event->pos().y() - _dragstartpos.y();
+		int	diffX	= event->pos().x() - _dragstartpos.x();
+		int	diffY	= event->pos().y() - _dragstartpos.y();
 		if(  (event->pos() - _dragstartpos).manhattanLength() > QApplication::startDragDistance()
 		  && diffX < 3 && diffX > - 3
 		  && diffY < - 10){
-		    QDrag	*drag = new QDrag(this);
-		    QMimeData	*mimeData = new QMimeData;
+		    QDrag	*drag		= new QDrag(this);
+		    QMimeData	*mimeData	= new QMimeData;
 		    QList<QUrl> urls;
-		    int		index = tabAt(event->pos());
-		    QUrl	url = tabData(index).toUrl();
+		    int		index	= tabAt(event->pos());
+		    QUrl	url	= tabData(index).toUrl();
 		    urls.append(url);
 		    mimeData->setUrls(urls);
 		    mimeData->setText(tabText(index));
@@ -634,6 +639,7 @@ namespace browser {
 	    }
 	    QTabBar::mouseMoveEvent(event);
 	}
+
 	void TabBar:: reloadTab(){
 	    if(QAction *action = qobject_cast<QAction *>(sender())){
 		int	index = action->data().toInt();
@@ -691,9 +697,9 @@ namespace browser {
 	setElideMode(Qt::ElideRight);
 	// _active_record = [this](Record * const record)-> WebView * {return globalparameters.entrance()->active_record().first->tabWidget()->newTab(record);};
 
-	auto	tree_view = _tree_screen->view();
-	auto	current_item = tree_view->current_item();
-	auto	parent = current_item->parent();
+	auto	tree_view	= _tree_screen->view();
+	auto	current_item	= tree_view->current_item();
+	auto	parent		= current_item->parent();
 	if(! parent)throw std::runtime_error("! parent");
 	connect(
 	    _tabbar
@@ -787,6 +793,7 @@ namespace browser {
 // setStyleSheet("QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");         // left: 1px; alignment: left; // does not work
 	// Qt::Alignment tabAlignment = Qt::Alignment(q->style()->styleHint(QStyle::SH_TabBar_Alignment, 0, q));
     }
+
 	// When index is -1 index chooses the current tab
     void TabWidget:: reloadTab(int index){
 	if(index < 0)index = currentIndex();
@@ -794,6 +801,7 @@ namespace browser {
 	QWidget *widget = this->widget(index);
 	if(WebView *tab = qobject_cast<WebView *>(widget))tab->reload();
     }
+
     TabWidget::~TabWidget(){
 	////        delete _profile;
 	// delete _tabbar;
@@ -813,6 +821,7 @@ namespace browser {
 
 	// delete _record_controller;
     }
+
     void TabWidget:: clear(){
 	// clear the recently closed tabs
 	_recentlyclosedtabs.clear();
@@ -822,12 +831,14 @@ namespace browser {
 	    qLineEdit->setText(qLineEdit->text());
 	}
     }
+
     void TabWidget:: moveTab(int fromIndex, int toIndex){
 	QWidget *lineEdit = _lineedits->widget(fromIndex);
 
 	_lineedits->removeWidget(lineEdit);
 	_lineedits->insertWidget(toIndex, lineEdit);
     }
+
 //    void TabWidget::setCurrentIndex(int index){
 //        QTabWidget::setCurrentIndex(index);
 //        WebView *current_view = this->currentWebView();
@@ -853,9 +864,11 @@ namespace browser {
 	if(! action)return;
 	_actions.append(new WebActionMapper(action, webAction, this));
     }
+
     QLineEdit *TabWidget:: currentLineEdit() const {
 	return lineEdit(_lineedits->currentIndex());
     }
+
     WebView *TabWidget:: currentWebView() const {
 //        WebView *v = nullptr;
 //        if(currentIndex() == - 1){
@@ -869,6 +882,7 @@ namespace browser {
 //        }
 	return webView(currentIndex());	// v;
     }
+
     void TabWidget:: currentChanged(int index){	// switch tab
 	auto synchronize = [&](WebView *view_current){
 		view_current->setFocus();
@@ -882,8 +896,8 @@ namespace browser {
 			// if(recordtableview)recordtableview->setSelectionToPos(position); // work
 		    view_current->setFocus();
 
-		    auto	_tree_view = _tree_screen->view();
-		    QModelIndex index_on_tree = _tree_view->source_model()->index(_current_item_in_browser);
+		    auto	_tree_view	= _tree_screen->view();
+		    QModelIndex index_on_tree	= _tree_view->source_model()->index(_current_item_in_browser);
 		    assert(index_on_tree.isValid());
 		    if(index_on_tree.isValid()){
 			if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser, _current_item_in_browser->parent()));
@@ -909,13 +923,10 @@ namespace browser {
 //                        }
 //                    }
 		    auto _mainwindow = globalparameters.mainwindow();
-		    if(! _mainwindow->windowTitle().contains(view_current->page()->title())){_mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title());}
-			// webView->setFocus();
+		    if(! _mainwindow->windowTitle().contains(view_current->page()->title()))_mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title());	// webView->setFocus();
 		    MetaEditor *metaeditor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
 		    assert(metaeditor);
-		    if(metaeditor->item() != _current_item_in_browser){
-			view_current->page()->sychronize_metaeditor_to_item();	// metaeditor->bind(record);
-		    }
+		    if(metaeditor->item() != _current_item_in_browser)view_current->page()->sychronize_metaeditor_to_item();	// metaeditor->bind(record);
 		}
 	    };
 
@@ -983,25 +994,28 @@ namespace browser {
 	    _lineedits->setCurrentIndex(index);
 	    emit	loadProgress(view_current->progress());
 	    emit	showStatusBarMessage(view_current->lastStatusBarText());
-	    if(view_current->page()->url().isEmpty()){
-		_lineedits->currentWidget()->setFocus();
-	    }
+	    if(view_current->page()->url().isEmpty())_lineedits->currentWidget()->setFocus();
 // else {}
 	}
     }
+
     QAction *TabWidget:: recentlyClosedTabsAction() const {
 	return _recentlyclosedtabsaction;
     }
+
     QAction *TabWidget:: nextTabAction() const {
 	return _nexttabaction;
     }
+
     QAction *TabWidget:: previousTabAction() const {
 	return _previoustabaction;
     }
+
 // QWidget *
     QStackedWidget *TabWidget:: lineEditStack() const {
 	return _lineedits;
     }
+
 // void TabWidget::lineEditStack(QStackedWidget *lineedits)
 // {
 // _lineedits = lineedits;
@@ -1015,9 +1029,10 @@ namespace browser {
 	if(urlLineEdit)return urlLineEdit->lineEdit();
 	return 0;
     }
+
     WebView *TabWidget:: webView(int index) const {
-	WebView *webView = nullptr;
-	QWidget *widget = this->widget(index);
+	WebView *webView	= nullptr;
+	QWidget *widget		= this->widget(index);
 
 	webView = qobject_cast<WebView *>(widget);
 
@@ -1048,6 +1063,7 @@ namespace browser {
 
 	return webView;
     }
+
     int TabWidget:: webViewIndex(WebView *view) const {
 	int index = - 1;
 
@@ -1059,6 +1075,7 @@ namespace browser {
 
 	return index;
     }
+
 // void TabManager::new_view(bool make_current)
 // {
 // new_view(register_record(QUrl(DockedWindow::_defaulthome)), globalparameters.getRecordTableScreen()->getRecordTableController(), make_current);
@@ -1079,25 +1096,23 @@ namespace browser {
 
 
     WebView *TabWidget:: view_no_pinned(){
-	int	found = 0;
-	WebView *r = nullptr;
+	int	found	= 0;
+	WebView *r	= nullptr;
 	for(int i = 0; i < count(); i ++){
-	    WebView	*v = webView(i);
-	    WebPage	*p = v->page();
+	    WebView	*v	= webView(i);
+	    WebPage	*p	= v->page();
 	    if(p){
 		auto it = p->item();
 		if(it && it->field<pin_type>() == _string_from_check_state[Qt::Unchecked]){
 		    found ++;
-		    if(found == 1){
-			r = webView(i);
-		    }else{
-			closeTab(i);
-		    }
+		    if(found == 1)r = webView(i);
+		    else closeTab(i);
 		}
 	    }
 	}
 	return r;
     }
+
 /// *!
 // \fn int QTabWidget::insertTab(int index, QWidget *page, const QIcon& icon, const QString &label)
 // \overload
@@ -1121,8 +1136,9 @@ namespace browser {
 // return index;
 // }
 
-    QAction *TabWidget::	newTabAction() const {return _newtabaction;}
-    WebView *TabWidget::	newTab(boost::intrusive_ptr<RecordIndex> record_index, bool make_current){	// boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
+    QAction *TabWidget:: newTabAction() const {return _newtabaction;}
+
+    WebView *TabWidget:: newTab(boost::intrusive_ptr<RecordIndex> record_index, bool make_current){	// boost::intrusive_ptr<TreeItem> tab_brother, boost::intrusive_ptr<TreeItem> target
 	// , bool openinnewtab   // , const TreeScreen::paste_strategy &_view_paste_strategy // , equal_t _equal
 	boost::intrusive_ptr<TreeItem> result(nullptr);
 	// auto _record_model = modelindex.current_model();
@@ -1202,15 +1218,15 @@ namespace browser {
 
 		{
 			// line edit
-		    UrlLineEdit *urlLineEdit = new UrlLineEdit(view);
-		    QLineEdit	*lineEdit = urlLineEdit->lineEdit();
+		    UrlLineEdit *urlLineEdit	= new UrlLineEdit(view);
+		    QLineEdit	*lineEdit	= urlLineEdit->lineEdit();
 		    if(! _lineeditcompleter && count() > 0){
 			HistoryCompletionModel *completionModel = new HistoryCompletionModel(this);
 			completionModel->setSourceModel(sapp_t::historyManager()->historyFilterModel());
 			_lineeditcompleter = new QCompleter(completionModel, this);
 			// Should this be in Qt by default?
-			QAbstractItemView	*popup = _lineeditcompleter->popup();
-			QListView		*listView = qobject_cast<QListView *>(popup);
+			QAbstractItemView	*popup		= _lineeditcompleter->popup();
+			QListView		*listView	= qobject_cast<QListView *>(popup);
 			if(listView)listView->setUniformItemSizes(true);
 		    }
 		    lineEdit->setCompleter(_lineeditcompleter);
@@ -1248,8 +1264,8 @@ namespace browser {
 		// int index = addTab(view, target->field("name").leftJustified(5, '.', true)); //, tr("(Untitled)")
 
 		//
-		QString title = target->field<name_type>().leftJustified(5, '.', true);
-		int	pre_index = record_index->sibling_index().row();	// tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0;
+		QString title		= target->field<name_type>().leftJustified(5, '.', true);
+		int	pre_index	= record_index->sibling_index().row();		// tab_brother ? tab_brother->binder() ? webViewIndex(tab_brother->binder()->page()->view()) + 1 : 0 : 0;
 		QIcon	icon;
 		//
 		int index = insertTab(pre_index == 0 ? 0 : pre_index + 1, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
@@ -1314,9 +1330,7 @@ namespace browser {
 	assert(result == view->page()->binder()->host());	// old one choosed
 	assert(result == target || result->field<url_type>() == target->field<url_type>());
 	// assert(result->record_binder()->bounded_page());
-	if(! result->binder()->page()){
-	    result->binder()->page(view->page());	// result->bind();   // this is recursively call
-	}
+	if(! result->binder()->page())result->binder()->page(view->page());		// result->bind();   // this is recursively call
 	assert(result->binder()->host());	// 0
 	assert(result->binder()->page());	// 1
 	assert(view->page()->binder());	// 8
@@ -1354,34 +1368,37 @@ namespace browser {
 
 	return view;	// TabWidget::newTabFull::WebView *
     }
+
     void TabWidget:: reloadAllTabs(){
 	for(int i = 0; i < count(); ++ i){
 	    QWidget *tabWidget = widget(i);
-	    if(WebView *tab = qobject_cast<WebView *>(tabWidget)){
-		tab->reload();
-	    }
+	    if(WebView *tab = qobject_cast<WebView *>(tabWidget))tab->reload();
 	}
     }
+
     void TabWidget:: lineEditReturnPressed(){
 	if(QLineEdit *lineEdit = qobject_cast<QLineEdit *>(sender())){
 	    emit loadPage(lineEdit->text());
 	    if(_lineedits->currentWidget() == lineEdit)currentWebView()->setFocus();
 	}
     }
+
     void TabWidget:: windowCloseRequested(){
-	WebPage *webPage = qobject_cast<WebPage *>(sender());
-	WebView *webView = qobject_cast<WebView *>(webPage->view());
-	int	index = webViewIndex(webView);
+	WebPage *webPage	= qobject_cast<WebPage *>(sender());
+	WebView *webView	= qobject_cast<WebView *>(webPage->view());
+	int	index		= webViewIndex(webView);
 	if(index >= 0){
 	    if(count() == 1)webView->page()->browser()->close();
 	    else closeTab(index);
 	}
     }
+
     void TabWidget:: closeOtherTabs(int index){
 	if(- 1 == index)return;
 	for(int i = count() - 1; i > index; -- i)closeTab(i);
 	for(int i = index - 1; i >= 0; -- i)closeTab(i);
     }
+
 //// When index is -1 index chooses the current tab
 // void TabWidget::cloneTab(int index)
 // {
@@ -1407,9 +1424,11 @@ namespace browser {
 	if(! tab)return;
 	tab->page()->triggerAction(QWebEnginePage::RequestClose);
     }
+
     QAction *TabWidget:: closeTabAction() const {
 	return _closetabaction;
     }
+
 // When index is -1 index chooses the current tab
     void TabWidget:: closeTab(int index){
 //        int current_index = currentIndex();
@@ -1418,7 +1437,7 @@ namespace browser {
 	if(index >= 0 && index < count()){	// if(index < 0 || index >= count())
 		// return;
 
-	    bool hasFocus = false;
+//	    bool hasFocus = false;
 	    if(WebView *_view_to_close = webView(index)){
 		assert(widget(index) == _view_to_close);// debug
 #if defined(QWEBENGINEPAGE_ISMODIFIED)
@@ -1435,7 +1454,7 @@ namespace browser {
 		    if(closeConfirmation.exec() == QMessageBox::No)return;
 		}
 #endif
-		hasFocus = _view_to_close->hasFocus();
+//		hasFocus = _view_to_close->hasFocus();
 		if(_profile == globalparameters.profile()	// QWebEngineProfile::defaultProfile()
 		    ){
 		    _recentlyclosedtabsaction->setEnabled(true);
@@ -1543,9 +1562,9 @@ namespace browser {
 	    if(_tabbar->count() == 0)emit lastTabClosed();
 	}
     }
+
 // deprecated, profile should be assigned at the construction of BrowserPage
-    void TabWidget:: setProfile(Profile *profile// QWebEngineProfile *profile
-	){
+    void TabWidget:: setProfile(Profile *profile){	// QWebEngineProfile *profile
 	_profile = profile;
 
 	// for(int i = 0; i < count(); ++i) {
@@ -1558,41 +1577,42 @@ namespace browser {
 	// }
 	// }
     }
+
     void TabWidget:: webViewLoadStarted(){
-	WebView *webView = qobject_cast<WebView *>(sender());
-	int	index = webViewIndex(webView);
+	WebView *webView	= qobject_cast<WebView *>(sender());
+	int	index		= webViewIndex(webView);
 	if(- 1 != index){
 	    QIcon icon(QLatin1String(":loading.gif"));
 	    setTabIcon(index, icon);
 	}
     }
+
     void TabWidget:: webViewIconChanged(){
-	WebView *webView = qobject_cast<WebView *>(sender());
-	int	index = webViewIndex(webView);
+	WebView *webView	= qobject_cast<WebView *>(sender());
+	int	index		= webViewIndex(webView);
 	if(- 1 != index){
 	    QIcon icon = webView->icon();
 	    setTabIcon(index, icon);
 	}
     }
+
     void TabWidget:: webViewTitleChanged(const QString &title){
-	WebView *webView = qobject_cast<WebView *>(sender());
-	int	index = webViewIndex(webView);
-	auto	_real_title = title.leftJustified(5, '.', true);
-	if(- 1 != index){
-	    setTabText(index, _real_title);
-	}
+	WebView *webView	= qobject_cast<WebView *>(sender());
+	int	index		= webViewIndex(webView);
+	auto	_real_title	= title.leftJustified(5, '.', true);
+	if(- 1 != index)setTabText(index, _real_title);
 	if(currentIndex() == index)emit setCurrentTitle(_real_title);	// "test"//
 
 	sapp_t::historyManager()->updateHistoryItem(webView->page()->url(), title);
     }
+
     void TabWidget:: webViewUrlChanged(const QUrl &url){
-	WebView *webView = qobject_cast<WebView *>(sender());
-	int	index = webViewIndex(webView);
-	if(- 1 != index){
-	    _tabbar->setTabData(index, url);
-	}
+	WebView *webView	= qobject_cast<WebView *>(sender());
+	int	index		= webViewIndex(webView);
+	if(- 1 != index)_tabbar->setTabData(index, url);
 	emit tabsChanged();
     }
+
     void TabWidget:: aboutToShowRecentTabsMenu(){
 	_recentlyclosedtabsmenu->clear();
 	for(int i = 0; i < _recentlyclosedtabs.count(); ++ i){
@@ -1604,11 +1624,13 @@ namespace browser {
 	    _recentlyclosedtabsmenu->addAction(action);
 	}
     }
+
     void TabWidget:: aboutToShowRecentTriggeredAction(QAction *action){
 	QUrl url = action->data().toUrl();
 
 	loadUrlInCurrentTab(url);
     }
+
     void TabWidget:: mouseDoubleClickEvent(QMouseEvent *event){
 	if(  ! childAt(event->pos())
 		// Remove the line below when QTabWidget does not have a one pixel frame
@@ -1616,8 +1638,8 @@ namespace browser {
 	    ){
 	    auto tree_view = _tree_screen->view();
 
-	    auto	current_item = tree_view->current_item();
-	    auto	parent = current_item->parent();
+	    auto	current_item	= tree_view->current_item();
+	    auto	parent		= current_item->parent();
 	    if(! parent)throw std::runtime_error(formatter() << std::string(typeid(decltype(&TabWidget::mouseDoubleClickEvent)).name()) << " ! parent");
 // boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
 
@@ -1639,6 +1661,7 @@ namespace browser {
 	}
 	QTabWidget::mouseDoubleClickEvent(event);
     }
+
     void TabWidget:: contextMenuEvent(QContextMenuEvent *event){
 	if(! childAt(event->pos())){
 	    _tabbar->contextMenuRequested(event->pos());
@@ -1647,6 +1670,7 @@ namespace browser {
 	}
 	QTabWidget::contextMenuEvent(event);
     }
+
     void TabWidget:: resizeEvent(QResizeEvent *e){
 	for(int i = 0; i < count(); i ++){
 	    WebView *view = webView(i);
@@ -1654,6 +1678,7 @@ namespace browser {
 	}
 	QTabWidget::resizeEvent(e);
     }
+
     void TabWidget:: mouseReleaseEvent(QMouseEvent *event){
 	if(
 	    event->button() == Qt::MidButton && ! childAt(event->pos())
@@ -1664,8 +1689,8 @@ namespace browser {
 
 	    auto tree_view = _tree_screen->view();
 
-	    auto	current_item = tree_view->current_item();
-	    auto	parent = current_item->parent();
+	    auto	current_item	= tree_view->current_item();
+	    auto	parent		= current_item->parent();
 	    if(! parent)throw std::runtime_error(formatter() << typeid(decltype(&TabWidget::mouseReleaseEvent)).name() << "! parent");
 	    if(! url.isEmpty() && url.isValid() && ! url.scheme().isEmpty()){
 		TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(current_item
@@ -1676,15 +1701,16 @@ namespace browser {
 	    }
 	}
     }
+
     void TabWidget:: loadUrlInCurrentTab(const QUrl &_url){
 	WebView *webView = currentWebView();
 	if(webView){
 		// Record *record;
 	    boost::intrusive_ptr<TreeItem> _item = webView->page()->item();
 	    if(_item->page_valid() && _item->page()->url() != _url){
-		auto	tree_view = _tree_screen->view();
-		auto	current_item = tree_view->current_item();
-		auto	parent = current_item->parent();
+		auto	tree_view	= _tree_screen->view();
+		auto	current_item	= tree_view->current_item();
+		auto	parent		= current_item->parent();
 		if(! parent)throw std::runtime_error(formatter() << typeid(decltype(&TabWidget::loadUrlInCurrentTab)).name() << "! parent");
 		auto it = TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->item_register(_url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toString().toStdString());});
 
@@ -1698,21 +1724,25 @@ namespace browser {
 	    }
 	}
     }
+
     void TabWidget:: nextTab(){
 	int next = currentIndex() + 1;
 	if(next == count())next = 0;
 	setCurrentIndex(next);
     }
+
     WebView *TabWidget:: sibling(WebView *v) const {
 	int index = webViewIndex(v) - 1;
 	if(index < 0)index = count() - 1;
 	return webView(index);
     }
+
     void TabWidget:: previousTab(){
 	int next = currentIndex() - 1;
 	if(next < 0)next = count() - 1;
 	setCurrentIndex(next);
     }
+
     static const qint32 TabWidgetMagic = 0xaa;
 
     QByteArray TabWidget:: saveState() const {
@@ -1729,18 +1759,17 @@ namespace browser {
 		tabs_url.append(
 		    view->page()->url().toString()
 		    );
-	    }else{
-		tabs_url.append(QString::null);
-	    }
+	    }else tabs_url.append(QString::null);
 	}
 	stream << tabs_url;
 	stream << currentIndex();
 
 	return data;
     }
+
     bool TabWidget:: restoreState(const QByteArray &state){
 	int		version = 1;
-	QByteArray	sd = state;
+	QByteArray	sd	= state;
 	QDataStream	stream(&sd, QIODevice::ReadOnly);
 	if(stream.atEnd())return false;
 	qint32	marker;
@@ -1786,12 +1815,15 @@ namespace browser {
 
 	return true;
     }
+
     void TabWidget:: current_download_acceptance(std::pair<QUrl, bool> policy){
 	_current_download_acceptance = policy;
     }
+
     std::pair<QUrl, bool> TabWidget:: current_download_acceptance() const {
 	return _current_download_acceptance;
     }
+
     void TabWidget:: downloadRequested(QWebEngineDownloadItem *download){
 	int ret = ! QMessageBox::Ok;
 	if(! _current_download_acceptance.second && _current_download_acceptance.first != download->url()){
@@ -1808,27 +1840,26 @@ namespace browser {
 	    if(state == QWebEngineDownloadItem::DownloadRequested || state == QWebEngineDownloadItem::DownloadInProgress){
 		// download->accept();  // default in construction
 		if(state == QWebEngineDownloadItem::DownloadRequested)sapp_t::downloadManager()->download(this, download);
-	    }else{	// if(state == QWebEngineDownloadItem::DownloadCompleted || state == QWebEngineDownloadItem::DownloadCancelled || state == QWebEngineDownloadItem::DownloadInterrupted) {
-		_current_download_acceptance.second = false;
-	    }
+	    }else	// if(state == QWebEngineDownloadItem::DownloadCompleted || state == QWebEngineDownloadItem::DownloadCancelled || state == QWebEngineDownloadItem::DownloadInterrupted) {
+			_current_download_acceptance.second = false;
 	}else{
 	    download->cancel();
 	    _current_download_acceptance.first = download->url();
 	}
-	auto	_main_window = globalparameters.mainwindow();
-	auto	_h_left_splitter = _main_window->h_tree_splitter();
-	auto	sizes = _h_left_splitter->sizes();
-	auto	_vtab_tree = _main_window->vtab_tree();
+	auto	_main_window		= globalparameters.mainwindow();
+	auto	_h_left_splitter	= _main_window->h_tree_splitter();
+	auto	sizes			= _h_left_splitter->sizes();
+	auto	_vtab_tree		= _main_window->vtab_tree();
 	// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
 	if(0 == sizes[0]){	// _h_left_splitter->widget(0)->width()
 	    auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
 		// auto h = h_right_splitter->handle(1);
 		// h->move(lr + shw, h->rect().top());
 
-	    auto	size_memory = appconfig.h_tree_splitter_sizelist();
-	    auto	sum = size_memory[0] + size_memory[1];
-	    sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-	    sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+	    auto	size_memory	= appconfig.h_tree_splitter_sizelist();
+	    auto	sum		= size_memory[0] + size_memory[1];
+	    sizes[0]	= size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
+	    sizes[1]	= sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 		// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
 	    _h_left_splitter->setSizes(sizes);	// emit _h_left_splitter->splitterMoved(sizes[0], 1);
 
@@ -1841,6 +1872,7 @@ namespace browser {
 		// h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
 	}
     }
+
     void TabWidget:: onTabsChanged(){
 	// if(count() > 0) {
 	// WebView *tab = nullptr;
@@ -1882,17 +1914,19 @@ namespace browser {
 
 	// _tree_view->select_and_current(_current);
     }
+
 	// will fail if count()==0 or it not inside current tabmanager
     boost::intrusive_ptr<TreeItem> TabWidget:: sibling(boost::intrusive_ptr<TreeItem> it) const {
 	boost::intrusive_ptr<TreeItem> r;
 	if(count() > 0 && it){
-	    auto	v = it->binder()->page()->view();
-	    auto	index = webViewIndex(v) - 1;
+	    auto	v	= it->binder()->page()->view();
+	    auto	index	= webViewIndex(v) - 1;
 	    if(index < 0)index = count() - 1;	// if(index != - 1 && index > 0)
 	    r = webView(index)->page()->binder()->host();
 	}
 	return r;
     }
+
     Browser *TabWidget:: browser(){return _browser;}
 
     TabBar *TabWidget:: tabbar(){return _tabbar;}
@@ -1989,6 +2023,7 @@ namespace browser {
 	}
 	return bv;
     }
+
     WebView *TabWidget:: find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
 	WebView *view = nullptr;
 	for(int i = 0; i < count(); i ++){
@@ -2005,6 +2040,7 @@ namespace browser {
 	}
 	return view;
     }
+
 // WebView *TabWidget::find(boost::intrusive_ptr<const TreeItem> it_find)const
 // {
 //// boost::intrusive_ptr<TreeItem> re;
@@ -2024,7 +2060,7 @@ namespace browser {
 	WebPage *webPage = qobject_cast<WebPage *>(sender());
 	if(request.toggleOn()){
 	    if(! _fullscreenview){
-		_fullscreenview = new QWebEngineView();
+		_fullscreenview		= new QWebEngineView();
 		_fullscreennotification = new FullScreenNotification(_fullscreenview);
 
 		QAction *exitFullScreenAction = new QAction(_fullscreenview);
@@ -2049,6 +2085,7 @@ namespace browser {
 	    _fullscreennotification->hide();
 	}
     }
+
 // boost::intrusive_ptr<TreeItem> TabWidget::item_request_from_tree_impl(const QUrl &_url)
 // {
 // TreeScreen *_tree_screen    = _tree_screen;
@@ -2372,25 +2409,31 @@ namespace browser {
 	connect(_root, &QAction::destroyed, this, &WebActionMapper::rootDestroyed);
 	_root->setEnabled(false);
     }
+
     void WebActionMapper:: rootDestroyed(){
 	_root = 0;
     }
+
     void WebActionMapper:: currentDestroyed(){
 	updateCurrent(0);
     }
+
     void WebActionMapper:: addChild(QAction *action){
 	if(! action)return;
 	connect(action, &QAction::changed, this, &WebActionMapper::childChanged);
     }
+
     QWebEnginePage::WebAction WebActionMapper:: webAction() const {
 	return _webaction;
     }
+
     void WebActionMapper:: rootTriggered(){
 	if(_currentparent){
 	    QAction *gotoAction = _currentparent->action(_webaction);
 	    gotoAction->trigger();
 	}
     }
+
     void WebActionMapper:: childChanged(){
 	if(QAction *source = qobject_cast<QAction *>(sender())){
 	    if(  _root
@@ -2401,6 +2444,7 @@ namespace browser {
 	    }
 	}
     }
+
     void WebActionMapper:: updateCurrent(QWebEnginePage *currentParent){
 	if(_currentparent)disconnect(static_cast<QObject *>(_currentparent), &QObject::destroyed, this, &WebActionMapper::currentDestroyed);
 	_currentparent = currentParent;
@@ -2416,17 +2460,19 @@ namespace browser {
 	_root->setEnabled(source->isEnabled());
 	connect(static_cast<QObject *>(_currentparent), &QObject::destroyed, this, &WebActionMapper::currentDestroyed);
     }
+
     CustomTabStyle::CustomTabStyle(){}
 
     QSize CustomTabStyle:: SizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const {
 	QSize s = QProxyStyle::sizeFromContents(type, option, size, widget);
 	if(type == QStyle::CT_TabBarTab){
 	    s.transpose();
-	    s.rwidth() = 100;
+	    s.rwidth()	= 100;
 	    s.rheight() = 16;
 	}
 	return s;
     }
+
     void CustomTabStyle:: drawControl(QStyle::ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const {
 	if(element == CE_TabBarTabLabel){
 	    if(const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)){
@@ -2453,6 +2499,7 @@ namespace browser {
 	}
 	QProxyStyle::drawControl(element, option, painter, widget);
     }
+
 	// PopupWindow::PopupWindow(TabWidget *tabmanager
 	// , QWebEngineProfile *profile
 	// , QUrl const &url

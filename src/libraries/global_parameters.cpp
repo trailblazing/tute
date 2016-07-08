@@ -440,14 +440,14 @@ void GlobalParameters::find_splitter(QSplitter *_find_splitter) {
     this->_find_splitter = _find_splitter;
 }
 
-void GlobalParameters::h_record_splitter(QSplitter *h_right_splitter)
+void GlobalParameters::h_record_splitter(QSplitter *h_record_splitter)
 {
-    _h_right_splitter = h_right_splitter;
+    _h_record_splitter = h_record_splitter;
 }
 
 QSplitter *GlobalParameters::h_record_splitter()
 {
-    return _h_right_splitter;
+    return _h_record_splitter;
 }
 
 void GlobalParameters::h_tree_splitter(QSplitter *vleftsplitter)

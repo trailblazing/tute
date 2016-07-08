@@ -85,6 +85,7 @@ namespace  browser {
     class ToolbarSearch;
     class WebPage;
     class TabWidget;
+    class DownloadManager;
 }
 
 class AdjustingScrollArea : public QScrollArea {
@@ -125,8 +126,8 @@ class ts_t
     W_OBJECT(ts_t)
 
     public:
-	typedef std::function<bool (boost::intrusive_ptr<const Linker>)> substitute_condition;
-	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)> substitute_condition_double;
+	typedef std::function<bool (boost::intrusive_ptr<const Linker>)>								substitute_condition;
+	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)>				substitute_condition_double;
 	typedef std::function<boost::intrusive_ptr<TreeItem> (TreeIndex, boost::intrusive_ptr<TreeItem>, const substitute_condition &)> paste_strategy;
 
 	ts_t(QString object_name, const AppConfig &_appconfig, QMenu *_filemenu, QMenu *_toolsmenu, wn_t *_main_window = 0);
@@ -521,16 +522,17 @@ class ts_t
 
 class tsv_t : public QFrame {
     public:
-	tsv_t(ts_t *_tree_screen, rs_t *_record_screen);
+	tsv_t(ts_t *_tree_screen, QWidget *widget_right);
+
 	~tsv_t();
-	QWidget *tree_screen() const;
+	ts_t	*tree_screen() const;
 	int	tree_screen(ts_t *tree);
 
-	rs_t	*record_screen() const;
-	void	record_screen(rs_t *rs);
+	QWidget	*widget_right() const;
+	void	widget_right(QWidget *rs);
     private:
 	ts_t		*_tree_screen;
-	rs_t		*_record_screen;
+	QWidget		*_widget_right;
 	QStackedLayout	*_layout;
 };
 
