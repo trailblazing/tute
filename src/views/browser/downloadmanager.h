@@ -119,9 +119,9 @@ namespace browser {
 	  , public Ui_download_dialog {
 	public:
 	    enum RemovePolicy {
-		Never,
-		Exit,
-		SuccessFullDownload
+		Never
+		, Exit
+		, SuccessFullDownload
 	    };
 
 	    RemovePolicy	removePolicy() const;
@@ -179,7 +179,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif	// DOWNLOADMANAGER_H
 

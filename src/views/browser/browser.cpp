@@ -354,12 +354,12 @@ namespace browser {
 	    else{
 		vtab_tree->setUpdatesEnabled(false);
 
-		vtab_tree->insertTab(vtab_tree->indexOf(tree_viewers.back()) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));			// QString("Browser ") + QString::number(tree_viewer_count)
+		vtab_tree->insertTab(vtab_tree->indexOf(tree_viewers.back()) + 1, new tsv_t(_main_window, _tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));			// QString("Browser ") + QString::number(tree_viewer_count)
 		// vtab_tree->setCurrentIndex(index);
 		vtab_tree->setUpdatesEnabled(true);
 	    }
 		// int index = vtab_record->currentIndex();
-	    vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
+//	    vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
 	    _record_screen->adjustSize();
 		// vtab_record->setCurrentIndex(index);
 	}
@@ -824,7 +824,7 @@ namespace browser {
 	return _lastsearch;
     }
 
-    const QString																																																																																																																																																												&Browser::lastsearch() const {
+    const QString																																																																																																																																																																		&Browser::lastsearch() const {
 	return _lastsearch;
     }
 

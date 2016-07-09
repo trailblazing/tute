@@ -46,14 +46,14 @@ using namespace std;
 
 // Версия программы
 // Software Version
-#define APPLICATION_RELEASE_VERSION 1
-#define APPLICATION_RELEASE_SUBVERSION 32
-#define APPLICATION_RELEASE_MICROVERSION 164
+#define APPLICATION_RELEASE_VERSION		1
+#define APPLICATION_RELEASE_SUBVERSION		32
+#define APPLICATION_RELEASE_MICROVERSION	164
 
 // Поддерживаемая версия формата базы (хранилища)
 // Format supported version of the database (repository)
-#define CURRENT_FORMAT_VERSION 1
-#define CURRENT_FORMAT_SUBVERSION 2
+#define CURRENT_FORMAT_VERSION		1
+#define CURRENT_FORMAT_SUBVERSION	2
 
 // #define ADD_NEW_RECORD_TO_END 0
 // #define ADD_NEW_RECORD_BEFORE 1
@@ -67,14 +67,21 @@ void	log_print(char *lpszText, ...);
 void	critical_error(QString message);
 QString xml_node_to_qstring(QDomNode xmlData);
 
-void    print_object_tree(void);
+
 // bool    compare_qstringlist_length(const QStringList &list1, const QStringList &list2);
 
 template<typename ToolButton>
-void insert_action_as_button(QToolBar *tools_line, QAction *action){	// void    insert_action_as_button(QToolBar *tools_line, QAction *action);
+void append_action_as_button(QToolBar *tools_line, QAction *action){	// void    insert_action_as_button(QToolBar *tools_line, QAction *action);
     tools_line->addAction(action);
     qobject_cast<ToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(true);	// false
 }
+
+template<typename ToolButton>
+void insert_action_as_button(QToolBar *tools_line, QAction *before, QAction *action){	// void    insert_action_as_button(QToolBar *tools_line, QAction *action);
+    tools_line->insertAction(before, action);
+    qobject_cast<ToolButton *>(tools_line->widgetForAction(action))->setAutoRaise(true);	// false
+}
+
 // int     imax(int x1, int x2);
 // int     imin(int x1, int x2);
 void		my_message_output(QtMsgType type, const char *msg);
@@ -83,7 +90,7 @@ extern QString	get_unical_id(void);
 int		get_milli_count(void);
 void		init_random(void);
 
-void    set_kinetic_scrollarea(QAbstractItemView *object);
+
 
 int	screen_size_x(void);
 int	screen_size_y(void);
@@ -91,6 +98,7 @@ qreal	calculate_iconsize_px(void);
 
 void		show_message_box(QString message);	// Выдача на экран простого окна с сообщением
 extern QString	set_css_style();
+void		set_kinetic_scrollarea(QAbstractItemView *object);
 
 class WalkHistory;
 class GlobalParameters;
@@ -111,7 +119,7 @@ extern const char	*global_root_id;
 // extern const char *global_root_parent_id;
 extern const char *index_xml_file_name;
 // template <class X> inline X *find_object(QString n);
-
+void print_object_tree(void);
 // Поиск объекта от корня по имени
 template <class X> inline X *find_object(QString objectName){
     QObject *findObj;
@@ -135,16 +143,14 @@ template <class X> inline X *find_object(QString objectName){
     if(findObj == nullptr){
 	// Если объекта с указанным именем не найдено
 	// print_object_tree();
-	printf("find_object(): Can't find object with name %s\n",
-	    qPrintable(objectName));
+	printf("find_object(): Can't find object with name %s\n", qPrintable(objectName));
 
 	print_object_tree();
 
-	/*
-	QList<QWidget *> widgets = mainwindow->findChildren<QWidget *>();
-	foreach (QWidget* b, widgets)
-	  printf("Obj: %s\n", qPrintable( b->objectName() ) );
-	*/
+
+//	QList<QWidget *> widgets = mainwindow->findChildren<QWidget *>();
+//	foreach(QWidget * b, widgets) printf("Obj: %s\n", qPrintable(b->objectName()));
+
 
 	exit(1);
 
@@ -157,19 +163,22 @@ template <class X> inline X *find_object(QString objectName){
 		// Если найденный объект не может быть преобразован к заданному в шаблоне
 		// типу
 	    printf("find_object(): Object %s find, but can't convert type. Check "
-		   "<type> in function call\n",
-		qPrintable(objectName));
+		   "<type> in function call\n"
+		  , qPrintable(objectName));
 	    exit(1);
 
 	    return nullptr;
 	}else return obj;	// Объект найден нормально
     }
 }
+
 class Sleeper : public QThread {
     public:
-	static void	usleep(unsigned long usecs)	{QThread::usleep(usecs);}
-	static void	msleep(unsigned long msecs)	{QThread::msleep(msecs);}
-	static void	sleep(unsigned long secs)	{QThread::sleep(secs);}
+	static void usleep(unsigned long usecs){QThread::usleep(usecs);}
+
+	static void msleep(unsigned long msecs){QThread::msleep(msecs);}
+
+	static void sleep(unsigned long secs){QThread::sleep(secs);}
 };
 
 // class Record;

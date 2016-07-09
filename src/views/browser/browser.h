@@ -81,7 +81,7 @@ struct RecordIndex;
 
 extern const char *profile_storage_name;
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 namespace browser {
     class AutoSaver;
@@ -117,9 +117,9 @@ namespace browser {
 
 	    Handles the tab widget and all the actions
 	 */
-    class Browser :
-		  public QMainWindow
-			//        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
+    class Browser
+	: public QMainWindow
+		//        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
     {
 	W_OBJECT(Browser)
 
@@ -298,8 +298,7 @@ namespace browser {
 	    bool		_is_under_construction = true;
 	    ts_t		*_tree_screen;
 	    FindScreen		*_find_screen;
-
-	    wn_t          *_main_window;
+	    wn_t		*_main_window;
 
 		// RecordController    *_record_controller;
 
@@ -350,7 +349,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 
 #endif	// BROWSERWINDOW_H

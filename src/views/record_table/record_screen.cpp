@@ -50,7 +50,7 @@ rs_t::rs_t(ts_t			*_tree_screen
       , _browser(_browser)
       , _tree_screen(_tree_screen)
       , _main_window(_main_window)
-      , _tree_hide(new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this))
+      , _tree_show(new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this))
       , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
       , _pin(new QAction(tr("Pin note"), this))
       , _addnew_to_end(new QAction(tr("Add note"), this))
@@ -123,15 +123,15 @@ void rs_t:: save_in_new_branch(bool checked){
 
 	    QMap<QString, QString> data;
 
-	    QDateTime	ctime_dt = QDateTime::currentDateTime();
-	    QString	ctime = ctime_dt.toString("yyyyMMddhhmmss");
+	    QDateTime	ctime_dt	= QDateTime::currentDateTime();
+	    QString	ctime		= ctime_dt.toString("yyyyMMddhhmmss");
 		// _item->field("ctime", ctime);
 
-	    data["id"] = get_unical_id();
-	    data["name"] = ctime;
-	    data["ctime"] = ctime;
-	    data["dir"] = data["id"];
-	    data["file"] = "text.html";
+	    data["id"]		= get_unical_id();
+	    data["name"]	= ctime;
+	    data["ctime"]	= ctime;
+	    data["dir"]		= data["id"];
+	    data["file"]	= "text.html";
 
 	    boost::intrusive_ptr<TreeItem> _blank_header = TreeItem::dangle_instance(data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));
 		// = tree_screen->branch_add(tree_source_model, _index
@@ -159,8 +159,8 @@ void rs_t:: save_in_new_branch(bool checked){
 		////            into_know_branch->field("name", objectName());
 
 		////            auto target = new_tree_item_in_treeknow_root;    // ->record_table();   // std::make_shared<RecordTable>(tree_item);
-	    auto	_record_model = [&](){return this->record_controller()->source_model();};																																									// ->record_table();
-	    auto	know_model_board = [&](){return _tree_screen->view()->know_model_board();};
+	    auto	_record_model		= [&](){return this->record_controller()->source_model();};																																										// ->record_table();
+	    auto	know_model_board	= [&](){return _tree_screen->view()->know_model_board();};
 	    for(int i = 0; i < _record_model()->size(); i ++){
 		auto it = _record_model()->item(pos_source(i));
 		if(! know_model_board()->item([=](boost::intrusive_ptr<const TreeItem> t){
@@ -184,45 +184,50 @@ void rs_t:: save_in_new_branch(bool checked){
 
 // Настройка возможных действий
 void rs_t:: setup_actions(void){
-    QList<int>	sizes = _main_window->h_tree_splitter()->sizes();
+    QList<int>	sizes		= _main_window->h_tree_splitter()->sizes();
     QString	_hide_tree_text = sizes[0] == 0 ? tr("Show tree view") : tr("Hide tree view");
-    _tree_hide->setText(_hide_tree_text);
-    _tree_hide->setToolTip(_hide_tree_text);
-    _tree_hide->setStatusTip(_hide_tree_text);
+    _tree_show->setText(_hide_tree_text);
+    _tree_show->setToolTip(_hide_tree_text);
+    _tree_show->setStatusTip(_hide_tree_text);
     QIcon _hide_tree_icon = sizes[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg");
-    _tree_hide->setIcon(_hide_tree_icon);
+    _tree_show->setIcon(_hide_tree_icon);
 
 
-    connect(_main_window->h_tree_splitter(), &QSplitter::splitterMoved, [&, _hide_tree_text, _hide_tree_icon](int pos = 0, int index = 0) mutable {
-	    (void)pos;
-	    (void)index;
-	    auto h_tree_splitter = _main_window->h_tree_splitter();
+    connect(_main_window->h_tree_splitter(), &QSplitter::splitterMoved, [&, _hide_tree_text, _hide_tree_icon](int _tree_pos = 0, int index = 0) mutable {
+	    (void) _tree_pos;
+	    (void) index;
 
-	    auto sizes = h_tree_splitter->sizes();
+//	    auto h_tree_splitter = _main_window->h_tree_splitter();
+//	    auto sizes = h_tree_splitter->sizes();
+
 	    auto vtab_tree = _main_window->vtab_tree();
 	    auto bar_width = vtab_tree->tabBar()->geometry().width();
-	    if(bar_width >= sizes[0]){																														// h_left_splitter->widget(0)->width()
+	    if(_tree_pos <= bar_width){	// if(bar_width >= sizes[0]){																														// h_left_splitter->widget(0)->width()
 		_hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
 		_hide_tree_text = tr("Show tree view");
 //		vtab_tree->resize(bar_width, vtab_tree->height());
 //		vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
 		vtab_tree->setMinimumWidth(bar_width);
 //		vtab_tree->setMaximumWidth(bar_width);
+		if(! _toolsline->actions().contains(_tree_show))insert_action_as_button<QToolButton>(_toolsline, _pin, _tree_show);
 	    }else{
 		_hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
 		_hide_tree_text = tr("Hide tree view");
 //		vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		vtab_tree->setMaximumWidth(_main_window->maximumWidth());
+		if(_toolsline->actions().contains(_tree_show))_toolsline->removeAction(_tree_show);
 	    }
-	    _tree_hide->setIcon(_hide_tree_icon);
-	    _tree_hide->setToolTip(_hide_tree_text);
-	    _tree_hide->setStatusTip(_hide_tree_text);
-	    _tree_hide->setText(_hide_tree_text);
+	    _tree_show->setIcon(_hide_tree_icon);
+	    _tree_show->setToolTip(_hide_tree_text);
+	    _tree_show->setStatusTip(_hide_tree_text);
+	    _tree_show->setText(_hide_tree_text);
 //	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
 	});
 
-    connect(_tree_hide, &QAction::triggered, [&, _hide_tree_text, _hide_tree_icon]() mutable {
+    connect(_tree_show, &QAction::triggered, [&, _hide_tree_text, _hide_tree_icon]() mutable {
 	    auto h_tree_splitter = _main_window->h_tree_splitter();
+	    auto h_record_splitter = _main_window->h_record_splitter();
+	    auto h_record_sizes = h_record_splitter->sizes();
 		////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
 		// if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
 		// else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
@@ -234,18 +239,19 @@ void rs_t:: setup_actions(void){
 	    auto vtab_tree = _main_window->vtab_tree();
 	    auto bar_width = vtab_tree->tabBar()->geometry().width();	// same as tabRect(0).width()
 //            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
-	    auto sizes = h_tree_splitter->sizes();
-	    if(bar_width >= sizes[0]){																														// h_left_splitter->widget(0)->width()
+	    auto h_tree_sizes = h_tree_splitter->sizes();
+	    QList<int> delta;
+	    if(h_tree_sizes[0] <= bar_width){	// show	// h_left_splitter->widget(0)->width()
 		auto vtab_tree_min_width = vtab_tree->minimumSizeHint().width();																																						// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
 
 		// auto h = h_right_splitter->handle(1);
 		// h->move(lr + shw, h->rect().top());
 
-		auto size_memory = appconfig.h_tree_splitter_sizelist();
+		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
 
-		auto sum = size_memory[0] + size_memory[1];
-		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-		sizes[1] = sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;
+		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
+		h_tree_sizes[0] = tree_size_memory[0] > vtab_tree_min_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : vtab_tree_min_width;
+		h_tree_sizes[1] = tree_sum - h_tree_sizes[0] > 0 ? tree_sum - h_tree_sizes[0] : tree_sum * 85 / 100;
 		vtab_tree->setMaximumWidth(_main_window->maximumWidth());	// just a very big number
 		vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 
@@ -258,11 +264,11 @@ void rs_t:: setup_actions(void){
 // _hide_tree_text = tr("Hide tree view");
 
 ////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
-	    }else{
-		// h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
+	    }else{	// hide
+			// h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
 
-		sizes[1] = sizes[0] + sizes[1] - bar_width;
-		sizes[0] = bar_width;	// 0;
+		h_tree_sizes[1] = h_tree_sizes[0] + h_tree_sizes[1] - bar_width;
+		h_tree_sizes[0] = bar_width;	// 0;
 //		vtab_tree->resize(bar_width, vtab_tree->height());
 //		vtab_tree->setMaximumWidth(bar_width);
 		vtab_tree->setMinimumWidth(bar_width);
@@ -271,15 +277,26 @@ void rs_t:: setup_actions(void){
 // _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
 // _hide_tree_text = tr("Show tree view");
 	    }
-	    h_tree_splitter->setSizes(sizes);	//
+	    delta << h_tree_splitter->sizes()[0] - h_tree_sizes[0];
+//	    delta[1] = h_tree_splitter->sizes()[1] - h_tree_splitter_sizes[1];
+	    if(h_tree_sizes != h_tree_splitter->sizes()){
+		h_tree_splitter->setSizes(h_tree_sizes);	//
+		emit h_tree_splitter->splitterMoved(h_tree_sizes[0], 1);
+	    }
+	    h_record_sizes[0] = h_record_sizes[0] - delta[0];
+	    h_record_sizes[1] = h_record_sizes[1] + delta[0];
+	    if(h_record_sizes != h_record_splitter->sizes()){
+		h_record_splitter->setSizes(h_record_sizes);
+		emit h_record_splitter->splitterMoved(h_record_sizes[0], 1);
+	    }
 // _tree_hide->setIcon(_hide_tree_icon);
 // _tree_hide->setToolTip(_hide_tree_text);
 // _tree_hide->setStatusTip(_hide_tree_text);
 // _tree_hide->setText(_hide_tree_text);
-	    emit h_tree_splitter->splitterMoved(sizes[0], 1);
+
 		// emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
 	});
-    if(_tree_screen->_actionlist[action_show_hide_record_screen]->text() == tr("Show record screen"))emit _main_window->h_record_splitter()->splitterMoved(_main_window->h_record_splitter()->sizes()[0], 1);
+    if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen"))emit _main_window->h_record_splitter()->splitterMoved(_main_window->h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
 	// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
@@ -478,7 +495,7 @@ void rs_t:: setup_actions(void){
 	    _record_controller->source_model()->move_up(_record_controller->index<pos_source>(pos_proxy_));
 
 		// Установка засветки на перемещенную запись
-	    _record_controller->cursor_to_index(pos_proxy((int)pos_proxy_ - 1));
+	    _record_controller->cursor_to_index(pos_proxy((int) pos_proxy_ - 1));
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -504,7 +521,7 @@ void rs_t:: setup_actions(void){
 	    _record_controller->source_model()->move_dn(_record_controller->index<pos_source>(pos_proxy_));
 
 		// Установка засветки на перемещенную запись
-	    _record_controller->cursor_to_index(pos_proxy((int)pos_proxy_ + 1));
+	    _record_controller->cursor_to_index(pos_proxy((int) pos_proxy_ + 1));
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -566,48 +583,48 @@ void rs_t:: setup_actions(void){
 }
 
 void rs_t:: setup_ui(void){
-	// _toolsline = new QToolBar(this);
-// QSize toolBarIconSize(16,16);
-// toolsLine->setIconSize(toolBarIconSize);
-// setStyleSheet("border : 0px;");
+//    _toolsline = new QToolBar(this);
+//    QSize toolBarIconSize(16, 16);
+//    toolsLine->setIconSize(toolBarIconSize);
+//    setStyleSheet("border : 0px;");
     if(appconfig.interface_mode() == "mobile"){
-	insert_action_as_button<QToolButton>(_toolsline, _back);
+	append_action_as_button<QToolButton>(_toolsline, _back);
 	_toolsline->addSeparator();
     }
-    insert_action_as_button<QToolButton>(_toolsline, _tree_hide);
-    insert_action_as_button<QToolButton>(_toolsline, _pin);
-    insert_action_as_button<QToolButton>(_toolsline, _save_in_new_branch);
-    insert_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
+    append_action_as_button<QToolButton>(_toolsline, _tree_show);
+    append_action_as_button<QToolButton>(_toolsline, _pin);
+    append_action_as_button<QToolButton>(_toolsline, _save_in_new_branch);
+    append_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
     if(appconfig.interface_mode() == "desktop"){
-	insert_action_as_button<QToolButton>(_toolsline, _edit_field);
-	insert_action_as_button<QToolButton>(_toolsline, _close);
+	append_action_as_button<QToolButton>(_toolsline, _edit_field);
+	append_action_as_button<QToolButton>(_toolsline, _close);
     }
-    insert_action_as_button<QToolButton>(_toolsline, _action_walk_history_previous);
-    insert_action_as_button<QToolButton>(_toolsline, _action_walk_history_next);
-    insert_action_as_button<QToolButton>(_toolsline, _action_move_up);
-    insert_action_as_button<QToolButton>(_toolsline, _action_move_dn);
+    append_action_as_button<QToolButton>(_toolsline, _action_walk_history_previous);
+    append_action_as_button<QToolButton>(_toolsline, _action_walk_history_next);
+    append_action_as_button<QToolButton>(_toolsline, _action_move_up);
+    append_action_as_button<QToolButton>(_toolsline, _action_move_dn);
 
     _toolsline->addSeparator();
 
-    insert_action_as_button<QToolButton>(_toolsline, _cut);
-    insert_action_as_button<QToolButton>(_toolsline, _copy);
-    insert_action_as_button<QToolButton>(_toolsline, _paste);
-    insert_action_as_button<QToolButton>(_toolsline, _delete);
+    append_action_as_button<QToolButton>(_toolsline, _cut);
+    append_action_as_button<QToolButton>(_toolsline, _copy);
+    append_action_as_button<QToolButton>(_toolsline, _paste);
+    append_action_as_button<QToolButton>(_toolsline, _delete);
 
     _toolsline->addSeparator();
 
-    insert_action_as_button<QToolButton>(_toolsline, _sort);
-    insert_action_as_button<QToolButton>(_toolsline, _print);
-    insert_action_as_button<QToolButton>(_toolsline, _settings);
+    append_action_as_button<QToolButton>(_toolsline, _sort);
+    append_action_as_button<QToolButton>(_toolsline, _print);
+    append_action_as_button<QToolButton>(_toolsline, _settings);
 	// _extra_toolsline = new QToolBar(this);
     if(appconfig.interface_mode() == "desktop"){
-	insert_action_as_button<QToolButton>(_extra_toolsline, _action_syncro);
+	append_action_as_button<QToolButton>(_extra_toolsline, _action_syncro);
 	// insertActionAsButton(extraToolsLine, actionWalkHistoryPrevious);
 	// insertActionAsButton(extraToolsLine, actionWalkHistoryNext);
     }
-    insert_action_as_button<QToolButton>(_extra_toolsline, _find_in_base);
+    append_action_as_button<QToolButton>(_extra_toolsline, _find_in_base);
 
-    insert_action_as_button<QToolButton>(_extra_toolsline, _tree_screen->_actionlist[action_main_menu]);
+    append_action_as_button<QToolButton>(_extra_toolsline, _tree_screen->_actionlist[action_main_menu]);
 	// _treepathlabel = new QLabel(this);
 
 	// _treepath_button = new FlatToolButton(this);
@@ -816,11 +833,11 @@ void rs_t:: tools_update(){
 	// Добавлять можно к любой ветке
     _addnew_to_end->setEnabled(true);
 
-    rv_t		*view = _record_controller->view();
-    QItemSelectionModel *item_selection_model = view->selectionModel();
+    rv_t		*view			= _record_controller->view();
+    QItemSelectionModel *item_selection_model	= view->selectionModel();
 
-    int		selected_rows = (item_selection_model->selectedRows()).size();
-    bool	has_selection = item_selection_model->hasSelection();
+    int		selected_rows	= (item_selection_model->selectedRows()).size();
+    bool	has_selection	= item_selection_model->hasSelection();
     bool	sorting_enabled = view->isSortingEnabled();
 	// Добавление записи до
 	// Добавлять "до" можно только тогда, когда выбрана только одна строка
@@ -845,9 +862,7 @@ void rs_t:: tools_update(){
 	// едактировать можно только тогда, когда выбрана только одна строка
     if(  has_selection	// item_selection_model->hasSelection()
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
-	){
-	_edit_field->setEnabled(true);
-    }
+	)_edit_field->setEnabled(true);
 	// Удаление записи
 	// Пункт активен только если запись (или записи) выбраны в списке
     if(has_selection){											// item_selection_model->hasSelection()
@@ -877,11 +892,8 @@ void rs_t:: tools_update(){
       || 0 == view->model()->rowCount()
 	){
 	const QMimeData *mime_data = QApplication::clipboard()->mimeData();
-	if(mime_data != nullptr){
-	    if(mime_data->hasFormat("mytetra/records")){
-		_paste->setEnabled(true);
-	    }
-	}
+	if(mime_data != nullptr)
+		if(mime_data->hasFormat("mytetra/records"))_paste->setEnabled(true);
     }
 	// Перемещение записи вверх
 	// Пункт возможен только когда выбрана одна строка
@@ -891,9 +903,7 @@ void rs_t:: tools_update(){
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && view->is_selected_set_to_top() == false
-	){
-	_action_move_up->setEnabled(true);
-    }
+	)_action_move_up->setEnabled(true);
 	// Перемещение записи вниз
 	// Пункт возможен только когда выбрана одна строка
 	// и указатель стоит не в конце списка
@@ -902,9 +912,7 @@ void rs_t:: tools_update(){
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && view->is_selected_set_to_bottom() == false
-	){
-	_action_move_dn->setEnabled(true);
-    }
+	)_action_move_dn->setEnabled(true);
 	// Обновляется состояние области редактирования текста
     if(  has_selection	// item_selection_model->hasSelection()
       && _record_controller->row_count() > 0
@@ -988,5 +996,5 @@ browser::Browser *rs_t:: browser(){return _browser;}
 
 ts_t *rs_t:: tree_screen(){return _tree_screen;}
 
-QAction *rs_t:: tree_hide(){return _tree_hide;}
+QAction *rs_t:: tree_hide(){return _tree_show;}
 

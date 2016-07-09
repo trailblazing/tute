@@ -140,7 +140,7 @@ void FindScreen::setup_navigate(void){
 
     _historyhome->setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H));
 
-    insert_action_as_button<QToolButton>(_navigater, _historyhome);				// _navigater->addAction(_historyhome);
+    append_action_as_button<QToolButton>(_navigater, _historyhome);				// _navigater->addAction(_historyhome);
 
         // _history_back = new FlatToolButton(this);
 
@@ -155,7 +155,7 @@ void FindScreen::setup_navigate(void){
         // _historyback->setMenu(_historybackmenu);
         // connect(_historybackmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowBackMenu()));
         // connect(_historybackmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
-    insert_action_as_button<QToolButton>(_navigater, _historyback);				// _navigater->addAction(_historyback);
+    append_action_as_button<QToolButton>(_navigater, _historyback);				// _navigater->addAction(_historyback);
         // insertActionAsButton(_container, _historyback);
 
         // _history_forward = new FlatToolButton(this);
@@ -169,7 +169,7 @@ void FindScreen::setup_navigate(void){
         // connect(_historyforwardmenu, SIGNAL(aboutToShow()), this, SLOT(slotAboutToShowForwardMenu()));
         // connect(_historyforwardmenu, SIGNAL(triggered(QAction *)), this, SLOT(slotOpenActionUrl(QAction *)));
         // _historyforward->setMenu(_historyforwardmenu);
-    insert_action_as_button<QToolButton>(_navigater, _historyforward);				// _navigater->addAction(_historyforward);
+    append_action_as_button<QToolButton>(_navigater, _historyforward);				// _navigater->addAction(_historyforward);
 
 
         // _stop_reload = new FlatToolButton(this);
@@ -179,7 +179,7 @@ void FindScreen::setup_navigate(void){
         // _reloadicon = style()->standardIcon(QStyle::SP_BrowserReload);
     _stopreload->setIcon(QIcon(":/resource/pic/mobile_reload.svg")				// style()->standardIcon(QStyle::SP_BrowserReload)
         );
-    insert_action_as_button<QToolButton>(_navigater, _stopreload);				// _navigater->addAction(_stopreload);
+    append_action_as_button<QToolButton>(_navigater, _stopreload);				// _navigater->addAction(_stopreload);
 }
 void FindScreen::assembly_navigate(void){
         // _navigater = new QHBoxLayout();

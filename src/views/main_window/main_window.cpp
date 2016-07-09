@@ -126,7 +126,12 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
     _h_record_splitter->setHandleWidth(0);
 // _h_splitter->setHandleWidth(0);
 
+
+
     _vtab_record->tabBar()->hide();
+
+
+
 //    _globalparameters.vtab_record(_vtab_record);// in initialize list
 //    _globalparameters.vtab_tree(_vtab_tree);	// in initialize list
 
@@ -328,7 +333,7 @@ void wn_t:: setup_signals(void){
 
     connect(_vtab_record, &HidableTabWidget::currentChanged, this, [&](int index){
 	    if(- 1 != index){
-		auto record_widget = _vtab_record->widget(index);
+		auto current_record_widget = _vtab_record->widget(index);
 
 		// for(int i = 0; i < _vtab_record->count(); i++) {
 		// if(i != real_index) {
@@ -344,38 +349,48 @@ void wn_t:: setup_signals(void){
 		// }
 		// }
 		rs_t *record_screen = nullptr;
-		if(record_widget->objectName() == record_screen_multi_instance_name)record_screen = dynamic_cast<rs_t *>(record_widget);
-		if(record_screen){
+//		browser::DownloadManager *download_manager = nullptr;
+//		if(current_record_widget->objectName() == download_manager_singleton_name){
+//		    download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
+//		    if(download_manager){
+//			;
+//			;
+//		    }
+//		}else
+		if(current_record_widget->objectName() == record_screen_multi_instance_name){
+		    record_screen = dynamic_cast<rs_t *>(current_record_widget);
+		    if(record_screen){
 //		    _vtab_record->setCurrentWidget(record_screen);
 
 
 //		    record_screen->restore_menubar();
 
 
-		    auto current_brower = record_screen->browser();
-		    if(current_brower && ! current_brower->is_under_construction()){
-			current_brower->raise();
-			current_brower->activateWindow();
+			auto current_brower = record_screen->browser();
+			if(current_brower && ! current_brower->is_under_construction()){
+			    current_brower->raise();
+			    current_brower->activateWindow();
+			}
 		    }
-		    for(int i = 0; i < _vtab_tree->count(); i ++){
-			auto tree_view_curr = _vtab_tree->widget(i);
-			if(tree_view_curr->objectName() == tree_screen_viewer_name){
-			    auto tree_viewer = dynamic_cast<tsv_t *>(tree_view_curr);
-			    if(tree_viewer){
-				if(tree_viewer->widget_right() == record_screen){
-				    if(_vtab_tree->currentIndex() != i){
-					if(! tree_viewer->tree_screen())tree_viewer->tree_screen(_tree_screen);
-					_vtab_tree->setCurrentIndex(i);
-				    }
-				    break;
+			// else{
+			// _tree_screen->restore_menubar();
+			// }
+		}
+		for(int i = 0; i < _vtab_tree->count(); i ++){
+		    auto tree_viewer = _vtab_tree->widget(i);
+		    if(tree_viewer->objectName() == tree_screen_viewer_name){
+			auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);
+			if(tree_viewer_){
+			    if(tree_viewer_->widget_right() == current_record_widget){
+				if(_vtab_tree->currentIndex() != i){
+				    if(! tree_viewer_->tree_screen())tree_viewer_->tree_screen(_tree_screen);
+				    _vtab_tree->setCurrentIndex(i);
 				}
+				break;
 			    }
 			}
 		    }
 		}
-		// else{
-		// _tree_screen->restore_menubar();
-		// }
 	    }
 	});
 
@@ -395,14 +410,16 @@ void wn_t:: setup_signals(void){
 		// }
 		// }
 		// }
-
-		auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);																			// auto current_widget = _vtab_record->widget(real_index);
+		QWidget *current_record_widget	= nullptr;
+		auto	tree_viewer_		= dynamic_cast<tsv_t *>(tree_viewer);																			// auto current_widget = _vtab_record->widget(real_index);
 		if(tree_viewer_){
 		    QWidget *tree_screen = tree_viewer_->tree_screen();
 		    if(! tree_screen)tree_viewer_->tree_screen(_this->_tree_screen);
+		    current_record_widget = tree_viewer_->widget_right();
+		    if(_this->_vtab_record->currentWidget() != current_record_widget)_this->_vtab_record->setCurrentWidget(current_record_widget);
 		    rs_t *record_screen = dynamic_cast<rs_t *>(tree_viewer_->widget_right());
 		    if(record_screen){
-			if(_this->_vtab_record->currentWidget() != record_screen)_this->_vtab_record->setCurrentWidget(record_screen);
+//			if(_this->_vtab_record->currentWidget() != record_screen)_this->_vtab_record->setCurrentWidget(record_screen);
 //			record_screen->restore_menubar();
 
 			auto current_brower = record_screen->browser();
@@ -418,9 +435,17 @@ void wn_t:: setup_signals(void){
 				v->raise();
 				v->adjustSize();// v->repaint();
 			    }
-// v->layout()->update();  // activate();
+//			    v->layout()->update();	// activate();
 			}
 		    }
+//		    browser::DownloadManager *download_manager = nullptr;
+//		    if(current_record_widget->objectName() == download_manager_singleton_name){
+//			download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
+//			if(download_manager){
+//			    if(_this->_vtab_record->currentWidget() != download_manager)_this->_vtab_record->setCurrentWidget(download_manager);
+//			    ;
+//			}
+//		    }
 			// else{
 			// _tree_screen->restore_menubar();
 			// }
@@ -436,15 +461,15 @@ void wn_t:: setup_signals(void){
 // auto count = _vtab_tree->count();
 	    if(0 == tree_viewer_count){														// if(1 >= count) {    // self and download
 // _this->_tree_screen->restore_menubar();
-		index = _vtab_tree->insertTab(0, static_cast<QWidget *>(new tsv_t(_this->_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
+		index = _vtab_tree->insertTab(0, static_cast<QWidget *>(new tsv_t(_this, _this->_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
 		_vtab_tree->setCurrentIndex(index);
 	    }
 	};
-
+    (void) empty_recovery;
 	// hide_others(_vtabwidget->currentIndex());
     connect(_vtab_tree, &HidableTabWidget::currentChanged, this, [&, this](int index){
 	    if(- 1 != index){
-		empty_recovery(this, _vtab_tree, index);
+//		empty_recovery(this, _vtab_tree, index);
 
 		tree_viewer_integrity(this, _vtab_tree, index);
 
@@ -459,7 +484,7 @@ void wn_t:: setup_signals(void){
 
     connect(_vtab_tree, &HidableTabWidget::tabBarClicked, this, [&, this](int index){
 // if(1 <= index) {
-	    empty_recovery(this, _vtab_tree, index);
+//	    empty_recovery(this, _vtab_tree, index);
 	    tree_viewer_integrity(this, _vtab_tree, index);
 // }
 	});
@@ -542,15 +567,15 @@ std::vector<tsv_t *> wn_t:: tree_viewers() const {
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
 |   |	|		    | |		    |	|    | |    |_______________________________________|	| |	|
 |   |	|		    | |		    |	|    | |						| |	|
-|   |	|		    | |		    |	|    | |			_v_right_splitter	| |	|
+|   |	|		    | |		    |	|    | |		_v_right_splitter		| |	|
 |   |	|		    | |		    |	|    | |________________________________________________| |	|
 |   |	|		    | |		    |	|    |                                                    |	|
 |   |	|		    | |		    |	|    |  ________________________________________________  |	|
 |   |	|		    | |		    |	|    | |						| |	|
-|   |	|		    | |		    |	|    | |			_find_screen		| |	|
+|   |	|		    | |		    |	|    | |		_find_screen			| |	|
 |   |	|___________________| |_____________|	|    | |________________________________________________| |	|
 |   |			                        |    |							  |	|
-|   |		_h_tree_splitter		|    |                         _v_find_splitter		  |	|
+|   |		_h_tree_splitter		|    |                  _v_find_splitter		  |	|
 |   |___________________________________________|    |____________________________________________________|	|
 |														|
 |                       _h_record_splitter									|
@@ -591,7 +616,7 @@ void wn_t:: assembly(void){
 	// if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
 //    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
-    _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(_tree_screen, _download)), QIcon(":/resource/pic/apple.svg"), "Download");				// QIcon(":/resource/pic/holly.svg")
+    _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen, _download)), QIcon(":/resource/pic/apple.svg"), "Download");			// QIcon(":/resource/pic/holly.svg")
 
 //    _vtab_tree->setCurrentIndex(index);
 
@@ -632,7 +657,8 @@ void wn_t:: assembly(void){
     _h_record_splitter->setObjectName("h_record_splitter");
     _h_record_splitter->addWidget(_h_tree_splitter);	//    _h_record_splitter->addWidget(_vtab_record);
     _h_record_splitter->addWidget(_v_find_splitter);
-
+    _h_record_splitter->setCollapsible(0, false);
+    _h_record_splitter->setCollapsible(1, false);
 // {
 // auto sizes = _h_right_splitter->sizes();
 // if(_globalparameters.entrance()->browsers().size() == 0) { // h_right_splitter->widget(0)->width()

@@ -34,7 +34,7 @@ extern GlobalParameters globalparameters;
 extern const char	*global_root_id;
 
 
-extern const char	*action_show_hide_record_screen;
+extern const char	*action_hide_tree_screen;
 extern const char	*action_set_as_session_root;
 extern const char	*action_find_in_base;
 extern const char	*action_cursor_follow_root;
@@ -522,7 +522,7 @@ class ts_t
 
 class tsv_t : public QFrame {
     public:
-	tsv_t(ts_t *_tree_screen, QWidget *widget_right);
+	tsv_t(wn_t *main_window, ts_t *tree_screen, QWidget *widget_right);
 
 	~tsv_t();
 	ts_t	*tree_screen() const;
@@ -531,6 +531,7 @@ class tsv_t : public QFrame {
 	QWidget	*widget_right() const;
 	void	widget_right(QWidget *rs);
     private:
+	wn_t		*_main_window;
 	ts_t		*_tree_screen;
 	QWidget		*_widget_right;
 	QStackedLayout	*_layout;

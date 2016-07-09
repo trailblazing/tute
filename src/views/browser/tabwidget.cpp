@@ -1436,7 +1436,6 @@ namespace browser {
 //        if(index < 0)index = currentIndex();
 	if(index >= 0 && index < count()){	// if(index < 0 || index >= count())
 		// return;
-
 //	    bool hasFocus = false;
 	    if(WebView *_view_to_close = webView(index)){
 		assert(widget(index) == _view_to_close);// debug
@@ -1846,31 +1845,35 @@ namespace browser {
 	    download->cancel();
 	    _current_download_acceptance.first = download->url();
 	}
-	auto	_main_window		= globalparameters.mainwindow();
-	auto	_h_left_splitter	= _main_window->h_tree_splitter();
-	auto	sizes			= _h_left_splitter->sizes();
-	auto	_vtab_tree		= _main_window->vtab_tree();
-	// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
-	if(0 == sizes[0]){	// _h_left_splitter->widget(0)->width()
-	    auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
-		// auto h = h_right_splitter->handle(1);
-		// h->move(lr + shw, h->rect().top());
+	auto	_main_window	= globalparameters.mainwindow();
+	auto	_vtab_tree	= _main_window->vtab_tree();
+	auto	_vtab_record	= _main_window->vtab_record();
+	if(_vtab_record->currentWidget()->objectName() != download_manager_singleton_name)
+		for(auto tree_viewer : _main_window->tree_viewers())
+			if(tree_viewer->widget_right()->objectName() == download_manager_singleton_name)_vtab_tree->setCurrentWidget(tree_viewer);
+//	auto	_h_tree_splitter	= _main_window->h_tree_splitter();
+//	auto	sizes			= _h_tree_splitter->sizes();
+//	// auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
+//	if(0 == sizes[0]){	// _h_left_splitter->widget(0)->width()
+//	    auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+//		// auto h = h_right_splitter->handle(1);
+//		// h->move(lr + shw, h->rect().top());
 
-	    auto	size_memory	= appconfig.h_tree_splitter_sizelist();
-	    auto	sum		= size_memory[0] + size_memory[1];
-	    sizes[0]	= size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-	    sizes[1]	= sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-		// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
-	    _h_left_splitter->setSizes(sizes);	// emit _h_left_splitter->splitterMoved(sizes[0], 1);
+//	    auto	size_memory	= appconfig.h_tree_splitter_sizelist();
+//	    auto	sum		= size_memory[0] + size_memory[1];
+//	    sizes[0]	= size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
+//	    sizes[1]	= sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+//		// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
+//	    _h_tree_splitter->setSizes(sizes);	// emit _h_left_splitter->splitterMoved(sizes[0], 1);
 
-		// auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
-		// auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
-		// auto s_2 = _entrance->minimumSizeHint();
-		// auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
-		// auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
-		// auto sizes_check = _h_left_splitter->sizes();
-		// h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
-	}
+//		// auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
+//		// auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
+//		// auto s_2 = _entrance->minimumSizeHint();
+//		// auto s_3 = _h_right_splitter->minimumSizeHint();    // (241,146)
+//		// auto s_4 = _h_right_splitter->maximumWidth();    // (241,146)
+//		// auto sizes_check = _h_left_splitter->sizes();
+//		// h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+//	}
     }
 
     void TabWidget:: onTabsChanged(){
