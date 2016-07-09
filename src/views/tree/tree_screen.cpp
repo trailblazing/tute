@@ -208,7 +208,7 @@ void ts_t:: setup_actions(void){
 	    (void) index;
 
 	    auto h_record_splitter = _main_window->h_record_splitter();
-	    auto sizes = h_record_splitter->sizes();
+	    auto h_record_sizes = h_record_splitter->sizes();
 //	    auto vtab_record = _main_window->vtab_record();
 	    auto vtab_tree = _main_window->vtab_tree();
 	    auto bar_width = vtab_tree->tabBar()->geometry().width();
@@ -217,10 +217,15 @@ void ts_t:: setup_actions(void){
 	    if(record_pos <= bar_width){// if(0 == sizes[0]){	// || globalparameters.entrance()->browsers().size() == 0             // h_right_splitter->widget(0)->width()
 		icon = QIcon(":/resource/pic/butterfly-right.svg");
 		text = tr("Show record screen");
-		h_record_splitter->setSizes(QList<int>() << bar_width << sizes[0] + sizes[1] - bar_width);
+
+		h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+		h_record_sizes[0] = bar_width;
+		h_record_splitter->setSizes(h_record_sizes);	// QList<int>() << bar_width << h_record_sizes[0] + h_record_sizes[1] - bar_width);
+		if(_main_window->vtab_record()->isVisible())_main_window->vtab_record()->hide();
 	    }else{
 		icon = QIcon(":/resource/pic/butterfly-left.svg");
 		text = tr("Hide record screen");
+		if(! _main_window->vtab_record()->isVisible())_main_window->vtab_record()->show();
 	    }
 	    _tree_hide->setIcon(icon);
 	    _tree_hide->setText(text);

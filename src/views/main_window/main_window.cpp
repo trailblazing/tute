@@ -657,7 +657,7 @@ void wn_t:: assembly(void){
     _h_record_splitter->setObjectName("h_record_splitter");
     _h_record_splitter->addWidget(_h_tree_splitter);	//    _h_record_splitter->addWidget(_vtab_record);
     _h_record_splitter->addWidget(_v_find_splitter);
-    _h_record_splitter->setCollapsible(0, false);
+    _h_record_splitter->setCollapsible(0, true);
     _h_record_splitter->setCollapsible(1, false);
 // {
 // auto sizes = _h_right_splitter->sizes();
