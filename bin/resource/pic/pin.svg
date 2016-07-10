@@ -15,40 +15,10 @@
    id="svg3357"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="pin.svg">
+   sodipodi:docname="pin.svg"
+   enable-background="new">
   <defs
-     id="defs3359">
-    <pattern
-       inkscape:isstock="true"
-       inkscape:stockid="Stripes 1:1"
-       id="Strips1_1"
-       patternTransform="translate(0,0) scale(10,10)"
-       height="1"
-       width="2"
-       patternUnits="userSpaceOnUse"
-       inkscape:collect="always">
-      <rect
-         id="rect4976"
-         height="2"
-         width="1"
-         y="-0.5"
-         x="0"
-         style="fill:black;stroke:none" />
-    </pattern>
-    <filter
-       inkscape:collect="always"
-       style="color-interpolation-filters:sRGB"
-       id="filter5709"
-       x="-0.036315846"
-       width="1.0726317"
-       y="-0.0356896"
-       height="1.0713792">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.12254619"
-         id="feGaussianBlur5711" />
-    </filter>
-  </defs>
+     id="defs3359" />
   <sodipodi:namedview
      id="base"
      pagecolor="#ffffff"
@@ -56,17 +26,17 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="21.114521"
-     inkscape:cx="-1.656253"
-     inkscape:cy="9.2215625"
+     inkscape:zoom="28.789645"
+     inkscape:cx="8"
+     inkscape:cy="8.0495148"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1364"
-     inkscape:window-height="684"
+     inkscape:window-width="1366"
+     inkscape:window-height="702"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="29"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata3362">
@@ -84,7 +54,8 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(0,-1036.3622)">
+     transform="translate(0,-1036.3622)"
+     style="display:inline;opacity:1">
     <rect
        style="opacity:0;fill:#ffffff;fill-opacity:1;fill-rule:evenodd;stroke:none;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="rect3254"
@@ -108,11 +79,17 @@
          d="m 10,1.25 0,2.7320263 2.75,0"
          style="fill:#a9bed4;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:0.5209856;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
-    <path
-       style="opacity:0.8;fill:url(#Strips1_1);fill-opacity:1;fill-rule:evenodd;stroke:#03ff00;stroke-width:2.35685007;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;filter:url(#filter5709)"
-       d="m 7.2935596,1047.4843 2.368038,4.3098 5.7306584,-8.2408"
-       id="path4255"
-       inkscape:connector-curvature="0"
-       transform="matrix(1.130065,0,0,0.99566372,-2.0199648,4.5430099)" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:14.46327114px;line-height:125%;font-family:Sans;letter-spacing:0px;word-spacing:0px;opacity:1;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="4.2556076"
+       y="977.08783"
+       id="text5514"
+       sodipodi:linespacing="125%"
+       transform="scale(0.92744745,1.0782282)"><tspan
+         sodipodi:role="line"
+         id="tspan5516"
+         x="4.2556076"
+         y="977.08783">✅</tspan></text>
   </g>
 </svg>

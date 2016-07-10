@@ -1254,7 +1254,7 @@ boost::intrusive_ptr<TreeItem> tkm_t:: delete_permanent(boost::intrusive_ptr<Lin
 	    if(result != linker_first->host()){
 		tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 		assert(tree_view);
-		result = merge(TreeLevel::instance(TreeIndex::instance([&] {return this;}, linker_first->host(), linker_first->host()->parent()), result), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << result, &tkm_t::delete_permanent, "cut", false));
+		result = merge(TreeLevel::instance(TreeIndex::instance([&] {return this;}, result, result->parent()), linker_first->host()), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
 	    }
 	    assert(result->linker()->integrity_external(result, delete_linker->host_parent()));
 //            bTreeIndex([&] {return view->source_model(); }, result)oost::intrusive_ptr<TreeIndex> tree_index_first;
@@ -1271,11 +1271,8 @@ boost::intrusive_ptr<TreeItem> tkm_t:: delete_permanent(boost::intrusive_ptr<Lin
 	deleted_item = model_delete_permantent_impl(delete_linker);			// if(removeRows(_index_delete.row(), 1, _index_delete.parent()))
 	if(host_parent && host_parent->count_direct() == 0 && root_item()->count_direct() > 0){			// (index.row() > 0) == index.isValid()
 	    tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-	    while((deleted_item = host_parent->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){
-		    return it->is_empty();
-		}))){
+	    while((deleted_item = host_parent->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){return it->is_empty();}))){
 		host_parent = host_parent->parent();
-
 		tree_view->cursor_follow_up();
 		if(! host_parent)break;
 	    }
@@ -1307,11 +1304,9 @@ boost::intrusive_ptr<TreeItem> tkm_t:: delete_permanent_recursive(boost::intrusi
     std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<Linker>)> model_delete_permantent_impl = [&](		// boost::intrusive_ptr<TreeItem> parent_item,
 	boost::intrusive_ptr<Linker> delete_target_linker						// , int position, int rows, const QModelIndex &parent
 	) mutable -> boost::intrusive_ptr<TreeItem> {
-	    boost::intrusive_ptr<TreeItem> result(nullptr);
-
-
-	    auto	host		= [&] {return delete_target_linker->host();};
-	    auto	host_parent	= [&] {return delete_target_linker->host_parent();};																																											// item(parent);
+	    boost::intrusive_ptr<TreeItem>	result(nullptr);
+	    auto				host		= [&] {return delete_target_linker->host();};
+	    auto				host_parent	= [&] {return delete_target_linker->host_parent();};																																											// item(parent);
 	    if(host() && static_cast<QModelIndex>(index(host())).isValid()){
 		if(host()->count_direct() > 0)
 			for(auto &il : host()->child_linkers())model_delete_permantent_impl(il);
@@ -1474,14 +1469,10 @@ boost::intrusive_ptr<TreeItem> tkm_t:: delete_permanent_recursive(boost::intrusi
 	//        assert(item_to_be_deleted == _current_know_branch->item(setto));
 	// try to rewrite, but below is just memory operation which is not we want, but but, the original code is also a memory ooperation too? why?
 	if(parent && parent->count_direct() == 0 && root_item()->count_direct() > 0){			// (index.row() > 0) == index.isValid()
-		// if(_parent)
-		//            _parent->child_remove(_item_deleted);
+		// if(_parent)_parent->child_remove(_item_deleted);
 	    tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-	    while((deleted_root_item = parent->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){
-		    return it->is_empty();
-		}))){
+	    while((deleted_root_item = parent->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){return it->is_empty();}))){
 		parent = parent->parent();
-
 		tree_view->cursor_follow_up();
 		if(! parent)break;
 	    }

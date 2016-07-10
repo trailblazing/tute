@@ -88,7 +88,7 @@ class tv_t : public QTreeView {
 
 	virtual ~tv_t();
 
-	void sychronize();
+//	void sychronize();
 
 	//    void source_model(boost::intrusive_ptr<TreeItem> _item);
 
