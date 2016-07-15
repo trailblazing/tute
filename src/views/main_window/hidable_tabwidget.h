@@ -12,18 +12,20 @@ extern const char *custom_hidabletabwidget_style;
 
 class HidableTabWidget : public QTabWidget {
     W_OBJECT(HidableTabWidget)
-public:
-    explicit HidableTabWidget(QString style_source, QWidget *parent = 0);
-    QAction *_hide_action;
+    public:
+	explicit HidableTabWidget(QString style_source, QWidget *parent = 0);
+	QAction *_hide_action;
 //    HidableTabWidget *delegate_tab();
-private slots:
-    void onHideAction(bool checked);
-    void onTabBarClicked();
-private:
+    protected slots:
+	bool eventFilter(QObject *obj, QEvent *event);
+    private slots:
+	void	onHideAction(bool checked);
+	void	onTabBarClicked();
+    private:
 //    HidableTabWidget *_delegate_tab;
-    QStackedLayout *_layout;
-    QString _style;
+	QStackedLayout	*_layout;
+	QString		_style;
 };
 
 
-#endif // HIDABLETABWIDGET_H
+#endif	// HIDABLETABWIDGET_H

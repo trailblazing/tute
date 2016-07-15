@@ -131,7 +131,7 @@ namespace browser {
 	connect(this, &PopupPage::proxyAuthenticationRequired, &PopupPage::proxyAuthenticationRequired);
     }
 
-    Browser *PopupPage:: browser(){
+    Browser *PopupPage::browser(){
 	QObject *w = this->parent();
 	while(w){
 	    if(Browser *mw = qobject_cast<Browser *>(w))return mw;
@@ -140,7 +140,7 @@ namespace browser {
 	return _entrance->equip_registered().first;	// BrowserApplication::instance()->mainWindow();
     }
 
-    bool PopupPage:: acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
+    bool PopupPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
 	Q_UNUSED(type);
 	if(isMainFrame){
 	    m_loadingUrl = url;
@@ -149,7 +149,7 @@ namespace browser {
 	return true;
     }
 
-    bool PopupPage:: certificateError(const QWebEngineCertificateError &error){
+    bool PopupPage::certificateError(const QWebEngineCertificateError &error){
 	if(error.isOverridable() && ! _certificate_ignored){
 	    QMessageBox msgBox;
 	    msgBox.setIcon(QMessageBox::Warning);
@@ -188,7 +188,7 @@ namespace browser {
 	// }
 
 #if ! defined(QT_NO_UITOOLS)
-    QObject *PopupPage:: createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues){
+    QObject *PopupPage::createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues){
 	Q_UNUSED(url);
 	Q_UNUSED(paramNames);
 	Q_UNUSED(paramValues);
@@ -200,7 +200,7 @@ namespace browser {
 #endif	// !defined(QT_NO_UITOOLS)
 
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-    void WebPage:: handleUnsupportedContent(QNetworkReply *reply){
+    void WebPage::handleUnsupportedContent(QNetworkReply *reply){
 	QString errorString = reply->errorString();
 	if(m_loadingUrl != reply->url()){
 		// sub resource of this page
@@ -248,7 +248,7 @@ namespace browser {
 
 #endif
 
-    void PopupPage:: authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
+    void PopupPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
 	Browser *mainWindow = _entrance->activiated_registered().first;
 
 	QDialog dialog(mainWindow);
@@ -276,7 +276,7 @@ namespace browser {
 	}
     }
 
-    void PopupPage:: proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost){
+    void PopupPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost){
 	Q_UNUSED(requestUrl);
 	Browser *mainWindow = _entrance->activiated_registered().first;
 
@@ -526,7 +526,7 @@ namespace browser {
 	// break_page_shared_items();   // move to on_close_requested()
     }
 
-    void WebPage:: update_record_view(boost::intrusive_ptr<TreeItem> item){
+    void WebPage::update_record_view(boost::intrusive_ptr<TreeItem> item){
 	_record_controller->synchronize_record_view(item);
 
 
@@ -544,7 +544,7 @@ namespace browser {
 	// }
     }
 
-    Browser *WebPage:: browser(){
+    Browser *WebPage::browser(){
 	// QObject *w = this->parent();
 
 	// while(w) {  // ? why
@@ -576,7 +576,7 @@ namespace browser {
 	// }
 
 
-    WebView *WebPage:: load(boost::intrusive_ptr<TreeItem> item, bool checked){
+    WebView *WebPage::load(boost::intrusive_ptr<TreeItem> item, bool checked){
 	// Q_UNUSED(checked)
 	assert(item);
 
@@ -653,7 +653,7 @@ namespace browser {
 	return _view;
     }
 
-    WebView *WebPage:: activate(){
+    WebView *WebPage::activate(){
 	QString _url_str	= _binder->host()->field<url_type>();
 	QUrl	_url		= QUrl(_url_str);
 	if(  _view	// && _loadingurl.isValid()     // && url().isValid()    // && url().toString() != _url_str
@@ -673,9 +673,9 @@ namespace browser {
 		if(! _browser->isTopLevel())_browser->raise();
 		if(! _browser->isActiveWindow())_browser->activateWindow();
 	    }
-	    auto	_vtab_tree	= globalparameters.vtab_tree();
-	    auto	record_screen	= _browser->record_screen();
-	    if(_vtab_tree->currentWidget() != record_screen)_vtab_tree->setCurrentWidget(record_screen);
+	    auto	_vtab_record	= globalparameters.vtab_record();
+	    auto	_record_screen	= _browser->record_screen();
+	    if(_vtab_record->currentWidget() != _record_screen)_vtab_record->setCurrentWidget(_record_screen);
 	    auto	it		= _binder->host();
 	    auto	tree_view	= _tree_screen->view();
 
@@ -708,7 +708,7 @@ namespace browser {
 	return _view;
     }
 
-    bool WebPage:: acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
+    bool WebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
 	Q_UNUSED(type);
 	if(isMainFrame){
 	    _loadingurl = url;
@@ -717,7 +717,7 @@ namespace browser {
 	return true;
     }
 
-    bool WebPage:: certificateError(const QWebEngineCertificateError &error){
+    bool WebPage::certificateError(const QWebEngineCertificateError &error){
 	if(error.isOverridable() && ! _certificate_ignored){
 	    QMessageBox msgBox;
 	    msgBox.setIcon(QMessageBox::Warning);
@@ -784,7 +784,7 @@ namespace browser {
 
 	// #include "webview.moc"
 
-    QWebEnginePage *WebPage:: createWindow(QWebEnginePage::WebWindowType type){
+    QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type){
 	// QString url = "";
 	QString script = "location.href";	// "document.title";  //"JavaScript:function(){return this.href;}();";
 	runJavaScript(script, [&](const QVariant &var){
@@ -926,7 +926,7 @@ namespace browser {
     }
 
 #if ! defined(QT_NO_UITOOLS)
-    QObject *WebPage:: createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues){
+    QObject *WebPage::createPlugin(const QString &classId, const QUrl &url, const QStringList &paramNames, const QStringList &paramValues){
 	Q_UNUSED(url);
 	Q_UNUSED(paramNames);
 	Q_UNUSED(paramValues);
@@ -938,7 +938,7 @@ namespace browser {
 #endif	// !defined(QT_NO_UITOOLS)
 
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
-    void WebPage:: handleUnsupportedContent(QNetworkReply *reply){
+    void WebPage::handleUnsupportedContent(QNetworkReply *reply){
 	QString errorString = reply->errorString();
 	if(_loadingurl != reply->url()){
 		// sub resource of this page
@@ -986,7 +986,7 @@ namespace browser {
 
 #endif
 
-    void WebPage:: authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
+    void WebPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
 	// if(_entrance->browsers().count() == 0) {
 	// _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
 	// }
@@ -1018,7 +1018,7 @@ namespace browser {
 	}
     }
 
-    void WebPage:: proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost){
+    void WebPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost){
 	Q_UNUSED(requestUrl);
 
 	// if(_entrance->browsers().count() == 0) {
@@ -1104,7 +1104,7 @@ namespace browser {
 	// return re;
 	// }
 
-    boost::intrusive_ptr<TreeItem> WebPage:: bind(boost::intrusive_ptr<TreeItem> item){	// , browser::WebPage *page
+    boost::intrusive_ptr<TreeItem> WebPage::bind(boost::intrusive_ptr<TreeItem> item){	// , browser::WebPage *page
 	boost::intrusive_ptr<TreeItem> result(nullptr);
 
 	// auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
@@ -1214,7 +1214,7 @@ namespace browser {
 	    });
     }
 
-    void PopupView:: setPage(PopupPage *_page){
+    void PopupView::setPage(PopupPage *_page){
 	if(m_page)m_page->deleteLater();
 	m_page = _page;
 	QWebEngineView::setPage(_page);
@@ -1229,7 +1229,7 @@ namespace browser {
 #endif
     }
 
-    void PopupView:: contextMenuEvent(QContextMenuEvent *event){
+    void PopupView::contextMenuEvent(QContextMenuEvent *event){
 	QMenu					*menu	= page()->createStandardContextMenu();
 	const QList<QAction *>			actions = menu->actions();
 	QList<QAction *>::const_iterator	it	= qFind(actions.cbegin(), actions.cend(), page()->action(QWebEnginePage::OpenLinkInThisWindow));
@@ -1242,7 +1242,7 @@ namespace browser {
 	menu->popup(event->globalPos());
     }
 
-    void PopupView:: wheelEvent(QWheelEvent *event){
+    void PopupView::wheelEvent(QWheelEvent *event){
 #if defined(QWEBENGINEPAGE_SETTEXTSIZEMULTIPLIER)
 	if(QApplication::keyboardModifiers() & Qt::ControlModifier){
 	    int numDegrees	= event->delta() / 8;
@@ -1256,11 +1256,11 @@ namespace browser {
 	QWebEngineView::wheelEvent(event);
     }
 
-    void PopupView:: openLinkInNewTab(){
+    void PopupView::openLinkInNewTab(){
 	pageAction(QWebEnginePage::OpenLinkInNewTab)->trigger();
     }
 
-    void PopupView:: onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature){
+    void PopupView::onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature){
 	FeaturePermissionBar *permissionBar = new FeaturePermissionBar(this);
 	connect(permissionBar, &FeaturePermissionBar::featurePermissionProvided, page(), &QWebEnginePage::setFeaturePermission);
 
@@ -1270,11 +1270,11 @@ namespace browser {
 	permissionBar->requestPermission(securityOrigin, feature);
     }
 
-    void PopupView:: setProgress(int progress){
+    void PopupView::setProgress(int progress){
 	m_progress = progress;
     }
 
-    void PopupView:: loadFinished(bool success){
+    void PopupView::loadFinished(bool success){
 	if(success && 100 != m_progress){
 	    qWarning()	<< "Received finished signal while progress is still:" << progress()
 			<< "Url:" << url();
@@ -1282,34 +1282,34 @@ namespace browser {
 	m_progress = 0;
     }
 
-    void PopupView:: loadUrl(const QUrl &url){
+    void PopupView::loadUrl(const QUrl &url){
 	m_initialUrl = url;
 	load(url);
     }
 
-    QString PopupView:: lastStatusBarText() const {
+    QString PopupView::lastStatusBarText() const {
 	return m_statusBarText;
     }
 
-    QUrl PopupView:: url() const {
+    QUrl PopupView::url() const {
 	QUrl url = QWebEngineView::url();
 	if(! url.isEmpty())return url;
 	return m_initialUrl;
     }
 
-    QIcon PopupView:: icon() const {
+    QIcon PopupView::icon() const {
 	if(! m_icon.isNull())return m_icon;
 	return QtSingleApplication::instance()->defaultIcon();
     }
 
-    void PopupView:: onIconUrlChanged(const QUrl &url){
+    void PopupView::onIconUrlChanged(const QUrl &url){
 	QNetworkRequest iconRequest(url);
 	m_iconReply = QtSingleApplication::networkAccessManager()->get(iconRequest);
 	m_iconReply->setParent(this);
 	connect(m_iconReply, &QNetworkReply::finished, this, &PopupView::iconLoaded);
     }
 
-    void PopupView:: iconLoaded(){
+    void PopupView::iconLoaded(){
 	m_icon = QIcon();
 	if(m_iconReply){
 	    QByteArray	data = m_iconReply->readAll();
@@ -1322,13 +1322,13 @@ namespace browser {
 	emit iconChanged();
     }
 
-    void PopupView:: mousePressEvent(QMouseEvent *event){
+    void PopupView::mousePressEvent(QMouseEvent *event){
 	m_page->m_pressedButtons	= event->buttons();
 	m_page->m_keyboardModifiers	= event->modifiers();
 	QWebEngineView::mousePressEvent(event);
     }
 
-    void PopupView:: mouseReleaseEvent(QMouseEvent *event){
+    void PopupView::mouseReleaseEvent(QMouseEvent *event){
 	QWebEngineView::mouseReleaseEvent(event);
 	if(! event->isAccepted() && (m_page->m_pressedButtons & Qt::MidButton)){
 	    QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
@@ -1336,7 +1336,7 @@ namespace browser {
 	}
     }
 
-    void PopupView:: setStatusBarText(const QString &string){
+    void PopupView::setStatusBarText(const QString &string){
 	m_statusBarText = string;
     }
 
@@ -1360,7 +1360,7 @@ namespace browser {
 	connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
     }
 
-    void PopupWindow:: adjustGeometry(const QRect &newGeometry){
+    void PopupWindow::adjustGeometry(const QRect &newGeometry){
 	const int	x1	= frameGeometry().left() - geometry().left();
 	const int	y1	= frameGeometry().top() - geometry().top();
 	const int	x2	= frameGeometry().right() - geometry().right();
@@ -1450,7 +1450,7 @@ namespace browser {
 	// }
 
 	// this will delete record for ever from database if you use real tree_item as source model of record_view
-    void WebPage:: item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item){
+    void WebPage::item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item){
 	if(_tabmanager && _tabmanager->count() > 0){
 	    RecordModel *source_model = _record_controller->source_model();	// tab_manager->source_model();
 	    assert(item);
@@ -1634,7 +1634,7 @@ namespace browser {
 	// return _view;
 	// }
 
-    void WebPage:: onTitleChanged(const QString &title){
+    void WebPage::onTitleChanged(const QString &title){
 	// assert(this->url() != QUrl());
 	assert(this->title() == title);
 	// Record *record = nullptr;
@@ -1694,7 +1694,7 @@ namespace browser {
     }
 
 	// This signal is emitted with the URL of the main frame when the main frame's title is received. The new URL is specified by url.
-    void WebPage:: onUrlChanged(const QUrl &url){
+    void WebPage::onUrlChanged(const QUrl &url){
 	// assert(_page->url() != QUrl());
 	// assert(url != QUrl());
 	if(_binder->host()){
@@ -1822,7 +1822,7 @@ namespace browser {
     }
 
 	// deprecated
-    void WebPage:: binder_reset(){
+    void WebPage::binder_reset(){
 	_record_controller->on_recordtable_configchange();
 	// _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
 	if(_binder){
@@ -1851,7 +1851,7 @@ namespace browser {
 	}
     }
 
-    void WebPage:: update_record(const QUrl &url, const QString &title){
+    void WebPage::update_record(const QUrl &url, const QString &title){
 	// Q_UNUSED(make_current)
 	////if(globalparameters.getRecordTableScreen()->getRecordTableController()) {
 	////        RecordTableController *_record_ontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
@@ -1992,7 +1992,7 @@ namespace browser {
 	// }
     }
 
-    void WebPage:: sychronize_metaeditor_to_item(){
+    void WebPage::sychronize_metaeditor_to_item(){
 	boost::intrusive_ptr<TreeItem> current_item = _binder->host();
 	// boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
 	assert(current_item);
@@ -2115,7 +2115,7 @@ namespace browser {
 	// }
     }
 
-    void WebView:: onLoadFinished(bool success){
+    void WebView::onLoadFinished(bool success){
 	if(success && 100 != _progress){
 	    qWarning()	<< "Received finished signal while progress is still:" << progress()
 			<< "Url:" << _page->url();
@@ -2181,7 +2181,7 @@ namespace browser {
 	_progress = 0;
     }
 
-    bool WebView:: load_finished() const {return _load_finished;}
+    bool WebView::load_finished() const {return _load_finished;}
 
     WebView::~WebView(){
 	// if(_page->record()) {
@@ -2391,7 +2391,7 @@ namespace browser {
 // set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));    //  does not work for base class is not QAbstractItemView
     }
 
-    void WebView:: page(WebPage *_page){
+    void WebView::page(WebPage *_page){
 	if(_page)_page->deleteLater();
 	this->_page = _page;
 	QWebEngineView::setPage(_page);
@@ -2411,7 +2411,7 @@ namespace browser {
 	connect(static_cast<QWebEnginePage *const>(this->_page), &QWebEnginePage::urlChanged, this->_page, &WebPage::onUrlChanged);
     }
 
-    void WebView:: activateWindow(){
+    void WebView::activateWindow(){
 	QObject::disconnect(_home_connection);
 
 	_home_connection
@@ -2435,7 +2435,7 @@ namespace browser {
 	QWebEngineView::activateWindow();
     }
 
-    void WebView:: contextMenuEvent(QContextMenuEvent *event){
+    void WebView::contextMenuEvent(QContextMenuEvent *event){
 #if defined(QWEBENGINEPAGE_HITTESTCONTENT)
 	QWebEngineHitTestResult r = page()->hitTestContent(event->pos());
 	if(! r.linkUrl().isEmpty()){
@@ -2468,7 +2468,7 @@ namespace browser {
 	// QWebEngineView::contextMenuEvent(event);
     }
 
-    void WebView:: wheelEvent(QWheelEvent *event){
+    void WebView::wheelEvent(QWheelEvent *event){
 #if defined(QWEBENGINEPAGE_SETTEXTSIZEMULTIPLIER)
 	if(QApplication::keyboardModifiers() & Qt::ControlModifier){
 	    int numDegrees	= event->delta() / 8;
@@ -2482,11 +2482,11 @@ namespace browser {
 	QWebEngineView::wheelEvent(event);
     }
 
-    void WebView:: openLinkInNewTab(){
+    void WebView::openLinkInNewTab(){
 	pageAction(QWebEnginePage::OpenLinkInNewTab)->trigger();
     }
 
-    void WebView:: openLinkInNewTab(const QUrl &_url){
+    void WebView::openLinkInNewTab(const QUrl &_url){
 	Q_UNUSED(_url);
 
 #if defined(QWEBENGINEPAGE_WEBACTION_OPENLINKINNEWWINDOW)
@@ -2517,7 +2517,7 @@ namespace browser {
 	// }
     }
 
-    void WebView:: onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature){
+    void WebView::onFeaturePermissionRequested(const QUrl &securityOrigin, QWebEnginePage::Feature feature){
 	FeaturePermissionBar *permissionBar = new FeaturePermissionBar(this);
 	connect(permissionBar, &FeaturePermissionBar::featurePermissionProvided, page(), &QWebEnginePage::setFeaturePermission);
 
@@ -2527,7 +2527,7 @@ namespace browser {
 	permissionBar->requestPermission(securityOrigin, feature);
     }
 
-    void WebView:: setProgress(int progress){
+    void WebView::setProgress(int progress){
 	_progress = progress;
     }
 
@@ -2538,7 +2538,7 @@ namespace browser {
 	// }
 
 
-    QString WebView:: lastStatusBarText() const {
+    QString WebView::lastStatusBarText() const {
 	return _statusbartext;
     }
 
@@ -2553,19 +2553,19 @@ namespace browser {
 	// }
 
 
-    QIcon WebView:: icon() const {
+    QIcon WebView::icon() const {
 	if(! _icon.isNull())return _icon;
 	return sapp_t::instance()->defaultIcon();
     }
 
-    void WebView:: onIconUrlChanged(const QUrl &url){
+    void WebView::onIconUrlChanged(const QUrl &url){
 	QNetworkRequest iconRequest(url);
 	_iconreply = sapp_t::networkAccessManager()->get(iconRequest);
 	_iconreply->setParent(this);
 	connect(_iconreply, &QNetworkReply::finished, this, &WebView::iconLoaded);
     }
 
-    void WebView:: on_close_requested(){
+    void WebView::on_close_requested(){
 	close();
 
 	emit _page->close_requested();
@@ -2599,7 +2599,7 @@ namespace browser {
 	// assert(_record_controller->source_model()->size() == tabmanager()->count());
     }
 
-    void WebView:: iconLoaded(){
+    void WebView::iconLoaded(){
 	_icon = QIcon();
 	if(_iconreply){
 	    QByteArray	data = _iconreply->readAll();
@@ -2612,13 +2612,13 @@ namespace browser {
 	emit iconChanged();
     }
 
-    void WebView:: mousePressEvent(QMouseEvent *event){
+    void WebView::mousePressEvent(QMouseEvent *event){
 	_page->_pressedbuttons		= event->buttons();
 	_page->_keyboardmodifiers	= event->modifiers();
 	QWebEngineView::mousePressEvent(event);
     }
 
-    void WebView:: mouseReleaseEvent(QMouseEvent *event){
+    void WebView::mouseReleaseEvent(QMouseEvent *event){
 	QWebEngineView::mouseReleaseEvent(event);
 	if(! event->isAccepted() && (_page->_pressedbuttons & Qt::MidButton)){
 	    QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
@@ -2626,20 +2626,20 @@ namespace browser {
 	}
     }
 
-    void WebView:: setStatusBarText(const QString &string){
+    void WebView::setStatusBarText(const QString &string){
 	_statusbartext = string;
     }
 
-    WebView *WebView:: load(boost::intrusive_ptr<TreeItem> it, bool checked){
+    WebView *WebView::load(boost::intrusive_ptr<TreeItem> it, bool checked){
 	WebView *v = nullptr;
 	if(it)v = _page->load(it, checked);
 	return v;
     }
 
-    void WebView:: recovery_global_consistency(){
+    void WebView::recovery_global_consistency(){
 	rs_t			*_record_screen = _browser->record_screen();
 	wn_t			*_mainwindow	= globalparameters.mainwindow();
-	HidableTabWidget	*_vtab_tree	= _mainwindow->vtab_tree();
+//	HidableTabWidget	*_vtab_tree	= _mainwindow->vtab_tree();
 	HidableTabWidget	*_vtab_record	= _mainwindow->vtab_record();
 	ts_t			*_tree_screen	= globalparameters.tree_screen();
 	auto			_tree_view	= _tree_screen->view();
@@ -2653,20 +2653,20 @@ namespace browser {
 	}
 // _record_controller->synchronize_record_view(_page->item());
 	if(_vtab_record->currentWidget() != _record_screen)_vtab_record->setCurrentWidget(_record_screen);
-	for(int i = 0; i < _vtab_tree->count(); i ++){
-	    auto tree_viewer = _vtab_tree->widget(i);
-	    if(tree_viewer->objectName() == tree_screen_viewer_name){
-		auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);
-		if(tree_viewer_){
-		    if(tree_viewer_->widget_right() == _record_screen){
-			if(_vtab_tree->currentIndex() != i){
-			    if(! tree_viewer_->tree_screen())tree_viewer_->tree_screen(_tree_screen);
-			    _vtab_tree->setCurrentIndex(i);
-			}
-		    }
-		}
-	    }
-	}
+//	for(int i = 0; i < _vtab_tree->count(); i ++){
+//	    auto tree_viewer = _vtab_tree->widget(i);
+//	    if(tree_viewer->objectName() == tree_screen_viewer_name){
+//		auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);
+//		if(tree_viewer_){
+//		    if(tree_viewer_->widget_right() == _record_screen){
+//			if(_vtab_tree->currentIndex() != i){
+//			    if(! tree_viewer_->tree_screen())tree_viewer_->tree_screen(_tree_screen);
+//			    _vtab_tree->setCurrentIndex(i);
+//			}
+//		    }
+//		}
+//	    }
+//	}
 	auto _current_item_in_browser = _page->binder()->host();
 	if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser, _current_item_in_browser->parent()));
 	if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_current_item_in_browser));
@@ -2687,7 +2687,7 @@ namespace browser {
 	// _bounded_item->record_binder(_bounded_page->record_binder());
     }
 
-    WebView *WebPage::Binder:: bind(){	// boost::intrusive_ptr<TreeItem> item
+    WebView *WebPage::Binder::bind(){	// boost::intrusive_ptr<TreeItem> item
 	assert(_page);
 	////                boost::intrusive_ptr<TreeItem> result = _the->record_controller()->source_model()->find(item);
 	WebView *view = nullptr;
@@ -2734,7 +2734,7 @@ namespace browser {
 	// _bounded_item->record_binder().reset();
     }
 
-    WebView *WebPage::Binder:: activator(
+    WebView *WebPage::Binder::activator(
 	// boost::intrusive_ptr<TreeItem> item
 	){
 	// assert(_item_link->binder());
@@ -2758,15 +2758,15 @@ namespace browser {
 	return _page->activate();	// view;
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage:: item() const {return _binder ? _binder->host() : nullptr;}
+    boost::intrusive_ptr<TreeItem> WebPage::item() const {return _binder ? _binder->host() : nullptr;}
 
-    WebPage *WebPage:: page() const {return _binder ? _binder->page() : nullptr;}
+    WebPage *WebPage::page() const {return _binder ? _binder->page() : nullptr;}
 
-    boost::intrusive_ptr<::Binder> WebPage:: binder(){return _binder;}
+    boost::intrusive_ptr<::Binder> WebPage::binder(){return _binder;}
 
     const boost::intrusive_ptr<::Binder> && WebPage::binder() const {return std::forward<const boost::intrusive_ptr<::Binder> >(_binder);}
 
-    void WebPage:: binder(boost::intrusive_ptr<::Binder> &&binder_){
+    void WebPage::binder(boost::intrusive_ptr<::Binder> &&binder_){
 	if(binder_){
 	    binder_->page(this);
 	    if(binder_ != _binder)this->_binder = std::forward<boost::intrusive_ptr<::Binder> >(binder_);
@@ -2777,11 +2777,11 @@ namespace browser {
 	}
     }
 
-    WebView *WebPage:: view(){return _view;}		// assert(_view);
+    WebView *WebPage::view(){return _view;}		// assert(_view);
 
-    rctl_t *WebPage:: record_controller(){return _record_controller;}
+    rctl_t *WebPage::record_controller(){return _record_controller;}
 
-    TabWidget *WebPage:: tabmanager(){return _tabmanager;}
+    TabWidget *WebPage::tabmanager(){return _tabmanager;}
 }
 
 

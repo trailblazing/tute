@@ -107,7 +107,7 @@ namespace browser {
     struct InvokeWrapper {
 	R		*receiver;
 	void		(C::*memberFun)(Arg);
-	void operator	()(Arg result){
+	void operator ()(Arg result){
 	    (receiver->*memberFun)(result);
 	}
     };
@@ -123,7 +123,7 @@ namespace browser {
 	: QWebEngineUrlRequestInterceptor(p)
     {}
 
-    void UrlRequestInterceptor:: interceptRequest(QWebEngineUrlRequestInfo &info){
+    void UrlRequestInterceptor::interceptRequest(QWebEngineUrlRequestInfo &info){
 	if(info.navigationType() == QWebEngineUrlRequestInfo::NavigationTypeLink)info.requestUrl();
     }
 
@@ -190,33 +190,34 @@ namespace browser {
 	_autosaver->deleteLater();
 	_bookmarkstoolbar->deleteLater();
 	// delete _tabmanager;
-	if(_main_window->vtab_record()->indexOf(_record_screen) != - 1)_main_window->vtab_record()->removeTab(_main_window->vtab_record()->indexOf(_record_screen));
-	HidableTabWidget *vtab_tree = _main_window->vtab_tree();
-	for(int i = 0; i < vtab_tree->count(); i ++){
-	    auto wg = vtab_tree->widget(i);
-	    if(wg->objectName() == tree_screen_viewer_name){
-		auto tree_viewer = dynamic_cast<tsv_t *>(wg);
-		if(tree_viewer){
-		    if(tree_viewer->widget_right() == _record_screen){
-			if(_main_window->tree_viewers().size() > 1)vtab_tree->removeTab(i);
-			else{
-//			    _main_window->tree_viewers()[0]->widget_right(nullptr);
-			    assert(dynamic_cast<DownloadManager *>(_main_window->tree_viewers()[0]->widget_right()));
-			}
-		    }
-		}
-	    }
-	}
-	// if(_record_screen) {
-	// _record_screen->deleteLater();
-	////            delete _record_screen; _record_screen = nullptr;
-	// }
+	HidableTabWidget *_vtab_record = _main_window->vtab_record();
+	if(_vtab_record->indexOf(_record_screen) != - 1)_vtab_record->removeTab(_vtab_record->indexOf(_record_screen));
+//	HidableTabWidget *vtab_tree = _main_window->vtab_tree();
+//	for(int i = 0; i < vtab_tree->count(); i ++){
+//	    auto wg = vtab_tree->widget(i);
+//	    if(wg->objectName() == tree_screen_viewer_name){
+//		auto tree_viewer = dynamic_cast<tsv_t *>(wg);
+//		if(tree_viewer){
+//		    if(tree_viewer->widget_right() == _record_screen){
+//			if(_main_window->tree_viewers().size() > 1)vtab_tree->removeTab(i);
+//			else{
+////			    _main_window->tree_viewers()[0]->widget_right(nullptr);
+//			    assert(dynamic_cast<DownloadManager *>(_main_window->tree_viewers()[0]->widget_right()));
+//			}
+//		    }
+//		}
+//	    }
+//	}
+//	// if(_record_screen) {
+//	// _record_screen->deleteLater();
+//	////            delete _record_screen; _record_screen = nullptr;
+//	// }
 
 	_layout->deleteLater();
 	_centralwidget->deleteLater();
     }
 
-    void Browser:: init(){	// QUrl const &url,
+    void Browser::init(){	// QUrl const &url,
 	// browser->setWidget(this);
 	// this->setParent(browser);
 	setWebAttribute(QWebEngineSettings::JavascriptEnabled, true);
@@ -281,24 +282,24 @@ namespace browser {
 	connect(_tabmanager, &TabWidget::lastTabClosed, this, [&]() -> void {
 		// _tabmanager->newTab(request_record(QUrl(DockedWindow::_defaulthome)));
 		this->close();
-		HidableTabWidget *vtab_tree = _main_window->vtab_tree();
-		HidableTabWidget *vtab_record = _main_window->vtab_record();
-		int index = vtab_record->indexOf(_record_screen);
+//		HidableTabWidget *_vtab_tree = _main_window->vtab_tree();
+		HidableTabWidget *_vtab_record = _main_window->vtab_record();
+		int index = _vtab_record->indexOf(_record_screen);
 		if(index != - 1){
-		    vtab_record->removeTab(index);
+		    _vtab_record->removeTab(index);
 			// static_cast<Browser *>(globalparameters.vtab()->currentWidget())->append_to_main_menu();
-		    for(int i = 0; i < vtab_tree->count(); i ++){
-			auto wg = vtab_tree->widget(i);
-			if(wg->objectName() == tree_screen_viewer_name){
-			    auto tree_viewer = dynamic_cast<tsv_t *>(wg);
-			    if(tree_viewer){
-				if(tree_viewer->widget_right() == _record_screen){
-				    if(_main_window->tree_viewers().size() > 1)vtab_tree->removeTab(i);
-				    else assert(dynamic_cast<DownloadManager *>(_main_window->tree_viewers()[0]->widget_right()));
-				}
-			    }
-			}
-		    }
+//		    for(int i = 0; i < _vtab_tree->count(); i ++){
+//			auto wg = _vtab_tree->widget(i);
+//			if(wg->objectName() == tree_screen_viewer_name){
+//			    auto tree_viewer = dynamic_cast<tsv_t *>(wg);
+//			    if(tree_viewer){
+//				if(tree_viewer->widget_right() == _record_screen){
+//				    if(_main_window->tree_viewers().size() > 1)_vtab_tree->removeTab(i);
+//				    else assert(dynamic_cast<DownloadManager *>(_main_window->tree_viewers()[0]->widget_right()));
+//				}
+//			    }
+//			}
+//		    }
 		}
 	    });
 #endif
@@ -311,55 +312,57 @@ namespace browser {
 
 
 
-	auto	vtab_tree	= _main_window->vtab_tree();
-	auto	vtab_record	= _main_window->vtab_record();
+
+	auto vtab_record = _main_window->vtab_record();	// auto	vtab_tree	= _main_window->vtab_tree();
 	if(vtab_record->indexOf(_record_screen) == - 1){
 		////        int index = vtab_tree->currentIndex();
-	    tsv_t			*tree_viewer_nullptr	= nullptr;
-	    std::vector<tsv_t *>	tree_viewers		= _main_window->tree_viewers();
-//	    int				tree_viewer_count	= tree_viewers.size();
-//            for(int i = 0; i < vtab_tree->count(); i ++){
-//                if(vtab_tree->widget(i)->objectName() == tree_screen_viewer_name){
-//                    tsvs.push_back(dynamic_cast<TreeScreenViewer *>(vtab_tree->widget(i)));
-//                    tree_viewer_count ++;
-//                }
-//            }
-	    for(auto tree_viewer : tree_viewers){
-//		if(1 == tree_viewer_count){
-//		tree_viewer = tree_viewers.back();
-//		if(tree_viewer){
-//		    rs_t *rs = dynamic_cast<rs_t *>(tree_viewer->widget_right());
-		if(! (dynamic_cast<rs_t *>(tree_viewer->widget_right()) || dynamic_cast<DownloadManager *>(tree_viewer->widget_right()))){
-		    tree_viewer_nullptr = tree_viewer;
-		    break;
-//		    vtab_tree->setUpdatesEnabled(false);
+//	    tsv_t			*tree_viewer_nullptr	= nullptr;
+//	    std::vector<tsv_t *>	tree_viewers		= _main_window->tree_viewers();
+////	    int				tree_viewer_count	= tree_viewers.size();
+////            for(int i = 0; i < vtab_tree->count(); i ++){
+////                if(vtab_tree->widget(i)->objectName() == tree_screen_viewer_name){
+////                    tsvs.push_back(dynamic_cast<TreeScreenViewer *>(vtab_tree->widget(i)));
+////                    tree_viewer_count ++;
+////                }
+////            }
+//	    for(auto tree_viewer : tree_viewers){
+////		if(1 == tree_viewer_count){
+////		tree_viewer = tree_viewers.back();
+////		if(tree_viewer){
+////		    rs_t *rs = dynamic_cast<rs_t *>(tree_viewer->widget_right());
+//		if(! (dynamic_cast<rs_t *>(tree_viewer->widget_right()) || dynamic_cast<DownloadManager *>(tree_viewer->widget_right()))){
+//		    tree_viewer_nullptr = tree_viewer;
+//		    break;
+////		    vtab_tree->setUpdatesEnabled(false);
 
-//		    vtab_tree->insertTab(vtab_tree->indexOf(tree_viewer) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));			// QString("Browser ") + QString::number(tree_viewer_count)
-//			// vtab_tree->setCurrentIndex(index);
-//		    vtab_tree->setUpdatesEnabled(true);
-//		    }else if(){
-//			tree_viewer->widget_right(_record_screen);
-			// emit vtab_tree->tabBarClicked(vtab_tree->indexOf(tsv));    // vtab_tree->currentChanged(vtab_tree->indexOf(tsv));
-		}// else tree_viewer->widget_right(_record_screen);
-//		}
-//		}else{
-//		    vtab_tree->setUpdatesEnabled(false);
+////		    vtab_tree->insertTab(vtab_tree->indexOf(tree_viewer) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));			// QString("Browser ") + QString::number(tree_viewer_count)
+////			// vtab_tree->setCurrentIndex(index);
+////		    vtab_tree->setUpdatesEnabled(true);
+////		    }else if(){
+////			tree_viewer->widget_right(_record_screen);
+//			// emit vtab_tree->tabBarClicked(vtab_tree->indexOf(tsv));    // vtab_tree->currentChanged(vtab_tree->indexOf(tsv));
+//		}// else tree_viewer->widget_right(_record_screen);
+////		}
+////		}else{
+////		    vtab_tree->setUpdatesEnabled(false);
 
-//		    vtab_tree->insertTab(vtab_tree->indexOf(tree_viewers.back()) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));		// QString("Browser ") + QString::number(tree_viewer_count)
-//			// vtab_tree->setCurrentIndex(index);
-//		    vtab_tree->setUpdatesEnabled(true);
-//		}
-	    }
-	    if(tree_viewer_nullptr)tree_viewer_nullptr->widget_right(_record_screen);
-	    else{
-		vtab_tree->setUpdatesEnabled(false);
+////		    vtab_tree->insertTab(vtab_tree->indexOf(tree_viewers.back()) + 1, new tsv_t(_tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));		// QString("Browser ") + QString::number(tree_viewer_count)
+////			// vtab_tree->setCurrentIndex(index);
+////		    vtab_tree->setUpdatesEnabled(true);
+////		}
+//	    }
+//	    if(tree_viewer_nullptr)tree_viewer_nullptr->widget_right(_record_screen);
+//	    else{
+//		vtab_tree->setUpdatesEnabled(false);
 
-		vtab_tree->insertTab(vtab_tree->indexOf(tree_viewers.back()) + 1, new tsv_t(_main_window, _tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));			// QString("Browser ") + QString::number(tree_viewer_count)
-		// vtab_tree->setCurrentIndex(index);
-		vtab_tree->setUpdatesEnabled(true);
-	    }
+//		vtab_tree->insertTab(vtab_tree->indexOf(tree_viewers.back()) + 1, new tsv_t(_main_window, _tree_screen, _record_screen), QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));			// QString("Browser ") + QString::number(tree_viewer_count)
+//		// vtab_tree->setCurrentIndex(index);
+//		vtab_tree->setUpdatesEnabled(true);
+//	    }
 		// int index = vtab_record->currentIndex();
-//	    vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
+	    vtab_record->setUpdatesEnabled(false);
+	    vtab_record->addTab(_record_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
+	    vtab_record->setUpdatesEnabled(true);
 	    _record_screen->adjustSize();
 		// vtab_record->setCurrentIndex(index);
 	}
@@ -414,7 +417,7 @@ namespace browser {
 	// });
     }
 
-    void Browser:: run_script(const QString &style_source){
+    void Browser::run_script(const QString &style_source){
 	QMetaObject::invokeMethod(this, "runScriptOnOpenViews", Qt::QueuedConnection, Q_ARG(QString, style_source));
     }
 
@@ -661,15 +664,11 @@ namespace browser {
 
 	// }
 
-    bool Browser:: is_under_construction() const {
-	return _is_under_construction;
-    }
+    bool Browser::is_under_construction() const {return _is_under_construction;}
 
-    QAction *Browser:: historyback(){
-	return _historyback;
-    }
+    QAction *Browser::historyback(){return _historyback;}
 
-    void Browser:: activateWindow(){
+    void Browser::activateWindow(){
 	this->setParent(_entrance);
 	_entrance->setWidget(this);
 
@@ -677,15 +676,13 @@ namespace browser {
 
 	_find_screen->toolbarsearch()->lineedits(this->tabWidget()->lineEditStack());
 
-	auto	vtab_tree	= globalparameters.vtab_tree();
-	int	index		= vtab_tree->indexOf(_record_screen);
-	if(vtab_tree->currentIndex() != index){
-	    auto previous_browser = static_cast<Browser *>(vtab_tree->currentWidget());
+	auto	_vtab_record	= _main_window->vtab_record();
+	int	index		= _vtab_record->indexOf(_record_screen);
+	if(_vtab_record->currentIndex() != index){
+	    auto previous_browser = _vtab_record->currentWidget();
 	    if(previous_browser)previous_browser->lower();
-	    vtab_tree->setCurrentIndex(index);
-	    if(! _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){
-		    return b->host()->id() == _tree_screen->view()->current_item()->id();
-		})){
+	    _vtab_record->setCurrentIndex(index);
+	    if(! _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->id() == _tree_screen->view()->current_item()->id();})){
 		auto it = _record_screen->record_controller()->view()->current_item();
 		if(it){
 		    _tree_screen->view()->select_as_current(TreeIndex::instance([&] {return _tree_screen->view()->source_model();}, it, it->parent()));
@@ -695,7 +692,7 @@ namespace browser {
 	QMainWindow::activateWindow();
     }
 
-    void Browser:: load_default_state(){
+    void Browser::load_default_state(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
@@ -703,30 +700,22 @@ namespace browser {
 	settings.endGroup();
     }
 
-    QSize Browser:: sizeHint() const {
+    QSize Browser::sizeHint() const {
 	QRect	desktopRect	= QApplication::desktop()->screenGeometry();
 	QSize	size		= desktopRect.size() * qreal(0.9);
 
 	return size;
     }
 
-    TabWidget *Browser:: tabWidget(){
-	return _tabmanager;
-    }
+    TabWidget *Browser::tabWidget(){return _tabmanager;}
 
-    TabWidget *Browser:: tabWidget() const {
-	return _tabmanager;
-    }
+    TabWidget *Browser::tabWidget() const {return _tabmanager;}
 
-    TabWidget *Browser:: tabmanager(){
-	return _tabmanager;
-    }
+    TabWidget *Browser::tabmanager(){return _tabmanager;}
 
-    TabWidget *Browser:: tabmanager() const {
-	return _tabmanager;
-    }
+    TabWidget *Browser::tabmanager() const {return _tabmanager;}
 
-    void Browser:: save(){
+    void Browser::save(){
 	sapp_t::instance()->saveSession();
 
 	QSettings settings;
@@ -738,7 +727,7 @@ namespace browser {
 
     static const qint32 browser_magic = 0xba;
 
-    QByteArray Browser:: save_state(bool withTabs) const {
+    QByteArray Browser::save_state(bool withTabs) const {
 	// FindScreen *_find_screen = globalparameters.find_screen();
 	assert(_find_screen);
 	// QToolBar *navigater = findscreen->navigater();
@@ -761,7 +750,7 @@ namespace browser {
 	return data;
     }
 
-    bool Browser:: restore_state(const QByteArray &state){
+    bool Browser::restore_state(const QByteArray &state){
 	// FindScreen *_find_screen = globalparameters.find_screen();
 	assert(_find_screen);
 	// QToolBar *navigater = findscreen->navigater();
@@ -809,26 +798,22 @@ namespace browser {
 	return true;
     }
 
-    void Browser:: runScriptOnOpenViews(const QString &source){
+    void Browser::runScriptOnOpenViews(const QString &source){
 	for(int i = 0; i < tabWidget()->count(); ++ i){
 	    auto browserview = tabWidget()->webView(i);
 	    if(browserview != nullptr)browserview->page()->runJavaScript(source);
 	}
     }
 
-    void Browser:: setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled){
+    void Browser::setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled){
 	_webattribute = attribute;_webattributeenabled = enabled;
     }
 
-    QString &Browser:: lastsearch(){
-	return _lastsearch;
-    }
+    QString &Browser::lastsearch(){return _lastsearch;}
 
-    const QString																																																																																																																																																																		&Browser::lastsearch() const {
-	return _lastsearch;
-    }
+    const QString &Browser::lastsearch() const {return _lastsearch;}
 
-    void Browser:: append_to_file_menu(){
+    void Browser::append_to_file_menu(){
 	// File
 	QMenu *filemenu = _main_window->file_menu();	// menuBar()->addMenu(tr("&File"));
 
@@ -873,7 +858,7 @@ namespace browser {
 	// _tree_screen->buttonmenu()->addMenu(filemenu);
     }
 
-    void Browser:: append_edit_menu(){
+    void Browser::append_edit_menu(){
 	// Edit
 	QMenu *editMenu = _main_window->edit_menu();
 	// editMenu = _main_window->menuBar()->addMenu(tr("&Edit"));
@@ -916,7 +901,7 @@ namespace browser {
 	_tree_screen->menus_in_button()->addMenu(editMenu);
     }
 
-    void Browser:: append_view_menu(){
+    void Browser::append_view_menu(){
 	// View
 	QMenu *viewMenu = _main_window->view_menu();	// _main_window->menuBar()->addMenu(tr("&View"));
 	viewMenu->clear();
@@ -985,7 +970,7 @@ namespace browser {
 	_tree_screen->menus_in_button()->addMenu(viewMenu);
     }
 
-    void Browser:: append_history_menu(){
+    void Browser::append_history_menu(){
 	// History
 	HistoryMenu *historyMenu = _main_window->histry_menu();
 	// new HistoryMenu(
@@ -1036,7 +1021,7 @@ namespace browser {
 	_tree_screen->menus_in_button()->addMenu(historyMenu);
     }
 
-    void Browser:: append_bookmark_menu(){
+    void Browser::append_bookmark_menu(){
 	// Bookmarks
 	BookmarksMenu *bookmarksMenu = _main_window->bookmark_menu();
 	// new BookmarksMenu(
@@ -1066,7 +1051,7 @@ namespace browser {
 	_tree_screen->menus_in_button()->addMenu(bookmarksMenu);
     }
 
-    void Browser:: append_window_menu(){
+    void Browser::append_window_menu(){
 	// Window
 	_windowmenu = _main_window->window_menu();	// menuBar()->addMenu(tr("&Window"));
 	_windowmenu->clear();
@@ -1076,7 +1061,7 @@ namespace browser {
 	_tree_screen->menus_in_button()->addMenu(_windowmenu);
     }
 
-    void Browser:: append_to_tools_menu(){
+    void Browser::append_to_tools_menu(){
 	QMenu *toolsMenu = _main_window->tools_menu();	// menuBar()->addMenu(tr("&Tools"));
 	toolsMenu->addAction(tr("Web &Search"), this, SLOT(slotWebSearch()), QKeySequence(tr("Ctrl+K", "Web Search")));
 #if defined(QWEBENGINEINSPECTOR)
@@ -1085,7 +1070,7 @@ namespace browser {
 #endif
     }
 
-    void Browser:: append_to_help_menu(){
+    void Browser::append_to_help_menu(){
 	_main_window->init_help_menu();
 	assert(_main_window->help_menu());
 	QMenu *helpMenu = _main_window->help_menu();	// menuBar()->addMenu(tr("&Help"));
@@ -1095,7 +1080,7 @@ namespace browser {
 	_tree_screen->menus_in_button()->addMenu(helpMenu);
     }
 
-    void Browser:: append_to_main_menu(){
+    void Browser::append_to_main_menu(){
 	new QShortcut(QKeySequence(Qt::Key_F6), this, SLOT(slotSwapFocus()));
 
 	_main_window->menuBar()->clear();
@@ -1119,7 +1104,7 @@ namespace browser {
 	append_to_help_menu();
     }
 
-    void Browser:: setup_tool_bar(){
+    void Browser::setup_tool_bar(){
 	// auto mainwindow = _main_window;
 	// FindScreen *_find_screen = globalparameters.find_screen();
 	assert(_find_screen);
@@ -1175,13 +1160,13 @@ namespace browser {
 	////navigater->addWidget(_chasewidget);
     }
 
-    void Browser:: slotShowBookmarksDialog(){
+    void Browser::slotShowBookmarksDialog(){
 	BookmarksDialog *dialog = new BookmarksDialog(this);
 	connect(dialog, &BookmarksDialog::openUrl, _tabmanager, &TabWidget::loadUrlInCurrentTab);
 	dialog->show();
     }
 
-    void Browser:: slotAddBookmark(){
+    void Browser::slotAddBookmark(){
 	WebView			*webView	= currentTab();
 	QString			url		= webView->page()->url().toString();
 	QString			title		= webView->title();
@@ -1189,7 +1174,7 @@ namespace browser {
 	dialog.exec();
     }
 
-    void Browser:: slotViewToolbar(){
+    void Browser::slotViewToolbar(){
 	// FindScreen *_find_screen = globalparameters.find_screen();
 	assert(_find_screen);
 	// QToolBar *navigater = findscreen->navigater();
@@ -1204,7 +1189,7 @@ namespace browser {
 	_autosaver->changeOccurred();
     }
 
-    void Browser:: slotViewBookmarksBar(){
+    void Browser::slotViewBookmarksBar(){
 	if(_bookmarkstoolbar->isVisible()){
 	    update_bookmarks_toolbar_action_text(false);
 	    _bookmarkstoolbar->close();
@@ -1215,23 +1200,23 @@ namespace browser {
 	_autosaver->changeOccurred();
     }
 
-    void Browser:: update_statusbar_action_text(bool visible){
+    void Browser::update_statusbar_action_text(bool visible){
 	_viewstatusbar->setText(! visible ? tr("Show Status Bar") : tr("Hide Status Bar"));
     }
 
-    void Browser:: handle_find_text_result(bool found){
+    void Browser::handle_find_text_result(bool found){
 	if(! found)slotUpdateStatusbar(tr("\"%1\" not found.").arg(_lastsearch));
     }
 
-    void Browser:: updateToolbarActionText(bool visible){
+    void Browser::updateToolbarActionText(bool visible){
 	_viewtoolbar->setText(! visible ? tr("Show Find in base") : tr("Hide Find in base"));
     }
 
-    void Browser:: update_bookmarks_toolbar_action_text(bool visible){
+    void Browser::update_bookmarks_toolbar_action_text(bool visible){
 	_viewbookmarkbar->setText(! visible ? tr("Show Bookmarks bar") : tr("Hide Bookmarks bar"));
     }
 
-    void Browser:: slotViewStatusbar(){
+    void Browser::slotViewStatusbar(){
 	if(status_bar()->isVisible()){
 	    update_statusbar_action_text(false);
 	    status_bar()->close();
@@ -1248,29 +1233,29 @@ namespace browser {
 //        _tabmanager->loadUrlInCurrentTab(url);
 //    }
 
-    void Browser:: slotDownloadManager(){
+    void Browser::slotDownloadManager(){
 	sapp_t::downloadManager()->show();
     }
 
-    void Browser:: slotSelectLineEdit(){
+    void Browser::slotSelectLineEdit(){
 	_tabmanager->currentLineEdit()->selectAll();
 	_tabmanager->currentLineEdit()->setFocus();
     }
 
-    void Browser:: slotFileSaveAs(){
+    void Browser::slotFileSaveAs(){
 	// not implemented yet.
     }
 
-    void Browser:: slotPreferences(){
+    void Browser::slotPreferences(){
 	SettingsDialog *s = new SettingsDialog(this);
 	s->show();
     }
 
-    void Browser:: slotUpdateStatusbar(const QString &string){
+    void Browser::slotUpdateStatusbar(const QString &string){
 	status_bar()->showMessage(string, 2000);
     }
 
-    void Browser:: slotUpdateWindowTitle(const QString &title){
+    void Browser::slotUpdateWindowTitle(const QString &title){
 	if(title.isEmpty())setWindowTitle(tr(application_name));
 	else{
 #if defined(Q_OS_OSX)
@@ -1281,7 +1266,7 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotAboutApplication(){
+    void Browser::slotAboutApplication(){
 	QMessageBox::about(this, tr("About"), tr(
 		"Version %1"
 		"<p>This demo demonstrates the facilities "
@@ -1292,7 +1277,7 @@ namespace browser {
 	    .arg(QCoreApplication::applicationVersion()));
     }
 
-    void Browser:: slotFileNew(){
+    void Browser::slotFileNew(){
 	// QtSingleApplication::instance()->
 	// _browser->new_mainwindow(register_record(QUrl(DockedWindow::_defaulthome)));
 
@@ -1307,7 +1292,7 @@ namespace browser {
 	this->slotHome();
     }
 
-    void Browser:: slotFileOpen(){
+    void Browser::slotFileOpen(){
 	QString file = QFileDialog::getOpenFileName(this, tr("Open Web Resource"), QString()
 						   , tr("Web Resources (*.html *.htm *.svg *.png *.gif *.svgz);;All files (*.*)"));
 	if(file.isEmpty())return;
@@ -1319,7 +1304,7 @@ namespace browser {
 
 #define QT_NO_PRINTPREVIEWDIALOG
 
-    void Browser:: slotFilePrintPreview(){
+    void Browser::slotFilePrintPreview(){
 #ifndef QT_NO_PRINTPREVIEWDIALOG
 	if(! currentTab())return;
 	QPrintPreviewDialog *dialog = new QPrintPreviewDialog(this);
@@ -1328,7 +1313,7 @@ namespace browser {
 #endif
     }
 
-    void Browser:: slotFilePrint(){
+    void Browser::slotFilePrint(){
 #if defined(QWEBENGINEPAGE_PRINT)
 	if(! currentTab())return;
 	printRequested(currentTab()->page()->mainFrame());
@@ -1336,7 +1321,7 @@ namespace browser {
     }
 
 #if defined(QWEBENGINEPAGE_PRINT)
-    void BrowserWindow:: printRequested(QWebEngineFrame *frame){
+    void BrowserWindow::printRequested(QWebEngineFrame *frame){
 #ifndef QT_NO_PRINTDIALOG
 	QPrinter	printer;
 	QPrintDialog	*dialog = new QPrintDialog(&printer, this);
@@ -1348,7 +1333,7 @@ namespace browser {
 
 #endif
 
-    void Browser:: slotPrivateBrowsing(){
+    void Browser::slotPrivateBrowsing(){
 	if(! sapp_t::instance()->privateBrowsing()){
 	    QString	title	= tr("Are you sure you want to turn on private browsing?");
 	    QString	text	= tr("<b>%1</b><br><br>"
@@ -1373,11 +1358,11 @@ namespace browser {
 	}
     }
 
-    void Browser:: resizeEvent(QResizeEvent *e){
+    void Browser::resizeEvent(QResizeEvent *e){
 	_tabmanager->resizeEvent(e);
     }
 
-    void Browser:: closeEvent(QCloseEvent *event){
+    void Browser::closeEvent(QCloseEvent *event){
 	if(_tabmanager->count() > 1){
 	    int ret = QMessageBox::warning(this, QString()
 					  , tr("Are you sure you want to close the window?"
@@ -1395,7 +1380,7 @@ namespace browser {
 	deleteLater();
     }
 
-    void Browser:: slotEditFind(){
+    void Browser::slotEditFind(){
 	if(! currentTab())return;
 	bool	ok;
 	QString search = QInputDialog::getText(this, tr("Find"), tr("Text:"), QLineEdit::Normal, _lastsearch, &ok);
@@ -1405,32 +1390,32 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotEditFindNext(){
+    void Browser::slotEditFindNext(){
 	if(! currentTab() && ! _lastsearch.isEmpty())return;
 	currentTab()->findText(_lastsearch);
     }
 
-    void Browser:: slotEditFindPrevious(){
+    void Browser::slotEditFindPrevious(){
 	if(! currentTab() && ! _lastsearch.isEmpty())return;
 	currentTab()->findText(_lastsearch, QWebEnginePage::FindBackward);
     }
 
-    void Browser:: slotViewZoomIn(){
+    void Browser::slotViewZoomIn(){
 	if(! currentTab())return;
 	currentTab()->setZoomFactor(currentTab()->zoomFactor() + 0.1);
     }
 
-    void Browser:: slotViewZoomOut(){
+    void Browser::slotViewZoomOut(){
 	if(! currentTab())return;
 	currentTab()->setZoomFactor(currentTab()->zoomFactor() - 0.1);
     }
 
-    void Browser:: slotViewResetZoom(){
+    void Browser::slotViewResetZoom(){
 	if(! currentTab())return;
 	currentTab()->setZoomFactor(1.0);
     }
 
-    void Browser:: slotViewFullScreen(bool makeFullScreen){
+    void Browser::slotViewFullScreen(bool makeFullScreen){
 	if(makeFullScreen)showFullScreen();
 	else{
 	    if(isMinimized())showMinimized();
@@ -1439,7 +1424,7 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotViewPageSource(){
+    void Browser::slotViewPageSource(){
 	if(! currentTab())return;
 	QPlainTextEdit *view = new QPlainTextEdit;
 	view->setWindowTitle(tr("Page Source of %1").arg(currentTab()->title()));
@@ -1451,7 +1436,7 @@ namespace browser {
     }
 
 	// deprecated by record::preoperty::home
-    void Browser:: slotHome(){
+    void Browser::slotHome(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("MainWindow"));
 	QString home		= settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
@@ -1468,14 +1453,14 @@ namespace browser {
 	settings.endGroup();
     }
 
-    void Browser:: slotWebSearch(){
+    void Browser::slotWebSearch(){
 	// _toolbarsearch
 	_find_screen->toolbarsearch()->lineEdit()->selectAll();
 	// _toolbarsearch
 	_find_screen->toolbarsearch()->lineEdit()->setFocus();
     }
 
-    void Browser:: slotToggleInspector(bool enable){
+    void Browser::slotToggleInspector(bool enable){
 #if defined(QWEBENGINEINSPECTOR)
 	QWebEngineSettings::globalSettings()->setAttribute(QWebEngineSettings::DeveloperExtrasEnabled, enable);
 	if(enable){
@@ -1490,7 +1475,7 @@ namespace browser {
 #endif
     }
 
-    void Browser:: slotSwapFocus(){
+    void Browser::slotSwapFocus(){
 	if(currentTab()->hasFocus())_tabmanager->currentLineEdit()->setFocus();
 	else currentTab()->setFocus();
     }
@@ -1505,9 +1490,9 @@ namespace browser {
 	// return _tabwidget;
 	// }
 
-    WebView *Browser:: currentTab() const {return _tabmanager->currentWebView();}
+    WebView *Browser::currentTab() const {return _tabmanager->currentWebView();}
 
-    void Browser:: slotLoadProgress(int progress){
+    void Browser::slotLoadProgress(int progress){
 	if(progress < 100 && progress > 0){
 	    _chasewidget->setAnimated(true);
 	    disconnect(_stopreload, &QAction::triggered, _reload, &QAction::trigger);
@@ -1527,7 +1512,7 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotAboutToShowBackMenu(){
+    void Browser::slotAboutToShowBackMenu(){
 	_historybackmenu->clear();
 	if(! currentTab())return;
 	QWebEngineHistory	*history	= currentTab()->history();
@@ -1543,7 +1528,7 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotAboutToShowForwardMenu(){
+    void Browser::slotAboutToShowForwardMenu(){
 	_historyforwardmenu->clear();
 	if(! currentTab())return;
 	QWebEngineHistory	*history	= currentTab()->history();
@@ -1559,7 +1544,7 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotAboutToShowWindowMenu(){
+    void Browser::slotAboutToShowWindowMenu(){
 	_windowmenu->clear();
 	_windowmenu->addAction(_tabmanager->nextTabAction());
 	_windowmenu->addAction(_tabmanager->previousTabAction());
@@ -1579,7 +1564,7 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotShowWindow(){
+    void Browser::slotShowWindow(){
 	if(QAction *action = qobject_cast<QAction *>(sender())){
 	    QVariant v = action->data();
 	    if(v.canConvert<uint>()){
@@ -1605,14 +1590,14 @@ namespace browser {
 	}
     }
 
-    void Browser:: slotOpenActionUrl(QAction *action){
+    void Browser::slotOpenActionUrl(QAction *action){
 	int			offset		= action->data().toInt();
 	QWebEngineHistory	*history	= currentTab()->history();
 	if(offset < 0)history->goToItem(history->backItems(- 1 * offset).first());	// back
 	else if(offset > 0)history->goToItem(history->forwardItems(history->count() - offset + 1).back());	// forward
     }
 
-    void Browser:: geometry_change_requested(const QRect &geometry){setGeometry(geometry);}
+    void Browser::geometry_change_requested(const QRect &geometry){setGeometry(geometry);}
 
 	// void DockedWindow::initUrl()
 	// {
@@ -1628,11 +1613,11 @@ namespace browser {
 	////    }
 	// }
 
-    QStatusBar *Browser:: status_bar(){return globalparameters.status_bar();}
+    QStatusBar *Browser::status_bar(){return globalparameters.status_bar();}
 
-    QStatusBar *Browser:: status_bar() const {return globalparameters.status_bar();}
+    QStatusBar *Browser::status_bar() const {return globalparameters.status_bar();}
 
-    boost::intrusive_ptr<TreeItem> Browser:: page_instantiate(boost::intrusive_ptr<RecordIndex> record_index){
+    boost::intrusive_ptr<TreeItem> Browser::page_instantiate(boost::intrusive_ptr<RecordIndex> record_index){
 	boost::intrusive_ptr<TreeItem> result(nullptr);
 //        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
 	boost::intrusive_ptr<TreeItem> target = record_index->target();
@@ -1706,15 +1691,15 @@ namespace browser {
 	// dp.second->show();
 	// assert(dp.first);
 	if(_entrance->widget() != this)_entrance->setWidget(this);
-	auto vtab_tree = globalparameters.vtab_tree();
-	if(vtab_tree->currentWidget() != _record_screen)vtab_tree->setCurrentWidget(_record_screen);
+	auto _vtab_record = _main_window->vtab_record();
+	if(_vtab_record->currentWidget() != _record_screen)_vtab_record->setCurrentWidget(_record_screen);
 	assert(view);
 	assert(result->binder()->integrity_external(result, view->page()));
 
 	return result;	// _mainWindows[0];
     }
 
-    rs_t *Browser:: record_screen(){return _record_screen;}
+    rs_t *Browser::record_screen(){return _record_screen;}
 
-    Entrance *Browser:: entrance(){return _entrance;}
+    Entrance *Browser::entrance(){return _entrance;}
 }

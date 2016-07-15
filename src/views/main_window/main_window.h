@@ -126,7 +126,7 @@ class wn_t
 	QSplitter		*find_splitter();
 	QSplitter		*h_record_splitter();
 	QSplitter		*h_tree_splitter();
-	std::vector<tsv_t *>	tree_viewers() const;
+//	std::vector<tsv_t *>	tree_viewers() const;
     public slots:
 	void	application_exit(void);
 	void	application_fast_exit(void);
@@ -199,7 +199,7 @@ class wn_t
 	QSplitter		*_v_right_splitter;
 	QSplitter		*_v_find_splitter;
 	HidableTabWidget	*_vtab_record;
-	HidableTabWidget	*_vtab_tree;
+//	HidableTabWidget	*_vtab_tree;
 	QSplitter		*_h_record_splitter;
 	QSplitter		*_h_tree_splitter;
 //    QSplitter           *_h_splitter;
@@ -214,13 +214,11 @@ class wn_t
 	QMenu				*_toolsmenu;
 	QMenu				*_helpmenu;
 
-	ts_t			*_tree_screen;
-	FindScreen		*_find_screen;
-	MetaEditor		*_editor_screen;
-
-	browser::Entrance   *_entrance;
-
-	browser::DownloadManager *_download;
+	ts_t				*_tree_screen;
+	FindScreen			*_find_screen;
+	MetaEditor			*_editor_screen;
+	browser::Entrance		*_entrance;
+	browser::DownloadManager	*_download;
 
 	QStatusBar		*_statusbar;
 	WindowSwitcher		*_switcher;

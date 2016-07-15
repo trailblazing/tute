@@ -852,12 +852,12 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent(const std::function<
 
 
 	    result = it;
-//	    if(results.find(il) == results.end()) results.insert(il);
-	    if(il){
-		il->host(boost::intrusive_ptr<TreeItem>(nullptr));
-		il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
-//		il.reset();
-	    }
+////	    if(results.find(il) == results.end()) results.insert(il);
+//	    if(il){
+//		il->host(boost::intrusive_ptr<TreeItem>(nullptr));
+//		il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
+////		il.reset();
+//	    }
 	    break;
 	}
     }
@@ -887,14 +887,12 @@ void ItemsFlat:: remove_duplicated(){
 			// else
 		    _child_linkers.removeOne(il);
 		    keep->host()->merge(il->host());
-		    il->host()->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){
-			    return it->is_empty();
-			});
-		    if(il){
-			il->host(boost::intrusive_ptr<TreeItem>(nullptr));
-			il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
-//			il.reset();
-		    }
+		    il->host()->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){return it->is_empty();});
+//		    if(il){
+//			il->host(boost::intrusive_ptr<TreeItem>(nullptr));
+//			il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
+////			il.reset();
+//		    }
 		}
 	    }
 	}
@@ -1024,11 +1022,11 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent_recursive(boost::int
 
 
 		result = it;
-		if(il){
-		    il->host(boost::intrusive_ptr<TreeItem>(nullptr));
-		    il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
-//		    il.reset();
-		}
+//		if(il){
+//		    il->host(boost::intrusive_ptr<TreeItem>(nullptr));
+//		    il->host_parent(boost::intrusive_ptr<TreeItem>(nullptr));
+////		    il.reset();
+//		}
 		break;
 		qDebug() << "Delete record succesfull";
 	    }

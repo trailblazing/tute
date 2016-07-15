@@ -66,22 +66,10 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
       , _v_right_splitter([&]() -> QSplitter * {auto _v_r_s = new QSplitter(Qt::Vertical);_v_r_s->setSizes(_appconfig.v_right_splitter_sizelist());_globalparameters.v_right_splitter(_v_r_s);return _v_r_s;} ())
       , _v_find_splitter([&]() -> QSplitter * {auto _v_f_s = new QSplitter(Qt::Vertical);_v_f_s->setSizes(_appconfig.findsplitter_sizelist());_globalparameters.find_splitter(_v_f_s);return _v_f_s;} ())
       , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(style_source_, this);_globalparameters.vtab_record(vr);return vr;} (_style))
-      , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);_globalparameters.vtab_tree(vt);return vt;} (_style))
+//      , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);_globalparameters.vtab_tree(vt);return vt;} (_style))
       , _h_record_splitter([&]() -> QSplitter * {auto _h_r_s = new QSplitter(Qt::Horizontal);_h_r_s->setSizes(_appconfig.h_record_splitter_sizelist());_globalparameters.h_record_splitter(_h_r_s);return _h_r_s;} ())
-      , _h_tree_splitter([&]() -> QSplitter * {
-	      if(_globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);																					// Для Андроида окно просто разворачивается на весь экран
-	      else{
-		  QRect rect = _appconfig.mainwin_geometry();
-		  resize(rect.size());
-		  move(rect.topLeft());
-	      }
-	      auto _h_l_s = new QSplitter(Qt::Horizontal);
-	      _h_l_s->setSizes(_appconfig.h_tree_splitter_sizelist());
-	      _globalparameters.h_tree_splitter(_h_l_s);
-
-	      return _h_l_s;
-	  } ())								// Qt::Vertical
-// , _h_splitter(new QSplitter(Qt::Horizontal))
+      , _h_tree_splitter([&]() -> QSplitter * {auto _h_l_s = new QSplitter(Qt::Horizontal);_h_l_s->setSizes(_appconfig.h_tree_splitter_sizelist());_globalparameters.h_tree_splitter(_h_l_s);return _h_l_s;} ())							// Qt::Vertical
+//      , _h_splitter(new QSplitter(Qt::Horizontal))
       , _filemenu(new QMenu(tr("&File"), this))
       , _editmenu(new QMenu(tr("&Edit"), this))
       , _viewmenu(new QMenu(tr("&View"), this))
@@ -128,7 +116,7 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
 
 
 
-    _vtab_record->tabBar()->hide();
+//    _vtab_record->tabBar()->hide();
 
 
 
@@ -150,6 +138,7 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
     QMainWindow::menuBar()->hide();
 
     setup_ui();
+
     setup_signals();
     assembly();
 
@@ -172,7 +161,7 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
     init_random();
 }
 
-void wn_t:: append_quit_menu(){
+void wn_t::append_quit_menu(){
     QAction *quit = new QAction(tr("&Quit"), this);
 
     quit->setShortcut(Qt::CTRL + Qt::Key_Q);
@@ -232,7 +221,13 @@ wn_t::~wn_t(){
     _helpmenu->deleteLater();
 }
 
-void wn_t:: setup_ui(void){
+void wn_t::setup_ui(void){
+    if(_globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);																					// Для Андроида окно просто разворачивается на весь экран
+    else{
+	QRect rect = _appconfig.mainwin_geometry();
+	resize(rect.size());
+	move(rect.topLeft());
+    }
 	// При создании объектов не указывается parent, так как он буден задан в момент вставки в layout в методе assembly()
 
 	// _tree_screen = new TreeScreen(_appconfig, this);
@@ -301,7 +296,7 @@ void wn_t:: setup_ui(void){
 	// MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name);
 }
 
-void wn_t:: setup_signals(void){
+void wn_t::setup_signals(void){
     connect(_editor_screen, &MetaEditor::send_expand_edit_area, this, &wn_t::on_expand_edit_area);
 
 	// Сигнал, генерирующийся при выходе из оконных систем X11 и Windows
@@ -330,187 +325,329 @@ void wn_t:: setup_signals(void){
 	// }
 	// };
 
+//    {
+//	connect(_vtab_record, &HidableTabWidget::currentChanged, this, [&](int index){
+//		if(- 1 != index){
+//		    auto current_record_widget = _vtab_record->widget(index);
 
-    connect(_vtab_record, &HidableTabWidget::currentChanged, this, [&](int index){
-	    if(- 1 != index){
-		auto current_record_widget = _vtab_record->widget(index);
+//			// for(int i = 0; i < _vtab_record->count(); i++) {
+//			// if(i != real_index) {
+//			// auto current_widget = _vtab_record->widget(i);
+//			// if(current_widget) {
+//			// if(current_widget->objectName() == record_screen_multi_instance_name) {
+//			// auto record_screen = static_cast<RecordScreen *>(current_widget);
+//			// record_screen->browser()->lower();
+//			// }
 
-		// for(int i = 0; i < _vtab_record->count(); i++) {
-		// if(i != real_index) {
-		// auto current_widget = _vtab_record->widget(i);
-		// if(current_widget) {
-		// if(current_widget->objectName() == record_screen_multi_instance_name) {
-		// auto record_screen = static_cast<RecordScreen *>(current_widget);
-		// record_screen->browser()->lower();
-		// }
+//			// current_widget->hide();
+//			// }
+//			// }
+//			// }
+//		    rs_t *record_screen = nullptr;
+////		browser::DownloadManager *download_manager = nullptr;
+////		if(current_record_widget->objectName() == download_manager_singleton_name){
+////		    download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
+////		    if(download_manager){
+////			;
+////			;
+////		    }
+////		}else
+//		    if(current_record_widget->objectName() == record_screen_multi_instance_name){
+//			record_screen = dynamic_cast<rs_t *>(current_record_widget);
+//			if(record_screen){
+////		    _vtab_record->setCurrentWidget(record_screen);
 
-		// current_widget->hide();
-		// }
-		// }
-		// }
-		rs_t *record_screen = nullptr;
-//		browser::DownloadManager *download_manager = nullptr;
-//		if(current_record_widget->objectName() == download_manager_singleton_name){
-//		    download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
-//		    if(download_manager){
-//			;
-//			;
+
+////		    record_screen->restore_menubar();
+
+
+//			    auto current_brower = record_screen->browser();
+//			    if(current_brower && ! current_brower->is_under_construction()){
+//				current_brower->raise();
+//				current_brower->activateWindow();
+//			    }
+//			}
+//			// else{
+//			// _tree_screen->restore_menubar();
+//			// }
 //		    }
-//		}else
-		if(current_record_widget->objectName() == record_screen_multi_instance_name){
-		    record_screen = dynamic_cast<rs_t *>(current_record_widget);
-		    if(record_screen){
-//		    _vtab_record->setCurrentWidget(record_screen);
-
-
-//		    record_screen->restore_menubar();
-
-
-			auto current_brower = record_screen->browser();
-			if(current_brower && ! current_brower->is_under_construction()){
-			    current_brower->raise();
-			    current_brower->activateWindow();
-			}
-		    }
-			// else{
-			// _tree_screen->restore_menubar();
-			// }
-		}
-		for(int i = 0; i < _vtab_tree->count(); i ++){
-		    auto tree_viewer = _vtab_tree->widget(i);
-		    if(tree_viewer->objectName() == tree_screen_viewer_name){
-			auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);
-			if(tree_viewer_){
-			    if(tree_viewer_->widget_right() == current_record_widget){
-				if(_vtab_tree->currentIndex() != i){
-				    if(! tree_viewer_->tree_screen())tree_viewer_->tree_screen(_tree_screen);
-				    _vtab_tree->setCurrentIndex(i);
-				}
-				break;
-			    }
-			}
-		    }
-		}
-	    }
-	});
-
-    auto tree_viewer_integrity = [&, this](wn_t *_this, HidableTabWidget *_vtab_tree, int index) -> void {
-	    auto tree_viewer = _vtab_tree->widget(index);
-	    if(tree_viewer->objectName() == tree_screen_viewer_name){																	// if(real_index < _vtab_record->count()) {
-		// for(int i = 0; i < _vtab_record->count(); i++) {
-		// if(i != real_index) {
-		// auto current_widget = _vtab_record->widget(i);
-		// if(current_widget) {
-		// if(current_widget->objectName() == record_screen_multi_instance_name) {
-		// auto record_screen = static_cast<RecordScreen *>(current_widget);
-		// record_screen->browser()->lower();
-		// }
-
-		// current_widget->hide();
-		// }
-		// }
-		// }
-		QWidget *current_record_widget	= nullptr;
-		auto	tree_viewer_		= dynamic_cast<tsv_t *>(tree_viewer);																			// auto current_widget = _vtab_record->widget(real_index);
-		if(tree_viewer_){
-		    QWidget *tree_screen = tree_viewer_->tree_screen();
-		    if(! tree_screen)tree_viewer_->tree_screen(_this->_tree_screen);
-		    current_record_widget = tree_viewer_->widget_right();
-		    if(_this->_vtab_record->currentWidget() != current_record_widget)_this->_vtab_record->setCurrentWidget(current_record_widget);
-		    rs_t *record_screen = dynamic_cast<rs_t *>(tree_viewer_->widget_right());
-		    if(record_screen){
-//			if(_this->_vtab_record->currentWidget() != record_screen)_this->_vtab_record->setCurrentWidget(record_screen);
-//			record_screen->restore_menubar();
-
-			auto current_brower = record_screen->browser();
-			if(current_brower && ! current_brower->is_under_construction()){
-			    current_brower->raise();
-			    current_brower->activateWindow();
-			    auto browser_tab = current_brower->tabmanager();
-			    browser_tab->setCurrentIndex(browser_tab->currentIndex());
-			    auto v = browser_tab->currentWebView();
-			    if(v){
-				v->setFocus();
-				v->activateWindow();
-				v->raise();
-				v->adjustSize();// v->repaint();
-			    }
-//			    v->layout()->update();	// activate();
-			}
-		    }
-//		    browser::DownloadManager *download_manager = nullptr;
-//		    if(current_record_widget->objectName() == download_manager_singleton_name){
-//			download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
-//			if(download_manager){
-//			    if(_this->_vtab_record->currentWidget() != download_manager)_this->_vtab_record->setCurrentWidget(download_manager);
-//			    ;
+//		    for(int i = 0; i < _vtab_tree->count(); i ++){
+//			auto tree_viewer = _vtab_tree->widget(i);
+//			if(tree_viewer->objectName() == tree_screen_viewer_name){
+//			    auto tree_viewer_ = dynamic_cast<tsv_t *>(tree_viewer);
+//			    if(tree_viewer_){
+//				if(tree_viewer_->widget_right() == current_record_widget){
+//				    if(_vtab_tree->currentIndex() != i){
+//					if(! tree_viewer_->tree_screen())tree_viewer_->tree_screen(_tree_screen);
+//					_vtab_tree->setCurrentIndex(i);
+//				    }
+//				    break;
+//				}
+//			    }
 //			}
 //		    }
-			// else{
-			// _tree_screen->restore_menubar();
-			// }
+//		}
+//	    });
+
+//	auto tree_viewer_integrity = [&, this](wn_t *_this, HidableTabWidget *_vtab_tree, int index) -> void {
+//		auto tree_viewer = _vtab_tree->widget(index);
+//		if(tree_viewer->objectName() == tree_screen_viewer_name){																	// if(real_index < _vtab_record->count()) {
+//			// for(int i = 0; i < _vtab_record->count(); i++) {
+//			// if(i != real_index) {
+//			// auto current_widget = _vtab_record->widget(i);
+//			// if(current_widget) {
+//			// if(current_widget->objectName() == record_screen_multi_instance_name) {
+//			// auto record_screen = static_cast<RecordScreen *>(current_widget);
+//			// record_screen->browser()->lower();
+//			// }
+
+//			// current_widget->hide();
+//			// }
+//			// }
+//			// }
+//		    QWidget	*current_record_widget	= nullptr;
+//		    auto	tree_viewer_		= dynamic_cast<tsv_t *>(tree_viewer);																			// auto current_widget = _vtab_record->widget(real_index);
+//		    if(tree_viewer_){
+//			QWidget *tree_screen = tree_viewer_->tree_screen();
+//			if(! tree_screen)tree_viewer_->tree_screen(_this->_tree_screen);
+//			current_record_widget = tree_viewer_->widget_right();
+//			if(_this->_vtab_record->currentWidget() != current_record_widget)_this->_vtab_record->setCurrentWidget(current_record_widget);
+//			rs_t *record_screen = dynamic_cast<rs_t *>(tree_viewer_->widget_right());
+//			if(record_screen){
+////			if(_this->_vtab_record->currentWidget() != record_screen)_this->_vtab_record->setCurrentWidget(record_screen);
+////			record_screen->restore_menubar();
+
+//			    auto current_brower = record_screen->browser();
+//			    if(current_brower && ! current_brower->is_under_construction()){
+//				current_brower->raise();
+//				current_brower->activateWindow();
+//				auto browser_tab = current_brower->tabmanager();
+//				browser_tab->setCurrentIndex(browser_tab->currentIndex());
+//				auto v = browser_tab->currentWebView();
+//				if(v){
+//				    v->setFocus();
+//				    v->activateWindow();
+//				    v->raise();
+//				    v->adjustSize();	// v->repaint();
+//				}
+////			    v->layout()->update();	// activate();
+//			    }
+//			}
+////		    browser::DownloadManager *download_manager = nullptr;
+////		    if(current_record_widget->objectName() == download_manager_singleton_name){
+////			download_manager = dynamic_cast<browser::DownloadManager *>(current_record_widget);
+////			if(download_manager){
+////			    if(_this->_vtab_record->currentWidget() != download_manager)_this->_vtab_record->setCurrentWidget(download_manager);
+////			    ;
+////			}
+////		    }
+//			// else{
+//			// _tree_screen->restore_menubar();
+//			// }
+//		    }
+//		}
+//	    };
+
+//	auto empty_recovery = [&, this](wn_t *_this, HidableTabWidget *_vtab_tree, int &index) -> void {
+//		(void) _this;
+//		int tree_viewer_count = 0;
+//		for(int i = 0; i < _vtab_tree->count(); i ++)
+//			if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name)tree_viewer_count ++;
+//// auto count = _vtab_tree->count();
+//		if(0 == tree_viewer_count){														// if(1 >= count) {    // self and download
+//// _this->_tree_screen->restore_menubar();
+//		    index = _vtab_tree->insertTab(0, static_cast<QWidget *>(new tsv_t(_this, _this->_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
+//		    _vtab_tree->setCurrentIndex(index);
+//		}
+//	    };
+//	(void) empty_recovery;
+//	// hide_others(_vtabwidget->currentIndex());
+//	connect(_vtab_tree, &HidableTabWidget::currentChanged, this, [&, this](int index){
+//		if(- 1 != index){
+////		empty_recovery(this, _vtab_tree, index);
+
+//		    tree_viewer_integrity(this, _vtab_tree, index);
+
+////// deprecated: ignoring Tree Search Area
+//// if(_vtab_tree->widget(index)->objectName() == tree_screen_singleton_name) {
+//// _appconfig.find_screen_tree_search_area(0);
+//// } else if(_vtab_tree->widget(index)->objectName() == record_screen_multi_instance_name) {
+//// _appconfig.find_screen_tree_search_area(1);
+//// }
+//		}
+//	    });
+
+//	connect(_vtab_tree, &HidableTabWidget::tabBarClicked, this, [&, this](int index){
+//// if(1 <= index) {
+////	    empty_recovery(this, _vtab_tree, index);
+//		tree_viewer_integrity(this, _vtab_tree, index);
+//// }
+//	    });
+//    }
+//	//
+    connect(_h_tree_splitter, &QSplitter::splitterMoved, [&](int _tree_pos, int index){
+	    (void) index;
+	    (void) _tree_pos;
+
+//	    QList<int>	current_tree_sizes = _h_tree_splitter->sizes();
+//	    QString _hide_tree_text = current_tree_sizes[0] == 0 ? tr("Show tree view") : tr("Hide tree view");
+//	    QIcon _hide_tree_icon = current_tree_sizes[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg");
+//	    auto widget = _vtab_record->currentWidget();
+//	    auto _record_screen = widget ? widget->objectName() == record_screen_multi_instance_name ? static_cast<rs_t *>(widget) : nullptr : nullptr;	// globalparameters.entrance()->activated_browser()->record_screen();
+//	    auto _record_hide = _record_screen ? _record_screen->_record_hide : nullptr;
+//////	    auto _hide_tree_icon = _record_screen->_hide_tree_icon;
+//////	    auto _hide_tree_text = _record_screen->_hide_tree_text;
+////	    auto old_tree_sizes = _appconfig.h_tree_splitter_sizelist();
+//////	    auto _h_record_splitter = this->h_record_splitter();
+////	    auto record_sizes = _h_record_splitter->sizes();
+
+//////	    auto _vtab_tree = this->vtab_tree();
+//	    auto bar_width = 0;	// _vtab_tree->tabBar()->geometry().width();
+//	    if(_tree_pos <= bar_width){	// if(bar_width >= sizes[0]){// h_left_splitter->widget(0)->width()
+////		//		vtab_tree->resize(bar_width, vtab_tree->height());
+////		//		vtab_tree->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+////		_vtab_tree->setMinimumWidth(bar_width);	// vtab_tree->setMaximumWidth(bar_width);
+//		if(_record_hide){
+//		    _hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
+//		    _hide_tree_text = tr("Show tree view");
+//		    if(! _record_screen->_toolsline->actions().contains(_record_hide))insert_action_as_button<QToolButton>(_record_screen->_toolsline, _record_screen->_pin, _record_hide);
+//		}
+//	    }else{
+//////		vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+////		_vtab_tree->setMaximumWidth(this->maximumWidth());
+//		if(_record_hide){
+//		    _hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
+//		    _hide_tree_text = tr("Hide tree view");
+//		    if(_record_screen->_toolsline->actions().contains(_record_hide))_record_screen->_toolsline->removeAction(_record_hide);
+//		}
+//	    }
+//	    if(_record_hide){
+//		_record_hide->setIcon(_hide_tree_icon);
+//		_record_hide->setToolTip(_hide_tree_text);
+//		_record_hide->setStatusTip(_hide_tree_text);
+//		_record_hide->setText(_hide_tree_text);
+//	    }
+	    auto tree_siezes = _h_tree_splitter->sizes();
+////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
+//	    auto summary = record_sizes[0] + record_sizes[1];
+//	    record_sizes[0] = record_sizes[0] + (tree_siezes[0] - old_tree_sizes[0]);
+//	    record_sizes[1] = summary - record_sizes[0];
+//	    _h_record_splitter->setSizes(record_sizes);
+//	    if(0 != pos){
+//	    auto tree_siezes = _h_tree_splitter->sizes();
+	    if(tree_siezes != _appconfig.h_tree_splitter_sizelist())_appconfig.h_tree_splitter_sizelist(tree_siezes);
+//	    }
+	});
+
+
+    connect(_h_record_splitter, &QSplitter::splitterMoved, [&](int record_pos, int index){
+	    (void) index;
+	    (void) record_pos;
+
+////	    (void) record_pos;
+////	    (void) index;
+//	    auto _tree_hide = _tree_screen->_actionlist[action_hide_tree_screen];
+////	    auto _h_record_splitter = this->h_record_splitter();
+	    auto record_sizes = _h_record_splitter->sizes();
+//	    auto vtab_record = _main_window->vtab_record();
+//	    auto _vtab_tree = this->vtab_tree();
+	    auto bar_width = _vtab_record->tabBar()->geometry().width();// minimumSizeHint().width();	//
+//	    QIcon icon;
+//	    QString text = "";
+	    if(record_pos < bar_width){	// if(0 == sizes[0]){	// || globalparameters.entrance()->browsers().size() == 0             // h_right_splitter->widget(0)->width()
+//		icon = QIcon(":/resource/pic/butterfly-right.svg");
+//		text = tr("Show record screen");
+		_vtab_record->setMinimumWidth(bar_width);
+		record_sizes[1] = record_sizes[0] + record_sizes[1] - bar_width;
+		record_sizes[0] = bar_width;
+		_h_record_splitter->setSizes(record_sizes);	// QList<int>() << bar_width << h_record_sizes[0] + h_record_sizes[1] - bar_width);
+//		if(_vtab_record->isVisible())_vtab_record->hide();
+	    }else if(record_pos > bar_width){
+//		icon = QIcon(":/resource/pic/butterfly-left.svg");
+//		text = tr("Hide record screen");
+		_vtab_record->setMaximumWidth(this->maximumWidth());
+//		if(! _vtab_record->isVisible())_vtab_record->show();
+	    }
+//	    _tree_hide->setIcon(icon);
+//	    _tree_hide->setText(text);
+//	    _tree_hide->setToolTip(text);
+//	    _tree_hide->setStatusTip(text);
+//////	    emit globalparameters.entrance()->activated_browser()->record_screen()->tree_hide()->triggered();
+//////	    auto _h_tree_splitter = this->h_tree_splitter();
+//	    emit _h_tree_splitter->splitterMoved(_h_tree_splitter->sizes()[0], 1);
+//	    if(0 != pos){
+//	    auto record_sizes = _h_record_splitter->sizes();
+	    if(record_sizes != _appconfig.h_record_splitter_sizelist())_appconfig.h_record_splitter_sizelist(record_sizes);
+//	    }
+	});
+
+
+    connect(_vtab_record->tabBar(), &QTabBar::tabBarClicked, [&](int index){
+	    (void) index;
+//	    auto _h_record_splitter = _main_window->h_record_splitter();
+//	    auto h_record_sizes = h_record_splitter->sizes();
+		////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
+		// if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
+		// else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
+		// auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
+		// auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
+		// auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
+		// auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
+		// auto rl = h_right_splitter->geometry().left();  // 142
+//	    auto _vtab_record = _main_window->vtab_record();
+	    auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
+	    auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+	    auto reasonable_width = bar_width + vtab_record_min_width;
+//            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
+	    auto h_record_sizes = _h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
+//	    QList<int> delta;
+	    if(h_record_sizes[0] <= reasonable_width){		// show	// h_left_splitter->widget(0)->width()
+		// auto h = h_right_splitter->handle(1);
+		// h->move(lr + shw, h->rect().top());
+
+		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
+
+		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
+		h_record_sizes[0] = tree_size_memory[0] > reasonable_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
+		h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
+		_vtab_record->setMaximumWidth(this->maximumWidth());	// just a very big number
+		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+		emit _vtab_record->_hide_action->setChecked(false);
+		if(_h_record_splitter->sizes() != h_record_sizes){
+		    _h_record_splitter->setSizes(h_record_sizes);
+		    emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
 		}
-	    }
-	};
+//		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
+//		sizes[1] = size_memory[0] + size_memory[1] - sizes[0];		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 
-    auto empty_recovery = [&, this](wn_t *_this, HidableTabWidget *_vtab_tree, int &index) -> void {
-	    (void) _this;
-	    int tree_viewer_count = 0;
-	    for(int i = 0; i < _vtab_tree->count(); i ++)
-			if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name)tree_viewer_count ++;
-// auto count = _vtab_tree->count();
-	    if(0 == tree_viewer_count){														// if(1 >= count) {    // self and download
-// _this->_tree_screen->restore_menubar();
-		index = _vtab_tree->insertTab(0, static_cast<QWidget *>(new tsv_t(_this, _this->_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
-		_vtab_tree->setCurrentIndex(index);
-	    }
-	};
-    (void) empty_recovery;
-	// hide_others(_vtabwidget->currentIndex());
-    connect(_vtab_tree, &HidableTabWidget::currentChanged, this, [&, this](int index){
-	    if(- 1 != index){
-//		empty_recovery(this, _vtab_tree, index);
+////            h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
 
-		tree_viewer_integrity(this, _vtab_tree, index);
+//		_hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
+//		_hide_tree_text = tr("Hide tree view");
 
-//// deprecated: ignoring Tree Search Area
-// if(_vtab_tree->widget(index)->objectName() == tree_screen_singleton_name) {
-// _appconfig.find_screen_tree_search_area(0);
-// } else if(_vtab_tree->widget(index)->objectName() == record_screen_multi_instance_name) {
-// _appconfig.find_screen_tree_search_area(1);
-// }
+////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
 	    }
 	});
 
-    connect(_vtab_tree, &HidableTabWidget::tabBarClicked, this, [&, this](int index){
-// if(1 <= index) {
-//	    empty_recovery(this, _vtab_tree, index);
-	    tree_viewer_integrity(this, _vtab_tree, index);
-// }
-	});
+//    connect(_vtab_record->tabBar(), &QTabBar::tabBarDoubleClicked, [&](int index){
+//	    (void) index;
 
-    connect(_h_tree_splitter, &QSplitter::splitterMoved, [&](int pos, int index){
-	    (void) index;
-	    (void) pos;
-//	    if(0 != pos){
-	    auto sizes = _h_tree_splitter->sizes();
-	    if(sizes != _appconfig.h_tree_splitter_sizelist())_appconfig.h_tree_splitter_sizelist(sizes);
+//	    auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
+
+//	    auto h_record_sizes = _h_record_splitter->sizes();		// auto h_tree_sizes = h_tree_splitter->sizes();
+
+
+//	    h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+//	    h_record_sizes[0] = bar_width;	// 0;
+
+//	    _vtab_record->setMinimumWidth(bar_width);
+//	    _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+//	    emit _vtab_record->_hide_action->setChecked(true);
+//	    if(h_record_sizes != _h_record_splitter->sizes()){
+//		_h_record_splitter->setSizes(h_record_sizes);		//
+//		emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
 //	    }
-	});
-
-
-    connect(_h_record_splitter, &QSplitter::splitterMoved, [&](int pos, int index){
-	    (void) index;
-	    (void) pos;
-//	    if(0 != pos){
-	    auto sizes = _h_record_splitter->sizes();
-	    if(sizes != _appconfig.h_record_splitter_sizelist())_appconfig.h_record_splitter_sizelist(sizes);
-//	    }
-	});
-
-
-
-
+//	});
 
 //// deprecated: ignoring Tree Search Area
 // connect(_vtab_tree, &QTabWidget::currentChanged,  &_appconfig
@@ -524,30 +661,31 @@ void wn_t:: setup_signals(void){
 // }
 // }   // &AppConfig::setFindScreenTreeSearchArea
 // );      // , findScreenDisp, &FindScreen::changedTreeSearchArea
-    _vtab_tree->tabBar()->setUsesScrollButtons(true);
+    _vtab_record->tabBar()->setUsesScrollButtons(true);	// _vtab_tree->tabBar()->setUsesScrollButtons(true);
 }
 
-std::vector<tsv_t *> wn_t:: tree_viewers() const {
-    std::vector<tsv_t *>	tsvs;
-    int				tree_viewer_count = 0;
-    for(int i = 0; i < _vtab_tree->count(); i ++){
-	if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name){
-	    tsvs.push_back(dynamic_cast<tsv_t *>(_vtab_tree->widget(i)));
-	    tree_viewer_count ++;
-	}
-    }
-    return tsvs;
-}
+// std::vector<tsv_t *> wn_t::tree_viewers() const {
+//    std::vector<tsv_t *>	tsvs;
+//    int				tree_viewer_count = 0;
+//    for(int i = 0; i < _vtab_tree->count(); i ++){
+//	if(_vtab_tree->widget(i)->objectName() == tree_screen_viewer_name){
+//	    tsvs.push_back(dynamic_cast<tsv_t *>(_vtab_tree->widget(i)));
+//	    tree_viewer_count ++;
+//	}
+//    }
+//    return tsvs;
+// }
 
 /*
 
+  // current version
  _______________________________________________________________________________________________________________
 |														|
 |    ___________________________________________      ____________________________________________________	|
 |   |						|    |							  |	|
 |   |	 ___________________   _____________    |    |  ________________________________________________  |	|
 |   |	|		    | |		    |	|    | |						| |	|
-|   |	|		    | |		    |	|    | |    ________________________________________	| |	|
+|   |	|		    | |		    |	|    | |     _______________________________________	| |	|
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
@@ -557,7 +695,7 @@ std::vector<tsv_t *> wn_t:: tree_viewers() const {
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
 |   |	|		    | |		    |	|    | |    |_______________________________________|	| |	|
 |   |	|		    | |		    |	|    | |						| |	|
-|   |	|		    | |		    |	|    | |    ________________________________________	| |	|
+|   |	|		    | |		    |	|    | |     _______________________________________	| |	|
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
 |   |	|_vtab_tree	    | |_vtab_record |	|    | |    |					    |	| |	|
 |   |	|		    | |		    |	|    | |    |					    |	| |	|
@@ -578,12 +716,58 @@ std::vector<tsv_t *> wn_t:: tree_viewers() const {
 |   |		_h_tree_splitter		|    |                  _v_find_splitter		  |	|
 |   |___________________________________________|    |____________________________________________________|	|
 |														|
-|                       _h_record_splitter									|
+|					    _h_record_splitter							|
 |_______________________________________________________________________________________________________________|
 
 
+ ___________________________________________________________________________________________________________________________________
+|																    |
+|    ___________________________      __________________________________________________________________________________________    |
+|   |				|    |												|   |
+|   |				|    |	  ______________________      ____________________________________________________	|   |
+|   |				|    |	 |			|    |							  |	|   |
+|   |				|    |	 |		        |    |  ________________________________________________  |	|   |
+|   |				|    |	 |		        |    | |						| |	|   |
+|   |				|    |	 |		        |    | |     _______________________________________	| |	|   |
+|   |				|    |	 |		        |    | |    |					    |	| |	|   |
+|   |				|    |	 |		        |    | |    |					    |	| |	|   |
+|   |				|    |	 |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |		_entrance		    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |_______________________________________|	| |	|   |
+|   |				|    |   |		        |    | |						| |	|   |
+|   |				|    |   |		        |    | |     _______________________________________	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |	    _vtab_tree	        |    |   |	_vtab_record	|    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |		_editor_screen		    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |					    |	| |	|   |
+|   |				|    |   |		        |    | |    |_______________________________________|	| |	|   |
+|   |				|    |   |		        |    | |						| |	|   |
+|   |				|    |   |		        |    | |		_v_right_splitter		| |	|   |
+|   |				|    |   |		        |    | |________________________________________________| |	|   |
+|   |				|    |   |		        |    |                                                    |	|   |
+|   |				|    |   |		        |    |  ________________________________________________  |	|   |
+|   |				|    |   |		        |    | |						| |	|   |
+|   |				|    |   |		        |    | |		_find_screen			| |	|   |
+|   |				|    |   |		        |    | |________________________________________________| |	|   |
+|   |			        |    |   |			|    |							  |	|   |
+|   |		                |    |   |                      |    |                  _v_find_splitter		  |	|   |
+|   |				|    |	 |______________________|    |____________________________________________________|	|   |
+|   |				|    |												|   |
+|   |				|    |			    _h_record_splitter							|   |
+|   |___________________________|    |__________________________________________________________________________________________|   |
+|																    |
+|			    _h_tree_splitter											    |
+|___________________________________________________________________________________________________________________________________|
+
+
 */
-void wn_t:: assembly(void){
+void wn_t::assembly(void){
 	// v_right_splitter = new QSplitter(Qt::Vertical);
     _v_right_splitter->addWidget(_entrance);
     _v_right_splitter->addWidget(_editor_screen);			// Text entries // Текст записи
@@ -599,8 +783,8 @@ void wn_t:: assembly(void){
     _v_find_splitter->setObjectName("find_splitter");
 
 	// _qtabwidget = new QTabWidget(this);
-
-    _vtab_tree->setTabPosition(QTabWidget::West);			// sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
+//    _vtab_tree->hide();
+//    _vtab_record->setTabPosition(QTabWidget::West);	// _vtab_tree->setTabPosition(QTabWidget::West);			// sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
 
 
 
@@ -616,7 +800,8 @@ void wn_t:: assembly(void){
 	// if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
 //    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
-    _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen, _download)), QIcon(":/resource/pic/apple.svg"), "Download");			// QIcon(":/resource/pic/holly.svg")
+    _vtab_record->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");	// _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen, _download)), QIcon(":/resource/pic/apple.svg"), "Download");			// QIcon(":/resource/pic/holly.svg")
+
 
 //    _vtab_tree->setCurrentIndex(index);
 
@@ -632,15 +817,6 @@ void wn_t:: assembly(void){
 
 
 
-    _h_tree_splitter->addWidget(_vtab_tree);
-    _h_tree_splitter->addWidget(_vtab_record);	//    _h_tree_splitter->addWidget(_h_record_splitter);
-
-	// v_left_splitter->addWidget(treeScreen);
-	// v_left_splitter->addWidget(recordTableScreen);
-    _h_tree_splitter->setCollapsible(0, true);
-    _h_tree_splitter->setCollapsible(1, false);
-	// v_left_splitter->setCollapsible(1, false);
-    _h_tree_splitter->setObjectName("h_tree_splitter");
 
 	// int vtab_fg_width = _vtabwidget->frameGeometry().width();   // 100
 	// int vtab_g_width = _vtabwidget->geometry().width();         // 100
@@ -655,10 +831,22 @@ void wn_t:: assembly(void){
 	// }
 
     _h_record_splitter->setObjectName("h_record_splitter");
-    _h_record_splitter->addWidget(_h_tree_splitter);	//    _h_record_splitter->addWidget(_vtab_record);
+    _h_record_splitter->addWidget(_vtab_record);	//    _h_record_splitter->addWidget(_h_tree_splitter);
     _h_record_splitter->addWidget(_v_find_splitter);
-    _h_record_splitter->setCollapsible(0, true);
+    _h_record_splitter->setCollapsible(0, false);
     _h_record_splitter->setCollapsible(1, false);
+
+//
+    _h_tree_splitter->addWidget(_tree_screen);	// _h_tree_splitter->addWidget(_vtab_tree);
+    _h_tree_splitter->addWidget(_h_record_splitter);	//    _h_tree_splitter->addWidget(_vtab_record);
+
+	// v_left_splitter->addWidget(treeScreen);
+	// v_left_splitter->addWidget(recordTableScreen);
+    _h_tree_splitter->setCollapsible(0, true);
+    _h_tree_splitter->setCollapsible(1, false);
+	// v_left_splitter->setCollapsible(1, false);
+    _h_tree_splitter->setObjectName("h_tree_splitter");
+//
 // {
 // auto sizes = _h_right_splitter->sizes();
 // if(_globalparameters.entrance()->browsers().size() == 0) { // h_right_splitter->widget(0)->width()
@@ -709,25 +897,25 @@ void wn_t:: assembly(void){
 	// findSplitter->setCollapsible(1,false);        // Часть для поиска не должна смыкаться
 	// findSplitter->setObjectName("find_splitter");
 
-    setCentralWidget(_h_record_splitter);//    setCentralWidget(_h_tree_splitter);  // setCentralWidget(_h_splitter);	//setCentralWidget(findSplitter);
+    setCentralWidget(_h_tree_splitter);	// setCentralWidget(_h_record_splitter);// setCentralWidget(_h_splitter);	//setCentralWidget(findSplitter);
 
 
 
-    auto	sizes		= _h_tree_splitter->sizes();
-    auto	bar_width	= _vtab_tree->tabBar()->geometry().width();
+    auto	record_sizes	= _h_record_splitter->sizes();	// _h_tree_splitter->sizes();
+    auto	bar_width	= _vtab_record->minimumSizeHint().width();	// tabBar()->geometry().width();	// _vtab_tree->tabBar()->geometry().width();
 // auto ww = _h_left_splitter->widget(0)->width(); // 100 != 0 when sizes[0] == 0
-    if(bar_width >= sizes[0]){			// _h_left_splitter->widget(0)->width()
-	auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+    if(bar_width >= record_sizes[0]){			// _h_left_splitter->widget(0)->width()
+	auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// auto vtab_tree_min_width = _vtab_tree->minimumSizeHint().width();		// _tree_screen->minimumSizeHint().width();                 // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
 	// auto h = h_right_splitter->handle(1);
 	// h->move(lr + shw, h->rect().top());
 
-	auto	size_memory	= appconfig.h_tree_splitter_sizelist();
-	auto	sum		= size_memory[0] + size_memory[1];
-	sizes[0]	= size_memory[0] > vtab_tree_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_tree_min_width;
-	sizes[1]	= sum - sizes[0] > 0 ? sum - sizes[0] : sum * 85 / 100;					// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+	auto	size_memory	= appconfig.h_record_splitter_sizelist();// appconfig.h_tree_splitter_sizelist();
+	auto	sum		= size_memory[0] > 0 ? size_memory[0] : this->geometry().width() * 15 / 100 + size_memory[1] > 0 ? size_memory[1] : this->geometry().width() * 85 / 100;
+	record_sizes[0]	= size_memory[0] > vtab_record_min_width ? size_memory[0] < sum ? size_memory[0] : sum * 15 / 100 : vtab_record_min_width;
+	record_sizes[1]	= sum - record_sizes[0] > 0 ? sum - record_sizes[0] : sum * 85 / 100;					// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 //	_vtab_tree->setMaximumWidth(maximumWidth());
 //	_vtab_tree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);// h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
-	_h_tree_splitter->setSizes(sizes);	// emit _h_tree_splitter->splitterMoved(sizes[0], 1);
+	_h_record_splitter->setSizes(record_sizes);	// _h_tree_splitter->setSizes(tree_sizes);	// emit _h_tree_splitter->splitterMoved(sizes[0], 1);
 
 // auto s_0 = _vtab_tree->minimumSizeHint();   // (146, 146)
 // auto s_1 = _vtab_record->minimumSizeHint(); // (25, 146)
@@ -739,7 +927,7 @@ void wn_t:: assembly(void){
     }
 }
 
-void wn_t:: save_all_state(void){
+void wn_t::save_all_state(void){
 	// Сохранение данных в поле редактирования
     save_text_area();
 
@@ -754,35 +942,35 @@ void wn_t:: save_all_state(void){
     appconfig.sync();
 }
 
-HidableTabWidget *wn_t:: vtab_record(){return _vtab_record;}
+HidableTabWidget *wn_t::vtab_record(){return _vtab_record;}
 
-HidableTabWidget *wn_t:: vtab_tree(){return _vtab_tree;}
+// HidableTabWidget *wn_t::vtab_tree(){return _vtab_tree;}
 
-QMenu *wn_t:: file_menu(){return _filemenu;}
+QMenu *wn_t::file_menu(){return _filemenu;}
 
-QMenu *wn_t:: edit_menu(){return _editmenu;}
+QMenu *wn_t::edit_menu(){return _editmenu;}
 
-QMenu *wn_t:: view_menu(){return _viewmenu;}
+QMenu *wn_t::view_menu(){return _viewmenu;}
 
-browser::HistoryMenu *wn_t:: histry_menu(){return _histrymenu;}
+browser::HistoryMenu *wn_t::histry_menu(){return _histrymenu;}
 
-browser::BookmarksMenu *wn_t:: bookmark_menu(){return _bookmarkmenu;}
+browser::BookmarksMenu *wn_t::bookmark_menu(){return _bookmarkmenu;}
 
-QMenu *wn_t:: window_menu(){return _windowmenu;}
+QMenu *wn_t::window_menu(){return _windowmenu;}
 
-QMenu *wn_t:: tools_menu(){return _toolsmenu;}
+QMenu *wn_t::tools_menu(){return _toolsmenu;}
 
-QMenu *wn_t:: help_menu(){return _helpmenu;}
+QMenu *wn_t::help_menu(){return _helpmenu;}
 
-QSplitter *wn_t:: find_splitter(){return _v_find_splitter;}
+QSplitter *wn_t::find_splitter(){return _v_find_splitter;}
 
-QSplitter *wn_t:: h_record_splitter(){return _h_record_splitter;}
+QSplitter *wn_t::h_record_splitter(){return _h_record_splitter;}
 
-QSplitter *wn_t:: h_tree_splitter(){return _h_tree_splitter;}
+QSplitter *wn_t::h_tree_splitter(){return _h_tree_splitter;}
 
 
 // Слот, срабатывающий когда происходит выход из оконной системы
-void wn_t:: commit_data(QSessionManager &manager){
+void wn_t::commit_data(QSessionManager &manager){
     Q_UNUSED(manager);
     qDebug() << "Session manager send commit data signal.";
 
@@ -790,7 +978,7 @@ void wn_t:: commit_data(QSessionManager &manager){
 }
 
 // Восстанавливается геометрия окна и позиции основных разделителей
-void wn_t:: restore_geometry(void){
+void wn_t::restore_geometry(void){
     if(globalparameters.target_os() == "android")setWindowState(Qt::WindowMaximized);				// Для Андроида окно просто разворачивается на весь экран
     else{
 	QRect rect = appconfig.mainwin_geometry();
@@ -865,13 +1053,13 @@ void wn_t:: restore_geometry(void){
 	// _h_right_splitter->repaint();
 	// _h_left_splitter->repaint();
 
-    auto sizes = _h_tree_splitter->sizes();
+    auto record_sizes = _h_record_splitter->sizes();	// _h_tree_splitter->sizes();
 // QList<int> new_sizes;
-    auto	sum		= sizes[0] + sizes[1];
-    auto	vtab_tree_min	= _vtab_tree->minimumSizeHint();		// (146, 146) // _tree_screen->minimumSizeHint().width();
-    if(sizes[0] == sum){
-	sizes[0] = vtab_tree_min.width();sizes[1] = sum				// vtab_tree_max_width
-	    - sizes[0];
+    auto	sum		= record_sizes[0] + record_sizes[1];
+    auto	vtab_record_min	= _vtab_record->minimumSizeHint();	// _vtab_tree->minimumSizeHint();		// (146, 146) // _tree_screen->minimumSizeHint().width();
+    if(record_sizes[0] == sum){
+	record_sizes[0] = vtab_record_min.width();
+	record_sizes[1] = sum - record_sizes[0];			// vtab_tree_max_width
     }
 // for(auto sz : sizes) {
 // if(sz == 0) {
@@ -883,7 +1071,7 @@ void wn_t:: restore_geometry(void){
 // new_sizes << sz;
 // }
 
-    _h_tree_splitter->setSizes(sizes);		// new_sizes
+    _h_record_splitter->setSizes(record_sizes);	// _h_tree_splitter->setSizes(record_sizes);		// new_sizes
 
 	// _v_right_splitter->setSizes(appconfig.vspl_sizelist());
 	// _h_splitter->setSizes(appconfig.hspl_sizelist());
@@ -893,7 +1081,7 @@ void wn_t:: restore_geometry(void){
 }
 
 // Запоминается геометрия окна и позиции основных разделителей
-void wn_t:: save_geometry(void){
+void wn_t::save_geometry(void){
     qDebug() << "Save window geometry and splitter sizes";
 
     QRect geom(pos(), size());
@@ -916,7 +1104,7 @@ void wn_t:: save_geometry(void){
     if(appconfig.findscreen_show())appconfig.findsplitter_sizelist(_v_find_splitter->sizes());
 }
 
-void wn_t:: restore_tree_position(void){
+void wn_t::restore_tree_position(void){
 	// Путь к последнему выбранному в дереве элементу
     auto	pair				= appconfig.tree_position();
     QString	current_root_id			= pair.first;
@@ -928,7 +1116,7 @@ void wn_t:: restore_tree_position(void){
 }
 
 // save
-void wn_t:: save_tree_position(void){
+void wn_t::save_tree_position(void){
     auto _current_source_model = [&](){
 	    return _tree_screen->view()->source_model();
 	};
@@ -957,7 +1145,7 @@ void wn_t:: save_tree_position(void){
 }
 
 // set
-void wn_t:: set_tree_position(QString current_root_id, QStringList current_item_absolute_path){
+void wn_t::set_tree_position(QString current_root_id, QStringList current_item_absolute_path){
 	// _tree_screen->session_root_id(current_item_absolute_path.last());
 
     auto	source_model		= [&](){return _tree_screen->view()->source_model();};
@@ -1004,7 +1192,7 @@ void wn_t:: set_tree_position(QString current_root_id, QStringList current_item_
     }
 }
 
-bool wn_t:: is_tree_position_crypt(){
+bool wn_t::is_tree_position_crypt(){
     bool	result	= false;
     auto	pair	= appconfig.tree_position();
     QString	id	= pair.first;
@@ -1056,31 +1244,31 @@ bool wn_t:: is_tree_position_crypt(){
 // }
 
 
-void wn_t:: save_editor_cursor_position(void){
+void wn_t::save_editor_cursor_position(void){
     int n = _editor_screen->cursor_position();
 
     appconfig.editor_cursor_position(n);
 }
 
-void wn_t:: restore_editor_cursor_position(void){
+void wn_t::restore_editor_cursor_position(void){
     int n = appconfig.editor_cursor_position();
 
     _editor_screen->cursor_position(n);
 }
 
-void wn_t:: save_editor_scrollbar_position(void){
+void wn_t::save_editor_scrollbar_position(void){
     int n = _editor_screen->scrollbar_position();
 
     appconfig.editor_scroll_bar_position(n);
 }
 
-void wn_t:: restore_editor_scrollbar_position(void){
+void wn_t::restore_editor_scrollbar_position(void){
     int n = appconfig.editor_scroll_bar_position();
 
     _editor_screen->scrollbar_position(n);
 }
 
-void wn_t:: restore_find_in_base_visible(void){
+void wn_t::restore_find_in_base_visible(void){
     bool n = appconfig.findscreen_show();
 
 	// Определяется ссылка на виджет поиска
@@ -1090,7 +1278,7 @@ void wn_t:: restore_find_in_base_visible(void){
 }
 
 // Создание раздела меню File
-void wn_t:: init_file_menu(void){
+void wn_t::init_file_menu(void){
 	// Создание меню
 	// _filemenu = new QMenu(tr("&File"), this);
     _filemenu->clear();
@@ -1158,7 +1346,7 @@ void wn_t:: init_file_menu(void){
 }
 
 // Создание раздела меню Tools
-void wn_t:: init_tools_menu(void){
+void wn_t::init_tools_menu(void){
     _toolsmenu->clear();
 	// Создание меню
 	// _toolsmenu = new QMenu(tr("&Tools"), this);
@@ -1187,7 +1375,7 @@ void wn_t:: init_tools_menu(void){
 }
 
 // Заполнение подраздела меню Preferences
-void wn_t:: init_preferences_menu(QMenu *menu){
+void wn_t::init_preferences_menu(QMenu *menu){
     QAction *a;
 
     a = new QAction(tr("Main"), this);
@@ -1212,7 +1400,7 @@ void wn_t:: init_preferences_menu(QMenu *menu){
 }
 
 // Создание раздела меню Help
-void wn_t:: init_help_menu(void){
+void wn_t::init_help_menu(void){
     _helpmenu->clear();
 	// Создание меню
 	// _helpmenu = new QMenu(tr("&Help"), this);
@@ -1230,19 +1418,19 @@ void wn_t:: init_help_menu(void){
 }
 
 // Новая коллекция
-void wn_t:: file_new(void){}
+void wn_t::file_new(void){}
 
 // Открыть коллекцию
-void wn_t:: file_open(void){}
+void wn_t::file_open(void){}
 
 // Сохранить текущую статью
-bool wn_t:: file_save(void){return true;}
+bool wn_t::file_save(void){return true;}
 
 // Сохранить текущую статью как файл
-bool wn_t:: file_save_as(void){return true;}
+bool wn_t::file_save_as(void){return true;}
 
 // Напечатать текущую статью
-void wn_t:: file_print(void){
+void wn_t::file_print(void){
 #ifndef QT_NO_PRINTER
     QPrinter printer(QPrinter::HighResolution);
     printer.setFullPage(true);
@@ -1255,7 +1443,7 @@ void wn_t:: file_print(void){
 }
 
 // Предпросмотр печати текущей статьи
-void wn_t:: file_print_preview(void){
+void wn_t::file_print_preview(void){
     PrintPreview *preview = new PrintPreview(_editor_screen->textarea_document(), this);
 
     preview->setModal(true);
@@ -1264,7 +1452,7 @@ void wn_t:: file_print_preview(void){
 }
 
 // Вывод текущей статьи в PDF файл
-void wn_t:: file_print_pdf(void){
+void wn_t::file_print_pdf(void){
 #ifndef QT_NO_PRINTER
     QString fileName = QFileDialog::getSaveFileName(this, "Export PDF"
 						   , QString(), "*.pdf");
@@ -1279,7 +1467,7 @@ void wn_t:: file_print_pdf(void){
 }
 
 // Слот - Нормальный выход из программы
-void wn_t:: application_exit(void){
+void wn_t::application_exit(void){
     save_all_state();
 	// Если в конфиге настроено, что нужно синхронизироваться при выходе
 	// И задана команда синхронизации
@@ -1291,7 +1479,7 @@ void wn_t:: application_exit(void){
 }
 
 // Быстрый выход из программы, без возможности синхронизации
-void wn_t:: application_fast_exit(void){
+void wn_t::application_fast_exit(void){
     save_all_state();
 
 	// Запуск выхода из программы
@@ -1299,14 +1487,14 @@ void wn_t:: application_fast_exit(void){
     emit close();
 }
 
-void wn_t:: tools_find(void){
+void wn_t::tools_find(void){
 	// Определяется ссылка на виджет поиска
     FindScreen *findScreenRel = globalparameters.find_screen();			// find_object<FindScreen>(find_screen_singleton_name);
     if(! (findScreenRel->isVisible()))findScreenRel->show();
     else findScreenRel->hide();
 }
 
-void wn_t:: editor_switch(void){
+void wn_t::editor_switch(void){
     MetaEditor *editorScreen = globalparameters.meta_editor();			// find_object<MetaEditor>(meta_editor_singleton_name);
     if(! (editorScreen->isVisible())){
 	editorScreen->show();
@@ -1317,7 +1505,7 @@ void wn_t:: editor_switch(void){
     }
 }
 
-void wn_t:: tools_preferences(void){
+void wn_t::tools_preferences(void){
 	// Создается окно настроек, после выхода из этой функции окно удалится
     AppConfigDialog dialog(_entrance->activated_browser()->record_screen()->record_controller(), "");
 
@@ -1328,7 +1516,7 @@ void wn_t:: tools_preferences(void){
 // Флаг показывает, что нужно сделать
 // true - распахнуть область отводимую редактору
 // false - сделать область, отводимую редактору, обычной
-void wn_t:: on_expand_edit_area(bool flag){
+void wn_t::on_expand_edit_area(bool flag){
 	// static QSize entrance_size = globalparameters.entrance()->size();
 	// static QSize tree_size = globalparameters.entrance()->size();
 	// static QSize recordtable_size = globalparameters.entrance()->size();
@@ -1354,7 +1542,7 @@ void wn_t:: on_expand_edit_area(bool flag){
 	// _recordtable_hidden = true;
 	// }
 
-	emit _vtab_tree->_hide_action->setChecked(true);
+	emit _vtab_record->_hide_action->setChecked(true);	// emit _vtab_tree->_hide_action->setChecked(true);
 	// QTabWidget *tab = globalparameters.vtab();
 	// tab->currentWidget()->hide();
 
@@ -1379,12 +1567,12 @@ void wn_t:: on_expand_edit_area(bool flag){
 	// }
 
 	// emit _vtabwidget->hideAction.toggle();
-	emit _vtab_tree->_hide_action->setChecked(false);
+	emit _vtab_record->_hide_action->setChecked(false);	// emit _vtab_tree->_hide_action->setChecked(false);
 	// globalparameters.vtab()->resize(vtab_size); // show();
     }
 }
 
-void wn_t:: on_click_help_about_mytetra(void){
+void wn_t::on_click_help_about_mytetra(void){
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
 
     QString	infoProgramName;
@@ -1436,13 +1624,13 @@ void wn_t:: on_click_help_about_mytetra(void){
 		 , info);
 }
 
-void wn_t:: on_click_help_about_qt(void){
+void wn_t::on_click_help_about_qt(void){
     QMessageBox *msgBox = new QMessageBox(this);
 
     msgBox->aboutQt(this);
 }
 
-void wn_t:: synchronization(void){
+void wn_t::synchronization(void){
 	// Сохраняются данные в поле редактирования
     save_text_area();
 
@@ -1492,7 +1680,7 @@ void wn_t:: synchronization(void){
     walkhistory.set_drop(false);
 }
 
-void wn_t:: setup_icon_actions(void){
+void wn_t::setup_icon_actions(void){
     _action_tray_restore = new QAction(tr("&Restore window"), this);
     connect(_action_tray_restore, &QAction::triggered, this, &wn_t::showNormal);
 
@@ -1506,7 +1694,7 @@ void wn_t:: setup_icon_actions(void){
     connect(_action_tray_quit, &QAction::triggered, this, &wn_t::application_exit);
 }
 
-void wn_t:: create_tray_icon(void){
+void wn_t::create_tray_icon(void){
     _tray_icon_menu = new QMenu(this);
     _tray_icon_menu->addAction(_action_tray_restore);
     _tray_icon_menu->addAction(_action_tray_maximize);
@@ -1518,7 +1706,7 @@ void wn_t:: create_tray_icon(void){
     _tray_icon->setContextMenu(_tray_icon_menu);
 }
 
-void wn_t:: set_icon(void){
+void wn_t::set_icon(void){
     connect(_tray_icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason))
 	   , this, SLOT(icon_activated(QSystemTrayIcon::ActivationReason)));
 
@@ -1529,7 +1717,7 @@ void wn_t:: set_icon(void){
 	// tray_icon->setToolTip(iconComboBox->itemText(index));
 }
 
-void wn_t:: icon_activated(QSystemTrayIcon::ActivationReason reason){
+void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason){
     if(QSystemTrayIcon::isSystemTrayAvailable() == false)return;
     switch(reason){
     case QSystemTrayIcon::Trigger:
@@ -1547,7 +1735,7 @@ void wn_t:: icon_activated(QSystemTrayIcon::ActivationReason reason){
 }
 
 // Слот закрытия окна
-void wn_t:: closeEvent(QCloseEvent *event){
+void wn_t::closeEvent(QCloseEvent *event){
     if(_enable_real_close == false){
 	if(QSystemTrayIcon::isSystemTrayAvailable() == false)return;
 	// При приходе события закрыть окно, событие игнорируется
@@ -1560,7 +1748,7 @@ void wn_t:: closeEvent(QCloseEvent *event){
     }
 }
 
-bool wn_t:: eventFilter(QObject *o, QEvent *e){
+bool wn_t::eventFilter(QObject *o, QEvent *e){
     Q_UNUSED(o);
 	// qDebug() << "Event: " << e->type();
 	// Отлавливание потери фокуса
@@ -1572,7 +1760,7 @@ bool wn_t:: eventFilter(QObject *o, QEvent *e){
     return false;		// Продолжать оработку событий дальше
 }
 
-void wn_t:: go_walk_history_previous(void){
+void wn_t::go_walk_history_previous(void){
     _editor_screen->save_textarea();
 
     id_value id = id_value(_editor_screen->misc_field("id"));
@@ -1585,7 +1773,7 @@ void wn_t:: go_walk_history_previous(void){
     go_walk_history();
 }
 
-void wn_t:: go_walk_history_next(void){
+void wn_t::go_walk_history_next(void){
     _editor_screen->save_textarea();
 
     id_value id = id_value(_editor_screen->misc_field("id"));
@@ -1598,7 +1786,7 @@ void wn_t:: go_walk_history_next(void){
     go_walk_history();
 }
 
-void wn_t:: go_walk_history(void){
+void wn_t::go_walk_history(void){
 	// QString tree_root_id = walkhistory.tree_root_id();
 
 	// if(_tree_screen->know_root()->root_item()->id() != tree_root_id) {
@@ -1653,7 +1841,7 @@ void wn_t:: go_walk_history(void){
 // Метод, вызываемый из всех точек интерфейса, в которых происходит
 // переход к другой записи. Метод вызывается до перехода, чтобы сохранить
 // текст редактируемой записи
-void wn_t:: save_text_area(void){
+void wn_t::save_text_area(void){
     id_value id = id_value(_editor_screen->misc_field("id"));
 
     qDebug() << "MainWindow::saveTextarea() : id :" << id;
@@ -1666,7 +1854,7 @@ void wn_t:: save_text_area(void){
 }
 
 // Слот, обрабатывающий смену фокуса на виджетах
-void wn_t:: on_focus_changed(QWidget *widgetFrom, QWidget *widgetTo){
+void wn_t::on_focus_changed(QWidget *widgetFrom, QWidget *widgetTo){
     Q_UNUSED(widgetFrom);
     if(widgetTo == nullptr)return;
     qDebug() << "MainWindow::onFocusChanged() to " << widgetTo->objectName();

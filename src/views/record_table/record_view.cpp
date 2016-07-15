@@ -359,7 +359,7 @@ rv_t::rv_t(rs_t *record_screen, rctl_t *record_controller)
 
 			// RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 
-		    _context_menu->addAction(_record_screen->_tree_show);
+		    _context_menu->addAction(_record_screen->_record_hide);
 		    _context_menu->addAction(_record_screen->_pin);
 		    _context_menu->addAction(_record_screen->_addnew_to_end);
 		    _context_menu->addAction(_record_screen->_edit_field);

@@ -193,10 +193,10 @@ namespace browser {
 	    QByteArray		save_state(bool withTabs = true) const;
 	    bool		restore_state(const QByteArray &state);
 //	    Q_INVOKABLE
-	    void		runScriptOnOpenViews(const QString &);
-	    void		setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
-	    QString		&lastsearch();
-	    const QString	&lastsearch() const;
+	    void			runScriptOnOpenViews(const QString &);
+	    void			setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
+	    QString			&lastsearch();
+	    const QString		&lastsearch() const;
 
 	    void				activateWindow();
 	    bool				is_under_construction() const;

@@ -482,15 +482,15 @@ QTabWidget *GlobalParameters::vtab_record()
 }
 
 
-void GlobalParameters::vtab_tree(QTabWidget *point)
-{
-    _vtab_tree = point;
-}
+//void GlobalParameters::vtab_tree(QTabWidget *point)
+//{
+//    _vtab_tree = point;
+//}
 
-QTabWidget *GlobalParameters::vtab_tree()
-{
-    return _vtab_tree;
-}
+//QTabWidget *GlobalParameters::vtab_tree()
+//{
+//    return _vtab_tree;
+//}
 
 browser::DownloadManager *GlobalParameters::download_manager()
 {

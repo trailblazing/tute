@@ -10,7 +10,7 @@
 #include "views/browser/entrance.h"
 
 extern GlobalParameters globalparameters;
-const char *custom_hidabletabwidget_style =
+const char		*custom_hidabletabwidget_style =
     "QTabWidget::pane {"
 //    "width: 250px;"	// content space, can not change easily if set here
     "border: 0 px;"
@@ -74,11 +74,11 @@ const char *custom_hidabletabwidget_style =
 ;
 
 W_OBJECT_IMPL(HidableTabWidget)
-HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
-    QTabWidget(parent)
-    , _hide_action(new QAction(tr("▾"), this))
-    , _layout(new QStackedLayout(this))
-    , _style(style_source){
+HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent)
+    : QTabWidget(parent)
+      , _hide_action(new QAction(tr("▾"), this))
+      , _layout(new QStackedLayout(this))
+      , _style(style_source){
 //    , _delegate_tab(_delegate_tab)
     _hide_action->setCheckable(true);
     _hide_action->setToolTip("Hide Panels");
@@ -89,13 +89,13 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
 
 
     setWindowFlags(	// Qt::Window |
-        Qt::FramelessWindowHint
-        // |Qt::Popup
-        | Qt::CustomizeWindowHint
+	Qt::FramelessWindowHint
+	// |Qt::Popup
+	| Qt::CustomizeWindowHint
 //        | Qt::SplashScreen   // http://www.qtforum.org/article/20174/how-to-create-borderless-windows-with-no-title-bar.html?s=86e2c5a6509f28a482adbb7d9f3654bb2058a301#post75829
-        // | Qt::DockWidgetArea::NoDockWidgetArea
-        | Qt::MaximizeUsingFullscreenGeometryHint
-        );
+	// | Qt::DockWidgetArea::NoDockWidgetArea
+	| Qt::MaximizeUsingFullscreenGeometryHint
+	);
 
     setAutoFillBackground(true);
     adjustSize();
@@ -103,7 +103,7 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
 
     setTabPosition(TabPosition::West);		// South
     setTabShape(TabShape::Triangular);
-        //    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
+	//    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
 //    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
 //    setStyleSheet("QTabWidget::pane { border: 0 px; }");
 
@@ -143,31 +143,23 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent) :
 
 void HidableTabWidget::onHideAction(bool checked){
     if(checked){
-        if(this->tabPosition() == North || tabPosition() == South){	// , West, East
-            this->setMaximumHeight(this->tabBar()->height());
-        }else{
-            this->setMaximumWidth(this->tabBar()->width());
-        }
-        this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
+	if(this->tabPosition() == North || tabPosition() == South)	// , West, East
+		this->setMaximumHeight(this->tabBar()->height());
+	else this->setMaximumWidth(this->tabBar()->width());
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
     }else{
-        if(this->tabPosition() == North || tabPosition() == South){	// , West, East
-            this->setMaximumHeight(
-                std::numeric_limits<int>::max()	// 100000
-                );	// just a very big number
-                        //            setContentsMargins(0, 0, 0, 0);
-        }else{
-            this->setMaximumWidth(
-                std::numeric_limits<int>::max()	// 100000
-                );	// just a very big number
-                        //            setContentsMargins(0, 0, 0, 0);
-        }
-        this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	if(this->tabPosition() == North || tabPosition() == South){	// , West, East
+	    this->setMaximumHeight(std::numeric_limits<int>::max());	// 100000// just a very big number
+		//            setContentsMargins(0, 0, 0, 0);
+	}else{
+	    this->setMaximumWidth(std::numeric_limits<int>::max());	// 100000// just a very big number
+		//            setContentsMargins(0, 0, 0, 0);
+	}
+	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     }
 }
 
-void HidableTabWidget::onTabBarClicked(){
-    _hide_action->setChecked(false);
-}
+void HidableTabWidget::onTabBarClicked(){_hide_action->setChecked(false);}
 
 // HidableTabWidget *HidableTabWidget::delegate_tab(){
 //    HidableTabWidget *r = nullptr;
@@ -175,4 +167,8 @@ void HidableTabWidget::onTabBarClicked(){
 //    return r;
 // }
 
+bool HidableTabWidget::eventFilter(QObject *obj, QEvent *event){
+    if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton)emit tabBarDoubleClicked(indexOf(childAt(static_cast<QMouseEvent *>(event)->pos())));
+    return QTabWidget::eventFilter(obj, event);
+}
 

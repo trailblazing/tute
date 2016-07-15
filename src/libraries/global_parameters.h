@@ -70,8 +70,8 @@ class GlobalParameters : public QObject {
 	void		vtab_record(QTabWidget *point);
 	QTabWidget	*vtab_record();
 
-	void		vtab_tree(QTabWidget *point);
-	QTabWidget	*vtab_tree();
+//	void		vtab_tree(QTabWidget *point);
+//	QTabWidget	*vtab_tree();
 
 	void	tree_screen(ts_t *point);
 	ts_t	*tree_screen();

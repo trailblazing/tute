@@ -279,8 +279,7 @@ void AppConfig:: splitter_sizelist(QString name, QList<int> list){
 
 std::pair<QString, QStringList> AppConfig:: tree_position(void) const {
     return std::make_pair(
-	_app_conf->value("tree_intercept", global_root_id).toString()
-			 , _app_conf->value("tree_position", "1").toString().split(",")
+	_app_conf->value("tree_intercept", global_root_id).toString(), _app_conf->value("tree_position", "1").toString().split(",")
 	);
 }
 

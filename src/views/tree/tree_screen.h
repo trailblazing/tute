@@ -344,6 +344,7 @@ class ts_t
 	//    friend class browser::WebPage;
 	// friend void browser::WebPage::onUrlChanged(const QUrl &url);
 	friend class tv_t;
+	friend class wn_t;
 };
 
 //// Вспомогательная функция, используется при добавлении ветки
