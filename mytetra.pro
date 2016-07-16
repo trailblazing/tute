@@ -56,6 +56,8 @@ CONFIG  +=  c++14
 CONFIG  +=  gnu++14
 CONFIG  +=  staticlib
 
+#QMAKE_CXXFLAGS += /MP
+
 greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets \
                                             printsupport
 

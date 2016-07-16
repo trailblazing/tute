@@ -494,7 +494,7 @@ QTabWidget *GlobalParameters::vtab_record()
 
 browser::DownloadManager *GlobalParameters::download_manager()
 {
-    _vtab_tree->setCurrentWidget(static_cast<QWidget *>(_download_manager));
+    _vtab_record->setCurrentWidget(static_cast<QWidget *>(_download_manager));
     return _download_manager;
 }
 

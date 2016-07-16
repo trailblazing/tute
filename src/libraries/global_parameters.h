@@ -138,7 +138,7 @@ class GlobalParameters : public QObject {
 	QSplitter			*_h_record_splitter;
 	QSplitter			*_v_right_splitter;
 	QTabWidget			*_vtab_record;
-	QTabWidget			*_vtab_tree;
+//	QTabWidget			*_vtab_tree;
 	wn_t				*_mainwindow;
 	browser::DownloadManager	*_download_manager;
 	QString				_main_program_file;
