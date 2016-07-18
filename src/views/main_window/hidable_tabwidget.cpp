@@ -10,6 +10,7 @@
 #include "views/browser/entrance.h"
 
 extern GlobalParameters globalparameters;
+extern const char	*record_screen_multi_instance_name;
 const char		*custom_hidabletabwidget_style =
     "QTabWidget::pane {"
 //    "width: 250px;"	// content space, can not change easily if set here
@@ -103,6 +104,20 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent)
 
     setTabPosition(TabPosition::West);		// South
     setTabShape(TabShape::Triangular);
+    setTabsClosable(true);
+    connect(this, &::HidableTabWidget::tabCloseRequested, [&](int index){
+	    auto w = widget(index);
+	    this->removeTab(index);
+	    if(w->objectName() == record_screen_multi_instance_name){
+		auto browser = dynamic_cast<rs_t *>(w)->browser();
+		if(browser)browser->close();
+	    }else{
+		w->close();
+		w->deleteLater();
+	    }
+	    w = nullptr;
+	});
+    setUsesScrollButtons(true);
 	//    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
 //    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
 //    setStyleSheet("QTabWidget::pane { border: 0 px; }");

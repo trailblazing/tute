@@ -218,7 +218,7 @@ class wn_t
 	FindScreen			*_find_screen;
 	MetaEditor			*_editor_screen;
 	browser::Entrance		*_entrance;
-	browser::DownloadManager	*_download;
+//	browser::DownloadManager	*_download;
 
 	QStatusBar		*_statusbar;
 	WindowSwitcher		*_switcher;

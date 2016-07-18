@@ -390,65 +390,65 @@ namespace browser {
 
 	_binder = [&]()->boost::intrusive_ptr<::Binder> {
 	    if(item->is_lite())item->to_fat();
-	    if(item->binder()){	// !_item->binder() ||
-//                if(! item->binder()->integrity_internal()){
-		// 6
+//	    if(item->binder()){	// !_item->binder() ||
+////                if(! item->binder()->integrity_internal()){
+//		// 6
 
 
-		////            //            auto state = _item->binder()->state();
+//		////            //            auto state = _item->binder()->state();
 
-		////            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
+//		////            if(_item->binder()->item_link() != _item || _item->binder()->page_link() != this) {
 
-		////                assert(!_item->binder()->page_link()->binder());
-		////                _item->binder()->page_link()->item_break(_item->binder()->item_link());
+//		////                assert(!_item->binder()->page_link()->binder());
+//		////                _item->binder()->page_link()->item_break(_item->binder()->item_link());
 
-		////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-		////                //                assert(_item->record_binder());
-		////                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
-		////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
-		////                //                assert(!_item->record_binder());
+//		////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+//		////                //                assert(_item->record_binder());
+//		////                //                _item->record_binder(nullptr);  // work    // _item->record_binder().reset();  // just rest the copy
+//		////                //                assert(!_item->record_binder()->bounded_page()->record_binder());
+//		////                //                assert(!_item->record_binder());
 
-		////                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-		////                assert(_item->binder()->page_link()->binder());
-		////                assert(_item->binder());
-		////            }
-		// } else {
-
-
-
-
-		item->binder_reset();		// item->binder().reset(); //->break_page();
+//		////                _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+//		////                assert(_item->binder()->page_link()->binder());
+//		////                assert(_item->binder());
+//		////            }
+//		// } else {
 
 
 
 
-
-		// if(!_item->binder()->page_link()) {
-		// _item->binder()->page_link() = this;
-		// _item->binder()->item_link() = _item;
-		// assert(_item->binder()->page_link());
-		// assert(_item->binder()->item_link());
-
-		////                if(!_binder)  { // 0x0000000000009?
-		////                _binder = _item->binder();
-		////                }
-		// }
+	    item->binder_reset();		// item->binder().reset(); //->break_page();
 
 
 
 
 
-		// item_registered_setup_binder(_item);
+//		// if(!_item->binder()->page_link()) {
+//		// _item->binder()->page_link() = this;
+//		// _item->binder()->item_link() = _item;
+//		// assert(_item->binder()->page_link());
+//		// assert(_item->binder()->item_link());
 
-		// _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
-		// _binder = _item->binder();    // from return
-//                }
-	    }
-		// else {
-		// item_bind(_item);
-		// }
+//		////                if(!_binder)  { // 0x0000000000009?
+//		////                _binder = _item->binder();
+//		////                }
+//		// }
 
-		// item_bind(item);  // you can't modify _binder before it's initialize time!!!
+
+
+
+
+//		// item_registered_setup_binder(_item);
+
+//		// _item->binder(new TreeItem::coupler_delegation(std::make_shared<WebPage::Coupler>(this, _item)));
+//		// _binder = _item->binder();    // from return
+////                }
+//	    }
+//		// else {
+//		// item_bind(_item);
+//		// }
+
+//		// item_bind(item);  // you can't modify _binder before it's initialize time!!!
 
 
 
@@ -505,11 +505,9 @@ namespace browser {
 
 	connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::titleChanged, this, &WebPage::onTitleChanged);
 	connect(static_cast<QWebEnginePage *const>(this), &QWebEnginePage::urlChanged, this, &WebPage::onUrlChanged);
-	connect(this, &WebPage::close_requested, &WebPage::binder_reset);
+	connect(this, &WebPage::close_requested, this, &WebPage::binder_reset);
 
-	connect(this, &WebPage::linkHovered, [&](const QString &url) mutable {
-		_hovered_url = url;
-	    });
+	connect(this, &WebPage::linkHovered, [&](const QString &url) mutable {_hovered_url = url;});
 	// if(record)QWebEnginePage::load(record->getNaturalFieldSource("url"));
 
 	// if(url != nullptr) {
@@ -523,11 +521,12 @@ namespace browser {
     }
 
     WebPage::~WebPage(){
-	// break_page_shared_items();   // move to on_close_requested()
+//	if(_tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b == _binder;}))record_view_remove(host());
+//	if(_binder)binder_reset();	// break_page_shared_items();   // move to on_close_requested()
     }
 
-    void WebPage::update_record_view(boost::intrusive_ptr<TreeItem> item){
-	_record_controller->synchronize_record_view(item);
+    void WebPage::record_view_synchronize(boost::intrusive_ptr<TreeItem> host_){
+	_record_controller->synchronize_record_view(host_);
 
 
 	////        auto tab_manager = view()->tabmanager();
@@ -544,19 +543,317 @@ namespace browser {
 	// }
     }
 
-    Browser *WebPage::browser(){
-	// QObject *w = this->parent();
+	// this will delete record for ever from database if you use real tree_item as source model of record_view
+    void WebPage::record_view_remove(boost::intrusive_ptr<TreeItem> host_){
+	if(_tabmanager && _tabmanager->count() > 0){
+	    RecordModel *source_model = _record_controller->source_model();	// tab_manager->source_model();
+	    assert(host_);
+		// assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
+	    if(source_model->item(id_value(host_->field<id_type>())))_record_controller->remove(host_->id());		// && record->unique_page() == this
+	}
+    }
 
-	// while(w) {  // ? why
-	// if(DockedWindow *mw = qobject_cast<DockedWindow *>(w))
-	// return mw;
+    void WebPage::record_info_update(const QUrl &url, const QString &title){
+	// Q_UNUSED(make_current)
+	////if(globalparameters.getRecordTableScreen()->getRecordTableController()) {
+	////        RecordTableController *_record_ontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
+	////            //Record *_record = nullptr;
+	////            //RecordTableModel *recordtablemodel = _record_ontroller->getRecordTableModel();
+	// RecordTableView *recordtableview = _record_ontroller->getView();
+	////            //RecordTableData *recordtabledata = recordtablemodel->getRecordTableData();
+	////        if(!_record) {
+	////            //            Record *record = nullptr;
+	////            RecordTableData *recordtabledata = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
+	////            if(recordtabledata)_record = recordtabledata->getRecordByUrl(url());
+	////        }
+	////        Record *record = this->record();
+	if(_binder->host()){
+		// _record->active_immediately(true);
 
-	// w = w->parent();
+		////            WebView *view = record->page()->view();
+		////            view->tabmanager()->setCurrentWidget(view);
+		////            view->show();
+
+		////                //MetaEditor *metaeditor = ::globalparameters.getMetaEditor();
+		// QModelIndex proxyindex = _record_ontroller->convertIdToProxyIndex(_record->getNaturalFieldSource("id"));
+		////                //QModelIndex sourceindex = _record_ontroller->convertIdToSourceIndex(_page->record()->getField("id"));
+		// int position = _record_ontroller->convertProxyIndexToPos(proxyindex);
+		////                // QString page_title = webPage()->title();    // same as this->title()
+
+
+		// Выясняется указатель на объект редактирования текста записи
+		// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+
+		// Выясняется ссылка на таблицу конечных данных
+		// RecordTableData *table = recordSourceModel->getTableData();
+
+	    bool is_current = (_view == _tabmanager->currentWebView());
+
+	    int index = _tabmanager->webViewIndex(_view);
+	    _tabmanager->setTabToolTip(index, title);
+
+	    bool data_changed = false;
+	    if(  title != ""
+	      && title != _binder->host()->field<name_type>()
+		// && !QUrl(title).isValid()
+		){
+		_binder->host()->field<name_type>(title);	// "name",
+		data_changed = true;
+
+		// metaeditor->setName(title);
+		auto _mainwindow = globalparameters.mainwindow();
+		if(! _mainwindow->windowTitle().contains(title))_mainwindow->setWindowTitle(QString(application_name) + " : " + title);	// table->setWorkPos(pos);
+		if(is_current)_editor_screen->name(title);
+	    }
+	    if(url.toString() != ""){
+		_binder->host()->field<url_type>(url.toString());	// "url",
+		data_changed = true;
+		if(is_current)_editor_screen->url(url.toString());
+	    }
+	    if(data_changed){
+		record_view_synchronize(_binder->host());
+		auto source_model = [&](){return _tree_screen->view()->source_model();};
+		source_model()->emit_datachanged_signal(source_model()->index(_binder->host()));
+	    }
+	    if(_editor_screen->item() != _binder->host() && is_current)metaeditor_sychronize();	// metaeditor->bind(_record);
+
+		// metaeditor->setUrl(url.toString());
+
+		// _page->load(url);
+
+		// if(recordtableview) {
+
+
+		// recordtableview->update();//repaint();    // does not work
+		// recordtableview->adjustSize();    // does not work, size weird
+
+		// if(make_current && recordtableview) {
+		// recordtableview->setSelectionToPos(position); // work
+
+	    _view->setFocus();	// make upate validate
+
+		// auto _tree_screen = globalparameters.tree_screen();
+	    auto	it		= _binder->host();
+	    auto	tree_view	= _tree_screen->view();
+	    if(is_current){	// globalparameters.mainwindow()
+		if(tree_view->current_item() != it)tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
+		if(_record_controller->view()->current_item() != it)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(it));	// IdType(_binder->item()->field("id"))
+	    }
+		// if(_record->_active_request) {
+		// if(_record->_openlinkinnewwindow == 1) {
+
+		// }
+
+		// DockedWindow *win = view()->tabmanager()->window();
+
+		// if(!win->isActiveWindow() || !win->isVisible()) {
+		// win->raise();
+		// win->activateWindow();
+		// }
+
+		// view()->tabmanager()->setCurrentWidget(view());
+		// view()->show();
+		// }
+
+
+
+
+
+
+		// globalParameters.getRecordTableScreen()->update();//repaint();    // does not work
+		// emit recordtableview->clicked(proxyindex);  // recordtableview->clickToRecord(proxyindex);    // does not work
+		// _record_ontroller->clickToRecord(proxyindex);    // does not work
+		// recordtablemodel->dataChanged();
+		// }
+
+		// }
+
+		// int row = sourceindex.row();
+		// int column = sourceindex.column();
+		// int _row = proxyindex.row();
+		// int _column = proxyindex.column();
+		// qDebug() << "qDebug()\t" << row << "\t" << column << "\t" << _row << "\t" << _column << "\t" << "\n";    // does not work?
+
+		// std::cout << "std::cout\t" << row << "\t" << column << "\t" << _row << "\t" << _column << "\t" << "\n";
+		// _record_ontroller->getRecordTableModel()->setData(sourceindex, QVariant::fromValue(this->title()), Qt::EditRole);
+
+		// _record_ontroller->editField(position
+		// , _record->getNaturalFieldSource("name")
+		// , _record->getNaturalFieldSource("author")
+		// , _record->getNaturalFieldSource("url")
+		// , _record->getNaturalFieldSource("tags")
+		// );    // does not work
+	}
+	// WebView *view = record->page()->view();
+
+	// if(view->hasFocus()) {
+	// view->tabmanager()->setCurrentWidget(view);
+	// view->show();
+	// }
 
 	// }
-	return _browser;
-	// return _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
     }
+
+    void WebPage::metaeditor_sychronize(){
+	boost::intrusive_ptr<TreeItem> current_item = _binder->host();
+	// boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
+	assert(current_item);
+	// assert(record == view()->tabmanager()->currentWebView()->page()->current_record()); // may be in backend?
+
+	// Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
+
+	// Выясняется указатель на объект редактирования текста записи
+	// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
+	assert(_editor_screen);
+	// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
+	// try {
+	// record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(current_item), current_item);
+	// } catch(std::exception &) {}
+	// if(record_index) {
+	if(_editor_screen->item() != current_item)_editor_screen->bind(current_item);
+	// int pos = indexOf(currentWebView());
+	// Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
+	// std::shared_ptr<TableData> table = std::make_shared<TableData>();   // _source_model->table_data_internal();
+
+	// for(int i = 0; i < count(); i++) {
+	// table->insert_new_record(table->work_pos(), static_cast<WebView *>(widget(i))->page()->current_record());
+	// }
+
+	// В таблице конечных данных запоминается какая запись была выбрана
+	// чтобы затем при выборе этой же подветки засветка автоматически
+	// установилась на последнюю рабочую запись
+	// table->work_pos(pos);
+
+
+	// Устанавливается функция обратного вызова для записи данных
+	_editor_screen->save_callback(_editor_screen->editor_save_callback);
+
+	// Сохраняется текст и картинки в окне редактирования
+	// find_object<MainWindow>("mainwindow")
+	globalparameters.mainwindow()->save_text_area();
+	// Для новой выбраной записи выясняется директория и основной файл
+	if(current_item->field<id_type>() == ""	// || current_item->field("url") == Browser::_defaulthome
+	    )current_item->field<id_type>(get_unical_id());	// "id",
+	if(current_item->field<url_type>() == "")current_item->field<dir_type>(current_item->id());	// "dir",
+	if(current_item->field<file_type>() == "")current_item->field<file_type>("text.html");	// "file",
+	QString current_dir	= current_item->field<dir_type>();	// table->field(pos, "dir");
+	QString current_file	= current_item->field<file_type>();		// table->field(pos, "file");
+	QString full_dir	= appconfig.tetra_dir() + "/base/" + current_dir;
+	QString full_file_name	= full_dir + "/" + current_file;
+	qDebug() << " File " << full_file_name << "\n";
+	// If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
+	if(  _editor_screen->work_directory() == full_dir
+	  && _editor_screen->file_name() == current_file
+	    ){
+	    globalparameters.window_switcher()->switchFromRecordtableToRecord();
+
+	    return;
+	}
+	// Перед открытием редактора происходит попытка получения текста записи
+	// Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
+	// Before the opening of the editor it attempts to get the text records
+	// This call will create a text file with the record if it is not already created (think remake)
+	_editor_screen->save_textarea();	// table->text(pos);    // ?
+
+	// едактору задаются имя файла и директории
+	// И дается команда загрузки файла
+	_editor_screen->work_directory(full_dir);
+	_editor_screen->file_name(current_file);
+
+	// Если идет работа с зашифрованной записью
+	// И если имя директории или имя файла пусты, то это означает что
+	// запись не была расшифрована, и редактор должен просто показывать пустой текст
+	// ничего не сохранять и не считывать
+	qDebug() << "RecordTableView::onClickToRecord() : id " << current_item->field<id_type>();	// table->field(pos, "id");
+	qDebug() << "RecordTableView::onClickToRecord() : name " << current_item->field<name_type>();	// table->field(pos, "name");
+	qDebug() << "RecordTableView::onClickToRecord() : crypt " << current_item->field<crypt_type>();	// table->field(pos, boost::mpl::c_str < crypt_type > ::value);
+	if(current_item->field<crypt_type>()	// table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+	    == "1")
+		if(full_dir.length() == 0 || current_file.length() == 0)_editor_screen->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
+	// В редактор заносится информация, идет ли работа с зашифрованным текстом
+	_editor_screen->misc_field(boost::mpl::c_str < crypt_type >::value, current_item->field<crypt_type>());				// table->field(pos, boost::mpl::c_str < crypt_type > ::value)
+
+
+	// В редакторе устанавливается функция обратного вызова для чтения данных
+	_editor_screen->load_callback(_editor_screen->editor_load_callback);
+
+	_editor_screen->load_textarea();
+	// edView->set_textarea(table->get_text(index.row()));
+
+	// Заполняются прочие инфо-поля
+	_editor_screen->pin(current_item->field<pin_type>());		// table->field(pos, "pin")
+
+	_editor_screen->name(current_item->field<name_type>());		// table->field(pos, "name")
+
+	_editor_screen->author(current_item->field<author_type>());	// table->field(pos, "author")
+
+	_editor_screen->home(current_item->field<home_type>());		// table->field(pos, "home")
+
+	_editor_screen->url(current_item->field<url_type>());		// table->field(pos, "url")
+
+	_editor_screen->tags(current_item->field<tags_type>());		// table->field(pos, "tags")
+
+
+	auto id = id_value(current_item->field<id_type>());	// table->field(pos, "id");
+	_editor_screen->misc_field("id", id);
+
+	_editor_screen->misc_field("title", current_item->field<name_type>());	// table->field(pos, "name")
+	// should each record carry it's tree path?
+	//// Set the path to the branch in which lies the record (in the form of the names of the branches)   // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
+	// QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
+	//// В мобильном интерфейсе редактор должен показывать путь до записи
+	// if(appconfig.getInterfaceMode() == "mobile")
+	// meta_editor->setTreePath(path);
+	// В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
+	if(appconfig.remember_cursor_at_ordinary_selection()){
+	    _editor_screen->cursor_position(walkhistory.cursor_position(id));
+	    _editor_screen->scrollbar_position(walkhistory.scrollbar_position(id));
+	}
+	// Обновление иконки аттачей
+	if(current_item->attach_table()->size() == 0)	// table->record(pos)->getAttachTablePointer()->size()
+		_editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_not_exists);	// Если нет приаттаченных файлов
+	else _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_exists);	// Есть приаттаченные файлы
+
+	// }
+    }
+
+	// deprecated
+    void WebPage::binder_reset(){
+	_record_controller->on_recordtable_configchange();
+	// _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
+	if(_binder){
+//	    auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
+////	    assert(_host_binder == _binder);
+//	    if(_host_binder && _host_binder == _binder){
+////		if(_host_binder->page())
+//		_host_binder->page(nullptr);
+////		if(_host_binder->host())
+//		_host_binder->host(nullptr);
+////		// _binder->break_page();   // item_break(_binder->item_link());  // break_items();
+
+////		_host_binder.reset(nullptr);
+//	    }else{
+	    _binder->page(nullptr);
+
+	    _binder->host(nullptr);
+//	    }
+////            auto _page_binder = _binder->page() ? _binder->page()->binder() : nullptr;
+////            if(_page_binder){
+////                assert(_page_binder == _binder);
+////                if(_page_binder->page())_page_binder->page(nullptr);
+////                if(_page_binder->host()){_page_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
+//////		_binder->page()->binder(nullptr);
+//////		_binder->page(nullptr);
+////                _page_binder = nullptr;
+////            }
+//	    _binder.reset(nullptr);
+	}
+    }
+
+    Browser *WebPage::browser(){return _browser;}// return _entrance->activiated_registered().first;    //QtSingleApplication::instance()->mainWindow();
+
+
+
 
 	// void WebPage::load(const QUrl &url)
 	// {
@@ -708,6 +1005,82 @@ namespace browser {
 	return _view;
     }
 
+    boost::intrusive_ptr<TreeItem> WebPage::bind(boost::intrusive_ptr<TreeItem> host_){	// , browser::WebPage *page
+	boost::intrusive_ptr<TreeItem> result(nullptr);
+
+	// auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
+	// return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
+	// >>("", &WebPage::RecordBinder::binder, ar);
+	// };
+	// auto activator = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
+	// return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
+	// };
+
+	// registered record, but have no generator:
+	// auto ar =
+	// auto _tree_screen = globalparameters.tree_screen();
+
+	// if(!item->is_registered_to_browser() && !item->record_binder()) {
+	auto tree_view = _tree_screen->view();
+	assert(static_cast<QModelIndex>(tree_view->source_model()->index(host_)).isValid());
+
+	// if(!tree_view->source_model()->index(item).isValid())
+	// result = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3));
+	// else
+	result = host_;
+
+	auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item){
+		// auto ar = std::make_shared<WebPage::Binder>(result_item, this);
+		auto result_coupler = new ::Binder(std::make_shared<WebPage::Binder>(result_item, this));
+		// std::move(::Binder::item_interface("", &WebPage::Binder::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
+		// , std::move(::Binder::page_interface("", &WebPage::Binder::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
+		// , std::move(::Binder::bind_interface("", &WebPage::Binder::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
+		// , std::move(::Binder::activate_interface("", &WebPage::Binder::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
+		// );
+
+
+		assert(_binder->integrity_external(result_item, this));	// _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
+		assert(result_item->binder()->integrity_external(result_item, this));	// result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
+		return result_coupler;
+	    };
+	if(result->binder() && result->binder() == _binder){
+	    if(! result->binder()->integrity_external(result, this)){
+		if(_binder)binder_reset();
+		create_coupler(result);
+	    }
+	}else{
+	    if(_binder)binder_reset();
+	    create_coupler(result);
+	}
+	// std::make_shared<WebPage::Coupler>(this, item);
+
+
+	// } else {
+	// if(_record_binder != item->record_binder())_record_binder = item->record_binder();
+	// }
+
+
+
+	////        it->binder(
+	////            binder(ar)
+	////        );
+
+	////        it->activator(
+	////            activator(ar)
+	////        );
+
+	// it->record_binder(std::make_shared<CouplerDelegation>(
+	// std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
+	// , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
+	// , std::make_shared<bind_interface>("", &Coupler::binder, ar)
+	// , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
+	// ));
+
+	assert(result->binder());
+
+	return result;
+    }
+
     bool WebPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
 	Q_UNUSED(type);
 	if(isMainFrame){
@@ -849,7 +1222,7 @@ namespace browser {
 	    auto tree_view = _tree_screen->view();
 	    if(view){
 		page = view->page();
-		auto item_view = view->page()->item();
+		auto item_view = view->page()->host();
 		if(item_view){
 		    auto index_view = tree_view->source_model()->index(item_view);
 		    if(static_cast<QModelIndex>(index_view).isValid())tree_view->index_invoke(view, index_view);}
@@ -1104,81 +1477,7 @@ namespace browser {
 	// return re;
 	// }
 
-    boost::intrusive_ptr<TreeItem> WebPage::bind(boost::intrusive_ptr<TreeItem> item){	// , browser::WebPage *page
-	boost::intrusive_ptr<TreeItem> result(nullptr);
 
-	// auto binder = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
-	// return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<TreeItem>   // , boost::intrusive_ptr<TreeItem>(TreeItem::*)(WebPage *)
-	// >>("", &WebPage::RecordBinder::binder, ar);
-	// };
-	// auto activator = [](boost::shared_ptr<WebPage::RecordBinder> ar) {
-	// return std::make_shared<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *>>("", &WebPage::RecordBinder::activator, ar);
-	// };
-
-	// registered record, but have no generator:
-	// auto ar =
-	// auto _tree_screen = globalparameters.tree_screen();
-
-	// if(!item->is_registered_to_browser() && !item->record_binder()) {
-	auto tree_view = _tree_screen->view();
-	assert(static_cast<QModelIndex>(tree_view->source_model()->index(item)).isValid());
-
-	// if(!tree_view->source_model()->index(item).isValid())
-	// result = tree_view->item_register(item, std::bind(&KnowView::view_paste_child, tree_view, tree_index, std::placeholders::_2, std::placeholders::_3));
-	// else
-	result = item;
-
-	auto create_coupler = [&](boost::intrusive_ptr<TreeItem> result_item){
-		// auto ar = std::make_shared<WebPage::Binder>(result_item, this);
-		auto result_coupler = new ::Binder(std::make_shared<WebPage::Binder>(result_item, this));
-		// std::move(::Binder::item_interface("", &WebPage::Binder::item, ar))          // std::make_shared<TreeItem::coupler::item_interface>("", &WebPage::coupler::item_link, ar)
-		// , std::move(::Binder::page_interface("", &WebPage::Binder::page, ar))        // std::make_shared<TreeItem::coupler::page_interface>("", &WebPage::coupler::page_link, ar)
-		// , std::move(::Binder::bind_interface("", &WebPage::Binder::bind, ar))             // std::make_shared<TreeItem::coupler::bind_interface>("", &WebPage::coupler::bind, ar)
-		// , std::move(::Binder::activate_interface("", &WebPage::Binder::activator, ar))    // std::make_shared<TreeItem::coupler::activate_interface>("", &WebPage::coupler::activator, ar)
-		// );
-
-
-		assert(_binder->integrity_external(result_item, this));	// _binder.reset(new TreeItem::coupler(std::make_shared<WebPage::coupler>(result, this)));
-		assert(result_item->binder()->integrity_external(result_item, this));	// result->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>&>(_binder));
-		return result_coupler;
-	    };
-	if(result->binder() && result->binder() == _binder){
-	    if(! result->binder()->integrity_external(result, this)){
-		if(_binder)binder_reset();
-		create_coupler(result);
-	    }
-	}else{
-	    if(_binder)binder_reset();
-	    create_coupler(result);
-	}
-	// std::make_shared<WebPage::Coupler>(this, item);
-
-
-	// } else {
-	// if(_record_binder != item->record_binder())_record_binder = item->record_binder();
-	// }
-
-
-
-	////        it->binder(
-	////            binder(ar)
-	////        );
-
-	////        it->activator(
-	////            activator(ar)
-	////        );
-
-	// it->record_binder(std::make_shared<CouplerDelegation>(
-	// std::make_shared<bounded_item_interface>("", &Coupler::bounded_item, ar)
-	// , std::make_shared<bounded_page_interface>("", &Coupler::bounded_page, ar)
-	// , std::make_shared<bind_interface>("", &Coupler::binder, ar)
-	// , std::make_shared<activate_interface> ("", &Coupler::activator, ar)
-	// ));
-
-	assert(result->binder());
-
-	return result;
-    }
 
 #ifdef USE_POPUP_WINDOW
     W_OBJECT_IMPL(PopupView)
@@ -1449,16 +1748,6 @@ namespace browser {
 
 	// }
 
-	// this will delete record for ever from database if you use real tree_item as source model of record_view
-    void WebPage::item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item){
-	if(_tabmanager && _tabmanager->count() > 0){
-	    RecordModel *source_model = _record_controller->source_model();	// tab_manager->source_model();
-	    assert(item);
-		// assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
-	    if(source_model->item(id_value(item->field<id_type>())))	// && record->unique_page() == this
-			_record_controller->remove(item->id());
-	}
-    }
 
 	//// which_page_point_to_me
 	// void WebPage::item_break(boost::intrusive_ptr<TreeItem> item)
@@ -1677,7 +1966,7 @@ namespace browser {
 // if(!_mainwindow->windowTitle().contains(title)) {_mainwindow->setWindowTitle(QString(application_name) + " : " + title); }
 
 // if(_view == _tabmanager->currentWebView()) {
-// if(_editor_screen->item() != _binder->host()) sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
+// if(_editor_screen->item() != _binder->host()) metaeditor_sychronize();  // metaeditor->bind(_record);
 
 // _editor_screen->name(title);
 // }
@@ -1685,8 +1974,8 @@ namespace browser {
 // int index = _tabmanager->webViewIndex(_view);
 // _tabmanager->setTabToolTip(index, title);
 
-		    update_record(url(), title);
-		    update_record_view(_binder->host());
+		    record_info_update(url(), title);
+		    record_view_synchronize(_binder->host());
 		}
 		// }
 	    }
@@ -1779,13 +2068,13 @@ namespace browser {
 // source_model()->emit_datachanged_signal(source_model()->index(_binder->host()));
 
 // if(_view == _tabmanager->currentWebView()) {
-// if(_editor_screen->item() != _binder->host()) sychronize_metaeditor_to_item();  // metaeditor->bind(_record);
+// if(_editor_screen->item() != _binder->host()) metaeditor_sychronize();  // metaeditor->bind(_record);
 
 // _editor_screen->url(url.toString());
 // }
 
-		    update_record(url, title());
-		    update_record_view(_binder->host());
+		    record_info_update(url, title());
+		    record_view_synchronize(_binder->host());
 		}
 		// update_record(url, title(), true);
 
@@ -1819,300 +2108,6 @@ namespace browser {
 		// update_recordtableview(url, _page->title());
 		// }
 	}
-    }
-
-	// deprecated
-    void WebPage::binder_reset(){
-	_record_controller->on_recordtable_configchange();
-	// _record_controller->delete_items_selected();   // source_model()->on_table_config_changed();
-	if(_binder){
-	    auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;
-	    if(_host_binder){
-		if(_host_binder->page())_host_binder->page(nullptr);
-		if(_host_binder->host())_host_binder->host(nullptr);
-//		if(_binder->host()){
-//		    _binder->host()->binder(nullptr);
-//		    _binder->host(nullptr);
-//		}
-	    }
-		// _binder->break_page();   // item_break(_binder->item_link());  // break_items();
-	    assert(_host_binder == _binder);
-	    _host_binder.reset(nullptr);
-//            auto _page_binder = _binder->page() ? _binder->page()->binder() : nullptr;
-//            if(_page_binder){
-//                assert(_page_binder == _binder);
-//                if(_page_binder->page())_page_binder->page(nullptr);
-//                if(_page_binder->host()){_page_binder->host(boost::intrusive_ptr<TreeItem>(nullptr));}
-////		_binder->page()->binder(nullptr);
-////		_binder->page(nullptr);
-//                _page_binder = nullptr;
-//            }
-	    _binder.reset(nullptr);
-	}
-    }
-
-    void WebPage::update_record(const QUrl &url, const QString &title){
-	// Q_UNUSED(make_current)
-	////if(globalparameters.getRecordTableScreen()->getRecordTableController()) {
-	////        RecordTableController *_record_ontroller = globalparameters.getRecordTableScreen()->getRecordTableController();
-	////            //Record *_record = nullptr;
-	////            //RecordTableModel *recordtablemodel = _record_ontroller->getRecordTableModel();
-	// RecordTableView *recordtableview = _record_ontroller->getView();
-	////            //RecordTableData *recordtabledata = recordtablemodel->getRecordTableData();
-	////        if(!_record) {
-	////            //            Record *record = nullptr;
-	////            RecordTableData *recordtabledata = view()->recordtablecontroller()->getRecordTableModel()->getRecordTableData();
-	////            if(recordtabledata)_record = recordtabledata->getRecordByUrl(url());
-	////        }
-	////        Record *record = this->record();
-	if(_binder->host()){
-		// _record->active_immediately(true);
-
-		////            WebView *view = record->page()->view();
-		////            view->tabmanager()->setCurrentWidget(view);
-		////            view->show();
-
-		////                //MetaEditor *metaeditor = ::globalparameters.getMetaEditor();
-		// QModelIndex proxyindex = _record_ontroller->convertIdToProxyIndex(_record->getNaturalFieldSource("id"));
-		////                //QModelIndex sourceindex = _record_ontroller->convertIdToSourceIndex(_page->record()->getField("id"));
-		// int position = _record_ontroller->convertProxyIndexToPos(proxyindex);
-		////                // QString page_title = webPage()->title();    // same as this->title()
-
-
-		// Выясняется указатель на объект редактирования текста записи
-		// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-
-		// Выясняется ссылка на таблицу конечных данных
-		// RecordTableData *table = recordSourceModel->getTableData();
-
-	    bool is_current = (_view == _tabmanager->currentWebView());
-
-	    int index = _tabmanager->webViewIndex(_view);
-	    _tabmanager->setTabToolTip(index, title);
-
-	    bool data_changed = false;
-	    if(  title != ""
-	      && title != _binder->host()->field<name_type>()
-		// && !QUrl(title).isValid()
-		){
-		_binder->host()->field<name_type>(title);	// "name",
-		data_changed = true;
-
-		// metaeditor->setName(title);
-		auto _mainwindow = globalparameters.mainwindow();
-		if(! _mainwindow->windowTitle().contains(title))_mainwindow->setWindowTitle(QString(application_name) + " : " + title);	// table->setWorkPos(pos);
-		if(is_current)_editor_screen->name(title);
-	    }
-	    if(url.toString() != ""){
-		_binder->host()->field<url_type>(url.toString());	// "url",
-		data_changed = true;
-		if(is_current)_editor_screen->url(url.toString());
-	    }
-	    if(data_changed){
-		update_record_view(_binder->host());
-		auto source_model = [&](){return _tree_screen->view()->source_model();};
-		source_model()->emit_datachanged_signal(source_model()->index(_binder->host()));
-	    }
-	    if(_editor_screen->item() != _binder->host() && is_current)sychronize_metaeditor_to_item();	// metaeditor->bind(_record);
-
-		// metaeditor->setUrl(url.toString());
-
-		// _page->load(url);
-
-		// if(recordtableview) {
-
-
-		// recordtableview->update();//repaint();    // does not work
-		// recordtableview->adjustSize();    // does not work, size weird
-
-		// if(make_current && recordtableview) {
-		// recordtableview->setSelectionToPos(position); // work
-
-	    _view->setFocus();	// make upate validate
-
-		// auto _tree_screen = globalparameters.tree_screen();
-	    auto	it		= _binder->host();
-	    auto	tree_view	= _tree_screen->view();
-	    if(is_current){	// globalparameters.mainwindow()
-		if(tree_view->current_item() != it)tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
-		if(_record_controller->view()->current_item() != it)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(it));	// IdType(_binder->item()->field("id"))
-	    }
-		// if(_record->_active_request) {
-		// if(_record->_openlinkinnewwindow == 1) {
-
-		// }
-
-		// DockedWindow *win = view()->tabmanager()->window();
-
-		// if(!win->isActiveWindow() || !win->isVisible()) {
-		// win->raise();
-		// win->activateWindow();
-		// }
-
-		// view()->tabmanager()->setCurrentWidget(view());
-		// view()->show();
-		// }
-
-
-
-
-
-
-		// globalParameters.getRecordTableScreen()->update();//repaint();    // does not work
-		// emit recordtableview->clicked(proxyindex);  // recordtableview->clickToRecord(proxyindex);    // does not work
-		// _record_ontroller->clickToRecord(proxyindex);    // does not work
-		// recordtablemodel->dataChanged();
-		// }
-
-		// }
-
-		// int row = sourceindex.row();
-		// int column = sourceindex.column();
-		// int _row = proxyindex.row();
-		// int _column = proxyindex.column();
-		// qDebug() << "qDebug()\t" << row << "\t" << column << "\t" << _row << "\t" << _column << "\t" << "\n";    // does not work?
-
-		// std::cout << "std::cout\t" << row << "\t" << column << "\t" << _row << "\t" << _column << "\t" << "\n";
-		// _record_ontroller->getRecordTableModel()->setData(sourceindex, QVariant::fromValue(this->title()), Qt::EditRole);
-
-		// _record_ontroller->editField(position
-		// , _record->getNaturalFieldSource("name")
-		// , _record->getNaturalFieldSource("author")
-		// , _record->getNaturalFieldSource("url")
-		// , _record->getNaturalFieldSource("tags")
-		// );    // does not work
-	}
-	// WebView *view = record->page()->view();
-
-	// if(view->hasFocus()) {
-	// view->tabmanager()->setCurrentWidget(view);
-	// view->show();
-	// }
-
-	// }
-    }
-
-    void WebPage::sychronize_metaeditor_to_item(){
-	boost::intrusive_ptr<TreeItem> current_item = _binder->host();
-	// boost::intrusive_ptr<Record> record = this->table_model()->table_data()->record(pos);
-	assert(current_item);
-	// assert(record == view()->tabmanager()->currentWebView()->page()->current_record()); // may be in backend?
-
-	// Внимание! Наверно, всю эту логику следует перенести в MetaEditor. А здесь только получить данные из таблицы
-
-	// Выясняется указатель на объект редактирования текста записи
-	// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
-	assert(_editor_screen);
-	// boost::intrusive_ptr<RecordModel::ModelIndex> record_index;
-	// try {
-	// record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(current_item), current_item);
-	// } catch(std::exception &) {}
-	// if(record_index) {
-	if(_editor_screen->item() != current_item)_editor_screen->bind(current_item);
-	// int pos = indexOf(currentWebView());
-	// Turns the reference to the table of final data   // Выясняется ссылка на таблицу конечных данных
-	// std::shared_ptr<TableData> table = std::make_shared<TableData>();   // _source_model->table_data_internal();
-
-	// for(int i = 0; i < count(); i++) {
-	// table->insert_new_record(table->work_pos(), static_cast<WebView *>(widget(i))->page()->current_record());
-	// }
-
-	// В таблице конечных данных запоминается какая запись была выбрана
-	// чтобы затем при выборе этой же подветки засветка автоматически
-	// установилась на последнюю рабочую запись
-	// table->work_pos(pos);
-
-
-	// Устанавливается функция обратного вызова для записи данных
-	_editor_screen->save_callback(_editor_screen->editor_save_callback);
-
-	// Сохраняется текст и картинки в окне редактирования
-	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->save_text_area();
-	// Для новой выбраной записи выясняется директория и основной файл
-	if(current_item->field<id_type>() == ""	// || current_item->field("url") == Browser::_defaulthome
-	    )current_item->field<id_type>(get_unical_id());	// "id",
-	if(current_item->field<url_type>() == "")current_item->field<dir_type>(current_item->id());	// "dir",
-	if(current_item->field<file_type>() == "")current_item->field<file_type>("text.html");	// "file",
-	QString current_dir	= current_item->field<dir_type>();	// table->field(pos, "dir");
-	QString current_file	= current_item->field<file_type>();		// table->field(pos, "file");
-	QString full_dir	= appconfig.tetra_dir() + "/base/" + current_dir;
-	QString full_file_name	= full_dir + "/" + current_file;
-	qDebug() << " File " << full_file_name << "\n";
-	// If the window contents of the record is already selected record  // Если в окне содержимого записи уже находится выбираемая запись
-	if(  _editor_screen->work_directory() == full_dir
-	  && _editor_screen->file_name() == current_file
-	    ){
-	    globalparameters.window_switcher()->switchFromRecordtableToRecord();
-
-	    return;
-	}
-	// Перед открытием редактора происходит попытка получения текста записи
-	// Этот вызов создаст файл с текстом записи, если он еще не создан (подумать, переделать)
-	// Before the opening of the editor it attempts to get the text records
-	// This call will create a text file with the record if it is not already created (think remake)
-	_editor_screen->save_textarea();	// table->text(pos);    // ?
-
-	// едактору задаются имя файла и директории
-	// И дается команда загрузки файла
-	_editor_screen->work_directory(full_dir);
-	_editor_screen->file_name(current_file);
-
-	// Если идет работа с зашифрованной записью
-	// И если имя директории или имя файла пусты, то это означает что
-	// запись не была расшифрована, и редактор должен просто показывать пустой текст
-	// ничего не сохранять и не считывать
-	qDebug() << "RecordTableView::onClickToRecord() : id " << current_item->field<id_type>();	// table->field(pos, "id");
-	qDebug() << "RecordTableView::onClickToRecord() : name " << current_item->field<name_type>();	// table->field(pos, "name");
-	qDebug() << "RecordTableView::onClickToRecord() : crypt " << current_item->field<crypt_type>();	// table->field(pos, boost::mpl::c_str < crypt_type > ::value);
-	if(current_item->field<crypt_type>()	// table->field(pos, boost::mpl::c_str < crypt_type > ::value)
-	    == "1")
-		if(full_dir.length() == 0 || current_file.length() == 0)_editor_screen->dir_file_empty_reaction(MetaEditor::DIRFILEEMPTY_REACTION_SUPPRESS_ERROR);
-	// В редактор заносится информация, идет ли работа с зашифрованным текстом
-	_editor_screen->misc_field(boost::mpl::c_str < crypt_type >::value, current_item->field<crypt_type>());				// table->field(pos, boost::mpl::c_str < crypt_type > ::value)
-
-
-	// В редакторе устанавливается функция обратного вызова для чтения данных
-	_editor_screen->load_callback(_editor_screen->editor_load_callback);
-
-	_editor_screen->load_textarea();
-	// edView->set_textarea(table->get_text(index.row()));
-
-	// Заполняются прочие инфо-поля
-	_editor_screen->pin(current_item->field<pin_type>());		// table->field(pos, "pin")
-
-	_editor_screen->name(current_item->field<name_type>());		// table->field(pos, "name")
-
-	_editor_screen->author(current_item->field<author_type>());	// table->field(pos, "author")
-
-	_editor_screen->home(current_item->field<home_type>());		// table->field(pos, "home")
-
-	_editor_screen->url(current_item->field<url_type>());		// table->field(pos, "url")
-
-	_editor_screen->tags(current_item->field<tags_type>());		// table->field(pos, "tags")
-
-
-	auto id = id_value(current_item->field<id_type>());	// table->field(pos, "id");
-	_editor_screen->misc_field("id", id);
-
-	_editor_screen->misc_field("title", current_item->field<name_type>());	// table->field(pos, "name")
-	// should each record carry it's tree path?
-	//// Set the path to the branch in which lies the record (in the form of the names of the branches)   // Устанавливается путь до ветки в которой лежит запись (в виде названий веток)
-	// QString path = qobject_cast<TableScreen *>(parent())->getTreePath();
-	//// В мобильном интерфейсе редактор должен показывать путь до записи
-	// if(appconfig.getInterfaceMode() == "mobile")
-	// meta_editor->setTreePath(path);
-	// В редакторе восстанавливается позиция курсора и прокрутки если это необходимо
-	if(appconfig.remember_cursor_at_ordinary_selection()){
-	    _editor_screen->cursor_position(walkhistory.cursor_position(id));
-	    _editor_screen->scrollbar_position(walkhistory.scrollbar_position(id));
-	}
-	// Обновление иконки аттачей
-	if(current_item->attach_table()->size() == 0)	// table->record(pos)->getAttachTablePointer()->size()
-		_editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_not_exists);	// Если нет приаттаченных файлов
-	else _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_exists);	// Есть приаттаченные файлы
-
-	// }
     }
 
     void WebView::onLoadFinished(bool success){
@@ -2157,7 +2152,7 @@ namespace browser {
 		////            if(_page->record()) {
 		////                _page->update_record(_page->url(), _page->title());
 		////            }
-	    _page->update_record(_page->url(), _page->title());
+	    _page->record_info_update(_page->url(), _page->title());
 		// }
 
 	    recovery_global_consistency();
@@ -2196,6 +2191,8 @@ namespace browser {
 	    _page->deleteLater();
 	}
     }
+
+    WebPage *WebView::page() const {return _page;}
 
 	// WebView::WebView(const boost::intrusive_ptr<TreeItem> requested_item
 	// , Profile *profile   // , bool openinnewtab
@@ -2281,7 +2278,7 @@ namespace browser {
 	////    _record_controller->addnew_item_fat(requested_item);
 	// }
     W_OBJECT_IMPL(WebView)
-    WebView::WebView(boost::intrusive_ptr<TreeItem> item
+    WebView::WebView(boost::intrusive_ptr<TreeItem> host_
 		    , Profile          *profile			// , bool openinnewtab
 		    , ts_t       *tree_screen
 		    , MetaEditor       *editor_screen
@@ -2294,7 +2291,7 @@ namespace browser {
 	  , _tabmanager(tabmanager)					// , _record(record)
 	  , _record_controller(table_controller)
 	  , _page(new WebPage(profile
-			     , item			// , openinnewtab
+			     , host_			// , openinnewtab
 			     , tree_screen
 			     , editor_screen
 			     , entrance
@@ -2512,7 +2509,7 @@ namespace browser {
 	////        _record_ontroller->getView()->setSelectionToPos(position);
 	setFocus();
 	// globalparameters.mainwindow()
-	if(_record_controller->view()->selection_first<id_value>() != _page->item()->field<id_type>())_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_page->item()));	// IdType(_page->item()->field("id"))
+	if(_record_controller->view()->selection_first<id_value>() != _page->host()->field<id_type>())_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_page->host()));	// IdType(_page->item()->field("id"))
 
 	// }
     }
@@ -2527,10 +2524,6 @@ namespace browser {
 	permissionBar->requestPermission(securityOrigin, feature);
     }
 
-    void WebView::setProgress(int progress){
-	_progress = progress;
-    }
-
 	// void PageView::loadUrl(const QUrl &url)
 	// {
 	////        _initialurl = url;
@@ -2538,9 +2531,17 @@ namespace browser {
 	// }
 
 
-    QString WebView::lastStatusBarText() const {
-	return _statusbartext;
-    }
+    QString WebView::lastStatusBarText() const {return _statusbartext;}
+
+    int WebView::progress() const {return _progress;}
+
+    void WebView::setProgress(int progress){_progress = progress;}
+
+    TabWidget *const &WebView::tabmanager() const {return _tabmanager;}
+
+    rctl_t *WebView::record_controller(){return _record_controller;}
+
+    void WebView::record_controller(rctl_t *_record_controller){this->_record_controller = _record_controller;}
 
 	// QUrl PageView::url() const
 	// {
@@ -2649,7 +2650,8 @@ namespace browser {
 	if(index != _tabmanager->currentIndex())							// c->index<PosSource>(c->source_model()->index(_binder->item()))
 		_tabmanager->setCurrentIndex(index);
 	if(! _browser->isVisible()){
-	    _browser->raise();_browser->activateWindow();
+	    _browser->raise();
+	    _browser->activateWindow();
 	}
 // _record_controller->synchronize_record_view(_page->item());
 	if(_vtab_record->currentWidget() != _record_screen)_vtab_record->setCurrentWidget(_record_screen);
@@ -2718,7 +2720,7 @@ namespace browser {
 	    if(_page->url().toString() != _item->field<url_type>())_page->setUrl(QUrl(_item->field<url_type>()));// _bounded_page = view->page();
 														// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
 	    assert(_page->_editor_screen);
-	    if(_page->_editor_screen->item() != _item)_page->sychronize_metaeditor_to_item();
+	    if(_page->_editor_screen->item() != _item)_page->metaeditor_sychronize();
 	    assert(_page->binder()->integrity_external(_item, _page));
 	}
 	return view;	// _the->load(record, _make_current);
@@ -2758,9 +2760,9 @@ namespace browser {
 	return _page->activate();	// view;
     }
 
-    boost::intrusive_ptr<TreeItem> WebPage::item() const {return _binder ? _binder->host() : nullptr;}
+    boost::intrusive_ptr<TreeItem> WebPage::host() const {return _binder ? _binder->host() : nullptr;}
 
-    WebPage *WebPage::page() const {return _binder ? _binder->page() : nullptr;}
+//    WebPage *WebPage::page() const {return _binder ? _binder->page() : nullptr;}
 
     boost::intrusive_ptr<::Binder> WebPage::binder(){return _binder;}
 

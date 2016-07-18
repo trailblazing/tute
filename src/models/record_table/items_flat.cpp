@@ -550,21 +550,21 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: item_fat(int pos){
 ////    _tree_item = item;
 // }
 
-// Преобразование таблицы конечных записей в Dom документ
-QDomElement ItemsFlat:: dom_from_activated_itemsflat() const {
-	// Если у ветки нет таблицы конечных записей, возвращается пустой документ
-    if(_child_linkers.size() == 0)return QDomElement();
-    std::shared_ptr<QDomDocument>	doc		= std::make_shared<QDomDocument>();
-    QDomElement				record_dom_data = doc->createElement("recordtable");
-	// Пробегаются все записи в таблице
-    for(int i = 0; i < _child_linkers.size(); i ++){
-	if(  _child_linkers.at(i)->host()->page_valid()								// unique_page()
-	  && static_cast<ItemsFlat *const>(_child_linkers.at(i)->host().get()) != this)record_dom_data.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem());												// К элементу recordtabledata прикрепляются конечные записи
-    }
-	// qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
+//// Преобразование таблицы конечных записей в Dom документ
+//QDomElement ItemsFlat:: dom_from_activated_itemsflat() const {
+//	// Если у ветки нет таблицы конечных записей, возвращается пустой документ
+//    if(_child_linkers.size() == 0)return QDomElement();
+//    std::shared_ptr<QDomDocument>	doc		= std::make_shared<QDomDocument>();
+//    QDomElement				record_dom_data = doc->createElement("recordtable");
+//	// Пробегаются все записи в таблице
+//    for(int i = 0; i < _child_linkers.size(); i ++){
+//	if(  _child_linkers.at(i)->host()->page_valid()								// unique_page()
+//	  && static_cast<ItemsFlat *const>(_child_linkers.at(i)->host().get()) != this)record_dom_data.appendChild(_child_linkers.at(i)->host()->dom_from_treeitem());												// К элементу recordtabledata прикрепляются конечные записи
+//    }
+//	// qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
-    return record_dom_data;
-}
+//    return record_dom_data;
+//}
 
 // азбор DOM модели и преобразование ее в таблицу
 void ItemsFlat:: dom_to_itemsflat(const QDomElement &dom_model){// , boost::intrusive_ptr<TreeItem> _parent_item

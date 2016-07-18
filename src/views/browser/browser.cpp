@@ -1618,10 +1618,10 @@ namespace browser {
     QStatusBar *Browser::status_bar() const {return globalparameters.status_bar();}
 
     boost::intrusive_ptr<TreeItem> Browser::page_instantiate(boost::intrusive_ptr<RecordIndex> record_index){
-	boost::intrusive_ptr<TreeItem> result(nullptr);
+//	boost::intrusive_ptr<TreeItem> result(nullptr);
 //        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
-	boost::intrusive_ptr<TreeItem> target = record_index->target();
-	if(target->is_lite())target->to_fat();
+	boost::intrusive_ptr<TreeItem> result = record_index->target();
+	if(result->is_lite())result->to_fat();
 	// clean();
 	// assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);
 //        assert(tab_brother != target);
@@ -1633,7 +1633,7 @@ namespace browser {
 	// } else
 	// {
 	// for(auto &i : _mainWindows) {
-	auto url_euql = [&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), target->field<home_type>().toStdString()) && b->host()->id() == target->id() && b == target->binder();};
+	auto url_euql = [&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), result->field<home_type>().toStdString()) && b->host()->id() == result->id() && b == result->binder();};
 	view = _tabmanager->find(url_euql);	// if _item->field("url") == Browser::_defaulthome , force rebind
 	// if(view != nullptr) {
 	////            dp.first = i.data();
@@ -1686,7 +1686,7 @@ namespace browser {
 
 		////            tab->setCurrentWidget(dp.second);   // tab->setCurrentIndex(tab->webViewIndex(dp.second));
 		////            dp.second->show();
-	}else result = view->page()->item();
+	}else result = view->page()->host();
 	// tab->setCurrentWidget(dp.second);
 	// dp.second->show();
 	// assert(dp.first);

@@ -56,10 +56,26 @@ CONFIG  +=  c++14
 CONFIG  +=  gnu++14
 CONFIG  +=  staticlib
 
-#QMAKE_CXXFLAGS += /MP
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets \
                                             printsupport
+
+
+#QMAKE_CXXFLAGS += /MP
+TARGETDEPS += ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Svg.so           \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5WebEngineWidgets.so    \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5PrintSupport.so        \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Widgets.so             \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5WebEngineCore.so       \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Quick.so               \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Gui.so                 \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Xml.so                 \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Qml.so                 \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Network.so             \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5WebChannel.so          \
+        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Core.so
+
 
 contains(TARGET_OS, ANY_OS) {
 DESTDIR     =   bin

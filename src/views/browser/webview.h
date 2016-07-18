@@ -84,7 +84,7 @@ class tm_t;
 class ts_t;
 class rctl_t;
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 // #define USE_POPUP_WINDOW
 
@@ -178,24 +178,28 @@ namespace browser {
 
 	    void load(const QUrl &url) = delete;
 
-	    boost::intrusive_ptr<TreeItem>	item() const;	// {return _record_binder->bounded_item();}
-	    WebPage				*page() const;
+	    boost::intrusive_ptr<TreeItem>	host() const;	// {return _record_binder->bounded_item();}
+//	    WebPage				*page() const;
 
 	    struct Binder : public std::enable_shared_from_this <Binder> {		// boost::intrusive_ref_counter<Binder, boost::thread_safe_counter>    //
 		private:
-		    boost::intrusive_ptr<TreeItem>  _item;
-		    WebPage                         *_page;
+		    boost::intrusive_ptr<TreeItem>	_item;
+		    WebPage				*_page;
 
 			//            bool _make_current;
 		public:
 		    Binder(boost::intrusive_ptr<TreeItem> item_, WebPage *page_);
 		    ~Binder();
 		    void host(boost::intrusive_ptr<TreeItem> it){_item = it;}
+
 		    void page(WebPage *p){_page = p;}
+
 		    boost::intrusive_ptr<TreeItem> host() const {return _item;}
+
 		    WebPage *page() const {return _page;}
-		    WebView *bind();		// , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
-		    WebView *activator();
+
+		    WebView	*bind();		// , boost::intrusive_ptr<TreeItem>(TreeItem::* _bind)(WebPage *)
+		    WebView	*activator();
 		    static QString binder_type(){return "page_binder";}
 	    };
 
@@ -203,7 +207,7 @@ namespace browser {
 //        {if(_record->binded_page() == this)_record->bind_page(nullptr);
 //        _record = nullptr;}
 //        void items_break();
-	    void sychronize_metaeditor_to_item();
+	    void metaeditor_sychronize();
 
 //        boost::intrusive_ptr<TreeItem> item_bind(const QUrl &_url
 //                                                              , const
@@ -235,7 +239,7 @@ namespace browser {
 //                                                 target->id();}
 //                                                );
 
-	    boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<TreeItem> item);
+	    boost::intrusive_ptr<TreeItem> bind(boost::intrusive_ptr<TreeItem> host_);
 
 	    boost::intrusive_ptr<::Binder>	binder();
 	    const				boost::intrusive_ptr<::Binder> && binder() const;
@@ -251,9 +255,9 @@ namespace browser {
 #endif
 	    virtual bool certificateError(const QWebEngineCertificateError &error) Q_DECL_OVERRIDE;
 
-	    void	update_record(const QUrl &url, const QString &title);
-	    void	update_record_view(boost::intrusive_ptr<TreeItem> item);
-	    void	item_remove_from_record_screen(boost::intrusive_ptr<TreeItem> item);
+	    void	record_info_update(const QUrl &url, const QString &title);
+	    void	record_view_synchronize(boost::intrusive_ptr<TreeItem> host_);
+	    void	record_view_remove(boost::intrusive_ptr<TreeItem> host_);
 	    void	binder_reset();
 
 	private slots:
@@ -278,8 +282,8 @@ namespace browser {
 
 	    WebView *_view;
 // set the webview mousepressedevent
-	    Qt::KeyboardModifiers	_keyboardmodifiers = Qt::NoModifier;
-	    Qt::MouseButtons		_pressedbuttons = Qt::NoButton;
+	    Qt::KeyboardModifiers	_keyboardmodifiers	= Qt::NoModifier;
+	    Qt::MouseButtons		_pressedbuttons		= Qt::NoButton;
 // bool _openinnewtab;
 	    QUrl	_loadingurl;
 	    QString	_hovered_url = Browser::_defaulthome;
@@ -323,14 +327,16 @@ namespace browser {
 	public:
 	    PopupView(QWidget *parent = 0);
 	    PopupPage	*webPage() const {return m_page;}
-	    void	setPage(PopupPage *page);
+
+	    void setPage(PopupPage *page);
 
 	    void	loadUrl(const QUrl &url);
 	    QUrl	url() const;
 	    QIcon	icon() const;
 
-	    QString	lastStatusBarText() const;
-	    inline int	progress() const {return m_progress;}
+	    QString lastStatusBarText() const;
+	    inline int progress() const {return m_progress;}
+
 	protected:
 	    void	mousePressEvent(QMouseEvent *event);
 	    void	mouseReleaseEvent(QMouseEvent *event);
@@ -368,7 +374,7 @@ namespace browser {
 	W_OBJECT(WebView)
 
 	public:
-	    WebView(boost::intrusive_ptr<TreeItem> item
+	    WebView(boost::intrusive_ptr<TreeItem> host_
 		   , Profile *profile		// , bool openinnewtab
 		   , ts_t *tree_screen, MetaEditor *editor_screen
 		   , Entrance *entrance
@@ -384,9 +390,8 @@ namespace browser {
 //               );
 
 	    ~WebView();
-	    WebPage *page() const {
-		return _page;
-	    }
+	    WebPage *page() const;
+
 	    bool	load_finished() const;
 	    void	page(WebPage *page);
 	    void	activateWindow();
@@ -396,24 +401,19 @@ namespace browser {
 	    QIcon	icon() const;
 
 	    QString	lastStatusBarText() const;
-	    inline int	progress() const {
-		return _progress;
-	    }
-	    rctl_t *record_controller(){
-		return _record_controller;
-	    }
-	    void record_controller(rctl_t *_record_controller){
-		this->_record_controller = _record_controller;
-	    }
+	    int		progress() const;
+
+	    rctl_t	*record_controller();	// {return _record_controller;}
+	    void	record_controller(rctl_t *_record_controller);	// {this->_record_controller = _record_controller;}
+
 //        Record *const &record()const {return _record;}
 //        void record(Record *record) {if(record) {_record = record;
 //        _record->view(this);}}
 
 //        void switch_show();
 
-	    TabWidget *const &tabmanager() const {
-		return _tabmanager;
-	    }
+	    TabWidget *const &tabmanager() const;
+
 	    void recovery_global_consistency();
 	protected:
 	    void loadUrl(const QUrl &url);
@@ -482,9 +482,11 @@ namespace browser {
 //		connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
 //	    }
 	    QWebEnginePage *page() const {return _view->page();}
+
 	private Q_SLOTS:
-	    void	setUrl(const QUrl &url){_addressbar->setText(url.toString());}
-	    void	adjustGeometry(const QRect &newGeometry);
+	    void setUrl(const QUrl &url){_addressbar->setText(url.toString());}
+
+	    void adjustGeometry(const QRect &newGeometry);
 //	    {
 //		const int	x1 = frameGeometry().left() - geometry().left();
 //		const int	y1 = frameGeometry().top() - geometry().top();
@@ -502,6 +504,6 @@ namespace browser {
 #endif	// USE_POPUP_WINDOW
 }
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif

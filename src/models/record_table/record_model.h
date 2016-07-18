@@ -115,7 +115,7 @@ class RecordModel : public QAbstractTableModel
 	index_source	index(boost::intrusive_ptr<TreeItem> it) const;
 	index_source	fake_index(boost::intrusive_ptr<TreeItem> it) const;
 	// for multi items link with unique page
-	boost::intrusive_ptr<TreeItem>	item_bounded(boost::intrusive_ptr<TreeItem> it) const;
+//	boost::intrusive_ptr<TreeItem>	item_bounded(boost::intrusive_ptr<TreeItem> it) const;
 	boost::intrusive_ptr<TreeItem>	item(boost::intrusive_ptr<TreeItem> it) const;
 
 	// int item_current(QString find_id);

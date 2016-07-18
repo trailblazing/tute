@@ -344,7 +344,7 @@ void rs_t::setup_actions(void){
 		for(auto &browser : _entrance->browsers()){
 		    auto tabmanager = browser->tabmanager();																																																// record_controller()->source_model();  // ->record_table();
 		    for(int i = 0; i < tabmanager->count(); i ++){
-			auto page_item = tabmanager->webView(i)->page()->item();
+			auto page_item = tabmanager->webView(i)->page()->host();
 			if(! know_model_board()->item([=](boost::intrusive_ptr<const TreeItem> t){
 			    return t->id() == page_item->field<id_type>();
 			})){																																																										// item->field("id")
@@ -438,7 +438,7 @@ void rs_t::setup_actions(void){
 	    auto _current_model = [&](){
 		return _tree_view->source_model();
 	    };
-	    auto _item = _tabmanager->currentWebView()->page()->item();
+	    auto _item = _tabmanager->currentWebView()->page()->host();
 	    _tree_view->delete_permanent(_current_model
 					, QList<boost::intrusive_ptr<TreeItem> >() << _item
 					, &tkm_t::delete_permanent

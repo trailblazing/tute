@@ -72,7 +72,7 @@ struct Linker : public boost::intrusive_ref_counter<Linker, boost::thread_safe_c
 
 	int move_up(void);
 	int move_dn(void);
-	void remove();
+	void dangle();
 
 	bool integrity_internal() const;
 	bool integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_) const;

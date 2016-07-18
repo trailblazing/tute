@@ -93,7 +93,7 @@ class ItemsFlat {
 
 	// Функция создания DOM-документа из данных таблицы конечных записей
 	//    QDomElement export_to_dom(QDomDocument *doc) const;
-	QDomElement dom_from_activated_itemsflat() const;
+//	QDomElement dom_from_activated_itemsflat() const;
 
 	QDomElement dom_from_itemsflat() const;
 	//    QDomElement dom_from_itemsflat(std::shared_ptr<QDomDocument> doc) const;

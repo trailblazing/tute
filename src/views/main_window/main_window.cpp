@@ -82,7 +82,7 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
       , _find_screen(new FindScreen(find_screen_singleton_name, _tree_screen, this))
       , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))		// _find_screen -> for find_text
       , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))							// Qt::MaximizeUsingFullscreenGeometryHint
-      , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
+//      , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
       , _statusbar(new QStatusBar(this))
       , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
       , _enable_real_close(false){
@@ -233,28 +233,28 @@ void wn_t::setup_ui(void){
 	// _tree_screen = new TreeScreen(_appconfig, this);
 	// _tree_screen->setObjectName(tree_screen_singleton_name);  // "treeScreen"
     _globalparameters.tree_screen(_tree_screen);
-	// _treetable_hidden = treeScreen->isHidden();
-	// connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
-	// connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
+//	// _treetable_hidden = treeScreen->isHidden();
+//	// connect(treeScreen, &TreeScreen::hide, this, [this]() {_treetable_hidden = true;});
+//	// connect(treeScreen, &TreeScreen::show, this, [this]() {_treetable_hidden = false;});
 
-	// _table_screen = new TableScreen(this);
-	// _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
-
-
-	// _globalparameters.push_record_screen(_table_screen);
+//	// _table_screen = new TableScreen(this);
+//	// _table_screen->setObjectName(table_screen_singleton_name); // "recordTableScreen"
 
 
-	// _recordtable_hidden = recordTableScreen->isHidden();
-	// connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
-	// connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
+//	// _globalparameters.push_record_screen(_table_screen);
 
-	// _page_screen = new TableScreen(this);
-	// _page_screen->setObjectName("page_screen");
-	// _globalparameters.page_screen(_page_screen);
 
-	// _download = new browser::DownloadManager(this);
-	// _download->setObjectName(download_manager_singleton_name);
-    _globalparameters.download_manager(_download);
+//	// _recordtable_hidden = recordTableScreen->isHidden();
+//	// connect(recordTableScreen, &RecordTableScreen::hide, this, [this]() {_recordtable_hidden = true;});
+//	// connect(recordTableScreen, &RecordTableScreen::show, this, [this]() {_recordtable_hidden = false;});
+
+//	// _page_screen = new TableScreen(this);
+//	// _page_screen->setObjectName("page_screen");
+//	// _globalparameters.page_screen(_page_screen);
+
+//	// _download = new browser::DownloadManager(this);
+//	// _download->setObjectName(download_manager_singleton_name);
+//    _globalparameters.download_manager(_download);
 
 
 	// _editor_screen = new MetaEditor();
@@ -782,28 +782,28 @@ void wn_t::assembly(void){
     _v_find_splitter->setCollapsible(1, false);				// Часть для поиска не должна смыкаться
     _v_find_splitter->setObjectName("find_splitter");
 
-	// _qtabwidget = new QTabWidget(this);
-//    _vtab_tree->hide();
-//    _vtab_record->setTabPosition(QTabWidget::West);	// _vtab_tree->setTabPosition(QTabWidget::West);			// sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
+//	// _qtabwidget = new QTabWidget(this);
+////    _vtab_tree->hide();
+////    _vtab_record->setTabPosition(QTabWidget::West);	// _vtab_tree->setTabPosition(QTabWidget::West);			// sometime make "QModelIndex TreeModel::parent(const QModelIndex &index) const" failed.
 
 
 
 
 
-	// _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
+//	// _vtabwidget->addTab(_tree_screen, QIcon(":/resource/pic/leaves.svg"), "Tree");
 
 
 
 
-	// _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
+//	// _vtabwidget->addTab(_table_screen, QIcon(":/resource/pic/clover.svg"), "Candidate");
 
-	// if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
+//	// if(_page_screen)_vtabwidget->addTab(_page_screen, QIcon(":/resource/pic/three_leaves_clover.svg"), "Page");
 
-//    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
-    _vtab_record->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");	// _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen, _download)), QIcon(":/resource/pic/apple.svg"), "Download");			// QIcon(":/resource/pic/holly.svg")
+////    auto index = _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(_tree_screen, nullptr)), QIcon(":/resource/pic/three_leaves_clover.svg"), "Browser");
+//    _vtab_record->addTab(static_cast<QWidget *>(_download), QIcon(":/resource/pic/apple.svg"), "Download");	// _vtab_tree->addTab(static_cast<QWidget *>(new tsv_t(this, _tree_screen, _download)), QIcon(":/resource/pic/apple.svg"), "Download");			// QIcon(":/resource/pic/holly.svg")
 
 
-//    _vtab_tree->setCurrentIndex(index);
+////    _vtab_tree->setCurrentIndex(index);
 
 
     _appconfig.find_screen_tree_search_area(0);			// force to root_item of global tree

@@ -348,7 +348,7 @@ namespace browser {
 		    if(view){
 			WebPage *page = view->page();
 			if(page){
-			    boost::intrusive_ptr<TreeItem> _item = page->item();
+			    boost::intrusive_ptr<TreeItem> _item = page->host();
 			    assert(_item);
 			    QString home = _item->field<home_type>();
 			    QUrl homeurl = QUrl(home);
@@ -1466,7 +1466,7 @@ namespace browser {
 	    if(v->page()){
 		boost::intrusive_ptr<::Binder> binder = v->page()->binder();
 		if(binder){
-		    auto _this_item = v->page()->item();// globalparameters.entrance()->find(_equal);
+		    auto _this_item = v->page()->host();// globalparameters.entrance()->find(_equal);
 		    if(_this_item){
 			if(binder->integrity_external(_this_item, v->page())){
 // assert(_this_item == v->page()->binder()->item());
@@ -1513,7 +1513,7 @@ namespace browser {
 // if(v) {
 // if(v->page()) {
 // if(v->page()->binder()) {
-// auto _this = v->page()->item(); // globalparameters.entrance()->find(_equal);
+// auto _this = v->page()->host(); // globalparameters.entrance()->find(_equal);
 // if(_this) {
 // assert(_this == v->page()->binder()->item());
 

@@ -185,9 +185,11 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 
 	// Получение значения поля по имени
 	template<typename field_type>QString field() const {return Record::field<field_type>();}	// , typename field_type_switch = typename switch_type<field_type>::type
+
 	// , field_type_switch   // field_content;
 
 	template<typename field_type>void field(const QString &value){Record::field<field_type>(value);}	// , typename field_type_switch = typename switch_type<field_type>::type
+
 	// , field_type_switch
 
 	// Получение всех полей данных
@@ -242,8 +244,10 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 
 	int	move_up(void);
 	int	move_dn(void);
-	void	move_up(int pos){ItemsFlat::move_up(pos);}
-	void	move_dn(int pos){ItemsFlat::move_dn(pos);}
+	void move_up(int pos){ItemsFlat::move_up(pos);}
+
+	void move_dn(int pos){ItemsFlat::move_dn(pos);}
+
 	//// Возвращает id путь (список идентификаторов от корня до текущего элемента)
 	// QStringList path_absolute(void) const;
 
@@ -324,7 +328,7 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 	// activate_helper activator() const;    // {return _activator;}
 
 	// void active_request(PosSource pos, int openLinkIn);
-	bool page_valid() const;// {return _page_valid;}
+//	bool page_valid() const;// {return _page_valid;}
 	// operator ItemsFlat() {return *this;}
 
 	// deprecated
@@ -404,13 +408,14 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 	// friend void boost::sp_adl_block::intrusive_ptr_release< TreeItem, counter_type >(const boost::intrusive_ref_counter< TreeItem, counter_type > *p) BOOST_NOEXCEPT;
 
 	// void page_to_nullptr();   // {_page->record(nullptr); _page = nullptr; }
-	bool is_holder() const;
+//	bool is_holder() const;
 
 	// friend class browser::WebPage;
 	friend class ItemsFlat;
 	friend class tkm_t;
 	// friend class TreeScreen;
 	friend inline boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right){return *it_left << it_right;}
+
 	TreeItem(QMap<QString, QString> _field_data, const QDomElement &_dom_element = QDomElement());
 };
 

@@ -42,6 +42,7 @@ Linker::~Linker(){
     }
 	// return result;
 }
+
 Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusive_ptr<TreeItem> host_item)	// , const int pos, const int mode
     : boost::intrusive_ref_counter<Linker, boost::thread_safe_counter>()
       , _host_parent([&]() -> boost::intrusive_ptr<TreeItem> {assert(host_parent_item != host_item);return host_parent_item;} ())																					// _new_parent
@@ -110,9 +111,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 				      this->_host_parent = _parent;
 				      actually_insert_position = count;
 				      integrity_external(_host, _host_parent);
-				  }else{
-				      _parent->_child_linkers.removeOne(il);
-				  }
+				  }else _parent->_child_linkers.removeOne(il);
 			      }
 			      count ++;
 			  }
@@ -165,7 +164,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 				  if(_host->field<file_type>() == "")_host->field<file_type>("text.html");
 			      }
 				// The method must take a full-fledged object record    // Мотод должен принять полновесный объект записи
-			      if(_host->is_lite()){_host->to_fat();}		// critical_error("ItemsFlat::insert_new_item() can't insert lite record");
+			      if(_host->is_lite())_host->to_fat();		// critical_error("ItemsFlat::insert_new_item() can't insert lite record");
 				// В список переданных полей добавляются вычислимые в данном месте поля
 			      if(_host->field<ctime_type>() == ""){
 					// Время создания данной записи
@@ -183,13 +182,11 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 			      }
 				// }
 				// Запись полновесных данных с учетом шифрации
-			      if(is_crypt && _host->field<crypt_type>() != "1"){						// В зашифрованную ветку незашифрованную запись
-				  _host->to_encrypt_and_save_fat();
-			      }else if(! is_crypt && _host->field<crypt_type>() == "1"){														// В незашифрованную ветку зашифрованную запись
-				  _host->to_decrypt_and_save_fat();
-			      }else{
-				  _host->push_fat_attributes();
-			      }
+			      if(is_crypt && _host->field<crypt_type>() != "1")							// В зашифрованную ветку незашифрованную запись
+					_host->to_encrypt_and_save_fat();
+			      else if(! is_crypt && _host->field<crypt_type>() == "1")															// В незашифрованную ветку зашифрованную запись
+					_host->to_decrypt_and_save_fat();
+			      else _host->push_fat_attributes();
 				// Record switch to easy mode to be added to the final table of records ?***    // Запись переключается в легкий режим чтобы быть добавленной в таблицу конечных записей
 			      _host->to_lite();
 				////        // Запись добавляется в таблицу конечных записей
@@ -252,9 +249,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 			  assert(result);
 			  if(_host_parent->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1"){															// new_host_parent &&
 			      if(_host->_field_data[boost::mpl::c_str < crypt_type > ::value] != "1")_host->to_encrypt();
-			  }else{
-			      if(_host->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1")_host->to_decrypt();
-			  }
+			  }else if(_host->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1")_host->to_decrypt();
 				//		      }
 				//		      integrity_fix_up();   // recursive call
 		      }
@@ -288,9 +283,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 		      if(! std::get<HOST_LINKER_IS_THIS>(*_status)()){result = false;assert(result);}
 		      if(! std::get<HOST_PARENT_LINKERS_HAS_THIS>(*_status)()){result = false;assert(result);}
 		  }
-	      }else{
-		  assert(_parent == _host_parent);
-	      }
+	      }else assert(_parent == _host_parent);
 	      return _result;
 	  }
 // ;
@@ -440,6 +433,7 @@ int Linker::sibling_order() const {
 
     return result;
 }
+
 int Linker::move_up(void){
     int row = 0;
 	// Выясняется номер данного элемента в списке родителя
@@ -451,6 +445,7 @@ int Linker::move_up(void){
     }
     return row;
 }
+
 int Linker::move_dn(void){
     int row = 0;
 	// Выясняется номер данного элемента в списке родителя
@@ -463,10 +458,13 @@ int Linker::move_dn(void){
     }
     return row;
 }
+
 boost::intrusive_ptr<TreeItem> Linker::host_parent() const {return _host_parent;}
+
 boost::intrusive_ptr<TreeItem> Linker::host() const {return _host;}
 
 void Linker::host_parent(boost::intrusive_ptr<TreeItem> &&p){_host_parent = std::forward<boost::intrusive_ptr<TreeItem> >(p);}
+
 void Linker::host(boost::intrusive_ptr<TreeItem> &&h){_host = std::forward<boost::intrusive_ptr<TreeItem> >(h);}
 
 boost::intrusive_ptr<Linker> Linker::parent(boost::intrusive_ptr<TreeItem> _parent, const int pos, const int mode){
@@ -513,7 +511,8 @@ boost::intrusive_ptr<Linker> Linker::parent(boost::intrusive_ptr<TreeItem> _pare
 //    }
     return result;
 }
-void Linker::remove(){
+
+void Linker::dangle(){
 	// if(_host_parent->up_linker())_host_parent->up_linker(nullptr);    // pretty wrong semantic!
     _host->dangle();
 
@@ -523,6 +522,7 @@ void Linker::remove(){
 	// _host->up_linker().reset();
 	// }
 }
+
 bool Linker::integrity_internal() const {
     return std::get<HOST_EXIST>(*_status)()
 	   && std::get<HOST_PARENT_EXIST>(*_status)()
@@ -531,11 +531,13 @@ bool Linker::integrity_internal() const {
 	   && std::get<HOST_LINKER_IS_THIS>(*_status)()
 	   && std::get<HOST_PARENT_LINKERS_HAS_THIS>(*_status)();
 }
+
 bool Linker::integrity_external(boost::intrusive_ptr<const TreeItem> host_, boost::intrusive_ptr<const TreeItem> host_parent_) const {
     return integrity_internal()
 	   && std::get<EXTERNAL_HOST_IS_THIS_HOST>(*_status)(host_)
 	   && std::get<EXTERNAL_HOST_PARENT_IS_THIS_HOST_PARENT>(*_status)(host_parent_);
 }
+
 // Linker::status_type Linker::state_impl()
 // {
 // status_type status;
@@ -581,7 +583,7 @@ bool Linker::integrity_external(boost::intrusive_ptr<const TreeItem> host_, boos
 // };
 
 
-boost::intrusive_ptr<Linker> Linker:: instance(boost::intrusive_ptr<TreeItem> _host, boost::intrusive_ptr<TreeItem> _parent, int pos, int mode){	// we can use caller temmplate to get caller info
+boost::intrusive_ptr<Linker> Linker::instance(boost::intrusive_ptr<TreeItem> _host, boost::intrusive_ptr<TreeItem> _parent, int pos, int mode){		// we can use caller temmplate to get caller info
 	// boost::intrusive_ptr<TreeItem> _result(nullptr);
 	//// Добавление новой записи
 	//// Метод только добавляет во внутреннее представление новые данные,
@@ -767,3 +769,4 @@ boost::intrusive_ptr<Linker> Linker:: instance(boost::intrusive_ptr<TreeItem> _h
 
     return _linker;
 }
+

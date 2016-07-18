@@ -36,7 +36,7 @@
 
 
 extern GlobalParameters globalparameters;
-extern AppConfig appconfig;
+extern AppConfig	appconfig;
 
 namespace browser {
     class WebPage;
@@ -88,6 +88,7 @@ MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
 
     Editor::update_indentline_geometry();
 }
+
 MetaEditor::~MetaEditor(void)
 {}
 
@@ -95,6 +96,7 @@ MetaEditor::~MetaEditor(void)
 void MetaEditor::setup_signals(FindScreen *_find_screen){
     connect(this, &MetaEditor::set_find_text_signal, _find_screen, &FindScreen::find_text);
 }
+
 void MetaEditor::setup_labels(void){
 	// Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
 	// _tree_path = new QLabel(this);
@@ -162,6 +164,7 @@ void MetaEditor::setup_labels(void){
     _label_tags->setText(tr("<B>Tags:</B> "));
     _label_tags->setVisible(false);
 }
+
 void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 	// boost::intrusive_ptr<TreeItem> item_to_be_bound = record_index->target();
     _item = item_to_be_bound;
@@ -190,7 +193,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 				      , [this](QMouseEvent *ev){
 		Q_UNUSED(ev)
 		assert(_item);
-		assert(_item->page_valid() && _item->page());
+		assert(_item->page());	// _item->page_valid() &&
 		_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 	    });
 
@@ -200,21 +203,23 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 		Q_UNUSED(ev)
 		// Q_UNUSED(home)
 		assert(_item);
-		assert(_item->page_valid());
+//		assert(_item->page_valid());
 		browser::WebPage *page = _item->page();
 		assert(page);
 		QString home = _item->field<home_type>();
 		QString url = _item->field<url_type>();
 		if(home != browser::Browser::_defaulthome && url != home){
-// _item->field("url", home);
+//		    _item->field("url", home);
 		    static_cast<QWebEnginePage *>(page)->setUrl(QUrl(home));	// item_bind(_item)->activate(); // page->load(_record, true);
-			// _record->active();
+//		    _record->active();
 		}
 	    });
 }
+
 boost::intrusive_ptr<TreeItem> MetaEditor::item(){
     return _item;
 }
+
 void MetaEditor::setup_ui(void){
 	// Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...
 	// _item_tags_layout = new QHBoxLayout();
@@ -241,28 +246,29 @@ void MetaEditor::setup_ui(void){
 
 	// _attachtable_screen = new AttachTableScreen(this);
 }
+
 void MetaEditor::assembly(void){
 	//// Сборка виджета редактирования текста (основной виджет)
 	// _editor_main_screen    = new QWidget(this);
 	// _editor_main_layer     = new QGridLayout(_editor_main_screen);
 
-    _editor_main_layer->addLayout(_textformat_buttons_layout,   0, 0, 1, 2);
-    _editor_main_layer->addWidget(_item_pin,                    1, 0, 1, 1);
-    _editor_main_layer->addWidget(_tree_path,                   1, 1, 1, 1);
+    _editor_main_layer->addLayout(_textformat_buttons_layout, 0, 0, 1, 2);
+    _editor_main_layer->addWidget(_item_pin, 1, 0, 1, 1);
+    _editor_main_layer->addWidget(_tree_path, 1, 1, 1, 1);
 
-    _editor_main_layer->addWidget(_item_name,                   2, 0, 1, 2);
-    _editor_main_layer->addWidget(_item_author,                 3, 0, 1, 2);
+    _editor_main_layer->addWidget(_item_name, 2, 0, 1, 2);
+    _editor_main_layer->addWidget(_item_author, 3, 0, 1, 2);
 
-    _editor_main_layer->addWidget(_text_area,                   4, 0, 1, 2);
+    _editor_main_layer->addWidget(_text_area, 4, 0, 1, 2);
 
-    _editor_main_layer->addWidget(_label_home,                  5, 0, 1, 1);
-    _editor_main_layer->addWidget(_item_home,                   5, 1, 1, 1);
+    _editor_main_layer->addWidget(_label_home, 5, 0, 1, 1);
+    _editor_main_layer->addWidget(_item_home, 5, 1, 1, 1);
 
-    _editor_main_layer->addWidget(_label_url,                   6, 0, 1, 1);
-    _editor_main_layer->addWidget(_item_url,                    6, 1, 1, 1);
+    _editor_main_layer->addWidget(_label_url, 6, 0, 1, 1);
+    _editor_main_layer->addWidget(_item_url, 6, 1, 1, 1);
 
-    _editor_main_layer->addWidget(_label_tags,                  7, 0, 1, 1);
-    _editor_main_layer->addWidget(_item_tags_scrollarea,        7, 1, 1, 1);	//    _editor_main_layer->addLayout(_item_tags_scrollarea_layout, 7, 1, 1, 1);	// Было addLayout(recordTagsLayout ...)    //
+    _editor_main_layer->addWidget(_label_tags, 7, 0, 1, 1);
+    _editor_main_layer->addWidget(_item_tags_scrollarea, 7, 1, 1, 1);	//    _editor_main_layer->addLayout(_item_tags_scrollarea_layout, 7, 1, 1, 1);	// Было addLayout(recordTagsLayout ...)    //
 
     _editor_main_layer->setColumnStretch(1, 1);
     _editor_main_layer->setRowStretch(4, 2);	// for textArea auto fullfill
@@ -290,19 +296,23 @@ void MetaEditor::assembly(void){
 	// По-умолчанию отображается слой редатирования
     to_editor_layout();
 }
+
 void MetaEditor::to_editor_layout(void){
     _attachtable_screen->hide();// Что бы небыло мерцания, вначале нужно делать сокрытие текущего виджета
     _editor_main_screen->show();
 }
+
 void MetaEditor::to_attach_layout(void){
     _editor_main_screen->hide();
     _attachtable_screen->show();
 }
+
 // Статическая функция, обрабатывает клик в редакторе по кнопке переключения на список прикрепляемых файлов
 void MetaEditor::to_attach_callback(void){
     MetaEditor *edView = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
     edView->to_attach_layout();
 }
+
 // Слот для установки значений инфополей на экране
 void MetaEditor::field(QString n, QString v){
     if(n == "pin")pin(v);
@@ -313,6 +323,7 @@ void MetaEditor::field(QString n, QString v){
     else if(n == "tags")tags(v);
     else critical_error("metaeditor.set_field Undestand field " + n + " with value " + v);
 }
+
 void MetaEditor::clear_all(void){
     qDebug() << "MetaEditor::clear_all()";
 
@@ -335,19 +346,21 @@ void MetaEditor::clear_all(void){
 	// Очистка для слоя приаттаченных файлов
     _attachtable_screen->clear();
 }
+
 void MetaEditor::tree_path(QString path){
     _tree_path->setVisible(true);
     _tree_path->setText(tr("<b>Path: </b>") + path);
 }
+
 void MetaEditor::switch_pin(){
 	// if(globalparameters.entrance()->activiated_browser()) {
     browser::TabWidget *_tabmanager = globalparameters.entrance()->activated_browser()->tabmanager();
 	// record_screens()->record_controller();
     if(_tabmanager){
-	RecordModel *source_model = _tabmanager->source_model();
-	auto _record_controller = _tabmanager->record_controller();
-	rv_t *record_view = _tabmanager->view();
-	pos_source pos_source_(_tabmanager->currentIndex());	// first_selectionpos();
+	RecordModel	*source_model		= _tabmanager->source_model();
+	auto		_record_controller	= _tabmanager->record_controller();
+	rv_t		*record_view		= _tabmanager->view();
+	pos_source	pos_source_(_tabmanager->currentIndex());	// first_selectionpos();
 	if(source_model && - 1 != pos_source_){
 		// Выясняется ссылка на таблицу конечных данных
 		// auto item = source_model->tree_item();  //->record_table();    //getTableData();
@@ -371,8 +384,8 @@ void MetaEditor::switch_pin(){
 		pin(p = _string_from_check_state[Qt::CheckState::Checked]);
 		home(h);
 
-		edit_data["pin"] = p;
-		edit_data["home"] = h;
+		edit_data["pin"]	= p;
+		edit_data["home"]	= h;
 	    }
 		//// Переданные отредактированные поля преобразуются в вид имя-значение
 		// QMap<QString, QString> editData;
@@ -397,15 +410,18 @@ void MetaEditor::switch_pin(){
     }
 	// }
 }
+
 void MetaEditor::pin(QString pin_){
 	// recordPin->setVisible(true);
     _item_pin->setCheckState(_state_check_from_string[pin_]);
 	// recordPin->setText("<b>" + pin + "</b>");
 }
+
 void MetaEditor::name(QString name_){
     _item_name->setVisible(true);
     _item_name->setText("<b>" + name_ + "</b>");
 }
+
 void MetaEditor::author(QString author_){
     if(author_.length() == 0){
 	_item_author->setVisible(false);
@@ -415,6 +431,7 @@ void MetaEditor::author(QString author_){
 	_item_author->setText("<i>" + author_ + "</i>");
     }
 }
+
 void MetaEditor::home(QString url_){
     if(url_.length() == 0){
 	_label_home->setVisible(false);
@@ -428,6 +445,7 @@ void MetaEditor::home(QString url_){
 	else _item_home->setText("<a href=\"" + url_ + "\">" + url_ + "</a>");
     }
 }
+
 void MetaEditor::url(QString url_){
     if(url_.length() == 0){
 	_label_url->setVisible(false);
@@ -441,6 +459,7 @@ void MetaEditor::url(QString url_){
 	else _item_url->setText("<a href=\"" + url_ + "\">" + url_ + "</a>");
     }
 }
+
 void MetaEditor::tags(QString tags_){
     _item_tags_text_list.clear();
 
@@ -524,6 +543,7 @@ void MetaEditor::tags(QString tags_){
 	_item_tags_scrollarea->adjustSize();
     }
 }
+
 // Слот принимает Url метки. Url состоит из порядкового номера метки,
 // по нему восстанавливается текст метки
 // Slot accepts Url tags . Url consists of a serial number label ,
@@ -547,3 +567,4 @@ void MetaEditor::on_click_to_tag(const QString &link_text){
 ClickableLabel::ClickableLabel(QWidget *parent, Qt::WindowFlags f) : QLabel(parent, f){}
 
 ClickableLabel::ClickableLabel(const QString &text, QWidget *parent, Qt::WindowFlags f) : QLabel(text, parent, f){}
+

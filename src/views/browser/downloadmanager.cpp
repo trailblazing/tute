@@ -96,9 +96,9 @@ namespace browser {
 		settings.endGroup();
 
 
-		auto	path = _download->path();
-		auto	file_path = path.mid(0, path.lastIndexOf('/') + 1);
-		auto	difference = url_difference(file_path.toStdString(), download_directory.toStdString());
+		auto	path		= _download->path();
+		auto	file_path	= path.mid(0, path.lastIndexOf('/') + 1);
+		auto	difference	= url_difference(file_path.toStdString(), download_directory.toStdString());
 		if(! (difference == "" || difference == "/")){
 		    auto file_name = path.mid(path.lastIndexOf('/'));
 		    *file_name.begin() != '/' ? file_name.prepend('/') : "";
@@ -113,13 +113,12 @@ namespace browser {
 	}
 	init();
     }
-    void DownloadWidget:: init(){
+
+    void DownloadWidget::init(){
 	if(_download){
 	    if(_download->state() == QWebEngineDownloadItem::DownloadRequested){
-		connect(// _download.get() // _download.data()
-		    _download, &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress);
-		connect(// _download.get() // _download.data()
-		    _download, &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);
+		connect(_download, &QWebEngineDownloadItem::downloadProgress, this, &DownloadWidget::downloadProgress);	// _download.get() // _download.data()
+		connect(_download, &QWebEngineDownloadItem::finished, this, &DownloadWidget::finished);	// _download.get() // _download.data()
 //        }
 //            if(_download->state() == QWebEngineDownloadItem::DownloadRequested ){
 		// reset info
@@ -140,15 +139,16 @@ namespace browser {
 //            }
 	}
     }
-    bool DownloadWidget:: getFileName(bool prompt_for_filename){
+
+    bool DownloadWidget::getFileName(bool prompt_for_filename){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	if(_file.absoluteDir().exists())defaultLocation = _file.absolutePath();
 	QString download_directory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
 	if(! download_directory.isEmpty())download_directory += QLatin1Char('/');
-	QString _default_filename = QFileInfo(download_directory, _file.fileName()).absoluteFilePath();
-	QString filename = _default_filename;
+	QString _default_filename	= QFileInfo(download_directory, _file.fileName()).absoluteFilePath();
+	QString filename		= _default_filename;
 	if(prompt_for_filename){
 	    filename = QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename);
 	    if(filename.isEmpty()){
@@ -162,18 +162,16 @@ namespace browser {
 
 	auto download_state = _download->state();
 	assert(download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress);
-	if(_download && (download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress)){
-	    _download->setPath(_file.absoluteFilePath());
-	}
+	if(_download && (download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress))_download->setPath(_file.absoluteFilePath());
 	fileNameLabel->setText(_file.fileName());
 	settings.endGroup();
 
 	return true;
     }
-    TabWidget *DownloadWidget:: tab_manager() const {
-	return _tab_manager;
-    }
-    void DownloadWidget:: stop(){
+
+    TabWidget *DownloadWidget::tab_manager() const {return _tab_manager;}
+
+    void DownloadWidget::stop(){
 	setUpdatesEnabled(false);
 	stopButton->setEnabled(false);
 	stopButton->hide();
@@ -181,11 +179,13 @@ namespace browser {
 	if(_download)_download->cancel();
 	emit statusChanged();
     }
-    void DownloadWidget:: open(){
+
+    void DownloadWidget::open(){
 	QUrl url = QUrl::fromLocalFile(_file.absoluteFilePath());
 	QDesktopServices::openUrl(url);
     }
-    void DownloadWidget:: downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
+
+    void DownloadWidget::downloadProgress(qint64 bytesReceived, qint64 bytesTotal){
 	_bytesreceived = bytesReceived;
 	if(bytesTotal == - 1){
 	    progressBar->setValue(0);
@@ -196,15 +196,16 @@ namespace browser {
 	}
 	updateInfoLabel();
     }
-    void DownloadWidget:: updateInfoLabel(){
+
+    void DownloadWidget::updateInfoLabel(){
 	qint64 bytesTotal = progressBar->maximum();
 
 	// update info label
-	double	speed = _bytesreceived * 1000.0 / _downloadtime.elapsed();
-	double	timeRemaining = ((double)(bytesTotal - _bytesreceived)) / speed;
-	QString timeRemainingString = tr("seconds");
+	double	speed			= _bytesreceived * 1000.0 / _downloadtime.elapsed();
+	double	timeRemaining		= ((double) (bytesTotal - _bytesreceived)) / speed;
+	QString timeRemainingString	= tr("seconds");
 	if(timeRemaining > 60){
-	    timeRemaining = timeRemaining / 60;
+	    timeRemaining	= timeRemaining / 60;
 	    timeRemainingString = tr("minutes");
 	}
 	timeRemaining = floor(timeRemaining);
@@ -220,7 +221,7 @@ namespace browser {
 	    info = tr("%1 of %2 (%3/sec) %4")
 		.arg(dataString(_bytesreceived))
 		.arg(bytesTotal == 0 ? tr("?") : dataString(bytesTotal))
-		.arg(dataString((int)speed))
+		.arg(dataString((int) speed))
 		.arg(remaining);
 	}else{
 	    if(_bytesreceived != bytesTotal){
@@ -231,55 +232,58 @@ namespace browser {
 	}
 	downloadInfoLabel->setText(info);
     }
-    QString DownloadWidget:: dataString(int size) const {
+
+    QString DownloadWidget::dataString(int size) const {
 	QString unit;
-	if(size < 1024){
-	    unit = tr("bytes");
-	}else if(size < 1024 * 1024){
-	    size /= 1024;
-	    unit = tr("kB");
+	if(size < 1024)unit = tr("bytes");
+	else if(size < 1024 * 1024){
+	    size	/= 1024;
+	    unit	= tr("kB");
 	}else{
-	    size /= 1024 * 1024;
-	    unit = tr("MB");
+	    size	/= 1024 * 1024;
+	    unit	= tr("MB");
 	}
 	return QString(QLatin1String("%1 %2")).arg(size).arg(unit);
     }
-    bool DownloadWidget:: downloading() const {
-	return(progressBar->isVisible());
+
+    bool DownloadWidget::downloading() const {
+	return progressBar->isVisible();
     }
-    bool DownloadWidget:: downloadedSuccessfully() const {
+
+    bool DownloadWidget::downloadedSuccessfully() const {
 	bool completed = _download
 	    && _download->isFinished()
 	    && _download->state() == QWebEngineDownloadItem::DownloadCompleted;
 
 	return completed || ! stopButton->isVisible();
     }
-    void DownloadWidget:: finished(){
+
+    void DownloadWidget::finished(){
 	if(_download){
 	    QWebEngineDownloadItem::DownloadState	state = _download->state();
 	    QString					message;
 	    bool					interrupted = false;
 	    switch(state){
-	    case QWebEngineDownloadItem::DownloadRequested:	// Fall-through.
-	    case QWebEngineDownloadItem::DownloadInProgress:
-		Q_UNREACHABLE();
-		break;
+		case QWebEngineDownloadItem::DownloadRequested:		// Fall-through.
+		case QWebEngineDownloadItem::DownloadInProgress:
+		    Q_UNREACHABLE();
+		    break;
 
-	    case QWebEngineDownloadItem::DownloadCompleted:
-		_tab_manager->current_download_acceptance({_download->url(), false});
-		break;
+		case QWebEngineDownloadItem::DownloadCompleted:
+		    _tab_manager->current_download_acceptance({_download->url(), false});
+		    break;
 
-	    case QWebEngineDownloadItem::DownloadCancelled:
-		message = QStringLiteral("Download cancelled");
-		interrupted = true;
-		_tab_manager->current_download_acceptance({_download->url(), false});
-		break;
+		case QWebEngineDownloadItem::DownloadCancelled:
+		    message	= QStringLiteral("Download cancelled");
+		    interrupted	= true;
+		    _tab_manager->current_download_acceptance({_download->url(), false});
+		    break;
 
-	    case QWebEngineDownloadItem::DownloadInterrupted:
-		message = QStringLiteral("Download interrupted");
-		interrupted = true;
-		_tab_manager->current_download_acceptance({_download->url(), false});
-		break;
+		case QWebEngineDownloadItem::DownloadInterrupted:
+		    message	= QStringLiteral("Download interrupted");
+		    interrupted	= true;
+		    _tab_manager->current_download_acceptance({_download->url(), false});
+		    break;
 	    }
 	    if(interrupted){
 		downloadInfoLabel->setText(message);
@@ -293,6 +297,7 @@ namespace browser {
 	updateInfoLabel();
 	emit statusChanged();
     }
+
     W_OBJECT_IMPL(DownloadManager)
 	/*!
 	    DownloadManager is a Dialog that contains a list of DownloadWidgets
@@ -319,23 +324,23 @@ namespace browser {
 	connect(cleanupButton, &FlatToolButton::clicked, this, &DownloadManager::cleanup);
 	load();
     }
+
     DownloadManager::~DownloadManager(){
 	// delete
 	_model->deleteLater();
 	_autosaver->changeOccurred();
 	_autosaver->saveIfNeccessary();
-	if(_iconprovider){
-	    delete _iconprovider;
-	}
+	if(_iconprovider)delete _iconprovider;
     }
-    int DownloadManager:: activeDownloads() const {
+
+    int DownloadManager::activeDownloads() const {
 	int count = 0;
-	for(int i = 0; i < _downloads.count(); ++ i){
-	    if(_downloads.at(i)->stopButton->isEnabled())++ count;
-	}
+	for(int i = 0; i < _downloads.count(); ++ i)
+		if(_downloads.at(i)->stopButton->isEnabled())++ count;
 	return count;
     }
-    void DownloadManager:: download(TabWidget *_tab_manager, QWebEngineDownloadItem *download){
+
+    void DownloadManager::download(TabWidget *_tab_manager, QWebEngineDownloadItem *download){
 	assert(download->state() == QWebEngineDownloadItem::DownloadRequested || download->state() == QWebEngineDownloadItem::DownloadInProgress);
 	if(download->state() == QWebEngineDownloadItem::DownloadRequested){
 	    QSettings settings;
@@ -344,9 +349,9 @@ namespace browser {
 	    settings.endGroup();
 
 
-	    auto	path = download->path();
-	    auto	file_path = path.mid(0, path.lastIndexOf('/') + 1);
-	    auto	difference = url_difference(file_path.toStdString(), download_directory.toStdString());
+	    auto	path		= download->path();
+	    auto	file_path	= path.mid(0, path.lastIndexOf('/') + 1);
+	    auto	difference	= url_difference(file_path.toStdString(), download_directory.toStdString());
 	    if(! (difference == "" || difference == "/")){
 		auto file_name = path.mid(path.lastIndexOf('/'));
 		*file_name.begin() != '/' ? file_name.prepend('/') : "";
@@ -359,7 +364,8 @@ namespace browser {
 	    addItem(widget);
 	}
     }
-    void DownloadManager:: addItem(std::shared_ptr<DownloadWidget> widget){
+
+    void DownloadManager::addItem(std::shared_ptr<DownloadWidget> widget){
 	connect(widget.get(), &DownloadWidget::statusChanged, this, &DownloadManager::updateRow);
 	int row = _downloads.count();
 	_model->beginInsertRows(QModelIndex(), row, row);
@@ -372,9 +378,10 @@ namespace browser {
 	widget->fileIcon->setPixmap(icon.pixmap(48, 48));
 	downloadsView->setRowHeight(row, widget->sizeHint().height());
     }
-    void DownloadManager:: updateRow(){
+
+    void DownloadManager::updateRow(){
 	DownloadWidget	*widget = qobject_cast<DownloadWidget *>(sender());
-	int		row = _downloads.indexOf(widget->shared_from_this());
+	int		row	= _downloads.indexOf(widget->shared_from_this());
 	if(- 1 == row)return;
 	if(! _iconprovider)_iconprovider = new QFileIconProvider();
 	QIcon icon = _iconprovider->icon(widget->_file);
@@ -386,21 +393,22 @@ namespace browser {
 	if(  ! widget->downloading()
 	  && sapp_t::instance()->privateBrowsing())remove = true;
 	if(  widget->downloadedSuccessfully()
-	  && removePolicy() == DownloadManager::SuccessFullDownload){
-	    remove = true;
-	}
+	  && removePolicy() == DownloadManager::SuccessFullDownload)remove = true;
 	if(remove)_model->removeRow(row);
 	cleanupButton->setEnabled(_downloads.count() - activeDownloads() > 0);
     }
-    DownloadManager::RemovePolicy DownloadManager:: removePolicy() const {
+
+    DownloadManager::RemovePolicy DownloadManager::removePolicy() const {
 	return _removepolicy;
     }
-    void DownloadManager:: setRemovePolicy(RemovePolicy policy){
+
+    void DownloadManager::setRemovePolicy(RemovePolicy policy){
 	if(policy == _removepolicy)return;
 	_removepolicy = policy;
 	_autosaver->changeOccurred();
     }
-    void DownloadManager:: save() const {
+
+    void DownloadManager::save() const {
 	QSettings settings;
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QMetaEnum removePolicyEnum = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("RemovePolicy"));
@@ -413,8 +421,8 @@ namespace browser {
 	    settings.setValue(key + QLatin1String("location"), _downloads[i]->_file.filePath());
 	    settings.setValue(key + QLatin1String("done"), _downloads[i]->downloadedSuccessfully());
 	}
-	int	i = _downloads.count();
-	QString key = QString(QLatin1String("download_%1_")).arg(i);
+	int	i	= _downloads.count();
+	QString key	= QString(QLatin1String("download_%1_")).arg(i);
 	while(settings.contains(key + QLatin1String("url"))){
 	    settings.remove(key + QLatin1String("url"));
 	    settings.remove(key + QLatin1String("location"));
@@ -424,23 +432,24 @@ namespace browser {
 	settings.setValue(QLatin1String("prompt_store_position"), QLatin1String((QString::number(_prompt_store_position)).toLatin1()));
 	settings.endGroup();
     }
-    void DownloadManager:: load(){
+
+    void DownloadManager::load(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QSize size = settings.value(QLatin1String("size")).toSize();
 	if(size.isValid())resize(size);
-	QByteArray	value = settings.value(QLatin1String("removeDownloadsPolicy"), QLatin1String("Never")).toByteArray();
-	QMetaEnum	removePolicyEnum = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("RemovePolicy"));
-	_removepolicy = removePolicyEnum.keyToValue(value) == - 1 ?
-	    Never :
-	    static_cast<RemovePolicy>(removePolicyEnum.keyToValue(value));
+	QByteArray	value			= settings.value(QLatin1String("removeDownloadsPolicy"), QLatin1String("Never")).toByteArray();
+	QMetaEnum	removePolicyEnum	= staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("RemovePolicy"));
+	_removepolicy = removePolicyEnum.keyToValue(value) == - 1
+	    ? Never
+	    : static_cast<RemovePolicy>(removePolicyEnum.keyToValue(value));
 
-	int	i = 0;
-	QString key = QString(QLatin1String("download_%1_")).arg(i);
+	int	i	= 0;
+	QString key	= QString(QLatin1String("download_%1_")).arg(i);
 	while(settings.contains(key + QLatin1String("url"))){
-	    QUrl	url = settings.value(key + QLatin1String("url")).toUrl();
-	    QString	fileName = settings.value(key + QLatin1String("location")).toString();
-	    bool	done = settings.value(key + QLatin1String("done"), true).toBool();
+	    QUrl	url		= settings.value(key + QLatin1String("url")).toUrl();
+	    QString	fileName	= settings.value(key + QLatin1String("location")).toString();
+	    bool	done		= settings.value(key + QLatin1String("done"), true).toBool();
 	    if(done && ! url.isEmpty() && ! fileName.isEmpty()){
 		std::shared_ptr<DownloadWidget> widget = std::make_shared<DownloadWidget>(nullptr, nullptr, this);
 		widget->_file.setFile(fileName);
@@ -457,7 +466,8 @@ namespace browser {
 	_prompt_store_position = settings.value(QLatin1String("prompt_store_position")).toBool();
 	settings.endGroup();
     }
-    void DownloadManager:: cleanup(){
+
+    void DownloadManager::cleanup(){
 	if(_downloads.isEmpty())return;
 	for(auto &download : _downloads){
 	    download->tab_manager()->current_download_acceptance({QUrl(), false});
@@ -470,25 +480,30 @@ namespace browser {
 	}
 	_autosaver->changeOccurred();
     }
-    void DownloadManager:: updateItemCount(){
+
+    void DownloadManager::updateItemCount(){
 	int count = _downloads.count();
 	itemCount->setText(count == 1 ? tr("1 Download") : tr("%1 Downloads").arg(count));
     }
+
     W_OBJECT_IMPL(DownloadModel)
     DownloadModel::DownloadModel(DownloadManager *downloadManager, QObject *parent)
 	: QAbstractListModel(parent)
 	  , _downloadmanager(downloadManager)
     {}
-    QVariant DownloadModel:: data(const QModelIndex &index, int role) const {
+
+    QVariant DownloadModel::data(const QModelIndex &index, int role) const {
 	if(index.row() < 0 || index.row() >= rowCount(index.parent()))return QVariant();
 	if(role == Qt::ToolTipRole)
 		if(! _downloadmanager->_downloads.at(index.row())->downloadedSuccessfully())return _downloadmanager->_downloads.at(index.row())->downloadInfoLabel->text();
 	return QVariant();
     }
-    int DownloadModel:: rowCount(const QModelIndex &parent) const {
+
+    int DownloadModel::rowCount(const QModelIndex &parent) const {
 	return (parent.isValid()) ? 0 : _downloadmanager->_downloads.count();
     }
-    bool DownloadModel:: removeRows(int row, int count, const QModelIndex &parent){
+
+    bool DownloadModel::removeRows(int row, int count, const QModelIndex &parent){
 	if(parent.isValid())return false;
 	int lastRow = row + count - 1;
 	for(int i = lastRow; i >= row; -- i){

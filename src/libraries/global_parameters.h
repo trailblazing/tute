@@ -27,6 +27,7 @@ class QSplitter;
 class EditorConfigDialog;
 class EditorConfig;
 class AttachTableController;
+class HidableTabWidget;
 
 // W_REGISTER_ARGTYPE(rs_t)
 // W_REGISTER_ARGTYPE(rs_t *)
@@ -67,8 +68,8 @@ class GlobalParameters : public QObject {
 	void		v_right_splitter(QSplitter *vrightsplitter);
 	QSplitter	*v_right_splitter();
 
-	void		vtab_record(QTabWidget *point);
-	QTabWidget	*vtab_record();
+	void			vtab_record(HidableTabWidget *point);
+	HidableTabWidget	*vtab_record();
 
 //	void		vtab_tree(QTabWidget *point);
 //	QTabWidget	*vtab_tree();
@@ -97,8 +98,8 @@ class GlobalParameters : public QObject {
 	void		window_switcher(WindowSwitcher *point);
 	WindowSwitcher	*window_switcher();
 
-	wn_t		*mainwindow()				{return _mainwindow;}
-	void		mainwindow(wn_t *mainwindow)		{_mainwindow = mainwindow;}
+	wn_t		*mainwindow();
+	void		mainwindow(wn_t *mainwindow);
 	void		crypt_key(QByteArray hash);
 	QByteArray	crypt_key(void);
 
@@ -106,15 +107,15 @@ class GlobalParameters : public QObject {
 	// Так как в более старых версиях MyTetra его еще небыло
 	void create_stylesheet_file(QString dirname);
 
-	void				style_source(const QString &source)		{_style_source = source;}
-	QString				style_source() const				{return _style_source;}
-	void				download_manager(browser::DownloadManager *dm)	{_download_manager = dm;}
+	void				style_source(const QString &source);
+	QString				style_source() const;
+	void				download_manager(browser::DownloadManager *dm);
 	browser::DownloadManager	*download_manager();
 
-	void			editor_config(EditorConfig *dialog)					{_editor_config = dialog;}
-	EditorConfig		*editor_config()							{return _editor_config;}
-	AttachTableController	*attachtable_controller()						{return _attachtable_controller;}
-	void			attachtable_controller(AttachTableController *_attachtable_controller)	{this->_attachtable_controller = _attachtable_controller;}
+	void			editor_config(EditorConfig *dialog);
+	EditorConfig		*editor_config();
+	AttachTableController	*attachtable_controller();
+	void			attachtable_controller(AttachTableController *_attachtable_controller);
     private:
 
 	void	init_workdirectory(void);
@@ -124,29 +125,28 @@ class GlobalParameters : public QObject {
 	void	create_portable_programfiles(void);
 	void	create_first_programfiles(QString dirName);
 
-	browser::Profile		*_profile;
-	ts_t				*_tree_screen;
-	browser::Entrance		*_entrance;
-	std::vector<rs_t *>		_table_screens;
-	EditorConfig			*_editor_config;
-	FindScreen			*_find_screen;
-	MetaEditor			*_meta_editor;
-	QStatusBar			*_statusbar;
-	WindowSwitcher			*_window_switcher;
-	QSplitter			*_find_splitter;
-	QSplitter			*_v_left_splitter;
-	QSplitter			*_h_record_splitter;
-	QSplitter			*_v_right_splitter;
-	QTabWidget			*_vtab_record;
-//	QTabWidget			*_vtab_tree;
-	wn_t				*_mainwindow;
-	browser::DownloadManager	*_download_manager;
-	QString				_main_program_file;
-	QString				_work_directory;
-	AttachTableController		*_attachtable_controller;
+	browser::Profile			*_profile			= nullptr;
+	ts_t					*_tree_screen			= nullptr;
+	browser::Entrance			*_entrance			= nullptr;
+	EditorConfig				*_editor_config			= nullptr;
+	FindScreen				*_find_screen			= nullptr;
+	MetaEditor				*_meta_editor			= nullptr;
+	QStatusBar				*_statusbar			= nullptr;
+	WindowSwitcher				*_window_switcher		= nullptr;
+	QSplitter				*_find_splitter			= nullptr;
+	QSplitter				*_v_left_splitter		= nullptr;
+	QSplitter				*_h_record_splitter		= nullptr;
+	QSplitter				*_v_right_splitter		= nullptr;
+	HidableTabWidget			*_vtab_record			= nullptr;	//	HidableTabWidget			*_vtab_tree		= nullptr;
+	wn_t					*_mainwindow			= nullptr;
+	browser::DownloadManager		*_download_manager		= nullptr;
+	AttachTableController			*_attachtable_controller	= nullptr;
 
-	QByteArray	_password_hash;
-	QString		_style_source;
+	QByteArray				_password_hash;
+	QString					_style_source;
+	QString					_main_program_file;
+	QString					_work_directory;
+	std::vector<rs_t *>			_table_screens;
 };
 
 #endif /* __GLOBALPARAMETERS_H__ */
