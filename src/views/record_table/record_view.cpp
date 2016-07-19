@@ -264,11 +264,11 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 
 W_OBJECT_IMPL(rv_t)
 
-rv_t::rv_t(rs_t *record_screen, rctl_t *record_controller)
-    : QTableView(record_screen)
+rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
+    : QTableView(record_screen_)
       , _context_menu(new QMenu(this))
-      , _record_screen(record_screen)
-      , _record_controller(record_controller)
+      , _record_screen(record_screen_)
+      , _record_controller(record_controller_)
       , _layout(new QVBoxLayout(this))
       , _is_field_type_column([&](const QString &type_name, int index) -> bool {
 //              QString _type_name = boost::mpl::c_str<field_type>::value;

@@ -497,6 +497,7 @@ namespace browser {
 	    setTabsClosable(true);
 
 	    connect(static_cast<QTabBar *const>(this), &QTabBar::tabCloseRequested, this, &TabBar::closeTabSignal);
+//	    connect(static_cast<QTabBar *const>(this), &QTabBar::lastTabClosed, globalparameters.main_window()->vtab_record(), &HidableTabWidget::tabCloseRequested);
 	    setSelectionBehaviorOnRemove(QTabBar::SelectPreviousTab);
 	    setMovable(true);
 		// setStyleSheet("QTabBar::tab { left: 1px; max-width: 200px; align: left; text-align: left; margin-left: 2px; padding: 2px;}");  // ?
@@ -649,20 +650,22 @@ namespace browser {
     }
 
     W_OBJECT_IMPL(TabWidget)
-    TabWidget::TabWidget(ts_t              *_tree_screen
-			, FindScreen        *_find_screen
-			, MetaEditor        *_editor_screen
-			, Browser           *_browser
-			, rs_t              *_record_screen
-			, Entrance          *_entrance
-			, wn_t              *_main_window
-			, browser::Profile  *_profile)
-	: QTabWidget(_browser)
-	  , _tree_screen(_tree_screen)
-	  , _editor_screen(_editor_screen)
-	  , _entrance(_entrance)
-	  , _browser(_browser)
-	  , _record_controller(nullptr)	// (new rctl_t(_editor_screen, this, _record_screen, _main_window))
+    TabWidget::TabWidget(ts_t               *tree_screen_
+			, FindScreen        *find_screen_
+			, MetaEditor        *editor_screen_
+			, Browser           *browser_
+			, rs_t              *record_screen_
+			, Entrance          *entrance_
+			, wn_t              *main_window_
+			, browser::Profile  *profile_)
+	: QTabWidget(browser_)
+	  , _tree_screen(tree_screen_)
+	  , _editor_screen(editor_screen_)
+	  , _entrance(entrance_)
+	  , _browser(browser_)
+	  , _record_screen(record_screen_)
+	  , _main_window(main_window_)
+	  , _record_controller(new rctl_t(_editor_screen, this, _record_screen, _main_window))
 	  , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
 	  , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
 	  , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -673,10 +676,10 @@ namespace browser {
 	  , _lineeditcompleter(nullptr)	// new QCompleter(_completionModel, this)
 	  , _lineedits(new QStackedWidget(this))
 	  , _tabbar(new TabBar(this))
-	  , _profile(_profile)	// globalparameters.profile()   // QWebEngineProfile::defaultProfile()
+	  , _profile(profile_)	// globalparameters.profile()   // QWebEngineProfile::defaultProfile()
 	  , _fullscreenview(nullptr)
 	  , _fullscreennotification(nullptr){
-	_record_controller = new rctl_t(_editor_screen, this, _record_screen, _main_window);
+	assert(_record_controller);	//	_record_controller = new rctl_t(_editor_screen, this, _record_screen, _main_window);
 	assert(_record_controller->tabmanager());
 	setTabBar(_tabbar);
 	setTabPosition(TabPosition::West);	// South
@@ -687,7 +690,7 @@ namespace browser {
 	// , _shadow_branch_root(_shadow_branch_root)
 	// , _shadow_source_model(new TableModel(QString(table_screen_singleton_name) + QString("_shadow"), _tree_item, this))
 	// , _table_data(std::make_shared<TableData>(_tree_item))
-	_find_screen->toolbarsearch()->lineedits(_lineedits);
+	find_screen_->toolbarsearch()->lineedits(_lineedits);
 
 	// _lineedits = globalparameters.find_screen()->toolbarsearch()->lineedits();
 	// connect(parent, []() {}, globalparameters.find_screen()->toolbarsearch(), [this]() {globalparameters.find_screen()->toolbarsearch()->lineedits(_lineedits);});
@@ -721,15 +724,14 @@ namespace browser {
 	connect(_tabbar, &TabBar::tabMoved, this, &TabWidget::moveTab);
 
 	connect(this, &TabWidget::tabsChanged, this, &TabWidget::onTabsChanged);
-
+	connect(this, &TabWidget::lastTabClosed, [&] {auto index = _main_window->vtab_record()->indexOf(_record_screen);if(index != - 1)emit _main_window->vtab_record()->tabCloseRequested(index);});
 	setDocumentMode(true);
 
 	// _tabbar->setMaximumSize(0, 0);
 
 
 	{
-	    _tabbar->hide();
-// _tabbar->show();
+	    _tabbar->hide();// _tabbar->show();
 	}
 
 
@@ -1413,9 +1415,7 @@ namespace browser {
 	tab->page()->triggerAction(QWebEnginePage::RequestClose);
     }
 
-    QAction *TabWidget::closeTabAction() const {
-	return _closetabaction;
-    }
+    QAction *TabWidget::closeTabAction() const {return _closetabaction;}
 
 // When index is -1 index chooses the current tab
     void TabWidget::closeTab(int index){

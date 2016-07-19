@@ -931,12 +931,12 @@ void rs_t::tools_update(){
 	// Добавлять можно к любой ветке
     _addnew_to_end->setEnabled(true);
 
-    rv_t		*view			= _record_controller->view();
-    QItemSelectionModel *item_selection_model	= view->selectionModel();
+    rv_t		*_view			= _record_controller->view();
+    QItemSelectionModel *item_selection_model	= _view->selectionModel();
 
     int		selected_rows	= (item_selection_model->selectedRows()).size();
     bool	has_selection	= item_selection_model->hasSelection();
-    bool	sorting_enabled = view->isSortingEnabled();
+    bool	sorting_enabled = _view->isSortingEnabled();
 	// Добавление записи до
 	// Добавлять "до" можно только тогда, когда выбрана только одна строка
 	// и не включена сортировка
@@ -987,7 +987,7 @@ void rs_t::tools_update(){
 	// И проверяется, содержит ли буфер обмена данные нужного формата
     if(  (has_selection && 1 == selected_rows)											// (item_selection_model->hasSelection() && (item_selection_model->selectedRows()).size() == 1)
       || ! has_selection										// item_selection_model->hasSelection() == false
-      || 0 == view->model()->rowCount()
+      || 0 == _view->model()->rowCount()
 	){
 	const QMimeData *mime_data = QApplication::clipboard()->mimeData();
 	if(mime_data != nullptr)
@@ -1000,7 +1000,7 @@ void rs_t::tools_update(){
     if(  has_selection	// item_selection_model->hasSelection()
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
-      && view->is_selected_set_to_top() == false
+      && _view->is_selected_set_to_top() == false
 	)_action_move_up->setEnabled(true);
 	// Перемещение записи вниз
 	// Пункт возможен только когда выбрана одна строка
@@ -1009,7 +1009,7 @@ void rs_t::tools_update(){
     if(  has_selection	// item_selection_model->hasSelection()
       && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
-      && view->is_selected_set_to_bottom() == false
+      && _view->is_selected_set_to_bottom() == false
 	)_action_move_dn->setEnabled(true);
 	// Обновляется состояние области редактирования текста
     if(  has_selection	// item_selection_model->hasSelection()

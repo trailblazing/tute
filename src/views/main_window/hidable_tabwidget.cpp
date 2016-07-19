@@ -180,7 +180,7 @@ HidableTabWidget::~HidableTabWidget(){
     if(_record_screens.size() > 0){
 	for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
 	    if(*i){	// && *i != widget()=>for entrance
-		 _record_screens.erase(i);
+		_record_screens.erase(i);
 		(*i)->deleteLater();	// delete *i;
 		// *i = nullptr;
 	    }
@@ -274,15 +274,20 @@ browser::Browser *HidableTabWidget::new_browser(){
 
     setUpdatesEnabled(false);
     addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
-
+    bool found = false;
+    for(int i = 0; i < count(); i ++){
+	auto r = widget(i);
+	if(r == rs)found = true;
+    }
+    assert(found);
 //    bool found = false;
-//    for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
-//	if(*i == rs->browser()){
+//    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+//	if(*i == rs){
 //	    found = true;
 //	    break;
 //	}
 //    }
-//    if(! found) _browsers.insert(rs->browser());
+//    if(! found) _record_screens.insert(rs);
     _record_screens.insert(rs);
     setUpdatesEnabled(true);
     rs->adjustSize();

@@ -390,14 +390,14 @@ namespace browser {
 #endif
 
 	public:
-	    TabWidget(ts_t		*_tree_screen
-		     , FindScreen	*_find_screen
-		     , MetaEditor	*_editor_screen
-		     , Browser		*_browser
-		     , rs_t		*_record_screen
-		     , Entrance		*_entrance
-		     , wn_t		*_main_window
-		     , Profile		*_profile);
+	    TabWidget(ts_t		*tree_screen_
+		     , FindScreen	*find_screen_
+		     , MetaEditor	*editor_screen_
+		     , Browser		*browser_
+		     , rs_t		*record_screen_
+		     , Entrance		*entrance_
+		     , wn_t		*main_window_
+		     , Profile		*profile_);
 		// , TableController *_page_controller
 		// , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -593,6 +593,8 @@ namespace browser {
 	    MetaEditor		*_editor_screen;
 	    Entrance		*_entrance;
 	    Browser		*_browser;
+	    rs_t		*_record_screen;
+	    wn_t		*_main_window;
 	    rctl_t		*_record_controller;		// RecordScreen        *_record_screen;
 
 	    QAction		*_recentlyclosedtabsaction;

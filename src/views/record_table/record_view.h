@@ -131,7 +131,7 @@ class rv_t : public QTableView {
     W_OBJECT(rv_t)
 
     public:
-	rv_t(rs_t   *record_screen, rctl_t  *_record_controller);// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
+	rv_t(rs_t   *record_screen_, rctl_t  *record_controller_);// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
 
 
 	virtual ~rv_t();
