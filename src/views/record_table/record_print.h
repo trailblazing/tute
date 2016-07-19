@@ -19,7 +19,7 @@ class RecordPrint : public QDialog {
     W_OBJECT(RecordPrint)
 
     public:
-        RecordPrint(rs_t *_record_screen = 0);
+	RecordPrint(rs_t *_record_screen = 0);
         virtual ~RecordPrint();
 
         void setModel(RecordProxyModel *iModel);

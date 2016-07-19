@@ -150,7 +150,7 @@ namespace browser {
 	// return _record;
 	// }
 
-    void Entrance:: init_setting(void){
+    void Entrance::init_setting(void){
 	// QUrl _url;
 
 	// if(record)
@@ -207,9 +207,7 @@ namespace browser {
 	// }
 
 	qDebug() << "loading url: " << settings.value("main_view").toString();
-	if(settings.value("full_screen", false).toBool()){
-	    this->showFullScreen();
-	}
+	if(settings.value("full_screen", false).toBool())this->showFullScreen();
 	if(settings.value("hide_cursor", false).toBool()){
 	    this->setCursor(QCursor(Qt::BlankCursor));
 #ifdef Q_WS_QWS
@@ -275,6 +273,7 @@ namespace browser {
 
 	// this->current_record = findRecord();
     }
+
 	// void BrowserManager::loadUrl(Record *record)
 	// {
 	// QUrl _url = record->getField("url");
@@ -296,25 +295,27 @@ namespace browser {
 	// }
 	// }
 
-    Entrance *Entrance:: prepend(Browser *browser){
+    Entrance *Entrance::prepend(Browser *browser){
 	browser->setParent(this);
 	setWidget(browser);
 	browser->show();
 
-	// adjustSize();
-	// setAutoFillBackground(true);
-	// setFeatures(QDockWidget::NoDockWidgetFeatures);
-	// _browser = browser;
-	bool found = false;
-	for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
-	    if(*i == browser){
-		found = true;
-		break;
-	    }
-	}
-	if(! found)_browsers.insert(browser);
+//	// adjustSize();
+//	// setAutoFillBackground(true);
+//	// setFeatures(QDockWidget::NoDockWidgetFeatures);
+//	// _browser = browser;
+//	bool found = false;
+//	for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
+//	    if(*i == browser){
+//		found = true;
+//		break;
+//	    }
+//	}
+
+//	if(! found)_browsers.insert(browser);
 	return this;
     }
+
 	// void Entrance::on_splitter_moved(int pos, int index)
 	// {
 	// Q_UNUSED(index)
@@ -329,7 +330,7 @@ namespace browser {
 	// repaint();
 	// }
 
-    void Entrance:: on_activate_window(){
+    void Entrance::on_activate_window(){
 	FindScreen *findscreen = globalparameters.find_screen();
 
 	assert(findscreen);
@@ -342,8 +343,8 @@ namespace browser {
 					   , this
 					   , [this](bool checked = true) -> void {
 		    Q_UNUSED(checked)
-		    assert(activated_browser());
-		    auto view = activated_browser()->tabmanager()->currentWebView();
+		    assert(_main_window->vtab_record()->activated_browser());
+		    auto view = _main_window->vtab_record()->activated_browser()->tabmanager()->currentWebView();
 		    assert(view);
 		    if(view){
 			WebPage *page = view->page();
@@ -359,13 +360,14 @@ namespace browser {
 				// try {
 				// record_index = new RecordModel::ModelIndex([&] {return page->record_controller()->source_model();}, page->record_controller()->source_model()->sibling(_item), _item);
 				// } catch(std::exception &e) {throw e;}
-				page->bind(_item)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));	// page->load(record, true);
+				page->bind(_item)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// page->load(record, true);
 			    }
 			}
 		    }
 		}
 		);
     }
+
 	// Browser *Entrance::new_browser(const QByteArray &state)
 	// {
 
@@ -395,21 +397,25 @@ namespace browser {
 	// return browser;     // BrowserView::QDockWidget::BrowserWindow*
 	// }
 
-    Browser *Entrance:: new_browser(){
-	// DockedWindow *browser =
-	return new Browser(_tree_screen
-			  , _find_screen
-			  , _editor_screen	// , _vtab_tree
-			  , _main_window
-			  , this
-			  , _style_source
-			  , _profile
-			  , Qt::MaximizeUsingFullscreenGeometryHint
-		   );	// , dock_widget
+//    Browser *Entrance::new_browser(){
+////	// DockedWindow *browser =
+////	return new Browser(_tree_screen
+////			  , _find_screen
+////			  , _editor_screen	// , _vtab_tree
+////			  , _main_window
+////			  , this
+////			  , _style_source
+////			  , _profile
+////			  , Qt::MaximizeUsingFullscreenGeometryHint
+////		   );	// , dock_widget
 
+//	auto rs = new rs_t(_tree_screen, _find_screen, _editor_screen, this, _main_window, _style_source, _profile);
 
-	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
-    }
+//	return rs->browser();
+
+//	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+//    }
+
 	// Browser *Entrance::new_browser(QUrl const &url)
 	// {
 
@@ -573,7 +579,7 @@ namespace browser {
 		      , browser::Profile *_profile
 		      , Qt::WindowFlags flags)
 	: QDockWidget(_main_window, flags)	// , _application(application)
-	  , _browsers(std::set<Browser * >())	// , _shadow_branch(_record_controller->source_model()->_browser_pages)
+//	  , _browsers(std::set<Browser * >())	// , _shadow_branch(_record_controller->source_model()->_browser_pages)
 	  , _tree_screen(_tree_screen)
 	  , _find_screen(_find_screen)
 	  , _editor_screen(_editor_screen)	// , _record_controller(_record_controller)
@@ -692,29 +698,32 @@ namespace browser {
 
 	// browser->show();
     }
+
     Entrance::~Entrance(){
-	if(_browsers.size() > 0){
-	    for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
-		if(*i && *i != widget()){
-			// _browsers.erase(i);
-		    (*i)->deleteLater();// delete *i;
-			// *i = nullptr;
-		}
-	    }
-	}
-	// if(isselfcreated())delete current_record;   // no, do not apply memory by this class for record, from the original source
-	// if(_actionFreeze)delete _actionFreeze;
-	// if(_dockwidget)delete _dockwidget;
-	// if(browser)delete browser;  // I can't destroy?
-	// delete _shadow_branch;
+//	if(_browsers.size() > 0){
+//	    for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
+//		if(*i && *i != widget()){
+//			// _browsers.erase(i);
+//		    (*i)->deleteLater();// delete *i;
+//			// *i = nullptr;
+//		}
+//	    }
+//	}
+//	// if(isselfcreated())delete current_record;   // no, do not apply memory by this class for record, from the original source
+//	// if(_actionFreeze)delete _actionFreeze;
+//	// if(_dockwidget)delete _dockwidget;
+//	// if(browser)delete browser;  // I can't destroy?
+//	// delete _shadow_branch;
 	if(_hidetitlebar){delete _hidetitlebar;_hidetitlebar = nullptr;}
     }
-    void Entrance:: setup_actions(){
+
+    void Entrance::setup_actions(){
 	// _actionFreeze = new QAction(tr("Pin / freeze browser view"), this);
 	// _actionFreeze->setStatusTip(tr("Pin / freeze browser view"));
 	// _actionFreeze->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
     }
-    void Entrance:: setup_ui(void)
+
+    void Entrance::setup_ui(void)
     {}
 
 	// void BrowserView::setupDynamicSignals(void)
@@ -839,44 +848,45 @@ namespace browser {
 	// }
 
 
-	// not sure to succeeded
-    Browser *Entrance:: activated_browser(){
-	// clean();
+//	// not sure to succeeded
+//    Browser *Entrance::activated_browser(){
+//	// clean();
 
-	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
-	Browser *_browser = nullptr;
-	// if(_mainWindows.isEmpty()) {
-	// dp = new_dockedwindow(
-	// QUrl(DockedWindow::_defaulthome)
-	// );
-	// } else { //
-	// if(_browsers.size() > 0) {
-	for(auto i : _browsers){
-	    if(i->isVisible() || i->isActiveWindow()){
-		// assert(i);
-		// dp.first
-		_browser = i;	// .data();
-		// assert(_browser);
-		// dp.second = i->tabWidget()->currentWebView();
-		break;
-	    }
-	}
-	if(! _browser){
-		// _browser = _browsers[0];
-		// }
-		// } else {
-	    _browser = new_browser();
-		// assert(_browser);
-		// return _browser;
-		// dp.second = dp.first->tabWidget()->currentWebView();
-	}
-	// assert(dp.first);
-	// assert(dp.second);
-	assert(_browser);
+//	// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
+//	Browser *_browser = nullptr;
+//	// if(_mainWindows.isEmpty()) {
+//	// dp = new_dockedwindow(
+//	// QUrl(DockedWindow::_defaulthome)
+//	// );
+//	// } else { //
+//	// if(_browsers.size() > 0) {
+//	for(auto i : _main_window->vtab_record()->browsers()){
+//	    if(i->isVisible() || i->isActiveWindow()){
+//		// assert(i);
+//		// dp.first
+//		_browser = i;	// .data();
+//		// assert(_browser);
+//		// dp.second = i->tabWidget()->currentWebView();
+//		break;
+//	    }
+//	}
+//	if(! _browser){
+//		// _browser = _browsers[0];
+//		// }
+//		// } else {
+//	    _browser = new_browser();
+//		// assert(_browser);
+//		// return _browser;
+//		// dp.second = dp.first->tabWidget()->currentWebView();
+//	}
+//	// assert(dp.first);
+//	// assert(dp.second);
+//	assert(_browser);
 
-	return _browser;// qobject_cast<DockedWindow *>(widget()); //
-	// _mainWindows[0];
-    }
+//	return _browser;// qobject_cast<DockedWindow *>(widget()); //
+//	// _mainWindows[0];
+//    }
+
 	// void Entrance::activate(const QUrl &_find_url
 	// , const TreeScreen::paste_strategy &_view_paste_strategy
 	// , equal_url_t _equal
@@ -957,7 +967,7 @@ namespace browser {
 
 	// }
 
-    void Entrance:: assembly(void)
+    void Entrance::assembly(void)
     {}
 
 	// void BrowserManager::setUrl(const QUrl &_url)
@@ -966,16 +976,17 @@ namespace browser {
 	// main_window()->loadPage(_url.toString());
 	// }
 
-    void Entrance:: set_scrollbars(bool hide){
+    void Entrance::set_scrollbars(bool hide){
 	if(! hide){
 		// d->view->page()->setScrollBarPolicy(Qt::Vertical, Qt::ScrollBarAsNeeded);
 		// d->view->page()->setScrollBarPolicy(Qt::Horizontal, Qt::ScrollBarAsNeeded);
 	}
     }
-    void Entrance:: set_cache(bool cache, int cache_size){
+
+    void Entrance::set_cache(bool cache, int cache_size){
 	if(cache){
-	    QNetworkDiskCache	*diskCache = new QNetworkDiskCache(this);
-	    QString		location = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+	    QNetworkDiskCache	*diskCache	= new QNetworkDiskCache(this);
+	    QString		location	= QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
 	    diskCache->setCacheDirectory(location);
 	    diskCache->setMaximumCacheSize(cache_size * 1024 * 1024);	// in MB's
 		// d->nam->setCache(diskCache);
@@ -984,6 +995,7 @@ namespace browser {
 	    qDebug() << QString("Cache maximum size: %1MB").arg(cache_size);
 	}
     }
+
 	////deprecated
 	// void BrowserManager::onLoadFinished(bool finished)
 	// {
@@ -1080,10 +1092,8 @@ namespace browser {
 	// }
 
 
-    void Entrance:: finished(QNetworkReply *reply){
-	if(reply->error() != QNetworkReply::NoError){
-	    qDebug() << QString("Network Error: %1").arg(reply->errorString());
-	}
+    void Entrance::finished(QNetworkReply *reply){
+	if(reply->error() != QNetworkReply::NoError)qDebug() << QString("Network Error: %1").arg(reply->errorString());
 	if(reply->attribute(QNetworkRequest::SourceIsFromCacheAttribute).toBool() == true){
 	    QVariant contentVar = reply->header(QNetworkRequest::ContentTypeHeader);
 	    qDebug() << QString("Cache Used: %1").arg(contentVar.toString());
@@ -1112,13 +1122,15 @@ namespace browser {
 	// this->loadChanged();
 	// }
     }
-    void Entrance:: ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors){
+
+    void Entrance::ssl_errors(QNetworkReply *reply, const QList<QSslError> &errors){
 	foreach(const QSslError &error, errors){
 	    qDebug() << QString("SSL Error: %1").arg(error.errorString());
 	}
 
 	reply->ignoreSslErrors(errors);
     }
+
 	// void Entrance::clean()
 	// {
 	////        if(_browsers.size() > 0) {
@@ -1315,23 +1327,25 @@ namespace browser {
 	// return list;
 	// }
 
-    std::set<Browser *> &Entrance:: browsers(){
-	// clean();
+//    std::set<Browser *> &Entrance::browsers(){
+//	// clean();
 
-	// QList<DockedWindow *> list;
+//	// QList<DockedWindow *> list;
 
-	// for(int i = 0; i < _mainWindows.count(); ++i)
-	// list.append(_mainWindows.at(i));
+//	// for(int i = 0; i < _mainWindows.count(); ++i)
+//	// list.append(_mainWindows.at(i));
 
-	return _browsers;	// list;
-    }
+//	return _browsers;	// list;
+//    }
+
 #if defined(Q_OS_OSX)
-    void BrowserView:: lastWindowClosed(){
+    void BrowserView::lastWindowClosed(){
 	clean();
 	Browser *browser = new browser::Browser(this);
 	browser->slotHome();
 	_main_windows.prepend(browser);
     }
+
 #endif
 
 
@@ -1387,9 +1401,10 @@ namespace browser {
 	// return bv;
 	// }
 
-    bool Entrance:: restore_state(const QByteArray &state){
-	return activated_browser()->restore_state(state);
+    bool Entrance::restore_state(const QByteArray &state){
+	return _main_window->vtab_record()->activated_browser()->restore_state(state);
     }
+
 	// std::pair<DockedWindow *, WebView *> Entrance::active_record(Record *const record)
 	// {
 
@@ -1442,51 +1457,52 @@ namespace browser {
 	// }
 	// }
 
-    void Entrance:: resizeEvent(QResizeEvent *e){
+    void Entrance::resizeEvent(QResizeEvent *e){
 // for(auto i : _browsers) {
 // if(i) i->resizeEvent(e);
 // }
 	if(this->widget())static_cast<Browser *>(this->widget())->resizeEvent(e);
 	QDockWidget::resizeEvent(e);
     }
-    WebView *Entrance:: find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
-	// clean();
-	WebView *v = nullptr;
-	// new_dockedwindow(record);
-	for(auto i : _browsers){
-	    if(i){
-		v = i->tabWidget()->find(_equal);
-		if(v != nullptr){
-		    break;
-		}
-	    }
-	}
-	boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
-	if(v){
-	    if(v->page()){
-		boost::intrusive_ptr<::Binder> binder = v->page()->binder();
-		if(binder){
-		    auto _this_item = v->page()->host();// globalparameters.entrance()->find(_equal);
-		    if(_this_item){
-			if(binder->integrity_external(_this_item, v->page())){
-// assert(_this_item == v->page()->binder()->item());
 
-// if(_this_item && v->load_finished()) {                                                                                                                                                   // && (v->tabmanager()->currentWebView() == v)
-			    found_myself = _this_item;
-// }
-			}
-		    }
-		}
-	    }
-	}
-// }
-	if(! found_myself)v = nullptr;
-	return v;
-    }
-    void Entrance:: style_source(const QString &style_source){
+//    WebView *Entrance::find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
+//	// clean();
+//	WebView *v = nullptr;
+//	// new_dockedwindow(record);
+//	for(auto i : _main_window->vtab_record()->browsers()){
+//	    if(i){
+//		v = i->tabWidget()->find(_equal);
+//		if(v != nullptr)break;
+//	    }
+//	}
+//	boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
+//	if(v){
+//	    if(v->page()){
+//		boost::intrusive_ptr<::Binder> binder = v->page()->binder();
+//		if(binder){
+//		    auto _this_item = v->page()->host();// globalparameters.entrance()->find(_equal);
+//		    if(_this_item){
+//			if(binder->integrity_external(_this_item, v->page())){
+//// assert(_this_item == v->page()->binder()->item());
+
+//// if(_this_item && v->load_finished()) {                                                                                                                                                   // && (v->tabmanager()->currentWebView() == v)
+//			    found_myself = _this_item;
+//// }
+//			}
+//		    }
+//		}
+//	    }
+//	}
+//// }
+//	if(! found_myself)v = nullptr;
+//	return v;
+//    }
+
+    void Entrance::style_source(const QString &style_source){
 	_style_source = style_source;
     }
-    QString Entrance:: style_source(){return _style_source;}
+
+    QString Entrance::style_source(){return _style_source;}
 
 	// WebView *Entrance::find(const std::function<bool(boost::intrusive_ptr<const TreeItem>)> &_equal) const
 	// {

@@ -145,7 +145,7 @@ const char *custom_widget_style =
     "}"
     "QTabBar::tab:selected, QTabBar::tab:hover {"
     "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
-    "font-color: #black;"
+    "font-color: black;"
     "}"
     "QTabBar::tab:selected {"
     "border-color: #9B9B9B;"
@@ -649,20 +649,20 @@ namespace browser {
     }
 
     W_OBJECT_IMPL(TabWidget)
-    TabWidget::TabWidget(ts_t      *_tree_screen
-			, FindScreen    *_find_screen
-			, MetaEditor    *_editor_screen
-			, rs_t  *_record_screen
-			, Entrance      *_entrance
-			, Browser       *_browser
-			, wn_t    *_main_window
+    TabWidget::TabWidget(ts_t              *_tree_screen
+			, FindScreen        *_find_screen
+			, MetaEditor        *_editor_screen
+			, Browser           *_browser
+			, rs_t              *_record_screen
+			, Entrance          *_entrance
+			, wn_t              *_main_window
 			, browser::Profile  *_profile)
 	: QTabWidget(_browser)
 	  , _tree_screen(_tree_screen)
 	  , _editor_screen(_editor_screen)
 	  , _entrance(_entrance)
 	  , _browser(_browser)
-	  , _record_controller(new rctl_t(_editor_screen, this, _record_screen, _main_window))
+	  , _record_controller(nullptr)	// (new rctl_t(_editor_screen, this, _record_screen, _main_window))
 	  , _recentlyclosedtabsaction(new QAction(tr("Recently Closed Tabs"), this))
 	  , _newtabaction(new QAction(QIcon(QLatin1String(":addtab.png")), tr("New &Tab"), this))
 	  , _closetabaction(new QAction(QIcon(QLatin1String(":closetab.png")), tr("&Close Tab"), this))
@@ -676,6 +676,8 @@ namespace browser {
 	  , _profile(_profile)	// globalparameters.profile()   // QWebEngineProfile::defaultProfile()
 	  , _fullscreenview(nullptr)
 	  , _fullscreennotification(nullptr){
+	_record_controller = new rctl_t(_editor_screen, this, _record_screen, _main_window);
+	assert(_record_controller->tabmanager());
 	setTabBar(_tabbar);
 	setTabPosition(TabPosition::West);	// South
 // setTabShape(TabShape::Triangular);
@@ -707,7 +709,7 @@ namespace browser {
 	       , [&, tree_view, parent, current_item](){
 		TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(current_item, QUrl(Browser::_defaulthome), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 														    , [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
-		)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    });
 
 	connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::requestCloseTab);
@@ -736,9 +738,7 @@ namespace browser {
 	// _newtabaction = ;
 	_newtabaction->setShortcuts(QKeySequence::AddTab);
 	_newtabaction->setIconVisibleInMenu(false);
-	connect(
-	    _newtabaction
-	       , &QAction::triggered	// , this
+	connect(_newtabaction, &QAction::triggered	// , this
 	       , [&, tree_view, parent, current_item](bool make_current){
 		Q_UNUSED(make_current)
 
@@ -747,7 +747,7 @@ namespace browser {
 		    , QUrl(Browser::_defaulthome)
 		    , std::bind(&tv_t::paste_child, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 		    , [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
-		    )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		    )->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    });
 
 	// _closetabaction = ;
@@ -922,7 +922,7 @@ namespace browser {
 //                            }
 //                        }
 //                    }
-		    auto _mainwindow = globalparameters.mainwindow();
+		    auto _mainwindow = globalparameters.main_window();
 		    if(! _mainwindow->windowTitle().contains(view_current->page()->title()))_mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title());	// webView->setFocus();
 		    MetaEditor *metaeditor = globalparameters.meta_editor();	// find_object<MetaEditor>(meta_editor_singleton_name);
 		    assert(metaeditor);
@@ -1641,7 +1641,7 @@ namespace browser {
 														, QUrl(Browser::_defaulthome)
 														, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 														, [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
-		)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 // }
 
 	    return;
@@ -1684,7 +1684,7 @@ namespace browser {
 														    , url
 														    , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 														    , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
-		    )->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		    )->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    }
 	}
     }
@@ -1701,7 +1701,7 @@ namespace browser {
 		if(! parent)throw std::runtime_error(formatter() << typeid(decltype(&TabWidget::loadUrlInCurrentTab)).name() << "! parent");
 		auto	it	= TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->item_register(_url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toString().toStdString());});
 		auto	r	= webView->page()->bind(it);	// _record_controller
-		r->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		r->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    }
 	}
     }
@@ -1773,7 +1773,7 @@ namespace browser {
 						, _url
 						, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 						, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toStdString());}
-			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}else{
 		    if(webView(0)->page()->url() != _url){
 			// webView(0)->load(_record);    //loadUrl(_url);
@@ -1785,7 +1785,7 @@ namespace browser {
 			// record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(it), it);
 			// } catch(std::exception &e) {}
 
-			webView(0)->page()->bind(it)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+			webView(0)->page()->bind(it)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		    }
 		}
 	    }

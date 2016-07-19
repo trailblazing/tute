@@ -2,6 +2,8 @@
 #include "models/tree/tree_item.h"
 #include "views/browser/webview.h"
 #include "views/browser/entrance.h"
+#include "views/main_window/hidable_tabwidget.h"
+#include "views/main_window/main_window.h"
 
 extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
@@ -305,7 +307,7 @@ browser::WebPage *Binder::page() const {
     auto		_host	= _host_linker();
     if(! integrity_external(_host, _page)){
 	browser::WebView	*v	= nullptr;
-	auto			browser = globalparameters.entrance()->activated_browser();
+	auto			browser = globalparameters.main_window()->vtab_record()->activated_browser();
 
 	boost::intrusive_ptr<TreeItem> record_previous_item = browser->tabmanager()->currentWebView()->page()->binder()->host();
 
@@ -313,7 +315,7 @@ browser::WebPage *Binder::page() const {
 	boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, _host);;
 
 	auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
-		return browser->page_instantiate(_record_index)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));																															// item_bind_();
+		return browser->page_instantiate(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));																															// item_bind_();
 	    };
 
 	v	= browser_bind_activate(record_index);

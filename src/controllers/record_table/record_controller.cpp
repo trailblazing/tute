@@ -56,15 +56,15 @@ extern AppConfig	appconfig;
 extern WalkHistory	walkhistory;
 
 W_OBJECT_IMPL(rctl_t)
-rctl_t::rctl_t(MetaEditor           *_editor_screen		// TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
-	      , browser::TabWidget  *_tabmanager
-	      , rs_t	*_record_screen
-	      , wn_t	*_main_window)
+rctl_t::rctl_t(MetaEditor *_editor_screen		// TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
+	      , browser::TabWidget *_tabmanager
+	      , rs_t *_record_screen
+	      , wn_t *_main_window)
     : QObject(_record_screen)
-      , _source_model(new RecordModel(this, _tabmanager))
+      , _tabmanager(_tabmanager)
+      , _source_model(new RecordModel(this))
       , _proxy_model(new RecordProxyModel(this))
       , _view(new rv_t(_record_screen, this))	// , qobject_cast<QWidget * >(RecordTableScreen)
-      , _tabmanager(_tabmanager)
       , _record_screen(_record_screen)
       , _editor_screen(_editor_screen)
       , _main_window(_main_window){
@@ -130,12 +130,6 @@ boost::intrusive_ptr<TreeItem> rctl_t::item_click(const index_proxy &index_proxy
     auto	tree_view	= _tree_screen->view();
     result = source_model()->item(pos_source_);
     auto parent = result->parent();
-// boost::intrusive_ptr<TreeIndex> tree_index;
-// try {
-// tree_index = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-// return il->host() == result && result->linker() == il && result->parent() == il->host_parent();
-// }));
-// } catch(std::exception &e) {throw e; }
     if(result != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result, parent));
 	// PosSource pos_source_ = index<PosSource>(pos_proxy_);
 	// auto index_tab = _tabmanager->currentIndex();
@@ -143,7 +137,7 @@ boost::intrusive_ptr<TreeItem> rctl_t::item_click(const index_proxy &index_proxy
 
 	// if(_tabmanager->currentIndex() != (int)pos_source_) {
 	// _tabmanager->setCurrentIndex((int)pos_source_);
-    force_update ? result->binder()->activate() : result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+    force_update ? result->binder()->activate() : result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	// }
 
     _record_screen->tools_update();
@@ -1749,9 +1743,8 @@ void rctl_t::remove(QVector<id_value> delete_ids){
     browser::WebView *v = pages_remove_from_browser(delete_ids);
     if(v){
 	auto binder = v->page()->binder();
-	if(binder){
-	    if(binder->host() != _view->current_item())cursor_to_index(index<pos_proxy>(binder->host()));
-	}
+	if(binder)
+		if(binder->host() != _view->current_item())cursor_to_index(index<pos_proxy>(binder->host()));
     }
 //        //// Сохранение дерева веток
 //        ////    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1901,9 +1894,8 @@ void rctl_t::on_print_click(void){
     RecordPrint print_dialog(_record_screen);		// parentPointer
     print_dialog.setModel(_proxy_model);
     print_dialog.generateHtmlTableFromModel();
-    print_dialog.setTitleToHtml(
-	record_screen()->objectName()	// _source_model->_browser_pages->path_as_name_with_delimiter(" / ")
-	);
+    print_dialog.setTitleToHtml(record_screen()->objectName());	// _source_model->_browser_pages->path_as_name_with_delimiter(" / ")
+
     print_dialog.exec();
 }
 

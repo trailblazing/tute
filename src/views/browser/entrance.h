@@ -17,8 +17,7 @@
 // #include "webview.h"
 // #include "views/record/MetaEditor.h"
 // #include "models/tree/TreeItem.h"
-#include <boost/smart_ptr/intrusive_ref_counter.hpp>
-#include <boost/smart_ptr/intrusive_ptr.hpp>
+
 
 #include "views/browser/tabwidget.h"
 
@@ -120,8 +119,8 @@ namespace browser {
 		//            WebView *activator(boost::intrusive_ptr<TreeItem> item) {assert(item);assert(item->page_valid()); return item->unique_page()->active();}
 		//        };
 
-	    Browser		*activated_browser();
-	    std::set<Browser *> &browsers();	//        QList<DockedWindow*> window_raw_list();
+//	    Browser		*activated_browser();
+//	    std::set<Browser *> &browsers();	//        QList<DockedWindow*> window_raw_list();
 
 		//        //        void clean();
 
@@ -144,7 +143,7 @@ namespace browser {
 		//        std::pair<Browser *, WebView *>
 		//        WebView *find(boost::intrusive_ptr<const TreeItem> item) const;
 		//        std::pair<Browser *, WebView *>
-	    WebView *find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
+//	    WebView *find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;
 		// BrowserView *create_view(Record *record, BrowserWindow *window);
 
 		//        Q_INVOKABLE void runScriptOnOpenViews(const QString &);
@@ -174,7 +173,7 @@ namespace browser {
 		//        WebView *new_dockedwindow(Record *const record);
 		//        WebView *new_view(QUrl const &_url);
 
-	    Browser *new_browser();
+//	    Browser *new_browser();
 		//        Browser *new_browser(QUrl const &url);
 
 		//        Browser *new_browser(boost::intrusive_ptr<TreeItem> record);
@@ -204,7 +203,7 @@ namespace browser {
 		//        void setup_signals(ToolbarSearch *toolbarsearch);
 	    void assembly(void);
 		//        void setupMenu();
-	    std::set<Browser *>             _browsers;
+//	    std::set<Browser *>             _browsers;
 		//        ItemsFlat                       *_shadow_branch;
 	    ts_t				*_tree_screen;
 	    FindScreen				*_find_screen;

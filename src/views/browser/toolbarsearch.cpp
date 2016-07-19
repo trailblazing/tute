@@ -72,8 +72,8 @@
 #include "views/tree/tree_view.h"
 #include "models/tree/tree_index.hxx"
 #include "models/tree/tree_know_model.h"
-
-
+#include "views/main_window/hidable_tabwidget.h"
+#include "views/main_window/main_window.h"
 
 namespace browser {
     W_OBJECT_IMPL(ToolbarSearch)
@@ -112,17 +112,20 @@ namespace browser {
 
 	load();
     }
+
     ToolbarSearch::~ToolbarSearch(){
 	_autosaver->saveIfNeccessary();
     }
-    void ToolbarSearch:: save(){
+
+    void ToolbarSearch::save(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("toolbarsearch"));
 	settings.setValue(QLatin1String("recentSearches"), _stringlistmodel->stringList());
 	settings.setValue(QLatin1String("maximumSaved"), _maxsavedsearches);
 	settings.endGroup();
     }
-    void ToolbarSearch:: load(){
+
+    void ToolbarSearch::load(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("toolbarsearch"));
 	QStringList list = settings.value(QLatin1String("recentSearches")).toStringList();
@@ -130,12 +133,13 @@ namespace browser {
 	_stringlistmodel->setStringList(list);
 	settings.endGroup();
     }
-    void ToolbarSearch:: searchNow(){
+
+    void ToolbarSearch::searchNow(){
 	QString search_text = lineEdit()->text();
 
-	auto	result_item = globalparameters.find_screen()->find_clicked();
-	ts_t	*_tree_screen = globalparameters.tree_screen();
-	auto	tree_view = _tree_screen->view();
+	auto	result_item	= globalparameters.find_screen()->find_clicked();
+	ts_t	*_tree_screen	= globalparameters.tree_screen();
+	auto	tree_view	= _tree_screen->view();
 	if(! result_item){	//  || 0 == result_item->count_direct()
 	    QUrl url = QUrl(search_text);
 
@@ -195,7 +199,7 @@ namespace browser {
 						, url
 						, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 						, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
-			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 
 		    assert(_lineedits);
 		    if(_lineedits){
@@ -232,7 +236,7 @@ namespace browser {
 		    url.setFragment("q=" + search_text);
 //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 		    tree_index->page_instantiate(tree_view->current_item(), url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
-			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}
 	    }
 	}else if(result_item != tree_view->current_item()){
@@ -240,13 +244,14 @@ namespace browser {
 	    if(static_cast<QModelIndex>(index_result).isValid()){
 		auto it = tree_view->source_model()->child(index_result);
 		tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
-		tree_view->index_invoke(globalparameters.entrance()->activated_browser()->tabmanager()->currentWebView(), index_result);
+		tree_view->index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(), index_result);
 	    }
 	}else{
 	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
 	}
     }
-    void ToolbarSearch:: aboutToShowMenu(){
+
+    void ToolbarSearch::aboutToShowMenu(){
 	lineEdit()->selectAll();
 	QMenu *m = menu();
 	m->clear();
@@ -263,9 +268,10 @@ namespace browser {
 	    m->addAction(text)->setData(text);
 	}
 	m->addSeparator();
-	m->addAction(tr("Clear Recent Searches"), this, SLOT(clear()));
+	m->addAction(tr("Clear Recent Searches"), this, &ToolbarSearch::clear);
     }
-    void ToolbarSearch:: triggeredMenuAction(QAction *action){
+
+    void ToolbarSearch::triggeredMenuAction(QAction *action){
 	QVariant v = action->data();
 	if(v.canConvert<QString>()){
 	    QString text = v.toString();
@@ -273,14 +279,17 @@ namespace browser {
 	    searchNow();
 	}
     }
-    void ToolbarSearch:: clear(){
+
+    void ToolbarSearch::clear(){
 	_stringlistmodel->setStringList(QStringList());
 	_autosaver->changeOccurred();;
     }
-    void ToolbarSearch:: text(const QString &text){
+
+    void ToolbarSearch::text(const QString &text){
 	_findtext->setText(text);
     }
-    QString ToolbarSearch:: text() const {
+
+    QString ToolbarSearch::text() const {
 	return _findtext->text();
     }
 }

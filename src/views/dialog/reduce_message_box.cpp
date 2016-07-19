@@ -19,9 +19,9 @@ ReduceMessageBox::ReduceMessageBox(QWidget *parent) : QDialog(parent){
 }
 void ReduceMessageBox:: setupUI(void){
     int w =	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->width();
+	globalparameters.main_window()->width();
     int h =	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->height();
+	globalparameters.main_window()->height();
 
     this->resize(w * 2 / 3, h / 3);
 }

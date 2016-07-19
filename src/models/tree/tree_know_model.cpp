@@ -24,7 +24,8 @@
 #include "views/tree/tree_view.h"
 #include "views/tree/tree_screen.h"
 #include "views/browser/entrance.h"
-
+#include "views/main_window/hidable_tabwidget.h"
+#include "views/main_window/main_window.h"
 
 extern GlobalParameters globalparameters;
 extern const char	*clipboard_items_root;
@@ -1230,7 +1231,7 @@ boost::intrusive_ptr<TreeItem> tkm_t:: delete_permanent(boost::intrusive_ptr<Lin
 
 		//            remove_target->self_remove_from_parent();
 		result = parent_of_delete->delete_permanent(equal_linker);
-		browser::WebView *v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
+		browser::WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
 		if(v)v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
 		auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 		update_index(parent_index);

@@ -8,6 +8,9 @@
 #include <QLayout>
 #include "libraries/global_parameters.h"
 #include "views/browser/entrance.h"
+#include "models/tree/binder.hxx"
+#include "views/main_window/main_window.h"
+
 
 extern GlobalParameters globalparameters;
 extern const char	*record_screen_multi_instance_name;
@@ -60,7 +63,7 @@ const char		*custom_hidabletabwidget_style =
     "}"
     "QTabBar::tab:selected, QTabBar::tab:hover {"
     "background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #fafafa, stop: 0.4 #f4f4f4, stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);"
-    "font-color: #black;"
+    "font-color: black;"
     "}"
     "QTabBar::tab:selected {"
     "border-color: #9B9B9B;"
@@ -75,11 +78,23 @@ const char		*custom_hidabletabwidget_style =
 ;
 
 W_OBJECT_IMPL(HidableTabWidget)
-HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent)
-    : QTabWidget(parent)
+HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
+				  , FindScreen *_find_screen
+				  , MetaEditor *_editor_screen
+				  , browser::Entrance *_entrance
+				  , wn_t *_main_window
+				  , browser::Profile *_profile
+				  , QString _style_source)
+    : QTabWidget(_main_window)
       , _hide_action(new QAction(tr("▾"), this))
       , _layout(new QStackedLayout(this))
-      , _style(style_source){
+      , _tree_screen(_tree_screen)
+      , _find_screen(_find_screen)
+      , _editor_screen(_editor_screen)
+      , _entrance(_entrance)
+      , _main_window(_main_window)
+      , _profile(_profile)
+      , _style_source(_style_source){
 //    , _delegate_tab(_delegate_tab)
     _hide_action->setCheckable(true);
     _hide_action->setToolTip("Hide Panels");
@@ -109,8 +124,13 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent)
 	    auto w = widget(index);
 	    this->removeTab(index);
 	    if(w->objectName() == record_screen_multi_instance_name){
-		auto browser = dynamic_cast<rs_t *>(w)->browser();
-		if(browser)browser->close();
+		auto rs = dynamic_cast<rs_t *>(w);
+		auto _browser = dynamic_cast<rs_t *>(w)->browser();
+		if(_browser){
+		    _browser->close();
+		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+		    _browser->deleteLater();
+		}
 	    }else{
 		w->close();
 		w->deleteLater();
@@ -156,6 +176,27 @@ HidableTabWidget::HidableTabWidget(QString style_source, QWidget *parent)
     setLayout(_layout);
 }
 
+HidableTabWidget::~HidableTabWidget(){
+    if(_record_screens.size() > 0){
+	for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+	    if(*i){	// && *i != widget()=>for entrance
+		 _record_screens.erase(i);
+		(*i)->deleteLater();	// delete *i;
+		// *i = nullptr;
+	    }
+	}
+    }
+}
+
+std::set<rs_t *> &HidableTabWidget::record_screens(){
+//    int browser_size_ = 0;
+//    for(int i = 0; i < count(); i ++)
+//		if(widget(i)->objectName() == record_screen_multi_instance_name)browser_size_ ++;
+
+//    return browser_size_;
+    return _record_screens;
+}
+
 void HidableTabWidget::onHideAction(bool checked){
     if(checked){
 	if(this->tabPosition() == North || tabPosition() == South)	// , West, East
@@ -185,5 +226,109 @@ void HidableTabWidget::onTabBarClicked(){_hide_action->setChecked(false);}
 bool HidableTabWidget::eventFilter(QObject *obj, QEvent *event){
     if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton)emit tabBarDoubleClicked(indexOf(childAt(static_cast<QMouseEvent *>(event)->pos())));
     return QTabWidget::eventFilter(obj, event);
+}
+
+browser::WebView *HidableTabWidget::find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
+	// clean();
+    browser::WebView *v = nullptr;
+	// new_dockedwindow(record);
+    for(auto i : _record_screens){
+	if(i){
+	    v = i->browser()->tabWidget()->find(_equal);
+	    if(v != nullptr)break;
+	}
+    }
+    boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
+    if(v){
+	if(v->page()){
+	    boost::intrusive_ptr<::Binder> binder = v->page()->binder();
+	    if(binder){
+		auto _this_item = v->page()->host();	// globalparameters.entrance()->find(_equal);
+		if(_this_item){
+		    if(binder->integrity_external(_this_item, v->page())){
+//			assert(_this_item == v->page()->binder()->item());
+//			if(_this_item && v->load_finished())																			// && (v->tabmanager()->currentWebView() == v)
+			found_myself = _this_item;
+		    }
+		}
+	    }
+	}
+    }
+    if(! found_myself)v = nullptr;
+    return v;
+}
+
+browser::Browser *HidableTabWidget::new_browser(){
+//	// DockedWindow *browser =
+//	return new Browser(_tree_screen
+//			  , _find_screen
+//			  , _editor_screen	// , _vtab_tree
+//			  , _main_window
+//			  , this
+//			  , _style_source
+//			  , _profile
+//			  , Qt::MaximizeUsingFullscreenGeometryHint
+//		   );	// , dock_widget
+
+    auto rs = new rs_t(_tree_screen, _find_screen, _editor_screen, _entrance, _main_window, _style_source, _profile);
+
+    setUpdatesEnabled(false);
+    addTab(rs, QIcon(":/resource/pic/three_leaves_clover.svg"), QString("Browser"));	// QString("Browser ") + QString::number(vtab_record->count())
+
+//    bool found = false;
+//    for(auto i = _browsers.begin(); i != _browsers.end(); i ++){
+//	if(*i == rs->browser()){
+//	    found = true;
+//	    break;
+//	}
+//    }
+//    if(! found) _browsers.insert(rs->browser());
+    _record_screens.insert(rs);
+    setUpdatesEnabled(true);
+    rs->adjustSize();
+
+
+    return rs->browser();
+
+	// return find(url);   // std::make_pair(browser, find(url).second);     // BrowserView::QDockWidget::BrowserWindow*
+}
+
+// not sure to succeeded
+browser::Browser *HidableTabWidget::activated_browser(){
+// clean();
+
+// std::pair<Browser *, WebView *> dp = std::make_pair(nullptr, nullptr);
+    browser::Browser *_browser = nullptr;
+// if(_mainWindows.isEmpty()) {
+// dp = new_dockedwindow(
+// QUrl(DockedWindow::_defaulthome)
+// );
+// } else { //
+// if(_browsers.size() > 0) {
+    for(auto i : _record_screens){
+	if(i->browser()->isVisible() || i->browser()->isActiveWindow()){
+		// assert(i);
+		// dp.first
+	    _browser = i->browser();	// .data();
+		// assert(_browser);
+		// dp.second = i->tabWidget()->currentWebView();
+	    break;
+	}
+    }
+    if(! _browser){
+	// _browser = _browsers[0];
+	// }
+	// } else {
+	_browser = new_browser();
+	// assert(_browser);
+	// return _browser;
+	// dp.second = dp.first->tabWidget()->currentWebView();
+    }
+// assert(dp.first);
+// assert(dp.second);
+    assert(_browser);
+
+    return _browser;	// qobject_cast<DockedWindow *>(widget()); //
+// _mainWindows[0];
 }
 

@@ -98,8 +98,8 @@ class GlobalParameters : public QObject {
 	void		window_switcher(WindowSwitcher *point);
 	WindowSwitcher	*window_switcher();
 
-	wn_t		*mainwindow();
-	void		mainwindow(wn_t *mainwindow);
+	wn_t		*main_window();
+	void		main_window(wn_t *main_window);
 	void		crypt_key(QByteArray hash);
 	QByteArray	crypt_key(void);
 

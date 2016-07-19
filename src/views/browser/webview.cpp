@@ -517,7 +517,7 @@ namespace browser {
 	// load(url);
 	// }
 
-// update_record_view(item);
+//	update_record_view(item);
     }
 
     WebPage::~WebPage(){
@@ -601,7 +601,7 @@ namespace browser {
 		data_changed = true;
 
 		// metaeditor->setName(title);
-		auto _mainwindow = globalparameters.mainwindow();
+		auto _mainwindow = globalparameters.main_window();
 		if(! _mainwindow->windowTitle().contains(title))_mainwindow->setWindowTitle(QString(application_name) + " : " + title);	// table->setWorkPos(pos);
 		if(is_current)_editor_screen->name(title);
 	    }
@@ -730,7 +730,7 @@ namespace browser {
 
 	// Сохраняется текст и картинки в окне редактирования
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->save_text_area();
+	globalparameters.main_window()->save_text_area();
 	// Для новой выбраной записи выясняется директория и основной файл
 	if(current_item->field<id_type>() == ""	// || current_item->field("url") == Browser::_defaulthome
 	    )current_item->field<id_type>(get_unical_id());	// "id",
@@ -944,7 +944,7 @@ namespace browser {
 
 // if(checked) it->activate(std::bind(&browser::Entrance::find_activated, globalparameters.entrance(), std::placeholders::_1));
 	}
-	if(checked)it->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+	if(checked)it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	// }
 
 	return _view;
@@ -1188,9 +1188,9 @@ namespace browser {
 
 	boost::intrusive_ptr<TreeIndex> tree_index = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent, parent_parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->binder()->host(), this->binder()->host()->parent());
 	if(type == QWebEnginePage::WebBrowserWindow){
-	    WebView *v = _entrance->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
+	    WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
 	    if(v)v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
-	    Browser *_browser = _entrance->new_browser();			// QtSingleApplication::instance()->newMainWindow();
+	    Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 // auto tree_index = create_tree_index();
 // assert(tree_index);
 	    auto it = tree_index->item_register(target_url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
@@ -1198,7 +1198,7 @@ namespace browser {
 		    });																																// Browser::_defaulthome
 
 
-	    page = _browser->page_instantiate(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, nullptr, it))->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
+	    page = _browser->page_instantiate(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, nullptr, it))->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
 
 
 	    assert(page);
@@ -1215,7 +1215,7 @@ namespace browser {
 		// QUrl current = url();
 		// QUrl requestedurl = requestedUrl(); //equal to current page url
 
-	    WebView *view = _entrance->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
+	    WebView *view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
 		// return b->host()->field<url_type>() == target_url.toString();
 
 
@@ -1237,7 +1237,7 @@ namespace browser {
 		page = tree_index->page_instantiate(this->_binder->host(), target_url
 						   , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
 						   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
-			)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1))->page();
+			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
 		assert(page);
 	    }
 	    assert(page);
@@ -1364,7 +1364,7 @@ namespace browser {
 	// _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
 	// }
 
-	Browser *browser = _entrance->activated_browser();	// QtSingleApplication::instance()->mainWindow();
+	Browser *browser = globalparameters.main_window()->vtab_record()->activated_browser();	// QtSingleApplication::instance()->mainWindow();
 
 	QDialog dialog(browser);
 	dialog.setWindowFlags(Qt::Sheet);
@@ -1398,7 +1398,7 @@ namespace browser {
 	// _entrance->new_browser(QUrl(browser::Browser::_defaulthome));
 	// }
 
-	Browser *browser = _entrance->activated_browser();	// QtSingleApplication::instance()->mainWindow();
+	Browser *browser = globalparameters.main_window()->vtab_record()->activated_browser();	// QtSingleApplication::instance()->mainWindow();
 
 	QDialog dialog(browser);
 	dialog.setWindowFlags(Qt::Sheet);
@@ -1492,21 +1492,21 @@ namespace browser {
 	       , [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode){
 		const char *status = "";
 		switch(termStatus){
-		case QWebEnginePage::NormalTerminationStatus:
-		    status = "(normal exit)";
-		    break;
+		    case QWebEnginePage::NormalTerminationStatus:
+			status = "(normal exit)";
+			break;
 
-		case QWebEnginePage::AbnormalTerminationStatus:
-		    status = "(abnormal exit)";
-		    break;
+		    case QWebEnginePage::AbnormalTerminationStatus:
+			status = "(abnormal exit)";
+			break;
 
-		case QWebEnginePage::CrashedTerminationStatus:
-		    status = "(crashed)";
-		    break;
+		    case QWebEnginePage::CrashedTerminationStatus:
+			status = "(crashed)";
+			break;
 
-		case QWebEnginePage::KilledTerminationStatus:
-		    status = "(killed)";
-		    break;
+		    case QWebEnginePage::KilledTerminationStatus:
+			status = "(killed)";
+			break;
 		}
 		qInfo() << "Render process exited with code" << statusCode << status;
 		QTimer::singleShot(0, [this] {reload();});
@@ -2329,21 +2329,21 @@ namespace browser {
 	       , [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode){
 		const char *status = "";
 		switch(termStatus){
-		case QWebEnginePage::NormalTerminationStatus:
-		    status = "(normal exit)";
-		    break;
+		    case QWebEnginePage::NormalTerminationStatus:
+			status = "(normal exit)";
+			break;
 
-		case QWebEnginePage::AbnormalTerminationStatus:
-		    status = "(abnormal exit)";
-		    break;
+		    case QWebEnginePage::AbnormalTerminationStatus:
+			status = "(abnormal exit)";
+			break;
 
-		case QWebEnginePage::CrashedTerminationStatus:
-		    status = "(crashed)";
-		    break;
+		    case QWebEnginePage::CrashedTerminationStatus:
+			status = "(crashed)";
+			break;
 
-		case QWebEnginePage::KilledTerminationStatus:
-		    status = "(killed)";
-		    break;
+		    case QWebEnginePage::KilledTerminationStatus:
+			status = "(killed)";
+			break;
 		}
 		qInfo() << "Render process exited with code" << statusCode << status;
 
@@ -2438,7 +2438,7 @@ namespace browser {
 	if(! r.linkUrl().isEmpty()){
 	    QMenu menu(this);
 	    menu.addAction(pageAction(QWebEnginePage::OpenLinkInNewWindow));
-	    menu.addAction(tr("Open in New Tab"), this, SLOT(openLinkInNewTab()));
+	    menu.addAction(tr("Open in New Tab"), this, &WebView::openLinkInNewTab);
 	    menu.addSeparator();
 	    menu.addAction(pageAction(QWebEnginePage::DownloadLinkToDisk));
 		// Add link to bookmarks...
@@ -2639,7 +2639,7 @@ namespace browser {
 
     void WebView::recovery_global_consistency(){
 	rs_t			*_record_screen = _browser->record_screen();
-	wn_t			*_mainwindow	= globalparameters.mainwindow();
+	wn_t			*_mainwindow	= globalparameters.main_window();
 //	HidableTabWidget	*_vtab_tree	= _mainwindow->vtab_tree();
 	HidableTabWidget	*_vtab_record	= _mainwindow->vtab_record();
 	ts_t			*_tree_screen	= globalparameters.tree_screen();

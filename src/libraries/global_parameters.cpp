@@ -470,9 +470,9 @@ void GlobalParameters::window_switcher(WindowSwitcher *point){_window_switcher =
 
 WindowSwitcher *GlobalParameters::window_switcher(){return _window_switcher;}
 
-wn_t *GlobalParameters::mainwindow(){return _mainwindow;}
+wn_t *GlobalParameters::main_window(){return _mainwindow;}
 
-void GlobalParameters::mainwindow(wn_t *mainwindow){_mainwindow = mainwindow;}
+void GlobalParameters::main_window(wn_t *mainwindow){_mainwindow = mainwindow;}
 
 void GlobalParameters::crypt_key(QByteArray hash){_password_hash = hash;}
 

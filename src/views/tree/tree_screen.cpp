@@ -578,7 +578,7 @@ void ts_t::setup_actions(void){
     _editor_switch->setStatusTip(tr("Open/Close editor"));
     _editor_switch->setIcon(QIcon(":/resource/pic/expand_console.svg"));
     connect(_editor_switch, &QAction::triggered, [](){
-	    globalparameters.mainwindow()->editor_switch();
+	    globalparameters.main_window()->editor_switch();
 	});
 	// insert_action_as_button<QToolButton>(_toolsline, _settings);
     _actionlist[action_editor_switch] = _editor_switch;

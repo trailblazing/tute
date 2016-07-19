@@ -198,7 +198,7 @@ class wn_t
 
 	QSplitter		*_v_right_splitter;
 	QSplitter		*_v_find_splitter;
-	HidableTabWidget	*_vtab_record;
+
 //	HidableTabWidget	*_vtab_tree;
 	QSplitter		*_h_record_splitter;
 	QSplitter		*_h_tree_splitter;
@@ -219,7 +219,7 @@ class wn_t
 	MetaEditor			*_editor_screen;
 	browser::Entrance		*_entrance;
 //	browser::DownloadManager	*_download;
-
+	HidableTabWidget	*_vtab_record;
 	QStatusBar		*_statusbar;
 	WindowSwitcher		*_switcher;
 

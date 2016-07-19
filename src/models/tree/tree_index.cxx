@@ -275,7 +275,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex:: item_register(const QUrl             
 
 
 	// if(browser_pages) {
-    auto view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return _equal(b->host());});
+    auto view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return _equal(b->host());});
 
     boost::intrusive_ptr<TreeItem> in_browser;
     if(view){
@@ -300,7 +300,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex:: item_register(const QUrl             
 	    _result = in_tree;
 	    if(_result->is_lite())_result->to_fat();
 	    if(_result->field<id_type>() == "")_result->field<id_type>(get_unical_id());
-	    assert(  globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString());})
+	    assert(  globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString());})
 		  || _result->field<url_type>() == browser::Browser::_defaulthome);
 	}
 	assert(! _result->is_lite());
@@ -348,7 +348,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex:: item_register(const QUrl             
 	    _result = in_browser;
 	    if(_result->is_lite())_result->to_fat();
 	    if(_result->field<id_type>() == "")_result->field<id_type>(get_unical_id());
-	    assert(  globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString());})
+	    assert(  globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _result->field<home_type>().toStdString());})
 		  || _result->field<url_type>() == browser::Browser::_defaulthome);
 	    if(_result->field<url_type>() == browser::Browser::_defaulthome && _find_url.toString() != browser::Browser::_defaulthome)_result->field<url_type>(_find_url.toString());
 	}
@@ -714,9 +714,9 @@ boost::intrusive_ptr<TreeItem> TreeIndex:: page_instantiate(boost::intrusive_ptr
     auto		binder	= tab_brother->binder();
     if(binder){
 	auto host = binder->host();
-	view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const Binder> b){return b->host() == host && b == binder && host->parent() == b->host()->parent() && b->host()->id() == host->id();});
+	view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const Binder> b){return b->host() == host && b == binder && host->parent() == b->host()->parent() && b->host()->id() == host->id();});
     }
-    auto browser = view ? view->page()->browser() : globalparameters.entrance()->activated_browser();
+    auto browser = view ? view->page()->browser() : globalparameters.main_window()->vtab_record()->activated_browser();
 
     boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, tab_brother, it);	// tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() :   // tab_brother does not guarantee the browser exists
     assert(record_index);

@@ -202,7 +202,7 @@ ItemsFlat::~ItemsFlat(){
 // return _child_items.at(pos)->field(name);
 // }
 
-boost::intrusive_ptr<Linker> ItemsFlat:: linker_direct(int pos) const {
+boost::intrusive_ptr<Linker> ItemsFlat::linker_direct(int pos) const {
     boost::intrusive_ptr<Linker> result(nullptr);
 	//// Если индекс недопустимый, возвращается пустая запись
 	// if(pos < 0 || pos >= count_direct())
@@ -211,14 +211,14 @@ boost::intrusive_ptr<Linker> ItemsFlat:: linker_direct(int pos) const {
     return result;				// _child_items.at(pos);    // _child_items[pos];
 }
 
-QList<boost::intrusive_ptr<TreeItem> > ItemsFlat:: children_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_substitute_condition) const {
+QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::children_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_substitute_condition) const {
     QList<boost::intrusive_ptr<TreeItem> > results;
     for(auto il : _child_linkers)
 		if(_substitute_condition(il))results.push_back(il->host());											// return i;
     return results;				// -1;
 }
 
-QList<boost::intrusive_ptr<TreeItem> > ItemsFlat:: children_direct(const QString &name) const {
+QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::children_direct(const QString &name) const {
     QList<boost::intrusive_ptr<TreeItem> > results;
     for(auto il : _child_linkers)				// for(int i = 0; i < count_direct(); i++) {
 		if(il->host()->field<name_type>() == name)results.push_back(il->host());											// return i;
@@ -243,7 +243,7 @@ QList<boost::intrusive_ptr<TreeItem> > ItemsFlat:: children_direct(const QString
 // return item_direct(pos);
 // }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(int pos) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::child_direct(int pos) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
 	//// Если индекс недопустимый, возвращается пустая запись
 	// if(pos < 0 || pos >= count_direct())
@@ -252,7 +252,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(int pos) const {
     return result;				// _child_items.at(pos);    // _child_items[pos];
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(const QUrl &url) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::child_direct(const QUrl &url) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     for(int i = 0; i < count_direct(); i ++){
 	if(url_equal((child_direct(i)->field<url_type>()).toStdString(), url.toString().toStdString())){
@@ -295,7 +295,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(const QUrl &url) const {
 // return pos;
 // }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_substitute_condition) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::child_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_substitute_condition) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     for(auto il : _child_linkers){
 	if(_substitute_condition(il)){								// if(i->field("id") == item->field("id")) {
@@ -322,7 +322,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(const std::function<bool
 // return result;
 // }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(const id_value &id) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::child_direct(const id_value &id) const {
     boost::intrusive_ptr<TreeItem> result;
     for(auto il : _child_linkers){
 	if(il->host()->id() == id){	// if(i->field("id") == item->field("id")) {
@@ -352,7 +352,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: child_direct(const id_value &id) cons
 // return -1;
 // }
 
-int ItemsFlat:: sibling_order(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const {
+int ItemsFlat::sibling_order(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const {
     int r = - 1;
     for(int i = 0; i < _child_linkers.size(); i ++){
 	if(_equal(_child_linkers.at(i))){
@@ -401,7 +401,7 @@ int ItemsFlat:: sibling_order(const std::function<bool (boost::intrusive_ptr<con
 // Get the value of the text of the specified record
 // Method returns the decrypted data
 // If there is a problem that file with text entries, will create an empty file
-QString ItemsFlat:: text(int pos) const {
+QString ItemsFlat::text(int pos) const {
 	// Если индекс недопустимый, возвращается пустая строка
     if(pos < 0 || pos >= count_direct())return QString();
     if(_child_linkers[pos]->host()->is_lite())return _child_linkers[pos]->host()->text_from_lite_direct();
@@ -419,7 +419,7 @@ QString ItemsFlat:: text(int pos) const {
 // She is editor of passing a pointer to itself
 // And variable reference loadText, which must be filled
 // Attention! The method does not contain the data recording operation. Think about where to place it
-void ItemsFlat:: editor_load_callback(QObject *editor, QString &loadText){
+void ItemsFlat::editor_load_callback(QObject *editor, QString &loadText){
 	// qDebug() << "RecordTableScreen::editor_load_callback() : Dir" << dir << "File" << file;
 
 	// Ссылка на объект редактора
@@ -460,7 +460,7 @@ void ItemsFlat:: editor_load_callback(QObject *editor, QString &loadText){
 // She is editor of passing a pointer to itself
 // And the text to be written in the variable saveText
 // Attention! The method does not contain the data recording operation. Think about where to place it
-void ItemsFlat:: editor_save_callback(QObject *editor, QString saveText){
+void ItemsFlat::editor_save_callback(QObject *editor, QString saveText){
 	// qDebug() << "RecordTableScreen::editor_load_callback() : Dir" << dir << "File" << file;
 
 	// Ссылка на объект редактора
@@ -501,7 +501,7 @@ void ItemsFlat:: editor_save_callback(QObject *editor, QString saveText){
 // Эти образы используются для хранения в дереве знаний
 // Get a copy of a light image recording
 // These images are used to store the tree of knowledge
-boost::intrusive_ptr<TreeItem> ItemsFlat:: item_lite(int pos) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_lite(int pos) const {
 	// Если индекс недопустимый, возвращается пустая запись
     if(pos < 0 || pos >= count_direct())return boost::intrusive_ptr<TreeItem>(nullptr);
 	// Хранимая в дереве запись не может быть "тяжелой"
@@ -513,7 +513,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: item_lite(int pos) const {
 // Возвращается запись с "сырыми" данными. Если запись была зашифрована, метод вернет зашифрованные данные
 // Get a copy of the full image recording
 // Returns the record with "raw" data. If the record was encrypted, the method returns the encrypted data
-boost::intrusive_ptr<TreeItem> ItemsFlat:: item_fat(int pos){
+boost::intrusive_ptr<TreeItem> ItemsFlat::item_fat(int pos){
 	// Копия записи из дерева
     boost::intrusive_ptr<TreeItem> result = child_direct(pos);					// boost::intrusive_ptr<Record> resultRecord = getRecordLite(pos);
 	// original
@@ -551,7 +551,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: item_fat(int pos){
 // }
 
 //// Преобразование таблицы конечных записей в Dom документ
-//QDomElement ItemsFlat:: dom_from_activated_itemsflat() const {
+// QDomElement ItemsFlat:: dom_from_activated_itemsflat() const {
 //	// Если у ветки нет таблицы конечных записей, возвращается пустой документ
 //    if(_child_linkers.size() == 0)return QDomElement();
 //    std::shared_ptr<QDomDocument>	doc		= std::make_shared<QDomDocument>();
@@ -564,10 +564,10 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: item_fat(int pos){
 //	// qDebug() << "In export_modeldata_to_dom() recordtabledata " << doc.toString();
 
 //    return record_dom_data;
-//}
+// }
 
 // азбор DOM модели и преобразование ее в таблицу
-void ItemsFlat:: dom_to_itemsflat(const QDomElement &dom_model){// , boost::intrusive_ptr<TreeItem> _parent_item
+void ItemsFlat::dom_to_itemsflat(const QDomElement &dom_model){	// , boost::intrusive_ptr<TreeItem> _parent_item
 	// assert(static_cast<ItemsFlat *>(_parent_item.get()) == this);
 	// QDomElement n = dommodel.documentElement();
 	// QDomElement n = dommodel;
@@ -623,7 +623,7 @@ void ItemsFlat:: dom_to_itemsflat(const QDomElement &dom_model){// , boost::intr
     return;
 }
 
-QDomElement ItemsFlat:: dom_from_itemsflat() const {
+QDomElement ItemsFlat::dom_from_itemsflat() const {
 	//// Преобразование таблицы конечных записей в Dom документ
 	// auto dom_from_itemsflat = [&](std::shared_ptr<QDomDocument> doc) ->QDomElement const {
 	//// Если у ветки нет таблицы конечных записей, возвращается пустой документ
@@ -718,7 +718,7 @@ QDomElement ItemsFlat:: dom_from_itemsflat() const {
 // }
 
 // Замена в указанной записи переданных полей на новые значения
-void ItemsFlat:: fields(int pos, QMap<QString, QString> edit_fields){
+void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
     qDebug() << "In RecordTable method edit_record_fields()";
 
     QMapIterator<QString, QString> i(edit_fields);
@@ -779,7 +779,7 @@ void ItemsFlat:: fields(int pos, QMap<QString, QString> edit_fields){
 //    return result;
 // }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     if(_item){
 	for(auto it : _child_linkers){
@@ -796,7 +796,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: contains_direct(boost::intrusive_ptr<
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: contains_direct(boost::intrusive_ptr<const Linker> &&_item_linker) const {
+boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(boost::intrusive_ptr<const Linker> &&_item_linker) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     if(_item_linker){
 	for(auto it : _child_linkers){
@@ -813,7 +813,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: contains_direct(boost::intrusive_ptr<
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal){
+boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal){
     boost::intrusive_ptr<TreeItem> result;
 	// QMutableListIterator<boost::intrusive_ptr<Linker> > it(_child_linkers);
 // std::set<boost::intrusive_ptr<Linker>> results;
@@ -842,7 +842,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent(const std::function<
 ////		it->binder()->page()->on_close_requested();			// it->binder()->break_page();  // it->page_break();
 //	    }
 	    browser::WebView *web_view = nullptr;
-	    if((web_view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
+	    if((web_view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
 		if(it->binder()){
 		    assert(web_view->page() == it->page());
 		    it->page()->record_controller()->remove(it->id());
@@ -874,7 +874,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent(const std::function<
     return result;
 }
 
-void ItemsFlat:: remove_duplicated(){
+void ItemsFlat::remove_duplicated(){
     for(auto _item : _child_linkers){					// QList<boost::intrusive_ptr<TreeItem>>::iterator
 	int				found = 0;
 	boost::intrusive_ptr<Linker>	keep;
@@ -899,7 +899,7 @@ void ItemsFlat:: remove_duplicated(){
     }
 }
 
-QList<boost::intrusive_ptr<TreeItem> > ItemsFlat:: delete_permanent_recursive(int position, int count){
+QList<boost::intrusive_ptr<TreeItem> > ItemsFlat::delete_permanent_recursive(int position, int count){
 	// bool result = false;
 	// QList<boost::intrusive_ptr<Linker>> candidates;
     QList<boost::intrusive_ptr<TreeItem> > result;
@@ -957,7 +957,7 @@ QList<boost::intrusive_ptr<TreeItem> > ItemsFlat:: delete_permanent_recursive(in
     return result;				// true;
 }
 
-boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent_recursive(boost::intrusive_ptr<Linker> remove_linker, std::function<bool (boost::intrusive_ptr<const TreeItem>)> condition){
+boost::intrusive_ptr<TreeItem> ItemsFlat::delete_permanent_recursive(boost::intrusive_ptr<Linker> remove_linker, std::function<bool (boost::intrusive_ptr<const TreeItem>)> condition){
     boost::intrusive_ptr<TreeItem> result(nullptr);				// bool result = false;
 	// result = remove(item->id());
 	// if(_to_be_removed->parent_item() != this)_to_be_removed->self_remove_from_parent();
@@ -992,7 +992,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent_recursive(boost::int
 		_child_linkers.removeOne(il);															// removeAt(i); // Было takeAt
 
 		browser::WebView *web_view = nullptr;
-		if((web_view = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
+		if((web_view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<home_type>()).toStdString(), it->field<url_type>().toStdString()) && b == it->binder() && b->host()->id() == it->id();}))){
 		    if(it->binder()){
 			assert(web_view->page() == it->page());
 			it->page()->record_controller()->remove(it->id());
@@ -1100,7 +1100,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat:: delete_permanent_recursive(boost::int
 // Method of soft data deletion
 // These are cleared only object
 // And physical data on the disk are not affected
-void ItemsFlat:: clear(void){
+void ItemsFlat::clear(void){
 	////    _child_linkers.clear();
 	////    _tree_item = nullptr;
 
@@ -1148,12 +1148,12 @@ void ItemsFlat:: clear(void){
 // }
 
 // Количество записей в таблице данных
-int ItemsFlat:: count_direct(void) const {
+int ItemsFlat::count_direct(void) const {
     return _child_linkers.size();
 }
 
 // Перемещение записи вверх на одну строку
-void ItemsFlat:: move_up(int pos){
+void ItemsFlat::move_up(int pos){
     if(pos > 0 && pos < _child_linkers.count()){
 	// Данные перемещаются
 	_child_linkers.move(pos, pos - 1);
@@ -1167,7 +1167,7 @@ void ItemsFlat:: move_up(int pos){
 
 // Перемещение записи вниз на одну строку
 // Move write down one line
-void ItemsFlat:: move_dn(int pos){
+void ItemsFlat::move_dn(int pos){
     if(pos >= 0 && pos < _child_linkers.count() - 1){
 	// Данные перемещаются
 	_child_linkers.move(pos, pos + 1);
@@ -1181,7 +1181,7 @@ void ItemsFlat:: move_dn(int pos){
 
 // Переключение таблицы в зашифрованное состояние
 // todo: Добавить шифрацию имени приаттаченных файлов и содержимого файлов
-void ItemsFlat:: to_encrypt(void){
+void ItemsFlat::to_encrypt(void){
 	// Перебор записей
     for(int i = 0; i < count_direct(); i ++){
 	// Если запись уже зашифрована, ее шифровать ненужно
@@ -1194,7 +1194,7 @@ void ItemsFlat:: to_encrypt(void){
 
 // Переключение таблицы в расшифрованное состояние
 // todo: добавить расшифрацию имени приаттаченных файлов и содержимого файлов
-void ItemsFlat:: to_decrypt(void){
+void ItemsFlat::to_decrypt(void){
 	// Перебор записей
     for(int i = 0; i < count_direct(); i ++){
 	// Если запись не зашифрована, ее не нужно расшифровывать
@@ -1211,15 +1211,15 @@ void ItemsFlat:: to_decrypt(void){
 // return _tree_item;
 // }
 
-int ItemsFlat:: work_pos(void) const {
+int ItemsFlat::work_pos(void) const {
     return _workpos;
 }
 
-void ItemsFlat:: work_pos(int pos){
+void ItemsFlat::work_pos(int pos){
     _workpos = pos;
 }
 
-void ItemsFlat:: crypt(const bool _is_crypt){
+void ItemsFlat::crypt(const bool _is_crypt){
     if(_is_crypt && ! this->_is_crypt)
 		for(int i = 0; i < count_direct(); i ++)child_direct(i)->to_encrypt_fields();
     if(! _is_crypt && this->_is_crypt)
@@ -1227,19 +1227,19 @@ void ItemsFlat:: crypt(const bool _is_crypt){
     if(_is_crypt != this->_is_crypt)this->_is_crypt = _is_crypt;
 }
 
-bool ItemsFlat:: is_empty() const {
+bool ItemsFlat::is_empty() const {
     return 0 == _child_linkers.size();
 }
 
-QList<boost::intrusive_ptr<Linker> > ItemsFlat:: child_linkers(){
+QList<boost::intrusive_ptr<Linker> > ItemsFlat::child_linkers(){
     return _child_linkers;
 }
 
-void ItemsFlat:: traverse(const std::function<void (boost::intrusive_ptr<Linker>)> &operation){
+void ItemsFlat::traverse(const std::function<void (boost::intrusive_ptr<Linker>)> &operation){
     for(auto il : ItemsFlat::_child_linkers)operation(il);
 }
 
-void ItemsFlat:: release(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal){
+void ItemsFlat::release(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal){
 //    QList<boost::intrusive_ptr<Linker> >::Iterator pos = _child_linkers.begin();
 //    while(pos != _child_linkers.end()){
 //	auto link = *pos;

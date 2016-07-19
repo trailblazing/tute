@@ -151,7 +151,7 @@ namespace browser {
 // , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
 // );
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 namespace browser {
     class Browser;
@@ -390,14 +390,14 @@ namespace browser {
 #endif
 
 	public:
-	    TabWidget(ts_t        *_tree_screen
-		     , FindScreen      *_find_screen
-		     , MetaEditor      *_editor_screen
-		     , rs_t    *_record_screen
-		     , Entrance        *_entrance
-		     , Browser         *_browser
-		     , wn_t      *_main_window
-		     , Profile         *_profile);
+	    TabWidget(ts_t		*_tree_screen
+		     , FindScreen	*_find_screen
+		     , MetaEditor	*_editor_screen
+		     , Browser		*_browser
+		     , rs_t		*_record_screen
+		     , Entrance		*_entrance
+		     , wn_t		*_main_window
+		     , Profile		*_profile);
 		// , TableController *_page_controller
 		// , boost::intrusive_ptr<TreeItem> _shadow_branch_root
 
@@ -705,7 +705,7 @@ namespace browser {
 	// };
 }
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif	// TABWIDGET_H
 

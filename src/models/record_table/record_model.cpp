@@ -248,11 +248,11 @@ pages_container::~pages_container(){
 // }
 W_OBJECT_IMPL(RecordModel)
 // Конструктор модели
-RecordModel::RecordModel(rctl_t       *_record_controller	// TreeScreen             *_tree_screen    //, FindScreen           *_find_screen    //,
-//                        , RecordScreen          *_record_screen
-			, browser::TabWidget    *_tabmanager)
-    : QAbstractTableModel(_record_controller)	// _record_screen
-      , pages_container(_tabmanager)
+RecordModel::RecordModel(rctl_t *_record_controller	// TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen
+//			, browser::TabWidget *_tabmanager
+    )
+    : QAbstractTableModel(_record_controller)	// _record_controller	//
+//      , pages_container(_tabmanager)
       , _record_controller(_record_controller){
 	// _browser_pages->init_from_xml(_appconfig.get_tetradir() + "/default_page.xml");
 	// _browser_pages->root_item()->field("id", "0");  // get_unical_id()
@@ -412,7 +412,7 @@ int RecordModel::rowCount(const QModelIndex &parent) const {
 	// if(!browser_pages())    // if(!_table)
 	// return 0;
 
-    return pages_container::_tabmanager->count();
+    return _record_controller->tabmanager()->count();
 }
 
 // Сколько столбцов в таблице
@@ -542,16 +542,16 @@ browser::WebView *RecordModel::insert_new_item(const index_source source_pos_ind
     browser::WebView	*view		= nullptr;
     auto		insert_new_tab	= [&](pos_source &selected_position, const pos_source source_insert_pos){
 		// if(selected_position == -1) {
-	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, pages_container::_tabmanager->count() > 0 ? pages_container::_tabmanager->webView((int) source_insert_pos)->page()->binder()->host() : nullptr, _item);
+	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, _record_controller->tabmanager()->count() > 0 ? _record_controller->tabmanager()->webView((int) source_insert_pos)->page()->binder()->host() : nullptr, _item);
 //	    if(record_index)
-	    view = pages_container::_tabmanager->newTab(record_index);			// , _item->field("name")
+	    view = _record_controller->tabmanager()->newTab(record_index);			// , _item->field("name")
 //	    else{
-//		view = pages_container::_tabmanager->webView((int)source_insert_pos);
+//		view = _record_controller->tabmanager()->webView((int)source_insert_pos);
 //		view->page()->binder()->host()->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
 //		// addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
 //	    }
 	    assert(view);
-	    selected_position = pos_source(pages_container::_tabmanager->indexOf(view));
+	    selected_position = pos_source(_record_controller->tabmanager()->indexOf(view));
 
 	    return view;
 	};
@@ -563,14 +563,14 @@ browser::WebView *RecordModel::insert_new_item(const index_source source_pos_ind
 	if(_item->binder()){
 //            if(_item->binder()->page()){
 //            view = _item->binder()->page()->view();	// activate();
-	    auto v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
+	    auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
 	    if(v){
-		if(v->tabmanager() != pages_container::_tabmanager){
+		if(v->tabmanager() != _record_controller->tabmanager()){
 		    v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 //		    if(selected_position == - 1)
 //		    selected_position =
 		    view = insert_new_tab(selected_position, source_insert_pos);
-		}else selected_position = pos_source(pages_container::_tabmanager->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+		}else selected_position = pos_source(_record_controller->tabmanager()->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
 	    }else{
 //		selected_position =
 		view = insert_new_tab(selected_position, source_insert_pos);
@@ -622,7 +622,7 @@ void RecordModel::fields(int pos, QMap<QString, QString> data){
 QModelIndex RecordModel::index(int row, int column, const QModelIndex &parent) const {
 //    (void) parent;
     QModelIndex result;
-    if(column >= 0 && column < size()){
+    if(column >= 0 && column < _record_controller->tabmanager()->count()){
 	auto it = item(pos_source(column));
 	result = createIndex(row, column, static_cast<void *>(it.get()));
     }else result = QAbstractTableModel::index(row, column, parent);
@@ -635,7 +635,8 @@ index_source RecordModel::index(boost::intrusive_ptr<TreeItem> it) const {
     if(it){
 	for(int i = 0; i < count(); i ++){
 	    if(item(pos_source(i)) == it){
-		result = createIndex(i, 0, static_cast<void *>(it.get()));break;
+		result = createIndex(i, 0, static_cast<void *>(it.get()));
+		break;
 	    }
 	}
     }
@@ -653,7 +654,7 @@ index_source RecordModel::fake_index(boost::intrusive_ptr<TreeItem> it) const {
 }
 
 //// for multi items link with unique page
-//boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<TreeItem> it) const {
+// boost::intrusive_ptr<TreeItem> RecordModel::item_bounded(boost::intrusive_ptr<TreeItem> it) const {
 //    boost::intrusive_ptr<TreeItem> result = nullptr;
 //    for(int i = 0; i < count(); i ++){
 //	if(it->page_valid() && item(pos_source(i))->page() == it->page()){
@@ -661,7 +662,7 @@ index_source RecordModel::fake_index(boost::intrusive_ptr<TreeItem> it) const {
 //	}
 //    }
 //    return result;
-//}
+// }
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it) const {
     boost::intrusive_ptr<TreeItem> result = nullptr;
@@ -702,8 +703,8 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url) const {
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id){
     boost::intrusive_ptr<TreeItem> r(nullptr);
-    for(int pos = 0; pos < pages_container::_tabmanager->count(); pos ++){
-	auto it = pages_container::_tabmanager->webView(pos)->page()->host();
+    for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
+	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
 	if(it->id() == id){
 	    r = it;
 	    break;
@@ -714,8 +715,8 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id){
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
     boost::intrusive_ptr<TreeItem> r = nullptr;
-    for(int pos = 0; pos < pages_container::_tabmanager->count(); pos ++){
-	auto it = pages_container::_tabmanager->webView(pos)->page()->host();
+    for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
+	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
 	if(it->id() == id){
 	    r = it;
 	    break;
@@ -726,23 +727,23 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index){
     boost::intrusive_ptr<TreeItem> r = nullptr;
-    if(_index >= 0 && _index < size())r = pages_container::_tabmanager->webView((int) _index)->page()->host();
+    if(_index >= 0 && _index < size())r = _record_controller->tabmanager()->webView((int) _index)->page()->host();
     return r;
 }
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index) const {
     boost::intrusive_ptr<TreeItem> r = nullptr;
     if(_index >= 0 && _index < size()){
-	assert(pages_container::_tabmanager->webView((int) _index)->page()->binder());
-	r = pages_container::_tabmanager->webView((int) _index)->page()->binder()->host();
+	assert(_record_controller->tabmanager()->webView((int) _index)->page()->binder());
+	r = _record_controller->tabmanager()->webView((int) _index)->page()->binder()->host();
 
 	assert(r);	// if find_recursive get new item from tree, there will be no item_link? because I move it?
     }
     return r;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item_fat(pos_source index){
-    boost::intrusive_ptr<TreeItem> item = pages_container::_tabmanager->webView((int) index)->page()->host();
+boost::intrusive_ptr<TreeItem> RecordModel::item_fat(const pos_source index){
+    boost::intrusive_ptr<TreeItem> item = _record_controller->tabmanager()->webView((int) index)->page()->host();
     if(item->is_lite())item->to_fat();
     return item;
 }
@@ -792,12 +793,12 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(pos_source index){
 
 
 boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it) const {
-    return pages_container::_tabmanager->sibling(it);
+    return _record_controller->tabmanager()->sibling(it);
 }
 
 boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
     boost::intrusive_ptr<TreeItem>	result(nullptr);
-    auto				page = pages_container::_tabmanager->currentWebView() ? pages_container::_tabmanager->currentWebView()->page() : nullptr;
+    auto				page = _record_controller->tabmanager()->currentWebView() ? _record_controller->tabmanager()->currentWebView()->page() : nullptr;
     if(page){
 	auto binder = page->binder();
 	if(binder)result = binder->host();
@@ -806,7 +807,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
 }
 
 void RecordModel::position(pos_source _index){
-    pages_container::_tabmanager->setCurrentIndex((int) _index);
+    _record_controller->tabmanager()->setCurrentIndex((int) _index);
 }
 
 // PosSource RecordModel::position()const
@@ -816,8 +817,8 @@ void RecordModel::position(pos_source _index){
 
 pos_source RecordModel::position(id_value id) const {
     pos_source result(- 1);
-    for(int i = 0; i < pages_container::_tabmanager->count(); i ++){
-	if(pages_container::_tabmanager->webView(i)->page()->host()->id() == id){
+    for(int i = 0; i < _record_controller->tabmanager()->count(); i ++){
+	if(_record_controller->tabmanager()->webView(i)->page()->host()->id() == id){
 	    result = pos_source(i);
 	    break;
 	}
@@ -846,11 +847,11 @@ Qt::ItemFlags RecordModel::flags(const QModelIndex &index) const {
 
 
 int RecordModel::count() const {
-    return pages_container::_tabmanager->count();
+    return _record_controller->tabmanager()->count();
 }
 
 int RecordModel::size() const {
-    return pages_container::_tabmanager->count();
+    return _record_controller->tabmanager()->count();
 }
 
 int RecordModel::move_up(const pos_source pos){
@@ -859,7 +860,7 @@ int RecordModel::move_up(const pos_source pos){
     pos_source new_pos = pos;
     if(pos > 0){
 	new_pos = pos_source((int) pos - 1);
-	pages_container::_tabmanager->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
     }
     endResetModel();
 
@@ -872,7 +873,7 @@ int RecordModel::move_dn(const pos_source pos){
     pos_source new_pos = pos;
     if(pos < count() - 1){
 	new_pos = pos_source((int) pos + 1);
-	pages_container::_tabmanager->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
     }
     endResetModel();
 

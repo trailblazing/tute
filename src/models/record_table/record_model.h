@@ -21,8 +21,8 @@
 
 #define TABLE_DATA_ROLE Qt::UserRole + 10
 #define ONE_RECORD_ROLE Qt::UserRole + 11
-#define RECORD_ID_ROLE  Qt::UserRole + 12
-#define SORT_ROLE       Qt::UserRole + 13
+#define RECORD_ID_ROLE	Qt::UserRole + 12
+#define SORT_ROLE	Qt::UserRole + 13
 
 
 extern const int	add_new_record_to_end;
@@ -60,6 +60,7 @@ struct pages_container {
 	explicit pages_container(browser::TabWidget *_tabmanager);
 	~pages_container();
 	browser::TabWidget      *tabmanager(){return _tabmanager;}
+
 	// void browser_pages(ItemsFlat *_browser_pages);
 	// ItemsFlat *browser_pages();
 	// ItemsFlat *browser_pages()const;
@@ -70,7 +71,8 @@ struct pages_container {
 };
 
 class RecordModel : public QAbstractTableModel
-		  , public pages_container {
+//		  , public pages_container
+{
     W_OBJECT(RecordModel)
 
 	// By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
@@ -80,9 +82,8 @@ class RecordModel : public QAbstractTableModel
 
 
 
-	RecordModel(rctl_t        *_record_controller
-//                   , RecordScreen          *_record_screen
-		   , browser::TabWidget    *_tabmanager);
+	RecordModel(rctl_t *_record_controller);// , RecordScreen *_record_screen
+
 
 	~RecordModel();
 
@@ -127,7 +128,7 @@ class RecordModel : public QAbstractTableModel
 	boost::intrusive_ptr<TreeItem>	item(const id_value &id);
 	boost::intrusive_ptr<TreeItem>	item(const id_value &id) const;
 	boost::intrusive_ptr<TreeItem>	item(const QUrl &_url) const;
-	boost::intrusive_ptr<TreeItem>	item_fat(pos_source index);
+	boost::intrusive_ptr<TreeItem>	item_fat(const pos_source index);
 	// boost::intrusive_ptr<TreeItem> item(int pos) {return item(pos);}
 	// boost::intrusive_ptr<TreeItem> item(int pos)const {return item(pos);}
 

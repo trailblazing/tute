@@ -90,7 +90,7 @@ namespace browser {
 		QWidget::show();
 		QWidget::raise();
 	    });
-	QTimer::singleShot(5000, this, SLOT(fadeOut()));
+	QTimer::singleShot(5000, this, &FullScreenNotification::fadeOut);
     }
     void FullScreenNotification:: hide(){
 	QWidget::hide();

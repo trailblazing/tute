@@ -60,10 +60,10 @@ class rctl_t : public QObject {
 
 	//    typedef TreeItem::bind_helper       bind_helper;
 	//    typedef TreeItem::activate_helper   active_helper;
-	rctl_t(MetaEditor           *_editor_screen
-	      , browser::TabWidget  *_tabmanager
-	      , rs_t	*_record_screen
-	      , wn_t	*_main_window);
+	rctl_t(MetaEditor *_editor_screen
+	      , browser::TabWidget *_tabmanager
+	      , rs_t *_record_screen
+	      , wn_t *_main_window);
 	virtual ~rctl_t();
 
 	//    void init(void);
@@ -196,10 +196,10 @@ class rctl_t : public QObject {
 	//    void browser_update(const PosSource pos_source_);
 
 	//    bool                _no_view = true;
+	browser::TabWidget	*_tabmanager;	//
 	RecordModel		*_source_model;		// Class, advanced by QAbstractTableModel   // Класс, расширенный от QAbstractTableModel
 	RecordProxyModel	*_proxy_model;
 	rv_t			*_view;
-	browser::TabWidget	*_tabmanager;	//
 	rs_t			*_record_screen;
 	MetaEditor		*_editor_screen;
 	wn_t			*_main_window;
@@ -211,7 +211,8 @@ class rctl_t : public QObject {
 		       , QString pin
 		       , QString name
 		       , QString author
-		       , QString home, QString url
+		       , QString home
+		       , QString url
 		       , QString tags);
 
 	// Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop

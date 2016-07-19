@@ -65,7 +65,6 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
       , _databaseconfig(_databaseconfig)
       , _v_right_splitter([&]() -> QSplitter * {auto _v_r_s = new QSplitter(Qt::Vertical);_v_r_s->setSizes(_appconfig.v_right_splitter_sizelist());_globalparameters.v_right_splitter(_v_r_s);return _v_r_s;} ())
       , _v_find_splitter([&]() -> QSplitter * {auto _v_f_s = new QSplitter(Qt::Vertical);_v_f_s->setSizes(_appconfig.findsplitter_sizelist());_globalparameters.find_splitter(_v_f_s);return _v_f_s;} ())
-      , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(style_source_, this);_globalparameters.vtab_record(vr);return vr;} (_style))
 //      , _vtab_tree([&](QString style_source_){auto vt = new HidableTabWidget(style_source_, this);_globalparameters.vtab_tree(vt);return vt;} (_style))
       , _h_record_splitter([&]() -> QSplitter * {auto _h_r_s = new QSplitter(Qt::Horizontal);_h_r_s->setSizes(_appconfig.h_record_splitter_sizelist());_globalparameters.h_record_splitter(_h_r_s);return _h_r_s;} ())
       , _h_tree_splitter([&]() -> QSplitter * {auto _h_l_s = new QSplitter(Qt::Horizontal);_h_l_s->setSizes(_appconfig.h_tree_splitter_sizelist());_globalparameters.h_tree_splitter(_h_l_s);return _h_l_s;} ())							// Qt::Vertical
@@ -83,13 +82,14 @@ wn_t::wn_t(GlobalParameters     &_globalparameters
       , _editor_screen(new MetaEditor(meta_editor_singleton_name, _find_screen))		// _find_screen -> for find_text
       , _entrance(new browser::Entrance(entrance_singleton_name, _tree_screen, _find_screen, _editor_screen, this, _appconfig, _globalparameters.style_source(), _profile, Qt::Widget))							// Qt::MaximizeUsingFullscreenGeometryHint
 //      , _download(new browser::DownloadManager(download_manager_singleton_name, _vtab_record))
+      , _vtab_record([&](QString style_source_){auto vr = new HidableTabWidget(_tree_screen, _find_screen, _editor_screen, _entrance, this, _profile, style_source_);_globalparameters.vtab_record(vr);return vr;} (_style))
       , _statusbar(new QStatusBar(this))
       , _switcher(new WindowSwitcher(windowswitcher_singleton_name, _editor_screen, this))
       , _enable_real_close(false){
 	// _page_screen->setVisible(false);
 	// _page_screen->hide();
 
-    _globalparameters.mainwindow(this);
+    _globalparameters.main_window(this);
 
 
 
@@ -1379,23 +1379,23 @@ void wn_t::init_preferences_menu(QMenu *menu){
     QAction *a;
 
     a = new QAction(tr("Main"), this);
-	// connect(a, SIGNAL(triggered()), this, SLOT(toolsFind()));
+    connect(a, &QAction::triggered, this, &wn_t::tools_find);
     menu->addAction(a);
 
     a = new QAction(tr("Crypt"), this);
-	// connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+    connect(a, &QAction::triggered, this, &wn_t::tools_preferences);
     menu->addAction(a);
 
     a = new QAction(tr("Synchro"), this);
-	// connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+    connect(a, &QAction::triggered, this, &wn_t::tools_preferences);
     menu->addAction(a);
 
     a = new QAction(tr("RecordTable"), this);
-	// connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+    connect(a, &QAction::triggered, this, &wn_t::tools_preferences);
     menu->addAction(a);
 
     a = new QAction(tr("Misc"), this);
-	// connect(a, SIGNAL(triggered()), this, SLOT(toolsPreferences()));
+    connect(a, &QAction::triggered, this, &wn_t::tools_preferences);
     menu->addAction(a);
 }
 
@@ -1507,7 +1507,7 @@ void wn_t::editor_switch(void){
 
 void wn_t::tools_preferences(void){
 	// Создается окно настроек, после выхода из этой функции окно удалится
-    AppConfigDialog dialog(_entrance->activated_browser()->record_screen()->record_controller(), "");
+    AppConfigDialog dialog(_vtab_record->activated_browser()->record_screen()->record_controller(), "");
 
     dialog.show();
 }
@@ -1707,8 +1707,7 @@ void wn_t::create_tray_icon(void){
 }
 
 void wn_t::set_icon(void){
-    connect(_tray_icon, SIGNAL(activated(QSystemTrayIcon::ActivationReason))
-	   , this, SLOT(icon_activated(QSystemTrayIcon::ActivationReason)));
+    connect(_tray_icon, &QSystemTrayIcon::activated, this, &wn_t::icon_activated);
 
     QIcon icon = QIcon(":/resource/pic/logo.svg");
     _tray_icon->setIcon(icon);
@@ -1720,17 +1719,17 @@ void wn_t::set_icon(void){
 void wn_t::icon_activated(QSystemTrayIcon::ActivationReason reason){
     if(QSystemTrayIcon::isSystemTrayAvailable() == false)return;
     switch(reason){
-    case QSystemTrayIcon::Trigger:
-    case QSystemTrayIcon::DoubleClick:
-	if(isVisible()){
-	    if(isMinimized())showNormal();
-	    else hide();
-	}else{
-	    if(isMinimized())showNormal();
-	    else show();
-	}
-    default:
-	;
+	case QSystemTrayIcon::Trigger:
+	case QSystemTrayIcon::DoubleClick:
+	    if(isVisible()){
+		if(isMinimized())showNormal();
+		else hide();
+	    }else{
+		if(isMinimized())showNormal();
+		else show();
+	    }
+	default:
+	    ;
     }
 }
 

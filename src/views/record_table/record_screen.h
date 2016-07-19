@@ -48,7 +48,7 @@ class rs_t : public QWidget {
     W_OBJECT(rs_t)
 
     public:
-	rs_t(ts_t *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, browser::Browser *_browser, wn_t *_main_window, browser::Profile *_profile);
+	rs_t(ts_t *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, wn_t *_main_window, const QString &_style_source, browser::Profile *_profile);
 
 	virtual ~rs_t();
 
@@ -63,7 +63,7 @@ class rs_t : public QWidget {
 	rctl_t *record_controller();
 
 	// bool                inited() {return _inited;}
-	browser::TabWidget	*tabmanager();
+//	browser::TabWidget	*tabmanager();
 	browser::Browser	*browser();
 	ts_t			*tree_screen();
 	QAction			*tree_show();
@@ -85,7 +85,7 @@ class rs_t : public QWidget {
 
     private:
 	// bool                _inited = false;
-	browser::Browser	*_browser;
+
 	ts_t			*_tree_screen;
 	wn_t			*_main_window;
 
@@ -117,24 +117,18 @@ class rs_t : public QWidget {
 	QToolBar		*_toolsline;
 	QToolBar		*_extra_toolsline;
 
-	QLabel			*_treepathlabel;
-//	FlatToolButton		*_treepath_button;
-	QString	_treepath;
+	QLabel			*_treepathlabel;//	FlatToolButton		*_treepath_button;
+	QString			_treepath;
 
 
-
-	browser::TabWidget	*_tabmanager;
-	rctl_t			*_record_controller;
+	browser::Browser	*_browser;
+	rctl_t			*_record_controller;	//	browser::TabWidget	*_tabmanager;
 	VerticalScrollArea	*_vertical_scrollarea;
-
-
 
 	QHBoxLayout         *_records_toolslayout;
 	// browser::ToolbarSearch  *_recordtree_search;
 	// QHBoxLayout             *_recordtree_searchlayout;
 	QVBoxLayout         *_records_screenlayout;
-
-
 
 	void	setup_ui(void);
 	void	setup_signals(void);

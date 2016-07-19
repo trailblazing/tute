@@ -233,7 +233,7 @@ tv_t::tv_t(QString _name, ts_t *_tree_screen)
 	// connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
     if(appconfig.interface_mode() == "mobile")connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){cursor_step_into(index_tree(index));});
     if(appconfig.interface_mode() == "desktop"){
-	connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){index_invoke(globalparameters.entrance()->activated_browser()->tabmanager()->currentWebView(), index_tree(index));});
+	connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(), index_tree(index));});
 	// [&](const QModelIndex index) {
 	////            collapse(index);
 	////            expand(index);
@@ -1082,7 +1082,7 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index
 
 	// auto _item = _know_root->item(_parent_index);
 
-    auto v = globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
+    auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
     if(v)v->tabmanager()->record_controller()->synchronize_record_view(_item);
 //    _item->binder() ? _item->binder()->page() ? _item->binder()->page()->record_controller() ? [&] {
 //	auto record_controller = _item->binder()->page()->record_controller();
@@ -1664,7 +1664,7 @@ boost::intrusive_ptr<TreeItem> tv_t::new_child(boost::intrusive_ptr<TreeIndex> _
 	// auto item = _current_model->item(_current_index);
 
 	// find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->setDisabled(true);
+    globalparameters.main_window()->setDisabled(true);
 
     auto					current_item	= _modelindex->host();						// _current_model()->item(_current_index);
     auto					host_parent	= current_item->parent();
@@ -1723,7 +1723,7 @@ boost::intrusive_ptr<TreeItem> tv_t::new_child(boost::intrusive_ptr<TreeIndex> _
     _know_model_board->save();					// know_model_save();
 
 	// find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->setEnabled(true);
+    globalparameters.main_window()->setEnabled(true);
     assert(result->name() == _name);
 
 	// assert(result == _current_model()->item(setto));
@@ -1894,7 +1894,7 @@ boost::intrusive_ptr<TreeItem> tv_t::paste_children_from_children(boost::intrusi
 		// }
 
 		// find_object<MainWindow>("mainwindow")
-	    globalparameters.mainwindow()->setDisabled(true);
+	    globalparameters.main_window()->setDisabled(true);
 
 		// if(new_branch_root->id() == "") {
 		//// Получение уникального идентификатора
@@ -1971,7 +1971,7 @@ boost::intrusive_ptr<TreeItem> tv_t::paste_children_from_children(boost::intrusi
 		know_model_save();
 
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setEnabled(true);
+		globalparameters.main_window()->setEnabled(true);
 		// return
 		result = _current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){return it->id() == result->id();});																															// setto
 
@@ -2172,7 +2172,7 @@ void tv_t::paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _siblin
 	// Блокируется главное окно, чтобы при продолжительном выполнении
 	// небыло возможности сделать другие действия
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->setDisabled(true);
+	globalparameters.main_window()->setDisabled(true);
 
 
 	// Создается ссылка на буфер обмена
@@ -2283,7 +2283,7 @@ void tv_t::paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _siblin
 	    auto	pasted_branch_item	= _current_model()->item([=](boost::intrusive_ptr<const TreeItem> it){return it->id() == pasted_branch_id;});
 	    QStringList pasted_branch_path	= pasted_branch_item->path_list();
 		// find_object<MainWindow>("mainwindow")
-	    globalparameters.mainwindow()->set_tree_position(source_model()->root_item()->id(), pasted_branch_path);
+	    globalparameters.main_window()->set_tree_position(source_model()->root_item()->id(), pasted_branch_path);
 
 	    _know_model_board->synchronized(false);
 		// Сохранение дерева веток
@@ -2295,7 +2295,7 @@ void tv_t::paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _siblin
 	}
 	// азблокируется главное окно
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->setEnabled(true);
+	globalparameters.main_window()->setEnabled(true);
     }
 }
 
@@ -2358,7 +2358,7 @@ boost::intrusive_ptr<TreeItem> tv_t::paste_child(boost::intrusive_ptr<TreeIndex>
 		// }
 
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setDisabled(true);
+		globalparameters.main_window()->setDisabled(true);
 		// Получение уникального идентификатора
 		if((QString) _source_item->id() == "")_source_item->field<id_type>(get_unical_id());
 		// QModelIndex setto;
@@ -2464,7 +2464,7 @@ boost::intrusive_ptr<TreeItem> tv_t::paste_child(boost::intrusive_ptr<TreeIndex>
 
 
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setEnabled(true);
+		globalparameters.main_window()->setEnabled(true);
 
 
 		// }
@@ -2514,7 +2514,7 @@ boost::intrusive_ptr<TreeItem> tv_t::paste_child(boost::intrusive_ptr<TreeIndex>
 		// }
 
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setDisabled(true);
+		globalparameters.main_window()->setDisabled(true);
 		if((QString) _source_item->id() == "")_source_item->field<id_type>(get_unical_id());			// Получение уникального идентификатора
 //		    QString id = get_unical_id();
 
@@ -2554,7 +2554,7 @@ boost::intrusive_ptr<TreeItem> tv_t::paste_child(boost::intrusive_ptr<TreeIndex>
 		know_model_save();
 
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setEnabled(true);
+		globalparameters.main_window()->setEnabled(true);
 		// return
 		result = current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();});
 		assert((_source_item == result) || (_source_item->name() == result->name()));
@@ -2618,9 +2618,9 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
 
 			// азблокируется главное окно
 			// find_object<MainWindow>("mainwindow")
-		    globalparameters.mainwindow()->setEnabled(true);
+		    globalparameters.main_window()->setEnabled(true);
 			// find_object<MainWindow>("mainwindow")
-		    globalparameters.mainwindow()->blockSignals(false);
+		    globalparameters.main_window()->blockSignals(false);
 
 			// return _result;
 		}
@@ -2631,9 +2631,9 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
 
 	// На время удаления блокируется главное окно
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->setDisabled(true);
+	globalparameters.main_window()->setDisabled(true);
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->blockSignals(true);
+	globalparameters.main_window()->blockSignals(true);
 
 	// preparations
 
@@ -2699,7 +2699,7 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
 			// Нужно, чтобы нормально удалилась текущая редактируемая запись,
 			// если она находится в удаляемой ветке
 			// find_object<MainWindow>("mainwindow")
-		    globalparameters.mainwindow()->save_text_area();
+		    globalparameters.main_window()->save_text_area();
 			// Сортировка списка индексов по вложенности методом пузырька
 			// Индексы с длинным путем перемещаются в начало списка
 		    for(int i = 0; i < items_candidate.size(); i ++)
@@ -2776,10 +2776,10 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
 				}
 				return left_sibling_item;
 			    };
-			if(globalparameters.entrance()->browsers().size() > 0){
-			    browser::Browser					*browser	= globalparameters.entrance()->activated_browser();
-			    auto						tabmanager	= browser->tabmanager();
-			    QList<boost::intrusive_ptr<TreeItem> >		good_list;
+			if(globalparameters.main_window()->vtab_record()->record_screens().size() > 0){
+			    browser::Browser				*browser	= globalparameters.main_window()->vtab_record()->activated_browser();
+			    auto					tabmanager	= browser->tabmanager();
+			    QList<boost::intrusive_ptr<TreeItem> >	good_list;
 			    for(int i = 0; i < tabmanager->count(); i ++){
 				auto	v	= tabmanager->webView(i);
 				auto	it	= v->page()->binder()->host();
@@ -2815,9 +2815,9 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
 		}
 		// азблокируется главное окно
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setEnabled(true);
+		globalparameters.main_window()->setEnabled(true);
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->blockSignals(false);
+		globalparameters.main_window()->blockSignals(false);
 
 		tree_empty_controll();
 		tree_crypt_control();
@@ -2881,7 +2881,7 @@ QModelIndexList tv_t::copy(void){	// const
 
 	// Сохраняется текст в окне редактирования
 	// find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->save_text_area();
+    globalparameters.main_window()->save_text_area();
 
 	// Получение списка индексов QModelIndex выделенных элементов
 	// QModelIndexList _origin_index_list = selectionModel()->selectedIndexes();
@@ -3087,7 +3087,7 @@ void tv_t::edit(void){
 	// Если была нажата отмена
 	if(! (ok && ! newname.isEmpty()))return;
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->setDisabled(true);
+	globalparameters.main_window()->setDisabled(true);
 
 	item->field<name_type>(newname);
 
@@ -3096,7 +3096,7 @@ void tv_t::edit(void){
 	know_model_save();
 
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->setEnabled(true);
+	globalparameters.main_window()->setEnabled(true);
     }
 }
 
@@ -3117,7 +3117,7 @@ boost::intrusive_ptr<TreeItem> tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree
 	if(result){
 	    if(result != _to_be_operated){											// && target_on_tree
 		if(_to_be_operated->id() == static_cast<tkm_t *>(_current_model())->session_id())static_cast<tkm_t *>(_current_model())->session_id(TreeIndex::instance(_current_model, result, result->parent()));
-		globalparameters.mainwindow()->setDisabled(true);
+		globalparameters.main_window()->setDisabled(true);
 		result = static_cast<tkm_t *>(_current_model())->merge(TreeLevel::instance(tree_index, _to_be_operated)	// target_on_tree  // keep// remove   // std::bind(_know_model_board, this)
 								      , std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent_recursive, "cut", false)																					//
 			);
@@ -3125,7 +3125,7 @@ boost::intrusive_ptr<TreeItem> tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree
 		know_model_save();
 
 		// find_object<MainWindow>("mainwindow")
-		globalparameters.mainwindow()->setEnabled(true);
+		globalparameters.main_window()->setEnabled(true);
 	    }else													// if(target_on_tree)
 			result = result;
 	}
@@ -3229,7 +3229,7 @@ void tv_t::know_model_reload(void){
 void tv_t::cursor_step_into(const index_tree &_index){
 	// auto _tree_screen = static_cast<TreeScreen *>(parent());
     if(static_cast<QModelIndex>(_index).isValid() &&			// !source_model()->item(_index)->is_activated()
-	! globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {
+	! globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {
 	    bool result = false;
 	    auto ref_it = source_model()->child(_index);
 	    if(ref_it->binder()){
@@ -3245,7 +3245,7 @@ void tv_t::cursor_step_into(const index_tree &_index){
 
 	// Сохраняется текст в окне редактирования в соответсвующий файл
 	// find_object<MainWindow>("mainwindow")
-	globalparameters.mainwindow()->save_text_area();
+	globalparameters.main_window()->save_text_area();
 	auto _soure_model = [&](){
 		return source_model();
 	    };
@@ -3340,7 +3340,7 @@ void tv_t::cursor_step_into(const index_tree &_index){
 		path.removeAt(emptyStringIndex);
 
 		// find_object<RecordScreen>(table_screen_singleton_name)
-		globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+		globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
 	    }
 		// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
 	    resizeColumnToContents(0);
@@ -3406,7 +3406,7 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 	    }
 	}
 	browser::WebView *v = nullptr;
-	if(! globalparameters.entrance()->find([&](boost::intrusive_ptr<const ::Binder> b){	// !result_item->is_activated()
+	if(! globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){	// !result_item->is_activated()
 		bool result = false;
 		// auto result_item = source_model()->item(_index);
 		if(result_item->binder()){
@@ -3422,7 +3422,7 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 
 		// Сохраняется текст в окне редактирования в соответсвующий файл
 		// find_object<MainWindow>("mainwindow")
-	    globalparameters.mainwindow()->save_text_area();
+	    globalparameters.main_window()->save_text_area();
 
 	    setExpanded(static_cast<QModelIndex>(_index).parent(), true);																	// (isExpanded(_index)) ? setExpanded(_index, false) : setExpanded(_index, true);
 	    if(result_item->count_direct() > 0){																	// && (result_item->field("url") != "" || result_item->field("url") == "" )
@@ -3502,7 +3502,7 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 		    path.removeAt(emptyStringIndex);
 
 			// find_object<RecordScreen>(table_screen_singleton_name)
-		    globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+		    globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
 		}
 		// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
 		resizeColumnToContents(0);
@@ -3518,7 +3518,7 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 		// TreeIndex modelindex([&] {return _know_root;}, current_item()->parent(), current_item()->parent()->sibling_order(current_item()));
 		////            select_and_current(result_item);
 		// auto item_bind_ = [&]() {return item_bind(current_item(), result_item, std::bind(&KnowView::view_paste_child, this, modelindex, std::placeholders::_2, std::placeholders::_3))->activate();};
-		auto browser = globalparameters.entrance()->activated_browser();
+		auto browser = globalparameters.main_window()->vtab_record()->activated_browser();
 		// auto previous_item = _know_root->item(_previous_index);
 		boost::intrusive_ptr<TreeItem> record_previous_item(nullptr);
 		if(view)record_previous_item = view->page()->binder()->host();
@@ -3526,7 +3526,7 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, result_item);;
 
 		auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
-			return browser->page_instantiate(_record_index)->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));																															// item_bind_();
+			return browser->page_instantiate(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));																															// item_bind_();
 		    };
 //		if(record_index && ! result_item->binder())v = browser_bind_activate(record_index);																													// browser->item_bind(record_index)->activate();   // item_bind_();
 //		else	// if(record_index && result_item->binder() && ! result_item->binder()->page())																									// !result_item->binder()->integrity_internal()){
@@ -3621,7 +3621,7 @@ boost::intrusive_ptr<TreeItem> tv_t::cursor_follow_up(void){
 	};
 
 	// Сохраняется текст в окне редактирования в соответсвующий файл
-    globalparameters.mainwindow()->save_text_area();
+    globalparameters.main_window()->save_text_area();
 
     auto	current_model	= [&](){return source_model();};
     auto	_current_item	= current_item();
@@ -3656,7 +3656,7 @@ boost::intrusive_ptr<TreeItem> tv_t::cursor_follow_up(void){
 		    path.removeAt(emptyStringIndex);
 
 			// find_object<RecordScreen>(table_screen_singleton_name)
-		    globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+		    globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
 		}
 		// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
 		resizeColumnToContents(0);

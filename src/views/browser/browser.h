@@ -124,13 +124,14 @@ namespace browser {
 	W_OBJECT(Browser)
 
 	public:
-	    Browser(ts_t          *_tree_screen
-		   , FindScreen        *_find_screen
-		   , MetaEditor        *_editor_screen
-		   , wn_t        *_main_window
-		   , Entrance          *_entrance
-		   , const QString     &style_source
-		   , browser::Profile  *_profile
+	    Browser(ts_t		*_tree_screen
+		   , FindScreen		*_find_screen
+		   , MetaEditor		*_editor_screen
+		   , rs_t		*_record_screen
+		   , Entrance		*_entrance
+		   , wn_t		*_main_window
+		   , const QString	&style_source
+		   , browser::Profile	*_profile
 		   , Qt::WindowFlags flags);
 
 		//        Browser(QUrl const &url         // Record *const record
@@ -327,11 +328,9 @@ namespace browser {
 	    QAction		*_viewstatusbar;
 	    QAction		*_restorelastsession;
 	    QAction		*_addbookmark;
-
-	    QIcon	_reloadicon;
-	    QIcon	_stopicon;
-
-	    QString _lastsearch;
+	    QIcon		_reloadicon;
+	    QIcon		_stopicon;
+	    QString		_lastsearch;
 
 	    QWebEngineSettings::WebAttribute	_webattribute;
 	    bool				_webattributeenabled;

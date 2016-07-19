@@ -403,7 +403,7 @@ void FindScreen::setup_signals(void){
 	// При нажатии кнопки закрытия
     connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
     connect(_close_button, &FlatToolButton::clicked, [] {
-	    auto browser = globalparameters.entrance()->activated_browser();
+	    auto browser = globalparameters.main_window()->vtab_record()->activated_browser();
 		// if(win)
 	    browser->updateToolbarActionText(false);
 	});
@@ -572,16 +572,14 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// Сохраняется текущая редактируемая запись, чтобы и в ней
 	// были найдены введенные перед нажатием Find данные, если они есть
 	// find_object<MainWindow>("mainwindow")
-    globalparameters.mainwindow()->save_text_area();
+    globalparameters.main_window()->save_text_area();
 
 	//// Очищается таблица результата поиска
 	// _findtable->re_initialize();
 
     const tkm_t *_global_source_model = _tree_screen->view()->know_model_board();
 	// Выясняется ссылка на модель дерева данных
-    auto _current_model = [&](){
-	    return _tree_screen->view()->source_model();
-	};																										// static_cast<KnowModel *>(_tree_screen->tree_view()->model());
+    auto _current_model = [&](){return _tree_screen->view()->source_model();};																											// static_cast<KnowModel *>(_tree_screen->tree_view()->model());
 
 
 	// QMap<QString, QString> data;
@@ -596,7 +594,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
     QList<boost::intrusive_ptr<Linker> > _result_list;
 	// Выясняется стартовый элемент в дереве, с которого будет начат поиск
 	// Выясняется сколько всего конечных записей
-    boost::intrusive_ptr<TreeItem>	_start_item;				// = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
+    boost::intrusive_ptr<TreeItem>	_start_item(nullptr);				// = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
     boost::intrusive_ptr<TreeItem>	_session_root_item(_tree_screen->view()->session_root_auto());					// new TreeItem(nullptr, data)
 	// _tree_screen->tree_view()->source_model()->item(_tree_screen->tree_view()->current_index())->parent();    //
 
@@ -636,23 +634,39 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 
 	// __________________________________________________________________________________________________
 
+    auto browsers_search_prepare = [&](boost::intrusive_ptr<TreeItem> &_start_item, int &_candidate_records){	// , boost::intrusive_ptr<TreeItem>    &_result_item
+		// to be done
+		// QMap<QString, QString> data;
 
-    auto global_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &_start_item
-				    , int                              &_candidate_records
-		// , boost::intrusive_ptr<TreeItem>   &_result_item
-		// , std::shared_ptr<RecordTable>     &resultset_data
-	    ){
-		// Корневой элемент дерева
-	    _start_item = _global_source_model->root_item();																												// this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
-		// Количество элементов (веток) во всем дереве
-	    _candidate_records = _global_source_model->count_records_all();
-		// assert(_result_item->count_direct() == 0);  //_result_item = _result_item->active_subset();
+
+		// resultset_item.swap(_candidate_root);   // resultset_item == _candidate_root
+		// std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
+		// auto dommodel = resultset_item->export_to_dom();    // source->init(startItem, QDomElement());
+		// search_start_item->tabledata(dommodel);
+		// QMap<QString, QString> field_data;
+
+	    _start_item = TreeItem::dangle_instance(QMap<QString, QString>());	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
+		// boost::intrusive_ptr<TreeItem> _parent_item
+		// resultset_item;
+//	    browser::Entrance *_entrance = globalparameters.entrance();
+	    for(auto &browser : [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens())bs.insert(rs->browser()); return bs;} ()){
+		auto _tabmanager = browser->tabmanager();
+		for(int i = 0; i < _tabmanager->count(); i ++){
+		    _start_item << _tabmanager->webView(i)->page()->host();
+			// _start_item->child_rent(item);
+		}
+	    }
+		////        assert(_result_item->direct_count() == 0);
+
+		// _result_item = _result_item->active_subset();
+
+		//// resultset_item
+		//// resultset_record_source->active_subset(_tree_screen->insert_branch_process(_tree_screen->last_index(), "buffer", true));  //
+		////            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
+	    _candidate_records = _start_item->count_children_all();
 	};
 
-    auto branch_search_prepare = [&](boost::intrusive_ptr<TreeItem>     &_start_item
-				    , int                              &_candidate_records
-		// , boost::intrusive_ptr<TreeItem>   &_result_item
-	    ){
+    auto _current_model_search_prepare = [&](boost::intrusive_ptr<TreeItem> &_start_item, int &_candidate_records){		// , boost::intrusive_ptr<TreeItem>   &_result_item
 		//// Индекс текущей выбранной ветки
 		// QModelIndex current_item_index =    // find_object<TreeScreen>(tree_screen_singleton_name)
 		// _tree_screen->tree_view()->index_current();
@@ -669,40 +683,17 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 
 	// Q_UNUSED(branch_search_prepare)
 
-    auto active_subset_search_prepare = [&](boost::intrusive_ptr<TreeItem>      &_start_item
-					   , int                               &_candidate_records
-		// , boost::intrusive_ptr<TreeItem>    &_result_item
-	    ){
-		// to be done
-		// QMap<QString, QString> data;
-
-
-		// resultset_item.swap(_candidate_root);   // resultset_item == _candidate_root
-		// std::shared_ptr<QDomDocument> doc = std::make_shared<QDomDocument>();
-		// auto dommodel = resultset_item->export_to_dom();    // source->init(startItem, QDomElement());
-		// search_start_item->tabledata(dommodel);
-		// QMap<QString, QString> field_data;
-
-	    _start_item = TreeItem::dangle_instance(QMap<QString, QString>());	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, QMap<QString, QString>()));
-		// boost::intrusive_ptr<TreeItem> _parent_item
-		// resultset_item;
-	    browser::Entrance *_entrance = globalparameters.entrance();
-	    for(auto &browser : _entrance->browsers()){
-		auto tabmanager = browser->tabmanager();
-		for(int i = 0; i < tabmanager->count(); i ++){
-		    _start_item << tabmanager->webView(i)->page()->host();
-			// _start_item->child_rent(item);
-		}
-	    }
-		////        assert(_result_item->direct_count() == 0);
-
-		// _result_item = _result_item->active_subset();
-
-		//// resultset_item
-		//// resultset_record_source->active_subset(_tree_screen->insert_branch_process(_tree_screen->last_index(), "buffer", true));  //
-		////            std::make_shared<TableData>();      // assert(_result->size() == 0); //_result->empty();
-	    _candidate_records = _start_item->count_children_all();
+    auto global_search_prepare = [&](boost::intrusive_ptr<TreeItem> &_start_item, int &_candidate_records){	// , boost::intrusive_ptr<TreeItem>   &_result_item	// , std::shared_ptr<RecordTable>     &resultset_data
+		// Корневой элемент дерева
+	    _start_item = _global_source_model->root_item();																												// this change the value of local smart pointer, which can't be return to outer start_item, so function parameter type must be a reference.
+		// Количество элементов (веток) во всем дереве
+	    _candidate_records = _global_source_model->count_records_all();
+		// assert(_result_item->count_direct() == 0);  //_result_item = _result_item->active_subset();
 	};
+
+
+
+
 
 
     auto prepare_progressbar = [&](){
@@ -742,12 +733,12 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	    _progress->close();
 	};
 
-    auto final_search = [&](QList<boost::intrusive_ptr<Linker> >   &_result_list
-			   , boost::intrusive_ptr<TreeItem>       &_session_root_item				// std::shared_ptr<RecordTable> &resultset_data
-			   , boost::intrusive_ptr<TreeItem>       &_start_item
+    auto final_search = [&](QList<boost::intrusive_ptr<Linker> >    &_result_list
+			   , boost::intrusive_ptr<TreeItem>         &_session_root_item				// std::shared_ptr<RecordTable> &resultset_data
+			   , boost::intrusive_ptr<TreeItem>         &_start_item
 	    ) -> QList<boost::intrusive_ptr<Linker> > & {
 	    qDebug() << "Start finding in " << _candidate_records << " records";
-// prepare_progressbar();
+	    prepare_progressbar();
 
 
 
@@ -760,11 +751,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 		////            global_search_prepare(start_item, total_records, result);
 		////        }
 
-//// std::future<QList<boost::intrusive_ptr<Linker> > >
-// _result_list
-// = std::async(std::launch::async, [&] {return find_recursive(_result_list, _session_root_item, _start_item); }).get();
+//	    std::future<QList<boost::intrusive_ptr<Linker> > >
+//	    _result_list = std::async(std::launch::async, [&] {return find_recursive(_result_list, _session_root_item, _start_item);}).get();
 
-////                                                        std::thread(&FindScreen::find_recursive, this, _result_list, _session_root_item, _start_item).detach();// find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
+//	    std::thread(&FindScreen::find_recursive, this, _result_list, _session_root_item, _start_item).detach();	// find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
 	    return find_recursive(_result_list, _session_root_item, _start_item);				// _result_list;
 	};
 
@@ -794,7 +784,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 
     boost::intrusive_ptr<TreeItem>  final_result(nullptr);
 
-    active_subset_search_prepare(_start_item, _candidate_records);				// , _result_item
+    browsers_search_prepare(_start_item, _candidate_records);				// , _result_item
     if(_start_item){
 	if(0 != _candidate_records){
 	    _result_list = final_search(_result_list, _session_root_item, _start_item);
@@ -804,7 +794,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// }
 	// stage 2
 	if(0 == _result_list.size()){
-	    branch_search_prepare(_start_item, _candidate_records);
+	    _current_model_search_prepare(_start_item, _candidate_records);
 	    if(_start_item){
 		if(0 != _candidate_records){
 		    _result_list = final_search(_result_list, _session_root_item, _start_item);
@@ -949,7 +939,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
 //					      , searchRecordTable->field("id", i)
 //				);
 			    if(candidate->is_lite())candidate->to_fat();
-			    auto				browser			= globalparameters.entrance()->activated_browser();
+			    auto				browser			= globalparameters.main_window()->vtab_record()->activated_browser();
 			    auto				record_controller	= browser->record_screen()->record_controller();
 			    auto				tab_brother		= record_controller->view()->current_item();
 			    boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
@@ -963,7 +953,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
 //                            }else{
 				// auto previous_item = _source_model()->item(tree_view->previous_index());
 			    auto result = browser->page_instantiate(record_index);
-			    result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+			    result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 			    _result_list << result->linker();
 //                            }
 //                            }else{

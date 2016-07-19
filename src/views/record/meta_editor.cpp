@@ -32,7 +32,8 @@
 #include "views/browser/entrance.h"
 #include "views/browser/tabwidget.h"
 #include "views/tree/tree_view.h"
-
+#include "views/main_window/hidable_tabwidget.h"
+#include "views/main_window/main_window.h"
 
 
 extern GlobalParameters globalparameters;
@@ -194,7 +195,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 		Q_UNUSED(ev)
 		assert(_item);
 		assert(_item->page());	// _item->page_valid() &&
-		_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		_item->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    });
 
     QObject::disconnect(_home_connection);
@@ -354,7 +355,7 @@ void MetaEditor::tree_path(QString path){
 
 void MetaEditor::switch_pin(){
 	// if(globalparameters.entrance()->activiated_browser()) {
-    browser::TabWidget *_tabmanager = globalparameters.entrance()->activated_browser()->tabmanager();
+    browser::TabWidget *_tabmanager = globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager();
 	// record_screens()->record_controller();
     if(_tabmanager){
 	RecordModel	*source_model		= _tabmanager->source_model();
