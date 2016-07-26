@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include <QPainter>
@@ -8,16 +13,22 @@
 #include "over_text_tool_button.h"
 #include "libraries/flat_control.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(OverTextToolButton)
+#endif
+
 OverTextToolButton::OverTextToolButton(QWidget *parent) : FlatToolButton(parent){
     overText = "";
 }
-void OverTextToolButton:: setOverText(QString iText){
+
+void OverTextToolButton::setOverText(QString iText){
     overText = iText;
 
     this->update();
 }
-void OverTextToolButton:: paintEvent(QPaintEvent *event){
+
+void OverTextToolButton::paintEvent(QPaintEvent *event){
     FlatToolButton::paintEvent(event);
 
     QPainter painter(this);	// Создаём новый объект рисовальщика
@@ -30,3 +41,4 @@ void OverTextToolButton:: paintEvent(QPaintEvent *event){
 
     painter.drawText(0, 0, width(), height(), Qt::AlignCenter, overText);
 }
+

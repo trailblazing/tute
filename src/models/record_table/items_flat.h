@@ -180,6 +180,7 @@ class ItemsFlat {
 	friend class MetaEditor;
 	friend class TreeItem;
 	friend struct Linker;
+	friend boost::intrusive_ptr<TreeItem> &operator <<(boost::intrusive_ptr<TreeItem> &host, boost::intrusive_ptr<TreeItem> _item);	// {return *it_left << it_right;}
 };
 
 

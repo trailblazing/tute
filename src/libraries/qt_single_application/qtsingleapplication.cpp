@@ -44,7 +44,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "qtsingleapplication.h"
 #include "qtlocalpeer.h"
 #include <QWidget>
@@ -139,7 +144,11 @@
 */
 
 namespace qt4 {
-    W_OBJECT_IMPL(QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication)
+
+//#if QT_VERSION == 0x050600
+//    W_OBJECT_IMPL(QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication)
+//#endif
+
     void QtSingleApplication:: sysInit(const QString &appId){
 	actWin = 0;
 	peer = new QtLocalPeer(this, appId);

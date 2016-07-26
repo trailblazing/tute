@@ -2,8 +2,7 @@
 #define __TREEKNOWMODEL_H__	// __TREENODE_H__
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -11,6 +10,12 @@
 #include <QtXml>
 
 #include "tree_model.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 // KnowTreeModel - класс с удобными методами для управления данными дерева
 // Внимание! Данный класс наследуется от класса TreeModel
@@ -33,7 +38,11 @@ struct TreeLevel;
 
 
 class tkm_t : public tm_t {
+#if QT_VERSION == 0x050600
     W_OBJECT(tkm_t)
+#else
+    Q_OBJECT
+#endif
 
     public:
 

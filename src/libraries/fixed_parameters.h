@@ -18,12 +18,21 @@
 // #include <boost/mpl/set/set0.hpp>
 // #include <boost/mpl/set/set20.hpp>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QMap>
 #include <QStringList>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#else
+#include <QObject>
+#endif
+
+
 #include "utility/delegate.h"
 
 // extern const char *id_field;
@@ -84,7 +93,11 @@ template<typename field_type>struct switch_type {
 // Immutable parameters, ie parameters that are hard-coded in the current version MyTetra
 
 class FixedParameters : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(FixedParameters)
+#else
+    Q_OBJECT
+#endif
 
     public:
         FixedParameters(QObject *parent = 0);

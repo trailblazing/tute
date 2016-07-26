@@ -2,11 +2,16 @@
 #define _EDITORADDTABLEFORM_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QDialog>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 class QLabel;
@@ -14,7 +19,11 @@ class QSpinBox;
 class QDialogButtonBox;
 
 class EditorAddTableForm : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorAddTableForm)
+#else
+    Q_OBJECT
+#endif
 
 public:
     EditorAddTableForm();

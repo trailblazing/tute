@@ -2,8 +2,6 @@
 #define	_APPCONFIGPAGE_MAIN_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 
 #include <QWidget>
@@ -14,6 +12,11 @@
 #include <QLabel>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class FlatToolButton;
 
 #include "config_page.h"
@@ -21,7 +24,11 @@ class FlatToolButton;
 
 
 class AppConfigPageMain : public ConfigPage {
+#if QT_VERSION == 0x050600
     W_OBJECT(AppConfigPageMain)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AppConfigPageMain(QWidget *parent = 0);

@@ -18,18 +18,22 @@ struct Binder;
 struct Linker;
 class tkm_t;
 struct TreeIndex;
+class tv_t;
+
 
 BOOST_STRONG_TYPEDEF(QModelIndex, index_tree)
 
 struct TreeLevel : public boost::intrusive_ref_counter<TreeLevel, boost::thread_safe_counter> {
     boost::intrusive_ptr<TreeIndex>		tree_index();
     boost::intrusive_ptr<TreeItem>		to_be_operated();
+    boost::intrusive_ptr<TreeItem>		merge();
     boost::intrusive_ptr<TreeItem>		move(const int pos = 0, const int mode = add_new_record_after);
-    static boost::intrusive_ptr<TreeLevel>	instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_merge);
+    static boost::intrusive_ptr<TreeLevel>	instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_merge, tv_t *tree_view);
     private:
-	TreeLevel(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_operated);
+	TreeLevel(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_operated, tv_t *tree_view);
 	boost::intrusive_ptr<TreeIndex> _tree_index;
 	boost::intrusive_ptr<TreeItem>	_to_be_operated;
+	tv_t				*_tree_view;
 	friend struct TreeIndex;
 };
 

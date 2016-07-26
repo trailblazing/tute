@@ -43,18 +43,27 @@
 #define SETTINGS_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QtWidgets/QDialog>
 #include "ui_settings.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 //QT_BEGIN_NAMESPACE
 
 
 namespace browser {
     class SettingsDialog : public QDialog, public Ui_Settings {
+#if QT_VERSION == 0x050600
 	W_OBJECT(SettingsDialog)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    SettingsDialog(QWidget *parent = 0);

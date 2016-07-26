@@ -1,18 +1,28 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "main.h"
 
 #include "flat_control.h"
 
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(MtComboBox)
+#endif
+
 MtComboBox::MtComboBox(QWidget *parent) : QComboBox(parent){
     Q_UNUSED(parent);
     currentindexchanged = &QComboBox::currentIndexChanged;
-    itemDelegate = new QStyledItemDelegate();
+    itemDelegate	= new QStyledItemDelegate();
     this->setItemDelegate(itemDelegate);
 }
+
 MtComboBox::~MtComboBox(){
     delete itemDelegate;
 }
+
 // http://engineer-works.blogspot.com/2010/02/flat-qcombobox.html
 
 #include <QStylePainter>
@@ -20,7 +30,12 @@ MtComboBox::~MtComboBox(){
 #include <QMouseEvent>
 #include <QPalette>
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FlatComboBox)
+#endif
+
+
 
 FlatComboBox::FlatComboBox(QWidget *parent)
     : Super(parent)
@@ -37,9 +52,10 @@ FlatComboBox::FlatComboBox(QWidget *parent)
 	//    itemDelegate = new QStyledItemDelegate();
     this->setItemDelegate(itemDelegate);
 }
+
 FlatComboBox::~FlatComboBox(){delete itemDelegate;}
 
-void FlatComboBox:: paintEvent(QPaintEvent *e){
+void FlatComboBox::paintEvent(QPaintEvent *e){
     if(flat()){
 	QStylePainter painter(this);
 	painter.setPen(palette().color(QPalette::Text));
@@ -53,25 +69,32 @@ void FlatComboBox:: paintEvent(QPaintEvent *e){
 	painter.drawPrimitive(QStyle::PE_IndicatorArrowDown, opt);
 	opt.rect = rcOld;
 	painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
-    }else{
-	Super::paintEvent(e);
-    }
+    }else Super::paintEvent(e);
 }
-void FlatComboBox:: mousePressEvent(QMouseEvent *e){
-    if(! isEditable() || ! lineEdit()->rect().contains(e->pos())){
-	emit aboutToPullDown();
-    }
+
+void FlatComboBox::mousePressEvent(QMouseEvent *e){
+    if(! isEditable() || ! lineEdit()->rect().contains(e->pos()))emit aboutToPullDown();
     Super::mousePressEvent(e);
 }
-void FlatComboBox:: setFlat(bool flat){
+
+void FlatComboBox::setFlat(bool flat){
     flat_ = flat;
 }
-void FlatComboBox:: setArrowAlignment(Qt::Alignment a){
+
+void FlatComboBox::setArrowAlignment(Qt::Alignment a){
     arrowAlignment_ = a;
 }
+
 //
 
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FlatFontComboBox)
+#endif
+
+
+
 FlatFontComboBox::FlatFontComboBox(QWidget *parent)
     : Super(parent)
       , itemDelegate(new QStyledItemDelegate())
@@ -90,9 +113,10 @@ FlatFontComboBox::FlatFontComboBox(QWidget *parent)
 	//    itemDelegate = new QStyledItemDelegate();
     this->setItemDelegate(itemDelegate);
 }
+
 FlatFontComboBox::~FlatFontComboBox(){delete itemDelegate;}
 
-void FlatFontComboBox:: paintEvent(QPaintEvent *e){
+void FlatFontComboBox::paintEvent(QPaintEvent *e){
     if(flat()){
 	QStylePainter painter(this);
 	painter.setPen(palette().color(QPalette::Text));
@@ -106,25 +130,25 @@ void FlatFontComboBox:: paintEvent(QPaintEvent *e){
 	painter.drawPrimitive(QStyle::PE_IndicatorArrowDown, opt);
 	opt.rect = rcOld;
 	painter.drawControl(QStyle::CE_ComboBoxLabel, opt);
-    }else{
-	Super::paintEvent(e);
-    }
+    }else Super::paintEvent(e);
 }
-void FlatFontComboBox:: mousePressEvent(QMouseEvent *e){
-    if(! isEditable() || ! lineEdit()->rect().contains(e->pos())){
-	emit aboutToPullDown();
-    }
+
+void FlatFontComboBox::mousePressEvent(QMouseEvent *e){
+    if(! isEditable() || ! lineEdit()->rect().contains(e->pos()))emit aboutToPullDown();
     Super::mousePressEvent(e);
 }
-void FlatFontComboBox:: setFlat(bool flat){
-    flat_ = flat;
-}
-void FlatFontComboBox:: setArrowAlignment(Qt::Alignment a){
-    arrowAlignment_ = a;
-}
+
+void FlatFontComboBox::setFlat(bool flat){flat_ = flat;}
+
+void FlatFontComboBox::setArrowAlignment(Qt::Alignment a){arrowAlignment_ = a;}
 
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FlatToolButton)
+#endif
+
+
 
 FlatToolButton::FlatToolButton(QWidget *parent)
     : QToolButton(parent){
@@ -133,13 +157,14 @@ FlatToolButton::FlatToolButton(QWidget *parent)
     setAutoFillBackground(true);
     setAutoRaise(true);
 }
+
 // void FlatToolButton::setFlat(bool flat)
 // {
 //    flat_ = flat;
 //    setAutoRaise(true);
 // }
 
-void FlatToolButton:: paintEvent(QPaintEvent *e){
+void FlatToolButton::paintEvent(QPaintEvent *e){
 	//    if(flat()) {
 	//        QStylePainter painter(this);
 	//        painter.setPen(palette().color(QPalette::Text));
@@ -166,3 +191,4 @@ void FlatToolButton:: paintEvent(QPaintEvent *e){
     Super::paintEvent(e);
 	//    }
 }
+

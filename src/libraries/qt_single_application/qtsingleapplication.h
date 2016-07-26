@@ -45,11 +45,18 @@
 ****************************************************************************/
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QApplication>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 class QtLocalPeer;
 
@@ -72,8 +79,12 @@ class QtLocalPeer;
 
 namespace qt4 {
     class QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication : public QApplication {
-	W_OBJECT(QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication)
-
+// #if QT_VERSION == 0x050600
+//	W_OBJECT(QT_QTSINGLEAPPLICATION_EXPORT QtSingleApplication)
+// #else
+//	Q_OBJECT
+// #endif
+	Q_OBJECT
 	public:
 	    QtSingleApplication(int &argc, char * *argv, bool GUIenabled = true);
 	    QtSingleApplication(const QString &id, int &argc, char * *argv);
@@ -94,18 +105,20 @@ namespace qt4 {
 	    QWidget	*activationWindow() const;
 
 		// Obsolete:
-	    void initialize(bool dummy = true){
-		isRunning();
-		Q_UNUSED(dummy)
-	    }
+	    void initialize(bool dummy = true){isRunning();Q_UNUSED(dummy)}
+
 	public Q_SLOTS:
 	    bool	sendMessage(const QString &message, int timeout = 5000);
 	    void	activateWindow();
 
 
 Q_SIGNALS:
-	    void messageReceived(const QString &message) W_SIGNAL(messageReceived, (const QString &), message)	// ;
-
+	    void messageReceived(const QString &message)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(messageReceived, (const QString &), message)	// ;
+#else
+	    ;
+#endif
 
 	private:
 	    void	sysInit(const QString &appId = QString());

@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QFileInfo>
 #include <QtGlobal>
 #include <QtDebug>
@@ -6,7 +11,12 @@
 #include "editor_config.h"
 #include "../../main.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfig)
+#endif
+
+
 // Конструктор объекта хранения настроек редактора
 EditorConfig::EditorConfig(QString config_file_name, QWidget *parent) : QWidget(parent)
 {

@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QString>
 #include <QStringList>
 #include <QMutableMapIterator>
@@ -20,7 +25,14 @@
 //const char *has_attach_field = "hstch";     // "hasAttach";
 //const char *attach_count_field = "tchcnt";  // "attachCount";
 
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FixedParameters)
+#endif
+
+
+
 
 // Получение описаний набора полей
 QMap<QString, QString> FixedParameters::record_field_description(QStringList list) const {

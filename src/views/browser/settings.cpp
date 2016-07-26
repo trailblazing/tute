@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "settings.h"
@@ -63,7 +68,12 @@
 namespace browser {
     class WebView;
     class TabWidget;
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(SettingsDialog)
+#endif
+
+
     SettingsDialog::SettingsDialog(QWidget *parent)
 	: QDialog(parent){
 	setupUi(this);
@@ -74,15 +84,16 @@ namespace browser {
 	loadDefaults();
 	loadFromSettings();
     }
-    void SettingsDialog:: loadDefaults(){
-	QWebEngineSettings	*defaultSettings = QWebEngineSettings::globalSettings();
-	QString			standardFontFamily = defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
-	int			standardFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
+
+    void SettingsDialog::loadDefaults(){
+	QWebEngineSettings	*defaultSettings	= QWebEngineSettings::globalSettings();
+	QString			standardFontFamily	= defaultSettings->fontFamily(QWebEngineSettings::StandardFont);
+	int			standardFontSize	= defaultSettings->fontSize(QWebEngineSettings::DefaultFontSize);
 	standardFont = QFont(standardFontFamily, standardFontSize);
 	standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
 
 	QString fixedFontFamily = defaultSettings->fontFamily(QWebEngineSettings::FixedFont);
-	int	fixedFontSize = defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
+	int	fixedFontSize	= defaultSettings->fontSize(QWebEngineSettings::DefaultFixedFontSize);
 	fixedFont = QFont(fixedFontFamily, fixedFontSize);
 	fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
 
@@ -99,7 +110,8 @@ namespace browser {
 	sessionCookiesCombo->setCurrentIndex(profile->persistentCookiesPolicy());	// QWebEngineProfile::defaultProfile()
 	httpUserAgent->setText(profile->httpUserAgent());				// QWebEngineProfile::defaultProfile()
     }
-    void SettingsDialog:: loadFromSettings(){
+
+    void SettingsDialog::loadFromSettings(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("MainWindow"));
 	const QString defaultHome = QLatin1String(Browser::_defaulthome);
@@ -107,23 +119,23 @@ namespace browser {
 	settings.endGroup();
 
 	settings.beginGroup(QLatin1String("history"));
-	int	historyExpire = settings.value(QLatin1String("historyExpire")).toInt();
-	int	idx = 0;
+	int	historyExpire	= settings.value(QLatin1String("historyExpire")).toInt();
+	int	idx		= 0;
 	switch(historyExpire){
-	case 1: idx = 0;break;
+	    case 1: idx = 0;break;
 
-	case 7: idx = 1;break;
+	    case 7: idx = 1;break;
 
-	case 14: idx = 2;break;
+	    case 14: idx = 2;break;
 
-	case 30: idx = 3;break;
+	    case 30: idx = 3;break;
 
-	case 365: idx = 4;break;
+	    case 365: idx = 4;break;
 
-	case - 1: idx = 5;break;
+	    case - 1: idx = 5;break;
 
-	default:
-	    idx = 5;
+	    default:
+		idx = 5;
 	}
 	expireHistory->setCurrentIndex(idx);
 	settings.endGroup();
@@ -140,8 +152,8 @@ namespace browser {
 
 	// Appearance
 	settings.beginGroup(QLatin1String("websettings"));
-	fixedFont = qvariant_cast<QFont>(settings.value(QLatin1String("fixedFont"), fixedFont));
-	standardFont = qvariant_cast<QFont>(settings.value(QLatin1String("standardFont"), standardFont));
+	fixedFont	= qvariant_cast<QFont>(settings.value(QLatin1String("fixedFont"), fixedFont));
+	standardFont	= qvariant_cast<QFont>(settings.value(QLatin1String("standardFont"), standardFont));
 
 	standardLabel->setText(QString(QLatin1String("%1 %2")).arg(standardFont.family()).arg(standardFont.pointSize()));
 	fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(fixedFont.family()).arg(fixedFont.pointSize()));
@@ -174,7 +186,8 @@ namespace browser {
 	proxyPassword->setText(settings.value(QLatin1String("password")).toString());
 	settings.endGroup();
     }
-    void SettingsDialog:: saveToSettings(){
+
+    void SettingsDialog::saveToSettings(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("MainWindow"));
 	settings.setValue(QLatin1String("home"), homeLineEdit->text());
@@ -190,20 +203,20 @@ namespace browser {
 	settings.endGroup();
 
 	settings.beginGroup(QLatin1String("history"));
-	int	historyExpire = expireHistory->currentIndex();
-	int	idx = - 1;
+	int	historyExpire	= expireHistory->currentIndex();
+	int	idx		= - 1;
 	switch(historyExpire){
-	case 0: idx = 1;break;
+	    case 0: idx = 1;break;
 
-	case 1: idx = 7;break;
+	    case 1: idx = 7;break;
 
-	case 2: idx = 14;break;
+	    case 2: idx = 14;break;
 
-	case 3: idx = 30;break;
+	    case 3: idx = 30;break;
 
-	case 4: idx = 365;break;
+	    case 4: idx = 365;break;
 
-	case 5: idx = - 1;break;
+	    case 5: idx = - 1;break;
 	}
 	settings.setValue(QLatin1String("historyExpire"), idx);
 	settings.endGroup();
@@ -248,23 +261,27 @@ namespace browser {
 #endif
 	sapp_t::historyManager()->loadSettings();
     }
-    void SettingsDialog:: accept(){
+
+    void SettingsDialog::accept(){
 	saveToSettings();
 	QDialog::accept();
     }
-    void SettingsDialog:: showCookies(){
+
+    void SettingsDialog::showCookies(){
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
 	CookiesDialog *dialog = new CookiesDialog(QtSingleApplication::cookieJar(), this);
 	dialog->exec();
 #endif
     }
-    void SettingsDialog:: showExceptions(){
+
+    void SettingsDialog::showExceptions(){
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
 	CookiesExceptionsDialog *dialog = new CookiesExceptionsDialog(QtSingleApplication::cookieJar(), this);
 	dialog->exec();
 #endif
     }
-    void SettingsDialog:: chooseFont(){
+
+    void SettingsDialog::chooseFont(){
 	bool	ok;
 	QFont	font = QFontDialog::getFont(&ok, standardFont, this);
 	if(ok){
@@ -272,7 +289,8 @@ namespace browser {
 	    standardLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
 	}
     }
-    void SettingsDialog:: chooseFixedFont(){
+
+    void SettingsDialog::chooseFixedFont(){
 	bool	ok;
 	QFont	font = QFontDialog::getFont(&ok, fixedFont, this);
 	if(ok){
@@ -280,9 +298,10 @@ namespace browser {
 	    fixedLabel->setText(QString(QLatin1String("%1 %2")).arg(font.family()).arg(font.pointSize()));
 	}
     }
-    void SettingsDialog:: setHomeToCurrentPage(){
-	Browser *mw = static_cast<Browser *>(parent());
-	WebView *webView = mw->currentTab();
+
+    void SettingsDialog::setHomeToCurrentPage(){
+	Browser *mw		= static_cast<Browser *>(parent());
+	WebView *webView	= mw->currentTab();
 	if(webView)homeLineEdit->setText(webView->page()->url().toString());
     }
 }

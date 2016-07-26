@@ -42,12 +42,17 @@
 #ifndef AUTOSAVER_H
 #define AUTOSAVER_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtCore/QObject>
 #include <QtCore/QBasicTimer>
 #include <QtCore/QTime>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 //QT_BEGIN_NAMESPACE
 
@@ -58,8 +63,11 @@ namespace browser {
 	    prevent continuous writing to disk.
 	  */
     class AutoSaver : public QObject {
+#if QT_VERSION == 0x050600
 	W_OBJECT(AutoSaver)
-
+#else
+	Q_OBJECT
+#endif
 	public:
 	    AutoSaver(QObject *parent);
 	    ~AutoSaver();

@@ -1,16 +1,25 @@
 #ifndef __EDITORCONFIG_H__
 #define __EDITORCONFIG_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QObject>
 #include <QWidget>
 #include <QSettings>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 class EditorConfig : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorConfig)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EditorConfig(QString config_file_name, QWidget *parent = 0);

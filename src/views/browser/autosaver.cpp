@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include "autosaver.h"
 
@@ -52,7 +57,11 @@
 #define MAXWAIT		1000 * 15	// seconds
 
 namespace browser {
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(AutoSaver)
+#endif
+
+
     AutoSaver::AutoSaver(QObject *parent) : QObject(parent){
 	Q_ASSERT(parent);
     }

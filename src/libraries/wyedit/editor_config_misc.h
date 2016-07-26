@@ -2,9 +2,6 @@
 #define	_EDITORCONFIGMISC_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
-
 #include <QWidget>
 #include <QLineEdit>
 #include <QFontComboBox>
@@ -12,11 +9,25 @@
 
 #include "views/app_config/config_page.h"
 
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
+
 class EditorConfig;
 
 
 class EditorConfigMisc : public ConfigPage {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorConfigMisc)
+#else
+    Q_OBJECT
+#endif
 
 public:
     EditorConfigMisc(QWidget *parent = 0);

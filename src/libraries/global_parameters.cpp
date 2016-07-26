@@ -1,6 +1,11 @@
 // #include <memory>
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QSettings>
 #include <QFile>
 #include <QFileInfo>
@@ -27,7 +32,13 @@
 
 extern const char *index_xml_file_name;
 
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(GlobalParameters)
+#endif
+
+
 
 GlobalParameters::GlobalParameters(QObject *pobj){Q_UNUSED(pobj);}
 

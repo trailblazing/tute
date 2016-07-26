@@ -42,8 +42,7 @@
 #ifndef HISTORY_H
 #define HISTORY_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include "modelmenu.h"
 
@@ -57,11 +56,19 @@
 #include "ui_history.h"
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 // QT_BEGIN_NAMESPACE
 namespace browser {
     class HistoryItem;
 }
+
+#if QT_VERSION == 0x050600
 W_REGISTER_ARGTYPE(browser::HistoryItem)
+#endif
 
 namespace browser {
     class HistoryItem {
@@ -88,14 +95,38 @@ namespace browser {
 //    W_REGISTER_ARGTYPE(HistoryFilterModel *)
 //    W_REGISTER_ARGTYPE(HistoryTreeModel *)
     class HistoryManager : public QObject {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryManager)
-//	Q_OBJECT Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)
+//	W_PROPERTY(int, historyLimit, &HistoryManager::historyLimit, &HistoryManager::setHistoryLimit)
+#else
 
+	Q_OBJECT Q_PROPERTY(int historyLimit READ historyLimit WRITE setHistoryLimit)
+#endif
 	signals:
-	    void	historyReset() W_SIGNAL(historyReset)	// ;
-	    void	entryAdded(const HistoryItem &it) W_SIGNAL(entryAdded, (const HistoryItem &), it)	// ;
-	    void	entryRemoved(const HistoryItem &it) W_SIGNAL(entryRemoved, (const HistoryItem &), it)	// ;
-	    void	entryUpdated(int offset) W_SIGNAL(entryUpdated, (int), offset)	// ;
+	    void historyReset()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(historyReset)	//
+#else
+	    ;
+#endif
+	    void entryAdded(const HistoryItem &it)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(entryAdded, (const HistoryItem &), it)	//
+#else
+	    ;
+#endif
+	    void entryRemoved(const HistoryItem &it)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(entryRemoved, (const HistoryItem &), it)	//
+#else
+	    ;
+#endif
+	    void entryUpdated(int offset)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(entryUpdated, (int), offset)	//
+#else
+	    ;
+#endif
 
 	public:
 	    HistoryManager(QObject *parent = 0);
@@ -140,11 +171,17 @@ namespace browser {
 	    HistoryModel	*_historymodel;
 	    HistoryFilterModel	*_historyfiltermodel;
 	    HistoryTreeModel	*_historytreemodel;
+#if QT_VERSION == 0x050600
 	    W_PROPERTY(int, historyLimit, &HistoryManager::historyLimit, &HistoryManager::setHistoryLimit)
+#endif
     };
 //    W_REGISTER_ARGTYPE(HistoryManager *)
     class HistoryModel : public QAbstractTableModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryModel)
+#else
+	Q_OBJECT
+#endif
 
 	public slots:
 	    void	historyReset();
@@ -153,9 +190,9 @@ namespace browser {
 
 	public:
 	    enum Roles {
-		DateRole = Qt::UserRole + 1
-		, DateTimeRole = Qt::UserRole + 2
-		, UrlRole = Qt::UserRole + 3
+		DateRole	= Qt::UserRole + 1
+		, DateTimeRole	= Qt::UserRole + 2
+		, UrlRole	= Qt::UserRole + 3
 		, UrlStringRole = Qt::UserRole + 4
 	    };
 
@@ -176,14 +213,18 @@ namespace browser {
 	    the front of the list, but as offsets from the back.
 	  */
     class HistoryFilterModel : public QAbstractProxyModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryFilterModel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    HistoryFilterModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
 
 	    inline bool historyContains(const QString &url) const {load();return _historyhash.contains(url);}
 
-	    int		historyLocation(const QString &url) const;
+	    int	historyLocation(const QString &url) const;
 
 	    QModelIndex mapFromSource(const QModelIndex &sourceIndex) const;
 	    QModelIndex mapToSource(const QModelIndex &proxyIndex) const;
@@ -219,7 +260,11 @@ namespace browser {
 	    We store that row offset in our index's private data.
 	*/
     class HistoryMenuModel : public QAbstractProxyModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryMenuModel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    HistoryMenuModel(HistoryTreeModel *sourceModel, QObject *parent = 0);
@@ -238,10 +283,19 @@ namespace browser {
 
 	// Menu that is dynamically populated from the history
     class HistoryMenu : public ModelMenu {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryMenu)
+#else
+	Q_OBJECT
+#endif
 
 	signals:
-	    void openUrl(const QUrl &url) W_SIGNAL(openUrl, (const QUrl &), url)// ;
+	    void openUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(openUrl, (const QUrl &), url)	//
+#else
+	    ;
+#endif
 
 	public:
 	    HistoryMenu(QWidget *parent = 0);
@@ -264,7 +318,11 @@ namespace browser {
 	// proxy model for the history model that
 	// exposes each url http://www.foo.com and it url starting at the host www.foo.com
     class HistoryCompletionModel : public QAbstractProxyModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryCompletionModel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    HistoryCompletionModel(QObject *parent = 0);
@@ -285,7 +343,11 @@ namespace browser {
 	// into a tree, one top level node per day.
 	// Used in the HistoryDialog.
     class HistoryTreeModel : public QAbstractProxyModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryTreeModel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    HistoryTreeModel(QAbstractItemModel *sourceModel, QObject *parent = 0);
@@ -317,7 +379,11 @@ namespace browser {
 	// so filtering is only done on the children.
 	// Used in the HistoryDialog
     class TreeProxyModel : public QSortFilterProxyModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(TreeProxyModel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    TreeProxyModel(QObject *parent = 0);
@@ -329,10 +395,19 @@ namespace browser {
 	// #include "ui_history.h"
 
     class HistoryDialog : public QDialog, public Ui_HistoryDialog {
+#if QT_VERSION == 0x050600
 	W_OBJECT(HistoryDialog)
+#else
+	Q_OBJECT
+#endif
 
 	signals:
-	    void openUrl(const QUrl &url) W_SIGNAL(openUrl, (const QUrl &), url)// ;
+	    void openUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(openUrl, (const QUrl &), url)	//
+#else
+	    ;
+#endif
 
 	public:
 	    HistoryDialog(QWidget *parent = 0, HistoryManager *history = 0);

@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QDebug>
 
 #include "main.h"
@@ -7,31 +12,37 @@
 #include "attach_table_data.h"
 #include "controllers/attach_table/attach_table_controller.h"
 
-
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AttachTableModel)
+#endif
+
 
 AttachTableModel::AttachTableModel(AttachTableController *parent)
     : QAbstractTableModel(parent)
       , _table(nullptr){
 	//    table = NULL;
 }
+
 AttachTableModel::~AttachTableModel(){
 	// delete table; // Закомментировано - удалять здесь table нельзя, так как table существует в рамках коллекции таблиц конечных записей
 }
+
 // Число столбцов
-int AttachTableModel:: columnCount(const QModelIndex &parent) const {
+int AttachTableModel::columnCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
 
     return ATTACHTABLE_COLUMNS;	// Имя файла и размер
 }
+
 // Число файлов
-int AttachTableModel:: rowCount(const QModelIndex &parent) const {
+int AttachTableModel::rowCount(const QModelIndex &parent) const {
     Q_UNUSED(parent);
     if(_table == nullptr)return 0;
     return _table->size();
 }
+
 // Получение данных
-QVariant AttachTableModel:: data(const QModelIndex &index, int role) const {
+QVariant AttachTableModel::data(const QModelIndex &index, int role) const {
     if(index.isValid() && role == Qt::DisplayRole)return getCell(index.row(), index.column());
 	// Указатель на связанные с моделью данные
     if(role == ATTACHTABLE_ROLE_TABLE_DATA){
@@ -40,39 +51,41 @@ QVariant AttachTableModel:: data(const QModelIndex &index, int role) const {
     }
 	// Идентификатор аттача
     if(role == ATTACHTABLE_ROLE_ID){
-	int	row = index.row();
-	QString id = _table->id_by_row(row);
+	int	row	= index.row();
+	QString id	= _table->id_by_row(row);
 
 	return QVariant::fromValue(id);
     }
 	// В колонке с именем файла отображается иконка файла или линка
     if(role == Qt::DecorationRole && index.column() == ATTACHTABLE_COLUMN_FILENAME){
-	int	row = index.row();
-	QString id = _table->id_by_row(row);
-	QString attachType = _table->attach(id).getField("type");
+	int	row		= index.row();
+	QString id		= _table->id_by_row(row);
+	QString attachType	= _table->attach(id).getField("type");
 	if(attachType == "file")return QIcon(":/resource/pic/attach_is_file.svg");
 	if(attachType == "link")return QIcon(":/resource/pic/attach_is_link.svg");
     }
     return QVariant();
 }
+
 // Получение значения ячейки, защищенный метод
-QVariant AttachTableModel:: getCell(int row, int column) const {
+QVariant AttachTableModel::getCell(int row, int column) const {
     switch(column){
-    case ATTACHTABLE_COLUMN_FILENAME:
+	case ATTACHTABLE_COLUMN_FILENAME:
 
-	return QVariant(_table->file_name(row));
+	    return QVariant(_table->file_name(row));
 
-    case ATTACHTABLE_COLUMN_FILESIZE:
+	case ATTACHTABLE_COLUMN_FILESIZE:
 
-	return QVariant(_table->file_size(row));
+	    return QVariant(_table->file_size(row));
 
-    default:
+	default:
 
-	return QVariant();
+	    return QVariant();
     }
 }
+
 // Сохранение вводимых данных по указанному индексу
-bool AttachTableModel:: setData(const QModelIndex &index, const QVariant &value, int role){
+bool AttachTableModel::setData(const QModelIndex &index, const QVariant &value, int role){
     if(role == ATTACHTABLE_COMMAND_RESET_MODEL){
 	beginResetModel();
 	endResetModel();
@@ -118,7 +131,7 @@ bool AttachTableModel:: setData(const QModelIndex &index, const QVariant &value,
 	endResetModel();
 	// Устанавливается перекрестная ссылка в связанных данных
 	if(role == ATTACHTABLE_ROLE_TABLE_DATA && _table// != nullptr
-	    ) _table->related_attach_table_model_only(this);
+	    )_table->related_attach_table_model_only(this);
 	return true;
     }
 	// Если таблица данных не создана
@@ -136,24 +149,26 @@ bool AttachTableModel:: setData(const QModelIndex &index, const QVariant &value,
 	// Во всех остальных случаях
     return false;
 }
-QVariant AttachTableModel:: headerData(int section, Qt::Orientation orientation, int role) const {
+
+QVariant AttachTableModel::headerData(int section, Qt::Orientation orientation, int role) const {
     if(role != Qt::DisplayRole)return QVariant();
     if(orientation == Qt::Vertical)return QVariant(section + 1);
     else
 		switch(section){
-		case 0:
+		    case 0:
 
-		    return QVariant(tr("File name"));
+			return QVariant(tr("File name"));
 
-		case 1:
+		    case 1:
 
-		    return QVariant(tr("File size"));
+			return QVariant(tr("File size"));
 
-		default:
+		    default:
 
-		    return QVariant();
+			return QVariant();
 		}
 }
+
 /*
 void AttachTableModel::addAttach(Attach& newAttach)
 {

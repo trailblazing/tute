@@ -2,8 +2,7 @@
 #define _EDITORSPLITCELLFORM_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QWidget>
@@ -14,9 +13,17 @@
 #include <QCheckBox>
 
 
-class EditorSplitCellForm : public QDialog {
-    W_OBJECT(EditorSplitCellForm)
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
+class EditorSplitCellForm : public QDialog {
+#if QT_VERSION == 0x050600
+    W_OBJECT(EditorSplitCellForm)
+#else
+    Q_OBJECT
+#endif
     public:
 	EditorSplitCellForm(int fixHorisontalSplit, int fixVerticalSplit);
 	~EditorSplitCellForm();

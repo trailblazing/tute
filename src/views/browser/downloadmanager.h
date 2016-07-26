@@ -44,8 +44,7 @@
 
 #include <memory>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include "ui_downloads.h"
 #include "ui_downloaditem.h"
@@ -55,6 +54,11 @@
 #include <QtCore/QUrl>
 
 #include <QWebEngineDownloadItem>
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QFileIconProvider;
@@ -67,10 +71,18 @@ namespace browser {
     class TabWidget;
     class DownloadManager;
     class DownloadWidget : public QWidget, public Ui_DownloadItem, public std::enable_shared_from_this<DownloadWidget> {
+#if QT_VERSION == 0x050600
 	W_OBJECT(DownloadWidget)
-
+#else
+	Q_OBJECT
+#endif
 	signals:
-	    void statusChanged() W_SIGNAL(statusChanged)// ;
+	    void statusChanged()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(statusChanged)	//
+#else
+	    ;
+#endif
 
 	public:
 	    DownloadWidget(QWebEngineDownloadItem   *_download
@@ -129,8 +141,12 @@ namespace browser {
 
 
 	private:
+#if QT_VERSION == 0x050600
 	    W_OBJECT(DownloadManager)
-	    W_PROPERTY(RemovePolicy, removePolicy, &DownloadManager::removePolicy, &DownloadManager::setRemovePolicy)		// Q_PROPERTY(RemovePolicy removePolicy READ removePolicy WRITE setRemovePolicy)
+	    W_PROPERTY(RemovePolicy, removePolicy, &DownloadManager::removePolicy, &DownloadManager::setRemovePolicy)		//
+#else
+	    Q_OBJECT Q_PROPERTY(RemovePolicy removePolicy READ removePolicy WRITE setRemovePolicy)
+#endif
 	    Q_ENUMS(RemovePolicy)
 
 	public:
@@ -165,7 +181,11 @@ namespace browser {
 
     class DownloadModel : public QAbstractListModel {
 	friend class DownloadManager;
+#if QT_VERSION == 0x050600
 	W_OBJECT(DownloadModel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    DownloadModel(DownloadManager *downloadManager, QObject *parent = 0);

@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QtGui>
 #include <QLayout>
 #include <QMessageBox>
@@ -45,7 +50,12 @@
 extern AppConfig	appconfig;
 extern const char	*action_find_in_base;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(Editor)
+#endif
+
+
 Editor::Editor(QWidget *parent) : QWidget(parent){
     _init_data_enable_assembly = true;
     _init_data_config_file_name = "";

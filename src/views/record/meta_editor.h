@@ -3,8 +3,6 @@
 
 #include <memory>
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QWidget>
 #include <QLabel>
@@ -17,6 +15,18 @@
 #include "libraries/wyedit/editor.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
+
+
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 
 extern QMap<Qt::CheckState, QString>	_string_from_check_state;
 extern QMap<QString, Qt::CheckState>	_state_check_from_string;
@@ -33,7 +43,11 @@ class FindScreen;
 class RecordModel;
 
 class ClickableLabel : public QLabel {
+#if QT_VERSION == 0x050600
     W_OBJECT(ClickableLabel)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	ClickableLabel(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
@@ -43,13 +57,22 @@ class ClickableLabel : public QLabel {
 //	W_CONSTRUCTOR(const QString &, QWidget *, Qt::WindowFlags)
 // Q_SIGNALS:
     signals:
-	void mousePressEvent(QMouseEvent *ev) W_SIGNAL(mousePressEvent, (QMouseEvent *), ev)	// ;
+	void mousePressEvent(QMouseEvent *ev)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(mousePressEvent, (QMouseEvent *), ev)	//
+#else
+	;
+#endif
 };
 
 
 
 class MetaEditor : public Editor {
+#if QT_VERSION == 0x050600
     W_OBJECT(MetaEditor)
+#else
+    Q_OBJECT
+#endif
 
     public slots:
 
@@ -60,7 +83,12 @@ class MetaEditor : public Editor {
 
     signals:
 	// Сигнал вырабатывается при клике на текстовой метке
-	void set_find_text_signal(QString text) W_SIGNAL(set_find_text_signal, text)	// ;
+	void set_find_text_signal(QString text)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(set_find_text_signal, text)	//
+#else
+	;
+#endif
 
     public:
 	MetaEditor(QString object_name, FindScreen *_find_screen);
@@ -77,9 +105,9 @@ class MetaEditor : public Editor {
 
 	static void to_attach_callback(void);
 
-	void				to_editor_layout(void);
-	void				to_attach_layout(void);
-	void				bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);		// {_record = r;}
+	void	to_editor_layout(void);
+	void	to_attach_layout(void);
+	void	bind(boost::intrusive_ptr<TreeItem> item_to_be_bound);		// {_record = r;}
 
 	boost::intrusive_ptr<TreeItem>	item();		// {return _record;}
 

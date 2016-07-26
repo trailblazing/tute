@@ -1,14 +1,19 @@
 #ifndef __ATTACHTABLEMODEL_H__
 #define __ATTACHTABLEMODEL_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QAbstractTableModel>
 #include <QVariant>
 #include <QPair>
 
 #include "attach_table_data.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 #define ATTACHTABLE_COLUMN_FILENAME 0
 #define ATTACHTABLE_COLUMN_FILESIZE 1
@@ -34,7 +39,11 @@ class AttachTableController;
 // class AttachTableData;
 
 class AttachTableModel : public QAbstractTableModel {
+#if QT_VERSION == 0x050600
     W_OBJECT(AttachTableModel)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AttachTableModel(AttachTableController *parent);	// AttachTableController *parent

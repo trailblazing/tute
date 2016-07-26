@@ -1058,7 +1058,10 @@ id_value TreeItem::id() const {
 	// critical_error("In TreeItem data getting field with unavailable name 'id'");
 
 	// exit(1);
-	return id_value("");
+	auto dir = const_cast<TreeItem *>(this)->_field_data["dir"];
+	const_cast<TreeItem *>(this)->_field_data["id"] = dir.length() > 0 ? dir : get_unical_id();
+
+	return id_value(_field_data["id"]);
     }
 }
 
@@ -1167,7 +1170,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(boost::intrusive_ptr<co
 }
 
 boost::intrusive_ptr<const TreeItem> TreeItem::is_ancestor_of(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
-//    TreeModel::item(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
+    boost::intrusive_ptr<const TreeItem>  result(nullptr);
+	//    TreeModel::item(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
     std::function<boost::intrusive_ptr<const TreeItem>(boost::intrusive_ptr<const TreeItem>, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &, int)>
     item_recurse	// boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
 	= [&](boost::intrusive_ptr<const TreeItem> _it
@@ -1195,7 +1199,9 @@ boost::intrusive_ptr<const TreeItem> TreeItem::is_ancestor_of(const std::functio
     item_recurse(this, _equal, 0);	// QUrl()
 
 	// Запуск поиска и возврат результата
-    return item_recurse(this, _equal, 1);	// _find_url
+    result = item_recurse(this, _equal, 1);
+
+    return result == this ? nullptr : result;	// _find_url
 //    }
 
 //    return it->path_list().contains(this->id());
@@ -2793,9 +2799,9 @@ void TreeItem::binder_reset(){
 
 ////	    _page_binder.reset(nullptr);
 //	}else{
-	    _binder->page(nullptr);
+	_binder->page(nullptr);
 
-	    _binder->host(nullptr);
+	_binder->host(nullptr);
 //	}
 //	//
 ////        auto _host_binder = _binder->host() ? _binder->host()->binder() : nullptr;

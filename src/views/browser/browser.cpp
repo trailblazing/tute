@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include "browser.h"
 #include "utility/delegate.h"
@@ -500,7 +505,13 @@ namespace browser {
 	// QMainWindow::statusBar()->hide();
 	// show();
 	// }
+
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(Browser)
+#endif
+
+
     Browser::Browser(ts_t *_tree_screen
 		    , FindScreen *_find_screen
 		    , MetaEditor *_editor_screen

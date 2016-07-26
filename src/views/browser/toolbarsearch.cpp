@@ -43,7 +43,12 @@
 #include <functional>
 #include <cassert>
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "toolbarsearch.h"
@@ -76,7 +81,9 @@
 #include "views/main_window/main_window.h"
 
 namespace browser {
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(ToolbarSearch)
+#endif
 	/*
 		ToolbarSearch is a very basic search widget that also contains a small history.
 		Searches are turned into urls that use Google to perform search
@@ -137,26 +144,22 @@ namespace browser {
     void ToolbarSearch::searchNow(){
 	QString search_text = lineEdit()->text();
 
-	auto	result_item	= globalparameters.find_screen()->find_clicked();
-	ts_t	*_tree_screen	= globalparameters.tree_screen();
-	auto	tree_view	= _tree_screen->view();
-	if(! result_item){	//  || 0 == result_item->count_direct()
+	auto				result_item	= globalparameters.find_screen()->find_clicked();
+	ts_t				*_tree_screen	= globalparameters.tree_screen();
+	auto				tree_view	= _tree_screen->view();
+	boost::intrusive_ptr<TreeIndex> tree_index	= TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent());
+	if(0 == result_item->count_direct()){
 	    QUrl url = QUrl(search_text);
-
-
 		// if(url.host().isSimpleText());
-
 		//        bool url_isRelative = url.isRelative();
 		//        bool url_isValid = url.isValid();
 		//        bool host_not_null = !url.host().isNull();
 		//        bool host_isDetached = url.host().isDetached();
 		//        bool host_isEmpty = url.host().isEmpty();
 		//        bool host_isSimpleText = url.host().isSimpleText();
-
 		//        bool path_empty = url.path().isEmpty();
 		//        bool path_null = url.path().isNull();
 		//        QString path = url.path();
-
 		//        if( // !url.host().isEmpty() &&
 		//            url.isValid()
 		//        ) {
@@ -166,25 +169,12 @@ namespace browser {
 		//                //url = QUrl("http://" + searchText);
 		//                url.setScheme(QLatin1String("https"));
 		//            }
-
 		//            if(url.path().isEmpty()
 		//              ) {
 		//                url.setPath(QLatin1String("//"));
 		//            }
 		//        }
-
 		//            auto tree_view = _tree_screen->tree_view();
-
-	    auto tree_view = _tree_screen->view();
-
-//            boost::intrusive_ptr<TreeIndex> modelindex(nullptr);
-
-//            try {
-	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent());
-//            ->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
-//                return il->host() == tree_view->current_item() && il == tree_view->current_item()->linker() && tree_view->current_item()->parent() == il->host_parent();
-//            }));
-//            } catch(std::exception &e) {}
 	    if(tree_index){
 		// example !url.isEmpty() && url.isValid() && !url.scheme().isEmpty()
 		if(  ! url.isEmpty()
@@ -239,15 +229,35 @@ namespace browser {
 			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}
 	    }
-	}else if(result_item != tree_view->current_item()){
-	    auto index_result = tree_view->source_model()->index(result_item);
-	    if(static_cast<QModelIndex>(index_result).isValid()){
-		auto it = tree_view->source_model()->child(index_result);
-		tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
-		tree_view->index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(), index_result);
+	}
+//	else if(result_item != tree_view->current_item()){
+//	    auto index_result = tree_view->source_model()->index(result_item);
+//	    if(static_cast<QModelIndex>(index_result).isValid()){
+//		auto it = tree_view->source_model()->child(index_result);
+//		tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
+//		tree_view->index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(), index_result);
+//	    }
+//	}
+	else{
+//	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
+	    auto host_parent = tree_view->paste_children_from_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();});
+	    for(auto it : result_item->child_linkers()){	// move to search result
+		auto					browser			= globalparameters.main_window()->vtab_record()->activated_browser();
+		auto					record_controller	= browser->record_screen()->record_controller();
+		auto					tab_brother		= record_controller->view()->current_item();
+		boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, it->host());
+		//                            if(record_index){
+		//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
+		//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
+		//                                ){
+		//                                auto result = browser->item_bind(record_index);
+		//                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		//                                _result_list << result->linker();																												//
+		//                            }else{
+		// auto previous_item = _source_model()->item(tree_view->previous_index());
+		auto result = browser->page_instantiate(record_index);
+		result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    }
-	}else{
-	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
 	}
     }
 

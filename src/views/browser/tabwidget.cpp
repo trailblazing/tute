@@ -42,7 +42,12 @@
 #include <memory>
 #include <cassert>
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "tabwidget.h"
@@ -482,7 +487,10 @@ namespace browser {
     }
 
     namespace origin {
+#if QT_VERSION == 0x050600
 	W_OBJECT_IMPL(TabBar)
+#endif
+
 	TabBar::TabBar(QWidget *parent) : QTabBar(parent){
 	    setContextMenuPolicy(Qt::CustomContextMenu);
 	    setAcceptDrops(true);
@@ -648,8 +656,10 @@ namespace browser {
 	    }
 	}
     }
-
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(TabWidget)
+#endif
+
     TabWidget::TabWidget(ts_t               *tree_screen_
 			, FindScreen        *find_screen_
 			, MetaEditor        *editor_screen_
@@ -731,7 +741,7 @@ namespace browser {
 
 
 	{
-	    _tabbar->hide();// _tabbar->show();
+	    _tabbar->hide();	// _tabbar->show();
 	}
 
 
@@ -1299,7 +1309,7 @@ namespace browser {
 		// assert(result->binder()->integrity_external(result, view->page()));
 
 		auto item_with_same_url = view->page()->host();
-		if(item_with_same_url != result)result = _tree_screen->view()->merge(TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_url, item_with_same_url->parent()), result));	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+		if(item_with_same_url != result)result = TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_url, item_with_same_url->parent()), result, _tree_screen->view())->merge();	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //		result = page_item;	// target;
@@ -1310,7 +1320,7 @@ namespace browser {
 	    assert(result->binder()->integrity_external(result, view->page()));
 	}else{	// id is equal
 	    auto item_with_same_id = view->page()->host();
-	    if(item_with_same_id != result)result = _tree_screen->view()->merge(TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_id, item_with_same_id->parent()), result));	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+	    if(item_with_same_id != result)result = TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_id, item_with_same_id->parent()), result, _tree_screen->view())->merge();	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //	    result = page_item;	// target;
@@ -2385,7 +2395,12 @@ namespace browser {
 // assert(item->binder());
 // return  item;
 // }
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(WebActionMapper)
+#endif
+
+
     WebActionMapper::WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent) : QObject(parent)
 													    , _currentparent(0)
 													    , _root(root)

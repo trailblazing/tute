@@ -43,18 +43,25 @@
 #define SQUEEZELABEL_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QtWidgets/QLabel>
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 //QT_BEGIN_NAMESPACE
 
 
 namespace browser {
     class SqueezeLabel : public QLabel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(SqueezeLabel)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    SqueezeLabel(QWidget *parent = 0);

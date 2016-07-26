@@ -414,7 +414,7 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 	friend class ItemsFlat;
 	friend class tkm_t;
 	// friend class TreeScreen;
-	friend inline boost::intrusive_ptr<TreeItem> operator <<(boost::intrusive_ptr<TreeItem> it_left, boost::intrusive_ptr<TreeItem> it_right){return *it_left << it_right;}
+
 
 	TreeItem(QMap<QString, QString> _field_data, const QDomElement &_dom_element = QDomElement());
 };

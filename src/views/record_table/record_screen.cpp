@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QObject>
 #include <QMimeData>
 #include <QProgressBar>
@@ -37,7 +42,11 @@ extern const char	*tree_screen_viewer_name;
 // Виджет, который отображает список записей в ветке
 // c кнопками управления
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(rs_t)
+#endif
+
 
 rs_t::rs_t(ts_t			*_tree_screen
 	  , FindScreen          *_find_screen

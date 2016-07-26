@@ -2,8 +2,7 @@
 #define __ATTACHTABLEVIEW_H__
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QObject>
 #include <QWidget>
@@ -12,12 +11,23 @@
 #include <QGestureEvent>
 #include <QTapAndHoldGesture>
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 class AttachTableController;
 
 // Отображение таблицы с файлами (только таблица)
 
 class AttachTableView : public QTableView {
+#if QT_VERSION == 0x050600
     W_OBJECT(AttachTableView)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AttachTableView(QWidget *parent = 0);
@@ -32,7 +42,12 @@ class AttachTableView : public QTableView {
 
     signals:
 
-	void tapAndHoldGestureFinished(const QPoint &p) W_SIGNAL(tapAndHoldGestureFinished, (const QPoint &), p)// ;
+	void tapAndHoldGestureFinished(const QPoint &p)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(tapAndHoldGestureFinished, (const QPoint &), p)//
+#else
+	;
+#endif
 
 
     protected slots:

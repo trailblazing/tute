@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "modelmenu.h"
@@ -51,7 +56,11 @@
 Q_DECLARE_METATYPE(QModelIndex)
 
 namespace browser {
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(ModelMenu)
+#endif
+
+
     ModelMenu::ModelMenu(QWidget *parent)
 	: QMenu(parent)
 	  , _maxrows(7)
@@ -62,50 +71,65 @@ namespace browser {
 	  , _model(0){
 	connect(this, &ModelMenu::aboutToShow, this, &ModelMenu::aboutToShow);
     }
-    bool ModelMenu:: prePopulated(){
+
+    bool ModelMenu::prePopulated(){
 	return false;
     }
-    void ModelMenu:: postPopulated()
+
+    void ModelMenu::postPopulated()
     {}
-    void ModelMenu:: setModel(QAbstractItemModel *model){
+
+    void ModelMenu::setModel(QAbstractItemModel *model){
 	_model = model;
     }
-    QAbstractItemModel *ModelMenu:: model() const {
+
+    QAbstractItemModel *ModelMenu::model() const {
 	return _model;
     }
-    void ModelMenu:: setMaxRows(int max){
+
+    void ModelMenu::setMaxRows(int max){
 	_maxrows = max;
     }
-    int ModelMenu:: maxRows() const {
+
+    int ModelMenu::maxRows() const {
 	return _maxrows;
     }
-    void ModelMenu:: setFirstSeparator(int offset){
+
+    void ModelMenu::setFirstSeparator(int offset){
 	_firstseparator = offset;
     }
-    int ModelMenu:: firstSeparator() const {
+
+    int ModelMenu::firstSeparator() const {
 	return _firstseparator;
     }
-    void ModelMenu:: setRootIndex(const QModelIndex &index){
+
+    void ModelMenu::setRootIndex(const QModelIndex &index){
 	_root = index;
     }
-    QModelIndex ModelMenu:: rootIndex() const {
+
+    QModelIndex ModelMenu::rootIndex() const {
 	return _root;
     }
-    void ModelMenu:: setHoverRole(int role){
+
+    void ModelMenu::setHoverRole(int role){
 	_hoverrole = role;
     }
-    int ModelMenu:: hoverRole() const {
+
+    int ModelMenu::hoverRole() const {
 	return _hoverrole;
     }
-    void ModelMenu:: setSeparatorRole(int role){
+
+    void ModelMenu::setSeparatorRole(int role){
 	_separatorrole = role;
     }
-    int ModelMenu:: separatorRole() const {
+
+    int ModelMenu::separatorRole() const {
 	return _separatorrole;
     }
+
 	//    Q_DECLARE_METATYPE(QModelIndex)
 
-    void ModelMenu:: aboutToShow(){
+    void ModelMenu::aboutToShow(){
 	if(QMenu *menu = qobject_cast<QMenu *>(sender())){
 	    QVariant v = menu->menuAction()->data();
 	    if(v.canConvert<QModelIndex>()){
@@ -123,7 +147,8 @@ namespace browser {
 	createMenu(_root, max, this, this);
 	postPopulated();
     }
-    void ModelMenu:: createMenu(const QModelIndex &parent, int max, QMenu *parentMenu, QMenu *menu){
+
+    void ModelMenu::createMenu(const QModelIndex &parent, int max, QMenu *parentMenu, QMenu *menu){
 	if(! menu){
 	    QString title = parent.data().toString();
 	    menu = new QMenu(title, this);
@@ -143,18 +168,18 @@ namespace browser {
 	connect(menu, &QMenu::hovered, this, &ModelMenu::hovered);
 	for(int i = 0; i < end; ++ i){
 	    QModelIndex idx = _model->index(i, 0, parent);
-	    if(_model->hasChildren(idx)){
-		createMenu(idx, - 1, menu);
-	    }else{
+	    if(_model->hasChildren(idx))createMenu(idx, - 1, menu);
+	    else{
 		if(  _separatorrole != 0
-		  && idx.data(_separatorrole).toBool()) addSeparator();
+		  && idx.data(_separatorrole).toBool())addSeparator();
 		else menu->addAction(makeAction(idx));
 	    }
 	    if(menu == this && i == _firstseparator - 1)addSeparator();
 	}
     }
-    QAction *ModelMenu:: makeAction(const QModelIndex &index){
-	QIcon		icon = qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
+
+    QAction *ModelMenu::makeAction(const QModelIndex &index){
+	QIcon		icon	= qvariant_cast<QIcon>(index.data(Qt::DecorationRole));
 	QAction		*action = makeAction(icon, index.data().toString(), this);
 	QVariant	v;
 	v.setValue(index);
@@ -162,25 +187,28 @@ namespace browser {
 
 	return action;
     }
-    QAction *ModelMenu:: makeAction(const QIcon &icon, const QString &text, QObject *parent){
+
+    QAction *ModelMenu::makeAction(const QIcon &icon, const QString &text, QObject *parent){
 	QFontMetrics fm(font());
 	if(- 1 == _maxwidth)_maxwidth = fm.width(QLatin1Char('m')) * 30;
 	QString smallText = fm.elidedText(text, Qt::ElideMiddle, _maxwidth);
 
 	return new QAction(icon, smallText, parent);
     }
-    void ModelMenu:: triggered(QAction *action){
+
+    void ModelMenu::triggered(QAction *action){
 	QVariant v = action->data();
 	if(v.canConvert<QModelIndex>()){
 	    QModelIndex idx = qvariant_cast<QModelIndex>(v);
 	    emit	activated(idx);
 	}
     }
-    void ModelMenu:: hovered(QAction *action){
+
+    void ModelMenu::hovered(QAction *action){
 	QVariant v = action->data();
 	if(v.canConvert<QModelIndex>()){
-	    QModelIndex idx = qvariant_cast<QModelIndex>(v);
-	    QString	hoveredString = idx.data(_hoverrole).toString();
+	    QModelIndex idx		= qvariant_cast<QModelIndex>(v);
+	    QString	hoveredString	= idx.data(_hoverrole).toString();
 	    if(! hoveredString.isEmpty())emit hovered_signal(hoveredString);
 	}
     }

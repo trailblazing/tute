@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QString>
 #include <QWidget>
 #include <QBoxLayout>
@@ -16,7 +21,12 @@
 
 extern GlobalParameters globalparameters;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigMisc)
+#endif
+
+
 EditorConfigMisc::EditorConfigMisc(QWidget *parent) : ConfigPage(parent){
     qDebug() << "Create editor config misc widget";
 

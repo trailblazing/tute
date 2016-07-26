@@ -2,8 +2,7 @@
 #define	_EDITORFINDDIALOG_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QWidget>
@@ -11,19 +10,33 @@
 #include <QTextDocument>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class QCheckBox;
 class QLineEdit;
 class QPushButton;
 
 
 class EditorFindDialog : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorFindDialog)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EditorFindDialog(QWidget *parent = 0);
 
     signals:
-	void find_text(const QString &text, QTextDocument::FindFlags flags) W_SIGNAL(find_text, (const QString &, QTextDocument::FindFlags), text, flags)// ;
+	void find_text(const QString &text, QTextDocument::FindFlags flags)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(find_text, (const QString &, QTextDocument::FindFlags), text, flags)	//
+#else
+	;
+#endif
 
     private slots:
 	void	find_clicked(void);

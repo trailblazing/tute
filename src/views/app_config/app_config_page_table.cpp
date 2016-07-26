@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QWidget>
 #include <QBoxLayout>
 #include <QLabel>
@@ -16,8 +21,14 @@
 extern AppConfig	appconfig;
 extern FixedParameters	fixedparameters;
 extern GlobalParameters globalparameters;
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageTable)
-AppConfigPageTable::AppConfigPageTable(rctl_t *_record_controller, QWidget *parent) : ConfigPage(parent),  _record_controller(_record_controller){
+#endif
+
+
+AppConfigPageTable::AppConfigPageTable(rctl_t *_record_controller, QWidget *parent) : ConfigPage(parent), _record_controller(_record_controller){
     qDebug() << "Create record table config page";
 
     QStringList all_field_names = fixedparameters._record_field;
@@ -70,7 +81,8 @@ AppConfigPageTable::AppConfigPageTable(rctl_t *_record_controller, QWidget *pare
 
     setupSignals();
 }
-void AppConfigPageTable:: setupSignals(void){
+
+void AppConfigPageTable::setupSignals(void){
     QMapIterator<QString, QCheckBox *> i(_fields);
     while(i.hasNext()){
 	i.next();
@@ -83,8 +95,9 @@ void AppConfigPageTable:: setupSignals(void){
     connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctl_t::on_recordtable_configchange);
 	// connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
 }
+
 // Слот, срабатывающий каждый раз когда изменяется чекбокс любого поля
-void AppConfigPageTable:: on_field_toggle(bool flag){
+void AppConfigPageTable::on_field_toggle(bool flag){
     Q_UNUSED(flag);
 
     int count = 0;
@@ -103,17 +116,18 @@ void AppConfigPageTable:: on_field_toggle(bool flag){
 	_fields["name"]->setCheckState(Qt::Checked);
     }
 }
+
 // Метод должен возвращать уровень сложности сделанных изменений
 // 0 - изменения не требуют перезапуска программы
 // 1 - изменения требуют перезапуска программы
-int AppConfigPageTable:: apply_changes(void){
+int AppConfigPageTable::apply_changes(void){
     qDebug() << "Apply changes record table";
 
 	// Запоминается ширина полей
 	// Это надо сделать в первую очередь, потому что в дальнейшем после перечитывания модели и
 	// установки заголовков таблицы конечных записей слетают ширины полей (устанавливаюся в 100 px самим Qt)
-    QStringList show_fields = appconfig.record_table_show_fields();
-    QStringList fields_width = appconfig.record_table_fields_width();
+    QStringList show_fields	= appconfig.record_table_show_fields();
+    QStringList fields_width	= appconfig.record_table_fields_width();
     qDebug() << "showFields" << show_fields;
     qDebug() << "fieldsWidth" << fields_width;
 	// Запоминание в конфигурацию отображения горизонтальных заголовков
@@ -162,18 +176,18 @@ int AppConfigPageTable:: apply_changes(void){
 
 	// Уменьшается ширина существующих полей
 	QStringList	new_fields_width;
-	float		insert_field_width = 100.0;
-	float		insert_full_width = insert_field_width * (new_show_fields.size() - show_fields.size());
-	float		coefficient = (full_width - insert_full_width) / full_width;
+	float		insert_field_width	= 100.0;
+	float		insert_full_width	= insert_field_width * (new_show_fields.size() - show_fields.size());
+	float		coefficient		= (full_width - insert_full_width) / full_width;
 
 	foreach(QString current_width, fields_width)
-	new_fields_width << QString::number((int)(current_width.toFloat() * coefficient));
+	new_fields_width << QString::number((int) (current_width.toFloat() * coefficient));
 
 	qDebug() << "insertFullWidth" << insert_full_width;
 	qDebug() << "coefficient" << coefficient;
 	qDebug() << "newFieldsWidth" << new_fields_width;
 	// Добавляются ширины добавленных полей
-	for(int n = 0; n < (new_show_fields.size() - show_fields.size()); n ++)new_fields_width << QString::number((int)insert_field_width);
+	for(int n = 0; n < (new_show_fields.size() - show_fields.size()); n ++)new_fields_width << QString::number((int) insert_field_width);
 	qDebug() << "new_fields_width" << new_fields_width;
 
 	// Новые ширины полей запомниаются в конфигурацию
@@ -204,3 +218,4 @@ int AppConfigPageTable:: apply_changes(void){
 
     return 0;
 }
+

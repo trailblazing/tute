@@ -39,7 +39,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "featurepermissionbar.h"
@@ -57,36 +62,41 @@ namespace browser {
 
     static QString textForPermissionType(QWebEnginePage::Feature type){
 	switch(type){
-	case QWebEnginePage::Notifications:
+	    case QWebEnginePage::Notifications:
 
-	    return QObject::tr("use desktop notifications");
+		return QObject::tr("use desktop notifications");
 
-	case QWebEnginePage::Geolocation:
+	    case QWebEnginePage::Geolocation:
 
-	    return QObject::tr("use your position");
+		return QObject::tr("use your position");
 
-	case QWebEnginePage::MediaAudioCapture:
+	    case QWebEnginePage::MediaAudioCapture:
 
-	    return QObject::tr("use your microphone");
+		return QObject::tr("use your microphone");
 
-	case QWebEnginePage::MediaVideoCapture:
+	    case QWebEnginePage::MediaVideoCapture:
 
-	    return QObject::tr("use your camera");
+		return QObject::tr("use your camera");
 
-	case QWebEnginePage::MediaAudioVideoCapture:
+	    case QWebEnginePage::MediaAudioVideoCapture:
 
-	    return QObject::tr("use your camera and microphone");
+		return QObject::tr("use your camera and microphone");
 
-	case QWebEnginePage::MouseLock:
+	    case QWebEnginePage::MouseLock:
 
-	    return QObject::tr("lock your mouse");
+		return QObject::tr("lock your mouse");
 
-	default:
-	    Q_UNREACHABLE();
+	    default:
+		Q_UNREACHABLE();
 	}
 	return QString();
     }
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(FeaturePermissionBar)
+#endif
+
+
     FeaturePermissionBar::FeaturePermissionBar(QWidget *view)
 	: QWidget(view)
 	  , _messagelabel(new QLabel(this)){
@@ -96,9 +106,9 @@ namespace browser {
 	l->setContentsMargins(defaultHeight, 0, 0, 0);
 	l->addWidget(_messagelabel);
 	l->addStretch();
-	QPushButton	*allowButton = new QPushButton(tr("Allow"), this);
-	QPushButton	*denyButton = new QPushButton(tr("Deny"), this);
-	QPushButton	*discardButton = new QPushButton(QIcon(QStringLiteral(":closetab.png")), QString(), this);
+	QPushButton	*allowButton	= new QPushButton(tr("Allow"), this);
+	QPushButton	*denyButton	= new QPushButton(tr("Deny"), this);
+	QPushButton	*discardButton	= new QPushButton(QIcon(QStringLiteral(":closetab.png")), QString(), this);
 	connect(allowButton, &QPushButton::clicked, this, &FeaturePermissionBar::permissionGranted);
 	connect(denyButton, &QPushButton::clicked, this, &FeaturePermissionBar::permissionDenied);
 	connect(discardButton, &QPushButton::clicked, this, &FeaturePermissionBar::permissionUnknown);
@@ -110,9 +120,10 @@ namespace browser {
 	l->addWidget(discardButton);
 	setGeometry(0, - defaultHeight, view->width(), defaultHeight);
     }
-    void FeaturePermissionBar:: requestPermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature){
+
+    void FeaturePermissionBar::requestPermission(const QUrl &securityOrigin, QWebEnginePage::Feature feature){
 	_securityorigin = securityOrigin;
-	_feature = feature;
+	_feature	= feature;
 	_messagelabel->setText(tr("%1 wants to %2.").arg(securityOrigin.host()).arg(textForPermissionType(feature)));
 	show();
 	// Ease in
@@ -125,13 +136,16 @@ namespace browser {
 	animation->setEasingCurve(QEasingCurve::InOutQuad);
 	animation->start(QPropertyAnimation::DeleteWhenStopped);
     }
-    void FeaturePermissionBar:: permissionDenied(){
+
+    void FeaturePermissionBar::permissionDenied(){
 	emit featurePermissionProvided(_securityorigin, _feature, QWebEnginePage::PermissionDeniedByUser);
     }
-    void FeaturePermissionBar:: permissionGranted(){
+
+    void FeaturePermissionBar::permissionGranted(){
 	emit featurePermissionProvided(_securityorigin, _feature, QWebEnginePage::PermissionGrantedByUser);
     }
-    void FeaturePermissionBar:: permissionUnknown(){
+
+    void FeaturePermissionBar::permissionUnknown(){
 	emit featurePermissionProvided(_securityorigin, _feature, QWebEnginePage::PermissionUnknown);
     }
 }

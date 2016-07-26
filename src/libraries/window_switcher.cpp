@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "window_switcher.h"
 
 #include <QSplitter>
@@ -22,7 +27,12 @@ extern const char *record_screen_multi_instance_name;
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(WindowSwitcher)
+#endif
+
+
 WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent) : QObject(parent){
     setObjectName(object_name);
     enableSwitch();

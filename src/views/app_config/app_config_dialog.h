@@ -1,17 +1,26 @@
 #ifndef _APPCONFIGDIALOG_H_
 #define _APPCONFIGDIALOG_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 class ConfigDialog;
 class QListWidgetItem;
 class rctl_t;
 
 class AppConfigDialog : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(AppConfigDialog)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AppConfigDialog(rctl_t *_record_controller, QString firstPageName);

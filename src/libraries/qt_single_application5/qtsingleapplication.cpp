@@ -37,7 +37,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "qtsingleapplication.h"
 #include "qtlocalpeer.h"
 #include <QWidget>
@@ -86,7 +91,8 @@
 #include <qversiontagging.h>
 
 #ifndef QT_VERSION
-#define QT_VERSION 0x050600
+//#define QT_VERSION 0x050600
+#define QT_VERSION 0x050700
 #endif
 
 #if QT_VERSION < 0x050000
@@ -350,7 +356,12 @@ static void set_user_style_sheet(QWebEngineProfile *profile
     }
 }
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(QT_QTSINGLEAPPLICATION_EXPORT sapp_t)
+#endif
+
+
 void sapp_t::sys_init(){
 	// Инициализация глобальных параметров,
 	// внутри происходит установка рабочей директории

@@ -44,7 +44,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "qtsinglecoreapplication.h"
 #include "qtlocalpeer.h"
 
@@ -77,7 +82,11 @@
 */
 
 namespace qt4 {
-    W_OBJECT_IMPL(QtSingleCoreApplication)
+
+
+//#if QT_VERSION == 0x050600
+//    W_OBJECT_IMPL(QtSingleCoreApplication)
+//#endif
 
     QtSingleCoreApplication::QtSingleCoreApplication(int &argc, char * *argv)
 	: QCoreApplication(argc, argv){

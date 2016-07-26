@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QWidget>
 #include <QBoxLayout>
 #include <QDir>
@@ -9,7 +14,12 @@
 
 extern AppConfig appconfig;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageMisc)
+#endif
+
+
 AppConfigPageMisc::AppConfigPageMisc(QWidget *parent) : ConfigPage(parent){
     qDebug() << "Create misc config page";
 
@@ -59,10 +69,11 @@ AppConfigPageMisc::AppConfigPageMisc(QWidget *parent) : ConfigPage(parent){
 	// Основной слой устанавливается
     setLayout(central_layout);
 }
+
 // Метод должен возвращать уровень сложности сделанных изменений
 // 0 - изменения не требуют перезапуска программы
 // 1 - изменения требуют перезапуска программы
-int AppConfigPageMisc:: apply_changes(void){
+int AppConfigPageMisc::apply_changes(void){
     qDebug() << "Apply changes misc";
 // Сохраняется настройка подтверждения для действия "cut" на ветке
     if(appconfig.cut_branch_confirm() != cutBranchConfirm->isChecked())appconfig.cut_branch_confirm(cutBranchConfirm->isChecked());
@@ -78,3 +89,4 @@ int AppConfigPageMisc:: apply_changes(void){
     if(appconfig.remember_cursor_at_ordinary_selection() != rememberAtOrdinarySelectionCheckBox->isChecked())appconfig.remember_cursor_at_ordinary_selection(rememberAtOrdinarySelectionCheckBox->isChecked());
     return 0;
 }
+

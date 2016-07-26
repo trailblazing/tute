@@ -1,10 +1,17 @@
 #ifndef __GLOBALPARAMETERS_H__
 #define __GLOBALPARAMETERS_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QStatusBar>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 // #ifndef QWEBENGINEPAGE_HITTESTCONTENT
 // #define QWEBENGINEPAGE_HITTESTCONTENT
@@ -33,7 +40,11 @@ class HidableTabWidget;
 // W_REGISTER_ARGTYPE(rs_t *)
 
 class GlobalParameters : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(GlobalParameters)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	GlobalParameters(QObject *pobj = 0);

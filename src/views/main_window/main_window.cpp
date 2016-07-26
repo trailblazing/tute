@@ -1,6 +1,11 @@
 
 #include <string>
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QString>
 #include <QDir>
 #include <QString>
@@ -52,7 +57,12 @@ const char		*record_controller_multi_instance_name	= "record_controller";		// st
 const char		*record_view_multi_instance_name	= "record_view";
 extern const char	*tree_screen_viewer_name;
 extern const char	*action_find_in_base;
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(wn_t)
+#endif
+
+
 wn_t::wn_t(GlobalParameters     &_globalparameters
 	  , AppConfig           &_appconfig
 	  , DataBaseConfig      &_databaseconfig

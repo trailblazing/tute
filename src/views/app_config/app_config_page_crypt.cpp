@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QWidget>
 #include <QBoxLayout>
 #include <QDir>
@@ -19,7 +24,11 @@ extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
 extern DataBaseConfig	databaseconfig;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageCrypt)
+#endif
+
 AppConfigPageCrypt::AppConfigPageCrypt(QWidget *parent) : ConfigPage(parent){
     qDebug() << "Create crypt config page";
 
@@ -28,9 +37,11 @@ AppConfigPageCrypt::AppConfigPageCrypt(QWidget *parent) : ConfigPage(parent){
     setup_signals();
     assembly();
 }
+
 AppConfigPageCrypt::~AppConfigPageCrypt()
 {}
-void AppConfigPageCrypt:: setup_ui(void){
+
+void AppConfigPageCrypt::setup_ui(void){
 	// Группировщик виджетов работы с паролем
     passRetrieveBox = new QGroupBox(this);
     passRetrieveBox->setTitle(tr("Password settings"));
@@ -59,8 +70,8 @@ void AppConfigPageCrypt:: setup_ui(void){
     howPassRequestBox = new QGroupBox(this);
     howPassRequestBox->setTitle(tr("Access to encrypted data"));
 
-    howPassRequestRadio1 = new QRadioButton(tr("Ask the password when you click on an encrypted item"));
-    howPassRequestRadio2 = new QRadioButton(tr("Ask the password at MyTetra startup"));
+    howPassRequestRadio1	= new QRadioButton(tr("Ask the password when you click on an encrypted item"));
+    howPassRequestRadio2	= new QRadioButton(tr("Ask the password at MyTetra startup"));
 	// Точка устанавливается возле того пункта, который настроен в конфиге
     if(appconfig.howpassrequest() == "atClickOnCryptBranch")howPassRequestRadio1->setChecked(true);
     else howPassRequestRadio2->setChecked(true);
@@ -129,7 +140,8 @@ void AppConfigPageCrypt:: setup_ui(void){
     decryptFileToTrashDirectoryLayout->addWidget(decryptFileToTrashDirectoryEnable);
     decryptFileToTrashDirectoryBox->setLayout(decryptFileToTrashDirectoryLayout);
 }
-void AppConfigPageCrypt:: update_ui(void){
+
+void AppConfigPageCrypt::update_ui(void){
 	// Строка состояния пароля
     passRetrieveStatus->setText(getRetrieveStatusText());
 
@@ -139,7 +151,8 @@ void AppConfigPageCrypt:: update_ui(void){
 	// Строка с аннотацией
     passRetrieveAnnotation->setText(getRetrieveAnnotationText());
 }
-void AppConfigPageCrypt:: setup_signals(void){
+
+void AppConfigPageCrypt::setup_signals(void){
 	// При нажатии кнопки работы с паролем
     connect(passRetrieveButton, &QPushButton::clicked, this, &AppConfigPageCrypt::onPassRetrieveButtonClicked);
 
@@ -148,7 +161,8 @@ void AppConfigPageCrypt:: setup_signals(void){
 
     connect(passwordSaveEnable, &QCheckBox::toggled, this, &AppConfigPageCrypt::onPasswordSaveEnableToggle);
 }
-void AppConfigPageCrypt:: assembly(void){
+
+void AppConfigPageCrypt::assembly(void){
 	// Собирается основной слой
     QVBoxLayout *central_layout = new QVBoxLayout();
     central_layout->addWidget(passRetrieveBox);
@@ -161,28 +175,32 @@ void AppConfigPageCrypt:: assembly(void){
 	// Основной слой устанавливается
     setLayout(central_layout);
 }
-QString AppConfigPageCrypt:: getRetrieveStatusText(void){
+
+QString AppConfigPageCrypt::getRetrieveStatusText(void){
     QString status = tr("<b>Status:</b> ");
 	// Если в хранилище данных вообще не задан пароль
     if(databaseconfig.get_crypt_mode() == 0)status = status + tr("No password is set. ");
     else status = status + tr("Password is set. ");
 	// Если пароль (точнее хеш пароля) хранится локально
     if(appconfig.password_save_flag() &&
-	appconfig.password_middle_hash().length() > 0) status = status + tr("Password is saved locally. ");
+	appconfig.password_middle_hash().length() > 0)status = status + tr("Password is saved locally. ");
     return status;
 }
-QString AppConfigPageCrypt:: getRetrieveButtonText(void){
+
+QString AppConfigPageCrypt::getRetrieveButtonText(void){
 	// Если в хранилище данных вообще не задан пароль
     if(databaseconfig.get_crypt_mode() == 0)return tr("Set a password");
     else return tr("Change password");
 }
-QString AppConfigPageCrypt:: getRetrieveAnnotationText(void){
+
+QString AppConfigPageCrypt::getRetrieveAnnotationText(void){
 	// Если в хранилище данных вообще не задан пароль
     if(databaseconfig.get_crypt_mode() == 0)return tr("A password will be used to encrypt the item that you selected. Use \"Encrypt item\" or \"Decrypt item\" in context menu.");
     else return tr("If you change your password all encrypted item will be re-encrypted with a new password.");
 }
+
 // Действия при нажатии кнопки работы с паролем
-void AppConfigPageCrypt:: onPassRetrieveButtonClicked(void){
+void AppConfigPageCrypt::onPassRetrieveButtonClicked(void){
 	// Если в хранилище данных вообще не задан пароль
     if(databaseconfig.get_crypt_mode() == 0){
 	// Включается диалог запроса пароля "с нуля"
@@ -199,7 +217,8 @@ void AppConfigPageCrypt:: onPassRetrieveButtonClicked(void){
 	password.replacePassword();
     }
 }
-void AppConfigPageCrypt:: onPasswordSaveEnableToggle(bool checked){
+
+void AppConfigPageCrypt::onPasswordSaveEnableToggle(bool checked){
     if(checked){
 	howPassRequestRadio1->setEnabled(false);
 	howPassRequestRadio2->setEnabled(false);
@@ -208,8 +227,9 @@ void AppConfigPageCrypt:: onPasswordSaveEnableToggle(bool checked){
 	howPassRequestRadio2->setEnabled(true);
     }
 }
+
 // Действие при клике на галку настройки автоматического закрытия окна пароля
-void AppConfigPageCrypt:: onAutoClosePasswordEnableToggle(bool checked){
+void AppConfigPageCrypt::onAutoClosePasswordEnableToggle(bool checked){
 	// Устанавливается галка и активность виджета выбора задержки
     if(checked){
 	autoClosePasswordEnable->setChecked(true);
@@ -219,15 +239,16 @@ void AppConfigPageCrypt:: onAutoClosePasswordEnableToggle(bool checked){
 	autoClosePasswordDelay->setEnabled(false);
     }
 }
+
 // Метод должен возвращать уровень сложности сделанных изменений
 // 0 - изменения не требуют перезапуска программы
 // 1 - изменения требуют перезапуска программы
-int AppConfigPageCrypt:: apply_changes(void){
+int AppConfigPageCrypt::apply_changes(void){
     qDebug() << "Apply changes crypt";
     if(howPassRequestRadio1->isChecked() &&
-	appconfig.howpassrequest() == "atStartProgram") appconfig.howpassrequest("atClickOnCryptBranch");
+	appconfig.howpassrequest() == "atStartProgram")appconfig.howpassrequest("atClickOnCryptBranch");
     if(howPassRequestRadio2->isChecked() &&
-	appconfig.howpassrequest() == "atClickOnCryptBranch") appconfig.howpassrequest("atStartProgram");
+	appconfig.howpassrequest() == "atClickOnCryptBranch")appconfig.howpassrequest("atStartProgram");
     if(autoClosePasswordEnable->isChecked() != appconfig.auto_close_password_enable())appconfig.auto_close_password_enable(autoClosePasswordEnable->isChecked());
     if(autoClosePasswordDelay->value() != appconfig.auto_close_password_delay())appconfig.auto_close_password_delay(autoClosePasswordDelay->value());
     if(passwordSaveEnable->isChecked() != appconfig.password_save_flag()){
@@ -241,3 +262,4 @@ int AppConfigPageCrypt:: apply_changes(void){
     if(decryptFileToTrashDirectoryEnable->isChecked() != appconfig.enable_decrypt_file_to_trash_directory())appconfig.enable_decrypt_file_to_trash_directory(decryptFileToTrashDirectoryEnable->isChecked());
     return 0;
 }
+

@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QStackedWidget>
 #include <QListWidget>
 #include <QDialogButtonBox>
@@ -9,13 +14,19 @@
 #include "config_dialog.h"
 #include "config_page.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ConfigDialog)
+#endif
+
+
 ConfigDialog::ConfigDialog(QWidget *parent) : QDialog(parent){
     setup_ui();
     setup_signals();
     assembly();
 }
-void ConfigDialog:: setup_ui(void){
+
+void ConfigDialog::setup_ui(void){
 	// Список конфигурирующих виджетов
     contentsWidget = new QListWidget;
     contentsWidget->setViewMode(QListView::ListMode);
@@ -38,14 +49,16 @@ void ConfigDialog:: setup_ui(void){
 	// Кнопки закрытия диалога
     confirmButtons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 }
-void ConfigDialog:: setup_signals(void){
+
+void ConfigDialog::setup_signals(void){
     connect(confirmButtons, &QDialogButtonBox::accepted, this, &ConfigDialog::apply_changes);
 
     connect(confirmButtons, &QDialogButtonBox::rejected, this, &ConfigDialog::reject);
 
     connect(contentsWidget, &QListWidget::currentItemChanged, this, &ConfigDialog::change_page);
 }
-void ConfigDialog:: assembly(void){
+
+void ConfigDialog::assembly(void){
     QHBoxLayout *horizontalLayout = new QHBoxLayout;
     horizontalLayout->addWidget(contentsWidget);
     horizontalLayout->addWidget(pagesWidget, 1);// horizontalLayout->addWidget(pagesWidget, 1);
@@ -66,42 +79,49 @@ void ConfigDialog:: assembly(void){
 
     this->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
 }
-void ConfigDialog:: set_window_title(QString title){
+
+void ConfigDialog::set_window_title(QString title){
 	// Строка в заголовке окна
     setWindowTitle(title);
 }
-QListWidgetItem *ConfigDialog:: add_widget(QWidget *inswidget, QString name){
+
+QListWidgetItem *ConfigDialog::add_widget(QWidget *inswidget, QString name){
     pagesWidget->addWidget(inswidget);
 
     return create_items(name);
 }
+
 // Создаются пункты для вызова нужных конфигурирующих виджетов
-QListWidgetItem *ConfigDialog:: create_items(QString name){
+QListWidgetItem *ConfigDialog::create_items(QString name){
     QListWidgetItem *item = new QListWidgetItem(contentsWidget);
     item->setText(name);
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 
     return item;
 }
+
 // Приватный слот, переключение виджета настройки при клике по списку настроечных виджетов
-void ConfigDialog:: change_page(QListWidgetItem *current, QListWidgetItem *previous){
+void ConfigDialog::change_page(QListWidgetItem *current, QListWidgetItem *previous){
     if(! current)current = previous;
     pagesWidget->setCurrentIndex(contentsWidget->row(current));
 
 	// scrollArea->adjustSize();
 }
-void ConfigDialog:: externalChangePage(QListWidgetItem *item){
+
+void ConfigDialog::externalChangePage(QListWidgetItem *item){
     contentsWidget->setCurrentItem(item);
 
 	// scrollArea->adjustSize();
 }
-void ConfigDialog:: updateListWidth(void){
+
+void ConfigDialog::updateListWidth(void){
     contentsWidget->updateGeometry();
     contentsWidget->update();
 
 	// scrollArea->adjustSize();
 }
-void ConfigDialog:: apply_changes(void){
+
+void ConfigDialog::apply_changes(void){
     int difficult_flag = 0;
 	// Перебираются виджеты настройки
     for(int i = 0; i < pagesWidget->count(); i ++){
@@ -112,11 +132,12 @@ void ConfigDialog:: apply_changes(void){
     }
 	// Если требуется перезапустить программу для принятия изменений
     if(difficult_flag == 1){
-	QMessageBox::warning(this, tr("Warning"),
-	    tr("The program will have to be restarted for changes to take effect."),
-	    QMessageBox::Ok);
+	QMessageBox::warning(this, tr("Warning")
+			    , tr("The program will have to be restarted for changes to take effect.")
+			    , QMessageBox::Ok);
 	exit(0);
     }
 	// Диалог настройки закрывается
     close();
 }
+

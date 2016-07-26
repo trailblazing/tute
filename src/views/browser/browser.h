@@ -45,8 +45,7 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QBoxLayout>
 #include <QtWidgets/QMainWindow>
@@ -65,6 +64,10 @@
 #include "views/tree/tree_screen.h"
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QWebEngineFrame;
@@ -121,8 +124,11 @@ namespace browser {
 	: public QMainWindow
 		//        , public boost::intrusive_ref_counter<Browser, boost::thread_safe_counter>
     {
+#if QT_VERSION == 0x050600
 	W_OBJECT(Browser)
-
+#else
+	Q_OBJECT
+#endif
 	public:
 	    Browser(ts_t		*_tree_screen
 		   , FindScreen		*_find_screen

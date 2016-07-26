@@ -1,6 +1,11 @@
 #include <set>
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QAbstractItemView>
 #include <QAction>
@@ -88,7 +93,10 @@ const char *tree_screen_viewer_name = "TreeScreenViewer";
 
 // know_root_holder::~know_root_holder() {delete _know_root;}
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ts_t)
+#endif
 
 ts_t::ts_t(QString object_name
 	  , const AppConfig   &_appconfig
@@ -401,7 +409,7 @@ void ts_t::setup_actions(void){
 
 		    QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
 		    result = it.next();
-		    while(it.hasNext())result = _tree_view->merge(TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next()));	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
+		    while(it.hasNext())result = TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next(), _tree_view)->merge();	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
 			// children_transfer(_new_item, _current_model);
 		}else{
 			// Вставка новых данных в модель дерева записей

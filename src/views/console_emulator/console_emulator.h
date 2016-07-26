@@ -1,8 +1,6 @@
 #ifndef _CONSOLEEMULATOR_H_
 #define _CONSOLEEMULATOR_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QDialog>
 #include <QWidget>
@@ -14,6 +12,13 @@
 #include <QShortcut>
 
 #include "views/wait_clock/wait_clock.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 class FlatToolButton;
 
@@ -31,7 +36,11 @@ class FlatToolButton;
 // +------------------------------------------------+
 
 class ConsoleEmulator : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(ConsoleEmulator)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	ConsoleEmulator(QWidget *parent = 0);
@@ -57,7 +66,12 @@ class ConsoleEmulator : public QDialog {
     signals:
 
 	// Сигнал, вырабатывающийся в слоте onCancelConsole()
-	void cancelConsole(void) W_SIGNAL(cancelConsole)// ;
+	void cancelConsole(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(cancelConsole)//
+#else
+	;
+#endif
 
     private:
 

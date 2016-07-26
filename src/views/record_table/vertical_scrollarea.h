@@ -1,18 +1,27 @@
 #ifndef VERTICALSCROLLAREA_H
 #define VERTICALSCROLLAREA_H
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QScrollArea>
 #include "utility/delegate.h"
 #include "models/tree/binder.hxx"
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 class rv_t;
 
 class VerticalScrollArea : public QScrollArea {
+#if QT_VERSION == 0x050600
     W_OBJECT(VerticalScrollArea)
+#else
+    Q_OBJECT
+#endif
 
     //    std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *> > > _interface;
     rv_t *_record_view;

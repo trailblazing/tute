@@ -1,7 +1,12 @@
 
 #include <functional>
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QBoxLayout>
 #include <QGridLayout>
@@ -44,9 +49,15 @@ namespace browser {
     class Entrance;
 }
 
-W_OBJECT_IMPL(ClickableLabel)
 
+#if QT_VERSION == 0x050600
+W_OBJECT_IMPL(ClickableLabel)
+#endif
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(MetaEditor)
+#endif
+
 
 MetaEditor::MetaEditor(QString object_name, FindScreen *_find_screen)
     : Editor()

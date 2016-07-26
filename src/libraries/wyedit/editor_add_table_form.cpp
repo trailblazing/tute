@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QWidget>
 #include <QLabel>
 #include <QSpinBox>
@@ -9,7 +14,13 @@
 
 #include "editor_add_table_form.h"
 
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorAddTableForm)
+#endif
+
+
 EditorAddTableForm::EditorAddTableForm()
 {
     this->setWindowTitle(tr("Create a new table"));

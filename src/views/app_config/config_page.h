@@ -1,14 +1,21 @@
 #ifndef _CONFIGPAGE_H_
 #define _CONFIGPAGE_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QWidget>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class ConfigPage : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(ConfigPage)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	ConfigPage(QWidget *parent = 0);

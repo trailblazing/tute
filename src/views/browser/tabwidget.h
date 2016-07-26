@@ -50,9 +50,6 @@
 #include "utility/util.hxx"
 #include "utility/delegate.h"
 
-#include <wobjectdefs.h>
-#include <QObject>
-
 #include <QtWebEngineWidgets/QWebEngineFullScreenRequest>
 #include <QtWidgets/QTabBar>
 #include <QtWidgets/QCompleter>
@@ -86,6 +83,10 @@
 #include "views/tree/tree_screen.h"
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 class GlobalParameters;
@@ -270,16 +271,55 @@ namespace browser {
 	    Tab bar with a few more features such as a context menu and shortcuts
 	 */
 	class TabBar : public QTabBar {
+#if QT_VERSION == 0x050600
 	    W_OBJECT(TabBar)
+#else
+	    Q_OBJECT
+#endif
 
 	    signals:
-		void	newTab() W_SIGNAL(newTab)// ;
-		void	cloneTabSignal(int index) W_SIGNAL(cloneTabSignal, (int), index)// ;
-		void	closeTabSignal(int index) W_SIGNAL(closeTabSignal, (int), index)// ;
-		void	closeOtherTabsSignal(int index) W_SIGNAL(closeOtherTabsSignal, (int), index)	// ;
-		void	reloadTabSignal(int index) W_SIGNAL(reloadTabSignal, (int), index)	// ;
-		void	reloadAllTabs() W_SIGNAL(reloadAllTabs)	// ;
-		void	tabMoveRequested(int fromIndex, int toIndex) W_SIGNAL(tabMoveRequested, (int, int), fromIndex, toIndex)	// ;
+		void newTab()
+#if QT_VERSION == 0x050600
+		W_SIGNAL(newTab)//
+#else
+		;
+#endif
+		void cloneTabSignal(int index)
+#if QT_VERSION == 0x050600
+		W_SIGNAL(cloneTabSignal, (int), index)	//
+#else
+		;
+#endif
+		void closeTabSignal(int index)
+#if QT_VERSION == 0x050600
+		W_SIGNAL(closeTabSignal, (int), index)	//
+#else
+		;
+#endif
+		void closeOtherTabsSignal(int index)
+#if QT_VERSION == 0x050600
+		W_SIGNAL(closeOtherTabsSignal, (int), index)	//
+#else
+		;
+#endif
+		void reloadTabSignal(int index)
+#if QT_VERSION == 0x050600
+		W_SIGNAL(reloadTabSignal, (int), index)	//
+#else
+		;
+#endif
+		void reloadAllTabs()
+#if QT_VERSION == 0x050600
+		W_SIGNAL(reloadAllTabs)	//
+#else
+		;
+#endif
+		void tabMoveRequested(int fromIndex, int toIndex)
+#if QT_VERSION == 0x050600
+		W_SIGNAL(tabMoveRequested, (int, int), fromIndex, toIndex)	//
+#else
+		;
+#endif
 
 	    public:
 		TabBar(QWidget *parent = 0);
@@ -326,7 +366,11 @@ namespace browser {
 	    the current tabs webview's stop action.
 	 */
     class WebActionMapper : public QObject {
+#if QT_VERSION == 0x050600
 	W_OBJECT(WebActionMapper)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
@@ -367,23 +411,82 @@ namespace browser {
 
 	// browsertabmanager
     class TabWidget : public QTabWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(TabWidget)
+#else
+	Q_OBJECT
+#endif
 
 	signals:
 		// tab widget signals
-	    void	loadPage(const QString &url) W_SIGNAL(loadPage, (const QString &), url)	// ;
-	    void	tabsChanged() W_SIGNAL(tabsChanged)	// ;
-	    void	lastTabClosed() W_SIGNAL(lastTabClosed)	// ;
+	    void loadPage(const QString &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(loadPage, (const QString &), url)	//
+#else
+	    ;
+#endif
+	    void tabsChanged()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(tabsChanged)	//
+#else
+	    ;
+#endif
+	    void lastTabClosed()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(lastTabClosed)	//
+#else
+	    ;
+#endif
 
 		// current tab signals
-	    void	setCurrentTitle(const QString &url) W_SIGNAL(setCurrentTitle, (const QString &), url)	// ;
-	    void	showStatusBarMessage(const QString &message, int timeout = 0) W_SIGNAL(showStatusBarMessage, (const QString &, int), message, timeout)	// ;
-	    void	linkHovered(const QString &link) W_SIGNAL(linkHovered, (const QString &), link)	// ;	// , int timeout = 0);
-	    void	loadProgress(int progress) W_SIGNAL(loadProgress, (int), progress)	// ;
-	    void	geometryChangeRequested(const QRect &geometry) W_SIGNAL(geometryChangeRequested, (const QRect &), geometry)	// ;
-	    void	menuBarVisibilityChangeRequested(bool visible) W_SIGNAL(menuBarVisibilityChangeRequested, (bool), visible)	// ;
-	    void	statusBarVisibilityChangeRequested(bool visible) W_SIGNAL(statusBarVisibilityChangeRequested, (bool), visible)	// ;
-	    void	toolBarVisibilityChangeRequested(bool visible) W_SIGNAL(toolBarVisibilityChangeRequested, (bool), visible)	// ;
+	    void setCurrentTitle(const QString &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(setCurrentTitle, (const QString &), url)	//
+#else
+	    ;
+#endif
+	    void showStatusBarMessage(const QString &message, int timeout = 0)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(showStatusBarMessage, (const QString &, int), message, timeout)	//
+#else
+	    ;
+#endif
+	    void linkHovered(const QString &link)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(linkHovered, (const QString &), link)	// ;	// , int timeout = 0)
+#else
+	    ;
+#endif
+	    void loadProgress(int progress)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(loadProgress, (int), progress)	//
+#else
+	    ;
+#endif
+	    void geometryChangeRequested(const QRect &geometry)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(geometryChangeRequested, (const QRect &), geometry)	//
+#else
+	    ;
+#endif
+	    void menuBarVisibilityChangeRequested(bool visible)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(menuBarVisibilityChangeRequested, (bool), visible)	//
+#else
+	    ;
+#endif
+	    void statusBarVisibilityChangeRequested(bool visible)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(statusBarVisibilityChangeRequested, (bool), visible)	//
+#else
+	    ;
+#endif
+	    void toolBarVisibilityChangeRequested(bool visible)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(toolBarVisibilityChangeRequested, (bool), visible)	//
+#else
+	    ;
+#endif
 
 #if defined(QWEBENGINEPAGE_PRINTREQUESTED)
 	    void printRequested(QWebEngineFrame *frame);

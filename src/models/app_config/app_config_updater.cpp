@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QSettings>
 #include <QFile>
 
@@ -7,16 +12,23 @@
 
 #define APPCONFIGUPDATER_VERSION "APPCONFIGUPDATER v.1.0 Build 29.10.2010"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigUpdater)
+#endif
+
+
 AppConfigUpdater::AppConfigUpdater(QObject *pobj){
     Q_UNUSED(pobj);
 
     conf = nullptr;
 }
+
 AppConfigUpdater::~AppConfigUpdater(){
     delete conf;
 }
-void AppConfigUpdater:: set_config_file(QString fileName){
+
+void AppConfigUpdater::set_config_file(QString fileName){
 	// Проверяется, есть ли файл конфигурации
     QFile conffile(fileName);
     if(! conffile.exists())critical_error("appconfigupdater::set_config_file() - File " + fileName + " not found.");
@@ -25,13 +37,14 @@ void AppConfigUpdater:: set_config_file(QString fileName){
     conf->setPath(QSettings::IniFormat, QSettings::UserScope, "./");
     conf->setPath(QSettings::IniFormat, QSettings::SystemScope, "./");
 }
+
 // Метод разрешения конфликтов
 // Должен включать в себя логику обработки только тех параметров
 // и только для тех версий конфигов, которые действительно
 // должны поменять тип. Если для принятых параметров не будет
 // обработки, это значит что что-то сделано программистом не так
 // и нужно дорабатывать код
-QString AppConfigUpdater:: update_version_allowcollision(int versionFrom, int versionTo, QString name, QString fromType, QString fromValue, QString toType, QString toValue){
+QString AppConfigUpdater::update_version_allowcollision(int versionFrom, int versionTo, QString name, QString fromType, QString fromValue, QString toType, QString toValue){
 	// todo: Прописать сюда правила перевода int в bool и обратно
 
     critical_error("Error while update config version \nFrom: " + (QString::number(versionFrom)) +
@@ -44,15 +57,16 @@ QString AppConfigUpdater:: update_version_allowcollision(int versionFrom, int ve
 
     return QString();
 }
+
 // Основной метод обновления версий конфига
-void AppConfigUpdater:: update_version(int versionFrom, int versionTo, QStringList baseTable, QStringList finalTable){
+void AppConfigUpdater::update_version(int versionFrom, int versionTo, QStringList baseTable, QStringList finalTable){
 	// Таблица исходных параметров преобразуется к более удобному для работы виду
 	// И параллельно заполняется значениями из конфига
     QMap< QString, QMap< QString, QString > > fromTable;
     for(int i = 0; i < 100; i ++){
-	QString name = baseTable.at(i * 3 + 0);
-	QString type = baseTable.at(i * 3 + 1);
-	QString defValue = baseTable.at(i * 3 + 2);
+	QString name		= baseTable.at(i * 3 + 0);
+	QString type		= baseTable.at(i * 3 + 1);
+	QString defValue	= baseTable.at(i * 3 + 2);
 	// Если достигнут конец массива
 	if(name == "0" && type == "0" && defValue == "0")break;
 	// Подготовка массива для текущего параметра
@@ -73,16 +87,16 @@ void AppConfigUpdater:: update_version(int versionFrom, int versionTo, QStringLi
     QMap< QString, QMap< QString, QString > >	toTable;
     QList<QString>				controlList;
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-	QString name = finalTable.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 0);
-	QString type = finalTable.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1);
-	QString defValue = finalTable.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2);
+	QString name		= finalTable.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 0);
+	QString type		= finalTable.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1);
+	QString defValue	= finalTable.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2);
 	// Если достигнут конец массива
 	if(name == "0" && type == "0" && defValue == "0")break;
 	// Подготовка массива для текущего параметра
 	QMap< QString, QString > line;
 	line.clear();
-	line["type"] = type;
-	line["value"] = defValue;	// Дефолтное значение
+	line["type"]	= type;
+	line["value"]	= defValue;		// Дефолтное значение
 
 	// Для текущего имени параметра запоминается массив
 	toTable[name] = line;
@@ -99,9 +113,9 @@ void AppConfigUpdater:: update_version(int versionFrom, int versionTo, QStringLi
 	i.next();
 
 	// Данные для новой версии конфига
-	QString				toName = i.key();
-	QMap< QString, QString >	line = i.value();
-	QString				toType = line["type"];
+	QString				toName	= i.key();
+	QMap< QString, QString >	line	= i.value();
+	QString				toType	= line["type"];
 	QString				toValue = line["value"];
 
 	qDebug() << "To name: " << toName;
@@ -114,9 +128,9 @@ void AppConfigUpdater:: update_version(int versionFrom, int versionTo, QStringLi
 	QString				fromType;
 	QString				fromValue;
 	if(fromTable.contains(toName)){
-	    line2 = fromTable[toName];
-	    fromType = line2["type"];
-	    fromValue = line2["value"];
+	    line2	= fromTable[toName];
+	    fromType	= line2["type"];
+	    fromValue	= line2["value"];
 
 	    qDebug() << "Line2: " << line2;
 	    qDebug() << "From type: " << fromType;
@@ -171,8 +185,8 @@ void AppConfigUpdater:: update_version(int versionFrom, int versionTo, QStringLi
 
 	QString toName = j.key();
 
-	QMap< QString, QString >	line = j.value();
-	QString				toType = line["type"];
+	QMap< QString, QString >	line	= j.value();
+	QString				toType	= line["type"];
 	QString				toValue = line["value"];
 	if(toType == "QString")conf->setValue(toName, toValue);
 	else if(toType == "int")conf->setValue(toName, toValue.toInt());
@@ -187,3 +201,4 @@ void AppConfigUpdater:: update_version(int versionFrom, int versionTo, QStringLi
 	// Конфигурация записывается на диск
     conf->sync();
 }
+

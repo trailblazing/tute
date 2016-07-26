@@ -3,8 +3,7 @@
 
 #include <memory>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QMap>
 #include <QWidget>
@@ -12,6 +11,14 @@
 #include "models/record_table/items_flat.h"
 #include "models/tree/tree_item.h"
 #include "utility/delegate.h"
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 
 class QLineEdit;
@@ -47,7 +54,11 @@ struct back_ground {boost::intrusive_ptr<TreeItem>  _selected_branch_root;};
 class FindScreen : public QWidget
 //    , public back_ground
 {
+#if QT_VERSION == 0x050600
     W_OBJECT(FindScreen)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	static const constexpr char *_find_in_base_expand = "findInBaseExpand";		// "find_in_base_expand";
@@ -56,33 +67,24 @@ class FindScreen : public QWidget
 	// QToolBar *navigater() {return _navigater;}
 
 	//    void toolbarsearch(browser::ToolbarSearch *toolbarsearch) {_toolbarsearch = toolbarsearch;}
-	browser::ToolbarSearch *toolbarsearch(){
-	    return _toolbarsearch;
-	}
-	FlatToolButton *findstartbutton(){
-	    return _find_start_button;
-	}
-	QAction *historyback(){
-	    return _historyback;
-	}
-	QAction *historyforward(){
-	    return _historyforward;
-	}
-	QAction *historyhome(){
-	    return _historyhome;
-	}
-	QAction *stopreload(){
-	    return _stopreload;
-	}
-	QAction *stop(){
-	    return _stop;
-	}
-	QAction *reload(){
-	    return _reload;
-	}
-	browser::ChaseWidget *chasewidget(){
-	    return _chasewidget;
-	}
+	browser::ToolbarSearch *toolbarsearch(){return _toolbarsearch;}
+
+	FlatToolButton *findstartbutton(){return _find_start_button;}
+
+	QAction *historyback(){return _historyback;}
+
+	QAction *historyforward(){return _historyforward;}
+
+	QAction *historyhome(){return _historyhome;}
+
+	QAction *stopreload(){return _stopreload;}
+
+	QAction *stop(){return _stop;}
+
+	QAction *reload(){return _reload;}
+
+	browser::ChaseWidget *chasewidget(){return _chasewidget;}
+
 	//    void remove_child(const QString &id);
 	//    void remove_child(const int row);
 	void adjust_size();
@@ -120,8 +122,18 @@ class FindScreen : public QWidget
 
 	// Сигнал вырабатывается, когда обнаружено что в слоте setFindText()
 	// был изменен текст для поиска
-	void	text_changed_from_another(const QString &str) W_SIGNAL(text_changed_from_another, (const QString &), str)// ;
-	void	find_clicked_after_another_text_changed(void) W_SIGNAL(find_clicked_after_another_text_changed)	// ;
+	void text_changed_from_another(const QString &str)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(text_changed_from_another, (const QString &), str)	//
+#else
+	;
+#endif
+	void find_clicked_after_another_text_changed(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(find_clicked_after_another_text_changed)	//
+#else
+	;
+#endif
 
     private:
 
@@ -149,7 +161,7 @@ class FindScreen : public QWidget
 
 	boost::intrusive_ptr<TreeItem> find_start(void);
 
-	QList<boost::intrusive_ptr<Linker> > &find_recursive(QList<boost::intrusive_ptr<Linker> > &_result_list, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> curritem);
+	boost::intrusive_ptr<TreeItem> &find_recursive(boost::intrusive_ptr<TreeItem> &final_result, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> curritem);
 
 	bool find_in_text_process(const QString &text);
 

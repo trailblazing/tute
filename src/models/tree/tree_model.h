@@ -3,8 +3,7 @@
 
 #include <memory>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QAbstractItemModel>
 #include <QModelIndex>
@@ -15,6 +14,12 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 // #include "TreeItem.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 // TreeModel - Это вспомогательный класс! От него наследуется KnowTreeModel
 
@@ -31,7 +36,11 @@ struct TreeIndex;
 struct index_tree;
 
 class tm_t : public QAbstractItemModel {
+#if QT_VERSION == 0x050600
     W_OBJECT(tm_t)
+#else
+    Q_OBJECT
+#endif
 
     public:
 

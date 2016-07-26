@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "hidable_tabwidget.h"
@@ -77,7 +82,12 @@ const char		*custom_hidabletabwidget_style =
     "}"
 ;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(HidableTabWidget)
+#endif
+
+
 HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
 				  , FindScreen *_find_screen
 				  , MetaEditor *_editor_screen
@@ -124,11 +134,11 @@ HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
 	    auto w = widget(index);
 	    this->removeTab(index);
 	    if(w->objectName() == record_screen_multi_instance_name){
-		auto rs = dynamic_cast<rs_t *>(w);
+//		auto rs = dynamic_cast<rs_t *>(w);
 		auto _browser = dynamic_cast<rs_t *>(w)->browser();
 		if(_browser){
 		    _browser->close();
-		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
 		    _browser->deleteLater();
 		}
 	    }else{
@@ -177,24 +187,38 @@ HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
 }
 
 HidableTabWidget::~HidableTabWidget(){
-    if(_record_screens.size() > 0){
-	for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-	    if(*i){	// && *i != widget()=>for entrance
-		_record_screens.erase(i);
-		(*i)->deleteLater();	// delete *i;
+//    if(_record_screens.size() > 0){
+    for(int i = 0; i < count(); i ++){	// for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+	auto w = widget(i);
+	if(w->objectName() == record_screen_multi_instance_name){
+		//	    auto	rs		= dynamic_cast<rs_t *>(w);
+	    auto browser_ = dynamic_cast<rs_t *>(w)->browser();
+	    if(browser_){// if(*i){	// && *i != widget()=>for entrance
+//		_record_screens.erase(i);
+		browser_->deleteLater();// (*i)->deleteLater();	// delete *i;
 		// *i = nullptr;
 	    }
 	}
     }
+//    }
 }
 
-std::set<rs_t *> &HidableTabWidget::record_screens(){
+std::set<rs_t *> HidableTabWidget::record_screens() const {
 //    int browser_size_ = 0;
 //    for(int i = 0; i < count(); i ++)
 //		if(widget(i)->objectName() == record_screen_multi_instance_name)browser_size_ ++;
 
 //    return browser_size_;
-    return _record_screens;
+    std::set<rs_t *> result;
+    for(int i = 0; i < count(); i ++){		// for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+	auto w = widget(i);
+	if(w->objectName() == record_screen_multi_instance_name){
+	    auto rs = dynamic_cast<rs_t *>(w);
+//	    auto	browser_	= dynamic_cast<rs_t *>(w)->browser();
+	    if(rs)if(result.find(rs) != result.end())result.insert(rs);	// if(*i){	// && *i != widget()=>for entrance
+	}
+    }
+    return result;	// _record_screens;
 }
 
 void HidableTabWidget::onHideAction(bool checked){
@@ -231,11 +255,22 @@ bool HidableTabWidget::eventFilter(QObject *obj, QEvent *event){
 browser::WebView *HidableTabWidget::find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const {
 	// clean();
     browser::WebView *v = nullptr;
-	// new_dockedwindow(record);
-    for(auto i : _record_screens){
-	if(i){
-	    v = i->browser()->tabWidget()->find(_equal);
-	    if(v != nullptr)break;
+//	// new_dockedwindow(record);
+//    for(auto i : _record_screens){
+//	if(i){
+//	    v = i->browser()->tabWidget()->find(_equal);
+//	    if(v != nullptr)break;
+//	}
+//    }
+    for(int i = 0; i < count(); i ++){
+	auto w = widget(i);
+	if(w->objectName() == record_screen_multi_instance_name){
+//	    auto	rs		= dynamic_cast<rs_t *>(w);
+	    auto browser_ = dynamic_cast<rs_t *>(w)->browser();
+	    if(browser_){
+		v = browser_->tabWidget()->find(_equal);
+		if(v != nullptr)break;
+	    }
 	}
     }
     boost::intrusive_ptr<const TreeItem> found_myself(nullptr);
@@ -280,15 +315,15 @@ browser::Browser *HidableTabWidget::new_browser(){
 	if(r == rs)found = true;
     }
     assert(found);
-//    bool found = false;
-//    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
-//	if(*i == rs){
-//	    found = true;
-//	    break;
-//	}
-//    }
-//    if(! found) _record_screens.insert(rs);
-    _record_screens.insert(rs);
+////    bool found = false;
+////    for(auto i = _record_screens.begin(); i != _record_screens.end(); i ++){
+////	if(*i == rs){
+////	    found = true;
+////	    break;
+////	}
+////    }
+////    if(! found) _record_screens.insert(rs);
+//    _record_screens.insert(rs);
     setUpdatesEnabled(true);
     rs->adjustSize();
 
@@ -309,15 +344,19 @@ browser::Browser *HidableTabWidget::activated_browser(){
 // QUrl(DockedWindow::_defaulthome)
 // );
 // } else { //
-// if(_browsers.size() > 0) {
-    for(auto i : _record_screens){
-	if(i->browser()->isVisible() || i->browser()->isActiveWindow()){
-		// assert(i);
-		// dp.first
-	    _browser = i->browser();	// .data();
-		// assert(_browser);
-		// dp.second = i->tabWidget()->currentWebView();
-	    break;
+//    if(count() > 0)
+    for(int i = 0; i < count(); i ++){		// for(auto i : _record_screens){
+	auto w = widget(i);
+	if(w->objectName() == record_screen_multi_instance_name){
+//	    auto	rs		= dynamic_cast<rs_t *>(w);
+	    auto browser_ = dynamic_cast<rs_t *>(w)->browser();
+	    if(browser_){
+		if(browser_->isVisible() || browser_->isActiveWindow()){
+		    _browser = browser_;		// .data();
+
+		    break;
+		}
+	    }
 	}
     }
     if(! _browser){

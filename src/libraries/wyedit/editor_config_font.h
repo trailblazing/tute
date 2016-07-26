@@ -1,8 +1,7 @@
 #ifndef _EDITORCONFIGFONT_H_
 #define	_EDITORCONFIGFONT_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QLineEdit>
@@ -11,6 +10,13 @@
 #include <QCheckBox>
 #include <QLabel>
 #include <QPushButton>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 class FlatToolButton;
@@ -22,7 +28,11 @@ class EditorConfig;
 
 
 class EditorConfigFont : public ConfigPage {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorConfigFont)
+#else
+    Q_OBJECT
+#endif
 
 public:
     EditorConfigFont(QWidget *parent = 0);

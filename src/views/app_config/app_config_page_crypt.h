@@ -2,8 +2,7 @@
 #define	_APPCONFIGPAGE_CRYPT_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QWidget>
@@ -16,9 +15,17 @@
 
 #include "config_page.h"
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 class AppConfigPageCrypt : public ConfigPage {
+#if QT_VERSION == 0x050600
     W_OBJECT(AppConfigPageCrypt)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AppConfigPageCrypt(QWidget *parent = 0);

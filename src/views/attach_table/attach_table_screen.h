@@ -1,13 +1,18 @@
 #ifndef ATTACHTABLESCREEN_H
 #define ATTACHTABLESCREEN_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QAction>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 class AttachTableView;
 class AttachTableController;
@@ -16,7 +21,12 @@ class AttachTableController;
 // Виджет
 
 class AttachTableScreen : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(AttachTableScreen)
+#else
+    Q_OBJECT
+#endif
+
     public:
 	AttachTableScreen(QWidget *parent = 0);
 	virtual ~AttachTableScreen();

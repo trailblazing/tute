@@ -152,7 +152,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 					// Create a new record (ID was empty) or
 					// Record with ID in a tree there, so stand the new ID and a new storage directory (not to overwrite existing)
 
-				  QString id = get_unical_id();
+				  QString id = _host->field<dir_type>() > 0 ? _host->field<dir_type>() : get_unical_id();
 					// Store directory entries and files    // Директория хранения записи и файл
 				  if(_host->field<dir_type>() == "")_host->field<dir_type>(id);						// get_unical_id()
 				  if(_host->field<file_type>() == "")_host->field<file_type>("text.html");

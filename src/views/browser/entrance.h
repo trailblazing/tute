@@ -3,8 +3,7 @@
 
 #include <set>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QList>
@@ -22,8 +21,10 @@
 #include "views/browser/tabwidget.h"
 
 
-
-
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 class tkm_t;
@@ -55,7 +56,7 @@ namespace browser {
 //                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>>
 //                                             );
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 
 namespace browser {
@@ -79,7 +80,12 @@ namespace browser {
 
 	// entrance.ini
     class Entrance : public QDockWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(Entrance)
+#else
+	Q_OBJECT
+#endif
+
 	public:
 
 
@@ -226,6 +232,6 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif	// _BROWSERMANAGER_H_

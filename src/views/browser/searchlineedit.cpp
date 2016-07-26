@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "searchlineedit.h"
@@ -53,7 +58,10 @@
 
 
 namespace browser {
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(ClearButton)
+#endif
+
     ClearButton::ClearButton(QWidget *parent)
 	: QAbstractButton(parent){
 #ifndef QT_NO_CURSOR
@@ -63,7 +71,8 @@ namespace browser {
 	setVisible(false);
 	setFocusPolicy(Qt::NoFocus);
     }
-    void ClearButton:: paintEvent(QPaintEvent *event){
+
+    void ClearButton::paintEvent(QPaintEvent *event){
 	Q_UNUSED(event);
 	QPainter	painter(this);
 	int		height = this->height();
@@ -73,9 +82,9 @@ namespace browser {
 	    ? palette().color(QPalette::Dark)
 	    : palette().color(QPalette::Mid));
 	painter.setPen(painter.brush().color());
-	int	size = width();
-	int	offset = size / 5;
-	int	radius = size - offset * 2;
+	int	size	= width();
+	int	offset	= size / 5;
+	int	radius	= size - offset * 2;
 	painter.drawEllipse(offset, offset, radius, radius);
 
 	painter.setPen(palette().color(QPalette::Base));
@@ -83,9 +92,11 @@ namespace browser {
 	painter.drawLine(border, border, width() - border, height - border);
 	painter.drawLine(border, height - border, width() - border, border);
     }
-    void ClearButton:: textChanged(const QString &text){
+
+    void ClearButton::textChanged(const QString &text){
 	setVisible(! text.isEmpty());
     }
+
 	/*
 	    Search icon on the left hand side of the search widget
 	    When a menu is set a down arrow appears
@@ -101,15 +112,16 @@ namespace browser {
     };
 
     SearchButton::SearchButton(QWidget *parent)
-	: QAbstractButton(parent),
-	  _menu(0){
+	: QAbstractButton(parent)
+	  , _menu(0){
 	setObjectName(QLatin1String("SearchButton"));
 #ifndef QT_NO_CURSOR
 	setCursor(Qt::ArrowCursor);
 #endif	// QT_NO_CURSOR
 	setFocusPolicy(Qt::NoFocus);
     }
-    void SearchButton:: mousePressEvent(QMouseEvent *event){
+
+    void SearchButton::mousePressEvent(QMouseEvent *event){
 	if(_menu && event->button() == Qt::LeftButton){
 	    QWidget *p = parentWidget();
 	    if(p){
@@ -120,7 +132,8 @@ namespace browser {
 	}
 	QAbstractButton::mousePressEvent(event);
     }
-    void SearchButton:: paintEvent(QPaintEvent *event){
+
+    void SearchButton::paintEvent(QPaintEvent *event){
 	Q_UNUSED(event);
 	QPainterPath myPath;
 
@@ -129,9 +142,9 @@ namespace browser {
 	myPath.addEllipse(circle);
 
 	myPath.arcMoveTo(circle, 300);
-	QPointF c = myPath.currentPosition();
-	int	diff = height() / 7;
-	myPath.lineTo(qMin(width() - 2, (int)c.x() + diff), c.y() + diff);
+	QPointF c	= myPath.currentPosition();
+	int	diff	= height() / 7;
+	myPath.lineTo(qMin(width() - 2, (int) c.x() + diff), c.y() + diff);
 
 	QPainter painter(this);
 	painter.setRenderHint(QPainter::Antialiasing, true);
@@ -153,7 +166,11 @@ namespace browser {
 	}
 	painter.end();
     }
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(SearchLineEdit)
+#endif
+
 	/*
 	    SearchLineEdit is an enhanced QLineEdit
 	    - A Search icon on the left with optional menu
@@ -171,45 +188,50 @@ namespace browser {
 	QSizePolicy policy = sizePolicy();
 	setSizePolicy(QSizePolicy::Preferred, policy.verticalPolicy());
     }
-    void SearchLineEdit:: paintEvent(QPaintEvent *event){
+
+    void SearchLineEdit::paintEvent(QPaintEvent *event){
 	if(lineEdit()->text().isEmpty() && ! hasFocus() && ! _inactivetext.isEmpty()){
 	    ExLineEdit::paintEvent(event);
 	    QStyleOptionFrame panel;	// QStyleOptionFrameV2
 	    initStyleOption(&panel);
-	    QRect		r = style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
-	    QFontMetrics	fm = fontMetrics();
-	    int			horizontalMargin = lineEdit()->x();
-	    QRect		lineRect(horizontalMargin + r.x(), r.y() + (r.height() - fm.height() + 1) / 2,
-		r.width() - 2 * horizontalMargin, fm.height());
+	    QRect		r			= style()->subElementRect(QStyle::SE_LineEditContents, &panel, this);
+	    QFontMetrics	fm			= fontMetrics();
+	    int			horizontalMargin	= lineEdit()->x();
+	    QRect		lineRect(horizontalMargin + r.x(), r.y() + (r.height() - fm.height() + 1) / 2
+					, r.width() - 2 * horizontalMargin, fm.height());
 	    QPainter painter(this);
 	    painter.setPen(palette().brush(QPalette::Disabled, QPalette::Text).color());
 	    painter.drawText(lineRect, Qt::AlignLeft | Qt::AlignVCenter, _inactivetext);
-	}else{
-	    ExLineEdit::paintEvent(event);
-	}
+	}else ExLineEdit::paintEvent(event);
     }
-    void SearchLineEdit:: resizeEvent(QResizeEvent *event){
+
+    void SearchLineEdit::resizeEvent(QResizeEvent *event){
 	updateGeometries();
 	ExLineEdit::resizeEvent(event);
     }
-    void SearchLineEdit:: updateGeometries(){
-	int	menuHeight = height();
-	int	menuWidth = menuHeight + 1;
+
+    void SearchLineEdit::updateGeometries(){
+	int	menuHeight	= height();
+	int	menuWidth	= menuHeight + 1;
 	if(! _searchbutton->_menu)menuWidth = (menuHeight / 5) * 4;
 	_searchbutton->resize(QSize(menuWidth, menuHeight));
     }
-    QString SearchLineEdit:: inactiveText() const {
+
+    QString SearchLineEdit::inactiveText() const {
 	return _inactivetext;
     }
-    void SearchLineEdit:: setInactiveText(const QString &text){
+
+    void SearchLineEdit::setInactiveText(const QString &text){
 	_inactivetext = text;
     }
-    void SearchLineEdit:: setMenu(QMenu *menu){
+
+    void SearchLineEdit::setMenu(QMenu *menu){
 	if(_searchbutton->_menu)_searchbutton->_menu->deleteLater();
 	_searchbutton->_menu = menu;
 	updateGeometries();
     }
-    QMenu *SearchLineEdit:: menu() const {
+
+    QMenu *SearchLineEdit::menu() const {
 	if(! _searchbutton->_menu){
 	    _searchbutton->_menu = new QMenu(_searchbutton);
 	    if(isVisible())(const_cast<SearchLineEdit *>(this))->updateGeometries();

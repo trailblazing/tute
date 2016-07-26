@@ -4,12 +4,12 @@
 # ANDROID_OS - for Android
 TARGET_OS   =   ANY_OS
 
-lessThan(QT_VERSION, 5.6) {
-    error("mytetra requires at least Qt 5.6!")
+lessThan(QT_VERSION, 5.7) {
+    error("mytetra requires at least Qt 5.7!")
 }
 
-lessThan(QT.webengine.VERSION, 5.6) {
-    error("mytetra requires at least QtWebEngine 5.6!")
+lessThan(QT.webengine.VERSION, 5.7) {
+    error("mytetra requires at least QtWebEngine 5.7!")
 }
 
 # Flags for profile application
@@ -26,6 +26,7 @@ DEFINES +=  "TARGET_OS=$${TARGET_OS}"
 #DEFINES +=  QWEBENGINESETTINGS_PATHS
 
 message(Building running in Qt major version: $${QT_MAJOR_VERSION})
+message(Building running in Qt version: $${QT_VERSION})
 message(Value of QT_NO_SESSIONMANAGER is: $${QT_NO_SESSIONMANAGER})
 
 TEMPLATE    =   app
@@ -36,9 +37,12 @@ QT  =   gui     \
         svg     \
         network
 
-QT  +=  widgets
-#QT +=  network webkit
-QT  +=  webenginewidgets network
+greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets             \
+                                            printsupport        \
+                                            webenginewidgets
+#QT  +=  widgets
+#QT +=  webkit
+#QT  +=  webenginewidgets
 
 qtHaveModule(uitools):!embedded: QT +=  uitools
 else: DEFINES   +=  QT_NO_UITOOLS
@@ -50,32 +54,54 @@ CONFIG  +=  qt      \
         console     \
         exception   \
         console     \
-#        debug       \
+#        debug
 
 CONFIG  +=  c++14
 CONFIG  +=  gnu++14
-CONFIG  +=  staticlib
+#CONFIG  +=  staticlib static
+
+QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
 
 
 
-greaterThan(QT_MAJOR_VERSION, 4): QT    +=  widgets \
-                                            printsupport
+# http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
+
+
+#PROJECT_QT_VERSION  = /usr
+PROJECT_QT_VERSION      = /opt/Qt/5.7/gcc_64
+#PROJECT_QT_VERSION      = $$PWD/../../GUI/Qt/5.7/gcc_64
+
+#PROJECT_QT_LIBS      = PROJECT_QT_VERSION/lib64
+#PROJECT_QT_LIBS      = PROJECT_QT_VERSION/lib
+PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib
 
 
 
-TARGETDEPS += ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Svg.so           \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5WebEngineWidgets.so    \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5PrintSupport.so        \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Widgets.so             \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5WebEngineCore.so       \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Quick.so               \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Gui.so                 \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Xml.so                 \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Qml.so                 \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Network.so             \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5WebChannel.so          \
-        ../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/libQt5Core.so
 
+
+TARGETDEPS += $$PROJECT_QT_LIBS/libQt5Svg.so            \
+        $$PROJECT_QT_LIBS/libQt5WebEngineWidgets.so     \
+        $$PROJECT_QT_LIBS/libQt5PrintSupport.so         \
+        $$PROJECT_QT_LIBS/libQt5Widgets.so              \
+        $$PROJECT_QT_LIBS/libQt5WebEngineCore.so        \
+        $$PROJECT_QT_LIBS/libQt5Quick.so                \
+        $$PROJECT_QT_LIBS/libQt5Gui.so                  \
+        $$PROJECT_QT_LIBS/libQt5Xml.so                  \
+        $$PROJECT_QT_LIBS/libQt5Qml.so                  \
+        $$PROJECT_QT_LIBS/libQt5Network.so              \
+        $$PROJECT_QT_LIBS/libQt5WebChannel.so           \
+        $$PROJECT_QT_LIBS/libQt5Core.so                 \
+        $$PROJECT_QT_LIBS/libQt5WebEngine.so            \
+        $$PROJECT_QT_LIBS/libQt5Positioning.so
+
+
+INCLUDEPATH     += $$PROJECT_QT_VERSION/include
+#DEPENDPATH      += $$PROJECT_QT_VERSION/include
+
+#INCLUDEPATH     += $$PROJECT_QT_VERSION/lib/
+DEPENDPATH      += . $$PROJECT_QT_LIBS
+
+LIBS            += -L$$PROJECT_QT_LIBS -lQt5Svg -lQt5WebEngineWidgets -lQt5PrintSupport -lQt5Widgets -lQt5WebEngineCore -lQt5Quick -lQt5Gui -lQt5Xml -lQt5Qml -lQt5Network -lQt5WebChannel -lQt5Core -lQt5WebEngine -lQt5Positioning
 
 contains(TARGET_OS, ANY_OS) {
 DESTDIR     =   bin
@@ -419,7 +445,7 @@ SOURCES     +=  \
 SOURCES     +=
 
 
-wince* { 
+wince* {
     CONFIG(debug, release|debug):addPlugins.sources     =   $$QT_BUILD_TREE/plugins/imageformats/qsvgd4.dll
     CONFIG(release, release|debug):addPlugins.sources   =   $$QT_BUILD_TREE/plugins/imageformats/qsvg4.dll
     addPlugins.path     =   imageformats
@@ -450,8 +476,7 @@ DISTFILES   +=          \
     src/views/browser/Info_mac.plist \
     README.md \
     doc/up_linker.png \
-    doc/binder.png \
-    Makefile
+    doc/binder.png
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
@@ -471,96 +496,97 @@ unix{
 }
 
 
-EXAMPLE_FILES   =   Info_mac.plist browser.icns browser.ico browser.rc
+EXAMPLE_FILES   =   Info_mac.plist browser.icns browser.ico browser.rc  \
+                        cookiejar.h cookiejar.cpp  # FIXME: these are currently unused.
 
 
 
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Svg
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Svg
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Svg
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Svg
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Svg
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Svg
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5WebEngineWidgets
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5WebEngineWidgets
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5WebEngineWidgets
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5WebEngineWidgets
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5WebEngineWidgets
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebEngineWidgets
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5PrintSupport
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5PrintSupport
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5PrintSupport
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5PrintSupport
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5PrintSupport
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5PrintSupport
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Widgets
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Widgets
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Widgets
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Widgets
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Widgets
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Widgets
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5WebEngineCore
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5WebEngineCore
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5WebEngineCore
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5WebEngineCore
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5WebEngineCore
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebEngineCore
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Quick
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Quick
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Quick
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Quick
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Quick
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Quick
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Gui
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Gui
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Gui
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Gui
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Gui
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Gui
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Xml
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Xml
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Xml
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Xml
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Xml
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Xml
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Qml
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Qml
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Qml
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Qml
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Qml
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Qml
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Network
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Network
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Network
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Network
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Network
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Network
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5WebChannel
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5WebChannel
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5WebChannel
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5WebChannel
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5WebChannel
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebChannel
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/release/ -lQt5Core
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/debug/ -lQt5Core
-else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5Core
+#win32:CONFIG(release, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/release/ -lQt5Core
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/debug/ -lQt5Core
+#else:unix: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5Core
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
 
-unix|win32: LIBS += -L$$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/lib/ -lQt5WebEngine
+#unix|win32: LIBS += -L$$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/lib/ -lQt5WebEngine
 
-INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
-DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.6.0/5.6/gcc_64/include
+#INCLUDEPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include
+#DEPENDPATH += $$PWD/../../GUI/Qt/Qt5.7.0/5.7/gcc_64/include

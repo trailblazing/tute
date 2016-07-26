@@ -27,17 +27,17 @@ Let's say the directory of your current project is named "working":
 
 1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
-1.2 Install verdigris (for remove qt::moc. Just two header-only files)
+1.2 Install verdigris (for remove qt::moc in Qt5.6. Two header-only files.)
 
     git clone https://github.com/woboq/verdigris.git
 
-1.3 Download and install Qt 5.6
+1.3 Download and install Qt 5.7
 
-    wget http://download.qt.io/development_releases/qt/5.6/5.6.0-rc/qt-opensource-linux-x64-5.6.0-rc.run
+    wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
 
 * Run the installation. Default location for administrator installation:
 
-    /opt/Qt5.6.0
+    /opt/Qt/5.7
 
 * Or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
 * After installation, you'll get a "MaintenanceTool" under the installation root directory.

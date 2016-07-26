@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "main.h"
 #include "record.h"
 #include "record_model.h"
@@ -246,11 +251,16 @@ pages_container::~pages_container(){
 // {
 // init_source_model(tree_item.get(), _record_controller, _record_screen, main_window, _editor_screen);
 // }
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(RecordModel)
+#endif
+
+
 // Конструктор модели
-RecordModel::RecordModel(rctl_t *_record_controller	// TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen
+RecordModel::RecordModel(rctl_t *_record_controller)	// TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen
 //			, browser::TabWidget *_tabmanager
-    )
     : QAbstractTableModel(_record_controller)	// _record_controller	//
 //      , pages_container(_tabmanager)
       , _record_controller(_record_controller){

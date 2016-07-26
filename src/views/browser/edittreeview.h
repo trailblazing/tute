@@ -42,16 +42,24 @@
 #ifndef EDITTREEVIEW_H
 #define EDITTREEVIEW_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtWidgets/QTreeView>
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 //QT_BEGIN_NAMESPACE
 
 namespace browser {
     class EditTreeView : public QTreeView {
+#if QT_VERSION == 0x050600
 	W_OBJECT(EditTreeView)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    EditTreeView(QWidget *parent = 0);

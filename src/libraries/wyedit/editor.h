@@ -1,8 +1,7 @@
 #ifndef _EDITOR_H_
 #define _EDITOR_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QBoxLayout>
 #include <QFontComboBox>
@@ -21,8 +20,18 @@
 #include "editor_find_dialog.h"
 #include "editor_show_text.h"
 
+
+
+
+
 // Fix ugly Qt QSS bug
 // #include "libraries/flat_control.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 // ----------------------------------------------------------
@@ -87,8 +96,8 @@
 #define WYEDIT_VERSION "WyEdit v.1.7 / 21.06.2015"
 
 
-#define MINIMUM_ALLOWED_FONT_SIZE 5
-#define MAXIMUM_ALLOWED_FONT_SIZE 100
+#define MINIMUM_ALLOWED_FONT_SIZE	5
+#define MAXIMUM_ALLOWED_FONT_SIZE	100
 
 class GlobalParameters;
 extern GlobalParameters globalparameters;
@@ -105,7 +114,11 @@ class FlatFontComboBox;
 class FlatToolButton;
 
 class Editor : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(Editor)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	Editor(QWidget *parent = nullptr);
@@ -114,50 +127,50 @@ class Editor : public QWidget {
 	EditorConfig        *_editor_config = nullptr;
 
 	// Кнопки форматирования текста
-	FlatToolButton		*_bold = nullptr;
-	FlatToolButton		*_italic = nullptr;
-	FlatToolButton		*_underline = nullptr;
-	FlatToolButton		*_monospace = nullptr;
-	FlatToolButton		*_code = nullptr;
-	FlatToolButton		*_clear = nullptr;
+	FlatToolButton		*_bold		= nullptr;
+	FlatToolButton		*_italic	= nullptr;
+	FlatToolButton		*_underline	= nullptr;
+	FlatToolButton		*_monospace	= nullptr;
+	FlatToolButton		*_code		= nullptr;
+	FlatToolButton		*_clear		= nullptr;
 
-	FlatToolButton		*_numeric_list = nullptr;
-	FlatToolButton		*_dot_list = nullptr;
+	FlatToolButton		*_numeric_list	= nullptr;
+	FlatToolButton		*_dot_list	= nullptr;
 
-	FlatToolButton		*_indent_plus = nullptr;
-	FlatToolButton		*_indent_minus = nullptr;
+	FlatToolButton		*_indent_plus	= nullptr;
+	FlatToolButton		*_indent_minus	= nullptr;
 
-	FlatToolButton		*_align_left = nullptr;
-	FlatToolButton		*_align_center = nullptr;
-	FlatToolButton		*_align_right = nullptr;
-	FlatToolButton		*_align_width = nullptr;
-	FlatToolButton		*_settings = nullptr;
+	FlatToolButton		*_align_left	= nullptr;
+	FlatToolButton		*_align_center	= nullptr;
+	FlatToolButton		*_align_right	= nullptr;
+	FlatToolButton		*_align_width	= nullptr;
+	FlatToolButton		*_settings	= nullptr;
 
 	// QFontComboBox
-	FlatFontComboBox	*_font_select = nullptr;
-	FlatComboBox		*_font_size = nullptr;
-	FlatToolButton		*_font_color = nullptr;
+	FlatFontComboBox	*_font_select	= nullptr;
+	FlatComboBox		*_font_size	= nullptr;
+	FlatToolButton		*_font_color	= nullptr;
 
-	FlatToolButton		*_show_html = nullptr;
-	FlatToolButton		*_find_text = nullptr;
-	FlatToolButton		*_show_formatting = nullptr;
+	FlatToolButton		*_show_html		= nullptr;
+	FlatToolButton		*_find_text		= nullptr;
+	FlatToolButton		*_show_formatting	= nullptr;
 
-	FlatToolButton		*_create_table = nullptr;
-	FlatToolButton		*_table_remove_row = nullptr;
-	FlatToolButton		*_table_remove_col = nullptr;
-	FlatToolButton		*_table_add_row = nullptr;
-	FlatToolButton		*_table_add_col = nullptr;
-	FlatToolButton		*_table_merge_cells = nullptr;
-	FlatToolButton		*_table_split_cell = nullptr;
+	FlatToolButton		*_create_table		= nullptr;
+	FlatToolButton		*_table_remove_row	= nullptr;
+	FlatToolButton		*_table_remove_col	= nullptr;
+	FlatToolButton		*_table_add_row		= nullptr;
+	FlatToolButton		*_table_add_col		= nullptr;
+	FlatToolButton		*_table_merge_cells	= nullptr;
+	FlatToolButton		*_table_split_cell	= nullptr;
 
-	FlatToolButton		*_insert_image_from_file = nullptr;
-	FlatToolButton		*_expand_edit_area = nullptr;
-	FlatToolButton		*_expand_tools_lines = nullptr;
-	FlatToolButton		*_save = nullptr;
+	FlatToolButton		*_insert_image_from_file	= nullptr;
+	FlatToolButton		*_expand_edit_area		= nullptr;
+	FlatToolButton		*_expand_tools_lines		= nullptr;
+	FlatToolButton		*_save				= nullptr;
 
-	FlatToolButton		*_back = nullptr;
-	FlatToolButton		*_freeze = nullptr;		// reserved for read only
-	FlatToolButton		*_find_in_base = nullptr;
+	FlatToolButton		*_back		= nullptr;
+	FlatToolButton		*_freeze	= nullptr;		// reserved for read only
+	FlatToolButton		*_find_in_base	= nullptr;
 
 	FlatToolButton		*_show_text = nullptr;
 
@@ -168,9 +181,9 @@ class Editor : public QWidget {
 	IndentSlider		*_indent_slider = nullptr;
 
 	// Горизонтальная линейка, содержащая кнопки форматирования
-	QVBoxLayout		*_textformat_buttons_layout = nullptr;
-	QToolBar		*_tools_line_0 = nullptr;
-	QToolBar		*_tools_line_1 = nullptr;
+	QVBoxLayout		*_textformat_buttons_layout	= nullptr;
+	QToolBar		*_tools_line_0			= nullptr;
+	QToolBar		*_tools_line_1			= nullptr;
 	void			insert_button_to_tools_line(QString toolName, QToolBar *line);
 
 	// Вертикальная группировалка линеек кнопок и области редактирования
@@ -226,8 +239,7 @@ class Editor : public QWidget {
 	void	misc_field(QString name, QString value);
 	QString misc_field(QString name);
 	void	clear_all_misc_field(void);
-
-	void update_indentline_geometry();
+	void	update_indentline_geometry();
 
 	void	dir_file_empty_reaction(int mode);
 	int	dir_file_empty_reaction(void);
@@ -243,31 +255,57 @@ class Editor : public QWidget {
 
 
 	enum {
-	    SAVE_IMAGES_SIMPLE = 0,
-	    SAVE_IMAGES_REMOVE_UNUSED = 1
+	    SAVE_IMAGES_SIMPLE		= 0
+	    , SAVE_IMAGES_REMOVE_UNUSED = 1
 	};
 
 	enum {
-	    DIRFILEEMPTY_REACTION_SHOW_ERROR,
-	    DIRFILEEMPTY_REACTION_SUPPRESS_ERROR
+	    DIRFILEEMPTY_REACTION_SHOW_ERROR
+	    , DIRFILEEMPTY_REACTION_SUPPRESS_ERROR
 	};
 
 	enum {
-	    WYEDIT_DESKTOP_MODE = 0,
-	    WYEDIT_MOBILE_MODE = 1
+	    WYEDIT_DESKTOP_MODE		= 0
+	    , WYEDIT_MOBILE_MODE	= 1
 	};
 
     signals:
 
 	// Сигналы установки отступов на линейке с движками
 	// согласно текущему форматированию
-	void	send_set_textindent_pos(int i) W_SIGNAL(send_set_textindent_pos, (int), i)	// ;
-	void	send_set_leftindent_pos(int i) W_SIGNAL(send_set_leftindent_pos, (int), i)	// ;
-	void	send_set_rightindent_pos(int i) W_SIGNAL(send_set_rightindent_pos, (int), i)	// ;
+	void send_set_textindent_pos(int i)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(send_set_textindent_pos, (int), i)	//
+#else
+	;
+#endif
+	void send_set_leftindent_pos(int i)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(send_set_leftindent_pos, (int), i)	//
+#else
+	;
+#endif
 
-	void send_expand_edit_area(bool flag) W_SIGNAL(send_expand_edit_area, (bool), flag)	// ;
+	void send_set_rightindent_pos(int i)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(send_set_rightindent_pos, (int), i)	//
+#else
+	;
+#endif
 
-	void wyedit_find_in_base_clicked() W_SIGNAL(wyedit_find_in_base_clicked)// ;
+	void send_expand_edit_area(bool flag)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(send_expand_edit_area, (bool), flag)	//
+#else
+	;
+#endif
+
+	void wyedit_find_in_base_clicked()
+#if QT_VERSION == 0x050600
+	W_SIGNAL(wyedit_find_in_base_clicked)	//
+#else
+	;
+#endif
 
     public slots:
 
@@ -450,13 +488,13 @@ class Editor : public QWidget {
 	QVBoxLayout	*_toolsarea_of_close_button;
 
 	enum {
-	    BT_BOLD,
-	    BT_ITALIC,
-	    BT_UNDERLINE,
-	    BT_ALIGN_LEFT,
-	    BT_ALIGN_CENTER,
-	    BT_ALIGN_RIGHT,
-	    BT_ALIGN_WIDTH
+	    BT_BOLD
+	    , BT_ITALIC
+	    , BT_UNDERLINE
+	    , BT_ALIGN_LEFT
+	    , BT_ALIGN_CENTER
+	    , BT_ALIGN_RIGHT
+	    , BT_ALIGN_WIDTH
 	};
 };
 

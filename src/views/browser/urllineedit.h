@@ -42,12 +42,22 @@
 #ifndef URLLINEEDIT_H
 #define URLLINEEDIT_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtCore/QUrl>
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QStyleOptionFrame>
+
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 
 QT_BEGIN_NAMESPACE
 class QLineEdit;
@@ -66,7 +76,11 @@ namespace browser {
 
 	// addressbar
     class ExLineEdit : public QWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(ExLineEdit)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    ExLineEdit(QWidget *parent = 0);
@@ -101,7 +115,11 @@ namespace browser {
     class WebView;
 
     class UrlLineEdit : public ExLineEdit {
+#if QT_VERSION == 0x050600
 	W_OBJECT(UrlLineEdit)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    UrlLineEdit(WebView *view, QWidget *parent = 0);

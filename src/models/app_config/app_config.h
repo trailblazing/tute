@@ -1,19 +1,28 @@
 #ifndef __APPCONFIG_H__
 #define __APPCONFIG_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QDir>
 #include <QSettings>
 #include <QDebug>
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class QRect;
 class QStringList;
 
 class AppConfig : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(AppConfig)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AppConfig(QObject *pobj = 0);

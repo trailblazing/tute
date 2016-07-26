@@ -1,14 +1,25 @@
 #ifndef WINDOWSWITCHER_H
 #define WINDOWSWITCHER_H
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectdefs.h>
 #include <QObject>
+#else
+#include <QObject>
+#endif
+
+
 
 class MetaEditor;
 
 
 class WindowSwitcher : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(WindowSwitcher)
+#else
+    Q_OBJECT
+#endif
 
 public:
     explicit WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent = 0);

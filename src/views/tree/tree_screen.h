@@ -2,8 +2,7 @@
 #define _TREESCREEN_H_
 
 #include <memory>
-#include <wobjectdefs.h>
-#include <QObject>
+
 #include <QtGlobal>
 #include <QWidget>
 #include <QListView>
@@ -26,6 +25,19 @@
 // #include "models/tree/TreeModel.h"
 // #include "models/tree/KnowModel.h"
 // #include "libraries/GlobalParameters.h"
+
+
+
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 
 
 class GlobalParameters;
@@ -123,7 +135,11 @@ class tv_t;
 
 class ts_t
     : public QWidget {		//    , public know_root_holder
+#if QT_VERSION == 0x050600
     W_OBJECT(ts_t)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	typedef std::function<bool (boost::intrusive_ptr<const Linker>)>								substitute_condition;
@@ -521,6 +537,7 @@ class ts_t
 //    return  result; // _current_model->item(setto);
 // }
 
+// deprecated
 class tsv_t : public QFrame {
     public:
 	tsv_t(wn_t *main_window, ts_t *tree_screen, QWidget *widget_right);

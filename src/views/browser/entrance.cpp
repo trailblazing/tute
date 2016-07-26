@@ -1,6 +1,11 @@
 #include "main.h"
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QWebEngineView>	// #include <QWebView> //#include <QtWebKitWidgets/QWebView>
 
@@ -568,7 +573,11 @@ namespace browser {
 
 	// qobject_cast<Entrance *>(parent)->window_list().prepend(browser);
 	// }
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(Entrance)
+#endif
+
     Entrance::Entrance(QString object_name
 		      , ts_t *_tree_screen
 		      , FindScreen *_find_screen// browser::ToolbarSearch *toolbarsearch

@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QObject>
 #include <QHeaderView>
 #include <QFileDialog>
@@ -24,7 +29,10 @@
 extern GlobalParameters globalparameters;
 extern AppConfig	appconfig;
 
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AttachTableController)
+#endif
+
 AttachTableController::AttachTableController(QObject *parent)
     : QObject(parent)
       , _view(new AttachTableView(qobject_cast<QWidget * >(parent)))

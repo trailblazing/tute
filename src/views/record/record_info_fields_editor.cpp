@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QWidget>
 #include <QTextEdit>
@@ -17,7 +22,11 @@
 // Окно редактирования информационных полей записи (не текста записи!)
 // Оно появляется при двойном клике на записи или при клике на кнопку редактирования полей записи
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(InfoFieldsEditor)
+#endif
+
 #if QT_VERSION < 0x050000
 
 
@@ -32,9 +41,11 @@ InfoFieldsEditor::InfoFieldsEditor(QWidget * parent, Qt::WindowFlags f) : QDialo
     setupSignals();
     assembly();
 }
+
 InfoFieldsEditor::~InfoFieldsEditor()
 {}
-void InfoFieldsEditor:: setupUI(void){
+
+void InfoFieldsEditor::setupUI(void){
 	// Ввод инфополей записи
     infoField = new InfoFieldEnter();
 
@@ -48,11 +59,13 @@ void InfoFieldsEditor:: setupUI(void){
     OkButton->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_Return));	// Устанавливается шорткат
     OkButton->setToolTip(tr("Ctrl+Enter"));
 }
-void InfoFieldsEditor:: setupSignals(void){
+
+void InfoFieldsEditor::setupSignals(void){
     connect(buttonBox, &QDialogButtonBox::accepted, this, &InfoFieldsEditor::okClick);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &InfoFieldsEditor::reject);
 }
-void InfoFieldsEditor:: assembly(void){
+
+void InfoFieldsEditor::assembly(void){
 	// Размещалка элементов
     QVBoxLayout *layout = new QVBoxLayout();
     layout->setMargin(8);
@@ -71,26 +84,28 @@ void InfoFieldsEditor:: assembly(void){
 	// Фокус устанавливается на поле ввода названия записи
     infoField->setFocusToStart();
 }
-void InfoFieldsEditor:: okClick(void){
+
+void InfoFieldsEditor::okClick(void){
     QString message = "";
 	// Проверка наличия названия записи
     if(infoField->getField("name").length() == 0)message = message + tr("Please enter the note's <b>title</b>.");
 	// Если что-то не заполнено, выдается предупреждение
     if(message.length() > 0){
-	QMessageBox::warning(this, tr("The note's fields cannot be modified"), message,
-	    QMessageBox::Close);
+	QMessageBox::warning(this, tr("The note's fields cannot be modified"), message
+			    , QMessageBox::Close);
 
 	return;
-    }else{
-	emit(accept());
-    }
+    }else emit(accept());
 }
-QString InfoFieldsEditor:: getField(QString name){
+
+QString InfoFieldsEditor::getField(QString name){
     if(infoField->checkFieldName(name) == true)return infoField->getField(name);
     else critical_error("Can not get field " + name + " in editrecord method get_field");
     return QString();
 }
-void InfoFieldsEditor:: setField(QString name, QString value){
+
+void InfoFieldsEditor::setField(QString name, QString value){
     if(infoField->checkFieldName(name) == true)infoField->setField(name, value);
     else critical_error("Can not set field " + name + " in editrecord method set_field");
 }
+

@@ -1,9 +1,6 @@
 #ifndef __REDUCEMESSAGEBOX_H__
 #define __REDUCEMESSAGEBOX_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
-
 #include <QDialog>
 #include <QLabel>
 #include <QTextEdit>
@@ -11,12 +8,23 @@
 #include <QFlags>
 
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 // Виджет, похожий на QMessageBox, только позволяющий выделять и копировать текст
 // (т. к. в Windows невозможно скопировать текст, отображаемый в QMessageBox)
 
 
 class ReduceMessageBox : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(ReduceMessageBox)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	ReduceMessageBox(QWidget *parent = 0);

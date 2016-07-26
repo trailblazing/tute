@@ -2,8 +2,6 @@
 #define _WAITCLOCK_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 
 #include <QWidget>
@@ -14,8 +12,39 @@
 #include <QPixmap>
 
 
+
+
+
+
+
+
+
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
 class WaitClock : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(WaitClock)
+#else
+    Q_OBJECT
+#endif
 
 public:
     WaitClock(QWidget *parent=0);

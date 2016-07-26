@@ -1,24 +1,34 @@
 #ifndef _ENTERPASSWORD_H_
 #define	_ENTERPASSWORD_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QDialog>
 #include <QTimer>
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 class QLabel;
 class QLineEdit;
 class QPushButton;
 
-#define ENTER_PASSWORD_MODE_SINGLE 0
-#define ENTER_PASSWORD_MODE_DOUBLE 1
-#define ENTER_PASSWORD_MODE_WITH_PREVIOUS 2
+#define ENTER_PASSWORD_MODE_SINGLE		0
+#define ENTER_PASSWORD_MODE_DOUBLE		1
+#define ENTER_PASSWORD_MODE_WITH_PREVIOUS	2
 
 
 class EnterPassword : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(EnterPassword)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EnterPassword(int imode, QWidget *parent = 0);

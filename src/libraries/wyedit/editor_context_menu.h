@@ -2,13 +2,23 @@
 #define _EDITORCONTEXTMENU_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QMenu>
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 class EditorContextMenu : public QMenu {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorContextMenu)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EditorContextMenu(QWidget *parent = 0);
@@ -17,16 +27,51 @@ class EditorContextMenu : public QMenu {
 	void set_edit_image_properties(bool is_image_select);
 
     signals:
-	void	undo(void) W_SIGNAL(undo)// ;
-	void	redo(void) W_SIGNAL(redo)// ;
-	void	cut(void) W_SIGNAL(cut)	// ;
-	void	copy(void) W_SIGNAL(copy)// ;
-	void	paste(void) W_SIGNAL(paste)	// ;
-	void	selectAll(void) W_SIGNAL(selectAll)	// ;
-	void	contextMenuEditImageProperties(void) W_SIGNAL(contextMenuEditImageProperties)	// ;
+	void undo(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(undo)	//
+#else
+	;
+#endif
+	void redo(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(redo)	//
+#else
+	;
+#endif
+	void cut(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(cut)	//
+#else
+	;
+#endif
+	void copy(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(copy)	//
+#else
+	;
+#endif
+	void paste(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(paste)	//
+#else
+	;
+#endif
+	void selectAll(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(selectAll)	//
+#else
+	;
+#endif
+	void contextMenuEditImageProperties(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(contextMenuEditImageProperties)	//
+#else
+	;
+#endif
 
     private:
-	QAction * actionUndo;
+	QAction *actionUndo;
 	QAction *actionRedo;
 	QAction *actionCut;
 	QAction *actionCopy;

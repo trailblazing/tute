@@ -42,8 +42,7 @@
 #ifndef WEBVIEW_H
 #define WEBVIEW_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QClipboard>
 #include <QIcon>
@@ -65,6 +64,13 @@
 #include "views/record_table/record_screen.h"
 #include "views/record_table/record_view.h"
 // #include "models/tree/TreeItem.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 QT_BEGIN_NAMESPACE
 class QAuthenticator;
@@ -135,12 +141,25 @@ namespace browser {
 #endif	// USE_POPUP_WINDOW
 
     class WebPage : public QWebEnginePage {
+#if QT_VERSION == 0x050600
 	W_OBJECT(WebPage)
-
+#else
+	Q_OBJECT
+#endif
 	signals:
-	    void loadingUrl(const QUrl &url) W_SIGNAL(loadingUrl, (const QUrl &), url)	// ;
+	    void loadingUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(loadingUrl, (const QUrl &), url)	//
+#else
+	    ;
+#endif
 //        void linkHovered(const QString &url, int time_out = 0);
-	    void close_requested() W_SIGNAL(close_requested)	// ;
+	    void close_requested()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(close_requested)	//
+#else
+	    ;
+#endif
 
 	public:
 //        typedef Binder coupler_delegation;
@@ -371,7 +390,11 @@ namespace browser {
 // browserview
 // template<typename T>
     class WebView : public QWebEngineView {
+#if QT_VERSION == 0x050600
 	W_OBJECT(WebView)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    WebView(boost::intrusive_ptr<TreeItem> host_
@@ -424,8 +447,18 @@ namespace browser {
 	    void	wheelEvent(QWheelEvent *event);
 
 	signals:
-	    void	iconChanged() W_SIGNAL(iconChanged)	// ;
-	    void	close_requested() W_SIGNAL(close_requested)	// ;
+	    void iconChanged()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(iconChanged)	//
+#else
+	    ;
+#endif
+	    void close_requested()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(close_requested)	//
+#else
+	    ;
+#endif
 	public slots:
 //    void loadFinished(bool success);
 //    void openLinkInNewTab();

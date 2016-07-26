@@ -44,18 +44,31 @@
 **
 ****************************************************************************/
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 
 #include <QtCore/QCoreApplication>
 
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 class QtLocalPeer;
 
 namespace qt4 {
     class QtSingleCoreApplication : public QCoreApplication {
-	W_OBJECT(QtSingleCoreApplication)
+// #if QT_VERSION == 0x050600
+//	W_OBJECT(QtSingleCoreApplication)
+// #else
+//	Q_OBJECT
+// #endif
+
+	Q_OBJECT
 
 	public:
 	    QtSingleCoreApplication(int &argc, char * *argv);
@@ -69,10 +82,14 @@ namespace qt4 {
 
 
 Q_SIGNALS:
-	    void messageReceived(const QString &message) W_SIGNAL(messageReceived, (const QString &), message)	// ;
-
+	    void messageReceived(const QString &message)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(messageReceived, (const QString &), message)	// ;
+#else
+	    ;
+#endif
 
 	private:
-	    QtLocalPeer * peer;
+	    QtLocalPeer *peer;
     };
 }

@@ -4,6 +4,11 @@
 #include <QToolButton>
 #include <QSplashScreen>
 
+#ifndef QT_VERSION
+//#define QT_VERSION 0x050600
+#define QT_VERSION 0x050700
+#endif
+
 #if QT_VERSION >= 0x050000
 #include <QScroller>
 #include <QScrollerProperties>
@@ -15,16 +20,14 @@
 
 #include "main.h"
 
-#include "views/browser/browser.h"
 #include "views/browser/webview.h"
+#include "views/browser/browser.h"
 #include "views/record/info_field_enter.h"
 
 
 #include <qversiontagging.h>
 
-#ifndef QT_VERSION
-#define QT_VERSION 0x050600
-#endif
+
 
 #if QT_VERSION < 0x050000
 #include "libraries/qtSingleApplication/qtsingleapplication.h"

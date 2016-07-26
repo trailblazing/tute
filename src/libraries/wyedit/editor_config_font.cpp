@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QString>
 #include <QWidget>
 #include <QBoxLayout>
@@ -18,7 +23,13 @@
 
 #include "main.h"
 extern GlobalParameters globalparameters;
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigFont)
+#endif
+
+
 EditorConfigFont::EditorConfigFont(QWidget *parent) : ConfigPage(parent){
     qDebug() << "Create editor config font widget";
 

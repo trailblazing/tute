@@ -1,19 +1,27 @@
 #ifndef __DATABASECONFIG_H__
 #define __DATABASECONFIG_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QSettings>
 #include <QString>
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 #define CRYPT_CHECK_ROUNDS 1000
 #define CRYPT_CHECK_HASH_LEN 160
 
 
 class DataBaseConfig : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(DataBaseConfig)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	DataBaseConfig(QObject *pobj = 0);

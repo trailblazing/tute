@@ -580,13 +580,13 @@ void ItemsFlat::dom_to_itemsflat(const QDomElement &dom_model){	// , boost::intr
     while(! dom_record.isNull()){
 	QDomNamedNodeMap	attribute_map	= dom_record.attributes();
 	QString			id		= attribute_map.namedItem("id").nodeValue();
-
+//	QString			url		= attribute_map.namedItem("url").nodeValue();
+//	QString			name		= attribute_map.namedItem("name").nodeValue();
+	if(id == "")id = attribute_map.namedItem("dir").nodeValue() != "" ? attribute_map.namedItem("dir").nodeValue() : get_unical_id();
 	assert(id != "");
 
-	int index = this->sibling_order([&](boost::intrusive_ptr<const Linker> it){
-		    return it->host()->id() == id;
-		});								// ->sibling_order();
-	QMap<QString, QString> data;
+	int			index = this->sibling_order([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == id;});								// ->sibling_order();
+	QMap<QString, QString>	data;
 	data["id"] = id;
 
 	// KnowModel::dom_to_records::assembly_record_and_table_to_parent(dom_model, _parent_item);
@@ -1251,7 +1251,8 @@ void ItemsFlat::release(const std::function<bool (boost::intrusive_ptr<const Lin
 //	auto _i = pos.next();
 //	if(_equal(_i))_child_linkers.removeOne(_i);
 //    }
-    for(auto _i : _child_linkers)
-		if(_equal(_i))_child_linkers.removeOne(_i);
+    for(auto _i : _child_linkers)if(_equal(_i))_child_linkers.removeOne(_i);
 }
+
+boost::intrusive_ptr<TreeItem> &operator <<(boost::intrusive_ptr<TreeItem> &host, boost::intrusive_ptr<TreeItem> _item){if(host->_child_linkers.indexOf(_item->linker()) == - 1)host->_child_linkers << _item->linker();return host;}
 

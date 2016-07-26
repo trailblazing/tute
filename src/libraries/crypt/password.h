@@ -2,11 +2,21 @@
 #define __PASSWORD_H__
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QString>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#else
+#include <QObject>
+#endif
+
+
 
 // Терминология:
 // Ключ шифрования - это набор байт, полученный путем преобразования пароля.
@@ -17,10 +27,15 @@
 //                     только без завершающего преобразования в MD5
 
 
+
 #define SAVED_PASSWORD_CHECKING_LINE "This string is used for checking middle hash"
 
 class Password : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(Password)
+#else
+    Q_OBJECT
+#endif
 
 public:
     Password();

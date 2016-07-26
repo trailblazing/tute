@@ -2,7 +2,12 @@
 
 
 #include <cassert>
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QObject>
 #include <QHeaderView>
@@ -55,7 +60,12 @@ extern GlobalParameters globalparameters;
 extern AppConfig	appconfig;
 extern WalkHistory	walkhistory;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(rctl_t)
+#endif
+
+
 rctl_t::rctl_t(MetaEditor *_editor_screen		// TreeScreen           *_tree_screen        // , FindScreen         *_find_screen        // ,
 	      , browser::TabWidget *_tabmanager
 	      , rs_t *_record_screen

@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include <QAbstractScrollArea>
@@ -22,21 +27,21 @@
 #include "print_preview.h"
 
 
-static inline int inches_to_pixels(float inches, QPaintDevice *device)
-{
+static inline int inches_to_pixels(float inches, QPaintDevice *device){
     return qRound(inches * device->logicalDpiY());
 }
 
-
-static inline qreal mm_to_inches(double mm)
-{
+static inline qreal mm_to_inches(double mm){
     return mm * 0.039370147;
 }
 
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(PrintPreview)
+#endif
+
+
 PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
-    : QDialog(parent), printer(QPrinter::HighResolution)
-{
+    : QDialog(parent), printer(QPrinter::HighResolution){
     setWindowTitle(tr("MyTetra - Print Preview"));
 
     printer.setFullPage(true);
@@ -47,9 +52,9 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     doc->setUseDesignMetrics(true);
     doc->documentLayout()->setPaintDevice(view->viewport());
 
-    // add a nice 2 cm margin
-    const qreal margin = inches_to_pixels(mm_to_inches(20), this);
-    QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+	// add a nice 2 cm margin
+    const qreal		margin	= inches_to_pixels(mm_to_inches(20), this);
+    QTextFrameFormat	fmt	= doc->rootFrame()->frameFormat();
     fmt.setMargin(margin);
     doc->rootFrame()->setFrameFormat(fmt);
 
@@ -60,7 +65,7 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     doc->setDefaultFont(f);
 
 
-    // Кнопки на панели инструментов
+	// Кнопки на панели инструментов
     FlatToolButton *button_print = new FlatToolButton(this);
     button_print->setText(tr("&Print..."));
     button_print->setShortcut(Qt::CTRL + Qt::Key_P);
@@ -88,7 +93,7 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     connect(button_close, &FlatToolButton::clicked, this, &PrintPreview::close);
 
 
-    // Панель инструментов
+	// Панель инструментов
     QHBoxLayout *toolsbox = new QHBoxLayout();
     toolsbox->addWidget(button_print);
     toolsbox->addWidget(button_page_setup);
@@ -98,56 +103,46 @@ PrintPreview::PrintPreview(const QTextDocument *document, QWidget *parent)
     toolsbox->addStretch();
 
 
-    // Сборка содержимого окна
+	// Сборка содержимого окна
     centralLayout = new QVBoxLayout();
     centralLayout->addLayout(toolsbox);
     centralLayout->addWidget(view);
     centralLayout->setSpacing(1);
-    centralLayout->setContentsMargins(0, 0, 0, 0);  // setContentsMargins(1, 1, 1, 1);
+    centralLayout->setContentsMargins(0, 0, 0, 0);	// setContentsMargins(1, 1, 1, 1);
 
     setLayout(centralLayout);
     resize(800, 600);
 }
 
-
-void PrintPreview::setup()
-{
+void PrintPreview::setup(){
     QSizeF page = printer.pageRect().size();
     page.setWidth(page.width() * view->logicalDpiX() / printer.logicalDpiX());
     page.setHeight(page.height() * view->logicalDpiY() / printer.logicalDpiY());
 
-    // add a nice 2 cm margin
-    const qreal margin = inches_to_pixels(mm_to_inches(20), this);
-    QTextFrameFormat fmt = doc->rootFrame()->frameFormat();
+	// add a nice 2 cm margin
+    const qreal		margin	= inches_to_pixels(mm_to_inches(20), this);
+    QTextFrameFormat	fmt	= doc->rootFrame()->frameFormat();
     fmt.setMargin(margin);
     doc->rootFrame()->setFrameFormat(fmt);
 
     doc->setPageSize(page);
 }
 
-
-PrintPreview::~PrintPreview()
-{
+PrintPreview::~PrintPreview(){
     delete doc;
 }
 
-
-void PrintPreview::print()
-{
+void PrintPreview::print(){
     QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    if (dlg->exec() == QDialog::Accepted) {
-        doc->print(&printer);
-    }
+    if(dlg->exec() == QDialog::Accepted)doc->print(&printer);
     delete dlg;
 }
 
-
-void PrintPreview::page_setup()
-{
+void PrintPreview::page_setup(){
     QPageSetupDialog dlg(&printer, this);
-    if (dlg.exec() == QDialog::Accepted) {
-        setup();
-        view->updateLayout();
+    if(dlg.exec() == QDialog::Accepted){
+	setup();
+	view->updateLayout();
     }
 }
 

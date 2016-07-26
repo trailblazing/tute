@@ -1,8 +1,7 @@
 #ifndef _EDITORIMAGEPROPERTIES_H_
 #define	_EDITORIMAGEPROPERTIES_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtGlobal>
 #include <QWidget>
@@ -13,8 +12,18 @@
 #include <QPushButton>
 
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class EditorImageProperties : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorImageProperties)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EditorImageProperties(QWidget *parent = 0);

@@ -1,13 +1,17 @@
 #ifndef __APPCONFIGUPDATER_H__
 #define __APPCONFIGUPDATER_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QSettings>
 #include <QDebug>
 #include <QString>
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 #define MYTETRA_CONFIG_PARAM_NUM 100
@@ -15,7 +19,11 @@
 
 
 class AppConfigUpdater : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(AppConfigUpdater)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	AppConfigUpdater(QObject *pobj = 0);

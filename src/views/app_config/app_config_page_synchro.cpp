@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QWidget>
 #include <QBoxLayout>
 #include <QLabel>
@@ -8,7 +13,12 @@
 
 extern AppConfig appconfig;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageSynchro)
+#endif
+
+
 AppConfigPageSynchro::AppConfigPageSynchro(QWidget *parent) : ConfigPage(parent){
     qDebug() << "Create synchro config page";
 
@@ -60,10 +70,11 @@ AppConfigPageSynchro::AppConfigPageSynchro(QWidget *parent) : ConfigPage(parent)
 	// Основной слой устанавливается
     setLayout(central_layout);
 }
+
 // Метод должен возвращать уровень сложности сделанных изменений
 // 0 - изменения не требуют перезапуска программы
 // 1 - изменения требуют перезапуска программы
-int AppConfigPageSynchro:: apply_changes(void){
+int AppConfigPageSynchro::apply_changes(void){
     qDebug() << "Apply changes synchro";
 // Сохраняется строка с командой синхронизации
     if(appconfig.synchro_command() != synchroCommand->text())appconfig.synchro_command(synchroCommand->text());
@@ -73,3 +84,4 @@ int AppConfigPageSynchro:: apply_changes(void){
     if(appconfig.synchro_on_exit() != synchroOnExit->isChecked())appconfig.synchro_on_exit(synchroOnExit->isChecked());
     return 0;
 }
+

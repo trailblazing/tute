@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include <QEvent>
@@ -9,7 +14,10 @@
 #include "vertical_scrollarea.h"
 #include "views/record_table/record_view.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(VerticalScrollArea)
+#endif
 
 VerticalScrollArea::VerticalScrollArea(rv_t *_record_view        // std::shared_ptr<sd::_interface<void(QResizeEvent *), sd::meta_info<void *>>> interface
                                       , QWidget *parent)

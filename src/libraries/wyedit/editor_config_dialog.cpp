@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QStackedWidget>
 #include <QDialog>
 
@@ -14,7 +19,12 @@
 
 extern GlobalParameters globalparameters;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorConfigDialog)
+#endif
+
+
 EditorConfigDialog::EditorConfigDialog(QWidget *parent) : QWidget(parent){
     configDialog = new ConfigDialog(this);
 

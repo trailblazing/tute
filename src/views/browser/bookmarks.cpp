@@ -39,7 +39,11 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
 
 #include "bookmarks.h"
 
@@ -68,7 +72,12 @@
 
 
 namespace browser {
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(BookmarksManager)
+#endif
+
+
     BookmarksManager::BookmarksManager(QObject *parent)
 	: QObject(parent)
 	  , _loaded(false)
@@ -194,7 +203,12 @@ namespace browser {
 	return 0;
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(BookmarksModel)
+#endif
+
+
     BookmarksModel * BookmarksManager::bookmarksModel(){
 	if(! _bookmarkmodel)_bookmarkmodel = new BookmarksModel(this, this);
 	return _bookmarkmodel;
@@ -555,7 +569,12 @@ namespace browser {
 	return itemNode;
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(AddBookmarkProxyModel)
+#endif
+
+
     AddBookmarkProxyModel::AddBookmarkProxyModel(QObject *parent)
 	: QSortFilterProxyModel(parent)
     {}
@@ -570,7 +589,12 @@ namespace browser {
 	return sourceModel()->hasChildren(idx);
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(AddBookmarkDialog)
+#endif
+
+
     AddBookmarkDialog::AddBookmarkDialog(const QString &url, const QString &title, QWidget *parent, BookmarksManager *bookmarkManager)
 	: QDialog(parent)
 	  , _url(url)
@@ -611,7 +635,11 @@ namespace browser {
 	QDialog::accept();
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(BookmarksMenu)
+#endif
+
+
     BookmarksMenu::BookmarksMenu(QWidget *parent)
 	: ModelMenu(parent)
 	  , _bookmarksmanager(0){
@@ -642,7 +670,13 @@ namespace browser {
 	for(int i = 0; i < _initialactions.count(); ++ i)addAction(_initialactions.at(i));
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(BookmarksDialog)
+#endif
+
+
+
     BookmarksDialog::BookmarksDialog(QWidget *parent, BookmarksManager *manager)
 	: QDialog(parent){
 	_bookmarksmanager = manager;
@@ -736,7 +770,13 @@ namespace browser {
 	_bookmarksmanager->addBookmark(parent, node, currentIndex.row() + 1);
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(BookmarksToolBar)
+#endif
+
+
+
     BookmarksToolBar::BookmarksToolBar(BookmarksModel *model, QWidget *parent)
 	: QToolBar(tr("Bookmark"), parent)
 	  , _bookmarksmodel(model){

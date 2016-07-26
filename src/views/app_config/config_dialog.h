@@ -2,10 +2,16 @@
 #define _CONFIGDIALOG_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QDialog>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 class QDialogButtonBox;
 class QListWidget;
@@ -16,7 +22,11 @@ class QScrollArea;
 class AppConfigDialog;
 
 class ConfigDialog : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(ConfigDialog)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	ConfigDialog(QWidget *parent);
@@ -37,8 +47,7 @@ class ConfigDialog : public QDialog {
 
 	QListWidgetItem *create_items(QString name);
 
-	QListWidget *contentsWidget;
-	// QScrollArea *scrollArea;
+	QListWidget		*contentsWidget;	// QScrollArea *scrollArea;
 	QStackedWidget		*pagesWidget;
 	QDialogButtonBox	*confirmButtons;
 };

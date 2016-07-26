@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "main.h"
 #include <QToolButton>
 #include "attach_table_screen.h"
@@ -7,7 +12,13 @@
 #include "libraries/global_parameters.h"
 
 extern GlobalParameters globalparameters;
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AttachTableScreen)
+#endif
+
+
 AttachTableScreen::AttachTableScreen(QWidget *parent) : QWidget(parent){
 	// По факту этот класс - синглтон. Синглтон сам задает себе имя
     this->setObjectName("attachTableScreen");
@@ -25,10 +36,12 @@ AttachTableScreen::AttachTableScreen(QWidget *parent) : QWidget(parent){
     setupSignals();
     assembly();
 }
+
 AttachTableScreen::~AttachTableScreen()
 {}
+
 // Настройка возможных действий
-void AttachTableScreen:: setupActions(void){
+void AttachTableScreen::setupActions(void){
 	// Добавление файла
     actionAddAttach = new QAction(tr("Attach file"), this);
     actionAddAttach->setStatusTip(tr("Attach file"));
@@ -69,7 +82,8 @@ void AttachTableScreen:: setupActions(void){
     actionSwitchToEditor->setStatusTip(tr("Return to editor"));
     actionSwitchToEditor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
 }
-void AttachTableScreen:: setupUI(void){
+
+void AttachTableScreen::setupUI(void){
 	// Создание тулбара
     toolsLine = new QToolBar(this);
 
@@ -86,7 +100,8 @@ void AttachTableScreen:: setupUI(void){
 
     append_action_as_button<QToolButton>(toolsLine, actionSwitchToEditor);
 }
-void AttachTableScreen:: setupSignals(void){
+
+void AttachTableScreen::setupSignals(void){
 	// Связывание действий
     connect(actionAddAttach, &QAction::triggered, attachTableController, &AttachTableController::on_add_attach);
     connect(actionAddLink, &QAction::triggered, attachTableController, &AttachTableController::on_add_link);
@@ -99,7 +114,8 @@ void AttachTableScreen:: setupSignals(void){
 
     connect(actionSwitchToEditor, &QAction::triggered, attachTableController, &AttachTableController::on_switch_to_editor);
 }
-void AttachTableScreen:: assembly(void){
+
+void AttachTableScreen::assembly(void){
     screenLayout = new QVBoxLayout();	// todo: Добавить this?
 
     screenLayout->addWidget(toolsLine);
@@ -112,9 +128,11 @@ void AttachTableScreen:: assembly(void){
     lt = layout();
     lt->setContentsMargins(0, 0, 0, 0);
 }
+
 // Очистка таблицы приаттаченных файлов
 // Список на экране должен быть пустой
 // Вызывается в моменты, когда ни одна запись не выбрана или содержимое записи недоступно
-void AttachTableScreen:: clear(){
+void AttachTableScreen::clear(){
     attachTableController->attach_table_data(nullptr);
 }
+

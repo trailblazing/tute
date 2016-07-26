@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include <QScrollBar>
@@ -15,59 +20,56 @@
 
 #include "view_preview.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(PreviewView)
+#endif
+
 
 PreviewView::PreviewView(QTextDocument *document)
+    :_doc(document)
 {
     verticalScrollBar()->setSingleStep(20);
     horizontalScrollBar()->setSingleStep(20);
 
     viewport()->setBackgroundRole(QPalette::Dark);
 
-    _doc = document;
-    _scale = 1.0;
-    _inter_page_spacing = 30;
+//    _doc		= document;
+//    _scale		= 1.0;
+//    _inter_page_spacing = 30;
 }
 
-
-void PreviewView::zoom_in()
-{
+void PreviewView::zoom_in(){
     _scale += 0.2;
     resizeEvent(0);
     viewport()->update();
 }
 
-
-void PreviewView::zoom_out()
-{
+void PreviewView::zoom_out(){
     _scale -= 0.2;
     resizeEvent(0);
     viewport()->update();
 }
 
-
-void PreviewView::paintEvent(QPaintEvent *)
-{
+void PreviewView::paintEvent(QPaintEvent *){
     QPainter p(viewport());
 
-    p.translate(-horizontalScrollBar()->value(), -verticalScrollBar()->value());
+    p.translate(- horizontalScrollBar()->value(), - verticalScrollBar()->value());
     p.translate(_inter_page_spacing, _inter_page_spacing);
 
     const int pages = _doc->pageCount();
-    for (int i = 0; i < pages; ++i) {
-        p.save();
-        p.scale(_scale, _scale);
+    for(int i = 0; i < pages; ++ i){
+	p.save();
+	p.scale(_scale, _scale);
 
-        paint_page(&p, i);
+	paint_page(&p, i);
 
-        p.restore();
-        p.translate(0, _inter_page_spacing + _doc->pageSize().height() * _scale);
+	p.restore();
+	p.translate(0, _inter_page_spacing + _doc->pageSize().height() * _scale);
     }
 }
 
-
-void PreviewView::paint_page(QPainter *painter, int page)
-{
+void PreviewView::paint_page(QPainter *painter, int page){
     const QSizeF pgSize = _doc->pageSize();
 
     QColor col(Qt::black);
@@ -83,13 +85,13 @@ void PreviewView::paint_page(QPainter *painter, int page)
     col = col.light();
     painter->drawLine(QLineF(pgSize.width(), 2, pgSize.width(), pgSize.height() - 2));
 
-    QRectF docRect(QPointF(0, page * pgSize.height()), pgSize);
-    QAbstractTextDocumentLayout::PaintContext ctx;
+    QRectF					docRect(QPointF(0, page * pgSize.height()), pgSize);
+    QAbstractTextDocumentLayout::PaintContext	ctx;
     ctx.clip = docRect;
 
-    // don't use the system palette text as default text color, on HP/UX
-    // for example that's white, and white text on white paper doesn't
-    // look that nice
+	// don't use the system palette text as default text color, on HP/UX
+	// for example that's white, and white text on white paper doesn't
+	// look that nice
     ctx.palette.setColor(QPalette::Text, Qt::black);
 
     painter->translate(0, - page * pgSize.height());
@@ -97,9 +99,7 @@ void PreviewView::paint_page(QPainter *painter, int page)
     _doc->documentLayout()->draw(painter, ctx);
 }
 
-
-void PreviewView::resizeEvent(QResizeEvent *)
-{
+void PreviewView::resizeEvent(QResizeEvent *){
     const QSize viewportSize = viewport()->size();
 
     QSize docSize;
@@ -114,23 +114,19 @@ void PreviewView::resizeEvent(QResizeEvent *)
     verticalScrollBar()->setPageStep(viewportSize.height());
 }
 
-
-void PreviewView::mousePressEvent(QMouseEvent *e)
-{
-    _mouse_press_pos = e->pos();
-    _scroll_bar_values_on_mouse_press.rx() = horizontalScrollBar()->value();
-    _scroll_bar_values_on_mouse_press.ry() = verticalScrollBar()->value();
+void PreviewView::mousePressEvent(QMouseEvent *e){
+    _mouse_press_pos				= e->pos();
+    _scroll_bar_values_on_mouse_press.rx()	= horizontalScrollBar()->value();
+    _scroll_bar_values_on_mouse_press.ry()	= verticalScrollBar()->value();
     e->accept();
 }
 
+void PreviewView::mouseMoveEvent(QMouseEvent *e){
+    if(_mouse_press_pos.isNull()){
+	e->ignore();
 
-void PreviewView::mouseMoveEvent(QMouseEvent *e)
-{
-    if (_mouse_press_pos.isNull()) {
-        e->ignore();
-        return;
+	return;
     }
-
     horizontalScrollBar()->setValue(_scroll_bar_values_on_mouse_press.x() - e->pos().x() + _mouse_press_pos.x());
     verticalScrollBar()->setValue(_scroll_bar_values_on_mouse_press.y() - e->pos().y() + _mouse_press_pos.y());
     horizontalScrollBar()->update();
@@ -138,9 +134,7 @@ void PreviewView::mouseMoveEvent(QMouseEvent *e)
     e->accept();
 }
 
-
-void PreviewView::mouseReleaseEvent(QMouseEvent *e)
-{
+void PreviewView::mouseReleaseEvent(QMouseEvent *e){
     _mouse_press_pos = QPoint();
     e->accept();
 }

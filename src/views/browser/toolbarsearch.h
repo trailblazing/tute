@@ -47,8 +47,6 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include "searchlineedit.h"
 #include <QLineEdit>
@@ -57,6 +55,15 @@
 // #include "models/tree/TreeItem.h"
 // #include "models/tree/TreeModel.h"
 #include "views/tree/tree_screen.h"
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 
 QT_BEGIN_NAMESPACE
 class QUrl;
@@ -91,7 +98,12 @@ namespace browser {
     class AutoSaver;
 
     class ToolbarSearch : public SearchLineEdit {
+#if QT_VERSION == 0x050600
 	W_OBJECT(ToolbarSearch)
+#else
+	Q_OBJECT
+#endif
+
 
 	signals:
 		//        void search(boost::intrusive_ptr<TreeItem>, const QUrl &url
@@ -99,7 +111,12 @@ namespace browser {
 		//                    , equal_url_t _equal = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url) ->bool {return it ? QUrl(it->field("url")).fragment() == _url.fragment() : false;}
 		//                   );
 
-	    void returnPressed() W_SIGNAL(returnPressed)// ;
+	    void returnPressed()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(returnPressed)//
+#else
+	    ;
+#endif
 	public:
 	    ToolbarSearch(	// QStackedWidget *lineedits, QLineEdit *findtext,
 		QWidget *parent = 0);

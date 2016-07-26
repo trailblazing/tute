@@ -1,19 +1,27 @@
 #ifndef _EXECUTECOMMAND_H_
 #define	_EXECUTECOMMAND_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QDialog>
 #include <QProcess>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class ConsoleEmulator;
 
 
 class ExecuteCommand : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(ExecuteCommand)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	ExecuteCommand(QWidget *parent = 0);

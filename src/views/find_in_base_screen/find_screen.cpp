@@ -4,7 +4,12 @@
 #include <future>
 #include <utility>
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QLineEdit>
 #include <QPushButton>
@@ -48,7 +53,13 @@
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
 extern const char	*global_root_id;
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FindScreen)
+#endif
+
+
 FindScreen::FindScreen(QString object_name
 		      , ts_t *_tree_screen	// boost::intrusive_ptr<TreeItem> _selected_branch_root
 		      , QWidget    *parent)
@@ -376,28 +387,17 @@ void FindScreen::setup_signals(void){
 
 
 	// При нажатии Enter в строке запроса
-    connect(_toolbarsearch, &browser::ToolbarSearch::returnPressed, this
-	   , [this](){
-	    FindScreen::find_clicked();
-	}
-	);
+    connect(_toolbarsearch, &browser::ToolbarSearch::returnPressed, this, [this] {FindScreen::find_clicked();});
 
 	// При нажатии кнопки Find
-    connect(_find_start_button, &QPushButton::clicked, this
-	   , [this](){
-	    FindScreen::find_clicked();
-	}
-	);
+    connect(_find_start_button, &QPushButton::clicked, this, [this] {FindScreen::find_clicked();});
+
+	// После установки текста извне, вырабатывается этот сигнал
+    connect(this, &FindScreen::find_clicked_after_another_text_changed, this, [this] {FindScreen::find_clicked();});
 
 	// При нажатии кнопки разворачивания/сворачивания инструментов поиска
     connect(_tools_expand, &FlatToolButton::clicked, this, &FindScreen::tools_expand_clicked);
 
-	// После установки текста извне, вырабатывается этот сигнал
-    connect(this, &FindScreen::find_clicked_after_another_text_changed, this
-	   , [this](){
-	    FindScreen::find_clicked();
-	}
-	);
 
 
 	// При нажатии кнопки закрытия
@@ -591,7 +591,22 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// data["dir"]     = data["id"];
 	// data["file"]    = "text.html";
 
-    QList<boost::intrusive_ptr<Linker> > _result_list;
+//    QList<boost::intrusive_ptr<Linker> > _result_list;
+
+	//    boost::intrusive_ptr<TreeItem>	final_result(nullptr);
+    QMap<QString, QString> data;
+
+    QDateTime	ctime_dt	= QDateTime::currentDateTime();
+    QString	ctime		= ctime_dt.toString("yyyyMMddhhmmss");
+	// _item->field("ctime", ctime);
+
+    data["id"]		= get_unical_id();
+    data["name"]	= ctime;
+    data["ctime"]	= ctime;
+    data["dir"]		= data["id"];
+    data["file"]	= "text.html";
+
+    boost::intrusive_ptr<TreeItem> final_result = TreeItem::dangle_instance(data);	// QMap<QString, QString>()
 	// Выясняется стартовый элемент в дереве, с которого будет начат поиск
 	// Выясняется сколько всего конечных записей
     boost::intrusive_ptr<TreeItem>	_start_item(nullptr);				// = boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr));
@@ -733,10 +748,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	    _progress->close();
 	};
 
-    auto final_search = [&](QList<boost::intrusive_ptr<Linker> >    &_result_list
+    auto final_search = [&](boost::intrusive_ptr<TreeItem>          &final_result	// QList<boost::intrusive_ptr<Linker> >    &_result_list
 			   , boost::intrusive_ptr<TreeItem>         &_session_root_item				// std::shared_ptr<RecordTable> &resultset_data
 			   , boost::intrusive_ptr<TreeItem>         &_start_item
-	    ) -> QList<boost::intrusive_ptr<Linker> > & {
+	    ) -> boost::intrusive_ptr<TreeItem> & {
 	    qDebug() << "Start finding in " << _candidate_records << " records";
 	    prepare_progressbar();
 
@@ -752,10 +767,10 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 		////        }
 
 //	    std::future<QList<boost::intrusive_ptr<Linker> > >
-//	    _result_list = std::async(std::launch::async, [&] {return find_recursive(_result_list, _session_root_item, _start_item);}).get();
+	    final_result = std::async(std::launch::async, [&] {return find_recursive(final_result, _session_root_item, _start_item);}).get();
 
 //	    std::thread(&FindScreen::find_recursive, this, _result_list, _session_root_item, _start_item).detach();	// find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
-	    return find_recursive(_result_list, _session_root_item, _start_item);				// _result_list;
+	    return final_result;// find_recursive(final_result, _session_root_item, _start_item);				// _result_list;
 	};
 
 
@@ -782,27 +797,26 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// ) { // search in last search result
 
 
-    boost::intrusive_ptr<TreeItem>  final_result(nullptr);
 
     browsers_search_prepare(_start_item, _candidate_records);				// , _result_item
     if(_start_item){
 	if(0 != _candidate_records){
-	    _result_list = final_search(_result_list, _session_root_item, _start_item);
+	    final_result = final_search(final_result, _session_root_item, _start_item);
 	    _tree_screen->enable_up_action();										// !_is_search_global
 		// _selected_branch_as_pages != _tree_screen->know_root()->root_item()
 	}
 	// }
 	// stage 2
-	if(0 == _result_list.size()){
+	if(0 == final_result->count_direct()){
 	    _current_model_search_prepare(_start_item, _candidate_records);
 	    if(_start_item){
 		if(0 != _candidate_records){
-		    _result_list = final_search(_result_list, _session_root_item, _start_item);
+		    final_result = final_search(final_result, _session_root_item, _start_item);
 		    _tree_screen->enable_up_action();																// !_is_search_global
 			// _selected_branch_as_pages != _tree_screen->know_root()->root_item()
 		}
 		// stage 3
-		if(0 == _result_list.size()){													// (_result_item->count_direct() - original_count)
+		if(0 == final_result->count_direct()){													// (_result_item->count_direct() - original_count)
 			// auto tree_screen = find_object<TreeScreen>(tree_screen_singleton_name);
 			// tree_screen->delete_one_branch(_search_model->index_item(_search_model->findChild<boost::intrusive_ptr<TreeItem>>(QString("buffer"))));
 
@@ -821,7 +835,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 		    global_search_prepare(_start_item, _candidate_records);																// , _resultset_data
 		    if(_start_item){
 			if(0 != _candidate_records){
-			    _result_list = final_search(_result_list, _session_root_item, _start_item);
+			    final_result = final_search(final_result, _session_root_item, _start_item);
 			    _tree_screen->enable_up_action();																						// _tree_screen->know_branch()->root_item()->id() != _search_model->root_item()->id() // !_is_search_global
 				// _selected_branch_as_pages != _tree_screen->know_root()->root_item()
 			}
@@ -840,11 +854,12 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	// else, open from search engine
 	// }
 	// output(_result_item);
-    if(_result_list.size() > 0)final_result = _result_list.at(0)->host();
+
+//    if(_result_list.size() > 0)for(auto it : _result_list)final_result << it->host();	//= _result_list.at(0)->host();
     return final_result;			// ->record_table();
 }
 
-QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::intrusive_ptr<Linker> > &_result_list, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> _start_item){
+boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> &final_result, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> _start_item){
 	// auto tree_view = _tree_screen->tree_view();
 	////    // Если была нажата отмена поиска
 	////    if(_cancel_flag == 1)return _result_item;
@@ -939,22 +954,25 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
 //					      , searchRecordTable->field("id", i)
 //				);
 			    if(candidate->is_lite())candidate->to_fat();
-			    auto				browser			= globalparameters.main_window()->vtab_record()->activated_browser();
-			    auto				record_controller	= browser->record_screen()->record_controller();
-			    auto				tab_brother		= record_controller->view()->current_item();
-			    boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
-//                            if(record_index){
-//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
-//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
-//                                ){
-//                                auto result = browser->item_bind(record_index);
-//                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-//                                _result_list << result->linker();																												//
-//                            }else{
-				// auto previous_item = _source_model()->item(tree_view->previous_index());
-			    auto result = browser->page_instantiate(record_index);
-			    result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
-			    _result_list << result->linker();
+//			    {// move to search result
+//				auto					browser			= globalparameters.main_window()->vtab_record()->activated_browser();
+//				auto					record_controller	= browser->record_screen()->record_controller();
+//				auto					tab_brother		= record_controller->view()->current_item();
+//				boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, candidate);
+////                            if(record_index){
+////                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
+////                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
+////                                ){
+////                                auto result = browser->item_bind(record_index);
+////                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+////                                _result_list << result->linker();																												//
+////                            }else{
+//				// auto previous_item = _source_model()->item(tree_view->previous_index());
+//				auto result = browser->page_instantiate(record_index);
+//				result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+//			    }
+
+			    final_result << candidate;	// result->linker();
 //                            }
 //                            }else{
 //                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
@@ -964,7 +982,9 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
 				// find_recursive(_start_item->child(i), _result_item);
 				// }
 			}
-			if(candidate)if(candidate->count_direct() > 0)find_recursive(_result_list, _session_root_item, candidate);}else{
+			if(candidate)
+				if(candidate->count_direct() > 0)find_recursive(final_result, _session_root_item, candidate);
+		    }else{
 			// if(_progress->wasCanceled()) {
 			_cancel_flag = 1;
 			_progress->reset();
@@ -981,7 +1001,7 @@ QList<boost::intrusive_ptr<Linker> > &FindScreen::find_recursive(QList<boost::in
 		// for(int i = 0; i < _start_item->current_count(); i++) find_recursive(_start_item->child(i), _result_item);
 	}
     }
-    return _result_list;				// _result_item;
+    return final_result;				// _result_item;
 }
 
 // Поиск в переданном тексте

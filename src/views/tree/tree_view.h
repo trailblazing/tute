@@ -3,8 +3,6 @@
 
 #include <memory>
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QWidget>
 #include <QTreeView>
@@ -21,6 +19,26 @@
 #include "models/tree/tree_know_model.h"
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
+
+
+
+
+
+
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
+
+
+
+
 
 extern enum QItemSelectionModel::SelectionFlag	current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
@@ -55,10 +73,17 @@ class HtmlDelegate : public QStyledItemDelegate {
 	tv_t	*_tree_view;
 };
 
+#if QT_VERSION == 0x050600
 W_REGISTER_ARGTYPE(tv_t)
+#endif
 
 class tv_t : public QTreeView {
+#if QT_VERSION == 0x050600
     W_OBJECT(tv_t)
+#else
+    Q_OBJECT
+#endif
+
 
     public:
 	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, const QUrl &)>									equal_url_t;
@@ -115,7 +140,12 @@ class tv_t : public QTreeView {
 	tkm_t				*know_model_board() const;
 	boost::intrusive_ptr<TreeItem>	session_root_auto();
     signals:
-	void tapandhold_gesture_finished(const QPoint &p) W_SIGNAL(tapandhold_gesture_finished, (const QPoint &), p)	// ;
+	void tapandhold_gesture_finished(const QPoint &p)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(tapandhold_gesture_finished, (const QPoint &), p)	//
+#else
+	;
+#endif
 	//    void zoomChanged();
 
     public slots:
@@ -249,15 +279,15 @@ class tv_t : public QTreeView {
 ////	#include <TelepathyQt/Types>
 ////	#include <TelepathyQt/Connection>
 
-//class AccountsModel;
-//class ContactModelItem;
-//class ContactListWidgetPrivate;
+// class AccountsModel;
+// class ContactModelItem;
+// class ContactListWidgetPrivate;
 
-//namespace Tp {
+// namespace Tp {
 //    class PendingOperation;
-//}
+// }
 
-//class ContactListWidget : public QTreeView {
+// class ContactListWidget : public QTreeView {
 //    Q_OBJECT Q_DECLARE_PRIVATE(ContactListWidget)
 //    Q_DISABLE_COPY(ContactListWidget)
 
@@ -297,7 +327,7 @@ class tv_t : public QTreeView {
 //	void	startVideoChannel(ContactModelItem *contactItem);
 //	void	startDesktopSharing(ContactModelItem *contactItem);
 
-//Q_SIGNALS:
+// Q_SIGNALS:
 //	void	enableOverlays(bool);
 //	void	accountManagerReady(Tp::PendingOperation *op);
 //	void	genericOperationFinished(Tp::PendingOperation *op);
@@ -319,6 +349,6 @@ class tv_t : public QTreeView {
 
 //	friend class ContextMenu;
 //	ContactListWidgetPrivate *const d_ptr;
-//};
+// };
 
 //	#endif	// CONTACT_LIST_WIDGET_H

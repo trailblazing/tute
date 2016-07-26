@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "models/record_table/linker.hxx"
 #include "tree_item.h"
 #include "tree_model.h"
@@ -45,7 +50,13 @@ extern const char	*clipboard_items_root;
 
 // TreeModel - Это модель данных, которая работает с видом TreeScreen
 // От него наследуется класс KnowTreeModel
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(tm_t)
+#endif
+
+
 tm_t::tm_t(tv_t *parent)
     : QAbstractItemModel(parent){
     return;
@@ -60,7 +71,7 @@ tm_t::~tm_t(void){
     return;
 }
 
-int tm_t:: columnCount(const QModelIndex &parent) const {
+int tm_t::columnCount(const QModelIndex &parent) const {
 	// Q_UNUSED(itemIndex);
 
 	//// Ранее число столбцов вычислялось исходя из
@@ -89,7 +100,7 @@ int tm_t:: columnCount(const QModelIndex &parent) const {
     return result;
 }
 
-QVariant tm_t:: data(const QModelIndex &_index, int role) const {
+QVariant tm_t::data(const QModelIndex &_index, int role) const {
 	// Если индекс невалиден, возвращается несуществующий элемент
     if(! _index.isValid())return QVariant();
 	// Если запрашивается окраска текста элемента
@@ -121,7 +132,7 @@ QVariant tm_t:: data(const QModelIndex &_index, int role) const {
     return QVariant();
 }
 
-Qt::ItemFlags tm_t:: flags(const QModelIndex &_index) const {
+Qt::ItemFlags tm_t::flags(const QModelIndex &_index) const {
     if(! _index.isValid())return Qt::ItemIsEnabled;
     return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
@@ -132,7 +143,7 @@ Qt::ItemFlags tm_t:: flags(const QModelIndex &_index) const {
 
 // Get the index of the element that is defined with parent and Row and column number relative to parent (numbering from zero)
 // Mysterious method, we must also think that he does in fact
-QModelIndex tm_t:: index(int row, int column, const QModelIndex &current_index) const {
+QModelIndex tm_t::index(int row, int column, const QModelIndex &current_index) const {
     QModelIndex result;
 	// if(current_index.isValid() && current_index.column() != 0) {
 	// return QModelIndex();
@@ -154,7 +165,7 @@ QModelIndex tm_t:: index(int row, int column, const QModelIndex &current_index) 
 }
 
 // does not must be succeeded
-index_tree tm_t:: index(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const {
+index_tree tm_t::index(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const {
 	// QModelIndex result;
 
     std::function<QModelIndex(QModelIndex, std::function<bool (boost::intrusive_ptr<const Linker>)>)>
@@ -170,7 +181,7 @@ index_tree tm_t:: index(const std::function<bool (boost::intrusive_ptr<const Lin
 		}else{
 		    find_index = index_recursive(_index_child, _equal);
 		    if(find_index.isValid())
-				if(_equal(item(find_index)->linker())) break;
+				if(_equal(item(find_index)->linker()))break;
 		}
 	    }
 	    return find_index;
@@ -317,7 +328,7 @@ index_tree tm_t:: index(const std::function<bool (boost::intrusive_ptr<const Lin
 
 
 
-index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
+index_tree tm_t::index(boost::intrusive_ptr<const TreeItem> _item) const {
     index_tree result;
 	// assert(!result.isValid());
 
@@ -425,14 +436,14 @@ index_tree tm_t:: index(boost::intrusive_ptr<const TreeItem> _item) const {
     return result;
 }
 
-index_tree tm_t:: fake_index(boost::intrusive_ptr<TreeItem> it) const {
+index_tree tm_t::fake_index(boost::intrusive_ptr<TreeItem> it) const {
     index_tree result;
     if(it)result = createIndex(0, 0, static_cast<void *>(it.get()));
     return result;
 }
 
 // Обновление на экране ветки и подветок
-void tm_t:: update_index(const index_tree &_index){
+void tm_t::update_index(const index_tree &_index){
     if(static_cast<QModelIndex>(_index).isValid()){
 	// auto _source_model = _tree_view->source_model();
 	// Для корневой ветки дается команда чтобы модель сообщила о своем изменении
@@ -487,7 +498,7 @@ void tm_t:: update_index(const index_tree &_index){
 
 
 // Get a pointer to the Item-element associated with the specified QModelIndex  // Получение указателя на Item-злемент связанный с заданным QModelIndex
-boost::intrusive_ptr<TreeItem> tm_t:: item(const QModelIndex &_index) const		// ???
+boost::intrusive_ptr<TreeItem> tm_t::item(const QModelIndex &_index) const		// ???
 {
     boost::intrusive_ptr<TreeItem> _result = (nullptr);	// _root_item; //
     if(_index.isValid()){
@@ -509,7 +520,7 @@ boost::intrusive_ptr<TreeItem> tm_t:: item(const QModelIndex &_index) const		// 
 }
 
 // Получение указателя на Item-злемент с указанным путем
-boost::intrusive_ptr<TreeItem> tm_t:: item(QStringList path) const {
+boost::intrusive_ptr<TreeItem> tm_t::item(QStringList path) const {
     boost::intrusive_ptr<TreeItem>	result(nullptr);
     boost::intrusive_ptr<TreeItem>	curritem = _root_item;
 	// boost::intrusive_ptr<TreeItem> result(nullptr);
@@ -542,7 +553,7 @@ boost::intrusive_ptr<TreeItem> tm_t:: item(QStringList path) const {
     return result;	// curritem;
 }
 
-boost::intrusive_ptr<TreeItem> tm_t:: item(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
+boost::intrusive_ptr<TreeItem> tm_t::item(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
     std::function<boost::intrusive_ptr<TreeItem>(boost::intrusive_ptr<TreeItem>, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &, int)>
     item_recurse	// boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
 	= [&](boost::intrusive_ptr<TreeItem> _it
@@ -619,9 +630,9 @@ boost::intrusive_ptr<TreeItem> tm_t:: item(const std::function<bool (boost::intr
 // return true;
 // }
 
-boost::intrusive_ptr<TreeItem> tm_t:: root_item() const {return _root_item;}
+boost::intrusive_ptr<TreeItem> tm_t::root_item() const {return _root_item;}
 
-void tm_t:: emit_datachanged_signal(const QModelIndex &_index){
+void tm_t::emit_datachanged_signal(const QModelIndex &_index){
     emit dataChanged(_index, _index);
 }
 
@@ -629,9 +640,9 @@ void tm_t:: emit_datachanged_signal(const QModelIndex &_index){
 // Заголовки хранятся в корневом Item элементе просто в виде значений
 // для каждого столбца
 // section - для какого столбца возвращается заголовок
-QVariant tm_t:: headerData(int section
-			  , Qt::Orientation orientation
-			  , int role) const {
+QVariant tm_t::headerData(int section
+			 , Qt::Orientation orientation
+			 , int role) const {
     Q_UNUSED(section);
     Q_UNUSED(orientation);
     Q_UNUSED(role);
@@ -649,7 +660,7 @@ QVariant tm_t:: headerData(int section
 }
 
 // Вставка пустых строк с позиции position в количестве rows
-bool tm_t:: insertRows(int position, int rows, const QModelIndex &_index_parent){
+bool tm_t::insertRows(int position, int rows, const QModelIndex &_index_parent){
     boost::intrusive_ptr<TreeItem>		parent_item	= item(_index_parent);
     bool					success		= false;
 
@@ -664,7 +675,7 @@ bool tm_t:: insertRows(int position, int rows, const QModelIndex &_index_parent)
     return success;
 }
 
-QModelIndex tm_t:: parent(const QModelIndex &_index) const {
+QModelIndex tm_t::parent(const QModelIndex &_index) const {
     QModelIndex _result = QModelIndex();
 	// if(!_index.isValid())
 	// return QModelIndex();
@@ -688,7 +699,7 @@ QModelIndex tm_t:: parent(const QModelIndex &_index) const {
     return _result;	// createIndex(parent_item->sibling_order(), 0, static_cast<void *>(parent_item.get()));
 }
 
-bool tm_t:: removeRows(int position, int rows, const QModelIndex &parent){
+bool tm_t::removeRows(int position, int rows, const QModelIndex &parent){
     boost::intrusive_ptr<TreeItem>		parent_item	= item(parent);
     bool					success		= false;
 
@@ -699,7 +710,7 @@ bool tm_t:: removeRows(int position, int rows, const QModelIndex &parent){
     return success;
 }
 
-int tm_t:: rowCount(const QModelIndex &_index) const {
+int tm_t::rowCount(const QModelIndex &_index) const {
     int count = 0;
     if(_index.isValid()){
 	boost::intrusive_ptr<TreeItem> it = item(_index);
@@ -709,14 +720,14 @@ int tm_t:: rowCount(const QModelIndex &_index) const {
 	   count;
 }
 
-void tm_t:: session_id(boost::intrusive_ptr<TreeIndex> modelindex	// const QString &id
+void tm_t::session_id(boost::intrusive_ptr<TreeIndex> modelindex// const QString &id
     ){
 	// assert(item([&](boost::intrusive_ptr<const TreeItem> it) {return it->id() == id;}));
     _session_id = modelindex->host()->id();
 }
 
 // Set the values ​​in the Item element associated with the specified QModelIndex   // Установка значений в Item элементе, связанного с указанным QModelIndex
-bool tm_t:: setData(const QModelIndex &_index, const QVariant &value, int role){
+bool tm_t::setData(const QModelIndex &_index, const QVariant &value, int role){
 	// оль UserRole в настоящий момент используется для задания флага, сообщающего
 	// что курсор неаходится над элементом при Drag and Drop
 	// The Role UserRole currently used to set a flag informing
@@ -742,7 +753,7 @@ bool tm_t:: setData(const QModelIndex &_index, const QVariant &value, int role){
     return false;
 }
 
-bool tm_t:: setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role){
+bool tm_t::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role){
     if(role != Qt::EditRole || orientation != Qt::Horizontal)return false;
     Q_UNUSED(section);
     _root_item->field<name_type>(value.toString());	// QString("name"),

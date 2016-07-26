@@ -1,15 +1,23 @@
 #ifndef _INDENTSLIDER_H_
 #define _INDENTSLIDER_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QMouseEvent>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class IndentSlider : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(IndentSlider)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	IndentSlider(int width, int height, QWidget *parent = 0);
@@ -35,11 +43,31 @@ class IndentSlider : public QWidget {
 	int get_current_indentedge_pos(void);
 
     signals:
-	void	change_textindent_pos(int i) W_SIGNAL(change_textindent_pos, (int), i)	// ;
-	void	change_leftindent_pos(int i) W_SIGNAL(change_leftindent_pos, (int), i)	// ;
-	void	change_rightindent_pos(int i) W_SIGNAL(change_rightindent_pos, (int), i)	// ;
+	void change_textindent_pos(int i)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(change_textindent_pos, (int), i)	//
+#else
+	;
+#endif
+	void change_leftindent_pos(int i)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(change_leftindent_pos, (int), i)	//
+#else
+	;
+#endif
+	void change_rightindent_pos(int i)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(change_rightindent_pos, (int), i)	//
+#else
+	;
+#endif
 
-	void mouse_release(void) W_SIGNAL(mouse_release);
+	void mouse_release(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(mouse_release)
+#else
+	;
+#endif
 
     public slots:
 	void	set_textindent_pos(int i);
@@ -63,29 +91,29 @@ class IndentSlider : public QWidget {
 	int	widget_height;
 
 	// Геометрия прямоугольника по которому двигаются слайдеры
-	int	indentline_left_pos;
-	int	indentline_right_pos;
-	int	indentline_height;
+	int	indentline_left_pos	= 0;
+	int	indentline_right_pos	= 0;
+	int	indentline_height	= 10;
 
-	int	indenttriangle_width;
+	int	indenttriangle_width = 8;
 	int	indentline_step_draw_marker;
 	int	indentline_step_marker;
 
 	// Позиции (X-координаты) слайдеров.
 	// Позиции указываются относительно прямоугольника
 	// по которому двигаются слайдеры
-	int	textindent_pos;
-	int	leftindent_pos;
-	int	rightindent_pos;
+	int	textindent_pos	= 0;
+	int	leftindent_pos	= 0;
+	int	rightindent_pos	= 0;
 
 	// Какой слайдер выбран в данный момент
-	int current_sel_indent;
+	int current_sel_indent = SEL_NONE;
 
 	enum {
-	    SEL_NONE,
-	    SEL_TEXT_INDENT,
-	    SEL_LEFT_INDENT,
-	    SEL_RIGHT_INDENT
+	    SEL_NONE
+	    , SEL_TEXT_INDENT
+	    , SEL_LEFT_INDENT
+	    , SEL_RIGHT_INDENT
 	};
 };
 

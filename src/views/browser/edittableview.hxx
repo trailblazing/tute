@@ -43,11 +43,16 @@
 #define EDITTABLEVIEW_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QtWidgets/QTableView>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 //QT_BEGIN_NAMESPACE
 
@@ -55,7 +60,11 @@
 // namespace browser {
 
 class EditTableView : public QTableView {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditTableView)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EditTableView(QWidget *parent = 0);

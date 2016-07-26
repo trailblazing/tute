@@ -1,8 +1,7 @@
 #ifndef _RECORD_TABLE_PRINT_H_
 #define	_RECORD_TABLE_PRINT_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtGlobal>
 #include <QWidget>
@@ -12,11 +11,22 @@
 #include <QTextEdit>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 class RecordProxyModel;
 class rs_t;
 
 class RecordPrint : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(RecordPrint)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	RecordPrint(rs_t *_record_screen = 0);

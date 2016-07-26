@@ -1,8 +1,6 @@
 #ifndef INFOFIELDENTER_H_
 #define INFOFIELDENTER_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QDialog>
 #include <QWidget>
@@ -13,6 +11,14 @@
 #include <QGridLayout>
 
 #include <QCheckBox>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 
 
 class FlatToolButton;
@@ -29,7 +35,11 @@ extern QMap<Qt::CheckState, QString> _string_from_check_state;
 extern QMap<QString, Qt::CheckState> _state_check_from_string;
 
 class InfoFieldEnter : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(InfoFieldEnter)
+#else
+    Q_OBJECT
+#endif
 
 public:
     InfoFieldEnter(QWidget *parent = 0);

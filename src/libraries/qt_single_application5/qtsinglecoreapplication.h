@@ -41,16 +41,27 @@
 #define QTSINGLECOREAPPLICATION_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QCoreApplication>
 
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 class QtLocalPeer;
 
 class QtSingleCoreApplication : public QCoreApplication {
+#if QT_VERSION == 0x050600
     W_OBJECT(QtSingleCoreApplication)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	QtSingleCoreApplication(int &argc, char * *argv);
@@ -64,11 +75,15 @@ class QtSingleCoreApplication : public QCoreApplication {
 
 
 Q_SIGNALS:
-	void messageReceived(const QString &message) W_SIGNAL(messageReceived, (const QString &), message)	// ;
-
+	void messageReceived(const QString &message)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(messageReceived, (const QString &), message)	// ;
+#else
+	;
+#endif
 
     private:
-	QtLocalPeer * peer;
+	QtLocalPeer *peer;
 };
 
 #endif	// QTSINGLECOREAPPLICATION_H

@@ -40,8 +40,7 @@
 #ifndef QTSINGLEAPPLICATION_H
 #define QTSINGLEAPPLICATION_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QApplication>
@@ -50,6 +49,14 @@
 #include "models/database_config/database_config.h"
 #include "views/browser/browser.h"
 #include <memory>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 class QtLocalPeer;
 
@@ -101,24 +108,28 @@ namespace browser {
 
 class wn_t;
 
-class QT_QTSINGLEAPPLICATION_EXPORT sapp_t//: public BrowserApplication { //
+class QT_QTSINGLEAPPLICATION_EXPORT sapp_t	//: public BrowserApplication { //
     : public QApplication {
+#if QT_VERSION == 0x050600
     W_OBJECT(QT_QTSINGLEAPPLICATION_EXPORT sapp_t)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	//    typedef BrowserApplication BaseType;
 	sapp_t(int &argc
-	    , char * *argv
-	    , GlobalParameters &globalparameters
-	    , AppConfig &appconfig
-	    , DataBaseConfig &databaseconfig
-	    , bool _gui_enabled = true);
+	      , char * *argv
+	      , GlobalParameters &globalparameters
+	      , AppConfig &appconfig
+	      , DataBaseConfig &databaseconfig
+	      , bool _gui_enabled = true);
 	sapp_t(const QString &id
-	    , int &argc
-	    , char * *argv
-	    , GlobalParameters &globalparameters
-	    , AppConfig &appconfig
-	    , DataBaseConfig &databaseconfig);
+	      , int &argc
+	      , char * *argv
+	      , GlobalParameters &globalparameters
+	      , AppConfig &appconfig
+	      , DataBaseConfig &databaseconfig);
 	~sapp_t();
 	// Comment by Xi
 	// QtSingleApplication(int &argc, char **argv, Type type);
@@ -139,17 +150,20 @@ class QT_QTSINGLEAPPLICATION_EXPORT sapp_t//: public BrowserApplication { //
 	QWidget *activationWindow() const;
 
 	// Obsolete:
-	void initialize(bool dummy = true){
-	    isRunning();
-	    Q_UNUSED(dummy)
-	}
+	void initialize(bool dummy = true){isRunning();Q_UNUSED(dummy)}
+
     public Q_SLOTS:
 	bool	sendMessage(const QString &message, int timeout = 5000);
 	void	activateWindow();
 
 
 Q_SIGNALS:
-	void messageReceived(const QString &message) W_SIGNAL(messageReceived, (const QString &), message)	// ;
+	void messageReceived(const QString &message)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(messageReceived, (const QString &), message)	// ;
+#else
+	;
+#endif
 
 
     private:
@@ -161,8 +175,7 @@ Q_SIGNALS:
 	QtLocalPeer	*_peer;
 	QWidget		*_act_window;
 	bool		_gui_enabled;
-	//    std::shared_ptr<MainWindow>
-	wn_t *_window;
+	wn_t		*_window;
 	// private slots:
 	//    void newLocalSocketConnection();
 
@@ -185,9 +198,8 @@ Q_SIGNALS:
 
 	void	saveSession();
 	bool	canRestoreSession() const;
-	bool	privateBrowsing() const {
-	    return _private_browsing;
-	}
+	bool privateBrowsing() const {return _private_browsing;}
+
 	void	setLastAuthenticator(QAuthenticator *);
 	void	setLastProxyAuthenticator(QAuthenticator *);
 
@@ -223,7 +235,12 @@ Q_SIGNALS:
 	void	proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *);
 
     signals:
-	void privateBrowsingChanged(bool b) W_SIGNAL(privateBrowsingChanged, (bool), b)	// ;
+	void privateBrowsingChanged(bool b)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(privateBrowsingChanged, (bool), b)	// ;
+#else
+	;
+#endif
 
     private slots:
 	void postLaunch();

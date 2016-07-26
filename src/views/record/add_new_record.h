@@ -1,8 +1,6 @@
 #ifndef __ADDNEWRECORD_H__
 #define __ADDNEWRECORD_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QDialog>
 #include <QLabel>
@@ -10,13 +8,29 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
+
+
 class Editor;
 class InfoFieldEnter;
 
 // Окно добавления новой записи
 
 class AddNewRecord : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(AddNewRecord)
+#else
+    Q_OBJECT
+#endif
 
 public:
 

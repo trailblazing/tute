@@ -2,8 +2,6 @@
 #define MAINWINDOW_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QDialog>
 #include <QMainWindow>
@@ -55,6 +53,14 @@
 // #include "models/database_config/DataBaseConfig.h"
 
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 extern const char *meta_editor_singleton_name;
 
 namespace browser {
@@ -81,7 +87,11 @@ class tsv_t;
 
 class wn_t
     : public QMainWindow {
+#if QT_VERSION == 0x050600
     W_OBJECT(wn_t)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	wn_t(GlobalParameters &_globalparameters

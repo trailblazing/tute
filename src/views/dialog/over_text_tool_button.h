@@ -1,11 +1,16 @@
 #ifndef __OVERTEXTTOOLBUTTON_H__
 #define __OVERTEXTTOOLBUTTON_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QPaintEvent>
 #include "libraries/flat_control.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 class FlatToolButton;
 
@@ -13,7 +18,11 @@ class FlatToolButton;
 
 
 class OverTextToolButton : public FlatToolButton {
+#if QT_VERSION == 0x050600
     W_OBJECT(OverTextToolButton)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	OverTextToolButton(QWidget *parent = 0);

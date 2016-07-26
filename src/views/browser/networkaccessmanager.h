@@ -43,19 +43,28 @@
 #define NETWORKACCESSMANAGER_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
-
 
 #include <QtNetwork/QNetworkAccessManager>
 #include <QtNetwork/QNetworkRequest>
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 //QT_BEGIN_NAMESPACE
 
 
 namespace browser {
     class NetworkAccessManager : public QNetworkAccessManager {
+#if QT_VERSION == 0x050600
 	W_OBJECT(NetworkAccessManager)
+#else
+	Q_OBJECT
+#endif
 
 	public:
 	    NetworkAccessManager(QObject *parent = 0);

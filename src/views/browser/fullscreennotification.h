@@ -42,10 +42,14 @@
 #ifndef FULLSCREENNOTIFICATION_H
 #define FULLSCREENNOTIFICATION_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 class QLabel;
 class QGridLayout;
@@ -54,7 +58,12 @@ class QPropertyAnimation;
 
 namespace browser {
     class FullScreenNotification : public QWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(FullScreenNotification)
+#else
+	Q_OBJECT
+#endif
+
 	public:
 	    FullScreenNotification(QWidget *parent = 0);
 	    ~FullScreenNotification();

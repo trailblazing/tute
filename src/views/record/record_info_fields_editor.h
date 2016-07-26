@@ -1,8 +1,6 @@
 #ifndef __RECORDINFOFIELDSEDITOR_H__
 #define __RECORDINFOFIELDSEDITOR_H__
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QDialog>
 #include <QLabel>
@@ -10,12 +8,26 @@
 #include <QDialogButtonBox>
 #include <QPushButton>
 
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 class InfoFieldEnter;
 
 // Окно редактирования инфополей записи
 
 class InfoFieldsEditor : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(InfoFieldsEditor)
+#else
+    Q_OBJECT
+#endif
 
 public:
 #if QT_VERSION < 0x050000

@@ -5,8 +5,7 @@
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QWidget>
@@ -20,6 +19,11 @@
 #include "models/attach_table/attach_table_data.h"
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class TreeItem;
 
 // Определяется структура данных набора записей
@@ -32,7 +36,12 @@ Q_DECLARE_METATYPE(CLIPB_RECORDS_STRUCT);
 
 
 class ClipboardRecords : public QMimeData {
+#if QT_VERSION == 0x050600
     W_OBJECT(ClipboardRecords)
+#else
+    Q_OBJECT
+#endif
+
 
 public:
     ClipboardRecords(void);

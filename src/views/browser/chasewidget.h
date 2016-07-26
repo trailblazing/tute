@@ -42,14 +42,19 @@
 #ifndef CHASEWIDGET_H
 #define CHASEWIDGET_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtWidgets/QWidget>
 
 #include <QtCore/QSize>
 #include <QtGui/QColor>
 #include <QtGui/QPixmap>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QHideEvent;
@@ -64,7 +69,12 @@ QT_END_NAMESPACE
 
 namespace browser {
     class ChaseWidget : public QWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(ChaseWidget)
+#else
+	Q_OBJECT
+#endif
+
 	public:
 	    ChaseWidget(const QSize &size, QWidget *parent = 0, QPixmap pixmap = QPixmap(), bool pixmapEnabled = false);
 
@@ -92,7 +102,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif
 

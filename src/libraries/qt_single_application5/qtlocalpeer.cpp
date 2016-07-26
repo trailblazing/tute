@@ -36,7 +36,12 @@
 ** OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
 **
 ****************************************************************************/
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "qtlocalpeer.h"
 #include <QCoreApplication>
 #include <QTime>
@@ -66,7 +71,13 @@ namespace QtLP_Private {
 }
 
 const char *QtLocalPeer::ack = "ack";
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(QtLocalPeer)
+#endif
+
+
 QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
     : QObject(parent), id(appId){
     QString prefix = id;
@@ -80,15 +91,15 @@ QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
     prefix.remove(QRegExp("[^a-zA-Z]"));
     prefix.truncate(6);
 
-    QByteArray	idc = id.toUtf8();
-    quint16	idNum = qChecksum(idc.constData(), idc.size());
+    QByteArray	idc	= id.toUtf8();
+    quint16	idNum	= qChecksum(idc.constData(), idc.size());
     socketName = QLatin1String("qtsingleapp-") + prefix
 	+ QLatin1Char('-') + QString::number(idNum, 16);
 
 #if defined(Q_OS_WIN)
     if(! pProcessIdToSessionId){
 	QLibrary lib("kernel32");
-	pProcessIdToSessionId = (PProcessIdToSessionId)lib.resolve("ProcessIdToSessionId");
+	pProcessIdToSessionId = (PProcessIdToSessionId) lib.resolve("ProcessIdToSessionId");
     }
     if(pProcessIdToSessionId){
 	DWORD sessionId = 0;
@@ -106,7 +117,8 @@ QtLocalPeer::QtLocalPeer(QObject *parent, const QString &appId)
     lockFile.setFileName(lockName);
     lockFile.open(QIODevice::ReadWrite);
 }
-bool QtLocalPeer:: isClient(){
+
+bool QtLocalPeer::isClient(){
     if(lockFile.isLocked())return false;
     if(! lockFile.lock(QtLP_Private::QtLockedFile::WriteLock, false))return true;
     bool res = _server->listen(socketName);
@@ -122,7 +134,8 @@ bool QtLocalPeer:: isClient(){
 
     return false;
 }
-bool QtLocalPeer:: sendMessage(const QString &message, int timeout){
+
+bool QtLocalPeer::sendMessage(const QString &message, int timeout){
     if(! isClient())return false;
     QLocalSocket	socket;
     bool		connOk = false;
@@ -150,23 +163,24 @@ bool QtLocalPeer:: sendMessage(const QString &message, int timeout){
     }
     return res;
 }
-void QtLocalPeer:: receiveConnection(){
+
+void QtLocalPeer::receiveConnection(){
     QLocalSocket *socket = _server->nextPendingConnection();
     if(! socket)return;
-    while(socket->bytesAvailable() < (int)sizeof(quint32))socket->waitForReadyRead();
+    while(socket->bytesAvailable() < (int) sizeof(quint32))socket->waitForReadyRead();
     QLocalSocket	i;
-    QDataStream		ds0((QIODevice *)&i);
+    QDataStream		ds0((QIODevice *) &i);
     QDataStream		ds(static_cast<QIODevice *>(socket));
     QByteArray		uMsg;
     quint32		remaining;
     ds >> remaining;
     uMsg.resize(remaining);
-    int		got = 0;
-    char	*uMsgBuf = uMsg.data();
+    int		got		= 0;
+    char	*uMsgBuf	= uMsg.data();
     do {
-	got = ds.readRawData(uMsgBuf, remaining);
-	remaining -= got;
-	uMsgBuf += got;
+	got		= ds.readRawData(uMsgBuf, remaining);
+	remaining	-= got;
+	uMsgBuf		+= got;
     } while(remaining && got >= 0 && socket->waitForReadyRead(2000));
     if(got < 0){
 	qWarning("QtLocalPeer: Message reception failed %s", socket->errorString().toLatin1().constData());
@@ -180,3 +194,4 @@ void QtLocalPeer:: receiveConnection(){
     delete socket;
     emit messageReceived(message);	// ### (might take a long time to return)
 }
+

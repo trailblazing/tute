@@ -2,19 +2,22 @@
 #define __RECORDTABLECONTROLLER_H__
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QModelIndexList>
+
+
+
+
 #include "utility/delegate.h"
 #include <boost/serialization/strong_typedef.hpp>
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "models/tree/tree_item.h"
 
-
-
-
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 
 extern const int	add_new_record_to_end;
@@ -55,7 +58,11 @@ struct id_value;
 
 
 class rctl_t : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(rctl_t)
+#else
+    Q_OBJECT
+#endif
     public:
 
 	//    typedef TreeItem::bind_helper       bind_helper;

@@ -1,8 +1,7 @@
 #ifndef RECORDTABLESCREEN_H_
 #define RECORDTABLESCREEN_H_
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 #include <QWidget>
 #include <QListView>
 #include <QToolButton>
@@ -16,6 +15,19 @@
 #include <QItemSelection>
 #include <QLabel>
 // #include "models/tree/TreeItem.h"
+
+
+
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
+
 
 
 class rctl_t;
@@ -45,7 +57,11 @@ namespace browser {
 }
 
 class rs_t : public QWidget {
+#if QT_VERSION == 0x050600
     W_OBJECT(rs_t)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	rs_t(ts_t *_tree_screen, FindScreen *_find_screen, MetaEditor *_editor_screen, browser::Entrance *_entrance, wn_t *_main_window, const QString &_style_source, browser::Profile *_profile);

@@ -37,7 +37,12 @@
 **
 ****************************************************************************/
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include "qtsinglecoreapplication.h"
 #include "qtlocalpeer.h"
 
@@ -69,7 +74,13 @@
     argv are passed on to the QCoreAppliation constructor.
 */
 
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(QtSingleCoreApplication)
+#endif
+
+
 QtSingleCoreApplication::QtSingleCoreApplication(int &argc, char * *argv)
     : QCoreApplication(argc, argv){
     peer = new QtLocalPeer(this);

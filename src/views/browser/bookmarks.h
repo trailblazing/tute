@@ -42,8 +42,7 @@
 #ifndef BOOKMARKS_H
 #define BOOKMARKS_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtCore/QObject>
 #include <QtCore/QAbstractItemModel>
@@ -55,9 +54,14 @@
 #include "ui_bookmarks.h"
 #include <QtWidgets/QToolBar>
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 class FlatToolButton;
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 namespace browser {
 	/*!
@@ -68,12 +72,32 @@ namespace browser {
     class BookmarksModel;
 
     class BookmarksManager : public QObject {
+#if QT_VERSION == 0x050600
 	W_OBJECT(BookmarksManager)
+#else
+	Q_OBJECT
+#endif
 
 	signals:
-	    void	entryAdded(BookmarkNode *item) W_SIGNAL(entryAdded, (BookmarkNode *), item)	// ;
-	    void	entryRemoved(BookmarkNode *parent, int row, BookmarkNode *item) W_SIGNAL(entryRemoved, (BookmarkNode *, int, BookmarkNode *), parent, row, item)// ;
-	    void	entryChanged(BookmarkNode *item) W_SIGNAL(entryChanged, (BookmarkNode *), item)	// ;
+	    void entryAdded(BookmarkNode *item)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(entryAdded, (BookmarkNode *), item)	//
+#else
+	    ;
+#endif
+	    void entryRemoved(BookmarkNode *parent, int row, BookmarkNode *item)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(entryRemoved, (BookmarkNode *, int, BookmarkNode *), parent, row, item)	//
+#else
+	    ;
+#endif
+
+	    void entryChanged(BookmarkNode *item)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(entryChanged, (BookmarkNode *), item)	//
+#else
+	    ;
+#endif
 
 	public:
 	    BookmarksManager(QObject *parent = 0);
@@ -130,8 +154,9 @@ namespace browser {
     class InsertBookmarksCommand : public RemoveBookmarksCommand {
 	public:
 	    InsertBookmarksCommand(BookmarksManager *_bookmarkmanagaer, BookmarkNode *parent, BookmarkNode *node, int row);
-	    void	undo()	{RemoveBookmarksCommand::redo();}
-	    void	redo()	{RemoveBookmarksCommand::undo();}
+	    void undo(){RemoveBookmarksCommand::redo();}
+
+	    void redo(){RemoveBookmarksCommand::undo();}
     };
 
     class ChangeBookmarkCommand : public QUndoCommand {
@@ -152,7 +177,11 @@ namespace browser {
 	    BookmarksModel is a QAbstractItemModel wrapper around the BookmarkManager
 	  */
     class BookmarksModel : public QAbstractItemModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(BookmarksModel)
+#else
+	Q_OBJECT
+#endif
 
 	public slots:
 	    void	entryAdded(BookmarkNode *item);
@@ -161,10 +190,10 @@ namespace browser {
 
 	public:
 	    enum Roles {
-		TypeRole = Qt::UserRole + 1,
-		UrlRole = Qt::UserRole + 2,
-		UrlStringRole = Qt::UserRole + 3,
-		SeparatorRole = Qt::UserRole + 4
+		TypeRole	= Qt::UserRole + 1
+		, UrlRole	= Qt::UserRole + 2
+		, UrlStringRole = Qt::UserRole + 3
+		, SeparatorRole = Qt::UserRole + 4
 	    };
 
 	    BookmarksModel(BookmarksManager *bookmarkManager, QObject *parent = 0);
@@ -197,10 +226,19 @@ namespace browser {
 	// Menu that is dynamically populated from the bookmarks
 // #include "modelmenu.h"
     class BookmarksMenu : public ModelMenu {
+#if QT_VERSION == 0x050600
 	W_OBJECT(BookmarksMenu)
+#else
+	Q_OBJECT
+#endif
 
 	signals:
-	    void openUrl(const QUrl &url) W_SIGNAL(openUrl, (const QUrl &), url)// ;
+	    void openUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(openUrl, (const QUrl &), url)	//
+#else
+	    ;
+#endif
 
 	public:
 	    BookmarksMenu(QWidget *parent = 0);
@@ -223,7 +261,11 @@ namespace browser {
 	 */
 // #include <QtCore/QSortFilterProxyModel>
     class AddBookmarkProxyModel : public QSortFilterProxyModel {
+#if QT_VERSION == 0x050600
 	W_OBJECT(AddBookmarkProxyModel)
+#else
+	Q_OBJECT
+#endif
 	public:
 	    AddBookmarkProxyModel(QObject *parent = 0);
 	    int columnCount(const QModelIndex &parent = QModelIndex()) const;
@@ -237,8 +279,11 @@ namespace browser {
 	 */
 // #include "ui_addbookmarkdialog.h"
     class AddBookmarkDialog : public QDialog, public Ui_AddBookmarkDialog {
+#if QT_VERSION == 0x050600
 	W_OBJECT(AddBookmarkDialog)
-
+#else
+	Q_OBJECT
+#endif
 	public:
 	    AddBookmarkDialog(const QString &url, const QString &title, QWidget *parent = 0, BookmarksManager *bookmarkManager = 0);
 
@@ -254,10 +299,18 @@ namespace browser {
 // #include "ui_bookmarks.h"
     class TreeProxyModel;
     class BookmarksDialog : public QDialog, public Ui_BookmarksDialog {
+#if QT_VERSION == 0x050600
 	W_OBJECT(BookmarksDialog)
-
+#else
+	Q_OBJECT
+#endif
 	signals:
-	    void openUrl(const QUrl &url) W_SIGNAL(openUrl, (const QUrl &), url)// ;
+	    void openUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(openUrl, (const QUrl &), url)	//
+#else
+	    ;
+#endif
 
 	public:
 	    BookmarksDialog(QWidget *parent = 0, BookmarksManager *manager = 0);
@@ -279,10 +332,18 @@ namespace browser {
 
 // #include <QtWidgets/QToolBar>
     class BookmarksToolBar : public QToolBar {
+#if QT_VERSION == 0x050600
 	W_OBJECT(BookmarksToolBar)
-
+#else
+	Q_OBJECT
+#endif
 	signals:
-	    void openUrl(const QUrl &url) W_SIGNAL(openUrl, (const QUrl &), url)// ;
+	    void openUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(openUrl, (const QUrl &), url)//
+#else
+	    ;
+#endif
 
 	public:
 	    BookmarksToolBar(BookmarksModel *model, QWidget *parent = 0);
@@ -305,7 +366,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif	// BOOKMARKS_H
 

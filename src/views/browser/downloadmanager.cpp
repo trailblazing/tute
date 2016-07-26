@@ -38,7 +38,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include "downloadmanager.h"
 
@@ -71,7 +76,12 @@ namespace browser {
 	    It moves the data from the QWebEngineDownloadItem into the QFile as well
 	    as update the information/progressbar and report errors.
 	 */
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(DownloadWidget)
+#endif
+
+
     DownloadWidget::DownloadWidget(QWebEngineDownloadItem   *_download
 				  , TabWidget         *_tab_manager
 				  , DownloadManager   *_parent)
@@ -298,7 +308,12 @@ namespace browser {
 	emit statusChanged();
     }
 
+#if QT_VERSION == 0x050600
+
     W_OBJECT_IMPL(DownloadManager)
+#endif
+
+
 	/*!
 	    DownloadManager is a Dialog that contains a list of DownloadWidgets
 
@@ -486,7 +501,11 @@ namespace browser {
 	itemCount->setText(count == 1 ? tr("1 Download") : tr("%1 Downloads").arg(count));
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(DownloadModel)
+#endif
+
+
     DownloadModel::DownloadModel(DownloadManager *downloadManager, QObject *parent)
 	: QAbstractListModel(parent)
 	  , _downloadmanager(downloadManager)

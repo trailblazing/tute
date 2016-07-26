@@ -5,8 +5,6 @@
 #include <boost/smart_ptr/intrusive_ref_counter.hpp>
 #include <boost/smart_ptr/intrusive_ptr.hpp>
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 #include <QWidget>
 #include <QTableView>
@@ -21,8 +19,11 @@
 #include <QGestureEvent>
 
 #include <QStyledItemDelegate>	// #include <QItemDelegate>
+
+
 #include "libraries/flat_control.h"
 #include "libraries/fixed_parameters.h"
+
 
 extern const int	add_new_record_to_end;
 extern const int	add_new_record_before;
@@ -48,6 +49,13 @@ class FlatToolButton;
 
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 //! [0]
 class StarRating {
     public:
@@ -57,13 +65,13 @@ class StarRating {
 
 	void	paint(QPainter *painter, const QRect &rect, const QPalette &palette, EditMode mode) const;
 	QSize	sizeHint() const;
-	int	star_count() const {return _star_count;}
+	int star_count() const {return _star_count;}
 
-	int	max_star_count() const {return _max_star_count;}
+	int max_star_count() const {return _max_star_count;}
 
-	void	star_count(int starCount){_star_count = starCount;}
+	void star_count(int starCount){_star_count = starCount;}
 
-	void	max_star_count(int maxStarCount){_max_star_count = maxStarCount;}
+	void max_star_count(int maxStarCount){_max_star_count = maxStarCount;}
 
     private:
 	QPolygonF	star_polygon;
@@ -78,15 +86,25 @@ Q_DECLARE_METATYPE(StarRating)
 
 
 class FlatToolButtonRating : public FlatToolButton {
+#if QT_VERSION == 0x050600
     W_OBJECT(FlatToolButtonRating)
+#else
+    Q_OBJECT
+#endif
+
     public:
 	FlatToolButtonRating(QWidget *parent = nullptr);
-	void		star_rating(const StarRating &starRating){_star_rating = starRating;}
+	void star_rating(const StarRating &starRating){_star_rating = starRating;}
 
-	StarRating	star_rating(){return _star_rating;}
+	StarRating star_rating(){return _star_rating;}
 
     signals:
-	void editingFinished() W_SIGNAL(editingFinished)// ;
+	void editingFinished()
+#if QT_VERSION == 0x050600
+	W_SIGNAL(editingFinished)//
+#else
+	;
+#endif
     protected:
 	void	paintEvent(QPaintEvent *event);
 	void	mouseMoveEvent(QMouseEvent *event);
@@ -99,7 +117,11 @@ class FlatToolButtonRating : public FlatToolButton {
 
 class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 {
+#if QT_VERSION == 0x050600
     W_OBJECT(ViewDelegation)
+#else
+    Q_OBJECT
+#endif
     public:
 	explicit ViewDelegation(rv_t *view = 0);
 
@@ -128,10 +150,13 @@ Q_DECLARE_METATYPE(QStyleOptionButton)
 // W_REGISTER_ARGTYPE(rctl_t)
 
 class rv_t : public QTableView {
+#if QT_VERSION == 0x050600
     W_OBJECT(rv_t)
-
+#else
+    Q_OBJECT
+#endif
     public:
-	rv_t(rs_t   *record_screen_, rctl_t  *record_controller_);// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
+	rv_t(rs_t   *record_screen_, rctl_t  *record_controller_);	// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
 
 
 	virtual ~rv_t();
@@ -161,13 +186,17 @@ class rv_t : public QTableView {
 
 	// void on_parent_resizevent(QResizeEvent *e);
 	template <typename field_type>
-	bool is_field_type_column(int index){
-	    return _is_field_type_column(boost::mpl::c_str<field_type>::value, index);
-	}
+	bool is_field_type_column(int index){return _is_field_type_column(boost::mpl::c_str<field_type>::value, index);}
+
     signals:
 
 	// void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
-	void tap_and_hold_gesture_finished(const QPoint &p) W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint &), p)	// ;
+	void tap_and_hold_gesture_finished(const QPoint &p)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint &), p)	//
+#else
+	;
+#endif
 
 
     public slots:

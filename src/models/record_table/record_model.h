@@ -3,8 +3,7 @@
 
 #include <memory>
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QAbstractTableModel>
 #include <QModelIndex>
@@ -17,7 +16,16 @@
 
 #include <boost/serialization/strong_typedef.hpp>
 
+
+
 // #include "models/tree/TreeItem.h"
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 
 #define TABLE_DATA_ROLE Qt::UserRole + 10
 #define ONE_RECORD_ROLE Qt::UserRole + 11
@@ -73,8 +81,11 @@ struct pages_container {
 class RecordModel : public QAbstractTableModel
 //		  , public pages_container
 {
+#if QT_VERSION == 0x050600
     W_OBJECT(RecordModel)
-
+#else
+    Q_OBJECT
+#endif
 	// By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
     friend class rctl_t;
     friend class browser::Entrance;

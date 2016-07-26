@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include <thread>
@@ -116,7 +121,11 @@ extern bool		url_equal(const std::string &url_compare_stored, const std::string 
 
 namespace browser {
 #ifdef USE_POPUP_WINDOW
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(PopupPage)
+#endif
+
     PopupPage::PopupPage(Profile *profile, QObject *parent)
 	: QWebEnginePage(profile, parent)
 	  , m_keyboardModifiers(Qt::NoModifier)
@@ -308,8 +317,10 @@ namespace browser {
 
 #endif	// USE_POPUP_WINDOW
 
-
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(WebPage)
+#endif
+
     WebPage::WebPage(Profile                *profile
 		    , boost::intrusive_ptr<TreeItem> item
 		    , ts_t           *tree_screen
@@ -732,8 +743,7 @@ namespace browser {
 	// find_object<MainWindow>("mainwindow")
 	globalparameters.main_window()->save_text_area();
 	// Для новой выбраной записи выясняется директория и основной файл
-	if(current_item->field<id_type>() == ""	// || current_item->field("url") == Browser::_defaulthome
-	    )current_item->field<id_type>(get_unical_id());	// "id",
+	if(current_item->field<id_type>().length() == 0)current_item->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id());	// "id",	// || current_item->field("url") == Browser::_defaulthome
 	if(current_item->field<url_type>() == "")current_item->field<dir_type>(current_item->id());	// "dir",
 	if(current_item->field<file_type>() == "")current_item->field<file_type>("text.html");	// "file",
 	QString current_dir	= current_item->field<dir_type>();	// table->field(pos, "dir");
@@ -1480,7 +1490,11 @@ namespace browser {
 
 
 #ifdef USE_POPUP_WINDOW
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(PopupView)
+#endif
+
     PopupView::PopupView(QWidget *parent)
 	: QWebEngineView(parent)
 	  , m_progress(0)
@@ -1639,7 +1653,9 @@ namespace browser {
 	m_statusBarText = string;
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(PopupWindow)
+#endif
 
     PopupWindow::PopupWindow(Profile *profile)
 	: QWidget(), _addressbar(new QLineEdit(this))
@@ -2167,7 +2183,7 @@ namespace browser {
 				if(! others_same.contains(it_))others_same << it_;
 		}
 		for(auto _it : others_same){
-		    auto it_ = v->merge(TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it));	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+		    auto it_ = TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it, v)->merge();	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 		}
 	    }
@@ -2277,7 +2293,12 @@ namespace browser {
 	// setFocus();
 	////    _record_controller->addnew_item_fat(requested_item);
 	// }
+
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(WebView)
+#endif
+
     WebView::WebView(boost::intrusive_ptr<TreeItem> host_
 		    , Profile          *profile			// , bool openinnewtab
 		    , ts_t       *tree_screen

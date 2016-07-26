@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QBoxLayout>
 #include <QToolButton>
 #include <QFontComboBox>
@@ -21,7 +26,12 @@
 extern GlobalParameters globalparameters;
 const char		*clipboard_items_root = "clipboard_items_root";
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ClipboardBranch)
+#endif
+
+
 
 ClipboardBranch::ClipboardBranch(void) : QMimeData(){
     init();

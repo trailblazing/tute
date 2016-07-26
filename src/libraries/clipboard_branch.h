@@ -4,8 +4,7 @@
 #include <set>
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QWidget>
@@ -17,6 +16,11 @@
 
 #include "libraries/clipboard_records.h"
 //#include "models/tree/TreeModel.h"
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 class tm_t;
 struct TreeIndex;
@@ -51,7 +55,11 @@ struct CLIPB_TREE_ONE_LINE {
 
 
 class ClipboardBranch : public QMimeData {
+#if QT_VERSION == 0x050600
     W_OBJECT(ClipboardBranch)
+#else
+    Q_OBJECT
+#endif
 
 public:
     ClipboardBranch(void);

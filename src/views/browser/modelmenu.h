@@ -43,25 +43,41 @@
 #define MODELMENU_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QtWidgets/QMenu>
 #include <QtCore/QAbstractItemModel>
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 
 namespace browser {
 	// A QMenu that is dynamically populated from a QAbstractItemModel
     class ModelMenu : public QMenu {
+#if QT_VERSION == 0x050600
 	W_OBJECT(ModelMenu)
-
+#else
+	Q_OBJECT
+#endif
 	signals:
-	    void	activated(const QModelIndex &index) W_SIGNAL(activated, (const QModelIndex &), index)	// ;
-	    void	hovered_signal(const QString &text) W_SIGNAL(hovered_signal, (const QString &), text)	// ;
+	    void activated(const QModelIndex &index)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(activated, (const QModelIndex &), index)	//
+#else
+	    ;
+#endif
+	    void hovered_signal(const QString &text)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(hovered_signal, (const QString &), text)	//
+#else
+	    ;
+#endif
 
 	public:
 	    ModelMenu(QWidget *parent = 0);
@@ -112,7 +128,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 
 #endif	// MODELMENU_H

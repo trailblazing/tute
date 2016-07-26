@@ -1,14 +1,24 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QVBoxLayout>
 #include <QGridLayout>
 #include <QGroupBox>
 
 #include "editor_image_properties.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorImageProperties)
+#endif
+
+
 EditorImageProperties::EditorImageProperties(QWidget *parent) : QDialog(parent){
-    imageRealWidth = 0;
-    imageRealHeight = 0;
+    imageRealWidth	= 0;
+    imageRealHeight	= 0;
 
 	// Флаг, используемый для запрещения цикличного взаимного изменения
 	// высоты и ширины
@@ -18,9 +28,11 @@ EditorImageProperties::EditorImageProperties(QWidget *parent) : QDialog(parent){
     setup_signals();
     assembly();
 }
+
 EditorImageProperties::~EditorImageProperties()
 {}
-void EditorImageProperties:: setup_ui(){
+
+void EditorImageProperties::setup_ui(){
     infoLabel = new QLabel(" ");
 
     percentSizeLabel = new QLabel(tr("Size (%): "));
@@ -55,7 +67,8 @@ void EditorImageProperties:: setup_ui(){
 
     this->setWindowTitle(tr("Image properies"));
 }
-void EditorImageProperties:: setup_signals(){
+
+void EditorImageProperties::setup_signals(){
     void (QSpinBox::*_valueChanged)(int) = &QSpinBox::valueChanged;
     connect(percentSizeSpin, _valueChanged, this, &EditorImageProperties::on_changed_percent);
     connect(widthSpin, _valueChanged, this, &EditorImageProperties::on_changed_width);
@@ -66,7 +79,8 @@ void EditorImageProperties:: setup_signals(){
     connect(buttonBox, &QDialogButtonBox::accepted, this, &EditorImageProperties::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, this, &EditorImageProperties::reject);
 }
-void EditorImageProperties:: assembly(){
+
+void EditorImageProperties::assembly(){
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
 
@@ -74,13 +88,13 @@ void EditorImageProperties:: assembly(){
     QGridLayout *gridLayout = new QGridLayout();
 
     gridLayout->addWidget(percentSizeLabel, 0, 0);
-    gridLayout->addWidget(percentSizeSpin,  0, 1);
+    gridLayout->addWidget(percentSizeSpin, 0, 1);
 
     gridLayout->addWidget(widthLabel, 1, 0);
-    gridLayout->addWidget(widthSpin,  1, 1);
+    gridLayout->addWidget(widthSpin, 1, 1);
 
     gridLayout->addWidget(heightLabel, 2, 0);
-    gridLayout->addWidget(heightSpin,  2, 1);
+    gridLayout->addWidget(heightSpin, 2, 1);
 
 	// Кнопка сбора размера к настоящему размеру картинки
     gridLayout->addWidget(resetSizeButton, 3, 1);
@@ -90,8 +104,8 @@ void EditorImageProperties:: assembly(){
 
 
 	// Добавляется строка с информацией о картинке
-    QGroupBox	*groupBox = new QGroupBox(tr("Image info"));
-    QVBoxLayout *vbox = new QVBoxLayout;
+    QGroupBox	*groupBox	= new QGroupBox(tr("Image info"));
+    QVBoxLayout *vbox		= new QVBoxLayout;
     vbox->addWidget(infoLabel);
     groupBox->setLayout(vbox);
     mainLayout->addWidget(groupBox);
@@ -100,34 +114,42 @@ void EditorImageProperties:: assembly(){
 	// Добавляется линейка кнопок OK и Cancel на основной слой
     mainLayout->addWidget(buttonBox);
 }
-void EditorImageProperties:: set_info(QString infoText){
+
+void EditorImageProperties::set_info(QString infoText){
     infoLabel->setText(infoText);
 }
-void EditorImageProperties:: set_real_width(int width){
+
+void EditorImageProperties::set_real_width(int width){
     imageRealWidth = width;
 }
-void EditorImageProperties:: set_real_height(int height){
+
+void EditorImageProperties::set_real_height(int height){
     imageRealHeight = height;
 }
-void EditorImageProperties:: set_width(int width){
+
+void EditorImageProperties::set_width(int width){
     isRelateSizeSetted = true;
     widthSpin->setValue(width);
     isRelateSizeSetted = false;
 }
-void EditorImageProperties:: set_height(int height){
+
+void EditorImageProperties::set_height(int height){
     isRelateSizeSetted = true;
     heightSpin->setValue(height);
     isRelateSizeSetted = false;
 }
-int EditorImageProperties:: get_width(void){
+
+int EditorImageProperties::get_width(void){
     return widthSpin->value();
 }
-int EditorImageProperties:: get_height(void){
+
+int EditorImageProperties::get_height(void){
     return heightSpin->value();
 }
+
 // Расчет размеров картинки в процентах на основании реальных размеров
 // и заданных, и обновление виджета, отображающего проценты
-void EditorImageProperties:: update_percent(void){
+void EditorImageProperties::update_percent(void){
     if(imageRealWidth == 0 || imageRealHeight == 0)return;
     int calculatePercent;
 	// Расчет процента далается на основании более длинной стороны рисунка
@@ -137,21 +159,23 @@ void EditorImageProperties:: update_percent(void){
     percentSizeSpin->setValue(calculatePercent);
     isRelateSizeSetted = false;
 }
-void EditorImageProperties:: on_changed_percent(int n){
+
+void EditorImageProperties::on_changed_percent(int n){
 	// Запрещается "циклическое" изменение ширины и высоты
     if(isRelateSizeSetted)return;
     int calculateWidth;
     int calculateHeight;
 
-    calculateWidth = (n * imageRealWidth) / 100;
-    calculateHeight = (n * imageRealHeight) / 100;
+    calculateWidth	= (n * imageRealWidth) / 100;
+    calculateHeight	= (n * imageRealHeight) / 100;
 
     isRelateSizeSetted = true;
     widthSpin->setValue(calculateWidth);
     heightSpin->setValue(calculateHeight);
     isRelateSizeSetted = false;
 }
-void EditorImageProperties:: on_changed_width(int n){
+
+void EditorImageProperties::on_changed_width(int n){
     if(imageRealWidth == 0 || imageRealHeight == 0)return;
 	// Запрещается "циклическое" изменение ширины и высоты
     if(isRelateSizeSetted)return;
@@ -166,7 +190,8 @@ void EditorImageProperties:: on_changed_width(int n){
     percentSizeSpin->setValue(percent);
     isRelateSizeSetted = false;
 }
-void EditorImageProperties:: on_changed_height(int n){
+
+void EditorImageProperties::on_changed_height(int n){
     if(imageRealHeight == 0 || imageRealHeight == 0)return;
 	// Запрещается "циклическое" изменение ширины и высоты
     if(isRelateSizeSetted)return;
@@ -181,8 +206,10 @@ void EditorImageProperties:: on_changed_height(int n){
     percentSizeSpin->setValue(percent);
     isRelateSizeSetted = false;
 }
-void EditorImageProperties:: on_click_reset_size(){
+
+void EditorImageProperties::on_click_reset_size(){
     set_width(imageRealWidth);
     set_height(imageRealHeight);
     update_percent();
 }
+

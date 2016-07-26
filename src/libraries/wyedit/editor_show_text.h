@@ -2,17 +2,27 @@
 #define EDITORSHOWTEXT_H
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 
 #include <QDialog>
 #include <QTextEdit>
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 // Класс отдельного (открепляемого) окна для просмотра текста записи без возможности редактирования
 class EditorShowText : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorShowText)
+#else
+    Q_OBJECT
+#endif
+
+
+
     public:
 	explicit EditorShowText(QWidget *parent = 0);
 	virtual ~EditorShowText();

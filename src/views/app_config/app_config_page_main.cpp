@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QString>
 #include <QWidget>
 #include <QLabel>
@@ -17,18 +22,24 @@
 
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfigPageMain)
+#endif
+
 AppConfigPageMain::AppConfigPageMain(QWidget *parent) : ConfigPage(parent){
     setup_ui();
     setup_signals();
     assembly();
 }
-void AppConfigPageMain:: setup_ui(void){
+
+void AppConfigPageMain::setup_ui(void){
     qDebug() << "Create main config page";
 
 
-    QString	standartItem = tr("Standard");
-    QString	portableItem = tr("Portable");
+    QString	standartItem	= tr("Standard");
+    QString	portableItem	= tr("Portable");
 
 
 	// Блок работы с выбором языка интерфейса
@@ -107,9 +118,9 @@ void AppConfigPageMain:: setup_ui(void){
     dateTimeFormatBox->setTitle(tr("Date and time show settings"));
 
     disableCustomDateTimeFormat = new QRadioButton(tr("Show date and time by OS locale settings"), this);
-    enableCustomDateTimeFormat = new QRadioButton(tr("Custom date and time show format"), this);
-    customDateTimeFormat = new QLineEdit(this);
-    dateTimeFormatHelpButton = new FlatToolButton(this);
+    enableCustomDateTimeFormat	= new QRadioButton(tr("Custom date and time show format"), this);
+    customDateTimeFormat	= new QLineEdit(this);
+    dateTimeFormatHelpButton	= new FlatToolButton(this);
     QCommonStyle styleHelp;
     dateTimeFormatHelpButton->setIcon(styleHelp.standardIcon(QStyle::SP_MessageBoxQuestion));
 	// Точка устанавливается возле того пункта, который настроен в конфиге
@@ -125,6 +136,7 @@ void AppConfigPageMain:: setup_ui(void){
 	customDateTimeFormat->setText(appconfig.custom_datetime_format());
     }
 }
+
 AppConfigPageMain::~AppConfigPageMain(void){
 //    delete tetradirInput;
 //    delete trashdirInput;
@@ -137,7 +149,8 @@ AppConfigPageMain::~AppConfigPageMain(void){
 //    delete enableCustomDateTimeFormat;
 //    delete customDateTimeFormat;
 }
-void AppConfigPageMain:: setup_signals(void){
+
+void AppConfigPageMain::setup_signals(void){
     connect(tetradirButton, &FlatToolButton::clicked, this, &AppConfigPageMain::open_tetradir_select_dialog);
     connect(trashdirButton, &FlatToolButton::clicked, this, &AppConfigPageMain::open_trashdir_select_dialog);
 
@@ -146,7 +159,8 @@ void AppConfigPageMain:: setup_signals(void){
 
     connect(dateTimeFormatHelpButton, &FlatToolButton::clicked, this, &AppConfigPageMain::onDateTimeFormatHelpButton);
 }
-void AppConfigPageMain:: assembly(void){
+
+void AppConfigPageMain::assembly(void){
     QHBoxLayout *application_mode_layout = new QHBoxLayout();
 
     application_mode_layout->addWidget(application_mode_label);
@@ -177,8 +191,8 @@ void AppConfigPageMain:: assembly(void){
 
 
 	// Блок работы с отображением даты и времени
-    QVBoxLayout *dateTimeFormatVBox = new QVBoxLayout(this);
-    QHBoxLayout *dateTimeFormatHBox = new QHBoxLayout(this);
+    QVBoxLayout *dateTimeFormatVBox	= new QVBoxLayout(this);
+    QHBoxLayout *dateTimeFormatHBox	= new QHBoxLayout(this);
     dateTimeFormatVBox->addWidget(disableCustomDateTimeFormat);
     dateTimeFormatVBox->addWidget(enableCustomDateTimeFormat);
 
@@ -220,8 +234,9 @@ void AppConfigPageMain:: assembly(void){
 
     setLayout(centralLayout);
 }
+
 // Действия при нажатии кнопки выбора директории данных
-void AppConfigPageMain:: open_tetradir_select_dialog(void){
+void AppConfigPageMain::open_tetradir_select_dialog(void){
     QFileDialog tetradirSelectDialog(this);
     tetradirSelectDialog.setFileMode(QFileDialog::Directory);
     tetradirSelectDialog.setWindowTitle(tr("Select data directory"));
@@ -231,8 +246,9 @@ void AppConfigPageMain:: open_tetradir_select_dialog(void){
 
     tetradirInput->setText(tetradirSelectDialog.directory().absolutePath());
 }
+
 // Действия при нажатии кнопки выбора директории корзины
-void AppConfigPageMain:: open_trashdir_select_dialog(void){
+void AppConfigPageMain::open_trashdir_select_dialog(void){
     QFileDialog trashdirSelectDialog(this);
     trashdirSelectDialog.setFileMode(QFileDialog::Directory);
     trashdirSelectDialog.setWindowTitle(tr("Select trash directory"));
@@ -242,20 +258,23 @@ void AppConfigPageMain:: open_trashdir_select_dialog(void){
 
     trashdirInput->setText(trashdirSelectDialog.directory().absolutePath());
 }
+
 // Действия при нажатии на радиокнопку системных установок даты и времени
-void AppConfigPageMain:: onDisableCustomDateTimeFormatToggle(bool checked){
+void AppConfigPageMain::onDisableCustomDateTimeFormatToggle(bool checked){
     qDebug() << "In onDisableCustomDateTimeFormat(): " << checked;
     if(checked == true){
 	customDateTimeFormat->setEnabled(false);
 	customDateTimeFormat->setText("");
     }
 }
+
 // Действия при нажатии на радиокнопку пользовательских установок даты и времени
-void AppConfigPageMain:: onEnableCustomDateTimeFormatToggle(bool checked){
+void AppConfigPageMain::onEnableCustomDateTimeFormatToggle(bool checked){
     qDebug() << "In onEnableCustomDateTimeFormat(): " << checked;
     if(checked == true)customDateTimeFormat->setEnabled(true);
 }
-void AppConfigPageMain:: onDateTimeFormatHelpButton(void){
+
+void AppConfigPageMain::onDateTimeFormatHelpButton(void){
     QString text = "Format symbols:\n\
 \n\
 d: day 1-31, dd: day 01-31,\n\
@@ -276,10 +295,11 @@ Sample: dd.MM.yyyy - hh:mm:ss";
     msgBox.setText(text);
     msgBox.exec();
 }
+
 // Метод должен возвращать уровень сложности сделанных изменений
 // 0 - изменения не требуют перезапуска программы
 // 1 - изменения требуют перезапуска программы
-int AppConfigPageMain:: apply_changes(void){
+int AppConfigPageMain::apply_changes(void){
     qDebug() << "Apply changes main";
 
     int difficultChanges = 0;
@@ -288,9 +308,9 @@ int AppConfigPageMain:: apply_changes(void){
 	QDir dir(tetradirInput->text());
 	// Проверяется, допустимо ли имя директории
 	if(dir.isReadable() == false || dir.exists() == false)
-		QMessageBox::warning(this, tr("Warning"),
-		    tr("The data directory does not exists or unavailable for reading."),
-		    QMessageBox::Ok);
+		QMessageBox::warning(this, tr("Warning")
+				    , tr("The data directory does not exists or unavailable for reading.")
+				    , QMessageBox::Ok);
 	else{
 		// Новое имя запоминается в конфиг
 	    appconfig.tetra_dir(tetradirInput->text());
@@ -302,30 +322,22 @@ int AppConfigPageMain:: apply_changes(void){
 	QDir dir(trashdirInput->text());
 	// Проверяется, допустимо ли имя директории
 	if(dir.isReadable() == false || dir.exists() == false)
-		QMessageBox::warning(this, tr("Warning"),
-		    tr("The trash directory does not exists or unavailable for reading."),
-		    QMessageBox::Ok);
+		QMessageBox::warning(this, tr("Warning")
+				    , tr("The trash directory does not exists or unavailable for reading.")
+				    , QMessageBox::Ok);
 	else{
 		// Новое имя запоминается в конфиг
 	    appconfig.trash_dir(trashdirInput->text());
 	}
     }
 	// Если был изменен размер корзины
-    if((int)appconfig.trash_size() != (int)trashsizeInput->text().toInt()){
-	appconfig.trash_size(trashsizeInput->text().toInt());
-    }
+    if((int) appconfig.trash_size() != (int) trashsizeInput->text().toInt())appconfig.trash_size(trashsizeInput->text().toInt());
 	// Если было изменено максимально возможное количество файлов в корзине
-    if(appconfig.trash_max_file_count() != trashmaxfilecountInput->text().toInt()){
-	appconfig.trash_max_file_count(trashmaxfilecountInput->text().toInt());
-    }
+    if(appconfig.trash_max_file_count() != trashmaxfilecountInput->text().toInt())appconfig.trash_max_file_count(trashmaxfilecountInput->text().toInt());
 	// Если было изменено использование пользовательского формата даты и времени
-    if(appconfig.enable_custom_datetime_format() != enableCustomDateTimeFormat->isChecked()){
-	appconfig.enable_custom_datetime_format(enableCustomDateTimeFormat->isChecked());
-    }
+    if(appconfig.enable_custom_datetime_format() != enableCustomDateTimeFormat->isChecked())appconfig.enable_custom_datetime_format(enableCustomDateTimeFormat->isChecked());
 	// Если было изменен пользовательский формат даты и времени
-    if(appconfig.custom_datetime_format() != customDateTimeFormat->text()){
-	appconfig.custom_datetime_format(customDateTimeFormat->text());
-    }
+    if(appconfig.custom_datetime_format() != customDateTimeFormat->text())appconfig.custom_datetime_format(customDateTimeFormat->text());
 	// Если был изменен язык
     if(appconfig.interface_language() != interfaceLanguage->currentText()){
 	appconfig.interface_language(interfaceLanguage->currentText());
@@ -339,3 +351,4 @@ int AppConfigPageMain:: apply_changes(void){
     }
     return difficultChanges;
 }
+

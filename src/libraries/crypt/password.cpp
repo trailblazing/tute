@@ -1,4 +1,9 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QMessageBox>
 #include <QCryptographicHash>
 #include <QtGlobal>
@@ -23,7 +28,15 @@ extern GlobalParameters globalparameters;
 extern DataBaseConfig	databaseconfig;
 extern const char	*knowtreeview_singleton_name;
 
+
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(Password)
+#endif
+
+
+
+
 Password::Password(void)
 {}
 Password::~Password(void)

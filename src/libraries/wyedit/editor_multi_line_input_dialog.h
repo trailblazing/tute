@@ -2,8 +2,7 @@
 #define	_EDITORMULTILINEINPUTDIALOG_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QtGlobal>
 #include <QWidget>
@@ -12,8 +11,18 @@
 #include <QTextEdit>
 
 
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
 class EditorMultiLineInputDialog : public QDialog {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorMultiLineInputDialog)
+#else
+    Q_OBJECT
+#endif
 
 public:
     EditorMultiLineInputDialog(QWidget *parent=0);

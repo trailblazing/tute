@@ -1,10 +1,20 @@
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 #include <QAction>
 #include <QDebug>
 
 #include "editor_context_menu.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(EditorContextMenu)
+#endif
+
+
 EditorContextMenu::EditorContextMenu(QWidget *parent) : QMenu(parent)
 {
     setup_actions();

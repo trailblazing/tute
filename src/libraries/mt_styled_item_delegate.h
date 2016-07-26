@@ -2,15 +2,22 @@
 #define __MTSTYLEDITEMDELEGATE_H__
 
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QStyledItemDelegate>
+
+
+#include <wobjectdefs.h>
+#include <QObject>
 
 // Этот класс не используется, скорее всего будет удален
 
 class MtStyledItemDelegate : public QStyledItemDelegate {
+#if QT_VERSION == 0x050600
     W_OBJECT(MtStyledItemDelegate)	//
+#else
+    Q_OBJECT
+#endif
 
     public:
 	explicit MtStyledItemDelegate(QObject *parent = 0);

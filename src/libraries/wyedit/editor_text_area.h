@@ -2,8 +2,6 @@
 #define _EDITORTEXTAREA_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
 
 
 #include <QTextEdit>
@@ -13,8 +11,20 @@
 #include <QEvent>
 #include <QGestureEvent>
 
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
+
+
 class EditorTextArea : public QTextEdit {
+#if QT_VERSION == 0x050600
     W_OBJECT(EditorTextArea)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	EditorTextArea(QWidget *parent = 0);
@@ -33,8 +43,18 @@ class EditorTextArea : public QTextEdit {
 	int	get_indent_started_right(void);
 
     signals:
-	void	tap_and_hold_gesture_finished(const QPoint &p) W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint &), p)	// ;
-	void	update_indentline_geometry_signal(void) W_SIGNAL(update_indentline_geometry_signal)	// ;
+	void tap_and_hold_gesture_finished(const QPoint &p)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(tap_and_hold_gesture_finished, (const QPoint &), p)	//
+#else
+	;
+#endif
+	void update_indentline_geometry_signal(void)
+#if QT_VERSION == 0x050600
+	W_SIGNAL(update_indentline_geometry_signal)	//
+#else
+	;
+#endif
 
 
     public slots:

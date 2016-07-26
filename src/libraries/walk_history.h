@@ -2,9 +2,6 @@
 #define _WALKHISTORY_H_
 
 
-#include <wobjectdefs.h>
-#include <QObject>
-
 
 #include <QtGlobal>
 #include <QObject>
@@ -13,11 +10,18 @@
 #include <QStringList>
 #include <QMap>
 
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
+
 #define WALK_HISTORY_MAX 100
 
-#define WALK_HISTORY_GO_NONE     0
-#define WALK_HISTORY_GO_PREVIOUS 1
-#define WALK_HISTORY_GO_NEXT     2
+#define WALK_HISTORY_GO_NONE		0
+#define WALK_HISTORY_GO_PREVIOUS	1
+#define WALK_HISTORY_GO_NEXT		2
 
 struct WALK_HISTORY_DATA {
     int _cursor_position;
@@ -27,7 +31,11 @@ struct WALK_HISTORY_DATA {
 struct id_value;
 
 class WalkHistory : public QObject {
+#if QT_VERSION == 0x050600
     W_OBJECT(WalkHistory)
+#else
+    Q_OBJECT
+#endif
 
     public:
 	WalkHistory(void);
@@ -42,8 +50,7 @@ class WalkHistory : public QObject {
 	int		cursor_position(const id_value &id);
 	int		scrollbar_position(const id_value &id);
 	void		remove_history_data(const id_value &id);
-
-	void set_drop(bool flag);
+	void		set_drop(bool flag);
 
     protected:
 

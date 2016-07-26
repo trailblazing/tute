@@ -42,11 +42,16 @@
 #ifndef FEATUREPERMISSIONBAR_H
 #define FEATUREPERMISSIONBAR_H
 
-#include <wobjectdefs.h>
-#include <QObject>
+
 
 #include <QWidget>
 #include <QWebEnginePage>
+
+
+#if QT_VERSION == 0x050600
+#include <wobjectdefs.h>
+#include <QObject>
+#endif
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -58,15 +63,22 @@ QT_END_NAMESPACE
 
 namespace browser {
     class FeaturePermissionBar : public QWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(FeaturePermissionBar)
-
+#else
+	Q_OBJECT
+#endif
 	public:
 	    FeaturePermissionBar(QWidget *);
 	    void requestPermission(const QUrl &, QWebEnginePage::Feature feature);
 
 	signals:
-	    void featurePermissionProvided(const QUrl &securityOrigin, QWebEnginePage::Feature f, QWebEnginePage::PermissionPolicy p) W_SIGNAL(featurePermissionProvided, (const QUrl &, QWebEnginePage::Feature, QWebEnginePage::PermissionPolicy), securityOrigin, f, p)	// ;
-
+	    void featurePermissionProvided(const QUrl &securityOrigin, QWebEnginePage::Feature f, QWebEnginePage::PermissionPolicy p)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(featurePermissionProvided, (const QUrl &, QWebEnginePage::Feature, QWebEnginePage::PermissionPolicy), securityOrigin, f, p)	// ;
+#else
+	    ;
+#endif
 	private slots:
 	    void	permissionDenied();
 	    void	permissionGranted();
@@ -80,7 +92,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif	// FEATUREPERMISSIONBAR_H
 

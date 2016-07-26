@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QVBoxLayout>
 #include <QGridLayout>
@@ -13,7 +18,11 @@
 #include "views/record_table/record_screen.h"
 #include "record_print.h"
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(RecordPrint)
+#endif
+
 
 RecordPrint::RecordPrint(rs_t *_record_screen) : QDialog(_record_screen){
     setup_ui();

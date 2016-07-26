@@ -40,7 +40,12 @@
 ****************************************************************************/
 
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 
 #include "history.h"
@@ -72,7 +77,12 @@
 
 namespace browser {
 //    W_OBJECT_IMPL(HistoryItem)
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryManager)
+#endif
+
+
     static const unsigned int HISTORY_VERSION = 23;
 
     HistoryManager::HistoryManager(QObject *parent)
@@ -310,7 +320,10 @@ namespace browser {
 	_lastsavedurl = _history.value(0)._url;
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryModel)
+#endif
+
     HistoryModel::HistoryModel(HistoryManager *history, QObject *parent)
 	: QAbstractTableModel(parent)
 	  , _history(history){
@@ -377,7 +390,7 @@ namespace browser {
 			// when there is no title try to generate one from the url
 			if(item._title.isEmpty()){
 			    QString page = QFileInfo(QUrl(item._url).path()).fileName();
-			    if(! page.isEmpty()) return page;
+			    if(! page.isEmpty())return page;
 			    return item._url;
 			}
 			return item._title;
@@ -389,7 +402,7 @@ namespace browser {
 	    }
 
 	    case Qt::DecorationRole:
-		if(index.column() == 0)	return sapp_t::instance()->icon(item._url);
+		if(index.column() == 0)return sapp_t::instance()->icon(item._url);
 	}
 	return QVariant();
     }
@@ -418,7 +431,11 @@ namespace browser {
 
 #define MOVEDROWS 15
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryMenuModel)
+#endif
+
 	/*
 	    Maps the first bunch of items of the source model to the root
 	*/
@@ -448,7 +465,7 @@ namespace browser {
 	    return bumpedItems + folders;
 	}
 	if(parent.internalId() == quintptr(- 1))
-		if(parent.row() < bumpedRows()) return 0;
+		if(parent.row() < bumpedRows())return 0;
 	QModelIndex	idx		= mapToSource(parent);
 	int		defaultCount	= sourceModel()->rowCount(idx);
 	if(idx == sourceModel()->index(0, 0))return defaultCount - bumpedRows();
@@ -506,7 +523,11 @@ namespace browser {
 	return createIndex(bumpedItems + treeIndexParent.row(), treeIndexParent.column(), sr);
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryMenu)
+#endif
+
+
     HistoryMenu::HistoryMenu(QWidget *parent)
 	: ModelMenu(parent)
 	  , _history(0){
@@ -554,7 +575,11 @@ namespace browser {
 	for(int i = 0; i < _initialactions.count(); ++ i)addAction(_initialactions.at(i));
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(TreeProxyModel)
+#endif
+
+
     TreeProxyModel::TreeProxyModel(QObject *parent) : QSortFilterProxyModel(parent){
 	setSortRole(HistoryModel::DateTimeRole);
 	setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -565,7 +590,11 @@ namespace browser {
 	return QSortFilterProxyModel::filterAcceptsRow(source_row, source_parent);
     }
 
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryDialog)
+#endif
+
+
     HistoryDialog::HistoryDialog(QWidget *parent, HistoryManager *setHistory) : QDialog(parent){
 	HistoryManager *history = setHistory;
 	if(! history)history = sapp_t::historyManager();
@@ -619,7 +648,12 @@ namespace browser {
 	clipboard->setText(url);
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryFilterModel)
+#endif
+
+
     HistoryFilterModel::HistoryFilterModel(QAbstractItemModel *sourceModel, QObject *parent)
 	: QAbstractProxyModel(parent)
 	  , _loaded(false){
@@ -780,7 +814,11 @@ namespace browser {
 	return true;
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryCompletionModel)
+#endif
+
     HistoryCompletionModel::HistoryCompletionModel(QObject *parent)
 	: QAbstractProxyModel(parent)
     {}
@@ -857,7 +895,12 @@ namespace browser {
 	endResetModel();
     }
 
+
+#if QT_VERSION == 0x050600
     W_OBJECT_IMPL(HistoryTreeModel)
+#endif
+
+
     HistoryTreeModel::HistoryTreeModel(QAbstractItemModel *sourceModel, QObject *parent)
 	: QAbstractProxyModel(parent){
 	setSourceModel(sourceModel);

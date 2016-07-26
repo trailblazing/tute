@@ -1,5 +1,10 @@
 
+
+#if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
+#endif
+
+
 
 #include <QObject>
 #include <QMimeData>
@@ -9,7 +14,7 @@
 #include <QScrollBar>
 #include <QStyleOptionToolBar>
 
-#include <wobjectimpl.h>
+
 
 #include "libraries/flat_control.h"
 #include "main.h"
@@ -42,7 +47,11 @@ extern const char				*record_view_multi_instance_name;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(FlatToolButtonRating)
+#endif
+
 
 FlatToolButtonRating::FlatToolButtonRating(QWidget *parent) : FlatToolButton(parent){
 //    setMouseTracking(true);
@@ -117,7 +126,11 @@ void StarRating::paint(QPainter *painter, const QRect &rect, const QPalette &pal
 //!
 //!
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(ViewDelegation)
+#endif
+
 
 ViewDelegation::ViewDelegation(rv_t *view) : QStyledItemDelegate(view), _view(view){
     auto column_count = appconfig.record_table_show_fields().size();
@@ -262,7 +275,11 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 
 // Виджет, отображащий список записей в ветке
 
+
+#if QT_VERSION == 0x050600
 W_OBJECT_IMPL(rv_t)
+#endif
+
 
 rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
     : QTableView(record_screen_)
