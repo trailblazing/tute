@@ -27,14 +27,17 @@ struct TreeLevel : public boost::intrusive_ref_counter<TreeLevel, boost::thread_
     boost::intrusive_ptr<TreeIndex>		tree_index();
     boost::intrusive_ptr<TreeItem>		to_be_operated();
     boost::intrusive_ptr<TreeItem>		merge();
-    boost::intrusive_ptr<TreeItem>		move(const int pos = 0, const int mode = add_new_record_after);
+    boost::intrusive_ptr<TreeItem>		move();
+
     static boost::intrusive_ptr<TreeLevel>	instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_merge, tv_t *tree_view);
     private:
 	TreeLevel(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_operated, tv_t *tree_view);
-	boost::intrusive_ptr<TreeIndex> _tree_index;
-	boost::intrusive_ptr<TreeItem>	_to_be_operated;
-	tv_t				*_tree_view;
+	boost::intrusive_ptr<TreeItem>			move_impl(const int pos = 0, const int mode = add_new_record_after);
+	boost::intrusive_ptr<TreeIndex>			_tree_index;
+	boost::intrusive_ptr<TreeItem>			_to_be_operated;
+	tv_t						*_tree_view;
 	friend struct TreeIndex;
+	friend class tkm_t;
 };
 
 struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_safe_counter> {

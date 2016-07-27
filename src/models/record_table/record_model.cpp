@@ -311,9 +311,9 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 		// Преобразование возможно только для отображаемой в таблице информации
 	    if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < ctime_type >::value){
 		// Преобразование временного штампа в дату и время
-		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
-		if(appconfig.enable_custom_datetime_format() == false)return fieldDateTime.toString(Qt::SystemLocaleDate);
-		else return fieldDateTime.toString(appconfig.custom_datetime_format());
+//		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
+		if(appconfig.enable_custom_datetime_format() == false)return field;	// fieldDateTime.toString(Qt::SystemLocaleDate);
+		else return field;	// fieldDateTime.toString(appconfig.custom_datetime_format());
 	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){	// "hasAttach"   // Наличие аттачей
 		if(field == "0")return "";	// Если аттачей нет, выводится пустая строка. Это повышает читабельность
 		else return tr("Yes");	// На русский перевести как "Есть"

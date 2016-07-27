@@ -76,7 +76,9 @@ FindScreen::FindScreen(QString object_name
 	// _tree_screen->know_branch()->root_item()  //_selected_branch_root
 	// }
       , _chasewidget(new browser::ChaseWidget(QSize(17, 17), this))
+#ifdef SHOW_PROCESS_DIALOG
       , _progress(new QProgressDialog(this))
+#endif
 	// , _findtable(new FindTableWidget(this)) // deprecated
 	// , _is_search_global(_tree_screen->know_branch()->root_item()->id() == global_root_id)
 	// , _selected_branch_as_pages([ & ]
@@ -97,7 +99,12 @@ FindScreen::FindScreen(QString object_name
     setObjectName(object_name);
     _navigater->setMaximumWidth(130);
     _chasewidget->setMaximumWidth(20);
+
+
+#ifdef SHOW_PROCESS_DIALOG
     _progress->reset();
+#endif
+
     _toolbarsearch->setMinimumWidth(100);
 
     _toolbarsearch->sizePolicy().setHorizontalStretch(10);
@@ -448,7 +455,9 @@ void FindScreen::setup_ui(void){
 	// _findtable = new FindTableWidget();
 	// _findtable->hide();
 	// _progress = new QProgressDialog(this);
+#ifdef SHOW_PROCESS_DIALOG
     _progress->hide();
+#endif
 }
 
 void FindScreen::assembly(void){
@@ -596,8 +605,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	//    boost::intrusive_ptr<TreeItem>	final_result(nullptr);
     QMap<QString, QString> data;
 
-    QDateTime	ctime_dt	= QDateTime::currentDateTime();
-    QString	ctime		= ctime_dt.toString("yyyyMMddhhmmss");
+//    QDateTime	ctime_dt	= QDateTime::currentDateTime();
+    QString ctime = get_qtime();// ctime_dt.toString("yyyyMMddhhmmss");
 	// _item->field("ctime", ctime);
 
     data["id"]		= get_unical_id();
@@ -709,7 +718,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 
 
 
-
+#ifdef SHOW_PROCESS_DIALOG
 
     auto prepare_progressbar = [&](){
 		// Показывается виджет линейки наполняемости
@@ -718,6 +727,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	    _progress->setRange(0, _candidate_records);
 	    _progress->setModal(true);
 	    _progress->setMinimumDuration(0);
+
 	    _progress->show();
 
 		// Обнуляется счетчик обработанных конечных записей
@@ -726,6 +736,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	};
 
     (void) prepare_progressbar;
+#endif
+
     auto assert_start_item = [&](){
 		// Если стартовый элемент не был установлен
 		// if(!startItem)
@@ -740,21 +752,28 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 		// return startItem;
 	};
 
+#ifdef SHOW_PROCESS_DIALOG
 
     auto close_progressbar = [&](){
 		// Виджет линейки наполняемости скрывается
 	    _progress->reset();
+
 	    _progress->hide();
 	    _progress->close();
 	};
+    (void) close_progressbar;
+#endif
 
     auto final_search = [&](boost::intrusive_ptr<TreeItem>          &final_result	// QList<boost::intrusive_ptr<Linker> >    &_result_list
 			   , boost::intrusive_ptr<TreeItem>         &_session_root_item				// std::shared_ptr<RecordTable> &resultset_data
 			   , boost::intrusive_ptr<TreeItem>         &_start_item
 	    ) -> boost::intrusive_ptr<TreeItem> & {
 	    qDebug() << "Start finding in " << _candidate_records << " records";
-	    prepare_progressbar();
 
+	    _total_progress_counter = 0;
+#ifdef SHOW_PROCESS_DIALOG
+	    prepare_progressbar();
+#endif
 
 
 		// _result_item->clear();
@@ -845,17 +864,23 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	    }else assert_start_item();														// return nullptr;
 	}
     }else assert_start_item();								// return nullptr;
-	// close_progressbar();
-	// } else {
 
+#ifdef SHOW_PROCESS_DIALOG
     close_progressbar();
-	// create a new note and open in browser
-	// if it is a web address, open it
-	// else, open from search engine
-	// }
-	// output(_result_item);
+#else
+    globalparameters.status_bar()->showMessage("searching node(s) : " + QString::number(_total_progress_counter), 2000);// across thread message
+#endif
 
-//    if(_result_list.size() > 0)for(auto it : _result_list)final_result << it->host();	//= _result_list.at(0)->host();
+//	// } else {
+
+//    close_progressbar();
+//	// create a new note and open in browser
+//	// if it is a web address, open it
+//	// else, open from search engine
+//	// }
+//	// output(_result_item);
+
+////    if(_result_list.size() > 0)for(auto it : _result_list)final_result << it->host();	//= _result_list.at(0)->host();
     return final_result;			// ->record_table();
 }
 
@@ -884,14 +909,20 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 		// Перебираются записи таблицы
 		for(int i = 0; i < _start_item->count_direct(); i ++){
 		    auto candidate = _start_item->child_direct(i);
+		    ++ _total_progress_counter;
+#ifdef SHOW_PROCESS_DIALOG
 			// Обновляется линейка наполняемости
-		    _progress->setValue(++ _total_progress_counter);
+		    _progress->setValue(_total_progress_counter);
 		    sapp_t::instance()->processEvents();
 		    if(! _progress->wasCanceled()){
 			// if(_progress->wasCanceled()) {
 			// _cancel_flag = 1;
 			// return _result_item;
 			// }
+#else
+		    sapp_t::instance()->processEvents();
+#endif
+//			globalparameters.status_bar()->showMessage("searching node(s) : " + QString::number(_total_progress_counter), 1000);// across thread message
 
 			// езультаты поиска в полях
 			QMap<QString, bool> iteration_search_result;
@@ -927,7 +958,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 				    iteration_search_result[key] = find_in_text_process(textdoc.toPlainText());
 				}
 			    }
-			}																			// Закрылся цикл поиска в полях
+			}																				// Закрылся цикл поиска в полях
 
 
 			// Проверяется, есть ли поле, в котором поиск был успешен
@@ -937,7 +968,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 			if(value == true)found_flag = 1;
 			// Если запись найдена
 			if(found_flag == 1){
-			    qDebug() << "Find succesfull in " << candidate->field<name_type>();
+//			    qDebug() << "Find succesfull in " << candidate->field<name_type>();
 //			    QString pin0 = curritem->field("pin");
 //			    QString pin1 = searchRecordTable->field("pin", i);		// work
 //				// В таблицу результатов поиска добавляются данные
@@ -972,7 +1003,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 //				result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 //			    }
 
-			    final_result << candidate;	// result->linker();
+			    final_result << candidate;		// result->linker();
 //                            }
 //                            }else{
 //                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
@@ -984,6 +1015,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 			}
 			if(candidate)
 				if(candidate->count_direct() > 0)find_recursive(final_result, _session_root_item, candidate);
+#ifdef SHOW_PROCESS_DIALOG
 		    }else{
 			// if(_progress->wasCanceled()) {
 			_cancel_flag = 1;
@@ -993,6 +1025,8 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 			// return _result_item;
 			// }
 		    }
+#else
+#endif
 		}													// Закрылся цикл перебора записей в таблице конечных записей
 	    }										// Закрылось условие что в ветке есть таблица конечных записей
 
@@ -1035,45 +1069,25 @@ bool FindScreen::find_in_text_process(const QString &text){
     }
 }
 
-void FindScreen::word_regard(int pos){
-    appconfig.findscreen_wordregard(pos);
-}
+void FindScreen::word_regard(int pos){appconfig.findscreen_wordregard(pos);}
 
-void FindScreen::how_extract(int pos){
-    appconfig.findscreen_howextract(pos);
-}
+void FindScreen::how_extract(int pos){appconfig.findscreen_howextract(pos);}
 
-void FindScreen::tree_search_area(int pos){
-    appconfig.find_screen_tree_search_area(pos);
-}
+void FindScreen::tree_search_area(int pos){appconfig.find_screen_tree_search_area(pos);}
 
-void FindScreen::if_find_in_pin(int state){
-    if_find_in_field("pin", state);
-}
+void FindScreen::if_find_in_pin(int state){if_find_in_field("pin", state);}
 
-void FindScreen::if_find_in_name(int state){
-    if_find_in_field("name", state);
-}
+void FindScreen::if_find_in_name(int state){if_find_in_field("name", state);}
 
-void FindScreen::if_find_in_author(int state){
-    if_find_in_field("author", state);
-}
+void FindScreen::if_find_in_author(int state){if_find_in_field("author", state);}
 
-void FindScreen::if_find_in_home(int state){
-    if_find_in_field("home", state);
-}
+void FindScreen::if_find_in_home(int state){if_find_in_field("home", state);}
 
-void FindScreen::if_find_in_url(int state){
-    if_find_in_field("url", state);
-}
+void FindScreen::if_find_in_url(int state){if_find_in_field("url", state);}
 
-void FindScreen::if_find_in_tags(int state){
-    if_find_in_field("tags", state);
-}
+void FindScreen::if_find_in_tags(int state){if_find_in_field("tags", state);}
 
-void FindScreen::if_find_in_text(int state){
-    if_find_in_field("text", state);
-}
+void FindScreen::if_find_in_text(int state){if_find_in_field("text", state);}
 
 void FindScreen::if_find_in_field(QString fieldname, int state){
     bool i;

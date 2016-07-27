@@ -1,11 +1,19 @@
 #include <sys/timeb.h>
 
+#include <chrono>
+#include <ctime>
+#include <sstream>
+#include <boost/locale.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>	// include all types plus i/o
+#include <boost/date_time/posix_time/posix_time_types.hpp>	// no i/o just types
+
+
 #include <QTranslator>
 #include <QToolButton>
 #include <QSplashScreen>
 
 #ifndef QT_VERSION
-//#define QT_VERSION 0x050600
+// #define QT_VERSION 0x050600
 #define QT_VERSION 0x050700
 #endif
 
@@ -82,26 +90,26 @@ QObject *mainwindow;
 bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get){
     std::string difference = url_difference(url_compare_stored, url_compare_get);
 
-    return(difference.size() == 0 || difference == "/");
+    return difference.size() == 0 || difference == "/";
 }
+
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
     std::string compare = "";
     if(url_compare_stored.size() >= url_compare_get.size()){
-	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++){						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-	    if(url_compare_stored.at(i) != url_compare_get.at(i))compare += url_compare_stored.at(i);										// url_compare_stored.erase(i, 1);
-	}
+	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) != url_compare_get.at(i))compare += url_compare_stored.at(i);										// url_compare_stored.erase(i, 1);
 	for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++)compare += url_compare_stored.at(i);
     }else{
 	// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++){						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-	    if(url_compare_stored.at(i) == url_compare_get.at(i))compare += url_compare_get.at(i);									// url_compare_get.erase(i, 1);
-	}
+	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+		if(url_compare_stored.at(i) == url_compare_get.at(i))compare += url_compare_get.at(i);										// url_compare_get.erase(i, 1);
 	for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++)compare += url_compare_get.at(i);
     }
     std::string::size_type pos;
     while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
     return compare;
 }
+
 void log_print(char *lpszText, ...){
     va_list	argList;
     FILE	*pFile;
@@ -128,6 +136,7 @@ void log_print(char *lpszText, ...){
 	// успешное завершение
     return;
 }
+
 void critical_error(QString message){
     qDebug() << " ";
     qDebug() << "---------------";
@@ -137,12 +146,13 @@ void critical_error(QString message){
     qDebug() << "---------------";
     qDebug() << " ";
 
-    QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error",
-	message + "\n\nProgramm was closed.",
-	QMessageBox::Ok);
+    QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error"
+			 , message + "\n\nProgramm was closed."
+			 , QMessageBox::Ok);
 
     exit(1);
 }
+
 // Функция-помощник при отладке генерации XML-кода. Преобразует узел DOM в строку
 QString xml_node_to_qstring(QDomNode xmlData){
 	// Если узел представляет собой полностью документ
@@ -166,6 +176,7 @@ QString xml_node_to_qstring(QDomNode xmlData){
 	return xmlcode;
     }
 }
+
 // Преобразование из QString в обычный char
 char *qstring_to_char(const QString &str){
 	/*
@@ -185,6 +196,7 @@ char *qstring_to_char(const QString &str){
 
     return str.toLocal8Bit().data();
 }
+
 // Рекурсивная печать дерева объектов, т.к. dumpObjectInfo() и dumpObjectTree() не работают
 void print_object_tree_recurse(QObject *pobj){
     static int indent = 0;
@@ -205,12 +217,14 @@ void print_object_tree_recurse(QObject *pobj){
 	indent --;
     }
 }
+
 // Печать дерева объектов, основная функция
 void print_object_tree(void){
     qDebug() << "Object tree";
 
     print_object_tree_recurse(mainwindow);
 }
+
 //// Функция для сортировки массива из QStringList исходя из длин списков
 // bool compare_qstringlist_length(const QStringList &list1, const QStringList &list2)
 // {
@@ -240,13 +254,54 @@ void print_object_tree(void){
 //    else return x2;
 // }
 
+std::string get_time(){
+    std::time_t		tt	= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());// std::time(0);// get time now
+    struct tm		*now	= localtime(&tt);
+    std::ostringstream	_current_time;
+    _current_time	<< std::setw(4) << std::setfill('0') << (now->tm_year + 1900)	// << '-'
+			<< std::setw(2) << std::setfill('0') << (now->tm_mon + 1)	// << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_mday	// << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_hour	// << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_min	// << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_sec;
+
+    return _current_time.str();
+}
+
+QString get_qtime(){
+    return QString::fromStdString(get_time());
+}
 
 void smart_print_debug_message(QString msg){
-    if(globalparameters.target_os() == "any" ||
-	globalparameters.target_os() == "meego"){
-	QTime	currTime = QTime::currentTime();
-	QString timeText = currTime.toString("hh:mm:ss");
-	msg = timeText + " " + msg;
+    if(globalparameters.target_os() == "any" ||	globalparameters.target_os() == "meego"){
+////	QTime	currTime	= QTime::currentTime();
+////	QString timeText	= currTime.toString("hh:mm:ss");
+//	QDateTime	ctime_dt	= QDateTime::currentDateTime();
+//	QString		ctime		= ctime_dt.toString("yyyyMMddhhmmss");
+
+
+	std::time_t		tt	= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());// std::time(0);// get time now
+	struct tm		*now	= localtime(&tt);
+	std::ostringstream	_current_time;
+	_current_time	<< (now->tm_year + 1900) << '-'
+			<< std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_mday << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_hour << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_min << '-'
+			<< std::setw(2) << std::setfill('0') << now->tm_sec;
+	std::string c_t(_current_time.str());
+//	// auto _end = std::chrono::system_clock::now();	// std::chrono::time_point<std::chrono::system_clock>
+//	std::time_t end_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+
+
+//	namespace pt = boost::posix_time;
+//	std::ostringstream msg_;
+//	const pt::ptime		now_ = pt::second_clock::local_time();
+//	pt::time_facet		f("%H-%M-%S");	// pt::time_facet * const f = new pt::time_facet("%H-%M-%S");
+//	msg_.imbue(std::locale(msg_.getloc(), &f));
+//	msg_ << now_;
+	auto ctime = QString::fromStdString(_current_time.str());
+	msg = ctime + " " + msg;	// timeText + " " + msg;
 
 	unsigned int messageLen = msg.toLocal8Bit().size();
 	// printf("Len of line: %d\n", messageLen);
@@ -255,6 +310,7 @@ void smart_print_debug_message(QString msg){
     }
 	// В Android пока неясно, как смотреть поток ошибок, для андроида qDebug() не переопределяется
 }
+
 // Обработчик (хендлер) вызовов qDebug()
 // Внутри этого обработчика нельзя использовать вызовы qDebug(), т. к. получится рекурсия
 #if QT_VERSION < 0x050000
@@ -280,28 +336,29 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
 	// Если в конфигурации запрещен вывод отладочных сообщений
     if(! appconfig.print_debug_messages())return;
     switch(type){
-    case QtInfoMsg:
-	smart_print_debug_message("[INF] " + msgText + "\n");
-	break;
+	case QtInfoMsg:
+	    smart_print_debug_message("[INF] " + msgText + "\n");
+	    break;
 
-    case QtDebugMsg:
-	smart_print_debug_message("[DBG] " + msgText + "\n");
-	break;
+	case QtDebugMsg:
+	    smart_print_debug_message("[DBG] " + msgText + "\n");
+	    break;
 
-    case QtWarningMsg:
-	smart_print_debug_message("[WRN] " + msgText + "\n");
-	break;
+	case QtWarningMsg:
+	    smart_print_debug_message("[WRN] " + msgText + "\n");
+	    break;
 
-    case QtCriticalMsg:
-	smart_print_debug_message("[CRERR] " + msgText + "\n");
-	break;
+	case QtCriticalMsg:
+	    smart_print_debug_message("[CRERR] " + msgText + "\n");
+	    break;
 
-    case QtFatalMsg:
-	smart_print_debug_message("[FTERR] " + msgText + "\n");
-	abort();
+	case QtFatalMsg:
+	    smart_print_debug_message("[FTERR] " + msgText + "\n");
+	    abort();
     }
 	// #endif
 }
+
 void set_debug_message_handler(){
     qDebug() << "Debug message before set message handler for target OS: " << globalparameters.target_os();
 	// Для десктопных операционок можно переустановить обработчик qDebug()
@@ -318,6 +375,7 @@ void set_debug_message_handler(){
     }
     qDebug() << "Debug message after set message handler";
 }
+
 // Выдача на экран простого окна с сообщением
 void show_message_box(QString message){
     QMessageBox msg_box;
@@ -325,6 +383,7 @@ void show_message_box(QString message){
     msg_box.setText(message);
     msg_box.exec();
 }
+
 int screen_size_y(void){
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     int size = (QtSingleApplication::instance()->desktop()->availableGeometry()).height();
@@ -336,6 +395,7 @@ int screen_size_y(void){
 
     return size;
 }
+
 int screen_size_x(void){
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     int size = (QtSingleApplication::instance()->desktop()->availableGeometry()).width();
@@ -347,42 +407,45 @@ int screen_size_x(void){
 
     return size;
 }
+
 qreal calculate_iconsize_px(void){
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
-    qreal	dpiX = QtSingleApplication::instance()->desktop()->physicalDpiX();
-    qreal	dpiY = QtSingleApplication::instance()->desktop()->physicalDpiY();
-    qreal	dpi = (dpiX + dpiY) / 2;
+    qreal	dpiX	= QtSingleApplication::instance()->desktop()->physicalDpiX();
+    qreal	dpiY	= QtSingleApplication::instance()->desktop()->physicalDpiY();
+    qreal	dpi	= (dpiX + dpiY) / 2;
 #endif
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     qreal dpi = QApplication::screens().at(0)->physicalDotsPerInch();
 #endif
 
-    qreal	iconSizeMm = 6;			// Размер иконки в миллиметрах (рекомендованный)
-    qreal	iconSizeInch = iconSizeMm / 25.4;		// Размер иконки в дюймах
-    qreal	iconSizePx = iconSizeInch * dpi;
+    qreal	iconSizeMm	= 6;			// Размер иконки в миллиметрах (рекомендованный)
+    qreal	iconSizeInch	= iconSizeMm / 25.4;			// Размер иконки в дюймах
+    qreal	iconSizePx	= iconSizeInch * dpi;
 
     return iconSizePx;
 }
+
 // Замена в CSS-стиле все вхождения подстроки META_ICON_SIZE на вычисленный размер иконки в пикселях
 // Replacement CSS-style of all occurrences of a substring META_ICON_SIZE calculated on the icon size in pixels
 QString replace_css_meta_iconsize(QString styleText){
     styleText.replace("META_ICON_SIZE", QString::number((int) calculate_iconsize_px()));
-    styleText.replace("META_ICON_HALF_SIZE", QString::number((int)calculate_iconsize_px() / 2));
-    styleText.replace("META_ICON_TWO_THIRDS_SIZE", QString::number(((int)calculate_iconsize_px() * 2) / 3));
-    styleText.replace("META_ICON_QUARTER_SIZE", QString::number((int)calculate_iconsize_px() / 4));
-    styleText.replace("META_ICON_FIFTH_SIZE", QString::number((int)calculate_iconsize_px() / 5));
-    styleText.replace("META_ICON_SIXTH_SIZE", QString::number((int)calculate_iconsize_px() / 6));
+    styleText.replace("META_ICON_HALF_SIZE", QString::number((int) calculate_iconsize_px() / 2));
+    styleText.replace("META_ICON_TWO_THIRDS_SIZE", QString::number(((int) calculate_iconsize_px() * 2) / 3));
+    styleText.replace("META_ICON_QUARTER_SIZE", QString::number((int) calculate_iconsize_px() / 4));
+    styleText.replace("META_ICON_FIFTH_SIZE", QString::number((int) calculate_iconsize_px() / 5));
+    styleText.replace("META_ICON_SIXTH_SIZE", QString::number((int) calculate_iconsize_px() / 6));
 
     return styleText;
 }
+
 QString set_css_style(){
     QString style;
 
-    QString	work_directory = globalparameters.work_directory();
-    auto	target_os = globalparameters.target_os();
-    QString	file_name_to = work_directory + "/stylesheet.css";
-    QString	file_name_from = work_directory + "/resource/standartconfig/" + target_os + "/stylesheet.css";
+    QString	work_directory	= globalparameters.work_directory();
+    auto	target_os	= globalparameters.target_os();
+    QString	file_name_to	= work_directory + "/stylesheet.css";
+    QString	file_name_from	= work_directory + "/resource/standartconfig/" + target_os + "/stylesheet.css";
 
 
 
@@ -394,9 +457,7 @@ QString set_css_style(){
     if(! result){
 	qDebug() << "Stylesheet not found in " << file_name_from;
 //        globalparameters.create_stylesheet_file(globalparameters.work_directory());
-    }else{
-	size_from = css_from.size();
-    }
+    }else size_from = css_from.size();
     css_from.close();	// ?
 
 
@@ -408,14 +469,10 @@ QString set_css_style(){
     if(! openResult){
 	qDebug() << "Stylesheet not found in " << file_name_from << ". Create new css file.";
 	globalparameters.create_stylesheet_file(globalparameters.work_directory());
-    }else{
-	size_to = css.size();
-    }
+    }else size_to = css.size();
     css.close();	// ?
     if(size_to < size_from){
-	if(! QFile::remove(file_name_to)){
-	    critical_error("Can not remove file\n" + file_name_to);
-	}
+	if(! QFile::remove(file_name_to))critical_error("Can not remove file\n" + file_name_to);
 	if(! QFile::copy(file_name_from, file_name_to)){
 		//        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
 		//        }else {
@@ -436,6 +493,7 @@ QString set_css_style(){
     }
     return style;
 }
+
 void set_kinetic_scrollarea(QAbstractItemView *object){
 #if QT_VERSION < 0x050000
 
@@ -454,7 +512,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 	scroller->grabGesture(object, QScroller::LeftMouseButtonGesture);
 
 	// Поведение прокрутки на краях списка (сейчас не пружинит)
-	QScrollerProperties	properties = scroller->scrollerProperties();
+	QScrollerProperties	properties	= scroller->scrollerProperties();
 	QVariant		overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::
 		OvershootWhenScrollable									// OvershootAlwaysOff
 		);
@@ -663,6 +721,7 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
     }
 #endif
 }
+
 QStringList text_delimiter_decompose(QString text){
     text.replace('"', ' ');
     text.replace("'", " ");
@@ -678,6 +737,7 @@ QStringList text_delimiter_decompose(QString text){
 
     return list;
 }
+
 // Функция всегда возвращает уникальный идентификатор
 QString get_unical_id(void){
 	// Уникальный идентификатор состоит из 10 цифр количества секунд с эпохи UNIX
@@ -686,7 +746,7 @@ QString get_unical_id(void){
 	// Количество секунд как число
     long seconds;
 
-    seconds = (long)time(nullptr);
+    seconds = (long) time(nullptr);
 
 	// Количество секунд как строка
     QString secondsLine = QString::number(seconds, 10);
@@ -700,6 +760,7 @@ QString get_unical_id(void){
 
     return result;
 }
+
 int get_milli_count(void){
 	// Something like GetTickCount but portable
 	// It rolls over every ~ 12.1 days (0x100000/24/60/60)
@@ -711,23 +772,25 @@ int get_milli_count(void){
 
     return nCount;
 }
+
 void init_random(void){
     qDebug() << "Init random generator";
 
     unsigned int seed1 = get_milli_count();
     srand(seed1);
 
-    unsigned int	delay = rand() % 1000;
-    unsigned int	r = 0;
+    unsigned int	delay	= rand() % 1000;
+    unsigned int	r	= 0;
     for(unsigned int i = 0; i < delay; i ++)r = r + rand();
     seed1 = seed1 - get_milli_count() + r;
 
-    unsigned int	seed2 = time(nullptr);
-    unsigned int	seed3 = seed1 + seed2;
-    unsigned int	seed = seed3;
+    unsigned int	seed2	= time(nullptr);
+    unsigned int	seed3	= seed1 + seed2;
+    unsigned int	seed	= seed3;
 
     srand(seed);
 }
+
 int main(int argc, char * *argv){
     printf("\n\rStart MyTetra v. % d. % d. % d\n\r", APPLICATION_RELEASE_VERSION, APPLICATION_RELEASE_SUBVERSION, APPLICATION_RELEASE_MICROVERSION);
 
@@ -926,3 +989,4 @@ int main(int argc, char * *argv){
 
     return sapp_t(argc, argv, globalparameters, appconfig, databaseconfig).exec();			// application.exec();
 }
+

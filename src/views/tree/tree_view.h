@@ -165,11 +165,11 @@ class tv_t : public QTreeView {
 					       , const add_new_delegate &_branch_add_new
 					       , const add_new &_branch_add_new_impl);
 
-	boost::intrusive_ptr<TreeItem> paste_children_from_children(boost::intrusive_ptr<TreeIndex> _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition_double &_substitute_condition);
+	boost::intrusive_ptr<TreeItem> move_children(boost::intrusive_ptr<TreeIndex> _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition_double &_substitute_condition);
 
-	void paste_children_from_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex);
+	void paste_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex);
 
-	boost::intrusive_ptr<TreeItem> paste_child(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
+	boost::intrusive_ptr<TreeItem> move(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 //	boost::intrusive_ptr<TreeItem> paste_sibling(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 
 	QList<boost::intrusive_ptr<TreeItem> > delete_permanent(const std::function<tkm_t *()> &_current_model

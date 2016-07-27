@@ -41,8 +41,8 @@ DataBaseConfig::DataBaseConfig(QObject *pobj){
 // Деструктор объекта настройки БД
 DataBaseConfig::~DataBaseConfig(){
     if(is_init_flag){
-	qDebug() << "Save database config file";
-	conf->sync();
+//	qDebug() << "Save database config file";
+//	conf->sync();
     }
 }
 

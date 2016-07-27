@@ -264,7 +264,7 @@ namespace browser {
 	       , [&](const QString &file){
 		tv_t *tree_view = _tree_screen->view();
 		auto it = tree_view->session_root_auto();
-		TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	    }
 	    );
 	connect(_tabmanager, &TabWidget::setCurrentTitle, this, &Browser::slotUpdateWindowTitle);
@@ -1244,7 +1244,7 @@ namespace browser {
 //        loadPage(file);
 	tv_t	*tree_view	= _tree_screen->view();
 	auto	it		= tree_view->session_root_auto();
-	TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
     }
 
 #define QT_NO_PRINTPREVIEWDIALOG
@@ -1395,7 +1395,7 @@ namespace browser {
 	auto	parent		= current_item->parent();
 	if(! parent)throw std::runtime_error(formatter() << "! parent");
 	TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(
-	    tree_view->current_item(), QUrl(home), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
+	    tree_view->current_item(), QUrl(home), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
 	    )->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 // }
 	settings.endGroup();

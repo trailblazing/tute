@@ -496,7 +496,7 @@ void ts_t::setup_actions(void){
 
 // boost::intrusive_ptr<TreeIndex> tree_index;
 // try{tree_index = new TreeIndex([&] () -> KnowModel* {return _tree_view->source_model();}, _parent, sibling_order);} catch(std::exception &e) {throw e; }
-	    _tree_view->paste_children_from_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent, _parent->parent()));	// std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+	    _tree_view->paste_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent, _parent->parent()));	// std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 	});	// , paste
 
     _actionlist[action_paste_branch] = ac;
@@ -520,7 +520,7 @@ void ts_t::setup_actions(void){
 // return _tree_view->source_model();
 // }, _current_item, 0);
 // } catch(std::exception &e) {throw e; }
-	    _tree_view->paste_children_from_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent, _parent->parent()));	// std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+	    _tree_view->paste_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent, _parent->parent()));	// std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 	});	// branch_paste_sub
 
     _actionlist[action_paste_sub_branch] = ac;

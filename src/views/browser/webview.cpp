@@ -1203,7 +1203,7 @@ namespace browser {
 	    Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 // auto tree_index = create_tree_index();
 // assert(tree_index);
-	    auto it = tree_index->item_register(target_url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
+	    auto it = tree_index->item_register(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
 			return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());	// return it_->field<url_type>() == target_url.toString();
 		    });																																// Browser::_defaulthome
 
@@ -1245,7 +1245,7 @@ namespace browser {
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
 		page = tree_index->page_instantiate(this->_binder->host(), target_url
-						   , std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
+						   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
 						   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
 			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
 		assert(page);

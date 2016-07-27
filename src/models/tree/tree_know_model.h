@@ -117,7 +117,7 @@ class tkm_t : public tm_t {
 	boost::intrusive_ptr<TreeItem> merge(boost::intrusive_ptr<TreeLevel> _tree_merge, const view_delete_permantent_strategy &_view_delete_permantent);	// boost::intrusive_ptr<TreeItem> target
 
 
-	boost::intrusive_ptr<TreeItem> move_child(boost::intrusive_ptr<TreeLevel> _tree_level, int mode = add_new_record_after);
+
 
 
 
@@ -126,8 +126,8 @@ class tkm_t : public tm_t {
     private:
 
 
-	void init(QDomDocument *dom_model);
-
+	void				init(QDomDocument *dom_model);
+	boost::intrusive_ptr<TreeItem>	move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode = add_new_record_after);
 	//    // Функция заполнения дерева из DOM-документа
 	//    void setup_modeldata(QDomDocument *dommodel, boost::intrusive_ptr<TreeItem> self);
 
@@ -210,6 +210,7 @@ class tkm_t : public tm_t {
 	friend class ts_t;
 	friend class rs_t;
 	friend struct TreeIndex;
+	friend struct TreeLevel;
 };
 
 

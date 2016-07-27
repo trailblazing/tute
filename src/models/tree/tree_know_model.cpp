@@ -786,7 +786,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::new_child(boost::intrusive_ptr<TreeIndex> 
 
 
 // Add a new highlight to the Item element  // Добавление новой подветки к Item элементу
-boost::intrusive_ptr<TreeItem> tkm_t::move_child(boost::intrusive_ptr<TreeLevel> _tree_level, int mode){		//    , int _pos
+boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree_level, int mode){		//    , int _pos
 	//    , QString id, QString name
     boost::intrusive_ptr<TreeIndex>	tree_index	= _tree_level->tree_index();		// boost::intrusive_ptr<TreeItem> _parent
     boost::intrusive_ptr<TreeItem>	to_be_operated	= _tree_level->to_be_operated();
@@ -840,7 +840,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::move_child(boost::intrusive_ptr<TreeLevel>
 			   , pos				// (pos + 1 < parent->count_direct()) ? pos + 1 : parent->count_direct()
 		);
 
-	    result = _tree_level->move(pos, mode);	// source_item->parent(host, pos, mode)->host();				// add_new_branch(parent, id, name);  // parent->count_direct()
+	    result = _tree_level->move_impl(pos, mode);	// source_item->parent(host, pos, mode)->host();				// add_new_branch(parent, id, name);  // parent->count_direct()
 	    if(result && child([&](boost::intrusive_ptr<const TreeItem> it) -> bool {return it->id() == result->id();})){
 		emit_datachanged_signal(index(to_be_host->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == result->id() && result->linker() == il && il->host_parent() == result->parent();}), 0, _index_parent));
 	    }
@@ -863,7 +863,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::move_child(boost::intrusive_ptr<TreeLevel>
 	    }
 	    endInsertRows();
 	}else{				// should not use
-	    result = _tree_level->move(pos, mode);	// source_item->parent(host, pos, mode)->host();				// 1-3
+	    result = _tree_level->move_impl(pos, mode);	// source_item->parent(host, pos, mode)->host();				// 1-3
 	    assert(result->linker()->integrity_external(result, to_be_host));
 	}
 	if(to_be_host->field<crypt_type>() == "1" && result){
@@ -1261,7 +1261,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //            assert(tree_index);
 
 //            if(tree_index) {
-	    auto result = view->paste_child(TreeIndex::instance([&] {return view->source_model();}, host_parent, host_parent->parent()), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
+	    auto result = view->move(TreeIndex::instance([&] {return view->source_model();}, host_parent, host_parent->parent()), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
 	    assert(result->id() == linker_first->host()->id());
 	    if(result != linker_first->host()){
 		tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
@@ -1274,7 +1274,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //            assert(tree_index_first);
 //            if(tree_index_first) {
 	    for(auto &il : host->child_linkers()){
-		view->paste_child(TreeIndex::instance([&] {return view->source_model();}, result, result->parent()), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
+		view->move(TreeIndex::instance([&] {return view->source_model();}, result, result->parent()), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
 	    }
 //            }
 //            }

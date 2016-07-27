@@ -48,6 +48,10 @@ namespace browser {
     class TabWidget;
 }
 
+#ifndef SHOW_PROCESS_DIALOG
+//#define SHOW_PROCESS_DIALOG
+#endif
+
 // Виджет поиска по базе
 struct back_ground {boost::intrusive_ptr<TreeItem>  _selected_branch_root;};
 
@@ -210,9 +214,9 @@ class FindScreen : public QWidget
 	QGridLayout	*_tools_grid;
 
 	QVBoxLayout     *_central_desktop_layout;
-
+#ifdef SHOW_PROCESS_DIALOG
 	QProgressDialog *_progress;
-
+#endif
 	//    bool            _is_search_global = true;
 	//    FindTableWidget     *_findtable;
 	//    std::shared_ptr<ItemsFlat>      _selected_branch_as_pages;
@@ -224,7 +228,7 @@ class FindScreen : public QWidget
 	// Список слов, которые нужно искать
 	QStringList _search_word_list;
 
-	int _total_progress_counter;
+	int _total_progress_counter = 0;
 
 	int _cancel_flag = 0;
 };

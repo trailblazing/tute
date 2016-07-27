@@ -78,7 +78,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
       , integrity_fix_up(
 //	    [&] {
 //	      auto integrity_fix_up_impl =
-	  [&](boost::intrusive_ptr<TreeItem> _parent, const int pos, const int mode) -> boost::intrusive_ptr<Linker> {
+	  [&](boost::intrusive_ptr<TreeItem> _target_parent, const int pos, const int mode) -> boost::intrusive_ptr<Linker> {
 	      boost::intrusive_ptr<Linker> _result(nullptr);
 
 		// Добавление новой записи
@@ -91,27 +91,28 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 		// ADD_NEW_RECORD_AFTER - после указанной позиции, pos - номер позиции
 		// Метод принимает "тяжелый" объект записи
 		// Объект для вставки приходит как незашифрованным, так и зашифрованным
-	      auto child_move_unique = [&](boost::intrusive_ptr<TreeItem> _parent, int pos = 0, int mode = add_new_record_after) -> boost::intrusive_ptr<Linker> {					// , boost::intrusive_ptr<TreeItem>   _host   // child_insert? does not set parent pointer?
+	      auto child_move_unique = [&](boost::intrusive_ptr<TreeItem> _parent_target, int pos = 0, int mode = add_new_record_after) -> boost::intrusive_ptr<Linker> {					// , boost::intrusive_ptr<TreeItem>   _host   // child_insert? does not set parent pointer?
 		  boost::intrusive_ptr<Linker> result(nullptr);
 			// boost::intrusive_ptr<TreeItem> _child_item(this);
 			// assert(_self != _parent);
-		  if(_parent && _host != _parent){
+		  assert(_host != _parent_target);
+		  if(_parent_target && _host != _parent_target){
 		      int actually_insert_position = - 1;
 			//		  int result_should_be_position = pos;
 		      int count = 0;
 		      int found = 0;
-		      if(! integrity_external(this->_host, _parent)){
+		      if(! integrity_external(this->_host, _parent_target)){
 				//		      if(_host_parent != _parent){
-			  if(_host_parent && _host_parent != _parent && _host_parent->contains_direct(_host))_host_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->host()->id() && il == this;});
-			  for(auto il : _parent->_child_linkers){						//= _parent->_child_linkers.begin(); it != _parent->_child_linkers.end(); it++) {
+			  if(_host_parent && _host_parent != _parent_target && _host_parent->contains_direct(_host))_host_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->host()->id() && il == this;});
+			  for(auto il : _parent_target->_child_linkers){						//= _parent->_child_linkers.begin(); it != _parent->_child_linkers.end(); it++) {
 			      if(il == this){
 				  found ++;
 				  if(found == 1){
 				      result = this;
-				      this->_host_parent = _parent;
+				      this->_host_parent = _parent_target;
 				      actually_insert_position = count;
 				      integrity_external(_host, _host_parent);
-				  }else _parent->_child_linkers.removeOne(il);
+				  }else _parent_target->_child_linkers.removeOne(il);
 			      }
 			      count ++;
 			  }
@@ -120,7 +121,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 				// get shadow_branch
 				// TreeModelKnow *shadow_branch = globalparameters.tree_screen()->_shadow_branch;  // static_cast<TreeModelKnow *>(find_object<TreeViewKnow>(knowtreeview_singleton_name)->model());
 			  if(0 == found){			// !item_direct(_source_item)
-			      if(_host_parent != _parent)_host_parent = _parent;
+			      if(_host_parent != _parent_target)_host_parent = _parent_target;
 				// && !shadow_branch->is_record_id_exists(item->field("id"))
 				//// deprecated by _parent_target->remove
 				// auto _origin_parent = _source_item->parent();
@@ -168,8 +169,9 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 				// В список переданных полей добавляются вычислимые в данном месте поля
 			      if(_host->field<ctime_type>() == ""){
 					// Время создания данной записи
-				  QDateTime ctime_dt = QDateTime::currentDateTime();
-				  QString ctime = ctime_dt.toString("yyyyMMddhhmmss");
+//				  QDateTime ctime_dt = QDateTime::currentDateTime();
+
+				  QString ctime = get_qtime();	// ctime_dt.toString("yyyyMMddhhmmss");
 				  _host->field<ctime_type>(ctime);
 			      }
 				// Выясняется в какой ветке вставляется запись - в зашифрованной или нет
@@ -253,7 +255,7 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 				//		      }
 				//		      integrity_fix_up();   // recursive call
 		      }
-		      assert(_parent == _host_parent);
+		      assert(_parent_target == _host_parent);
 		      if(! _host_parent)throw std::runtime_error("child_move_unique : nullptr == _host_parent");
 		      if(! _host_parent->contains_direct(this))throw std::runtime_error("child_move_unique : _host_parent && _host_parent->contains_direct(this) failure");
 		      if(! integrity_external(_host, _host_parent))throw std::runtime_error("child_move_unique : integrity_external failure");
@@ -275,15 +277,15 @@ Linker::Linker(boost::intrusive_ptr<TreeItem>  host_parent_item, boost::intrusiv
 		  _host->linker(this);							// change rvalue to lvalue!!!
 		  if(! _host->linker()){result = false;assert(result);}
 	      }
-	      if(! std::get<HOST_PARENT_LINKER_EXIST>(*_status)() || _parent != _host_parent){	// (_parent != _host_parent)// to merge
-		  _result = child_move_unique(_parent, pos, mode);
-		  assert(_parent == _host_parent);
+	      if(! std::get<HOST_PARENT_LINKER_EXIST>(*_status)() || _target_parent != _host_parent){	// (_parent != _host_parent)// to merge
+		  _result = child_move_unique(_target_parent, pos, mode);
+		  assert(_target_parent == _host_parent);
 		  if(_result && _host_parent){
 		      if(! _host_parent->contains_direct(this)){result = false;assert(result);}
 		      if(! std::get<HOST_LINKER_IS_THIS>(*_status)()){result = false;assert(result);}
 		      if(! std::get<HOST_PARENT_LINKERS_HAS_THIS>(*_status)()){result = false;assert(result);}
 		  }
-	      }else assert(_parent == _host_parent);
+	      }else assert(_target_parent == _host_parent);
 	      return _result;
 	  }
 // ;
@@ -487,13 +489,13 @@ boost::intrusive_ptr<Linker> Linker::parent(boost::intrusive_ptr<TreeItem> _pare
 //                    _host_parent->_child_linkers.insert(pos, this);
 //                }
 //    result = child_move_unique(_parent, pos, mode);	// , _host
-
 //            if(_host_parent->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1"){													// new_host_parent &&
 //                if(_host->_field_data[boost::mpl::c_str < crypt_type > ::value] != "1")_host->to_encrypt();
 //            }else{
 //                if(_host->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1")_host->to_decrypt();
 //            }
 //            }
+    if(_host == _parent)throw std::runtime_error("try to point to self as parent");
 	// _host_parent = new_host_parent;
     result = integrity_fix_up(_parent, pos, mode);
     assert(_parent == _host_parent);

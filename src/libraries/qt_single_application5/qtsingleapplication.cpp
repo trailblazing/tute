@@ -91,7 +91,7 @@
 #include <qversiontagging.h>
 
 #ifndef QT_VERSION
-//#define QT_VERSION 0x050600
+// #define QT_VERSION 0x050600
 #define QT_VERSION 0x050700
 #endif
 
@@ -356,7 +356,6 @@ static void set_user_style_sheet(QWebEngineProfile *profile
     }
 }
 
-
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(QT_QTSINGLEAPPLICATION_EXPORT sapp_t)
 #endif
@@ -597,12 +596,11 @@ void sapp_t::main_window(){
     QtSingleCoreApplication instead.
  */
 
-sapp_t::sapp_t(
-    int &argc
+sapp_t::sapp_t(int &argc
 	      , char * *argv
-	      , GlobalParameters &globalparameters
-	      , AppConfig &appconfig
-	      , DataBaseConfig &databaseconfig
+	      , GlobalParameters    &globalparameters
+	      , AppConfig	    &appconfig
+	      , DataBaseConfig	    &databaseconfig
 	      , bool GUIenabled)
     : QApplication(argc, argv)
       , _peer(new QtLocalPeer(this, QString()))
@@ -631,13 +629,12 @@ sapp_t::sapp_t(
     QAppliation constructor.
  */
 
-sapp_t::sapp_t(
-    const QString &appId
+sapp_t::sapp_t(const QString &appId
 	      , int &argc
 	      , char * *argv
-	      , GlobalParameters &globalparameters
-	      , AppConfig &appconfig
-	      , DataBaseConfig &databaseconfig)
+	      , GlobalParameters    &globalparameters
+	      , AppConfig	    &appconfig
+	      , DataBaseConfig	    &databaseconfig)
     : QApplication(argc, argv)
       , _peer(new QtLocalPeer(this, appId))
       , _act_window(nullptr)
@@ -858,7 +855,7 @@ void sapp_t::newLocalSocketConnection(){
 	    boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-	    it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent())->item_register(_url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
+	    it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent())->item_register(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
 
 //            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
@@ -878,7 +875,7 @@ void sapp_t::newLocalSocketConnection(){
 //            if(tree_index)
 	    TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(tree_view->current_item()
 														, _url
-														, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+														, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 														, [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
 		)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	}
@@ -977,7 +974,7 @@ void sapp_t::postLaunch(){
 //            browser->loadPage(args.last());			// mainWindow()->loadPage(args.last());
 	    tv_t	*tree_view	= _globalparameters.tree_screen()->view();
 	    auto	it		= tree_view->session_root_auto();
-	    TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, args.last(), std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	    TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, args.last(), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	}
 	//        else
 	//            browser->slotHome(); // mainWindow()->slotHome();
@@ -1335,7 +1332,7 @@ QIcon sapp_t::defaultIcon() const {
 void sapp_t::setPrivateBrowsing(bool privateBrowsing){
     if(_private_browsing == privateBrowsing)return;
     _private_browsing = privateBrowsing;
-    auto browsers = [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
+    auto browsers = [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens())bs.insert(rs->browser());return bs;} ();
     if(privateBrowsing){
 	if(! _private_profile)_private_profile = new browser::Profile(profile_storage_name, this);	// new QWebEngineProfile(this);
 	for(auto &browser : browsers)browser->tabWidget()->setProfile(_private_profile);

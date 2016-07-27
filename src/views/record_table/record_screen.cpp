@@ -220,8 +220,8 @@ void rs_t::save_in_new_branch(bool checked){
 
 	    QMap<QString, QString> data;
 
-	    QDateTime	ctime_dt	= QDateTime::currentDateTime();
-	    QString	ctime		= ctime_dt.toString("yyyyMMddhhmmss");
+//	    QDateTime	ctime_dt	= QDateTime::currentDateTime();
+	    QString ctime = get_qtime();	// ctime_dt.toString("yyyyMMddhhmmss");
 		// _item->field("ctime", ctime);
 
 	    data["id"]		= get_unical_id();
@@ -268,7 +268,7 @@ void rs_t::save_in_new_branch(bool checked){
 		    _blank_header << it;																																																// _blank_header->child_rent(_record_model()->item(i));   // _result_item->work_pos(),
 		}
 	    }
-	    _tree_screen->view()->paste_children_from_children(TreeIndex::instance(_tree_source_model, _tree_screen->view()->current_item(), _tree_screen->view()->current_item()->parent()), _blank_header, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {
+	    _tree_screen->view()->move_children(TreeIndex::instance(_tree_source_model, _tree_screen->view()->current_item(), _tree_screen->view()->current_item()->parent()), _blank_header, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {
 		    return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();
 		});
 		// new_tree_item_in_treeknow_root = target;
@@ -453,10 +453,10 @@ void rs_t::setup_actions(void){
 		    }
 		}
 		if(modified){
-		    tree_view->paste_children_from_children(	// view_paste_sibling
+		    tree_view->move_children(	// view_paste_sibling
 			TreeIndex::instance(_source_model, tree_view->session_root_auto(), tree_view->session_root_auto()->parent())	// _tree_screen->tree_view()->current_index() //,
-							   , branch_item
-							   , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}
+					    , branch_item
+					    , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}
 			);
 
 			// _tree_screen->resetup_model(_source_model()->root_item());

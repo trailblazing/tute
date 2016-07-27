@@ -187,7 +187,7 @@ namespace browser {
 
 		    tree_index->page_instantiate(tree_view->current_item()
 						, url
-						, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+						, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 						, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 
@@ -225,7 +225,7 @@ namespace browser {
 		    url.setQuery(url_query);
 		    url.setFragment("q=" + search_text);
 //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		    tree_index->page_instantiate(tree_view->current_item(), url, std::bind(&tv_t::paste_child, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+		    tree_index->page_instantiate(tree_view->current_item(), url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}
 	    }
@@ -240,7 +240,7 @@ namespace browser {
 //	}
 	else{
 //	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
-	    auto host_parent = tree_view->paste_children_from_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();});
+	    auto host_parent = tree_view->move_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();});
 	    for(auto it : result_item->child_linkers()){	// move to search result
 		auto					browser			= globalparameters.main_window()->vtab_record()->activated_browser();
 		auto					record_controller	= browser->record_screen()->record_controller();

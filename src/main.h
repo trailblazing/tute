@@ -85,11 +85,13 @@ void insert_action_as_button(QToolBar *tools_line, QAction *before, QAction *act
 
 // int     imax(int x1, int x2);
 // int     imin(int x1, int x2);
-void		my_message_output(QtMsgType type, const char *msg);
-QStringList	text_delimiter_decompose(QString text);
-extern QString	get_unical_id(void);
-int		get_milli_count(void);
-void		init_random(void);
+extern std::string	get_time();
+extern QString		get_qtime();
+void			my_message_output(QtMsgType type, const char *msg);
+QStringList		text_delimiter_decompose(QString text);
+extern QString		get_unical_id(void);
+int			get_milli_count(void);
+void			init_random(void);
 
 
 

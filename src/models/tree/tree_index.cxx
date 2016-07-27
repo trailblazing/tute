@@ -238,7 +238,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
 			// }
 		    tree_view->synchronized(false);
 		}else if(tree_view->session_root_auto() != _result->parent()){	// if(session_root_item->is_ancestor_of(_result) && session_root_item != _result->parent())
-		    _result = tree_view->paste_child(_treeindex, _result, _substitute_condition);
+		    _result = tree_view->move(_treeindex, _result, _substitute_condition);
 		    assert(_result != tree_view->know_model_board()->root_item());
 		    assert(_result);
 		    tree_view->synchronized(false);
@@ -782,7 +782,11 @@ boost::intrusive_ptr<TreeItem> TreeLevel::to_be_operated(){return _to_be_operate
 
 boost::intrusive_ptr<TreeItem> TreeLevel::merge(){return (_to_be_operated == _tree_index->host()) ? _to_be_operated : _tree_view->merge(this);}
 
-boost::intrusive_ptr<TreeItem> TreeLevel::move(const int pos, const int mode){
+boost::intrusive_ptr<TreeItem> TreeLevel::move(){
+    return (_to_be_operated == _tree_index->host()) ? _to_be_operated : static_cast<tkm_t *>(_tree_view->source_model())->move(this);
+}
+
+boost::intrusive_ptr<TreeItem> TreeLevel::move_impl(const int pos, const int mode){
 //    auto	_parent = _tree_index->host_parent();
     auto _parent = _tree_index->host();
     if(_parent){
@@ -809,7 +813,7 @@ boost::intrusive_ptr<TreeLevel> TreeLevel::instance(boost::intrusive_ptr<TreeInd
     auto	current_model	= _tree_index->current_model();
     auto	host		= _tree_index->host();
     if(_to_be_merged->is_ancestor_of([&](boost::intrusive_ptr<const TreeItem> it){return it == host;})){
-	auto host_new = current_model()->move_child(TreeLevel::instance(TreeIndex::instance(current_model, _to_be_merged->parent()), host, tree_view));
+	auto host_new = TreeLevel::instance(TreeIndex::instance(current_model, _to_be_merged->parent()), host, tree_view)->move();	// static_cast<tkm_t *>(current_model())
 	assert(host_new == host);
 //	auto	temp	= host;
 //	host		= _to_be_merged;
