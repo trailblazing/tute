@@ -50,7 +50,7 @@
 
 #include "searchlineedit.h"
 #include <QLineEdit>
-
+#include <QThread>
 
 // #include "models/tree/TreeItem.h"
 // #include "models/tree/TreeModel.h"
@@ -91,11 +91,30 @@ namespace browser {
     class ChaseWidget;
 }
 
-//QT_BEGIN_NAMESPACE
+// QT_BEGIN_NAMESPACE
 
 
 namespace browser {
     class AutoSaver;
+
+
+    class WorkerThread : public QThread {
+	Q_OBJECT
+
+	void run() Q_DECL_OVERRIDE;
+//	{
+////		    QString result;
+//	    auto e = _child_linkers.last();
+//	    _child_linkers.pop_back();
+//	    emit resultReady();
+//	}
+	signals:
+	    void resultReady();
+	private:
+	    QList<boost::intrusive_ptr<TreeItem> >	&_child_items;
+	public:
+	    WorkerThread(QWidget *p, QList<boost::intrusive_ptr<TreeItem> > &l) : QThread(p), _child_items(l){}
+    };
 
     class ToolbarSearch : public SearchLineEdit {
 #if QT_VERSION == 0x050600
@@ -113,7 +132,7 @@ namespace browser {
 
 	    void returnPressed()
 #if QT_VERSION == 0x050600
-	    W_SIGNAL(returnPressed)//
+	    W_SIGNAL(returnPressed)	//
 #else
 	    ;
 #endif
@@ -125,10 +144,12 @@ namespace browser {
 	    QString	text() const;
 
 	    QLineEdit *findtext(){return _findtext;}
+
 		//        void findtext(QLineEdit *findtext) {_findtext = findtext;}
 
-	    QStackedWidget	*lineedits()				{return _lineedits;}
-	    void		lineedits(QStackedWidget *lineedits)	{_lineedits = lineedits;}
+	    QStackedWidget	*lineedits(){return _lineedits;}
+
+	    void lineedits(QStackedWidget *lineedits){_lineedits = lineedits;}
 
 	public slots:
 	    void	clear();
@@ -153,7 +174,7 @@ namespace browser {
 }
 
 
-//QT_END_NAMESPACE
+// QT_END_NAMESPACE
 
 #endif	// TOOLBARSEARCH_H
 

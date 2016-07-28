@@ -789,7 +789,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 	    final_result = std::async(std::launch::async, [&] {return find_recursive(final_result, _session_root_item, _start_item);}).get();
 
 //	    std::thread(&FindScreen::find_recursive, this, _result_list, _session_root_item, _start_item).detach();	// find_recursive(_result_list, _session_root_item, _start_item); // candidate_root->tabledata();
-	    return final_result;// find_recursive(final_result, _session_root_item, _start_item);				// _result_list;
+	    return final_result;//
+//		   find_recursive(final_result, _session_root_item, _start_item);				// _result_list;
 	};
 
 

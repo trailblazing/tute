@@ -39,7 +39,8 @@
 **
 ****************************************************************************/
 
-
+#include <thread>
+#include <future>
 #include <functional>
 #include <cassert>
 
@@ -59,7 +60,7 @@
 #include <QtCore/QSettings>
 #include <QtCore/QUrl>
 #include <QtCore/QUrlQuery>
-
+#include <QThread>
 #include <QtWidgets/QCompleter>
 #include <QtWidgets/QMenu>
 #include <QtCore/QStringListModel>
@@ -240,12 +241,14 @@ namespace browser {
 //	}
 	else{
 //	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
-	    auto host_parent = tree_view->move_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();});
-	    for(auto it : result_item->child_linkers()){	// move to search result
-		auto					browser			= globalparameters.main_window()->vtab_record()->activated_browser();
-		auto					record_controller	= browser->record_screen()->record_controller();
-		auto					tab_brother		= record_controller->view()->current_item();
-		boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, it->host());
+	    auto child_items = tree_view->move_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();});
+	    auto	_vtab_record		= globalparameters.main_window()->vtab_record();
+	    auto	browser			= _vtab_record->activated_browser();
+	    auto	record_controller	= browser->record_screen()->record_controller();
+	    auto	tab_brother		= record_controller->view()->current_item();
+//	    auto	child_linkers		= result_item->child_linkers();
+	    for(auto it : child_items){	// move to search result
+		boost::intrusive_ptr<RecordIndex>	record_index = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, it);
 		//                            if(record_index){
 		//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
 		//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
@@ -256,8 +259,17 @@ namespace browser {
 		//                            }else{
 		// auto previous_item = _source_model()->item(tree_view->previous_index());
 		auto result = browser->page_instantiate(record_index);
-		result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+//		std::thread(&TreeItem::activate, result, std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)).join();
 	    }
+
+//	    std::function<void()> startWorkInAThread = [&] {
+//		WorkerThread *workerThread = new WorkerThread(this, child_items);
+//		connect(workerThread, &WorkerThread::resultReady, this, [&] {if(child_items.size() > 0)startWorkInAThread();});
+//		connect(workerThread, &WorkerThread::finished, workerThread, &QObject::deleteLater);
+//		workerThread->start();
+//	    };
+//	    startWorkInAThread();
 	}
     }
 
@@ -295,12 +307,31 @@ namespace browser {
 	_autosaver->changeOccurred();;
     }
 
-    void ToolbarSearch::text(const QString &text){
-	_findtext->setText(text);
-    }
+    void ToolbarSearch::text(const QString &text){_findtext->setText(text);}
 
-    QString ToolbarSearch::text() const {
-	return _findtext->text();
+    QString ToolbarSearch::text() const {return _findtext->text();}
+
+    void WorkerThread::run(){
+//		    QString result;
+	auto					element			= _child_items.last();	// acrosss thread
+	auto					_vtab_record		= globalparameters.main_window()->vtab_record();
+	auto					browser			= _vtab_record->activated_browser();
+	auto					record_controller	= browser->record_screen()->record_controller();
+	auto					tab_brother		= record_controller->view()->current_item();	// acrosss thread
+	boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, element);
+	//                            if(record_index){
+	//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
+	//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
+	//                                ){
+	//                                auto result = browser->item_bind(record_index);
+	//                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+	//                                _result_list << result->linker();																												//
+	//                            }else{
+	// auto previous_item = _source_model()->item(tree_view->previous_index());
+	auto result = browser->page_instantiate(record_index);
+	result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+	_child_items.pop_back();
+	emit resultReady();
     }
 }
 

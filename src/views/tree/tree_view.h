@@ -165,7 +165,7 @@ class tv_t : public QTreeView {
 					       , const add_new_delegate &_branch_add_new
 					       , const add_new &_branch_add_new_impl);
 
-	boost::intrusive_ptr<TreeItem> move_children(boost::intrusive_ptr<TreeIndex> _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition_double &_substitute_condition);
+	QList<boost::intrusive_ptr<TreeItem> > move_children(boost::intrusive_ptr<TreeIndex> _parent_modelindex, boost::intrusive_ptr<TreeItem> _blank_header, const substitute_condition_double &_substitute_condition);
 
 	void paste_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex);
 

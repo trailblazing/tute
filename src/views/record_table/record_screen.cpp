@@ -1103,5 +1103,5 @@ browser::Browser *rs_t::browser(){return _browser;}
 
 ts_t *rs_t::tree_screen(){return _tree_screen;}
 
-QAction *rs_t::tree_show(){return _record_hide;}
+QAction *rs_t::record_hide(){return _record_hide;}
 

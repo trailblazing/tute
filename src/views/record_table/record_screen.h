@@ -82,7 +82,7 @@ class rs_t : public QWidget {
 //	browser::TabWidget	*tabmanager();
 	browser::Browser	*browser();
 	ts_t			*tree_screen();
-	QAction			*tree_show();
+	QAction			*record_hide();
 //	void			restore_menubar();
     public slots:
 

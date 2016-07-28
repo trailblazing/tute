@@ -558,25 +558,41 @@ void wn_t::setup_signals(void){
 ////	    (void) index;
 //	    auto _tree_hide = _tree_screen->_actionlist[action_hide_tree_screen];
 ////	    auto _h_record_splitter = this->h_record_splitter();
-	    auto record_sizes = _h_record_splitter->sizes();
+	    auto h_record_sizes = _h_record_splitter->sizes();
 //	    auto vtab_record = _main_window->vtab_record();
 //	    auto _vtab_tree = this->vtab_tree();
 	    auto bar_width = _vtab_record->tabBar()->geometry().width();// minimumSizeHint().width();	//
 //	    QIcon icon;
 //	    QString text = "";
-	    if(record_pos < bar_width){	// if(0 == sizes[0]){	// || globalparameters.entrance()->browsers().size() == 0             // h_right_splitter->widget(0)->width()
+	    if(record_pos <= bar_width){	// if(0 == sizes[0]){	// || globalparameters.entrance()->browsers().size() == 0             // h_right_splitter->widget(0)->width()
 //		icon = QIcon(":/resource/pic/butterfly-right.svg");
 //		text = tr("Show record screen");
 		_vtab_record->setMinimumWidth(bar_width);
-		record_sizes[1] = record_sizes[0] + record_sizes[1] - bar_width;
-		record_sizes[0] = bar_width;
-		_h_record_splitter->setSizes(record_sizes);	// QList<int>() << bar_width << h_record_sizes[0] + h_record_sizes[1] - bar_width);
+		_vtab_record->setMaximumWidth(bar_width);
+		h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+		h_record_sizes[0] = bar_width;
+
+		emit _vtab_record->_hide_action->setChecked(true);	// _vtab_record->setMinimumWidth(bar_width);
+		_vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+
+		_h_record_splitter->setSizes(h_record_sizes);	// QList<int>() << bar_width << h_record_sizes[0] + h_record_sizes[1] - bar_width);
+
+//		for(int i = 0; i < _vtab_record->count(); i ++)_vtab_record->widget(i)->close();
+
 //		if(_vtab_record->isVisible())_vtab_record->hide();
 	    }else if(record_pos > bar_width){
 //		icon = QIcon(":/resource/pic/butterfly-left.svg");
 //		text = tr("Hide record screen");
 		_vtab_record->setMaximumWidth(this->maximumWidth());
 //		if(! _vtab_record->isVisible())_vtab_record->show();
+
+		h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - record_pos;
+		h_record_sizes[0] = record_pos;
+		emit _vtab_record->_hide_action->setChecked(false);
+		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		_h_record_splitter->setSizes(h_record_sizes);
+//		_vtab_record->currentWidget()->show();
+//		emit _vtab_record->tabBar()->tabBarClicked(_vtab_record->currentIndex());
 	    }
 //	    _tree_hide->setIcon(icon);
 //	    _tree_hide->setText(text);
@@ -587,7 +603,7 @@ void wn_t::setup_signals(void){
 //	    emit _h_tree_splitter->splitterMoved(_h_tree_splitter->sizes()[0], 1);
 //	    if(0 != pos){
 //	    auto record_sizes = _h_record_splitter->sizes();
-	    if(record_sizes != _appconfig.h_record_splitter_sizelist())_appconfig.h_record_splitter_sizelist(record_sizes);
+	    if(h_record_sizes != _appconfig.h_record_splitter_sizelist())_appconfig.h_record_splitter_sizelist(h_record_sizes);
 //	    }
 	});
 
@@ -607,7 +623,7 @@ void wn_t::setup_signals(void){
 //	    auto _vtab_record = _main_window->vtab_record();
 	    auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
 	    auto vtab_record_min_width = _vtab_record->minimumSizeHint().width();	// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
-	    auto reasonable_width = bar_width + vtab_record_min_width;
+	    auto reasonable_width = bar_width * 2 + vtab_record_min_width;
 //            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
 	    auto h_record_sizes = _h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
 //	    QList<int> delta;
