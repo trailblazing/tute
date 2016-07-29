@@ -48,7 +48,7 @@ extern const char	*clipboard_items_root;
 
 
 
-extern const char	*action_set_as_session_root;
+//extern const char	*action_set_as_session_root;
 extern const char	*action_find_in_base;
 extern const char	*action_cursor_follow_root;
 extern const char	*action_cursor_follow_up;

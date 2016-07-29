@@ -55,7 +55,7 @@ extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
 
 
 const char	*action_hide_tree_screen	= "action_hide_tree_screen";
-const char	*action_set_as_session_root	= "set_as_session_root";
+//const char	*action_set_as_session_root	= "set_as_session_root";
 const char	*action_find_in_base		= "find_in_base";
 const char	*action_cursor_follow_root	= "cursor_follow_root";
 const char	*action_cursor_follow_up	= "cursor_follow_up";
@@ -318,11 +318,11 @@ void ts_t::setup_actions(void){
     _actionlist[action_hide_tree_screen] = _tree_hide;
 
 
-    ac = new QAction(tr("Set as session root manually"), this);
-    ac->setStatusTip(tr("Set as session root manually, not necessary"));
-    ac->setIcon(QIcon(":/resource/pic/ginkgo_pure.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::session_root_manual);
-    _actionlist[action_set_as_session_root] = ac;
+//    ac = new QAction(tr("Set as session root manually"), this);
+//    ac->setStatusTip(tr("Set as session root manually, not necessary"));
+//    ac->setIcon(QIcon(":/resource/pic/ginkgo_pure.svg"));
+//    connect(ac, &QAction::triggered, _tree_view, &tv_t::session_root_manual);
+//    _actionlist[action_set_as_session_root] = ac;
 
 
 
@@ -705,7 +705,7 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 
     append_action_as_button<QToolButton>(_tools_line, _actionlist[action_hide_tree_screen]);
 
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_set_as_session_root]);
+//    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_set_as_session_root]);
 
 	// _recordtree_searchlayout = new QHBoxLayout();
 	// _recordtree_searchlayout->addWidget(_recordtree_search);
@@ -930,7 +930,7 @@ void ts_t::assembly_menubar(QMenu *_filemenu, QMenu *_toolsmenu){
 
 void ts_t::assembly_context_menu(){
     _context_menu->addAction(_actionlist[action_hide_tree_screen]);
-    _context_menu->addAction(_actionlist[action_set_as_session_root]);
+//    _context_menu->addAction(_actionlist[action_set_as_session_root]);
 
     _context_menu->addAction(_actionlist[action_freeze_browser_view]);
     _context_menu->addAction(_actionlist[action_find_in_base]);

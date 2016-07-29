@@ -59,7 +59,7 @@ rs_t::rs_t(ts_t			*_tree_screen
       , _tree_screen(_tree_screen)
       , _main_window(_main_window)
       , _record_hide(new QAction(tr("Hide record view"), this))	// new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this)
-      , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
+//      , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
       , _pin(new QAction(tr("Pin note"), this))
       , _addnew_to_end(new QAction(tr("Add note"), this))
       , _addnew_before(new QAction(tr("Add note before"), this))
@@ -406,69 +406,69 @@ void rs_t::setup_actions(void){
     if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen"))emit _main_window->h_record_splitter()->splitterMoved(_main_window->h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
-	// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
-    _save_in_new_branch->setStatusTip(tr("Save new records in new branch manually, not necessary"));
-    _save_in_new_branch->setIcon(QIcon(":/resource/pic/trace.svg"));
+//	// _save_in_new_branch = new QAction(tr("Save in new branch"), this);
+//    _save_in_new_branch->setStatusTip(tr("Save new records in new branch manually, not necessary"));
+//    _save_in_new_branch->setIcon(QIcon(":/resource/pic/trace.svg"));
 
-    connect(_save_in_new_branch, &QAction::triggered, this, [&](bool checked = false) mutable {																					// &RecordScreen::save_in_new_branch
-	    Q_UNUSED(checked)
+//    connect(_save_in_new_branch, &QAction::triggered, this, [&](bool checked = false) mutable {																					// &RecordScreen::save_in_new_branch
+//	    Q_UNUSED(checked)
 
-	    ts_t * _tree_screen = globalparameters.tree_screen();																														// find_object<TreeScreen>(tree_screen_singleton_name);
-	    assert(_tree_screen);
-	    auto tree_view = _tree_screen->view();
-	    browser::Entrance *_entrance = globalparameters.entrance();
-	    assert(_entrance);
-	    auto know_model_board = [&](){
-		return _tree_screen->view()->know_model_board();
-	    };
-		// auto _index = _tree_screen->tree_view()->current_index();
-		// if(_index.isValid()) {
-	    if(_tree_screen && _entrance){
-		QMap<QString, QString> data;
-		auto _source_model = [&](){
-		    return tree_view->source_model();
-		};
-		// auto current_root_item = _source_model()->item(_index);
+//	    ts_t * _tree_screen = globalparameters.tree_screen();																														// find_object<TreeScreen>(tree_screen_singleton_name);
+//	    assert(_tree_screen);
+//	    auto tree_view = _tree_screen->view();
+//	    browser::Entrance *_entrance = globalparameters.entrance();
+//	    assert(_entrance);
+//	    auto know_model_board = [&](){
+//		return _tree_screen->view()->know_model_board();
+//	    };
+//		// auto _index = _tree_screen->tree_view()->current_index();
+//		// if(_index.isValid()) {
+//	    if(_tree_screen && _entrance){
+//		QMap<QString, QString> data;
+//		auto _source_model = [&](){
+//		    return tree_view->source_model();
+//		};
+//		// auto current_root_item = _source_model()->item(_index);
 
-		data["id"] = get_unical_id();																																							// current_root_item->id();     // source_model->root_item()->id();     //
-		data["name"] = "current session branch item";																																							// this->tabmanager()->webView(0)->page()->item_link()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
+//		data["id"] = get_unical_id();																																							// current_root_item->id();     // source_model->root_item()->id();     //
+//		data["name"] = "current session branch item";																																							// this->tabmanager()->webView(0)->page()->item_link()->name();    //current_root_item->name();   // source_model->root_item()->name();   //
 
-		boost::intrusive_ptr<TreeItem> branch_item = TreeItem::dangle_instance(data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));																																							// current_root_item
+//		boost::intrusive_ptr<TreeItem> branch_item = TreeItem::dangle_instance(data);	// boost::intrusive_ptr<TreeItem>(new TreeItem(nullptr, data));																																							// current_root_item
 
 
-		bool modified = false;
-		for(auto &browser : [&] {set<browser::Browser *> bs;for(auto rs : _main_window->vtab_record()->record_screens())bs.insert(rs->browser()); return bs;} ()){
-		    auto tabmanager = browser->tabmanager();																																																// record_controller()->source_model();  // ->record_table();
-		    for(int i = 0; i < tabmanager->count(); i ++){
-			auto page_item = tabmanager->webView(i)->page()->host();
-			if(! know_model_board()->item([=](boost::intrusive_ptr<const TreeItem> t){
-			    return t->id() == page_item->field<id_type>();
-			})){																																																										// item->field("id")
-			    if(page_item->is_lite())page_item->to_fat();
-				// page_item->parent(branch_item);
-				// _source_model()->model_move_as_child_impl(branch_item, page_item, branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
-			    branch_item << page_item;
-			    modified = true;
-			}
-		    }
-		}
-		if(modified){
-		    tree_view->move_children(	// view_paste_sibling
-			TreeIndex::instance(_source_model, tree_view->session_root_auto(), tree_view->session_root_auto()->parent())	// _tree_screen->tree_view()->current_index() //,
-					    , branch_item
-					    , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}
-			);
+//		bool modified = false;
+//		for(auto &browser : [&] {set<browser::Browser *> bs;for(auto rs : _main_window->vtab_record()->record_screens())bs.insert(rs->browser()); return bs;} ()){
+//		    auto tabmanager = browser->tabmanager();																																																// record_controller()->source_model();  // ->record_table();
+//		    for(int i = 0; i < tabmanager->count(); i ++){
+//			auto page_item = tabmanager->webView(i)->page()->host();
+//			if(! know_model_board()->item([=](boost::intrusive_ptr<const TreeItem> t){
+//			    return t->id() == page_item->field<id_type>();
+//			})){																																																										// item->field("id")
+//			    if(page_item->is_lite())page_item->to_fat();
+//				// page_item->parent(branch_item);
+//				// _source_model()->model_move_as_child_impl(branch_item, page_item, branch_item->work_pos());  // new_branch_item->child_insert(new_branch_item->work_pos(), item);
+//			    branch_item << page_item;
+//			    modified = true;
+//			}
+//		    }
+//		}
+//		if(modified){
+//		    tree_view->move_children(	// view_paste_sibling
+//			TreeIndex::instance(_source_model, tree_view->session_root_auto(), tree_view->session_root_auto()->parent())	// _tree_screen->tree_view()->current_index() //,
+//					    , branch_item
+//					    , [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}
+//			);
 
-			// _tree_screen->resetup_model(_source_model()->root_item());
-		    tree_view->synchronized(false);
-		    tree_view->know_model_save();
-		}
-		_source_model()->update_index(_source_model()->index(tree_view->session_root_auto()));
-	    }
-		// }
-	}
+//			// _tree_screen->resetup_model(_source_model()->root_item());
+//		    tree_view->synchronized(false);
+//		    tree_view->know_model_save();
+//		}
+//		_source_model()->update_index(_source_model()->index(tree_view->session_root_auto()));
+//	    }
+//		// }
+//	}
 
-	);
+//	);
 
 	// _pin = new QAction(tr("Pin note"), this);
     _pin->setStatusTip(tr("Pin a note"));
@@ -700,7 +700,7 @@ void rs_t::setup_ui(void){
     }
     append_action_as_button<QToolButton>(_toolsline, _record_hide);
     append_action_as_button<QToolButton>(_toolsline, _pin);
-    append_action_as_button<QToolButton>(_toolsline, _save_in_new_branch);
+//    append_action_as_button<QToolButton>(_toolsline, _save_in_new_branch);
     append_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
     if(appconfig.interface_mode() == "desktop"){
 	append_action_as_button<QToolButton>(_toolsline, _edit_field);

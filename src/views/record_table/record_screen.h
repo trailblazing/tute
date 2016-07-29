@@ -107,7 +107,7 @@ class rs_t : public QWidget {
 
 	// These staffs used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
 	QAction			*_record_hide;
-	QAction			*_save_in_new_branch;
+//	QAction			*_save_in_new_branch;
 	QAction			*_pin;
 	QAction			*_addnew_to_end;
 	QAction			*_addnew_before;

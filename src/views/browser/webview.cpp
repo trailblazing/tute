@@ -608,9 +608,9 @@ namespace browser {
 	      && title != _binder->host()->field<name_type>()
 		// && !QUrl(title).isValid()
 		){
-		_binder->host()->field<name_type>(title);	// "name",
-		data_changed = true;
+		if(_binder->host()->field<name_type>().size() == 0 || (_binder->host()->field<name_type>().size() > 0 && ! QUrl(title).isValid()))_binder->host()->field<name_type>(title);		// "name",
 
+		data_changed = true;
 		// metaeditor->setName(title);
 		auto _mainwindow = globalparameters.main_window();
 		if(! _mainwindow->windowTitle().contains(title))_mainwindow->setWindowTitle(QString(application_name) + " : " + title);	// table->setWorkPos(pos);
