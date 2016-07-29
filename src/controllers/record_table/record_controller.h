@@ -80,7 +80,7 @@ class rctl_t : public QObject {
 	RecordProxyModel		*proxy_model();
 	browser::TabWidget		*tabmanager(){return _tabmanager;}
 
-	boost::intrusive_ptr<TreeItem>	item_click(const index_proxy &index_proxy_, bool force_update = false);
+	boost::intrusive_ptr<TreeItem>	index_invoke(const index_proxy &index_proxy_, bool force_update = false);
 
 	//    bool is_tree_item_exists(void);
 	//    void reset_tabledata_test(TableData *rtData);
@@ -195,7 +195,7 @@ class rctl_t : public QObject {
 	// Печать таблицы конечных записей
 	void on_print_click(void);
 
-	void cursor_to_index(pos_proxy pos_proxy_);	// , const int mode = add_new_record_after
+	void select_as_current(pos_proxy pos_proxy_);	// , const int mode = add_new_record_after
 	//    void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
     protected:
 

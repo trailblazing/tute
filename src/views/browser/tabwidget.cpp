@@ -915,7 +915,7 @@ namespace browser {
 		    assert(index_on_tree.isValid());
 		    if(index_on_tree.isValid()){
 			if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser, _current_item_in_browser->parent()));
-			if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_current_item_in_browser));
+			if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->select_as_current(_record_controller->index<pos_proxy>(_current_item_in_browser));
 		    }
 //                    else{
 //                        auto _tree_it_current = _tree_view->current_item();

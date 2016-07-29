@@ -417,7 +417,7 @@ void MetaEditor::switch_pin(){
 		// find_object<TreeScreen>(tree_screen_singleton_name)->saveKnowTree();
 	    ts_t *treescreen = globalparameters.tree_screen();
 	    if(treescreen)treescreen->view()->know_model_save();
-	    if(record_view)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(pos_source_));
+	    if(record_view)_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source_));
 	}
     }
 	// }

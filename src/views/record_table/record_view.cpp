@@ -138,7 +138,7 @@ ViewDelegation::ViewDelegation(rv_t *view) : QStyledItemDelegate(view), _view(vi
 	auto	header_title			= _view->record_controller()->source_model()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();				// DisplayRole?UserRole
 	auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
 	if(header_title == rating_field_description)
-		for(int j = 0; j < _view->record_controller()->source_model()->rowCount(); j ++) _view->openPersistentEditor(_view->record_controller()->source_model()->index(j, i, QModelIndex()));
+		for(int j = 0; j < _view->record_controller()->source_model()->rowCount(); j ++)_view->openPersistentEditor(_view->record_controller()->source_model()->index(j, i, QModelIndex()));
     }
 }
 
@@ -523,7 +523,7 @@ void rv_t::restore_header_state(void){
 void rv_t::on_click(const QModelIndex &proxy_index){
     if(proxy_index.isValid() && _previous_index != proxy_index){
 	_previous_index = proxy_index;
-	_record_controller->item_click(index_proxy(proxy_index));
+	_record_controller->index_invoke(index_proxy(proxy_index), true);
     }
 }
 
@@ -542,7 +542,7 @@ void rv_t::on_doubleclick(const QModelIndex &index){
 
 	// Нужно перерисовать окно редактирования чтобы обновились инфополя
 	// делается это путем "повторного" выбора текущего пункта
-	_record_controller->item_click(index_proxy(index), true);		// аньше было select()
+	_record_controller->index_invoke(index_proxy(index), true);		// аньше было select()
 	globalparameters.main_window()->editor_switch();
     }
 }
@@ -647,7 +647,7 @@ void rv_t::edit_field_context(void){
     if(_record_controller->edit_field_context(proxy_index)){		// proxy_index
 	// Нужно перерисовать окно редактирования чтобы обновились инфополя
 	// делается это путем "повторного" выбора текущего пункта
-	_record_controller->item_click(proxy_index);			// proxy_index // Раньше было select()
+	_record_controller->index_invoke(proxy_index);			// proxy_index // Раньше было select()
     }
 }
 
@@ -710,20 +710,14 @@ boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
     if(it){
 	auto	posproxy	= _record_controller->index<pos_proxy>(it);
 	auto	index		= static_cast<QModelIndex>(_record_controller->index<index_proxy>(it));
-	if(index != selectionModel()->currentIndex())_record_controller->cursor_to_index(posproxy);
+	if(index != selectionModel()->currentIndex())_record_controller->select_as_current(posproxy);
     }
     return it;
 }
 
-bool rv_t::is_selected_set_to_top(void){
-    if(selection_first<pos_proxy>() == pos_proxy(0))return true;
-    else return false;
-}
+bool rv_t::is_selected_set_to_top(void){return (int) selection_first<pos_proxy>() == pos_proxy(0);}
 
-bool rv_t::is_selected_set_to_bottom(void){
-    if((int) selection_first<pos_proxy>() == model()->rowCount() - 1)return true;
-    else return false;
-}
+bool rv_t::is_selected_set_to_bottom(void){return (int) selection_first<pos_proxy>() == model()->rowCount() - 1;}
 
 //// mode - режим в котором добавлялась новая запись
 //// pos - позиция новой записи в размерности Source модели
@@ -794,63 +788,61 @@ void rv_t::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
 
 // еакция на нажатие кнопок мышки
 void rv_t::mousePressEvent(QMouseEvent *event){
-    ts_t *_tree_screen = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
-//    // get the buttons type
-//    Qt::MouseButtons mouse_button = event->buttons();
+//    ts_t *_tree_screen = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
+////    // get the buttons type
+////    Qt::MouseButtons mouse_button = event->buttons();
 
     _mouse_start_position = event->pos();
     QModelIndex next_index = indexAt(_mouse_start_position);
     if(next_index.isValid() && ! _is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
-//        // Если нажата левая кнопка мыши
-//        if(mouse_button == Qt::LeftButton){ // || mouse_button == Qt::RightButton
+//////        // Если нажата левая кнопка мыши
+//////        if(mouse_button == Qt::LeftButton){ // || mouse_button == Qt::RightButton
 
-//            selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
-////            if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
-//////                _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
-////                auto widget = new FlatToolButton(this);
-////                setIndexWidget(next_index, widget);
-////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
-////            }
-//            emit dataChanged(next_index, next_index);
-//            // auto it = _record_controller->source_model()->item(next_index.row());
-//            // _tree_screen->tree_view()->select_as_current(it);
-//        }else if(mouse_button == Qt::RightButton){ // only the right mouse buton
-//            // _mouse_start_position = event->pos();
-//            ////select item at cursor position
-//            ////        QPersistentModelIndex
-//            // QModelIndex next_index = indexAt(event->pos());
-//            // selectionModel()->clear();
-//            selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect); // Select
-//            selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
-//            assert(next_index == currentIndex());
-//            _record_controller->cursor_to_index(PosProxy(next_index.row())); //
-//            // emit clicked(next_index);
-
-
+//////            selectionModel()->select(next_index, QItemSelectionModel::SelectCurrent);
+////////            if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){
+//////////                _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
+////////                auto widget = new FlatToolButton(this);
+////////                setIndexWidget(next_index, widget);
+////////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
+////////            }
+//////            emit dataChanged(next_index, next_index);
+//////            // auto it = _record_controller->source_model()->item(next_index.row());
+//////            // _tree_screen->tree_view()->select_as_current(it);
+//////        }else if(mouse_button == Qt::RightButton){ // only the right mouse buton
+//////            // _mouse_start_position = event->pos();
+//////            ////select item at cursor position
+//////            ////        QPersistentModelIndex
+//////            // QModelIndex next_index = indexAt(event->pos());
+//////            // selectionModel()->clear();
+//////            selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect); // Select
+//////            selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
+//////            assert(next_index == currentIndex());
+//////            _record_controller->cursor_to_index(PosProxy(next_index.row())); //
+//////            // emit clicked(next_index);
 
 
-//            //// start the context menu
-//            // QModelIndexList select_indexes(selectedIndexes());
 
-//            // if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
-//            // _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
-//            // }
-//        }
 
-	selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);			// Select
-	selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
-	assert(next_index == currentIndex());
-	_record_controller->item_click(index_proxy(next_index));			// .row()
+//////            //// start the context menu
+//////            // QModelIndexList select_indexes(selectedIndexes());
 
-	auto it = _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index))));			// .row()
-	assert(it);
-	auto tree_view = _tree_screen->view();
-// boost::intrusive_ptr<TreeIndex> tree_index;
-// try {tree_index = new TreeIndex([&] {return tree_view->source_model();}, it->parent(), it->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == it->linker() && il->host() == it && it->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;}
+//////            // if(select_indexes.size() > 0 && select_indexes[0].isValid()) {
+//////            // _tree_screen->_context_menu->exec(event->pos());  // QCursor::pos()
+//////            // }
+//////        }
 
-	tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
-	assert(tree_view->current_item() == it);
-	assert(current_item() == it);
+////	selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);			// Select
+////	selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
+////	assert(next_index == currentIndex());
+//	_record_controller->index_invoke(index_proxy(next_index), true);			// .row()
+
+////	auto it = _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index))));			// .row()
+////	assert(it);
+////	auto tree_view = _tree_screen->view();
+
+////	tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
+////	assert(tree_view->current_item() == it);
+////	assert(current_item() == it);
     }
 	// else {
 	////call the parents function
@@ -873,7 +865,8 @@ void rv_t::mouseMoveEvent(QMouseEvent *event){
 
 // еакция на отпускание клавиши мышки
 void rv_t::mouseReleaseEvent(QMouseEvent *event){
-//    Qt::MouseButtons mouse_button = event->buttons();
+//    ts_t *_tree_screen = globalparameters.tree_screen();
+////    Qt::MouseButtons mouse_button = event->buttons();
     QModelIndex next_index = indexAt(event->pos());
     if(next_index.isValid()){
 //        if(mouse_button == Qt::LeftButton){
@@ -887,7 +880,20 @@ void rv_t::mouseReleaseEvent(QMouseEvent *event){
 //            assert(cur == pos);
 	    _record_controller->remove(pos->id());
 	}
-//        }
+//	else{
+////	    selectionModel()->select(next_index, QItemSelectionModel::ClearAndSelect);				// Select
+////	    selectionModel()->setCurrentIndex(next_index, QItemSelectionModel::SelectCurrent);
+////	    assert(next_index == currentIndex());
+//	    _record_controller->index_invoke(index_proxy(next_index), true);				// .row()
+
+////	    auto it = _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(next_index))));				// .row()
+////	    assert(it);
+////	    auto tree_view = _tree_screen->view();
+
+////	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
+////	    assert(tree_view->current_item() == it);
+////	    assert(current_item() == it);
+//	}
     }
     QTableView::mouseReleaseEvent(event);
 }

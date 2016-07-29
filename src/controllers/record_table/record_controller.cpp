@@ -120,13 +120,65 @@ rctl_t::~rctl_t(){
 // }
 
 
-rv_t *rctl_t::view(void){
-    return _view;
+rv_t *rctl_t::view(void){return _view;}
+
+
+
+// Установка засветки в нужную строку на экране
+void rctl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
+	////    IdType id;
+	////    PosSource pos_source_ = _source_model->position(id);
+	////    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
+
+	//// В QTableView некорректно работает установка на только что созданную строку
+	//// Это как-то связано с отрисовкой виджета QTableView
+	//// Прокрутка к только что созданной строке через selectRow() показывает только
+	//// верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
+	//// таблицы конечных записей, установка прокрутки делается через scrollToBottom()
+	// if(mode == add_new_record_to_end
+	// || (mode == add_new_record_after && pos_proxy_ >= (_view->model()->rowCount() - 1))
+	// ) {
+	// _view->scrollToBottom();
+	// }
+
+	// PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
+    index_proxy index_proxy_ = index<index_proxy>(pos_proxy_);	// Модельный индекс в Proxy модели
+    pos_proxy	pos_proxy_real(((QModelIndex) index_proxy_).row());
+	// todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
+    if((int) pos_proxy_real != (int) pos_proxy_){
+	QMessageBox msg_box;
+	msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
+	msg_box.exec();
+    }
+//    int rowCount = row_count();
+    if((int) pos_proxy_real < row_count()){	// if(pos_real > (rowCount - 1))return;
+	// Простой механизм выбора строки. Похоже, что его использовать не получится
+	_view->selectRow((int) pos_proxy_real);
+
+	// auto recordSourceModel = controller->getRecordTableModel();
+	// QModelIndex selIdx = recordSourceModel->index(pos, 0);
+
+	_view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
+	// Установка засветки на нужный индекс
+	// Set the backlight to the desired index
+	_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode);	// selIdx   // QItemSelectionModel::Select    // ClearAndSelect
+	// В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+	// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+	// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+	// Therefore, the recording must be made a virtual click to fill the final table of records
+	if(appconfig.interface_mode() == "mobile")emit _view->clicked((QModelIndex) index_proxy_);	// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+
+	// emit this->clicked(index);
+	assert(_view->currentIndex() == (QModelIndex) index_proxy_);
+	_view->scrollTo(_view->currentIndex());	// QAbstractItemView::PositionAtCenter
+
+	// this->setFocus();   // ?
+    }
 }
 
 // Принимает индекс Proxy модели
 // Accepts index Proxy models
-boost::intrusive_ptr<TreeItem> rctl_t::item_click(const index_proxy &index_proxy_, bool force_update){
+boost::intrusive_ptr<TreeItem> rctl_t::index_invoke(const index_proxy &index_proxy_, bool force_update){
     boost::intrusive_ptr<TreeItem> result;
 	// Так как, возможно, включена сортировка, индекс на экране преобразуется в обычный индекс
     index_source source_index = index<index_source>(index_proxy_);
@@ -135,20 +187,21 @@ boost::intrusive_ptr<TreeItem> rctl_t::item_click(const index_proxy &index_proxy
     pos_source pos_source_ = index<pos_source>(index_proxy_);	// (((QModelIndex)source_index).row());
     qDebug() << "RecordController::item_click() : current item num " << pos_source_;
 
-    cursor_to_index(index<pos_proxy>(index_proxy_));	// ?
-    auto	_tree_screen	= globalparameters.tree_screen();
-    auto	tree_view	= _tree_screen->view();
+    select_as_current(index<pos_proxy>(index_proxy_));	// ?
+//    auto	_tree_screen	= globalparameters.tree_screen();
+//    auto	tree_view	= _tree_screen->view();
     result = source_model()->item(pos_source_);
-    auto parent = result->parent();
-    if(result != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result, parent));
-	// PosSource pos_source_ = index<PosSource>(pos_proxy_);
-	// auto index_tab = _tabmanager->currentIndex();
-	// assert(index_tab == (int)pos_source_);
+//    if(result != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result, result->parent()));
+//	// PosSource pos_source_ = index<PosSource>(pos_proxy_);
+//	// auto index_tab = _tabmanager->currentIndex();
+//	// assert(index_tab == (int)pos_source_);
 
-	// if(_tabmanager->currentIndex() != (int)pos_source_) {
-	// _tabmanager->setCurrentIndex((int)pos_source_);
+//	// if(_tabmanager->currentIndex() != (int)pos_source_) {
+//	// _tabmanager->setCurrentIndex((int)pos_source_);
+//    auto brower_view = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
+//    if(brower_view != _tabmanager->currentWebView() && force_update)_tabmanager->setCurrentWidget(brower_view);
     force_update ? result->binder()->activate() : result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
-	// }
+
 
     _record_screen->tools_update();
 	// sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
@@ -729,57 +782,6 @@ int rctl_t::row_count(void) const {
 // return _view->selection_first_id();
 // }
 
-// Установка засветки в нужную строку на экране
-void rctl_t::cursor_to_index(pos_proxy pos_proxy_){	// , const int mode
-	////    IdType id;
-	////    PosSource pos_source_ = _source_model->position(id);
-	////    PosProxy pos_proxy_ = index<PosProxy>(pos_source_);
-
-	//// В QTableView некорректно работает установка на только что созданную строку
-	//// Это как-то связано с отрисовкой виджета QTableView
-	//// Прокрутка к только что созданной строке через selectRow() показывает только
-	//// верхнюю часть новой строки. Чтобы этого избежать, при добавлении в конец
-	//// таблицы конечных записей, установка прокрутки делается через scrollToBottom()
-	// if(mode == add_new_record_to_end
-	// || (mode == add_new_record_after && pos_proxy_ >= (_view->model()->rowCount() - 1))
-	// ) {
-	// _view->scrollToBottom();
-	// }
-
-	// PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
-    index_proxy index_proxy_ = index<index_proxy>(pos_proxy_);	// Модельный индекс в Proxy модели
-    pos_proxy	pos_proxy_real(((QModelIndex) index_proxy_).row());
-	// todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    if((int) pos_proxy_real != (int) pos_proxy_){
-	QMessageBox msg_box;
-	msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
-	msg_box.exec();
-    }
-//    int rowCount = row_count();
-    if((int) pos_proxy_real < row_count()){	// if(pos_real > (rowCount - 1))return;
-	// Простой механизм выбора строки. Похоже, что его использовать не получится
-	_view->selectRow((int) pos_proxy_real);
-
-	// auto recordSourceModel = controller->getRecordTableModel();
-	// QModelIndex selIdx = recordSourceModel->index(pos, 0);
-
-	_view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
-	// Установка засветки на нужный индекс
-	// Set the backlight to the desired index
-	_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode);	// selIdx   // QItemSelectionModel::Select    // ClearAndSelect
-	// В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-	// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-	// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-	// Therefore, the recording must be made a virtual click to fill the final table of records
-	if(appconfig.interface_mode() == "mobile")emit _view->clicked((QModelIndex) index_proxy_);	// QModelIndex selIdx=recordSourceModel->index(pos, 0);
-
-	// emit this->clicked(index);
-	assert(_view->currentIndex() == (QModelIndex) index_proxy_);
-	_view->scrollTo(_view->currentIndex());	// QAbstractItemView::PositionAtCenter
-
-	// this->setFocus();   // ?
-    }
-}
 
 // void RecordController::cursor_to_index(boost::intrusive_ptr<TreeItem> it)
 // {
@@ -1284,7 +1286,7 @@ browser::WebView *rctl_t::addnew_item(boost::intrusive_ptr<TreeItem> item_target
     assert(_source_model->position(item_target->id()) == selected_source_position);
 	// assert(_source_model->child(selected_position) == item);
 
-    cursor_to_index(index<pos_proxy>(selected_source_position));	// , mode // modify _source_model? yeah
+    select_as_current(index<pos_proxy>(selected_source_position));	// , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1560,7 +1562,7 @@ void rctl_t::close_context(void){
 	}
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex())cursor_to_index(pos_proxy(_tabmanager->currentIndex()));	// }
+    if(_view->currentIndex().row() != _tabmanager->currentIndex())select_as_current(pos_proxy(_tabmanager->currentIndex()));	// }
 }
 
 void rctl_t::remove(id_value delete_id){
@@ -1697,7 +1699,7 @@ void rctl_t::remove(QVector<id_value> delete_ids){
 			if(v){
 			    auto	it	= v->page()->binder()->host();
 			    auto	index_	= index<pos_proxy>(it->id());
-			    if(_view->current_item() != it)cursor_to_index(index_);
+			    if(_view->current_item() != it)select_as_current(index_);
 //		    for(auto id:real_delete_ids){
 //			IndexProxy index_ = index<IndexProxy>(id);  // invalid
 //			emit _view->dataChanged(index_, index_);
@@ -1754,7 +1756,7 @@ void rctl_t::remove(QVector<id_value> delete_ids){
     if(v){
 	auto binder = v->page()->binder();
 	if(binder)
-		if(binder->host() != _view->current_item())cursor_to_index(index<pos_proxy>(binder->host()));
+		if(binder->host() != _view->current_item())select_as_current(index<pos_proxy>(binder->host()));
     }
 //        //// Сохранение дерева веток
 //        ////    find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1957,7 +1959,7 @@ boost::intrusive_ptr<TreeItem> rctl_t::synchronize_record_view(boost::intrusive_
     index_proxy proxy_index = index<index_proxy>(index<pos_proxy>(source_position));
     _view->dataChanged((QModelIndex) proxy_index, (QModelIndex) proxy_index);
 
-    cursor_to_index(index<pos_proxy>(_item));
+    select_as_current(index<pos_proxy>(_item));
 // }item
 
     return _item;	// _record;

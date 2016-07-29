@@ -602,7 +602,7 @@ void rs_t::setup_actions(void){
 	    _record_controller->source_model()->move_up(_record_controller->index<pos_source>(pos_proxy_));
 
 		// Установка засветки на перемещенную запись
-	    _record_controller->cursor_to_index(pos_proxy((int) pos_proxy_ - 1));
+	    _record_controller->select_as_current(pos_proxy((int) pos_proxy_ - 1));
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -628,7 +628,7 @@ void rs_t::setup_actions(void){
 	    _record_controller->source_model()->move_dn(_record_controller->index<pos_source>(pos_proxy_));
 
 		// Установка засветки на перемещенную запись
-	    _record_controller->cursor_to_index(pos_proxy((int) pos_proxy_ + 1));
+	    _record_controller->select_as_current(pos_proxy((int) pos_proxy_ + 1));
 
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1025,7 +1025,7 @@ void rs_t::tools_update(){
       && _record_controller->row_count() > 0
 	){
 	qDebug() << "In table select present";
-	qDebug() << "In table row count is" << _record_controller->row_count();
+//	qDebug() << "In table row count is" << _record_controller->row_count();
 	// find_object<MetaEditor>(meta_editor_singleton_name)
 	globalparameters.meta_editor()->textarea_editable(true);
     }else{

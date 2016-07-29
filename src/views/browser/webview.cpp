@@ -648,7 +648,7 @@ namespace browser {
 	    auto	tree_view	= _tree_screen->view();
 	    if(is_current){	// globalparameters.mainwindow()
 		if(tree_view->current_item() != it)tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
-		if(_record_controller->view()->current_item() != it)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(it));	// IdType(_binder->item()->field("id"))
+		if(_record_controller->view()->current_item() != it)_record_controller->select_as_current(_record_controller->index<pos_proxy>(it));	// IdType(_binder->item()->field("id"))
 	    }
 		// if(_record->_active_request) {
 		// if(_record->_openlinkinnewwindow == 1) {
@@ -985,9 +985,7 @@ namespace browser {
 	    if(_vtab_record->currentWidget() != _record_screen)_vtab_record->setCurrentWidget(_record_screen);
 	    auto	it		= _binder->host();
 	    auto	tree_view	= _tree_screen->view();
-
-
-	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
+	    if(it != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent()));
 	    if(_url_str != Browser::_defaulthome){	// && _loadingurl.isValid()   // && _loadingurl == _url
 		if(_record_controller->view()->current_item() != _binder->host() || _view->tabmanager()->currentWebView() != _view){
 		    _tabmanager->setCurrentWidget(_view);
@@ -1002,7 +1000,7 @@ namespace browser {
 		    if(line_edit)line_edit->setText(_url_str);
 			// }
 		    if(_record_controller->view()->current_item() != _binder->host())	// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field<id_type>()){
-				_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_binder->host()));	// IdType(_binder->item()->field("id"))
+				_record_controller->select_as_current(_record_controller->index<pos_proxy>(_binder->host()));	// IdType(_binder->item()->field("id"))
 		}
 	    }
 	}
@@ -2530,7 +2528,7 @@ namespace browser {
 	////        _record_ontroller->getView()->setSelectionToPos(position);
 	setFocus();
 	// globalparameters.mainwindow()
-	if(_record_controller->view()->selection_first<id_value>() != _page->host()->field<id_type>())_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_page->host()));	// IdType(_page->item()->field("id"))
+	if(_record_controller->view()->selection_first<id_value>() != _page->host()->field<id_type>())_record_controller->select_as_current(_record_controller->index<pos_proxy>(_page->host()));	// IdType(_page->item()->field("id"))
 
 	// }
     }
@@ -2692,7 +2690,7 @@ namespace browser {
 //	}
 	auto _current_item_in_browser = _page->binder()->host();
 	if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser, _current_item_in_browser->parent()));
-	if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->cursor_to_index(_record_controller->index<pos_proxy>(_current_item_in_browser));
+	if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->select_as_current(_record_controller->index<pos_proxy>(_current_item_in_browser));
     }
 
 	// void WebView::switch_show()
