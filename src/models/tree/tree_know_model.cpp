@@ -661,9 +661,9 @@ boost::intrusive_ptr<TreeItem> tkm_t::new_child(boost::intrusive_ptr<TreeIndex> 
 	// Подузел прикрепляется к указанному элементу
 	// в конец списка подчиненных элементов
     boost::intrusive_ptr<TreeItem>	current = new TreeItem(parent, data, QDomElement(), pos);		// parent->child_add_new(pos, id, name);
-    auto				view	= static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-    update_index(index_parent);
-    view->update(index_parent);
+//    auto				view	= static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
+//    update_index(index_parent);
+//    view->update(index_parent);
 	//    //    // Определяется ссылка на только что созданную ветку
 	//    //    boost::intrusive_ptr<TreeItem> current = parent->child(parent->child_count() - 1);
 	//    // Устанавливается идентификатор узла
@@ -801,39 +801,39 @@ boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree
     auto index_operate_parent = operate_parent ? index(operate_parent) : index_tree();
     if(! (operate_parent == to_be_host && to_be_host->contains_direct(to_be_operated->linker()))){
 	auto _index_parent = index(to_be_host);
-	//        auto _index_origin = index(source_item);
-	auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-//        if(source_item->parent() != host){  // why do this? original_parent->delete_permanent
-//            boost::intrusive_ptr<TreeItem> deleted_item;
-//                //            bool remove_result = false;
-//            if(_index_origin.isValid()){
-//                // auto original_parent = source_item->parent();
-//                int sibling_order = - 1;
-//                if(original_parent){
-//                    sibling_order = original_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == source_item->linker() && il->host() == source_item && source_item->parent() == il->host_parent();});
-//                    assert(_index_origin.row() == sibling_order);
-//                    beginRemoveRows(_index_parent, _index_origin.row(), _index_origin.row());
-//                    deleted_item = original_parent->delete_permanent([&](boost::intrusive_ptr<const Linker> il){
-//                                return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent && source_item->parent() == il->host_parent();
-//                            });																																			// model_remove(_source_item->up_linker());
-//                    if(_index_original_parent.isValid()){
-//                        update_index(_index_origin.parent());							// emit_datachanged_signal(_index_origin.parent());
-//                        view->update(_index_origin.parent());
-//                        emit layoutChanged(QList<QPersistentModelIndex>() << _index_original_parent);
-//                    }
-//                    endRemoveRows();
-//                }					// else sibling_order = _index_origin.row();
-//            }
-//                //            else
-//                //                remove_result = true;
-//                //            else if(_source_item->parent()) {   // should not use
-//                //                //            _source_item->self_remove_from_parent();    //
-//                //                deleted_linker = _source_item->parent()->remove(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
-//                //            }
-//                //            assert(!deleted_linker);  // means always does not work!? no, eg. _source_item->parent() == nullptr, so some time it is nullptr, not always
-////            assert(!deleted_item);
-////            assert(!deleted_item->linker());
-//        }
+//	//        auto _index_origin = index(source_item);
+//	auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
+////        if(source_item->parent() != host){  // why do this? original_parent->delete_permanent
+////            boost::intrusive_ptr<TreeItem> deleted_item;
+////                //            bool remove_result = false;
+////            if(_index_origin.isValid()){
+////                // auto original_parent = source_item->parent();
+////                int sibling_order = - 1;
+////                if(original_parent){
+////                    sibling_order = original_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == source_item->linker() && il->host() == source_item && source_item->parent() == il->host_parent();});
+////                    assert(_index_origin.row() == sibling_order);
+////                    beginRemoveRows(_index_parent, _index_origin.row(), _index_origin.row());
+////                    deleted_item = original_parent->delete_permanent([&](boost::intrusive_ptr<const Linker> il){
+////                                return il == source_item->linker() && il->host() == source_item && source_item->parent() == original_parent && source_item->parent() == il->host_parent();
+////                            });																																			// model_remove(_source_item->up_linker());
+////                    if(_index_original_parent.isValid()){
+////                        update_index(_index_origin.parent());							// emit_datachanged_signal(_index_origin.parent());
+////                        view->update(_index_origin.parent());
+////                        emit layoutChanged(QList<QPersistentModelIndex>() << _index_original_parent);
+////                    }
+////                    endRemoveRows();
+////                }					// else sibling_order = _index_origin.row();
+////            }
+////                //            else
+////                //                remove_result = true;
+////                //            else if(_source_item->parent()) {   // should not use
+////                //                //            _source_item->self_remove_from_parent();    //
+////                //                deleted_linker = _source_item->parent()->remove(_source_item->up_linker()); // -> this comment content is not must a logic error  1-2?
+////                //            }
+////                //            assert(!deleted_linker);  // means always does not work!? no, eg. _source_item->parent() == nullptr, so some time it is nullptr, not always
+//////            assert(!deleted_item);
+//////            assert(!deleted_item->linker());
+////        }
 	if(static_cast<QModelIndex>(_index_parent).isValid() || to_be_host == _root_item){
 	    beginInsertRows(_index_parent
 			   , pos				// parent->count_direct()
@@ -848,17 +848,17 @@ boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree
 	    assert(static_cast<QModelIndex>(index(result)).isValid());
 	    assert(result->linker()->integrity_external(result, to_be_host));
 
-	    update_index(_index_parent);
-	    view->update(_index_parent);
+//	    update_index(_index_parent);
+//	    view->update(_index_parent);
 
 	    emit layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(_index_parent));
 	    if(static_cast<QModelIndex>(index_operate_parent).isValid()){
-		update_index(index_operate_parent);
-		view->update(index_operate_parent);
+//		update_index(index_operate_parent);
+//		view->update(index_operate_parent);
 		emit layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(index_operate_parent));
 	    }else if(static_cast<QModelIndex>(index_operated).isValid()){
-		update_index(index_operated);
-		view->update(index_operated);
+//		update_index(index_operated);
+//		view->update(index_operated);
 		emit layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(index_operated));
 	    }
 	    endInsertRows();
@@ -1244,9 +1244,9 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 		result = parent_of_delete->delete_permanent(equal_linker);
 		browser::WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
 		if(v)v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
-		auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-		update_index(parent_index);
-		view->update(parent_index);
+//		auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
+//		update_index(parent_index);
+//		view->update(parent_index);
 		endRemoveRows();
 	    }
 	    return result;
@@ -1332,9 +1332,9 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 
 			//            remove_target->self_remove_from_parent();
 		    result = host_parent()->delete_permanent(equal_linker);
-		    auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-		    update_index(parent_index);
-		    view->update(parent_index);
+//		    auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
+//		    update_index(parent_index);
+//		    view->update(parent_index);
 		    endRemoveRows();
 		}
 	    }
@@ -1529,13 +1529,13 @@ boost::intrusive_ptr<TreeItem> tkm_t::merge(boost::intrusive_ptr<TreeLevel> _tre
 	//    if(_index_origin.isValid())update_index(_index_origin.parent());
 	auto old_source_parent_index = index(old_source_parent);
 	if(static_cast<QModelIndex>(old_source_parent_index).isValid()){
-	    update_index(old_source_parent_index);
-	    view->update(old_source_parent_index);
+//	    update_index(old_source_parent_index);
+//	    view->update(old_source_parent_index);
 	}
 	auto _index_result = index(result);
 	if(static_cast<QModelIndex>(_index_result).isValid()){
-	    update_index(_index_result);
-	    view->update(_index_result);
+//	    update_index(_index_result);
+//	    view->update(_index_result);
 	}
 	//    if(_index_result.parent().isValid())update_index(_index_result.parent());
 	if(result->parent()){

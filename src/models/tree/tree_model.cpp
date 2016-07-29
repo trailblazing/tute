@@ -632,9 +632,7 @@ boost::intrusive_ptr<TreeItem> tm_t::item(const std::function<bool (boost::intru
 
 boost::intrusive_ptr<TreeItem> tm_t::root_item() const {return _root_item;}
 
-void tm_t::emit_datachanged_signal(const QModelIndex &_index){
-    emit dataChanged(_index, _index);
-}
+void tm_t::emit_datachanged_signal(const QModelIndex &_index){emit dataChanged(_index, _index);}
 
 // Получение заголовка столбца
 // Заголовки хранятся в корневом Item элементе просто в виде значений

@@ -43,12 +43,12 @@ struct TreeLevel : public boost::intrusive_ref_counter<TreeLevel, boost::thread_
 struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_safe_counter> {
     public:
 
-	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>)>											equal_url;
-	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, const QUrl &)>									equal_url_t;
-	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)>						equal_t;
-	typedef std::function<bool (boost::intrusive_ptr<const Linker>)>											substitute_condition;	// , boost::intrusive_ptr<const Linker>
-	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)>							substitute_condition_double;		//
-	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &)>	paste_strategy;
+	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>)>												equal_url;
+	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, const QUrl &)>										equal_url_t;
+	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)>							equal_t;
+	typedef std::function<bool (boost::intrusive_ptr<const Linker>)>												substitute_condition;	// , boost::intrusive_ptr<const Linker>
+	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)>								substitute_condition_double;		//
+	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &, bool)>	paste_strategy;
 
 
 	std::function<tkm_t *()> current_model() const;

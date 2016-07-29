@@ -869,7 +869,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 #ifdef SHOW_PROCESS_DIALOG
     close_progressbar();
 #else
-    globalparameters.status_bar()->showMessage("searching node(s) : " + QString::number(_total_progress_counter), 2000);// across thread message
+    globalparameters.status_bar()->showMessage("searched node(s) : " + QString::number(_total_progress_counter), 2000);// across thread message
 #endif
 
 //	// } else {

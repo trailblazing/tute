@@ -323,13 +323,13 @@ namespace browser {
 
     WebPage::WebPage(Profile                *profile
 		    , boost::intrusive_ptr<TreeItem> item
-		    , ts_t           *tree_screen
-		    , MetaEditor           *editor_screen
-		    , Entrance             *entrance
-		    , Browser              *browser
-		    , TabWidget            *tabmanager
-		    , rctl_t     *record_controller
-		    , WebView              *parent)
+		    , ts_t                  *tree_screen
+		    , MetaEditor            *editor_screen
+		    , Entrance              *entrance
+		    , Browser               *browser
+		    , TabWidget             *tabmanager
+		    , rctl_t                *record_controller
+		    , WebView               *parent)
 	: QWebEnginePage(profile, parent)
 	  , _tree_screen(tree_screen)
 	  , _editor_screen(editor_screen)
@@ -1189,21 +1189,22 @@ namespace browser {
 
 	auto tree_view = _tree_screen->view();
 
-	assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->binder()->host())).isValid());
-	auto	parent		= this->binder()->host()->parent();
-	auto	parent_parent	= parent->parent();
+	assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->host())).isValid());
+	auto parent = this->host() ? this->host()->parent() : nullptr;
+	assert(parent);
+	auto parent_parent = parent->parent();
 // auto create_tree_index = [&] {
 // boost::intrusive_ptr<TreeIndex> tree_modelindex(nullptr);
 
 
-	boost::intrusive_ptr<TreeIndex> tree_index = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent, parent_parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->binder()->host(), this->binder()->host()->parent());
+	boost::intrusive_ptr<TreeIndex> this_index = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent, parent_parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host(), this->host()->parent());
 	if(type == QWebEnginePage::WebBrowserWindow){
 	    WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
 	    if(v)v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 	    Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 // auto tree_index = create_tree_index();
 // assert(tree_index);
-	    auto it = tree_index->item_register(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
+	    auto it = this_index->item_register(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
 			return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());	// return it_->field<url_type>() == target_url.toString();
 		    });																																// Browser::_defaulthome
 
@@ -1227,25 +1228,24 @@ namespace browser {
 
 	    WebView *view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
 		// return b->host()->field<url_type>() == target_url.toString();
-
-
-	    auto tree_view = _tree_screen->view();
+//	    auto tree_view = _tree_screen->view();
 	    if(view){
 		page = view->page();
-		auto item_view = view->page()->host();
-		if(item_view){
-		    auto index_view = tree_view->source_model()->index(item_view);
-		    if(static_cast<QModelIndex>(index_view).isValid())tree_view->index_invoke(view, index_view);}
-		assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->binder()->host())).isValid());
-		assert(page->binder() && page->binder()->integrity_external(page->binder()->host(), page));
+		auto _item = page->host();
+		if(_item){
+		    auto _index = tree_view->source_model()->index(_item);
+		    if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// tree_view->index_invoke(TreeIndex::instance([&] {return tree_view->source_model();}, _item, _item->parent()));	// view,
+		}
+		assert(page->binder() && page->binder()->integrity_external(page->host(), page));
+		assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->host())).isValid());
 		assert(page);
 	    }else{
 		// WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
 		// already create window, why do this? -- refer to demo browser
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
-		page = tree_index->page_instantiate(this->_binder->host(), target_url
-						   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)					// std::placeholders::_1
+		page = this_index->page_instantiate(this->_binder->host(), target_url
+						   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)					// std::placeholders::_1
 						   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
 			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
 		assert(page);

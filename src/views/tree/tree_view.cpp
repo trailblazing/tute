@@ -240,7 +240,7 @@ tv_t::tv_t(QString _name, ts_t *_tree_screen)
 	// connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
     if(appconfig.interface_mode() == "mobile")connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){cursor_step_into(index_tree(index));});
     if(appconfig.interface_mode() == "desktop"){
-	connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){index_invoke(globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(), index_tree(index));});
+	connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){auto _item = _know_root->child(index);index_invoke(TreeIndex::instance([&] {return _know_root;}, _item, _item->parent()));});		// globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(),
 	// [&](const QModelIndex index) {
 	////            collapse(index);
 	////            expand(index);
@@ -782,7 +782,7 @@ boost::intrusive_ptr<TreeItem> tv_t::current_item(){
 
 		    it = TreeIndex::instance([&]() -> tkm_t * {return _know_root;}, new TreeItem(it), it)->page_instantiate(nullptr
 															   , QUrl(browser::Browser::_defaulthome)
-															   , std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+															   , std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 															   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), browser::Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), browser::Browser::_defaulthome);});
 
 
@@ -1755,7 +1755,7 @@ boost::intrusive_ptr<TreeItem> tv_t::tree_empty_controll(void){
 
 //	    );
 	result = TreeIndex::instance([&]() -> tkm_t * {return _know_root;}, new TreeItem(it), it)->page_instantiate(nullptr, QUrl(browser::Browser::_defaulthome)
-														   , std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
+														   , std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 														   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), browser::Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), browser::Browser::_defaulthome);});
     }else result = _know_model_board->root_item()->child_direct(0);
     assert(result);
@@ -1873,8 +1873,8 @@ boost::intrusive_ptr<TreeItem> tv_t::new_item(boost::intrusive_ptr<TreeIndex> _m
 
 // move children from children
 QList<boost::intrusive_ptr<TreeItem> > tv_t::move_children(boost::intrusive_ptr<TreeIndex>          _parent_modelindex	// std::function<KnowModel *()> _current_model, QModelIndex _current_index
-							, boost::intrusive_ptr<TreeItem>          _blank_header
-							, const tv_t::substitute_condition_double &_substitute_condition){
+							  , boost::intrusive_ptr<TreeItem>          _blank_header
+							  , const tv_t::substitute_condition_double &_substitute_condition){
     auto					_current_model	= _parent_modelindex->current_model();
     auto					host_index	= _parent_modelindex->host_index();
     auto					host_parent	= _parent_modelindex->host_parent();
@@ -2311,7 +2311,9 @@ void tv_t::paste_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_tree_index){
 
 boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       _treeindex	// std::function<KnowModel *()> _current_model, QModelIndex _current_index
 					 , boost::intrusive_ptr<TreeItem>       _source_item
-					 , const tv_t::substitute_condition	&_substitute_condition){
+					 , const tv_t::substitute_condition	&_substitute_condition
+					 , bool	save_immediately){
+	//
     auto paste_sibling_impl = [&](boost::intrusive_ptr<TreeIndex>       _modelindex
 				 , boost::intrusive_ptr<TreeItem>       _source_item
 				 , const tv_t::substitute_condition &substitute_condition_) -> boost::intrusive_ptr<TreeItem> {			// ->boost::intrusive_ptr<TreeItem>
@@ -2451,9 +2453,9 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
 		// QModelIndex
 		assert(current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();}));
 
-		// select_as_current(TreeIndex::instance(current_model, result->parent(), result));
-		// Сохранение дерева веток
-		know_model_save();
+//		// select_as_current(TreeIndex::instance(current_model, result->parent(), result));
+//		// Сохранение дерева веток
+//		know_model_save();
 
 
 		select_as_current(TreeIndex::instance(current_model, result, result->parent()));
@@ -2559,16 +2561,12 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
 		select_as_current(TreeIndex::instance(current_model, result, result->parent()));																						// setto
 		// selectionModel()->select(setto, current_tree_selection_mode);
 		// selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
-
 		// А можно было установить курсор на нужную позицию и так
 		// knowTreeView->selectionModel()->setCurrentIndex(kntrmodel->index(item->childCount()-1,0,index),
 		// QItemSelectionModel::ClearAndSelect);
-
-
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)->
-		know_model_save();
-
+		if(save_immediately)know_model_save();
 		// find_object<MainWindow>("mainwindow")
 		globalparameters.main_window()->setEnabled(true);
 		// return
@@ -3380,7 +3378,12 @@ void tv_t::cursor_step_into(const index_tree &_index){
     }
 }
 
-void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
+browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index){	// browser::WebView *view, const index_tree &_index
+    auto		_index		= _tree_index->host_index();
+    auto		_host		= _tree_index->host();
+    browser::WebView	*activated_view	= globalparameters.main_window()->vtab_record()->activated_browser()->currentTab();	// globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _host->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _host->field<url_type>().toStdString());});;
+    browser::WebView	*v		= nullptr;
+//    const index_tree &_index = _know_root->index(_item);
     if(static_cast<QModelIndex>(_index).isValid()){					// && index_current() != _index
 	// KnowModel *(TreeScreen::*_source_model_func)() = &TreeScreen::know_model_board;
 	// auto _source_model = std::bind(_source_model_func, this);
@@ -3421,15 +3424,13 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 		// boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
 	    }
 	}
-	browser::WebView *v = nullptr;
 	if(! globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){	// !result_item->is_activated()
 		bool result = false;
 		// auto result_item = source_model()->item(_index);
 		if(result_item->binder()){
-		    if(url_equal(b->host()->field<home_type>().toStdString(), result_item->field<home_type>().toStdString())){
-			if(result_item->binder()->page())
-				if(result_item->binder()->page()->view()->load_finished())result = true;
-		    }
+		    if(url_equal(b->host()->field<home_type>().toStdString(), result_item->field<home_type>().toStdString()))
+				if(result_item->binder()->page())
+					if(result_item->binder()->page()->view()->load_finished())result = true;
 		}
 		return result;
 	    })
@@ -3484,7 +3485,7 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 				i.next();
 				i.value()->setEnabled(false);
 			    }
-			    return;																																									// Программа дальше не идет, доделать...
+			    return v;																																									// Программа дальше не идет, доделать...
 			}
 		    }
 		}
@@ -3537,28 +3538,32 @@ void tv_t::index_invoke(browser::WebView *view, const index_tree &_index){
 		auto browser = globalparameters.main_window()->vtab_record()->activated_browser();
 		// auto previous_item = _know_root->item(_previous_index);
 		boost::intrusive_ptr<TreeItem> record_previous_item(nullptr);
-		if(view)record_previous_item = view->page()->binder()->host();
+		if(activated_view)record_previous_item = activated_view->page()->host();
 //                record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, result_item);;
+		if(record_previous_item != result_item){
+		    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, result_item);;
 
-		auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
-			return browser->page_instantiate(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));																															// item_bind_();
-		    };
-//		if(record_index && ! result_item->binder())v = browser_bind_activate(record_index);																													// browser->item_bind(record_index)->activate();   // item_bind_();
-//		else	// if(record_index && result_item->binder() && ! result_item->binder()->page())																									// !result_item->binder()->integrity_internal()){
-		v = browser_bind_activate(record_index);																													// browser->item_bind(record_index)->activate();   // item_bind_();
+		    auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
+			    return browser->page_instantiate(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// item_bind_();
+			};
+//		if(record_index && ! result_item->binder())v = browser_bind_activate(record_index);// browser->item_bind(record_index)->activate();   // item_bind_();
+//		else	// if(record_index && result_item->binder() && ! result_item->binder()->page())// !result_item->binder()->integrity_internal()){
+		    v = browser_bind_activate(record_index);	// browser->item_bind(record_index)->activate();   // item_bind_();
 //		else v = result_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		}else v = activated_view;
 	    }
 	}else{
 		// auto c = _binder->page()->record_controller();
-	    v = result_item->binder()->page()->view();
-	    auto	browser_tab	= v->tabmanager();
-	    auto	index		= browser_tab->webViewIndex(v);
-	    if(index != browser_tab->currentIndex())																	// c->index<PosSource>(c->source_model()->index(_binder->item()))
-			browser_tab->setCurrentIndex(index);
+	    v = result_item->page() ? result_item->page()->view() : nullptr;
+	    if(v){
+		auto	tabmanager	= v->tabmanager();
+		auto	index		= tabmanager->webViewIndex(v);
+		if(index != tabmanager->currentIndex())tabmanager->setCurrentIndex(index);	// c->index<PosSource>(c->source_model()->index(_binder->item()))
+	    }
 	}
 	if(v)v->recovery_global_consistency();
     }
+    return v;
 }
 
 QModelIndex tv_t::previous_index() const {return _previous_index;}

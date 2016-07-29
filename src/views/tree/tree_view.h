@@ -169,7 +169,7 @@ class tv_t : public QTreeView {
 
 	void paste_clipboard(boost::intrusive_ptr<TreeIndex> _sibling_modelindex);
 
-	boost::intrusive_ptr<TreeItem> move(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
+	boost::intrusive_ptr<TreeItem> move(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition, bool save_immediately = false);
 //	boost::intrusive_ptr<TreeItem> paste_sibling(boost::intrusive_ptr<TreeIndex> _treeindex, boost::intrusive_ptr<TreeItem> _source_item, const substitute_condition &_substitute_condition);
 
 	QList<boost::intrusive_ptr<TreeItem> > delete_permanent(const std::function<tkm_t *()> &_current_model
@@ -196,7 +196,7 @@ class tv_t : public QTreeView {
 	void	session_root_manual(bool checked = true);
 	// Действия при клике на ветку дерева
 	void				cursor_step_into(const index_tree &_index);
-	void				index_invoke(browser::WebView *view, const index_tree &_index);
+	browser::WebView		*index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index);	// browser::WebView *view, const index_tree &_index
 	boost::intrusive_ptr<TreeItem>	cursor_follow_up(boost::intrusive_ptr<TreeItem> _new_session_root_item);
 	boost::intrusive_ptr<TreeItem>	cursor_follow_up(void);
 	boost::intrusive_ptr<TreeItem>	cursor_follow_root(void);
