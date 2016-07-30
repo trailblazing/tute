@@ -605,10 +605,10 @@ namespace browser {
 
 	    bool data_changed = false;
 	    if(  title != ""
-	      && title != _binder->host()->field<name_type>()
-		// && !QUrl(title).isValid()
-		){
-		if(_binder->host()->field<name_type>().size() == 0 || (_binder->host()->field<name_type>().size() > 0 && ! QUrl(title).isValid()))_binder->host()->field<name_type>(title);		// "name",
+	      && title != _binder->host()->field<name_type>()){	// && ! QUrl(title).isValid()
+//		assert(QUrl(title).isValid());	// always true
+//		assert(title.contains("://"));	// not always true
+		if(_binder->host()->field<name_type>().size() == 0 || (_binder->host()->field<name_type>().size() > 0 && ! title.contains("://")))_binder->host()->field<name_type>(title);		// "name",
 
 		data_changed = true;
 		// metaeditor->setName(title);
