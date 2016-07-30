@@ -603,7 +603,7 @@ void wn_t::setup_signals(void){
 //	    emit _h_tree_splitter->splitterMoved(_h_tree_splitter->sizes()[0], 1);
 //	    if(0 != pos){
 //	    auto record_sizes = _h_record_splitter->sizes();
-	    if(h_record_sizes != _appconfig.h_record_splitter_sizelist())_appconfig.h_record_splitter_sizelist(h_record_sizes);
+	    if(h_record_sizes != _appconfig.h_record_splitter_sizelist() && h_record_sizes[0] != bar_width)_appconfig.h_record_splitter_sizelist(h_record_sizes);
 //	    }
 	});
 
@@ -631,10 +631,10 @@ void wn_t::setup_signals(void){
 		// auto h = h_right_splitter->handle(1);
 		// h->move(lr + shw, h->rect().top());
 
-		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
+		auto record_size_memory = appconfig.h_record_splitter_sizelist();
 
-		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
-		h_record_sizes[0] = tree_size_memory[0] > reasonable_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
+		auto tree_sum = record_size_memory[0] + record_size_memory[1];
+		h_record_sizes[0] = record_size_memory[0] > reasonable_width ? record_size_memory[0] < tree_sum ? record_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
 		h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
 		_vtab_record->setMaximumWidth(this->maximumWidth());	// just a very big number
 		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
