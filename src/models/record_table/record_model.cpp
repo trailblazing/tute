@@ -321,10 +321,12 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 		if(field == "0")return "";	// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
 		else return field;
 	    }else if(role == Qt::UserRole || role == Qt::EditRole){	// just a test
+#ifdef USE_STAR_RATING
 		StarRating star_rating = qvariant_cast<StarRating>(index.data());
 
 		// pixmap.load(":/resource/pic/butterfly-right.svg");
 		return QVariant::fromValue(star_rating);// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
+#endif
 	    }else return field;
 	}
     }
@@ -383,13 +385,17 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 // this->setTableData(qVariantFromValue(value) );
 // return true;
 // }
+
+#ifdef USE_STAR_RATING
     if(role == Qt::UserRole){	// just a test
+
 	StarRating star_rating = qvariant_cast<StarRating>(index.data());
 // pixmap.load(":/resource/pic/butterfly-right.svg");
 	star_rating.star_count(qvariant_cast<int>(value));
 
 	return true;	// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
     }
+#endif
 	// Во всех остальных случаях
     return false;
 }

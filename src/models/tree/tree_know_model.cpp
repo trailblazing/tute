@@ -107,14 +107,12 @@ void tkm_t::init(QDomDocument *dom_model){
 	return;
     }
     assert(_root_item);
-
 	//    QMap<QString, QString> root_data;
-
 	//    // Определяется одно поле в корневом объекте
 	//    // то есть на экране будет один столбец
 	//    root_data["id"] = global_root_id;
 	//    root_data["name"] = "";
-
+    if(globalparameters.main_window())globalparameters.main_window()->setDisabled(true);
     beginResetModel();
 
 	//    // Создание корневого Item объекта
@@ -137,6 +135,7 @@ void tkm_t::init(QDomDocument *dom_model){
     _root_item->dom_to_records(dom_content_root_as_record);
 
     endResetModel();
+    if(globalparameters.main_window())globalparameters.main_window()->setEnabled(true);
 	//    save(); // temporary
 }
 
@@ -431,7 +430,9 @@ bool tkm_t::update_sub_version_from_1_to_2(void){
 }
 
 void tkm_t::reload(void){
+    globalparameters.main_window()->setDisabled(true);
     if(_xml_file_name != "")init_from_xml(_xml_file_name);
+    globalparameters.main_window()->setEnabled(true);
 }
 
 // Запись всех данных в XML файл
@@ -1238,6 +1239,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 		//    bool success = false;
 		auto	equal_linker	= [&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker;};
 		int	position	= parent_of_delete->sibling_order(equal_linker);
+		globalparameters.main_window()->setDisabled(true);
 		beginRemoveRows(parent_index, position, position);																	// + rows - 1
 
 		//            remove_target->self_remove_from_parent();
@@ -1248,6 +1250,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //		update_index(parent_index);
 //		view->update(parent_index);
 		endRemoveRows();
+		globalparameters.main_window()->setEnabled(true);
 	    }
 	    return result;
 	};
@@ -1328,6 +1331,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 			//    bool success = false;
 		    auto	equal_linker	= [&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == delete_target_linker->host()->id() && il == delete_target_linker;};
 		    int		position	= host_parent()->sibling_order(equal_linker);
+		    globalparameters.main_window()->setDisabled(true);
 		    beginRemoveRows(parent_index, position, position);																																												// + rows - 1
 
 			//            remove_target->self_remove_from_parent();
@@ -1336,6 +1340,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 //		    update_index(parent_index);
 //		    view->update(parent_index);
 		    endRemoveRows();
+		    globalparameters.main_window()->setEnabled(true);
 		}
 	    }
 	    return result;
@@ -2563,12 +2568,8 @@ void tkm_t::clear(){
 // if succeeded, id and name changed, deprecated, replaced by KnowView::setup_model(boost::intrusive_ptr<TreeItem> _item)
 boost::intrusive_ptr<TreeItem> tkm_t::intercept(boost::intrusive_ptr<TreeItem> _item){	// TreeIndex modelindex    //
 	//    auto _item = modelindex.parent();
-    auto absolute_source_model = [&](){
-	    return static_cast<tv_t *>(static_cast<QObject *const>(this)->parent())->know_model_board();
-	};
-    assert(_item == absolute_source_model()->root_item() || absolute_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it){
-	    return it->id() == _item->id();
-	}));
+    auto absolute_source_model = [&](){return static_cast<tv_t *>(static_cast<QObject *const>(this)->parent())->know_model_board();};
+    assert(_item == absolute_source_model()->root_item() || absolute_source_model()->item([&](boost::intrusive_ptr<const TreeItem> it){return it->id() == _item->id();}));
     boost::intrusive_ptr<TreeItem> result(nullptr);
 	//    QMap<QString, QString> root_data;
 
@@ -2576,7 +2577,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::intercept(boost::intrusive_ptr<TreeItem> _
 	//    // то есть на экране будет один столбец
 	//    root_data["id"] = "0";
 	//    root_data["name"] = "";
-
+    globalparameters.main_window()->setDisabled(true);
     beginResetModel();
 	// Создание корневого Item объекта
     if(_root_item)_root_item.reset();
@@ -2614,6 +2615,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::intercept(boost::intrusive_ptr<TreeItem> _
     _root_item = _item;
 
     endResetModel();
+    globalparameters.main_window()->setEnabled(true);
 	//    //    QObject *(QObject::*_parent)() const = &QObject::parent;
 
 	//    KnowView *view = static_cast<KnowView *>(
@@ -2629,12 +2631,11 @@ boost::intrusive_ptr<TreeItem> tkm_t::intercept(boost::intrusive_ptr<TreeItem> _
 
 boost::intrusive_ptr<TreeItem> tkm_t::synchronize(boost::intrusive_ptr<TreeItem> source){
     boost::intrusive_ptr<TreeItem> result(_root_item);
-    result = child([=](boost::intrusive_ptr<const TreeItem> it){
-		return it->id() == source->id();
-	    });
+    result = child([=](boost::intrusive_ptr<const TreeItem> it){return it->id() == source->id();});
     boost::intrusive_ptr<TreeItem> parent;
     if(result)parent = result->parent();
 	//    int pos = parent ? parent->list_position(result) : 0;
+    globalparameters.main_window()->setDisabled(true);
     if(parent){
 	if(result)result.reset();			// ->clear_children();
 
@@ -2649,7 +2650,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::synchronize(boost::intrusive_ptr<TreeItem>
     assert(! result->attach_table()->is_lite());
 
 	//    if(parent)parent->insert_new_item(pos, result);
-
+    globalparameters.main_window()->setEnabled(true);
     _synchronized = true;
 
     return result;

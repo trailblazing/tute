@@ -30,7 +30,9 @@ extern GlobalParameters globalparameters;
 Record::Record()	// boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
     : _lite_flag(true)
       , _text("")
-      , _star_rating(new StarRating(1, 1))
+    #ifdef USE_STAR_RATING
+      , _star_rating(new StarRating(1, 5))
+    #endif
       , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))	// {
 	// liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
       , dom_from_record_impl([&](std::shared_ptr<QDomDocument> doc) -> QDomElement {
@@ -41,7 +43,7 @@ Record::Record()	// boost::intrusive_ref_counter<Record, boost::thread_safe_coun
 		// int available_field_list_size = available_field_list.size();
 	      for(int j = 0; j < available_field_list.size(); ++ j){
 		  QString field_name = available_field_list.at(j);
-		  if(field_name == boost::mpl::c_str < id_type > ::value && natural_field_source(field_name) == "")natural_field_source(field_name, natural_field_source(boost::mpl::c_str < dir_type > ::value).length() > 0 ? natural_field_source(boost::mpl::c_str < dir_type > ::value) : get_unical_id());
+		  if(field_name == boost::mpl::c_str < id_type >::value && natural_field_source(field_name) == "")natural_field_source(field_name, natural_field_source(boost::mpl::c_str < dir_type >::value).length() > 0 ? natural_field_source(boost::mpl::c_str < dir_type >::value) : get_unical_id());
 			// Устанавливается значение поля как атрибут DOM-узла
 		  if(is_natural_field_exists(field_name))elem.setAttribute(field_name, natural_field_source(field_name));
 	      }
@@ -102,7 +104,9 @@ Record::Record(QMap<QString, QString> field_data)
     : _lite_flag(true)	// boost::intrusive_ref_counter<Record, boost::thread_safe_counter>()  // std::enable_shared_from_this<Record>()
       , _field_data(field_data)
       , _text("")
-      , _star_rating(new StarRating(1, 1))
+    #ifdef USE_STAR_RATING
+      , _star_rating(new StarRating(1, 5))
+    #endif
       , _attach_table_data(std::make_shared<AttachTableData>(boost::intrusive_ptr<Record>(const_cast<Record *>(this))))	// {
 	// liteFlag = true;    // By default, the object light // По-умолчанию объект легкий
       , dom_from_record_impl([&](std::shared_ptr<QDomDocument> doc) -> QDomElement {

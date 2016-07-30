@@ -42,7 +42,7 @@ VerticalScrollArea::VerticalScrollArea(rv_t *_record_view	// std::shared_ptr<sd:
 
     setWidget(_record_view);
     _record_view->viewport()->installEventFilter(this);
-    _record_view->_vertical_scroll_bar_width	= this->verticalScrollBar()->width();
+//    _record_view->_vertical_scroll_bar_width	= this->verticalScrollBar()->width();
     _record_view->_vertical_scroll_area		= this;
 	//    setWidgetResizable(true);
 	//    setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

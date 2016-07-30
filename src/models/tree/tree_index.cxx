@@ -370,7 +370,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
 // } catch(std::exception &) {}
 
 // if(tree_index) {
-    _result = view_paste_strategy_preparation(this, _result, [&](boost::intrusive_ptr<const Linker> il) -> bool {return _result->field<url_type>() == il->host()->field<url_type>() && il->host()->id() == _result->id() && il == _result->linker() && il->host_parent() == _result->parent();}
+    _result = view_paste_strategy_preparation(this, _result, [&](boost::intrusive_ptr<const Linker> il) -> bool {return url_equal(_result->field<url_type>().toStdString(), il->host()->field<url_type>().toStdString()) && il->host()->id() == _result->id() && il == _result->linker() && il->host_parent() == _result->parent();}
 					     , _view_paste_strategy
 					     , item_is_brand_new
 					     , _find_url

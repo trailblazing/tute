@@ -118,19 +118,22 @@ class Record
 	template < typename field_type>struct field_read<field_type, append_to_crypt_type> {
 	    const Record *_this;
 	    field_read(const Record *_this) : _this(_this){}
-	    QString operator()() const {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type > ::type > ::value];}
+
+	    QString operator ()() const {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type > ::type > ::value];}
 	};
 
 	template <typename field_type>struct field_read<field_type, crypt_field_type> {
 	    const Record *_this;
 	    field_read(const Record *_this) : _this(_this){}
-	    QString operator()(){return _this->read_crypt_field(boost::mpl::c_str < typename boost::mpl::at < crypt_field_type, field_type >::type >::value);}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+
+	    QString operator ()(){return _this->read_crypt_field(boost::mpl::c_str < typename boost::mpl::at < crypt_field_type, field_type >::type >::value);}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 	};
 
 	template <typename field_type>struct field_read<field_type, calculable_field_type>{
 	    const Record *_this;
 	    field_read(const Record *_this) : _this(_this){}
-	    QString operator()();
+
+	    QString operator ()();
 	};
 
 
@@ -139,19 +142,22 @@ class Record
 	template < typename field_type>struct field_write<field_type, append_to_crypt_type> {
 	    Record *const _this;
 	    field_write(Record *const _this) : _this(_this){}
-	    void operator()(const QString &value){_this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type > ::type > ::value] = value;}
+
+	    void operator ()(const QString &value){_this->_field_data[boost::mpl::c_str < typename boost::mpl::at < append_to_crypt_type, field_type > ::type > ::value] = value;}
 	};
 
 	template <typename field_type>struct field_write<field_type, crypt_field_type> {
 	    Record *const _this;
 	    field_write(Record *const _this) : _this(_this){}
-	    void operator()(const QString &value){return _this->write_crypt_field(boost::mpl::c_str < typename boost::mpl::at < crypt_field_type, field_type >::type >::value, value);}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+
+	    void operator ()(const QString &value){return _this->write_crypt_field(boost::mpl::c_str < typename boost::mpl::at < crypt_field_type, field_type >::type >::value, value);}// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 	};
 
 	template <typename field_type>struct field_write<field_type, calculable_field_type> {
 	    Record *const _this;
 	    field_write(Record *const _this) : _this(_this){}
-	    void operator()(const QString &value);	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+
+	    void operator ()(const QString &value);	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 	};
 
 	template < typename field_type>	// , typename field_type_switch = typename switch_type<field_type>::type
@@ -210,9 +216,11 @@ class Record
 
 	// browser::WebView *bind();
 	// browser::WebView *active();
-	bool		dir_exists();
-	bool		file_exists();
+	bool	dir_exists();
+	bool	file_exists();
+#ifdef USE_STAR_RATING
 	StarRating	*star_rating(){return _star_rating;}
+#endif
     protected:
 
 	// browser::WebPage            *_page;
@@ -232,14 +240,13 @@ class Record
 	// Set the properties of the contents occurs in the upstream code
 // natural_field_map _field_data_static;
 	// Light properties // Легкие свойства
-	QMap<QString, QString>      _field_data;	//// A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
-
-	// Полновесные свойства
-	QByteArray			_text;		// Содержимое файла с текстом записи
-	QMap<QString, QByteArray>	_picture_files;	// Содержимое картинок, используемых в тексте записи (используется при переносе через буфер обмена, при DragAndDrop)
-	StarRating			*_star_rating;
-	// Таблица прикрепляемых файлов
-	std::shared_ptr<AttachTableData>    _attach_table_data;
+	QMap<QString, QString>			_field_data;		//// A list of the properties of records (attributes) ImyaAtributa - Meaning // Перечень свойств записи (атрибутов) ИмяАтрибута - Значение
+	QByteArray				_text;		// Содержимое файла с текстом записи// Полновесные свойства
+	QMap<QString, QByteArray>		_picture_files;	// Содержимое картинок, используемых в тексте записи (используется при переносе через буфер обмена, при DragAndDrop)
+#ifdef USE_STAR_RATING
+	StarRating				*_star_rating;
+#endif
+	std::shared_ptr<AttachTableData>	_attach_table_data;	// Таблица прикрепляемых файлов
 
 	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _binder;
 	// std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> _activator;
@@ -295,14 +302,16 @@ class Record
 template <>struct Record::field_read<has_attach_type, calculable_field_type> {
     const Record *_this;
     field_read(const Record *_this) : _this(_this){}
-    QString operator()(){return _this->has_attach_field();}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+
+    QString operator ()(){return _this->has_attach_field();}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 };
 
 
 template <>struct Record::field_read<attach_count_type, calculable_field_type> {
     const Record *_this;
     field_read(const Record *_this) : _this(_this){}
-    QString operator()(){return _this->attach_count_field();}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
+
+    QString operator ()(){return _this->attach_count_field();}	// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }
 };
 
 // typedef boost::mpl::set<pin_type, name_type, author_type, home_type, url_type, tags_type> crypt_field_type;

@@ -1,4 +1,4 @@
-
+#include <thread>
 
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
@@ -1025,7 +1025,7 @@ QModelIndex tv_t::current_index(void) const {
 }
 
 //// Получение индекса текущего элемента на котором стоит курсор
-//QModelIndex KnowView::view_index_last(void) const {
+// QModelIndex KnowView::view_index_last(void) const {
 ////    if(!selectionModel()->currentIndex().isValid()) {
 //    boost::intrusive_ptr<TreeItem> _item = nullptr;
 ////    KnowModel *_know_root = _know_root;  //source_model();
@@ -1062,9 +1062,9 @@ QModelIndex tv_t::current_index(void) const {
 
 ////    assert(selectionModel()->currentIndex().isValid());    // this line is to be recovery
 //    return selectionModel()->currentIndex();
-//}
+// }
 
-//QModelIndex KnowView::select_as_current_item(boost::intrusive_ptr<TreeItem> _item
+// QModelIndex KnowView::select_as_current_item(boost::intrusive_ptr<TreeItem> _item
 //					    , select_strategy _select_strategy
 //					    , current_strategy _current_strategy){
 //    auto select_as_current_index = [&](const QModelIndex &_index
@@ -1149,9 +1149,9 @@ QModelIndex tv_t::current_index(void) const {
 ////    _index = select_and_current(_index, _strategy);
 
 //    return _index;
-//}
+// }
 
-//QModelIndex KnowView::deselect(const QModelIndex &_index){
+// QModelIndex KnowView::deselect(const QModelIndex &_index){
 //    QModelIndex _result;
 
 //    selectionModel()->select(_index, QItemSelectionModel::SelectionFlag::Deselect);
@@ -1171,16 +1171,16 @@ QModelIndex tv_t::current_index(void) const {
 
 //    this->setFocus();	// ?
 //    return _result;
-//}
+// }
 
-//QModelIndex KnowView::deselect(boost::intrusive_ptr<TreeItem> _item){
+// QModelIndex KnowView::deselect(boost::intrusive_ptr<TreeItem> _item){
 //    QModelIndex _index = _know_root->index(_item);
 //    _index = deselect(_index);
 
 //    return _index;
-//}
+// }
 
-//QModelIndex KnowView::selection_to_pos(int _index){
+// QModelIndex KnowView::selection_to_pos(int _index){
 ////    bool result = false;
 //    QModelIndex index;
 //    if(_index != - 1){
@@ -1189,7 +1189,7 @@ QModelIndex tv_t::current_index(void) const {
 ////        result = true;
 //    }
 //    return index;
-//}
+// }
 
 QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index
 				   , select_strategy _select_strategy
@@ -1290,7 +1290,8 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
     browser::WebView	*activated_view	= globalparameters.main_window()->vtab_record()->activated_browser()->currentTab();	// globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), _host->field<home_type>().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), _host->field<url_type>().toStdString());});;
     browser::WebView	*v		= nullptr;
 //    const index_tree &_index = _know_root->index(_item);
-    if(static_cast<QModelIndex>(_index).isValid()){					// && index_current() != _index
+    if(static_cast<QModelIndex>(_index).isValid()){	// && index_current() != _index
+	globalparameters.main_window()->setDisabled(true);
 	// KnowModel *(TreeScreen::*_source_model_func)() = &TreeScreen::know_model_board;
 	// auto _source_model = std::bind(_source_model_func, this);
 
@@ -1468,6 +1469,7 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
 	    }
 	}
 	if(v)v->recovery_global_consistency();
+	globalparameters.main_window()->setEnabled(true);
     }
     return v;
 }
@@ -3387,7 +3389,7 @@ void tv_t::know_model_save(void){
 
 	// know_root_holder::know_root()->save();
 //    sychronize();
-    _know_model_board->save();
+    std::thread(&tkm_t::save, _know_model_board).detach();	// _know_model_board->save();
 }
 
 // Перечитывание дерева веток с диска

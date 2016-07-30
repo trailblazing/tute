@@ -57,7 +57,12 @@ class VerticalScrollArea;
 #include <QObject>
 #endif
 
+// #ifndef USE_BUTTON
+// #define USE_BUTTON
+// #endif
 
+
+#ifdef USE_STAR_RATING
 
 //! [0]
 class StarRating {
@@ -72,20 +77,23 @@ class StarRating {
 
 	int max_star_count() const {return _max_star_count;}
 
-	void star_count(int starCount){_star_count = starCount;}
+	void star_count(int star_count_){_star_count = star_count_;}
 
-	void max_star_count(int maxStarCount){_max_star_count = maxStarCount;}
+	void max_star_count(int max_star_count_){_max_star_count = max_star_count_;}
 
     private:
-	QPolygonF	star_polygon;
-	QPolygonF	diamond_polygon;
+	QPolygonF	_star_polygon;
+	QPolygonF	_diamond_polygon;
 	int		_star_count;
 	int		_max_star_count;
 };
 //! [0]
 
+
 //! [1]
 Q_DECLARE_METATYPE(StarRating)
+
+
 
 
 class FlatToolButtonRating : public FlatToolButton {
@@ -97,7 +105,7 @@ class FlatToolButtonRating : public FlatToolButton {
 
     public:
 	FlatToolButtonRating(QWidget *parent = nullptr);
-	void star_rating(const StarRating &starRating){_star_rating = starRating;}
+	void star_rating(const StarRating &star_rating_){_star_rating = star_rating_;}
 
 	StarRating star_rating(){return _star_rating;}
 
@@ -109,7 +117,7 @@ class FlatToolButtonRating : public FlatToolButton {
 	;
 #endif
     protected:
-	void	paintEvent(QPaintEvent *event);
+	void	paintEvent(QPaintEvent *e);
 	void	mouseMoveEvent(QMouseEvent *event);
 	void	mouseReleaseEvent(QMouseEvent *event);
     private:
@@ -117,6 +125,51 @@ class FlatToolButtonRating : public FlatToolButton {
 	StarRating _star_rating;
 };
 
+#endif
+
+
+#ifdef USE_BUTTON_COLUMN
+// #include <QStyledItemDelegate>
+// #include <QWidget>
+// #include <QPushButton>
+// #include <QTableView>
+class QPushButton;
+
+class ButtonColumnDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+
+    public:
+
+	explicit ButtonColumnDelegate(rv_t *view = 0);	// (QObject *parent = 0);
+	~ButtonColumnDelegate();
+
+	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+	void setEditorData(QWidget *editor, const QModelIndex &index) const;
+
+	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+
+	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+	void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+
+    public slots:
+	void cellEntered(const QModelIndex &index);
+
+    private:
+//	QTableView		*_view;
+	QPushButton		*_button;
+	rv_t			*_view;
+	const int		_rating_width = 30;
+
+	bool			_is_one_cell_in_edit_mode;
+	QPersistentModelIndex	_current_edited_cell_index;
+	friend class rv_t;
+};
+
+#endif
+
+class rv_t;
 
 class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 {
@@ -143,7 +196,11 @@ class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 	void commitAndCloseEditor();
 
     private:
-	rv_t  *_view;
+	rv_t		*_view;
+	const int	_scroll_bar_width	= 10;
+	const int	_rating_width		= 30;
+	int		_x_offset;
+	friend class rv_t;
 };
 
 Q_DECLARE_METATYPE(QStyleOptionButton)
@@ -191,6 +248,7 @@ class rv_t : public QTableView {
 	template <typename field_type>
 	bool is_field_type_column(int index){return _is_field_type_column(boost::mpl::c_str<field_type>::value, index);}
 
+	std::function<int()> rating_width;
     signals:
 
 	// void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
@@ -235,13 +293,20 @@ class rv_t : public QTableView {
 	QMenu			*_context_menu;
 	rs_t			*_record_screen;
 	rctl_t			*_record_controller;
+	VerticalScrollArea	*_vertical_scroll_area = nullptr;
 	QVBoxLayout		*_layout;
+	ViewDelegation		*_delegate;	//	ButtonColumnDelegate	*_delegate;
 	QPoint			_mouse_start_position;
-	bool			_enable_move_section;
+	bool			_enable_move_section = true;
 	QModelIndex		_previous_index;
-	int			x				= 0;		// test
-	int			_vertical_scroll_bar_width	= 0;
-	VerticalScrollArea	*_vertical_scroll_area		= nullptr;
+
+//	int			_vertical_scroll_bar_width	= 0;
+	int		x			= 0;			// test
+	const int	_scroll_bar_width	= 10;
+	const int	_pin_width		= 25;
+	const int	_rating_width		= 30;
+
+
 	// void setup_signals(void);
 	// void assembly_context_menu(void);
 
@@ -262,9 +327,9 @@ class rv_t : public QTableView {
 // #ifndef QT_NO_WHEELEVENT
 //	void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 // #endif
-	void	save_column_width(void);
+	void save_column_width(void);
 //	bool	is_vertical_scrollbar_visible() const;
-	void	resizeEvent(QResizeEvent *e);
+	void resizeEvent(QResizeEvent *e);
 
     private:
 	std::function<bool (const QString &, int)>	_is_field_type_column;
@@ -272,6 +337,7 @@ class rv_t : public QTableView {
 	friend class rs_t;
 	friend class VerticalScrollArea;
 	friend class rctl_t;
+	friend class ViewDelegation;
 };
 
 
