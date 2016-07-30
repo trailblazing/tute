@@ -39,6 +39,8 @@
 #include "views/tree/tree_view.h"
 #include "views/record_table/vertical_scrollarea.h"
 #include "libraries/fixed_parameters.h"
+#include "views/record_table/vertical_scrollarea.h"
+
 
 extern GlobalParameters				globalparameters;
 extern FixedParameters				fixedparameters;
@@ -299,7 +301,7 @@ rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
     setItemDelegate(delegate);
     setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::SelectedClicked);
 //    connect(this, &rv_t::clicked, this, [&](const QModelIndex &index){itemDelegate(index)->show();});
-
+    verticalHeader()->setDefaultAlignment(Qt::AlignmentFlag::AlignRight);
 // Пришлось ввести метод init, так как инициализация невозможна без
 // созданных в parent QAction, а создать в parent QAction можно только
 // при наличии ссылки на данный объект
@@ -788,7 +790,7 @@ void rv_t::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
 
 // еакция на нажатие кнопок мышки
 void rv_t::mousePressEvent(QMouseEvent *event){
-//    ts_t *_tree_screen = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
+//    ts_t * = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
 ////    // get the buttons type
 ////    Qt::MouseButtons mouse_button = event->buttons();
 
@@ -898,10 +900,14 @@ void rv_t::mouseReleaseEvent(QMouseEvent *event){
     QTableView::mouseReleaseEvent(event);
 }
 
-void rv_t::wheelEvent(QWheelEvent *event){	// does not work
-    x -= (event->delta() / 120) * 10;
-    verticalScrollBar()->setValue(x);
-}
+// #ifndef QT_NO_WHEELEVENT
+//// move to VerticalScrollArea::wheelEvent
+// void rv_t::wheelEvent(QWheelEvent *event){
+//    (void) event;
+////    x -= (event->delta() / 120) * 10;
+////    verticalScrollBar()->setValue(x);
+// }
+// #endif
 
 // Начало переноса записи
 void rv_t::start_drag(){
@@ -985,6 +991,7 @@ void rv_t::save_column_width(void){
     int count = appconfig.record_table_show_fields().size();
 
     QStringList columnWidthList;
+//    if(appconfig.record_table_show_vertical_headers())columnWidthList << QString::number(verticalHeader()->geometry().width());	// line number width
     for(int i = 0; i < count; i ++){
 	QString width;
 	width.setNum(columnWidth(i));
@@ -1037,39 +1044,76 @@ void rv_t::restore_column_width(void){
 ////    saveColumnWidth();
 // }
 
+// int rv_t::vertical_scroll_bar_width()const{return _vertical_scroll_bar_width;}
+// void rv_t::vertical_scroll_bar_width(int w){_vertical_scroll_bar_width = w;}
+
+
 
 // if pin and title width beyond container width, when click title item, widget will move left, pin column will disappeared
 void rv_t::resizeEvent(QResizeEvent *e){
-	// Q_UNUSED(e)
+//    auto is_vertical_scrollbar_visible = [&]() const->bool {
+//	bool IsVisible = false;
 
+//	int HeightOfAllRows = 0;
+//	for(int i = 0; i < _record_controller->source_model()->count(); i ++)HeightOfAllRows += rowHeight(i);
+//	int	HeaderHeight	= horizontalHeader()->height();
+//	int	TableHeight	= height();
+//	if((HeightOfAllRows + HeaderHeight) > TableHeight)IsVisible = true;
+//	return IsVisible;
+//    };
+//	// Q_UNUSED(e)
+    {
 	// int vscrollbar_width = this->verticalScrollBar()->width();
 	// int viewport_width = this->maximumViewportSize().width();
 	// int _width = width();
 	// int parent_width = e->size().width();
 	// auto margin = viewport()->contentsMargins();
 	// auto rect0 =  viewport()->contentsRect();
-    auto	rect		= contentsRect();
-    auto	real_capacity	= rect.width();
-    int		adjust_width	= 60;
+	auto	rect			= contentsRect();
+	auto	real_capacity		= rect.width();
+	auto	row_number_width	= appconfig.record_table_show_vertical_headers() ? verticalHeader()->geometry().width() : 0;
+//	auto	_vertical_scroll_bar_width	= _vertical_scroll_bar_width;//verticalScrollBar()->width();
+//	bool	_is_vertical_scrollbar_visible		= is_vertical_scrollbar_visible();
+	bool _is_vertival_scroll_bar_visibale = verticalScrollBar()->isVisible();
+//	bool	_vertical_scroll_is_visible		= _vertical_scroll_area ? _vertical_scroll_area->verticalScrollBar()->isVisible() : false;
+	int	scroll_bar_width	= 10;
+	int	scroll_sapce_width	= _is_vertival_scroll_bar_visibale ? 0 : scroll_bar_width;
+	int	rating_width		= 30 + scroll_sapce_width;
+	int	pin_width		= 25;
+	int	suggest_others_width	= row_number_width + pin_width + rating_width + (scroll_bar_width - scroll_sapce_width);			// _vertical_scroll_bar_width
 	// auto size_width = size().width();
-    auto	show_fields	= appconfig.record_table_show_fields();
-    int		sum_width	= 0;int i = 0;
-    for(auto f : show_fields)sum_width += columnWidth(i);
-    for(int i = 0; i < show_fields.size(); i ++){
-	if(sum_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
-	    if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 25);
-	    if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 30);
-	    if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, (real_capacity >= adjust_width) ? real_capacity - adjust_width : columnWidth(i));
-	}else{
-	    if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, 25);
-	    if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, 30);
-	    real_capacity = this->contentsRect().width();
+	auto	show_fields		= appconfig.record_table_show_fields();
+	auto	show_fields_width	= appconfig.record_table_fields_width();
+//	if(show_fields.contains("row number"))
+//	QMutableListIterator<QString> it(show_fields);
+	for(auto it : show_fields)if(it == "row number")show_fields.removeOne(it);
+	int required_width = row_number_width;
+//	int	i		= 0;
+	for(auto w : show_fields_width)required_width += w.toInt();	// columnWidth(i ++);
+	for(int i = 0; i < show_fields.size(); i ++){
+	    if(required_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
+		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, pin_width);
+		if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width);
+		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
+//		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+		}
+	    }else{
+		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, pin_width);
+		if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width);
+		real_capacity = this->contentsRect().width();
 //            if(real_capacity >= 300){
 //                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
 //            }else{
-	    if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, (real_capacity >= adjust_width) ? real_capacity - adjust_width : columnWidth(i));
+		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
+//		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+		}
 //            }
+	    }
 	}
+//	for(int j = 0; j < horizontalHeader()->count(); j ++)
+//		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, j))horizontalHeader()->setSectionResizeMode(j, QHeaderView::Stretch);
     }
     QTableView::resizeEvent(e);
 }

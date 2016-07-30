@@ -42,6 +42,9 @@ struct id_value;
 class rv_t;
 class QStyleOptionButton;
 class FlatToolButton;
+class VerticalScrollArea;
+
+
 
 #include <QMetaType>
 #include <QPointF>
@@ -198,7 +201,8 @@ class rv_t : public QTableView {
 	;
 #endif
 
-
+//	int	vertical_scroll_bar_width() const;
+//	void	vertical_scroll_bar_width(int w);
     public slots:
 
 	// Открытие контекстного меню
@@ -235,8 +239,9 @@ class rv_t : public QTableView {
 	QPoint			_mouse_start_position;
 	bool			_enable_move_section;
 	QModelIndex		_previous_index;
-	int			x = 0;		// test
-
+	int			x				= 0;		// test
+	int			_vertical_scroll_bar_width	= 0;
+	VerticalScrollArea	*_vertical_scroll_area		= nullptr;
 	// void setup_signals(void);
 	// void assembly_context_menu(void);
 
@@ -254,12 +259,12 @@ class rv_t : public QTableView {
 	void	mousePressEvent(QMouseEvent *event);
 	void	mouseMoveEvent(QMouseEvent *event);
 	void	mouseReleaseEvent(QMouseEvent *event);
-#ifndef QT_NO_WHEELEVENT
-	void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
-#endif
-	void save_column_width(void);
-
-	void resizeEvent(QResizeEvent *e);
+// #ifndef QT_NO_WHEELEVENT
+//	void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
+// #endif
+	void	save_column_width(void);
+//	bool	is_vertical_scrollbar_visible() const;
+	void	resizeEvent(QResizeEvent *e);
 
     private:
 	std::function<bool (const QString &, int)>	_is_field_type_column;

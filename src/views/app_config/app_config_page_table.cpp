@@ -34,6 +34,7 @@ AppConfigPageTable::AppConfigPageTable(rctl_t *_record_controller, QWidget *pare
     QStringList all_field_names = fixedparameters._record_field;
 // all_field_names << "close";
     QMap<QString, QString> description_fields = fixedparameters.record_field_description(all_field_names);
+
 // description_fields["close"] = tr("Close item");
     QStringList showFields = appconfig.record_table_show_fields();
 	// Создаются чекбоксы для каждого поля, хранимого в записи
@@ -146,6 +147,7 @@ int AppConfigPageTable::apply_changes(void){
 	// Если поле удалилось
 	if(show_fields.contains(i.key()) && ! i.value()->isChecked())remove_fields_list << i.key();
     }
+//    if(appconfig.record_table_show_vertical_headers() && ! add_fields_list.contains("row number"))add_fields_list << "row number";
     qDebug() << "add_fields_list : " << add_fields_list;
     qDebug() << "remove_fields_list : " << remove_fields_list;
 

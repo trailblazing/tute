@@ -265,7 +265,7 @@ namespace browser {
 ////		std::thread(&TreeItem::activate, result, std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)).join();
 //		globalparameters.status_bar()->showMessage("added node(s) : " + QString::number(++ _total_progress_counter), 1000);	// across thread message
 	    }
-	    child_items[0]->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+	    if(! tab_brother)child_items[0]->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 //	    std::function<void()> startWorkInAThread = [&] {
 //		WorkerThread *workerThread = new WorkerThread(this, child_items);
 //		connect(workerThread, &WorkerThread::resultReady, this, [&] {if(child_items.size() > 0)startWorkInAThread();});
