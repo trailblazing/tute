@@ -6,8 +6,9 @@
 
 #include <QStyledItemDelegate>
 
-
+#if QT_VERSION == 0x050600
 #include <wobjectdefs.h>
+#endif
 #include <QObject>
 
 // Этот класс не используется, скорее всего будет удален
