@@ -41,7 +41,7 @@ Record::Record()	// boost::intrusive_ref_counter<Record, boost::thread_safe_coun
 		// int available_field_list_size = available_field_list.size();
 	      for(int j = 0; j < available_field_list.size(); ++ j){
 		  QString field_name = available_field_list.at(j);
-		  if(field_name == "id" && natural_field_source(field_name) == "")natural_field_source(field_name, natural_field_source("dir").length() > 0 ? natural_field_source("dir") : get_unical_id());
+		  if(field_name == boost::mpl::c_str < id_type > ::value && natural_field_source(field_name) == "")natural_field_source(field_name, natural_field_source(boost::mpl::c_str < dir_type > ::value).length() > 0 ? natural_field_source(boost::mpl::c_str < dir_type > ::value) : get_unical_id());
 			// Устанавливается значение поля как атрибут DOM-узла
 		  if(is_natural_field_exists(field_name))elem.setAttribute(field_name, natural_field_source(field_name));
 	      }
@@ -54,7 +54,7 @@ Record::Record()	// boost::intrusive_ref_counter<Record, boost::thread_safe_coun
 	      QString result = "";
 
 	      auto crypt_field_name = boost::mpl::c_str<crypt_type>::value;
-	      if(name == "home" && _field_data[name] == "" && _field_data["url"] != "")_field_data[name] = _field_data["url"];	// for history reason
+	      if(name == "home" && _field_data[name] == "" && _field_data[boost::mpl::c_str < url_type > ::value] != "")_field_data[name] = _field_data[boost::mpl::c_str < url_type > ::value];	// for history reason
 	      if(_field_data.contains(crypt_field_name)){	// boost::mpl::c_str < crypt_type > ::value
 		  if(_field_data[crypt_field_name] == "1"){
 		      if(_field_data[name].length() > 0 && globalparameters.crypt_key().length() > 0){
@@ -405,7 +405,7 @@ void Record::dom_to_record(const QDomElement &_dom_element){
     }
 	// Проверка, есть ли у переданного DOM-элемента таблица файлов для заполнения
     if(! _dom_element.firstChildElement("files").isNull())_attach_table_data->dom_to_data(_dom_element.firstChildElement("files"));	// Заполнение таблицы приаттаченных файлов
-    if(_lite_flag && natural_field_source("id") != global_root_id)to_fat();
+    if(_lite_flag && natural_field_source(boost::mpl::c_str < id_type >::value) != global_root_id)to_fat();
 }
 
 QDomElement Record::dom_from_record() const {
@@ -531,8 +531,8 @@ void Record::to_fat(){
 
 QString Record::id_and_name() const {
     QString id, name;
-    if(_field_data.contains("id"))id = _field_data["id"];
-    if(_field_data.contains("name"))name = _field_data["name"];
+    if(_field_data.contains(boost::mpl::c_str < id_type >::value))id = _field_data[boost::mpl::c_str < id_type > ::value];
+    if(_field_data.contains(boost::mpl::c_str < name_type >::value))name = _field_data[boost::mpl::c_str < name_type > ::value];
     return "Record ID: " + id + " Name: " + name;
 }
 
@@ -1037,23 +1037,23 @@ void Record::push_fat_attributes(){
 
 // Полное имя директории записи
 QString Record::full_dir() const {
-    if(_field_data.contains("dir") == false)critical_error("Record::full_dir() : Not present dir field");
-    return appconfig.tetra_dir() + "/base/" + _field_data.value("dir");
+    if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false)const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);	// critical_error("Record::full_dir() : Not present dir field");
+    return appconfig.tetra_dir() + "/base/" + _field_data.value(boost::mpl::c_str < dir_type >::value);
 }
 
 // Короткое имя директории записи
 QString Record::short_dir() const {
-    if(_field_data.contains("dir") == false)critical_error("Record::short_dir() : Not present dir field");
-    return _field_data.value("dir");
+    if(_field_data.contains(boost::mpl::c_str < dir_type >::value) == false)const_cast<Record *>(this)->_field_data[boost::mpl::c_str < dir_type > ::value] = _field_data.value(boost::mpl::c_str < id_type >::value);	// critical_error("Record::short_dir() : Not present dir field");
+    return _field_data.value(boost::mpl::c_str < dir_type >::value);
 }
 
 // Полное имя файла с текстом записи
 QString Record::full_text_file_name() const {
-    if(_field_data.contains("file") == false){
+    if(_field_data.contains(boost::mpl::c_str < file_type >::value) == false){
 	// critical_error("Record::getFullDirName() : Not present file field");
-	return "";
+	return "text.html";
     }
-    return full_dir() + "/" + _field_data.value("file");
+    return full_dir() + "/" + _field_data.value(boost::mpl::c_str < file_type >::value);
 }
 
 // Полное имя произвольного файла в каталоге записи
