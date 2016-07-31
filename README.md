@@ -41,7 +41,7 @@ Let's say the directory of your current project is named "working":
 
 * Or some user installation is up to you (update the line
 
-    PROJECT_QT_VERSION      = /path-to-qt-installation/gcc_64
+        PROJECT_QT_VERSION      = /path-to-qt-installation/gcc_64
 
 in mytetra_webengine.pro).
 * Do not recommend to mix it up with system installation of Qt
