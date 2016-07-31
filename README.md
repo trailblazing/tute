@@ -40,7 +40,9 @@ Let's say the directory of your current project is named "working":
     /opt/Qt/5.7
 
 * Or some user installation is up to you (update the line
+
         PROJECT_QT_VERSION      = /opt/Qt/5.7/gcc_64
+
 in mytetra_webengine.pro).
 * Do not recommend to mix it up with system installation of Qt
 * After installation, you'll get a "MaintenanceTool" under the installation root directory.
