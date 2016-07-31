@@ -39,22 +39,25 @@ Let's say the directory of your current project is named "working":
 
     /opt/Qt/5.7
 
-* Or some user installation is up to you. But do not recommend to mix it up with system installation of Qt
+* Or some user installation is up to you (update the line
+    PROJECT_QT_VERSION      = /opt/Qt/5.7/gcc_64
+in mytetra_webengine.pro).
+* Do not recommend to mix it up with system installation of Qt
 * After installation, you'll get a "MaintenanceTool" under the installation root directory.
 
 1.4 Clone the repo to your workbench
 
     git clone https://github.com/beimprovised/mytetra_webengine.git
 
-1.5 Compile the Qt project file with Qt-Creator which comes with Qt 5.6
+1.5 Compile
 
-    qmake-qt5 mytetra_webengine.pro
+    /path-to-qt5.7/qmake mytetra_webengine.pro
 
     make all
 
     sudo make install
 
-* Or via GUI:
+* Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
         Open "mytetra_webengine.pro" under mytetra_webengine in qtcreator
         "Configure" the project in qtcreator (no additional requirements)
         Build it.
