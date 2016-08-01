@@ -18,7 +18,7 @@
 #include "views/enter_password/enter_password.h"
 #include "models/database_config/database_config.h"
 #include "libraries/crypt/password.h"
-
+#include "libraries/disk_helper.h"
 
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;

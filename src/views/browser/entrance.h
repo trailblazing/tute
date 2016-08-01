@@ -31,7 +31,7 @@ class tkm_t;
 class QNetworkReply;
 class QSslError;
 class sapp_t;
-class rctl_t;
+class rctrl_t;
 class HidableTabWidget;
 class ts_t;
 class FindScreen;

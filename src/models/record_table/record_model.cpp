@@ -13,6 +13,7 @@
 
 
 #include "models/tree/binder.hxx"
+#include "models/tree/tree_index.hxx"
 #include "models/tree/tree_item.h"
 #include "models/tree/tree_model.h"
 #include "models/app_config/app_config.h"
@@ -25,6 +26,7 @@
 #include "views/record_table/record_screen.h"
 #include "controllers/record_table/record_controller.h"
 #include "models/tree/tree_know_model.h"
+#include "views/tree/tree_view.h"
 #include "views/tree/tree_screen.h"
 #include "views/record/meta_editor.h"
 #include "views/browser/tabwidget.h"
@@ -259,7 +261,7 @@ W_OBJECT_IMPL(RecordModel)
 
 
 // Конструктор модели
-RecordModel::RecordModel(rctl_t *_record_controller)	// TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen
+RecordModel::RecordModel(rctrl_t *_record_controller)	// TreeScreen *_tree_screen//, FindScreen *_find_screen//, RecordScreen *_record_screen
 //			, browser::TabWidget *_tabmanager
     : QAbstractTableModel(_record_controller)	// _record_controller	//
 //      , pages_container(_tabmanager)
@@ -388,7 +390,6 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 
 #ifdef USE_STAR_RATING
     if(role == Qt::UserRole){	// just a test
-
 	StarRating star_rating = qvariant_cast<StarRating>(index.data());
 // pixmap.load(":/resource/pic/butterfly-right.svg");
 	star_rating.star_count(qvariant_cast<int>(value));
@@ -396,6 +397,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	return true;	// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
     }
 #endif
+
 	// Во всех остальных случаях
     return false;
 }
@@ -553,10 +555,10 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-browser::WebView *RecordModel::insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode){
-    pos_source		selected_position(- 1);
+browser::WebView *RecordModel::insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _target_item, int mode){
+    pos_source		returned_position(- 1);
     browser::WebView	*view		= nullptr;
-    auto		insert_new_tab	= [&](pos_source &selected_position, const pos_source source_insert_pos){
+    auto		insert_new_tab	= [&](pos_source &returned_position, const pos_source source_insert_pos, boost::intrusive_ptr<TreeItem> _item){
 		// if(selected_position == -1) {
 	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, _record_controller->tabmanager()->count() > 0 ? _record_controller->tabmanager()->webView((int) source_insert_pos)->page()->binder()->host() : nullptr, _item);
 //	    if(record_index)
@@ -567,42 +569,50 @@ browser::WebView *RecordModel::insert_new_item(const index_source source_pos_ind
 //		// addTab()-> wrong design, demage the function TabWidget::newTab and the function QTabWidget::addTab
 //	    }
 	    assert(view);
-	    selected_position = pos_source(_record_controller->tabmanager()->indexOf(view));
+	    returned_position = position(id_value(_item->field<id_type>()));	// pos_source(_record_controller->tabmanager()->indexOf(view));
 
 	    return view;
 	};
-    if(_item){
+    if(_target_item){
 	pos_source source_insert_pos = _record_controller->index<pos_source>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
 	Q_UNUSED(mode)	// to be used
 	if(- 1 == (int) source_insert_pos)source_insert_pos = 0;
+	auto brother = item(source_insert_pos);
 	beginResetModel();	// Подумать, возможно нужно заменить на beginInsertRows
-	if(_item->binder()){
+	if(_target_item->binder()){
 //            if(_item->binder()->page()){
 //            view = _item->binder()->page()->view();	// activate();
-	    auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
+	    auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _target_item->field<home_type>().toStdString()) && b->host()->field<id_type>() == _target_item->field<id_type>();});
 	    if(v){
 		if(v->tabmanager() != _record_controller->tabmanager()){
 		    v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 //		    if(selected_position == - 1)
 //		    selected_position =
-		    view = insert_new_tab(selected_position, source_insert_pos);
-		}else selected_position = pos_source(_record_controller->tabmanager()->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+		    view = insert_new_tab(returned_position, source_insert_pos, _target_item);
+		}else returned_position = position(id_value(_target_item->field<id_type>()));	// pos_source(_record_controller->tabmanager()->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
 	    }else{
 //		selected_position =
-		view = insert_new_tab(selected_position, source_insert_pos);
+		view = insert_new_tab(returned_position, source_insert_pos, _target_item);
 	    }
 		// Вставка новых данных в таблицу конечных записей
 		// accomplished by TabWidget::addTab in TabWidget::newTab?
 
 //            }
-	    assert(selected_position != - 1);
+	    assert(returned_position != - 1);
 	    assert(view);
 	}else{
-	    view = insert_new_tab(selected_position, source_insert_pos);
-	    assert(selected_position != - 1);
+	    auto	_tree_view	= globalparameters.tree_screen()->view();
+	    auto	this_index	= TreeIndex::instance([&] {return _tree_view->source_model();}, brother);
+	    auto	target_url	= _target_item->field<url_type>();
+	    auto	_target_item	= this_index->register_index(target_url, std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
+			return url_equal((it_->field<home_type>()).toStdString(), target_url.toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toStdString());	// return it_->field<url_type>() == target_url.toString();
+		    });
+
+	    view = insert_new_tab(returned_position, source_insert_pos, _target_item);
+	    assert(returned_position != - 1);
 	    assert(view);
 	}
-	assert(item(selected_position) == _item);
+	assert(item(returned_position) == _target_item || _target_item->field<url_type>() == browser::Browser::_defaulthome || _target_item->field<url_type>() == "");
 	assert(view);
 	endResetModel();// Подумать, возможно нужно заменить на endInsertRows
     }
@@ -822,9 +832,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
     return result;	// _tabmanager->currentWebView()->page()->binder()->host();
 }
 
-void RecordModel::position(pos_source _index){
-    _record_controller->tabmanager()->setCurrentIndex((int) _index);
-}
+void RecordModel::position(pos_source _index){_record_controller->tabmanager()->setCurrentIndex((int) _index);}
 
 // PosSource RecordModel::position()const
 // {
@@ -862,13 +870,9 @@ Qt::ItemFlags RecordModel::flags(const QModelIndex &index) const {
 // }
 
 
-int RecordModel::count() const {
-    return _record_controller->tabmanager()->count();
-}
+int RecordModel::count() const {return _record_controller->tabmanager()->count();}
 
-int RecordModel::size() const {
-    return _record_controller->tabmanager()->count();
-}
+int RecordModel::size() const {return _record_controller->tabmanager()->count();}
 
 int RecordModel::move_up(const pos_source pos){
     beginResetModel();

@@ -88,7 +88,7 @@ struct Binder;
 class TreeItem;
 class tm_t;
 class ts_t;
-class rctl_t;
+class rctrl_t;
 
 // QT_BEGIN_NAMESPACE
 
@@ -180,7 +180,7 @@ namespace browser {
 		   , Entrance *entrance
 		   , Browser *browser
 		   , TabWidget *tabmanager
-		   , rctl_t *record_controller
+		   , rctrl_t *record_controller
 		   , WebView *parent = 0);
 
 	    ~WebPage();
@@ -190,7 +190,7 @@ namespace browser {
 	    WebView	*view();		// {assert(_view); return _view;}
 //        std::map<QString, boost::intrusive_ptr<TreeItem>>
 //        binded_items()const;
-	    rctl_t	*record_controller();		// {return _record_controller;}
+	    rctrl_t	*record_controller();		// {return _record_controller;}
 	    WebView	*activate();
 	    WebView	*load(boost::intrusive_ptr<TreeItem> item, bool checked = true);
 //        WebView *bind(boost::intrusive_ptr<TreeItem> item);
@@ -296,7 +296,7 @@ namespace browser {
 	    Entrance	*_entrance;
 	    Browser	*_browser;
 	    TabWidget	*_tabmanager;
-	    rctl_t	*_record_controller;
+	    rctrl_t	*_record_controller;
 //        std::map<QString, boost::intrusive_ptr<TreeItem> > _items;
 
 	    WebView *_view;
@@ -403,7 +403,7 @@ namespace browser {
 		   , Entrance *entrance
 		   , Browser *browser
 		   , TabWidget *tabmanager
-		   , rctl_t *record_controller);
+		   , rctrl_t *record_controller);
 
 //        WebView(const boost::intrusive_ptr<TreeItem> requested_item
 //                , Profile *profile    // , bool openinnewtab
@@ -426,8 +426,8 @@ namespace browser {
 	    QString	lastStatusBarText() const;
 	    int		progress() const;
 
-	    rctl_t	*record_controller();	// {return _record_controller;}
-	    void	record_controller(rctl_t *_record_controller);	// {this->_record_controller = _record_controller;}
+	    rctrl_t	*record_controller();	// {return _record_controller;}
+	    void	record_controller(rctrl_t *_record_controller);	// {this->_record_controller = _record_controller;}
 
 //        Record *const &record()const {return _record;}
 //        void record(Record *record) {if(record) {_record = record;
@@ -478,7 +478,7 @@ namespace browser {
 	private:
 	    Browser	*_browser;
 	    TabWidget	*_tabmanager;
-	    rctl_t	*_record_controller;
+	    rctrl_t	*_record_controller;
 
 	    WebPage	*_page;
 	    QString	_statusbartext;

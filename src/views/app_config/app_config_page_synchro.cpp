@@ -10,6 +10,8 @@
 
 #include "app_config_page_synchro.h"
 #include "models/app_config/app_config.h"
+#include "libraries/disk_helper.h"
+
 
 extern AppConfig appconfig;
 

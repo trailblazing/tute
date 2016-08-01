@@ -82,7 +82,7 @@ class ItemsFlat;
 class TreeItem;
 class tm_t;
 class TreeController;
-class rctl_t;
+class rctrl_t;
 class ts_t;
 class InfoFieldsEditor;
 class rs_t;

@@ -1,4 +1,4 @@
-
+#include <cassert>
 #include <chrono>
 #include <QWidget>
 #include <QDateTime>
@@ -6,11 +6,12 @@
 
 #include "main.h"
 #include "trash_monitoring.h"
+#include "libraries/global_parameters.h"
 #include "models/app_config/app_config.h"
 #include "libraries/disk_helper.h"
 
-extern AppConfig appconfig;
-
+extern AppConfig	appconfig;
+extern GlobalParameters globalparameters;
 
 TrashMonitoring::TrashMonitoring(void)
 {}
@@ -19,16 +20,29 @@ TrashMonitoring::~TrashMonitoring(void)
 {}
 
 void TrashMonitoring::recover_from_trash(){
+    auto	_main_program_file = globalparameters.main_program_file();
+    QFileInfo	main_program_file_info(_main_program_file);
+    QString	full_current_path = main_program_file_info.absolutePath();
+    if(_files_table.size() == 0){
+	//
+	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
+	assert(succedded);
+	add_file(globalparameters.mytetra_xml().keys()[0]);
+    }
     auto file_data = _files_table.first();
     DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._file_name);
 }
 
 void TrashMonitoring::init(QString _trash_path){
+    auto	_main_program_file = globalparameters.main_program_file();
+    QFileInfo	main_program_file_info(_main_program_file);
+    QString	full_current_path = main_program_file_info.absolutePath();
 	// Инит объекта директории с указанным путем
     _dir.setPath(_trash_path);
     if(! _dir.exists()){
-	critical_error("Can not open trash directory " + _trash_path);
-	exit(1);
+	DiskHelper::create_directory(full_current_path, "trash");
+//	critical_error("Can not open trash directory " + _trash_path);
+//	exit(1);
     }
     _path = _trash_path;// Имя директории запоминается
 

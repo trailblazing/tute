@@ -18,13 +18,13 @@
 #include "libraries/clipboard_records.h"
 #include "libraries/clipboard_branch.h"
 #include "models/app_config/app_config.h"
-
 #include "libraries/crypt/password.h"
 #include "libraries/disk_helper.h"
 #include "views/browser/browser.h"
 #include "libraries/global_parameters.h"
 #include "models/record_table/linker.hxx"
 #include "models/tree/tree_index.hxx"
+#include "views/app_config/app_config_dialog.h"
 #include "views/browser/webview.h"
 #include "views/tree/tree_view.h"
 #include "views/tree/tree_screen.h"
@@ -68,7 +68,11 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent) : tm_t(parent){	/
 
     init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);		// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
-    if(all_count <= 0)throw std::runtime_error("database load failure");
+    if(all_count <= 0){
+//	throw std::runtime_error("database load failure");
+	AppConfigDialog dialog(nullptr);	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+	dialog.show();
+    }
     synchronized(true);
 }
 
@@ -1264,12 +1268,12 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //            assert(tree_index);
 
 //            if(tree_index) {
-	    auto result = view->move(TreeIndex::instance([&] {return view->source_model();}, host_parent, host_parent->parent()), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
+	    auto result = view->move(TreeIndex::instance([&] {return view->source_model();}, host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
 	    assert(result->id() == linker_first->host()->id());
 	    if(result != linker_first->host()){
 		tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 		assert(tree_view);
-		result = merge(TreeLevel::instance(TreeIndex::instance([&] {return this;}, result, result->parent()), linker_first->host(), view), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
+		result = merge(TreeLevel::instance(TreeIndex::instance([&] {return this;}, result), linker_first->host(), view), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
 	    }
 	    assert(result->linker()->integrity_external(result, delete_linker->host_parent()));
 //            bTreeIndex([&] {return view->source_model(); }, result)oost::intrusive_ptr<TreeIndex> tree_index_first;
@@ -1277,7 +1281,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //            assert(tree_index_first);
 //            if(tree_index_first) {
 	    for(auto &il : host->child_linkers()){
-		view->move(TreeIndex::instance([&] {return view->source_model();}, result, result->parent()), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
+		view->move(TreeIndex::instance([&] {return view->source_model();}, result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
 	    }
 //            }
 //            }
@@ -2368,33 +2372,36 @@ boost::intrusive_ptr<TreeItem> tkm_t::child(const QModelIndex &_index) const {re
 
 
 // Получение пути к ветке, где находится запись
-QStringList tkm_t::record_path(const id_value &record_id) const {
+QStringList tkm_t::path_list(const id_value &record_id) const {
     std::function<QStringList(boost::intrusive_ptr<TreeItem>, QStringList, const id_value &, int)>
     record_path_recurse = [&](boost::intrusive_ptr<TreeItem> _it
-			     , QStringList currentPath
+			     , QStringList current_path
 			     , const id_value &record_id_
 			     , int mode
 	    ){
-	    static QStringList	findPath;
-	    static bool		isFind;
+	    static QStringList	found_path;
+	    static bool		is_found;
 	    if(mode == 0){
-		findPath.clear();
-		isFind = false;
-
-		return QStringList();
-	    }
-	    if(isFind)return findPath;
+		found_path.clear();
+		is_found = false;
+//		found_path	= QStringList();
+	    }else if(! is_found){	// return found_path;
 		// Путь дополняется
-	    currentPath << _it->id();
+		current_path << _it->field<id_type>();
+//		auto r = _it->child_direct(record_id_);
 		// Если в данной ветке есть искомая запись
-	    if(_it->child_direct(record_id_)){
-		isFind		= true;
-		findPath	= currentPath;
-	    }else{
-		// Иначе перебираются подветки
-		for(int i = 0; i < _it->count_direct(); i ++)record_path_recurse(_it->child_direct(i), currentPath, record_id_, 1);
+		if(_it->field<id_type>() == record_id_){// if(_it->child_direct(record_id_)){
+		    found_path	= current_path;
+		    is_found	= true;
+		}else{
+			// Иначе перебираются подветки
+		    for(auto il : _it->child_linkers()){
+			if(! is_found)record_path_recurse(il->host(), current_path, record_id_, 1);
+			else break;
+		    }
+		}
 	    }
-	    return findPath;
+	    return found_path;
 	};
 
     record_path_recurse(_root_item, QStringList(), id_value(global_root_id), 0);	// "0"

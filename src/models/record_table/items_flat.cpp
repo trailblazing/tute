@@ -323,7 +323,7 @@ boost::intrusive_ptr<TreeItem> ItemsFlat::child_direct(const std::function<bool 
 // }
 
 boost::intrusive_ptr<TreeItem> ItemsFlat::child_direct(const id_value &id) const {
-    boost::intrusive_ptr<TreeItem> result;
+    boost::intrusive_ptr<TreeItem> result(nullptr);
     for(auto il : _child_linkers){
 	if(il->host()->id() == id){	// if(i->field("id") == item->field("id")) {
 // assert(i->is_registered());

@@ -60,16 +60,24 @@ rs_t::rs_t(ts_t			*_tree_screen
       , _main_window(_main_window)
       , _record_hide(new QAction(tr("Hide record view"), this))	// new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this)
 //      , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
+#ifdef USE_BUTTON_PIN
       , _pin(new QAction(tr("Pin note"), this))
+#endif
+#ifdef USE_BLANK_ITEM
       , _addnew_to_end(new QAction(tr("Add note"), this))
       , _addnew_before(new QAction(tr("Add note before"), this))
       , _addnew_after(new QAction(tr("Add note after"), this))
+#endif
       , _edit_field(new QAction(tr("Edit properties (name, url, tags...)"), this))
-      , _close(new QAction(tr("Close note(s)"), this))
+#ifdef USE_BUTTON_CLOSE
+    , _close(new QAction(tr("Close note(s)"), this))
+#endif
       , _delete(new QAction(tr("Delete note(s)"), this))
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
       , _cut(new QAction(tr("&Cut note(s)"), this))
       , _copy(new QAction(tr("&Copy note(s)"), this))
       , _paste(new QAction(tr("&Paste note(s)"), this))
+#endif
       , _editor(new QAction(tr("&Editor"), this))
       , _settings(new QAction(tr("&View settings"), this))
       , _action_move_up(new QAction(tr("&Move Up"), this))
@@ -268,7 +276,7 @@ void rs_t::save_in_new_branch(bool checked){
 		    _blank_header << it;																																																// _blank_header->child_rent(_record_model()->item(i));   // _result_item->work_pos(),
 		}
 	    }
-	    _tree_screen->view()->move_children(TreeIndex::instance(_tree_source_model, _tree_screen->view()->current_item(), _tree_screen->view()->current_item()->parent()), _blank_header, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {
+	    _tree_screen->view()->move_children(TreeIndex::instance(_tree_source_model, _tree_screen->view()->current_item()), _blank_header, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {
 		    return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();
 		});
 		// new_tree_item_in_treeknow_root = target;
@@ -469,7 +477,7 @@ void rs_t::setup_actions(void){
 //	}
 
 //	);
-
+#ifdef USE_BUTTON_PIN
 	// _pin = new QAction(tr("Pin note"), this);
     _pin->setStatusTip(tr("Pin a note"));
     _pin->setIcon(QIcon(":/resource/pic/pin.svg"));
@@ -481,7 +489,9 @@ void rs_t::setup_actions(void){
 	    if(metaeditor)metaeditor->switch_pin();
 	}
 	);
+#endif
 
+#ifdef USE_BLANK_ITEM
 	// Добавление записи
 	// a->setShortcut(tr("Ctrl+X"));
 	// _addnew_to_end = new QAction(tr("Add note"), this);
@@ -508,15 +518,16 @@ void rs_t::setup_actions(void){
 	   , _record_controller																				// _tabmanager
 	   , std::bind(&rctl_t::addnew_blank, _record_controller, add_new_record_after)																				// &RecordController::addnew_after   // &browser::TabWidget::addnew_after
 	);
+#endif
 
 	// едактирование записи
 	// _edit_field = new QAction(tr("Edit properties (pin, name, author, url, tags...)"), this);
     _edit_field->setStatusTip(tr("Edit note properties (pin, name, author, url, tags...)"));
     _edit_field->setIcon(QIcon(":/resource/pic/note_edit.svg"));
-    connect(_edit_field, &QAction::triggered, _record_controller, &rctl_t::on_edit_fieldcontext);										// _tabmanager
+    connect(_edit_field, &QAction::triggered, _record_controller, &rctrl_t::on_edit_fieldcontext);										// _tabmanager
 	// &browser::TabWidget::on_edit_fieldcontext
 
-
+#ifdef USE_BUTTON_CLOSE
 	// Удаление записи
 	// _delete = new QAction(tr("Delete note(s)"), this);
     _close->setStatusTip(tr("Close note(s)"));
@@ -524,7 +535,7 @@ void rs_t::setup_actions(void){
     _close->setShortcut(QKeySequence(Qt::CTRL | Qt::Key_W));
     connect(_close, &QAction::triggered, _record_controller, &rctl_t::close_context);											// _tabmanager
 	// &browser::TabWidget::close_context
-
+#endif
 
     _delete->setStatusTip(tr("Delete note(s)"));
     _delete->setIcon(QIcon(":/resource/pic/note_delete.svg"));
@@ -544,7 +555,7 @@ void rs_t::setup_actions(void){
 	});
 
 
-
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
 
 
 	// Удаление записи с копированием в буфер обмена
@@ -568,7 +579,7 @@ void rs_t::setup_actions(void){
     connect(_paste, &QAction::triggered, _record_controller, &rctl_t::paste);											// _tabmanager
 	// &browser::TabWidget::paste
 
-
+#endif
 	// auto _editor = new QAction(tr("Editor"), this);
     _editor->setStatusTip(tr("Switch editor open / close"));
     _editor->setIcon(QIcon(":/resource/pic/attach_switch_to_editor.svg"));
@@ -580,7 +591,7 @@ void rs_t::setup_actions(void){
 	// _settings = new QAction(tr("&View settings"), this);
     _settings->setStatusTip(tr("Setup table view settins"));
     _settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
-    connect(_settings, &QAction::triggered, _record_controller, &rctl_t::settings);											// &browser::TabWidget::settings
+    connect(_settings, &QAction::triggered, _record_controller, &rctrl_t::settings);											// &browser::TabWidget::settings
 
 
     assert(_record_controller);
@@ -671,7 +682,7 @@ void rs_t::setup_actions(void){
 	// _sort = new QAction(tr("Toggle sorting"), this);
     _sort->setStatusTip(tr("Enable/disable sorting by column"));
     _sort->setIcon(QIcon(":/resource/pic/sort.svg"));
-    connect(_sort, &QAction::triggered, _record_controller, &rctl_t::on_sort_click);
+    connect(_sort, &QAction::triggered, _record_controller, &rctrl_t::on_sort_click);
 	// _tabmanager
 	// &browser::TabWidget::on_sort_click
 
@@ -680,7 +691,7 @@ void rs_t::setup_actions(void){
 	// _print = new QAction(tr("Print table"), this);
     _print->setStatusTip(tr("Print current notes table"));
     _print->setIcon(QIcon(":/resource/pic/drops.svg"));											// actionPrint->setIcon(QIcon(":/resource/pic/print_record_table.svg"));
-    connect(_print, &QAction::triggered, _record_controller, &rctl_t::on_print_click);
+    connect(_print, &QAction::triggered, _record_controller, &rctrl_t::on_print_click);
 	// _tabmanager
 	// &browser::TabWidget::on_print_click
 
@@ -699,23 +710,31 @@ void rs_t::setup_ui(void){
 	_toolsline->addSeparator();
     }
     append_action_as_button<QToolButton>(_toolsline, _record_hide);
+#ifdef USE_BUTTON_PIN
     append_action_as_button<QToolButton>(_toolsline, _pin);
+#endif
+
 //    append_action_as_button<QToolButton>(_toolsline, _save_in_new_branch);
+#ifdef USE_BLANK_ITEM
     append_action_as_button<QToolButton>(_toolsline, _addnew_to_end);
+#endif
     if(appconfig.interface_mode() == "desktop"){
 	append_action_as_button<QToolButton>(_toolsline, _edit_field);
+#ifdef USE_BUTTON_CLOSE
 	append_action_as_button<QToolButton>(_toolsline, _close);
+#endif
     }
     append_action_as_button<QToolButton>(_toolsline, _action_walk_history_previous);
     append_action_as_button<QToolButton>(_toolsline, _action_walk_history_next);
     append_action_as_button<QToolButton>(_toolsline, _action_move_up);
     append_action_as_button<QToolButton>(_toolsline, _action_move_dn);
 
-    _toolsline->addSeparator();
-
+//    _toolsline->addSeparator();
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
     append_action_as_button<QToolButton>(_toolsline, _cut);
     append_action_as_button<QToolButton>(_toolsline, _copy);
     append_action_as_button<QToolButton>(_toolsline, _paste);
+#endif
     append_action_as_button<QToolButton>(_toolsline, _delete);
 
     _toolsline->addSeparator();
@@ -766,7 +785,7 @@ void rs_t::setup_signals(void){
 
 	// }
 	// );
-    connect(this->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    connect(this->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
 }
 
 void rs_t::assembly(void){
@@ -895,17 +914,25 @@ void rs_t::resizeEvent(QResizeEvent *e){
 // (но не всех действий на панели инструментов, так как на панели инструментов есть действия, не оказывающие воздействия на записи)
 void rs_t::disable_all_actions(void){
 	// _save_in_new_branch->setEnabled(false);
+#ifdef USE_BUTTON_PIN
     _pin->setEnabled(false);
+#endif
+
+#ifdef USE_BLANK_ITEM
     _addnew_to_end->setEnabled(false);
     _addnew_before->setEnabled(false);
     _addnew_after->setEnabled(false);
+#endif
     _edit_field->setEnabled(false);
+#ifdef USE_BUTTON_CLOSE
     _close->setEnabled(false);
+#endif
     _delete->setEnabled(false);
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
     _cut->setEnabled(false);
     _copy->setEnabled(false);
     _paste->setEnabled(false);
-
+#endif
     _action_move_up->setEnabled(false);
     _action_move_dn->setEnabled(false);
 }
@@ -934,18 +961,19 @@ void rs_t::tools_update(){
 	 */
 
 	// Включаются те действия которые разрешены
-
+#ifdef USE_BUTTON_PIN
     _pin->setEnabled(true);
-	// Добавление записи
-	// Добавлять можно к любой ветке
-    _addnew_to_end->setEnabled(true);
-
+#endif
     rv_t		*_view			= _record_controller->view();
     QItemSelectionModel *item_selection_model	= _view->selectionModel();
 
     int		selected_rows	= (item_selection_model->selectedRows()).size();
     bool	has_selection	= item_selection_model->hasSelection();
     bool	sorting_enabled = _view->isSortingEnabled();
+#ifdef USE_BLANK_ITEM
+	// Добавление записи
+	// Добавлять можно к любой ветке
+    _addnew_to_end->setEnabled(true);
 	// Добавление записи до
 	// Добавлять "до" можно только тогда, когда выбрана только одна строка
 	// и не включена сортировка
@@ -956,6 +984,7 @@ void rs_t::tools_update(){
 	_addnew_before->setEnabled(true);
 	_addnew_after->setEnabled(true);
     }
+ #endif
 	//// Добавление записи после
 	//// Добавлять "после" можно только тогда, когда выбрана только одна строка
 	//// и не включена сортировка
@@ -973,11 +1002,16 @@ void rs_t::tools_update(){
 	// Удаление записи
 	// Пункт активен только если запись (или записи) выбраны в списке
     if(has_selection){											// item_selection_model->hasSelection()
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
 	_cut->setEnabled(true);
 	_copy->setEnabled(true);
+#endif
+#ifdef USE_BUTTON_CLOSE
 	_close->setEnabled(true);
+#endif
 	_delete->setEnabled(true);
     }
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
 	//// Удаление с копированием записи в буфер обмена
 	//// Пункт активен только если запись (или записи) выбраны в списке
 	// if(item_selection_model->hasSelection()) {
@@ -1002,6 +1036,7 @@ void rs_t::tools_update(){
 	if(mime_data != nullptr)
 		if(mime_data->hasFormat("mytetra/records"))_paste->setEnabled(true);
     }
+#endif
 	// Перемещение записи вверх
 	// Пункт возможен только когда выбрана одна строка
 	// и указатель стоит не на начале списка
@@ -1084,7 +1119,7 @@ void rs_t::on_walkhistory_next_click(void){
 
 // Возвращение к дереву разделов в мобильном интерфейсе
 void rs_t::on_back_click(void){
-    globalparameters.window_switcher()->switchFromRecordtableToTree();
+    globalparameters.window_switcher()->recordtable_to_tree();
 }
 
 void rs_t::tree_path(QString path){
@@ -1095,7 +1130,7 @@ void rs_t::tree_path(QString path){
 
 QString rs_t::tree_path(void){return _treepath;}
 
-rctl_t *rs_t::record_controller(){return _record_controller;}
+rctrl_t *rs_t::record_controller(){return _record_controller;}
 
 // browser::TabWidget *rs_t::tabmanager(){return _tabmanager;}
 

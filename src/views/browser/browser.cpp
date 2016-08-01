@@ -264,7 +264,12 @@ namespace browser {
 	       , [&](const QString &file){
 		tv_t *tree_view = _tree_screen->view();
 		auto it = tree_view->session_root_auto();
-		TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		TreeIndex::activate([&] {return tree_view->source_model();}
+				   , it
+				   , file
+				   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+				   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());}
+		);
 	    }
 	    );
 	connect(_tabmanager, &TabWidget::setCurrentTitle, this, &Browser::slotUpdateWindowTitle);
@@ -629,7 +634,7 @@ namespace browser {
 	    if(! _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->id() == _tree_screen->view()->current_item()->id();})){
 		auto it = _record_screen->record_controller()->view()->current_item();
 		if(it){
-		    _tree_screen->view()->select_as_current(TreeIndex::instance([&] {return _tree_screen->view()->source_model();}, it, it->parent()));
+		    _tree_screen->view()->select_as_current(TreeIndex::instance([&] {return _tree_screen->view()->source_model();}, it));
 		}
 	    }
 	}
@@ -1244,7 +1249,11 @@ namespace browser {
 //        loadPage(file);
 	tv_t	*tree_view	= _tree_screen->view();
 	auto	it		= tree_view->session_root_auto();
-	TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, file, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	TreeIndex::activate([&] {return tree_view->source_model();}
+			   , it
+			   , file, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+			   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), file.toStdString()) || url_equal(it_->field<url_type>().toStdString(), file.toStdString());}
+	    );
     }
 
 #define QT_NO_PRINTPREVIEWDIALOG
@@ -1394,9 +1403,12 @@ namespace browser {
 	auto	current_item	= tree_view->current_item();
 	auto	parent		= current_item->parent();
 	if(! parent)throw std::runtime_error(formatter() << "! parent");
-	TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(
-	    tree_view->current_item(), QUrl(home), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
-	    )->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	TreeIndex::activate([&] {return tree_view->source_model();}
+			   , current_item
+			   , QUrl(home)
+			   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+			   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), home.toStdString()) || url_equal(it_->field<url_type>().toStdString(), home.toStdString());}
+	    );
 // }
 	settings.endGroup();
     }
@@ -1565,10 +1577,10 @@ namespace browser {
 
     QStatusBar *Browser::status_bar() const {return globalparameters.status_bar();}
 
-    boost::intrusive_ptr<TreeItem> Browser::page_instantiate(boost::intrusive_ptr<RecordIndex> record_index){
+    boost::intrusive_ptr<TreeItem> Browser::bind(boost::intrusive_ptr<RecordIndex> record_index){
 //	boost::intrusive_ptr<TreeItem> result(nullptr);
 //        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
-	boost::intrusive_ptr<TreeItem> result = record_index->target();
+	boost::intrusive_ptr<TreeItem> result = record_index->host();
 	if(result->is_lite())result->to_fat();
 	// clean();
 	// assert(_it->is_registered_to_browser() || _it->field("url") == browser::Browser::_defaulthome);

@@ -18,7 +18,7 @@
 #endif
 
 
-class rctl_t;
+class rctrl_t;
 
 class AppConfigPageTable : public ConfigPage {
 #if QT_VERSION == 0x050600
@@ -28,7 +28,7 @@ class AppConfigPageTable : public ConfigPage {
 #endif
 
     public:
-	AppConfigPageTable(rctl_t *_record_controller, QWidget *parent = 0);
+	AppConfigPageTable(rctrl_t *_record_controller, QWidget *parent = 0);
 	int apply_changes(void);
 
     signals:
@@ -54,7 +54,7 @@ class AppConfigPageTable : public ConfigPage {
 
 	void setupSignals(void);
 
-	rctl_t *_record_controller;
+	rctrl_t *_record_controller;
 };
 
 

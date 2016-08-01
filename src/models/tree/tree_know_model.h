@@ -94,7 +94,7 @@ class tkm_t : public tm_t {
 
 	bool is_contains_crypt_branches(void) const;
 
-	QStringList record_path(const id_value &record_id) const;
+	QStringList path_list(const id_value &record_id) const;
 
 	//    // Проверка наличия идентификатора ветки во всем дереве
 	//    bool is_item_exists(QString findId);

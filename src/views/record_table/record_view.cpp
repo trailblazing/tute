@@ -42,12 +42,12 @@
 #include "views/record_table/vertical_scrollarea.h"
 
 
-extern GlobalParameters				globalparameters;
-extern FixedParameters				fixedparameters;
-extern AppConfig				appconfig;
-extern const char				*record_view_multi_instance_name;
-extern enum QItemSelectionModel::SelectionFlag	current_tree_selection_mode;
-extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
+extern GlobalParameters								globalparameters;
+extern FixedParameters								fixedparameters;
+extern AppConfig								appconfig;
+extern const char								*record_view_multi_instance_name;
+extern enum QItemSelectionModel::SelectionFlag					current_tree_selection_mode;
+extern enum QItemSelectionModel::SelectionFlag					current_tree_current_index_mode;
 
 
 #ifdef USE_STAR_RATING
@@ -70,7 +70,7 @@ void FlatToolButtonRating::paintEvent(QPaintEvent *e){
     opt.state	= QStyle::State_Active | QStyle::State_Enabled;
     opt.rect	= QRect(50, 25, 100, 50);
 //    QPainter painter(this);
-    this->style()->drawControl(QStyle::CE_PushButton, &opt, &painter, nullptr);	// button.data()
+    this->style()->drawControl(QStyle::CE_PushButton, &opt, &painter, nullptr);		// button.data()
 }
 
 void FlatToolButtonRating::mouseMoveEvent(QMouseEvent *event){
@@ -257,13 +257,14 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
     auto	it				= _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     auto	header_title			= _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
     auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
-    if(it && header_title == rating_field_description){		// index.column() == 0
+    auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
+    if(it && header_title == rating_field_description){			// index.column() == 0
 #ifdef USE_STAR_RATING
 	StarRating *starRating = it->star_rating();	// qvariant_cast<StarRating>(index.data());
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 	starRating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
-#elif USE_TEXT_AS_BUTTON
+#elif defined USE_TEXT_AS_BUTTON
 //        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 //        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
@@ -274,7 +275,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
 	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-//	opt.text = "X";			// title;         // trUtf8("Button text");
+	opt.text = QChar(0x274C);// for ❌//QChar(0x274E);	// for "❎"; "X";			// title;         // trUtf8("Button text");
 	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);	//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
 //	it->star_rating()->paint(painter, option.rect, option.palette, StarRating::Editable);
 
@@ -316,10 +317,33 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	w		= _rating_width - _scroll_bar_width;		// button width
 	h		= 16;	// button height
 	button.rect	= QRect(x, y, w, h);
-	button.text	= "><";	// "=^.^=";
+	button.text	= QChar(0x274E);	// for "❎";	// √ ✅	// "><";	// "=^.^=";
 	button.state	= QStyle::State_Enabled;
 
 	QApplication::style()->drawControl(QStyle::CE_PushButton, &button, painter);
+#endif
+    }else if(it && header_title == pin_field_description && it->field<pin_type>() != _string_from_check_state[Qt::Unchecked]){
+#ifdef USE_STAR_RATING
+
+
+#elif defined USE_TEXT_AS_BUTTON
+//        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
+	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+//        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
+
+	QStyleOptionButton opt;
+	opt.state |= QStyle::State_Enabled;
+	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
+	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+//	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
+	opt.text = QChar(0x221A);// for √ // title;// trUtf8("Button text");
+	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+
+
+#else
+
+
 #endif
     }else QStyledItemDelegate::paint(painter, option, index);
 // drawFocus(painter, option, displayRect);
@@ -388,8 +412,8 @@ void ViewDelegation::setEditorData(QWidget *editor, const QModelIndex &index) co
 
     auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
     if(it){
-	StarRating		*star_rating	= it->star_rating();				// StarRating star_rating = qvariant_cast<StarRating>(index.data());
-	FlatToolButtonRating	*starEditor	= qobject_cast<FlatToolButtonRating *>(editor);
+	StarRating				*star_rating	= it->star_rating();				// StarRating star_rating = qvariant_cast<StarRating>(index.data());
+	FlatToolButtonRating			*starEditor	= qobject_cast<FlatToolButtonRating *>(editor);
 	starEditor->star_rating(*star_rating);
     }else
 
@@ -399,7 +423,7 @@ void ViewDelegation::setEditorData(QWidget *editor, const QModelIndex &index) co
 
 void ViewDelegation::commitAndCloseEditor(){
 #ifdef USE_STAR_RATING
-    FlatToolButtonRating	*editor = qobject_cast<FlatToolButtonRating *>(sender());
+    FlatToolButtonRating    *editor = qobject_cast<FlatToolButtonRating *>(sender());
 #else
     auto editor = dynamic_cast<QWidget *>(sender());
 #endif
@@ -428,6 +452,50 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
     (void) model;
     (void) option;
     (void) index;
+
+    auto	it				= _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
+    auto	header_title			= _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
+    auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
+    auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
+
+#ifdef USE_STAR_RATING
+#elif defined USE_TEXT_AS_BUTTON
+	// and use the editorEvent to handle a click.
+    if(event->type() == QEvent::MouseButtonRelease){
+	if(it && header_title == rating_field_description){
+	    QMouseEvent		*e	= (QMouseEvent *) event;
+	    int			clickX	= e->x();
+	    int			clickY	= e->y();
+
+	    QRect	r = option.rect;// getting the rect of the cell
+	    int		x, y, w, h;
+	    x	= r.left();	// r.left() + r.width() - _x_offset;	// the X coordinate
+	    y	= r.top();	// r.top() + 1;		// the Y coordinate
+	    w	= r.width();	// _rating_width - _scroll_bar_width;		// button width
+	    h	= r.height();	// 16;	// button height
+	    if(clickX > x && clickX < x + w)
+			if(clickY > y && clickY < y + h){
+				//		    QDialog *d = new QDialog();
+				//		    d->setGeometry(0, 0, 100, 100);
+				//		    d->show();
+			    if(_view->_is_field_type_column(boost::mpl::c_str<rating_type>::value, index.column())){
+				////                auto widget = new FlatToolButton(this);
+				////                setIndexWidget(next_index, widget);
+				////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
+				////            _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
+				//            auto cur = current_item();
+				auto	_record_controller	= _view->record_controller();
+				auto	pos			= _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(index))));
+				//            assert(cur == pos);
+				_record_controller->remove(pos->id());
+			    }
+			}
+	}else if(it && header_title == pin_field_description){
+	    if(it->field<pin_type>() != _string_from_check_state[Qt::Unchecked])it->field<pin_type>(_string_from_check_state[Qt::Unchecked]);
+	    else it->field<pin_type>(_string_from_check_state[Qt::Checked]);
+	}
+    }
+#else
 // style()->drawControl(...)
 // and use the editorEvent to handle a click.
     if(event->type() == QEvent::MouseButtonRelease){
@@ -459,6 +527,8 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 		    }
 		}
     }
+#endif
+
     return false;
 }
 
@@ -470,7 +540,7 @@ W_OBJECT_IMPL(rv_t)
 #endif
 
 
-rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
+rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
     : QTableView(record_screen_)
       , rating_width([&] {return _rating_width;})
       , _context_menu(new QMenu(this))
@@ -478,10 +548,10 @@ rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
       , _record_controller(record_controller_)
       , _layout(new QVBoxLayout(this))
       , _delegate(new ViewDelegation(this))	// (new ButtonColumnDelegate(this))//
-      , _rating_width(_delegate->_rating_width)	//      , _enable_move_section(true)
+      , _rating_width(_delegate->_rating_width)		//      , _enable_move_section(true)
       , _is_field_type_column([&](const QString &type_name, int index) -> bool {
 //              QString _type_name = boost::mpl::c_str<field_type>::value;
-	      auto header_title = _record_controller->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString();				// DisplayRole?UserRole
+	      auto header_title = _record_controller->source_model()->headerData(index, Qt::Horizontal, Qt::DisplayRole).toString();					// DisplayRole?UserRole
 	      auto rating_field_description = fixedparameters.record_field_description(QStringList() << type_name)[type_name];
 
 	      return header_title == rating_field_description;
@@ -498,7 +568,7 @@ rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
 // Причина в том, что одни и те же QAction используются в двух местах -
 // в RecordTableScreen и здесь в контекстном меню
     auto init = [&](void) -> void {		// RecordView::
-	    auto setup_signals = [&](void) -> void {				// RecordView::
+	    auto setup_signals = [&](void) -> void {					// RecordView::
 			// Сигнал чтобы показать контекстное меню по правому клику на списке записей
 		    connect(this, &rv_t::customContextMenuRequested, this, &rv_t::on_custom_context_menu_requested);
 
@@ -553,32 +623,39 @@ rv_t::rv_t(rs_t *record_screen_, rctl_t *record_controller_)
 			// RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 
 		    _context_menu->addAction(_record_screen->_record_hide);
+#ifdef USE_BUTTON_PIN
 		    _context_menu->addAction(_record_screen->_pin);
+#endif
+#ifdef USE_BLANK_ITEM
 		    _context_menu->addAction(_record_screen->_addnew_to_end);
+#endif
 		    _context_menu->addAction(_record_screen->_edit_field);
+#ifdef USE_BUTTON_CLOSE
 		    _context_menu->addAction(_record_screen->_close);
-
+#endif
 
 		    _context_menu->addSeparator();
-
+#ifdef USE_BLANK_ITEM
 		    _context_menu->addAction(_record_screen->_addnew_before);
 		    _context_menu->addAction(_record_screen->_addnew_after);
+#endif
 		    _context_menu->addAction(_record_screen->_action_move_up);
 		    _context_menu->addAction(_record_screen->_action_move_dn);
 		    _context_menu->addAction(_record_screen->_action_syncro);
 
-		    _context_menu->addSeparator();
-
+//		    _context_menu->addSeparator();
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
 		    _context_menu->addAction(_record_screen->_cut);
 		    _context_menu->addAction(_record_screen->_copy);
 		    _context_menu->addAction(_record_screen->_paste);
+#endif
 		    _context_menu->addAction(_record_screen->_delete);
 
 		    _context_menu->addSeparator();
 
 		    _context_menu->addAction(_record_screen->_sort);
 		    _context_menu->addAction(_record_screen->_print);
-		    _context_menu->addAction(_record_screen->_editor);						// connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
+		    _context_menu->addAction(_record_screen->_editor);							// connect(this, &RecordView::doubleClicked, this, &RecordView::on_doubleclick);
 		    _context_menu->addAction(_record_screen->_settings);
 
 		    _context_menu->addSeparator();
@@ -670,7 +747,7 @@ rv_t::~rv_t(){
 // }
 
 
-rctl_t *rv_t::record_controller(){return _record_controller;}
+rctrl_t *rv_t::record_controller(){return _record_controller;}
 
 
 QModelIndex rv_t::previous_index() const {
@@ -810,7 +887,7 @@ void rv_t::on_custom_context_menu_requested(const QPoint &pos){
 	// Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
     int n = this->horizontalHeader()->logicalIndexAt(pos);
     qDebug() << "Click on column number " << n;
-    _record_screen->_sort->setData(n);		// Запоминается в объект действия для сортировки
+    _record_screen->_sort->setData(n);			// Запоминается в объект действия для сортировки
 
 
 	// Включение отображения меню на экране
@@ -836,7 +913,7 @@ void rv_t::edit_field_context(void){
     assert(((QModelIndex) proxy_index).isValid());
 
     assert(((QModelIndex) proxy_index).row() == current_index.row());
-    if(_record_controller->edit_field_context(proxy_index)){		// proxy_index
+    if(_record_controller->edit_field_context(proxy_index)){			// proxy_index
 	// Нужно перерисовать окно редактирования чтобы обновились инфополя
 	// делается это путем "повторного" выбора текущего пункта
 	_record_controller->index_invoke(proxy_index);			// proxy_index // Раньше было select()
@@ -1312,7 +1389,7 @@ template<>pos_proxy rv_t::selection_first<pos_proxy>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
     if(selectItems.isEmpty())return pos_proxy(- 1);		// Если ничего не выделено
-    else return pos_proxy((selectItems.at(0)).row());		// Номер первого выделенного элемента
+    else return pos_proxy((selectItems.at(0)).row());			// Номер первого выделенного элемента
 }
 
 template<>pos_source rv_t::selection_first<pos_source>() const {

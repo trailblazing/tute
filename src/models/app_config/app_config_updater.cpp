@@ -8,6 +8,7 @@
 #include <QFile>
 
 #include "app_config_updater.h"
+#include "libraries/disk_helper.h"
 #include "main.h"
 
 #define APPCONFIGUPDATER_VERSION "APPCONFIGUPDATER v.1.0 Build 29.10.2010"

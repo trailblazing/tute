@@ -78,7 +78,7 @@ class rs_t;
 class FindScreen;
 class WindowSwitcher;
 class sapp_t;
-class rctl_t;
+class rctrl_t;
 class GlobalParameters;
 class AppConfig;
 class DataBaseConfig;

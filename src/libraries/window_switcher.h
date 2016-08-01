@@ -24,29 +24,29 @@ class WindowSwitcher : public QObject {
 public:
     explicit WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent = 0);
 
-    void enableSwitch(void);
-    void disableSwitch(void);
+    void enable(void);
+    void disable(void);
 
-    void switch_from_tree_to_record_screen(void);
-    void switchFromTreeToFindInBase(void);
-    bool getSwitchStatus(void);
+    void tree_to_record_screen(void);
+    void tree_to_find_in_base(void);
+    bool status(void);
 
-    static void switchFromRecordToRecordtable(void); // Используется как callback из редактора MetaEditor
-    void switchFromRecordToFindInBase(void);
+    static void record_to_recordtable(void); // Используется как callback из редактора MetaEditor
+    void record_to_find_in_base(void);
 
-    void switchFromRecordtableToRecord(void);
-    void switchFromRecordtableToFindInBase(void);
-    void switchFromRecordtableToTree(void);
+    void recordtable_ro_record(void);
+    void recordtable_to_find_in_base(void);
+    void recordtable_to_tree(void);
 
-    void closeFindInBase(void);
+    void close_find_in_base(void);
 
-    void restoreFocusWidget();
+    void restore_focus_widget();
 
 signals:
 
 public slots:
 
-    void findInBaseClick(void);
+    void find_in_base_click(void);
 
 private:
 

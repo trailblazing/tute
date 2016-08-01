@@ -30,7 +30,7 @@
 
 
 
-class rctl_t;
+class rctrl_t;
 class VerticalScrollArea;
 class FlatToolButton;
 class TreeItem;
@@ -56,6 +56,21 @@ namespace browser {
     class Profile;
 }
 
+
+#ifndef USE_WITHOUT_REGISTERED_TREEITEM
+#endif
+
+
+#ifndef USE_BLANK_ITEM
+#endif
+
+
+#ifndef USE_BUTTON_PIN
+#endif
+
+#ifndef USE_BUTTON_CLOSE
+#endif
+
 class rs_t : public QWidget {
 #if QT_VERSION == 0x050600
     W_OBJECT(rs_t)
@@ -76,7 +91,7 @@ class rs_t : public QWidget {
 	void	tree_path(QString path);
 	QString tree_path(void);
 
-	rctl_t *record_controller();
+	rctrl_t *record_controller();
 
 	// bool                inited() {return _inited;}
 //	browser::TabWidget	*tabmanager();
@@ -108,16 +123,25 @@ class rs_t : public QWidget {
 	// These staffs used on the toolbar and in the context menu entries    // Действия, используемые как на тулбаре, так и в контекстном меню списка записей
 	QAction			*_record_hide;
 //	QAction			*_save_in_new_branch;
+#ifdef USE_BUTTON_PIN
 	QAction			*_pin;
+#endif
+
+#ifdef USE_BLANK_ITEM
 	QAction			*_addnew_to_end;
 	QAction			*_addnew_before;
 	QAction			*_addnew_after;
+#endif
 	QAction			*_edit_field;
+#ifdef USE_BUTTON_CLOSE
 	QAction			*_close;
+#endif
 	QAction			*_delete;
+#ifdef USE_WITHOUT_REGISTERED_TREEITEM
 	QAction			*_cut;
 	QAction			*_copy;
 	QAction			*_paste;
+#endif
 	QAction			*_editor;
 	QAction			*_settings;
 	QAction			*_action_move_up;
@@ -138,7 +162,7 @@ class rs_t : public QWidget {
 
 
 	browser::Browser	*_browser;
-	rctl_t			*_record_controller;	//	browser::TabWidget	*_tabmanager;
+	rctrl_t			*_record_controller;	//	browser::TabWidget	*_tabmanager;
 	VerticalScrollArea	*_vertical_scrollarea;
 
 	QHBoxLayout         *_records_toolslayout;
@@ -154,7 +178,7 @@ class rs_t : public QWidget {
 	void	disable_all_actions(void);
 	void	save_in_new_branch(bool checked = false);
 	friend class rv_t;
-	friend class rctl_t;
+	friend class rctrl_t;
 	friend class wn_t;
 //	friend class ts_t;
 };

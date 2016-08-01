@@ -286,8 +286,7 @@ void wn_t::setup_ui(void){
 	// _switcher = new WindowSwitcher(this);
 	// _switcher->setObjectName(windowswitcher_singleton_name); // "windowSwitcher"
     _globalparameters.window_switcher(_switcher);
-	// windowSwitcher->findInBaseClick();
-
+    if(! _find_screen->isVisible())_switcher->find_in_base_click();
 	// if(_table_screen) {
 	// _entrance = new browser::Entrance(
 	// _record_ontroller
@@ -315,13 +314,13 @@ void wn_t::setup_signals(void){
     connect(sapp_t::instance(), &QApplication::focusChanged, this, &wn_t::on_focus_changed);
 
 	// Связывание сигналов кнопки поиска по базе с действием по открытию виджета поиска по базе
-    connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    connect(_tree_screen->_actionlist[action_find_in_base], &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
 	// connect(_entrance->getactionFreeze(), &QAction::triggered, globalparameters.getWindowSwitcher(), &WindowSwitcher::findInBaseClick);
 	// connect(_table_screen->_find_in_base, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
 	// if(_page_screen)connect(_page_screen->actionFindInBase, &QAction::triggered, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
 
-    connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::findInBaseClick);
+    connect(_editor_screen, &MetaEditor::wyedit_find_in_base_clicked, globalparameters.window_switcher(), &WindowSwitcher::find_in_base_click);
 
 	// auto hide_others = [this](int index) {
 	// if(-1 != index) {
@@ -1143,29 +1142,21 @@ void wn_t::restore_tree_position(void){
 
 // save
 void wn_t::save_tree_position(void){
-    auto _current_source_model = [&](){
-	    return _tree_screen->view()->source_model();
-	};
+    auto _current_source_model = [&](){return _tree_screen->view()->source_model();};
 	// if(!_tree_screen->sysynchronized())_tree_screen->synchronize();
     auto item = _tree_screen->view()->session_root_auto();		// item([ = ](boost::intrusive_ptr<const TreeItem> t) {return t->id() == _tree_screen->session_root_id();});
 	//// Получение QModelIndex выделенного в дереве элемента
 	// const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->view()->current_item();
-    if(current_item){
-	appconfig.tree_position(
-	    _current_source_model()->root_item()->id()					// _tree_screen->know_model_board()->root_item()->id()
-			       , current_item->path_list()
-	    );
-    }else if(item){			// if(index.isValid()) {
+    if(current_item)appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());	// _tree_screen->know_model_board()->root_item()->id()
+    else if(item){			// if(index.isValid()) {
 	////    if(index.isValid()) {   // this line is to be remove
 	//// Получаем указатель вида TreeItem
 	// auto item = _current_source_model()->item(index);
 
 	// Сохраняем путь к элементу item
-	appconfig.tree_position(
-	    _current_source_model()->root_item()->id()					// _tree_screen->know_model_board()->root_item()->id()
-			       , item->path_list()
-	    );
+	appconfig.tree_position(_current_source_model()->root_item()->id(), item->path_list());	// _tree_screen->know_model_board()->root_item()->id()
+
 	// }
     }
 }
@@ -1187,12 +1178,14 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 
 	// Получаем указатель на элемент вида TreeItem, используя путь
     auto it = know_model_board()->item(current_item_absolute_path);				// on know_root semantic
-    if(! static_cast<QModelIndex>(source_model()->index(it)).isValid()){
-// boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
-	_tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
-    }
-    auto tree_view = _tree_screen->view();
+
+    auto _tree_view = _tree_screen->view();
     if(it){
+	if(! static_cast<QModelIndex>(source_model()->index(it)).isValid()){
+		// boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
+	    _tree_view->cursor_follow_up(it);
+	    _tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
+	}
 	if(it != know_model_board()->root_item()){
 	    qDebug() << "Set tree position to " << it->field<name_type>() << " id " << it->field<id_type>();
 
@@ -1201,19 +1194,22 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 
 		// Курсор устанавливается в нужную позицию
 
-	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent());
+	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return _tree_view->source_model();}, it);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
 // })); } catch(std::exception &e) {throw e; }
 
-	    tree_view->select_as_current(tree_index);
-	    tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
+	    _tree_view->select_as_current(tree_index);
+	    _tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
 	}else{
-	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return tree_view->source_model();}, it);
+	    boost::intrusive_ptr<TreeItem> r(nullptr);
+	    if(it->count_direct() == 0)r = _tree_view->tree_empty_controll();
+	    else r = it->child_direct(0);
+	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::instance([&] {return _tree_view->source_model();}, r);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it, 0); } catch(std::exception &e) {throw e; }
 
-	    tree_view->select_as_current(tree_index);
-	    tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
+	    _tree_view->select_as_current(tree_index);
+	    _tree_view->source_model()->session_id(tree_index);						// TreeIndex(source_model, it)
 	}
     }
 }
@@ -1789,10 +1785,7 @@ void wn_t::go_walk_history_previous(void){
     _editor_screen->save_textarea();
 
     id_value id = id_value(_editor_screen->misc_field("id"));
-    walkhistory.add(id
-		   , _editor_screen->cursor_position()
-		   , _editor_screen->scrollbar_position()
-		   , WALK_HISTORY_GO_PREVIOUS);
+    walkhistory.add<WALK_HISTORY_GO_PREVIOUS>(id, _editor_screen->cursor_position(), _editor_screen->scrollbar_position());
     walkhistory.set_drop(true);
 
     go_walk_history();
@@ -1802,10 +1795,7 @@ void wn_t::go_walk_history_next(void){
     _editor_screen->save_textarea();
 
     id_value id = id_value(_editor_screen->misc_field("id"));
-    walkhistory.add(id
-		   , _editor_screen->cursor_position()
-		   , _editor_screen->scrollbar_position()
-		   , WALK_HISTORY_GO_NEXT);
+    walkhistory.add<WALK_HISTORY_GO_NEXT>(id, _editor_screen->cursor_position(), _editor_screen->scrollbar_position());
     walkhistory.set_drop(true);
 
     go_walk_history();
@@ -1825,11 +1815,11 @@ void wn_t::go_walk_history(void){
 	// walkhistory.set_drop(false);
 	// return;
 	// }
-
-    auto know_model_board = [&](){return _tree_screen->view()->know_model_board();};
+    auto	_tree_view		= _tree_screen->view();
+    auto	know_model_board	= std::bind(&tv_t::know_model_board, _tree_view);	// [&](){return _tree_screen->view()->know_model_board();};
     if(static_cast<QString>(record_id).length() > 0){
 	// Выясняется путь к ветке, где находится данная запись
-	QStringList absolute_path = know_model_board()->record_path(record_id);					// on know_root semantic
+	QStringList absolute_path = static_cast<tkm_t *>(know_model_board())->path_list(record_id);					// on know_root semantic
 
 	//// Проверяем, есть ли такая ветка
 	// if(_tree_screen->know_model_board()->is_item_valid(absolute_path) == false) {    // on know_root semantic
@@ -1840,21 +1830,28 @@ void wn_t::go_walk_history(void){
 
 	// Выясняется позицию записи в таблице конечных записей
 	auto item = know_model_board()->item(absolute_path);				// on know_root semantic
-	if(item){
+	if(item && item != know_model_board()->root_item()){
 		//// Проверяем, есть ли такая позиция
 		// if(!item->item_direct(record_id)) {  // == false
 		// walkhistory.set_drop(false);
 		// return;
 		// }
-	    if(item->child_direct(record_id)){
-		set_tree_position(global_root_id, absolute_path);
+//	    if(item->child_direct(record_id)){//?
+	    set_tree_position(global_root_id, absolute_path);
 		// select_id(id);
-		if(appconfig.remember_cursor_at_history_navigation()){
-		    _editor_screen->cursor_position(walkhistory.cursor_position(record_id));
-		    _editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
-		}
+	    if(appconfig.remember_cursor_at_history_navigation()){
+		_editor_screen->cursor_position(walkhistory.cursor_position(record_id));
+		_editor_screen->scrollbar_position(walkhistory.scrollbar_position(record_id));
 	    }
+//	    }
+	    auto url_target = item->field<url_type>();
 		// walkhistory.set_drop(false);
+	    TreeIndex::activate([&] {return _tree_view->source_model();}
+			       , _tree_view->current_item()
+			       , item->field<url_type>()
+			       , std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+			       , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url_target.toStdString()) || url_equal(it_->field<url_type>().toStdString(), url_target.toStdString());}
+		);
 	}
 	// else {
 	// walkhistory.set_drop(false);
@@ -1873,9 +1870,7 @@ void wn_t::save_text_area(void){
 
     _editor_screen->save_textarea();
 
-    walkhistory.add(id
-		   , _editor_screen->cursor_position()
-		   , _editor_screen->scrollbar_position());
+    walkhistory.add<WALK_HISTORY_GO_NONE>(id, _editor_screen->cursor_position(), _editor_screen->scrollbar_position());
 }
 
 // Слот, обрабатывающий смену фокуса на виджетах

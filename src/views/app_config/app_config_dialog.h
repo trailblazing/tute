@@ -13,7 +13,7 @@
 
 class ConfigDialog;
 class QListWidgetItem;
-class rctl_t;
+class rctrl_t;
 
 class AppConfigDialog : public QWidget {
 #if QT_VERSION == 0x050600
@@ -23,7 +23,7 @@ class AppConfigDialog : public QWidget {
 #endif
 
     public:
-	AppConfigDialog(rctl_t *_record_controller, QString firstPageName);
+	AppConfigDialog(rctrl_t *_record_controller, QString firstPageName = "");
 
     private:
 	ConfigDialog *configDialog;
@@ -33,7 +33,7 @@ class AppConfigDialog : public QWidget {
 	QListWidgetItem *pageSynchro;
 	QListWidgetItem *pageRecordTable;
 	QListWidgetItem *pageMisc;
-	rctl_t		*_record_controller;
+	rctrl_t		*_record_controller;
 	void		changePage(QString name);
 };
 

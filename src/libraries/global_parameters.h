@@ -127,11 +127,15 @@ class GlobalParameters : public QObject {
 	EditorConfig		*editor_config();
 	AttachTableController	*attachtable_controller();
 	void			attachtable_controller(AttachTableController *_attachtable_controller);
+	bool			is_mytetra_ini_config_exist(QString filename);
+	QMap<QString, QString>	config_ini() const;
+	QMap<QString, QString>	mytetra_xml() const;
+	QMap<QString, QString>	editorconf() const;
     private:
 
 	void	init_workdirectory(void);
 	bool	find_workdirectory(void);
-	bool	is_mytetra_ini_config(QString filename);
+
 	void	create_standard_programfiles(void);
 	void	create_portable_programfiles(void);
 	void	create_first_programfiles(QString dirName);

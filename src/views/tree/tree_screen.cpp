@@ -381,7 +381,7 @@ void ts_t::setup_actions(void){
     ac->setStatusTip(tr("Insert a new sub item into selected"));
     ac->setIcon(QIcon(":/resource/pic/add_subbranch.svg"));
     connect(ac, &QAction::triggered, [&]() mutable -> void {
-	    _tree_view->new_item(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item(), _tree_view->current_item()->parent())
+	    _tree_view->new_item(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item())
 				, std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 				, [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {return _tree_index->current_model()()->new_child(_tree_index, _id, _name);});
 	});
@@ -392,13 +392,13 @@ void ts_t::setup_actions(void){
     ac->setStatusTip(tr("Insert a new sibling item after selected"));
     ac->setIcon(QIcon(":/resource/pic/add_branch.svg"));
     connect(ac, &QAction::triggered, [&]() mutable {
-	    _tree_view->new_item(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item(), _tree_view->current_item()->parent())	// tree_index
+	    _tree_view->new_item(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _tree_view->current_item())	// tree_index
 				, std::bind(&tv_t::new_child, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)
 				, [&](boost::intrusive_ptr<TreeIndex> _tree_index, QString _id, QString _name) -> boost::intrusive_ptr<TreeItem> {
 		auto _current_model = _tree_index->current_model();
 // auto _host_index = _modelindex->parent_index();
 		boost::intrusive_ptr<TreeItem> result;
-		auto host_parent = _tree_index->host_parent();
+		auto host_parent = _tree_index->host()->parent();
 		assert(host_parent);
 		QList<boost::intrusive_ptr<TreeItem> > _alternative_items;
 		if(host_parent){_alternative_items = host_parent->children_direct([&](boost::intrusive_ptr<const Linker> il){return il->host()->name() == _name && il->host()->id() == _id;});}
@@ -409,7 +409,7 @@ void ts_t::setup_actions(void){
 
 		    QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
 		    result = it.next();
-		    while(it.hasNext())result = TreeLevel::instance(TreeIndex::instance(_current_model, result, result->parent()), it.next(), _tree_view)->merge();	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
+		    while(it.hasNext())result = TreeLevel::instance(TreeIndex::instance(_current_model, result), it.next(), _tree_view)->merge();	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
 			// children_transfer(_new_item, _current_model);
 		}else{
 			// Вставка новых данных в модель дерева записей
@@ -496,7 +496,7 @@ void ts_t::setup_actions(void){
 
 // boost::intrusive_ptr<TreeIndex> tree_index;
 // try{tree_index = new TreeIndex([&] () -> KnowModel* {return _tree_view->source_model();}, _parent, sibling_order);} catch(std::exception &e) {throw e; }
-	    _tree_view->paste_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent, _parent->parent()));	// std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+	    _tree_view->paste_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent));	// std::bind(&KnowModel::model_paste_sibling_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 	});	// , paste
 
     _actionlist[action_paste_branch] = ac;
@@ -520,7 +520,7 @@ void ts_t::setup_actions(void){
 // return _tree_view->source_model();
 // }, _current_item, 0);
 // } catch(std::exception &e) {throw e; }
-	    _tree_view->paste_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent, _parent->parent()));	// std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
+	    _tree_view->paste_clipboard(TreeIndex::instance([&]() -> tkm_t * {return _tree_view->source_model();}, _parent));	// std::bind(&KnowModel::model_paste_child_from_clipboard, _tree_view->source_model(), std::placeholders::_1, std::placeholders::_2)
 	});	// branch_paste_sub
 
     _actionlist[action_paste_sub_branch] = ac;
@@ -1104,7 +1104,7 @@ void ts_t::item_move_up_dn_branch(int (TreeItem::*_move)()){	// int direction
 	// Установка курсора на позицию, куда была перенесена ветка
 	if(index_after_move.isValid() && index_after_move != _index){
 	    auto it = _tree_view->source_model()->child(index_after_move);
-	    _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, it, it->parent()));
+	    _tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, it));
 	}
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)

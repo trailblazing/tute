@@ -31,7 +31,7 @@ extern const int	add_new_record_after;
 
 
 class ClipboardRecords;
-class rctl_t;
+class rctrl_t;
 class rs_t;
 class TreeItem;
 struct pos_proxy;
@@ -60,6 +60,10 @@ class VerticalScrollArea;
 // #ifndef USE_BUTTON
 // #define USE_BUTTON
 // #endif
+
+#ifndef USE_TEXT_AS_BUTTON
+#define USE_TEXT_AS_BUTTON
+#endif
 
 
 #ifdef USE_STAR_RATING
@@ -216,7 +220,7 @@ class rv_t : public QTableView {
     Q_OBJECT
 #endif
     public:
-	rv_t(rs_t   *record_screen_, rctl_t  *record_controller_);	// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
+	rv_t(rs_t   *record_screen_, rctrl_t  *record_controller_);	// W_CONSTRUCTOR(rs_t   *, rctl_t  *)	// QString screen_name,
 
 
 	virtual ~rv_t();
@@ -242,7 +246,7 @@ class rv_t : public QTableView {
 	bool	is_selected_set_to_bottom(void);
 
 	ClipboardRecords	*get_selected_records(void);
-	rctl_t			*record_controller();
+	rctrl_t			*record_controller();
 
 	// void on_parent_resizevent(QResizeEvent *e);
 	template <typename field_type>
@@ -292,7 +296,7 @@ class rv_t : public QTableView {
 
 	QMenu			*_context_menu;
 	rs_t			*_record_screen;
-	rctl_t			*_record_controller;
+	rctrl_t			*_record_controller;
 	VerticalScrollArea	*_vertical_scroll_area = nullptr;
 	QVBoxLayout		*_layout;
 	ViewDelegation		*_delegate;	//	ButtonColumnDelegate	*_delegate;
@@ -336,7 +340,7 @@ class rv_t : public QTableView {
 	void						start_drag();
 	friend class rs_t;
 	friend class VerticalScrollArea;
-	friend class rctl_t;
+	friend class rctrl_t;
 	friend class ViewDelegation;
 };
 

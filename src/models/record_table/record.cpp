@@ -596,9 +596,7 @@ QString Record::id_and_name() const {
 // }
 
 
-bool Record::is_natural_field_exists(QString name) const {
-    return _field_data.contains(name);
-}
+bool Record::is_natural_field_exists(QString name) const {return _field_data.contains(name);}
 
 //// template<> QString Record::field<has_attach_type>() const {return _attach_table_data->size() > 0 ? "1" : "0"; }
 // template <>QString Record::field_read<has_attach_type, calculable_field_type>::operator()(){// {return _this->_field_data[boost::mpl::c_str < typename boost::mpl::at < natural_field_type, field_type_current > ::type > ::value] = value; }

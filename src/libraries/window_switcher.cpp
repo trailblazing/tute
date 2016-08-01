@@ -35,16 +35,16 @@ W_OBJECT_IMPL(WindowSwitcher)
 
 WindowSwitcher::WindowSwitcher(QString object_name, MetaEditor *meta_editor, QObject *parent) : QObject(parent){
     setObjectName(object_name);
-    enableSwitch();
+    enable();
 
 	// Редактор является встраиваемым, поэтому работа кнопки Back у него идет через callback функцию
 	// MetaEditor *edView=find_object<MetaEditor>(meta_editor_singleton_name); // Выясняется указатель на объект редактирования текста записи
 
 	//    MetaEditor *metaEditor = globalparameters.getMetaEditor();
-    meta_editor->back_callback(this->switchFromRecordToRecordtable);	// Устанавливается функция обратного вызова при клике на кнопку Back
+    meta_editor->back_callback(this->record_to_recordtable);	// Устанавливается функция обратного вызова при клике на кнопку Back
 }
 
-void WindowSwitcher::enableSwitch(void){
+void WindowSwitcher::enable(void){
 	// Для десктопа переключение окон виджетов вообще не должно включаться
     if(appconfig.interface_mode() == "desktop"){
 	enableSwitcher = false;
@@ -54,15 +54,11 @@ void WindowSwitcher::enableSwitch(void){
     enableSwitcher = true;
 }
 
-void WindowSwitcher::disableSwitch(void){
-    enableSwitcher = false;
-}
+void WindowSwitcher::disable(void){enableSwitcher = false;}
 
-bool WindowSwitcher::getSwitchStatus(void){
-    return enableSwitcher;
-}
+bool WindowSwitcher::status(void){return enableSwitcher;}
 
-void WindowSwitcher::switch_from_tree_to_record_screen(void){
+void WindowSwitcher::tree_to_record_screen(void){
     if(! enableSwitcher)return;	// on desktop, default false
 
 	// Скрываются все прочие области
@@ -88,15 +84,13 @@ void WindowSwitcher::switch_from_tree_to_record_screen(void){
     }
 }
 
-void WindowSwitcher::switchFromTreeToFindInBase(void){
-    if(! enableSwitcher)return;
-}
+void WindowSwitcher::tree_to_find_in_base(void){if(! enableSwitcher)return;}
 
 // Статическая функция, используется редактором как callback функция при нажатии кнопки back в редакторе конечной записи
-void WindowSwitcher::switchFromRecordToRecordtable(void){
+void WindowSwitcher::record_to_recordtable(void){
     if(globalparameters.window_switcher() == nullptr)return;
 	// Если переключение запрещено
-    if(! globalparameters.window_switcher()->getSwitchStatus())return;
+    if(! globalparameters.window_switcher()->status())return;
     if(appconfig.interface_mode() != "mobile")	// В статическом методе использовать нестатическую переменну enableSwitcher нельзя
 		return;
 	// Скрываются все прочие области
@@ -119,9 +113,9 @@ void WindowSwitcher::switchFromRecordToRecordtable(void){
     }
 }
 
-void WindowSwitcher::switchFromRecordToFindInBase(void){if(! enableSwitcher)return;}
+void WindowSwitcher::record_to_find_in_base(void){if(! enableSwitcher)return;}
 
-void WindowSwitcher::switchFromRecordtableToRecord(void){
+void WindowSwitcher::recordtable_ro_record(void){
     if(! enableSwitcher)// on desktop, default false
 		return;
 	// Скрываются все прочие области
@@ -134,9 +128,9 @@ void WindowSwitcher::switchFromRecordtableToRecord(void){
     appconfig.focus_widget(object->objectName());
 }
 
-void WindowSwitcher::switchFromRecordtableToFindInBase(void){if(! enableSwitcher)return;}
+void WindowSwitcher::recordtable_to_find_in_base(void){if(! enableSwitcher)return;}
 
-void WindowSwitcher::switchFromRecordtableToTree(void){
+void WindowSwitcher::recordtable_to_tree(void){
     if(! enableSwitcher)return;
 	// Скрываются все прочие области
     globalparameters.meta_editor()->hide();
@@ -149,30 +143,30 @@ void WindowSwitcher::switchFromRecordtableToTree(void){
 }
 
 // Закрытие окна FindInBase с переходом на окно, откуда оно было открыто
-void WindowSwitcher::closeFindInBase(void){if(! enableSwitcher)return;}
+void WindowSwitcher::close_find_in_base(void){if(! enableSwitcher)return;}
 
 // Слот, срабатывающий при нажатии на кнопку перехода к поиску по базе в любом виджете
-void WindowSwitcher::findInBaseClick(void){
+void WindowSwitcher::find_in_base_click(void){
 	// Определяется ссылка на виджет поиска
-    FindScreen	*findScreen	= globalparameters.find_screen();	// find_object<FindScreen>(find_screen_singleton_name);
-    QSplitter	*vrs		= globalparameters.v_right_splitter();		// find_object<QSplitter>("v_right_splitter");
+    FindScreen	*_find_screen		= globalparameters.find_screen();	// find_object<FindScreen>(find_screen_singleton_name);
+    QSplitter	*_v_right_splitter	= globalparameters.v_right_splitter();		// find_object<QSplitter>("v_right_splitter");
 	//    browser::Entrance *entrance = globalparameters.entrance();
-    if(findScreen && vrs){
+    if(_find_screen && _v_right_splitter){
 	//        auto dp = entrance->activiated_registered();
-	int	height		= findScreen->height();
-	QSize	vrs_size	= vrs->size();
+	int	height		= _find_screen->height();
+	QSize	right_size	= _v_right_splitter->size();
 	// Если виджет не показан, он выводится на экран, и наоборот
-	if(findScreen->isVisible() == false){
-	    findScreen->widget_show();
-	    vrs->resize(QSize(vrs_size.width(), vrs->height() - height));	//            dp.first->resize(entrance->size()); // ? dp.second->resize(dp.first->size());
+	if(_find_screen->isVisible() == false){
+	    _find_screen->widget_show();
+	    _v_right_splitter->resize(QSize(right_size.width(), _v_right_splitter->height() - height));	//            dp.first->resize(entrance->size()); // ? dp.second->resize(dp.first->size());
 	}else{
-	    findScreen->widget_hide();
-	    vrs->resize(QSize(vrs_size.width(), vrs->height() + height));	//            dp.first->resize(entrance->size()); // dp.second->resize(dp.first->size());
+	    _find_screen->widget_hide();
+	    _v_right_splitter->resize(QSize(right_size.width(), _v_right_splitter->height() + height));	//            dp.first->resize(entrance->size()); // dp.second->resize(dp.first->size());
 	}
     }
 }
 
-void WindowSwitcher::restoreFocusWidget(){
+void WindowSwitcher::restore_focus_widget(){
     if(! enableSwitcher)return;
 	// Скрываются все прочие области
     globalparameters.tree_screen()->hide();

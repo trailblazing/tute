@@ -516,15 +516,15 @@ void sapp_t::main_window(){
 	// После создания окна восстанавливается вид окна в предыдущий запуск
 	// Эти действия нельзя делать в конструкторе главного окна,
 	// т.к. окно еще не создано
-    _globalparameters.window_switcher()->disableSwitch();
+    _globalparameters.window_switcher()->disable();
     _window->restore_find_in_base_visible();
     _window->restore_geometry();
     _window->restore_tree_position();
 	//    _window->restore_recordtable_position();
     _window->restore_editor_cursor_position();
     _window->restore_editor_scrollbar_position();
-    _globalparameters.window_switcher()->enableSwitch();
-    if(_appconfig.interface_mode() == "mobile")_globalparameters.window_switcher()->restoreFocusWidget();
+    _globalparameters.window_switcher()->enable();
+    if(_appconfig.interface_mode() == "mobile")_globalparameters.window_switcher()->restore_focus_widget();
     qDebug() << "Restore session succesfull";
 
 	// После восстановления последней редактируемой записи
@@ -599,8 +599,8 @@ void sapp_t::main_window(){
 sapp_t::sapp_t(int &argc
 	      , char * *argv
 	      , GlobalParameters    &globalparameters
-	      , AppConfig	    &appconfig
-	      , DataBaseConfig	    &databaseconfig
+	      , AppConfig           &appconfig
+	      , DataBaseConfig      &databaseconfig
 	      , bool GUIenabled)
     : QApplication(argc, argv)
       , _peer(new QtLocalPeer(this, QString()))
@@ -633,8 +633,8 @@ sapp_t::sapp_t(const QString &appId
 	      , int &argc
 	      , char * *argv
 	      , GlobalParameters    &globalparameters
-	      , AppConfig	    &appconfig
-	      , DataBaseConfig	    &databaseconfig)
+	      , AppConfig           &appconfig
+	      , DataBaseConfig      &databaseconfig)
     : QApplication(argc, argv)
       , _peer(new QtLocalPeer(this, appId))
       , _act_window(nullptr)
@@ -855,7 +855,7 @@ void sapp_t::newLocalSocketConnection(){
 	    boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-	    it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent())->item_register(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
+	    it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item())->register_index(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
 
 //            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
@@ -863,7 +863,7 @@ void sapp_t::newLocalSocketConnection(){
 	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
 //            } catch(std::exception &) {}
 //            if(record_index){
-	    browser->page_instantiate(record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
+	    browser->bind(record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
 //            }
 //            else{
 //                tree_view->index_invoke(tree_view->source_model()->index(it));
@@ -873,10 +873,11 @@ void sapp_t::newLocalSocketConnection(){
 //            try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, tree_view->current_item()->parent(), tree_view->current_item()->linker()->sibling_order()); } catch(std::exception &e) {throw e; }
 
 //            if(tree_index)
-	    TreeIndex::instance([&] {return tree_view->source_model();}, current_item, parent)->page_instantiate(tree_view->current_item()
-														, _url
-														, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-														, [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
+	    TreeIndex::activate([&] {return tree_view->source_model();}
+			       , tree_view->current_item()
+			       , _url
+			       , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+			       , [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());}
 		)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 	}
 	// browser_view->mainWindow()->load_record(record);
@@ -974,7 +975,11 @@ void sapp_t::postLaunch(){
 //            browser->loadPage(args.last());			// mainWindow()->loadPage(args.last());
 	    tv_t	*tree_view	= _globalparameters.tree_screen()->view();
 	    auto	it		= tree_view->session_root_auto();
-	    TreeIndex::instance([&] {return tree_view->source_model();}, it, it->parent())->page_instantiate(it, args.last(), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());})->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+	    TreeIndex::activate([&] {return tree_view->source_model();}
+			       , it
+			       , args.last()
+			       , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), args.last().toStdString()) || url_equal(it_->field<url_type>().toStdString(), args.last().toStdString());}
+		);
 	}
 	//        else
 	//            browser->slotHome(); // mainWindow()->slotHome();

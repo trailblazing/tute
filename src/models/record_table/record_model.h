@@ -41,7 +41,7 @@ class Record;
 class ItemsFlat;
 class TreeItem;
 class tkm_t;
-class rctl_t;
+class rctrl_t;
 class wn_t;
 class ts_t;
 class FindScreen;
@@ -87,13 +87,13 @@ class RecordModel : public QAbstractTableModel
     Q_OBJECT
 #endif
 	// By the closed (private) function models can have access controller   // К закрытым (private) функциям модели может иметь доступ контроллер
-    friend class rctl_t;
+    friend class rctrl_t;
     friend class browser::Entrance;
     public:
 
 
 
-	RecordModel(rctl_t *_record_controller);// , RecordScreen *_record_screen
+	RecordModel(rctrl_t *_record_controller);// , RecordScreen *_record_screen
 
 
 	~RecordModel();
@@ -157,7 +157,7 @@ class RecordModel : public QAbstractTableModel
 	// void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
 
 	// ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
-	rctl_t *reocrd_controller() const {return _record_controller;}
+	rctrl_t *reocrd_controller() const {return _record_controller;}
 
 
 	int count() const;	// {return _tabmanager->count();}
@@ -191,7 +191,7 @@ class RecordModel : public QAbstractTableModel
 	void on_table_config_changed(void);
 
 	// Добавление записей
-	browser::WebView	*insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _item, int mode = add_new_record_after);
+	browser::WebView	*insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _target_item, int mode = add_new_record_after);
 	bool			removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 	void			remove_child(boost::intrusive_ptr<TreeItem> it);
 
@@ -204,7 +204,7 @@ class RecordModel : public QAbstractTableModel
 	// std::shared_ptr<RecordTable>  _table; // flat one
 	// TreeModelKnow *_browser_pages;  // boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
 
-	rctl_t    *_record_controller;
+	rctrl_t    *_record_controller;
 	friend class rs_t;
 };
 

@@ -112,8 +112,7 @@ void MetaEditor::setup_signals(FindScreen *_find_screen){
 void MetaEditor::setup_labels(void){
 	// Путь в дереве до данной записи в виде названий веток (только для мобильного интерфейса)
 	// _tree_path = new QLabel(this);
-    _tree_path->setTextInteractionFlags(Qt::TextSelectableByMouse |
-	Qt::TextSelectableByKeyboard);
+    _tree_path->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     if(appconfig.interface_mode() == "desktop")_tree_path->setVisible(false);
     else _tree_path->setVisible(true);
     _tree_path->setWordWrap(true);
@@ -128,15 +127,13 @@ void MetaEditor::setup_labels(void){
 
 	// Название записи
 	// _item_name = new QLabel(this);
-    _item_name->setTextInteractionFlags(Qt::TextSelectableByMouse |
-	Qt::TextSelectableByKeyboard);
+    _item_name->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     _item_name->setVisible(false);
     _item_name->setWordWrap(true);
 
 	// Автор
 	// _item_author = new QLabel(this);
-    _item_author->setTextInteractionFlags(Qt::TextSelectableByMouse |
-	Qt::TextSelectableByKeyboard);
+    _item_author->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
     _item_author->setVisible(false);
     _item_author->setWordWrap(true);
 
@@ -154,19 +151,13 @@ void MetaEditor::setup_labels(void){
 
 	// _item_home = new ClickableLabel(this);
 	// recordHome->setOpenExternalLinks(true);
-    _item_home->setTextInteractionFlags(Qt::TextSelectableByMouse |
-	Qt::TextSelectableByKeyboard |
-	Qt::LinksAccessibleByMouse |
-	Qt::LinksAccessibleByKeyboard);
+    _item_home->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse |	Qt::LinksAccessibleByKeyboard);
     _item_home->setVisible(false);
     _item_home->setWordWrap(true);
 
 	// _item_url = new ClickableLabel(this);
 	// recordUrl->setOpenExternalLinks(true);
-    _item_url->setTextInteractionFlags(Qt::TextSelectableByMouse |
-	Qt::TextSelectableByKeyboard |
-	Qt::LinksAccessibleByMouse |
-	Qt::LinksAccessibleByKeyboard);
+    _item_url->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard | Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
     _item_url->setVisible(false);
     _item_url->setWordWrap(true);
 
@@ -228,9 +219,7 @@ void MetaEditor::bind(boost::intrusive_ptr<TreeItem> item_to_be_bound){
 	    });
 }
 
-boost::intrusive_ptr<TreeItem> MetaEditor::item(){
-    return _item;
-}
+boost::intrusive_ptr<TreeItem> MetaEditor::item(){return _item;}
 
 void MetaEditor::setup_ui(void){
 	// Область текстовых меток, которые выглядят на экране как [метка1] [метка2] [метка3] ...

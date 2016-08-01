@@ -48,33 +48,31 @@ struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_
 	typedef std::function<bool (boost::intrusive_ptr<const TreeItem>, boost::intrusive_ptr<const TreeItem>)>							equal_t;
 	typedef std::function<bool (boost::intrusive_ptr<const Linker>)>												substitute_condition;	// , boost::intrusive_ptr<const Linker>
 	typedef std::function<bool (boost::intrusive_ptr<const Linker>, boost::intrusive_ptr<const Linker>)>								substitute_condition_double;		//
-	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &, bool)>	paste_strategy;
+	typedef std::function<boost::intrusive_ptr<TreeItem> (boost::intrusive_ptr<TreeIndex>, boost::intrusive_ptr<TreeItem>, const substitute_condition &, bool)>	insert_strategy;
 
 
 	std::function<tkm_t *()> current_model() const;
 //	index_tree host_parent_index() const;
 	index_tree host_index() const;
 
-	boost::intrusive_ptr<TreeItem>	host_parent() const;
+//	boost::intrusive_ptr<TreeItem>	host_parent() const;
 	boost::intrusive_ptr<TreeItem>	host() const;
 	int				sibling_order() const;
 //	static boost::intrusive_ptr<TreeIndex> instance(const std::function<km_t *()> &current_model, boost::intrusive_ptr<TreeItem> host_parent, int sibling_order = 0);
-	static boost::intrusive_ptr<TreeIndex> instance(const std::function<tkm_t *()> &current_model, boost::intrusive_ptr<TreeItem> host, boost::intrusive_ptr<TreeItem> host_parent = nullptr);
+	static boost::intrusive_ptr<TreeIndex>		instance(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<TreeItem> host_);
+	boost::intrusive_ptr<TreeItem>			register_index(const QUrl              &find_url_
+								      , const insert_strategy  &tree_view_insert_strategy_
+								      , equal_url equal_);
 
-	boost::intrusive_ptr<TreeItem> item_register(const QUrl             &_find_url
-						    , const paste_strategy  &_view_paste_strategy
-						    , equal_url _equal	// = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
-	    );
-	//    boost::intrusive_ptr<TreeItem> item_register(boost::intrusive_ptr<TreeItem> target
-	//                                                 , const KnowView::paste_strategy &_view_paste_strategy
-	//                                                 , equal_t _equal // = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
-	//                                                );
+	boost::intrusive_ptr<TreeItem> bind(const QUrl              &_find_url	// boost::intrusive_ptr<TreeItem>   tab_brother,
+					   , const insert_strategy  &_view_insert_strategy
+					   , equal_url _equal);
 
-	boost::intrusive_ptr<TreeItem> page_instantiate(boost::intrusive_ptr<TreeItem> tab_brother
-						       , const QUrl                   &_find_url
-						       , const paste_strategy         &_view_paste_strategy
-						       , equal_url _equal);
-
+	static boost::intrusive_ptr<TreeItem> activate(const std::function<tkm_t *()>	&current_model_
+						      , boost::intrusive_ptr<TreeItem>	host_
+						      , const QUrl			&find_url_
+						      , const insert_strategy		&view_insert_strategy_
+						      , equal_url equal_) noexcept;
 	//    boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<RecordModel::ModelIndex> modelindex
 	//                                             , const KnowView::paste_strategy &_view_paste_strategy
 	//                                             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
@@ -84,10 +82,19 @@ struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_
 
     private:
 //	TreeIndex(const std::function<km_t *()> &current_model, boost::intrusive_ptr<TreeItem> host_parent_, int sibling_order = 0);	// , const QModelIndex &_current_index
-	TreeIndex(const std::function<tkm_t *()> &current_model, boost::intrusive_ptr<TreeItem> host, boost::intrusive_ptr<TreeItem> host_parent = nullptr);
+	TreeIndex(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<TreeItem> host_, const index_tree &host_index_, const int sibling_order_);
+	boost::intrusive_ptr<TreeItem> item_register(const QUrl             &find_url_
+						    , const insert_strategy &tree_view_insert_strategy_
+						    , equal_url equal_	// = [](boost::intrusive_ptr<const TreeItem> it, const QUrl &_url)->bool {return it->field("url") == _url.toString();}
+	    );
+	//    boost::intrusive_ptr<TreeItem> item_register(boost::intrusive_ptr<TreeItem> target
+	//                                                 , const KnowView::paste_strategy &_view_paste_strategy
+	//                                                 , equal_t _equal // = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
+	//                                                );
+
 	std::function<tkm_t *()>	_current_model;
 	boost::intrusive_ptr<TreeItem>	_host;
-	boost::intrusive_ptr<TreeItem>	_host_parent;
+//	boost::intrusive_ptr<TreeItem>	_host_parent;
 
 	int _sibling_order;
 //	index_tree _host_parent_index;

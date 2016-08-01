@@ -38,7 +38,7 @@ class MtComboBox;
 class FlatComboBox;
 class QStackedWidget;
 
-class rctl_t;
+class rctrl_t;
 class ts_t;
 struct Linker;
 

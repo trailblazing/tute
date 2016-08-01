@@ -596,7 +596,7 @@ namespace browser {
 		// void reset_tabledata(std::shared_ptr<RecordTable> table_data) {_page_tree_item->record_table(table_data);}
 
 	    TabBar	*tabbar();
-	    rctl_t	*record_controller();
+	    rctrl_t	*record_controller();
 
 
 
@@ -698,7 +698,7 @@ namespace browser {
 	    Browser		*_browser;
 	    rs_t		*_record_screen;
 	    wn_t		*_main_window;
-	    rctl_t		*_record_controller;		// RecordScreen        *_record_screen;
+	    rctrl_t		*_record_controller;		// RecordScreen        *_record_screen;
 
 	    QAction		*_recentlyclosedtabsaction;
 	    QAction		*_newtabaction;

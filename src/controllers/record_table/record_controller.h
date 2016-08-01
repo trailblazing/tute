@@ -57,7 +57,7 @@ struct id_value;
 
 
 
-class rctl_t : public QObject {
+class rctrl_t : public QObject {
 #if QT_VERSION == 0x050600
     W_OBJECT(rctl_t)
 #else
@@ -67,11 +67,11 @@ class rctl_t : public QObject {
 
 	//    typedef TreeItem::bind_helper       bind_helper;
 	//    typedef TreeItem::activate_helper   active_helper;
-	rctl_t(MetaEditor *_editor_screen
+	rctrl_t(MetaEditor *_editor_screen
 	      , browser::TabWidget *_tabmanager
 	      , rs_t *_record_screen
 	      , wn_t *_main_window);
-	virtual ~rctl_t();
+	virtual ~rctrl_t();
 
 	//    void init(void);
 
@@ -147,8 +147,8 @@ class rctl_t : public QObject {
 	//    void init_source_model(boost::intrusive_ptr<TreeItem> item);
 	//    void init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen);
 	//    bool no_view() {return _no_view;}
-	boost::intrusive_ptr<TreeItem>	synchronize_record_view(boost::intrusive_ptr<TreeItem> item);
-	rs_t				*record_screen(){return _record_screen;}
+
+	rs_t *record_screen(){return _record_screen;}
 
 	//    RecordController *reocrd_controller() {return this;}
 	//    RecordController *reocrd_controller()const {return const_cast<RecordController *>(this);}
@@ -211,16 +211,16 @@ class rctl_t : public QObject {
 	MetaEditor		*_editor_screen;
 	wn_t			*_main_window;
 
-	browser::WebView	*addnew_item_fat(boost::intrusive_ptr<TreeItem> item, const int mode = add_new_record_after);	// add_new_record_after
-	browser::WebView	*addnew_item(boost::intrusive_ptr<TreeItem> item_target, const int mode = add_new_record_after);
-
-	void edit_field(pos_source pos
-		       , QString pin
-		       , QString name
-		       , QString author
-		       , QString home
-		       , QString url
-		       , QString tags);
+	browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, const int mode = add_new_record_after);	// add_new_record_after
+	browser::WebView		*addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, const int mode = add_new_record_after);
+	boost::intrusive_ptr<TreeItem>	synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
+	void				edit_field(pos_source pos
+						  , QString pin
+						  , QString name
+						  , QString author
+						  , QString home
+						  , QString url
+						  , QString tags);
 
 	// Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
 
@@ -234,45 +234,46 @@ class rctl_t : public QObject {
 	//    friend boost::intrusive_ptr<Record> register_record(boost::intrusive_ptr<Record> record);
 
 	//    friend Record *register_record(const QUrl &_url);
+	friend struct RecordIndex;
 };
 
 template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14
 
-template<>pos_proxy rctl_t::	index<pos_proxy>(const pos_source &) const;
-template<>pos_proxy rctl_t::	index<pos_proxy>(const index_proxy &) const;
-template<>pos_proxy rctl_t::	index<pos_proxy>(const index_source &) const;
-template<>pos_proxy rctl_t::	index<pos_proxy>(const id_value &) const;
-template<>pos_proxy rctl_t::	index<pos_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>pos_proxy rctrl_t::	index<pos_proxy>(const pos_source &) const;
+template<>pos_proxy rctrl_t::	index<pos_proxy>(const index_proxy &) const;
+template<>pos_proxy rctrl_t::	index<pos_proxy>(const index_source &) const;
+template<>pos_proxy rctrl_t::	index<pos_proxy>(const id_value &) const;
+template<>pos_proxy rctrl_t::	index<pos_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>pos_source rctl_t::	index<pos_source>(const pos_proxy &) const;
-template<>pos_source rctl_t::	index<pos_source>(const index_proxy &) const;
-template<>pos_source rctl_t::	index<pos_source>(const index_source &) const;
-template<>pos_source rctl_t::	index<pos_source>(const id_value &) const;
-template<>pos_source rctl_t::	index<pos_source>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>pos_source rctrl_t::	index<pos_source>(const pos_proxy &) const;
+template<>pos_source rctrl_t::	index<pos_source>(const index_proxy &) const;
+template<>pos_source rctrl_t::	index<pos_source>(const index_source &) const;
+template<>pos_source rctrl_t::	index<pos_source>(const id_value &) const;
+template<>pos_source rctrl_t::	index<pos_source>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>index_proxy rctl_t::	index<index_proxy>(const pos_source &) const;
-template<>index_proxy rctl_t::	index<index_proxy>(const pos_proxy &) const;
-template<>index_proxy rctl_t::	index<index_proxy>(const index_source &) const;
-template<>index_proxy rctl_t::	index<index_proxy>(const id_value &) const;
-template<>index_proxy rctl_t::	index<index_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>index_proxy rctrl_t::	index<index_proxy>(const pos_source &) const;
+template<>index_proxy rctrl_t::	index<index_proxy>(const pos_proxy &) const;
+template<>index_proxy rctrl_t::	index<index_proxy>(const index_source &) const;
+template<>index_proxy rctrl_t::	index<index_proxy>(const id_value &) const;
+template<>index_proxy rctrl_t::	index<index_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>index_source rctl_t:: index<index_source>(const pos_source &) const;
-template<>index_source rctl_t:: index<index_source>(const index_proxy &) const;
-template<>index_source rctl_t:: index<index_source>(const pos_proxy &) const;
-template<>index_source rctl_t:: index<index_source>(const id_value &) const;
-template<>index_source rctl_t:: index<index_source>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>index_source rctrl_t:: index<index_source>(const pos_source &) const;
+template<>index_source rctrl_t:: index<index_source>(const index_proxy &) const;
+template<>index_source rctrl_t:: index<index_source>(const pos_proxy &) const;
+template<>index_source rctrl_t:: index<index_source>(const id_value &) const;
+template<>index_source rctrl_t:: index<index_source>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>id_value rctl_t::	index<id_value>(const pos_source &) const;
-template<>id_value rctl_t::	index<id_value>(const index_proxy &) const;
-template<>id_value rctl_t::	index<id_value>(const pos_proxy &) const;
-template<>id_value rctl_t::	index<id_value>(const index_source &) const;
-template<>id_value rctl_t::	index<id_value>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>id_value rctrl_t::	index<id_value>(const pos_source &) const;
+template<>id_value rctrl_t::	index<id_value>(const index_proxy &) const;
+template<>id_value rctrl_t::	index<id_value>(const pos_proxy &) const;
+template<>id_value rctrl_t::	index<id_value>(const index_source &) const;
+template<>id_value rctrl_t::	index<id_value>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>boost::intrusive_ptr<TreeItem> rctl_t::	index<boost::intrusive_ptr<TreeItem> >(const pos_source &) const;
-template<>boost::intrusive_ptr<TreeItem> rctl_t::	index<boost::intrusive_ptr<TreeItem> >(const index_proxy &) const;
-template<>boost::intrusive_ptr<TreeItem> rctl_t::	index<boost::intrusive_ptr<TreeItem> >(const pos_proxy &) const;
-template<>boost::intrusive_ptr<TreeItem> rctl_t::	index<boost::intrusive_ptr<TreeItem> >(const index_source &) const;
-template<>boost::intrusive_ptr<TreeItem> rctl_t::	index<boost::intrusive_ptr<TreeItem> >(const id_value &) const;
+template<>boost::intrusive_ptr<TreeItem> rctrl_t::	index<boost::intrusive_ptr<TreeItem> >(const pos_source &) const;
+template<>boost::intrusive_ptr<TreeItem> rctrl_t::	index<boost::intrusive_ptr<TreeItem> >(const index_proxy &) const;
+template<>boost::intrusive_ptr<TreeItem> rctrl_t::	index<boost::intrusive_ptr<TreeItem> >(const pos_proxy &) const;
+template<>boost::intrusive_ptr<TreeItem> rctrl_t::	index<boost::intrusive_ptr<TreeItem> >(const index_source &) const;
+template<>boost::intrusive_ptr<TreeItem> rctrl_t::	index<boost::intrusive_ptr<TreeItem> >(const id_value &) const;
 
 
 #endif	// __RECORDTABLECONTROLLER_H__

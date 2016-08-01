@@ -1132,7 +1132,7 @@ template<>QStringList AppConfig::parameter_table<26>(bool withEndSignature){	// 
 
     table << "vertical_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
     table << "horizontal_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
-//    table << "application_mode" << "QString" << "Portable";
+    table << "application_mode" << "QString" << "Portable";
 	//    table << "enableDecryptFileToTrashDirectory" << "bool" << "false";
     if(withEndSignature)table << "0" << "0" << "0";
     return table;

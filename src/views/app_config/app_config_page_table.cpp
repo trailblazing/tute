@@ -17,6 +17,8 @@
 #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "controllers/record_table/record_controller.h"
+#include "libraries/disk_helper.h"
+
 
 extern AppConfig	appconfig;
 extern FixedParameters	fixedparameters;
@@ -28,7 +30,7 @@ W_OBJECT_IMPL(AppConfigPageTable)
 #endif
 
 
-AppConfigPageTable::AppConfigPageTable(rctl_t *_record_controller, QWidget *parent) : ConfigPage(parent), _record_controller(_record_controller){
+AppConfigPageTable::AppConfigPageTable(rctrl_t *_record_controller, QWidget *parent) : ConfigPage(parent), _record_controller(_record_controller){
     qDebug() << "Create record table config page";
 
     QStringList all_field_names = fixedparameters._record_field;
@@ -91,9 +93,8 @@ void AppConfigPageTable::setupSignals(void){
     }
 	// Указатель на контроллер таблицы конечных записей
 	// RecordController *_record_controller = find_object<RecordController>("table_screen_controller");
-
 	// При изменении настроек отображения таблицы конечных записей должен вызываться соответствующий слот контроллера (чтобы перечиталась ширина столбцов)
-    connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctl_t::on_recordtable_configchange);
+    if(_record_controller)connect(this, &AppConfigPageTable::record_table_config_change, _record_controller, &rctrl_t::on_recordtable_configchange);
 	// connect(this, &AppConfigPageTable::recordTableConfigChange, page_controller, &RecordController::on_recordtable_configchange);
 }
 

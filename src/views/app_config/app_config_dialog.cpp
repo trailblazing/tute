@@ -17,6 +17,8 @@
 #include "app_config_page_synchro.h"
 #include "app_config_page_table.h"
 #include "models/app_config/app_config.h"
+#include "libraries/disk_helper.h"
+
 
 extern AppConfig appconfig;
 
@@ -25,7 +27,7 @@ extern AppConfig appconfig;
 W_OBJECT_IMPL(AppConfigDialog)
 #endif
 
-AppConfigDialog::AppConfigDialog(rctl_t *_record_controller, QString firstPageName = "") : QWidget(), _record_controller(_record_controller){
+AppConfigDialog::AppConfigDialog(rctrl_t *_record_controller, QString firstPageName) : QWidget(), _record_controller(_record_controller){
     if(appconfig.interface_mode() == "mobile"){	// if(true)
 	qDebug() << "Screen size X Y: " << screen_size_x() << screen_size_y();
 	this->setMinimumSize(screen_size_x(), screen_size_y());

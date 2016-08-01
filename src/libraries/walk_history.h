@@ -43,7 +43,8 @@ class WalkHistory : public QObject {
 
 	void clear(void);
 
-	void add(const id_value &_record_id, int _cursor_position, int _scrollbar_position, int mode = WALK_HISTORY_GO_NONE);
+	template<int direction>
+	void add(const id_value &_record_id, int _cursor_position, int _scrollbar_position);	// , int mode = WALK_HISTORY_GO_NONE
 
 	//    QString tree_root_id();
 	id_value	record_id() const;
@@ -76,5 +77,10 @@ class WalkHistory : public QObject {
 
 	//    QString _tree_root_id = "";
 };
+
+template<>void WalkHistory::	add<WALK_HISTORY_GO_NONE>(const id_value &_record_id, int _cursor_position, int _scrollbar_position);
+template<>void WalkHistory::	add<WALK_HISTORY_GO_PREVIOUS>(const id_value &_record_id, int _cursor_position, int _scrollbar_position);
+template<>void WalkHistory::	add<WALK_HISTORY_GO_NEXT>(const id_value &_record_id, int _cursor_position, int _scrollbar_position);
+
 
 #endif	// _WALKHISTORY_H_

@@ -1,4 +1,4 @@
-
+#include <cassert>
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
 #endif
@@ -19,6 +19,8 @@
 #include "models/app_config/app_config.h"
 #include "libraries/flat_control.h"
 #include "libraries/global_parameters.h"
+#include "libraries/disk_helper.h"
+
 
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
@@ -302,16 +304,22 @@ Sample: dd.MM.yyyy - hh:mm:ss";
 int AppConfigPageMain::apply_changes(void){
     qDebug() << "Apply changes main";
 
-    int difficultChanges = 0;
+    int		difficultChanges	= 0;
+    auto	_main_program_file	= globalparameters.main_program_file();
+    QFileInfo	main_program_file_info(_main_program_file);
+    QString	full_current_path = main_program_file_info.absolutePath();
 	// Если был изменен путь к базе, он запоминается в конфигфайл
     if(appconfig.tetra_dir() != tetradirInput->text()){
 	QDir dir(tetradirInput->text());
 	// Проверяется, допустимо ли имя директории
-	if(dir.isReadable() == false || dir.exists() == false)
-		QMessageBox::warning(this, tr("Warning")
-				    , tr("The data directory does not exists or unavailable for reading.")
-				    , QMessageBox::Ok);
-	else{
+	if(dir.isReadable() == false){
+	    QMessageBox::warning(this, tr("Warning")
+				, tr("The data directory does not exists or unavailable for reading.")
+				, QMessageBox::Ok);
+	}else if(dir.exists() == false){
+	    DiskHelper::create_directory(full_current_path, "data");
+	    DiskHelper::create_directory(full_current_path + "data", "base");
+	}else{
 		// Новое имя запоминается в конфиг
 	    appconfig.tetra_dir(tetradirInput->text());
 	    difficultChanges = 1;
@@ -321,10 +329,11 @@ int AppConfigPageMain::apply_changes(void){
     if(appconfig.trash_dir() != trashdirInput->text()){
 	QDir dir(trashdirInput->text());
 	// Проверяется, допустимо ли имя директории
-	if(dir.isReadable() == false || dir.exists() == false)
-		QMessageBox::warning(this, tr("Warning")
-				    , tr("The trash directory does not exists or unavailable for reading.")
-				    , QMessageBox::Ok);
+	if(dir.isReadable() == false){
+	    QMessageBox::warning(this, tr("Warning")
+				, tr("The trash directory does not exists or unavailable for reading.")
+				, QMessageBox::Ok);
+	}else if(dir.exists() == false)DiskHelper::create_directory(full_current_path, "trash");
 	else{
 		// Новое имя запоминается в конфиг
 	    appconfig.trash_dir(trashdirInput->text());
@@ -344,6 +353,7 @@ int AppConfigPageMain::apply_changes(void){
 	difficultChanges = 1;
     }
     if(globalparameters.application_mode() != application_mode_option->currentText()){
+	if(! globalparameters.is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());assert(succedded);}
 	globalparameters.application_mode(application_mode_option->currentText());
 	QMessageBox message;
 	message.setText("The changes of application mode will take effect after restart the application.");	// You have to restart Mytetra for the configuration changes to take effect.

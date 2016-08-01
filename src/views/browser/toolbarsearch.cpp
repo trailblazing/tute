@@ -148,7 +148,7 @@ namespace browser {
 	auto				result_item	= globalparameters.find_screen()->find_clicked();
 	ts_t				*_tree_screen	= globalparameters.tree_screen();
 	auto				tree_view	= _tree_screen->view();
-	boost::intrusive_ptr<TreeIndex> tree_index	= TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item(), tree_view->current_item()->parent());
+	boost::intrusive_ptr<TreeIndex> tree_index	= TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item());
 	if(0 == result_item->count_direct()){
 	    QUrl url = QUrl(search_text);
 		// if(url.host().isSimpleText());
@@ -186,12 +186,11 @@ namespace browser {
 		    ){
 			// QLineEdit *lineedit =
 
-		    tree_index->page_instantiate(tree_view->current_item()
-						, url
-						, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-						, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
-			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
-
+		    auto ti = tree_index->bind(url
+					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+			    );
+		    if(ti)ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		    assert(_lineedits);
 		    if(_lineedits){
 			QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
@@ -226,8 +225,11 @@ namespace browser {
 		    url.setQuery(url_query);
 		    url.setFragment("q=" + search_text);
 //		    emit search(url, std::bind(&TreeScreen::view_paste_child, _tree_screen, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-		    tree_index->page_instantiate(tree_view->current_item(), url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
-			)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		    auto ti = tree_index->bind(url
+					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
+			    );
+		    if(ti)ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}
 	    }
 	}
@@ -250,7 +252,7 @@ namespace browser {
 ////	    auto	child_linkers		= result_item->child_linkers();
 //	    auto _total_progress_counter = 0;
 	    for(auto it : child_items){	// move to search result
-		boost::intrusive_ptr<RecordIndex>	record_index = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, it);
+		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, it);
 		//                            if(record_index){
 		//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
 		//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
@@ -260,7 +262,7 @@ namespace browser {
 		//                                _result_list << result->linker();																												//
 		//                            }else{
 		// auto previous_item = _source_model()->item(tree_view->previous_index());
-		auto result = browser->page_instantiate(record_index);
+		auto result = browser->bind(record_index);
 //		result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 ////		std::thread(&TreeItem::activate, result, std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)).join();
 //		globalparameters.status_bar()->showMessage("added node(s) : " + QString::number(++ _total_progress_counter), 1000);	// across thread message
@@ -332,7 +334,7 @@ namespace browser {
 	//                                _result_list << result->linker();																												//
 	//                            }else{
 	// auto previous_item = _source_model()->item(tree_view->previous_index());
-	auto result = browser->page_instantiate(record_index);
+	auto result = browser->bind(record_index);
 	result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 	_child_items.pop_back();
 	emit resultReady();

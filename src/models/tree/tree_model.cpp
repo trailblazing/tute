@@ -507,8 +507,8 @@ boost::intrusive_ptr<TreeItem> tm_t::item(const QModelIndex &_index) const		// ?
 	// boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
 	////)
 	// ;
-	if(_item)	// qDebug() << "Get tree item " << item->data("name").toString();
-		_result = _item;
+	if(_item)_result = _item;	// qDebug() << "Get tree item " << item->data("name").toString();
+
 	else{
 	    assert(! _index.internalPointer());
 	    qDebug() << "Detect bad castind to TreeItem in item() method ";
@@ -532,8 +532,7 @@ boost::intrusive_ptr<TreeItem> tm_t::item(QStringList path) const {
 	for(int j = 0; j < curritem->count_direct(); j ++){
 	    if((curritem->child_direct(j))->id() == path.at(i)){
 		// Узел найден, он становится текущим
-		curritem =
-		    curritem->child_direct(j);
+		curritem = curritem->child_direct(j);
 		// found = 1;
 		break;
 	    }
@@ -542,9 +541,7 @@ boost::intrusive_ptr<TreeItem> tm_t::item(QStringList path) const {
 	// if(found == 0)
 	// critical_error("Detect bad path in getItem() method " + path.join(","));
     }
-    if(  curritem != _root_item
-      || (path.size() == 1 && path[0] == global_root_id)
-	)result = curritem;
+    if(curritem != _root_item || (path.size() == 1 && path[0] == global_root_id))result = curritem;
 	//// Если очередной идентификатор пути не был найден
 	// if(found == 0) {
 	// critical_error("Detect bad path in getItem() method " + path.join(","));
@@ -560,21 +557,24 @@ boost::intrusive_ptr<TreeItem> tm_t::item(const std::function<bool (boost::intru
 	     , const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal
 	     , int mode
 	    ){
-	    static boost::intrusive_ptr<TreeItem> find_item;
+	    static boost::intrusive_ptr<TreeItem> found_item;
 	    if(mode == 0){
-		find_item = nullptr;
-
-		return find_item;	// nullptr;
+		found_item = nullptr;
+//		return find_item;	// nullptr;
+	    }else if(! found_item){	// return find_item;
+		if(_equal(_it)){
+		    found_item = _it;
+//		    return find_item;
+		}else{
+		    for(auto il : _it->child_linkers()){
+			if(! found_item)item_recurse(il->host(), _equal, 1);
+			else break;
+		    }
+		}
 	    }
-	    if(find_item)return find_item;
-	    if(_equal(_it)){
-		find_item = _it;
+//	    assert(found_item != _root_item);
 
-		return find_item;
-	    }else{
-		for(int i = 0; i < _it->count_direct(); i ++)item_recurse(_it->child_direct(i), _equal, 1);
-		return find_item;
-	    }
+	    return found_item;
 	};
 
 	// Инициализация поиска
