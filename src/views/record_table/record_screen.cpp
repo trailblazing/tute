@@ -70,7 +70,7 @@ rs_t::rs_t(ts_t			*_tree_screen
 #endif
       , _edit_field(new QAction(tr("Edit properties (name, url, tags...)"), this))
 #ifdef USE_BUTTON_CLOSE
-    , _close(new QAction(tr("Close note(s)"), this))
+      , _close(new QAction(tr("Close note(s)"), this))
 #endif
       , _delete(new QAction(tr("Delete note(s)"), this))
 #ifdef USE_WITHOUT_REGISTERED_TREEITEM
@@ -967,7 +967,7 @@ void rs_t::tools_update(){
     rv_t		*_view			= _record_controller->view();
     QItemSelectionModel *item_selection_model	= _view->selectionModel();
 
-    int		selected_rows	= (item_selection_model->selectedRows()).size();
+    int		selected_rows	= item_selection_model->selectedIndexes().size();	// (item_selection_model->selectedRows()).size();// always crash because tabmanager inaccessible
     bool	has_selection	= item_selection_model->hasSelection();
     bool	sorting_enabled = _view->isSortingEnabled();
 #ifdef USE_BLANK_ITEM

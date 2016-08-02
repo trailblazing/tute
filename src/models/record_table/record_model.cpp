@@ -648,6 +648,9 @@ void RecordModel::fields(int pos, QMap<QString, QString> data){
 QModelIndex RecordModel::index(int row, int column, const QModelIndex &parent) const {
 //    (void) parent;
     QModelIndex result;
+    auto	tab = _record_controller->record_screen()->browser()->tabmanager();
+    assert(tab);
+    assert(_record_controller->tabmanager());
     if(column >= 0 && column < _record_controller->tabmanager()->count()){
 	auto it = item(pos_source(column));
 	result = createIndex(row, column, static_cast<void *>(it.get()));

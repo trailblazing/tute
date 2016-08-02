@@ -671,7 +671,8 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 
 	    setup_signals();
 
-	    setSelectionMode(QAbstractItemView::ExtendedSelection);				//// It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop   // SingleSelection  // MultiSelection //ExtendedSelection
+		// It was previously Extended Selection, but this mode is not suitable for Drag and Drop // Ранее было ExtendedSelection, но такой режим не подходит для Drag and Drop
+	    setSelectionMode(QAbstractItemView::ExtendedSelection);	// SingleSelection  // MultiSelection //ExtendedSelection
 
 
 	    setSelectionBehavior(QAbstractItemView::SelectRows);
