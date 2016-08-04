@@ -80,6 +80,9 @@
 #include "models/tree/tree_know_model.h"
 #include "views/main_window/hidable_tabwidget.h"
 #include "views/main_window/main_window.h"
+#include "controllers/record_table/record_controller.h"
+
+
 
 namespace browser {
 #if QT_VERSION == 0x050600
@@ -245,14 +248,15 @@ namespace browser {
 //	    tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, result_item, result_item->parent()));	// tree_view->index_invoke(tree_view->source_model()->index(result_item));
 	    auto child_items = tree_view->move_children(tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();});
 //	    auto	child_items		= std::async(std::launch::async, &tv_t::move_children, tree_view, tree_index, result_item, [&](boost::intrusive_ptr<const Linker> target, boost::intrusive_ptr<const Linker> source) -> bool {return target->host()->field<url_type>() == source->host()->field<url_type>() && target->host()->field<name_type>() == source->host()->field<name_type>();}).get();
-	    auto	_vtab_record		= globalparameters.main_window()->vtab_record();
-	    auto	browser			= _vtab_record->activated_browser();
-	    auto	record_controller	= browser->record_screen()->record_controller();
-//	    auto	tab_brother		= record_controller->view()->current_item();
+	    auto	_vtab_record	= globalparameters.main_window()->vtab_record();
+	    auto	browser		= _vtab_record->activated_browser();
+	    auto	ctrl		= browser->record_screen()->record_controller();
+	    auto	last		= ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
 ////	    auto	child_linkers		= result_item->child_linkers();
 //	    auto _total_progress_counter = 0;
 	    for(auto it : child_items){	// move to search result
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return record_controller->source_model();}, it);	// tab_brother
+		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return ctrl->source_model();}, it, last);	//
+		last = it;
 		//                            if(record_index){
 		//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
 		//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
@@ -319,12 +323,12 @@ namespace browser {
 
     void WorkerThread::run(){
 //		    QString result;
-	auto					element			= _child_items.last();	// acrosss thread
-	auto					_vtab_record		= globalparameters.main_window()->vtab_record();
-	auto					browser			= _vtab_record->activated_browser();
-	auto					record_controller	= browser->record_screen()->record_controller();
+	auto	element			= _child_items.last();	// acrosss thread
+	auto	_vtab_record		= globalparameters.main_window()->vtab_record();
+	auto	browser			= _vtab_record->activated_browser();
+	auto	record_controller	= browser->record_screen()->record_controller();
 //	auto					tab_brother		= record_controller->view()->current_item();	// acrosss thread
-	boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, element);	// tab_brother
+	boost::intrusive_ptr<RecordIndex>	record_index = RecordIndex::instance([&] {return record_controller->source_model();}, element);		// tab_brother
 	//                            if(record_index){
 	//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
 	//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
