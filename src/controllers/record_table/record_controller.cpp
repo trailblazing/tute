@@ -151,7 +151,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	msg_box.exec();
     }
 //    int rowCount = row_count();
-    if((int) pos_proxy_real > 0 && (int) pos_proxy_real < row_count()){		// if(pos_real > (rowCount - 1))return;
+    if((int) pos_proxy_real >= 0 && (int) pos_proxy_real < row_count()){		// if(pos_real > (rowCount - 1))return;
 	// Простой механизм выбора строки. Похоже, что его использовать не получится
 	_view->selectRow((int) pos_proxy_real);
 

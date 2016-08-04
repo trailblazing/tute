@@ -38,15 +38,15 @@ extern FixedParameters	fixedparameters;
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
 
-//pages_container::pages_container(browser::TabWidget *_tabmanager)
+// pages_container::pages_container(browser::TabWidget *_tabmanager)
 //    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
 //	// , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
-//{}
+// {}
 
 
-//pages_container::~pages_container(){
+// pages_container::~pages_container(){
 //    _tabmanager = nullptr;	// delete _browser_pages;
-//}
+// }
 
 // void pages_container::browser_pages(ItemsFlat *_browser_pages)
 // {
@@ -883,12 +883,12 @@ int RecordModel::count() const {return _record_controller->tabmanager()->count()
 
 int RecordModel::size() const {return _record_controller->tabmanager()->count();}
 
-int RecordModel::move_up(const pos_source pos){
+int RecordModel::move_up(const pos_source pos, const pos_source target){
     beginResetModel();
 
     pos_source new_pos = pos;
     if(pos > 0){
-	new_pos = pos_source((int) pos - 1);
+	new_pos = - 1 == target ? pos_source((int) pos - 1) : target;
 	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
     }
     endResetModel();

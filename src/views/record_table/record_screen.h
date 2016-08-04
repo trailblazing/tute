@@ -144,6 +144,7 @@ class rs_t : public QWidget {
 #endif
 	QAction			*_editor;
 	QAction			*_settings;
+	QAction			*_action_move_top;
 	QAction			*_action_move_up;
 	QAction			*_action_move_dn;
 	QAction			*_find_in_base;

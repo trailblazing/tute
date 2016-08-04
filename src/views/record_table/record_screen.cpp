@@ -80,8 +80,9 @@ rs_t::rs_t(ts_t			*_tree_screen
 #endif
       , _editor(new QAction(tr("&Editor"), this))
       , _settings(new QAction(tr("&View settings"), this))
-      , _action_move_up(new QAction(tr("&Move Up"), this))
-      , _action_move_dn(new QAction(tr("&Move Down"), this))
+      , _action_move_top(new QAction(tr("Move to &Top"), this))
+      , _action_move_up(new QAction(tr("Move &Up"), this))
+      , _action_move_dn(new QAction(tr("Move &Down"), this))
       , _find_in_base(new QAction(tr("Find in base"), this))
       , _action_syncro(new QAction(tr("Synchronization"), this))
       , _action_walk_history_previous(new QAction(tr("Previous viewing note"), this))
@@ -525,7 +526,7 @@ void rs_t::setup_actions(void){
 	// &browser::TabWidget::close_context
 #endif
 
-    _delete->setStatusTip(tr("Delete note(s)"));
+    _delete->setStatusTip(tr("Delete note(s) for ever"));
     _delete->setIcon(QIcon(":/resource/pic/note_delete.svg"));
     connect(_delete, &QAction::triggered, _tree_screen, [&](bool checked = false) mutable -> void {
 	    Q_UNUSED(checked);
@@ -581,6 +582,31 @@ void rs_t::setup_actions(void){
     _settings->setIcon(QIcon(":/resource/pic/cogwheel.svg"));
     connect(_settings, &QAction::triggered, _record_controller, &rctrl_t::settings);											// &browser::TabWidget::settings
 
+    assert(_record_controller);
+	// Перемещение записи вверх
+	// _action_move_up = new QAction(tr("&Move Up"), this);
+    _action_move_top->setStatusTip(tr("Move note to top"));
+    _action_move_top->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
+    connect(_action_move_top, &QAction::triggered
+	   , [&]() mutable {
+	    qDebug() << "In moveup(, 0)";
+
+		// Получение номера первой выделенной строки
+	    pos_proxy pos_proxy_ = _record_controller->view()->selection_first<pos_proxy>();
+
+		// Выясняется ссылка на таблицу конечных данных
+		// auto item = _source_model->browser_pages();
+	    pos_proxy pos_target = pos_proxy(0);
+		// Перемещение текущей записи вверх
+	    _record_controller->source_model()->move_up(_record_controller->index<pos_source>(pos_proxy_), _record_controller->index<pos_source>(pos_target));
+
+		// Установка засветки на перемещенную запись
+	    _record_controller->select_as_current(pos_target);
+
+		// Сохранение дерева веток
+		// find_object<TreeScreen>(tree_screen_singleton_name)
+	    globalparameters.tree_screen()->view()->know_model_save();
+	});	// _record_controller, &RecordController::move_up
 
     assert(_record_controller);
 	// Перемещение записи вверх
@@ -606,8 +632,8 @@ void rs_t::setup_actions(void){
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
 	    globalparameters.tree_screen()->view()->know_model_save();
-	}																				// _record_controller, &RecordController::move_up
-	);																				// connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
+	});	// _record_controller, &RecordController::move_up
+	// connect(_action_move_up, &QAction::triggered, _tabmanager, &browser::TabWidget::move_up);
 
 	// Перемещение записи вниз
 	// _action_move_dn = new QAction(tr("&Move Down"), this);
@@ -714,6 +740,7 @@ void rs_t::setup_ui(void){
     }
     append_action_as_button<QToolButton>(_toolsline, _action_walk_history_previous);
     append_action_as_button<QToolButton>(_toolsline, _action_walk_history_next);
+    append_action_as_button<QToolButton>(_toolsline, _action_move_top);
     append_action_as_button<QToolButton>(_toolsline, _action_move_up);
     append_action_as_button<QToolButton>(_toolsline, _action_move_dn);
 
@@ -921,6 +948,7 @@ void rs_t::disable_all_actions(void){
     _copy->setEnabled(false);
     _paste->setEnabled(false);
 #endif
+    _action_move_top->setEnabled(false);
     _action_move_up->setEnabled(false);
     _action_move_dn->setEnabled(false);
 }
@@ -984,7 +1012,7 @@ void rs_t::tools_update(){
 	// }
 	// едактирование записи
 	// едактировать можно только тогда, когда выбрана только одна строка
-    if(  has_selection	// item_selection_model->hasSelection()
+    if(has_selection	// item_selection_model->hasSelection()
 //      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
 	)_edit_field->setEnabled(true);
 	// Удаление записи
@@ -1033,7 +1061,10 @@ void rs_t::tools_update(){
 //      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && _view->is_selected_set_to_top() == false
-	)_action_move_up->setEnabled(true);
+	){
+	_action_move_top->setEnabled(true);
+	_action_move_up->setEnabled(true);
+    }
 	// Перемещение записи вниз
 	// Пункт возможен только когда выбрана одна строка
 	// и указатель стоит не в конце списка
@@ -1126,5 +1157,5 @@ browser::Browser *rs_t::browser(){return _browser;}
 
 ts_t *rs_t::tree_screen(){return _tree_screen;}
 
-//QAction *rs_t::record_hide(){return _record_hide;}	// move to main_window::_vtab_record->tabBar()->tabBarClicked
+// QAction *rs_t::record_hide(){return _record_hide;}	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 

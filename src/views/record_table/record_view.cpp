@@ -639,6 +639,7 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 		    _context_menu->addAction(_record_screen->_addnew_before);
 		    _context_menu->addAction(_record_screen->_addnew_after);
 #endif
+		    _context_menu->addAction(_record_screen->_action_move_top);
 		    _context_menu->addAction(_record_screen->_action_move_up);
 		    _context_menu->addAction(_record_screen->_action_move_dn);
 		    _context_menu->addAction(_record_screen->_action_syncro);
