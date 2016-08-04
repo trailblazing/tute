@@ -37,7 +37,7 @@ struct RecordIndex : public boost::intrusive_ref_counter<RecordIndex, boost::thr
 
 	static boost::intrusive_ptr<RecordIndex>		instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem> sibling_item_, boost::intrusive_ptr<TreeItem>  host_);
 	static boost::intrusive_ptr<RecordIndex>		instance(const std::function<RecordModel *()> &current_model_, const index_source &sibling_index, boost::intrusive_ptr<TreeItem>  host_);
-	static boost::intrusive_ptr<TreeItem>			synchronize(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_) noexcept;
+	static boost::intrusive_ptr<TreeItem>			synchronize(boost::intrusive_ptr<TreeItem>  host_) noexcept;
 	static boost::intrusive_ptr<TreeItem>			bind(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem> sibling_item_, boost::intrusive_ptr<TreeItem>  host_) noexcept;
     private:
 	RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item);

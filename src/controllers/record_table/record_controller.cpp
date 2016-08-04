@@ -1853,7 +1853,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 
 // Клик по пункту "Сортировка" в контекстном меню
 void rctrl_t::on_sort_click(void){
-    rs_t *parentPointer = qobject_cast<rs_t *>(parent());
+    rs_t *record_screen = qobject_cast<rs_t *>(parent());
 	// Если сортировка еще не включена
     if(! _view->isSortingEnabled()){
 	// Включается сортировка
@@ -1862,7 +1862,7 @@ void rctrl_t::on_sort_click(void){
 	_proxy_model->setSortRole(SORT_ROLE);	// Qt::DisplayRole
 
 	// Включается сортировка по нужному столбцу
-	int n = parentPointer->_sort->data().toInt();	// В actionSort хранится номер столбца, по которому нужно сортировать
+	int n = record_screen->_sort->data().toInt();	// В actionSort хранится номер столбца, по которому нужно сортировать
 	qDebug() << "Sort column number " << n;
 	_proxy_model->sort(n);
 

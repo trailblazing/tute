@@ -97,7 +97,7 @@ class rs_t : public QWidget {
 //	browser::TabWidget	*tabmanager();
 	browser::Browser	*browser();
 	ts_t			*tree_screen();
-	QAction			*record_hide();
+//	QAction			*record_hide();	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 //	void			restore_menubar();
     public slots:
 

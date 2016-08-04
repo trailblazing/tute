@@ -537,7 +537,7 @@ namespace browser {
     }
 
     void WebPage::record_view_synchronize(boost::intrusive_ptr<TreeItem> host_){
-	RecordIndex::synchronize([&] {return _record_controller->source_model();}, host_);
+	RecordIndex::synchronize(host_);
 
 
 	////        auto tab_manager = view()->tabmanager();

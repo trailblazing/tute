@@ -47,7 +47,7 @@ extern const char	*global_root_id;
 
 
 extern const char	*action_hide_tree_screen;
-//extern const char	*action_set_as_session_root;
+// extern const char	*action_set_as_session_root;
 extern const char	*action_find_in_base;
 extern const char	*action_cursor_follow_root;
 extern const char	*action_cursor_follow_up;
@@ -305,6 +305,7 @@ class ts_t
 	//    TreeController  *_tree_controller;
 	wn_t		*_main_window;
 	QToolBar	*_tools_line;
+	QToolBar	*_extra_tools_line;
 //    QToolBar        *_main_menu_bar;                  // QMenuBar *_menubar;
 //    QPushButton     *_main_menu_button;
 //    QWidgetAction   *_main_menu_action;

@@ -304,10 +304,10 @@ namespace browser {
     }
 
     void UrlLineEdit::focusOutEvent(QFocusEvent *event){
-	if(_lineedit->text().isEmpty() && _webview){
-	    if(_webview->load_finished())
-			if(_webview->page())_lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));
-	}
+//	if(_lineedit->text().isEmpty() && _webview){
+//	    if(_webview->load_finished())
+//			if(_webview->page())_lineedit->setText(QString::fromUtf8(_webview->page()->url().toEncoded()));	// _webview maybe not accessible, page() may be invalid
+//	}
 	ExLineEdit::focusOutEvent(event);
     }
 

@@ -622,7 +622,7 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 
 			// RecordTableScreen *_recordtablescreen = qobject_cast<RecordTableScreen *>(parent());
 
-		    _context_menu->addAction(_record_screen->_record_hide);
+//		    _context_menu->addAction(_record_screen->_record_hide);	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 #ifdef USE_BUTTON_PIN
 		    _context_menu->addAction(_record_screen->_pin);
 #endif
@@ -793,7 +793,7 @@ void rv_t::restore_header_state(void){
 void rv_t::on_click(const QModelIndex &proxy_index){
     if(proxy_index.isValid() && _previous_index != proxy_index){
 	_previous_index = proxy_index;
-	_record_controller->index_invoke(index_proxy(proxy_index), true);
+	_record_controller->index_invoke(index_proxy(proxy_index));
     }
 }
 

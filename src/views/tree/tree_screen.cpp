@@ -54,8 +54,8 @@ extern enum QItemSelectionModel::SelectionFlag	current_tree_selection_mode;
 extern enum QItemSelectionModel::SelectionFlag	current_tree_current_index_mode;
 
 
-const char	*action_hide_tree_screen	= "action_hide_tree_screen";
-//const char	*action_set_as_session_root	= "set_as_session_root";
+const char	*action_hide_tree_screen = "action_hide_tree_screen";
+// const char	*action_set_as_session_root	= "set_as_session_root";
 const char	*action_find_in_base		= "find_in_base";
 const char	*action_cursor_follow_root	= "cursor_follow_root";
 const char	*action_cursor_follow_up	= "cursor_follow_up";
@@ -110,6 +110,7 @@ ts_t::ts_t(QString object_name
 	// , _menubar(new QMenuBar(this))
 	// , _tree_controller(new TreeController())
       , _tools_line(new QToolBar(this))
+      , _extra_tools_line(new QToolBar(this))
 // , _main_menu_bar(new QToolBar(this))
 // , _main_menu_button(new QPushButton("", _main_menu_bar))
 // , _main_menu_action(new QWidgetAction(_main_menu_button))
@@ -183,6 +184,10 @@ ts_t::~ts_t(){
 	// delete
 	_tools_line->deleteLater();
 	_tools_line = nullptr;
+    }
+    if(_extra_tools_line){
+	_extra_tools_line->deleteLater();
+	_extra_tools_line = nullptr;
     }
 	// delete _treescreenlayout;
 	// delete _toolslayout;
@@ -733,9 +738,9 @@ void ts_t::setup_ui(QMenu *_filemenu, QMenu *_toolsmenu){
 	append_action_as_button<QToolButton>(_tools_line, _actionlist[action_freeze_browser_view]);
 	append_action_as_button<QToolButton>(_tools_line, _actionlist[action_find_in_base]);	// Клик по этой кнопке связывается с действием в MainWindow
     }
-    _tools_line->addSeparator();
+//    _tools_line->addSeparator();
 
-    append_action_as_button<QToolButton>(_tools_line, _actionlist[action_main_menu]);
+    append_action_as_button<QToolButton>(_extra_tools_line, _actionlist[action_main_menu]);
 
     assembly_menubar(_filemenu, _toolsmenu);
 
@@ -980,6 +985,8 @@ void ts_t::assembly(){
     _tools_layout->setSpacing(0);
     _tools_layout->setMargin(0);
     _tools_layout->setContentsMargins(0, 1, 0, 1);
+
+    _tools_layout->addWidget(_extra_tools_line);
 
 	// _treescreenlayout = new QVBoxLayout();
     _treescreenlayout->setObjectName("treescreen_QVBoxLayout");

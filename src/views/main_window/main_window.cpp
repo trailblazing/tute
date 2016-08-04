@@ -626,22 +626,23 @@ void wn_t::setup_signals(void){
 //            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
 	    auto h_record_sizes = _h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
 //	    QList<int> delta;
-	    if(h_record_sizes[0] <= reasonable_width){		// show	// h_left_splitter->widget(0)->width()
-		// auto h = h_right_splitter->handle(1);
-		// h->move(lr + shw, h->rect().top());
+	    if(index == _vtab_record->currentIndex()){
+		if(h_record_sizes[0] <= bar_width){	// reasonable_width// show	// h_left_splitter->widget(0)->width()
+			// auto h = h_right_splitter->handle(1);
+			// h->move(lr + shw, h->rect().top());
 
-		auto record_size_memory = appconfig.h_record_splitter_sizelist();
+		    auto record_size_memory = appconfig.h_record_splitter_sizelist();
 
-		auto tree_sum = record_size_memory[0] + record_size_memory[1];
-		h_record_sizes[0] = record_size_memory[0] > reasonable_width ? record_size_memory[0] < tree_sum ? record_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
-		h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
-		_vtab_record->setMaximumWidth(this->maximumWidth());	// just a very big number
-		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-		emit _vtab_record->_hide_action->setChecked(false);
-		if(_h_record_splitter->sizes() != h_record_sizes){
-		    _h_record_splitter->setSizes(h_record_sizes);
-		    emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
-		}
+		    auto tree_sum = record_size_memory[0] + record_size_memory[1];
+		    h_record_sizes[0] = record_size_memory[0] > reasonable_width ? record_size_memory[0] < tree_sum ? record_size_memory[0] : tree_sum * 15 / 100 : reasonable_width;
+		    h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
+		    _vtab_record->setMaximumWidth(this->maximumWidth());	// just a very big number
+		    _vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+		    emit _vtab_record->_hide_action->setChecked(false);
+		    if(_h_record_splitter->sizes() != h_record_sizes){
+			_h_record_splitter->setSizes(h_record_sizes);
+			emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
+		    }
 //		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
 //		sizes[1] = size_memory[0] + size_memory[1] - sizes[0];		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
 
@@ -651,6 +652,16 @@ void wn_t::setup_signals(void){
 //		_hide_tree_text = tr("Hide tree view");
 
 ////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+		}else{
+		    h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+		    h_record_sizes[0] = bar_width;		// 0;
+		    emit _vtab_record->_hide_action->setChecked(true);		// _vtab_record->setMinimumWidth(bar_width);
+		    _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+		    if(h_record_sizes != _h_record_splitter->sizes()){
+			_h_record_splitter->setSizes(h_record_sizes);		//
+			emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
+		    }
+		}
 	    }
 	});
 

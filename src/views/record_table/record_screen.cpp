@@ -58,7 +58,7 @@ rs_t::rs_t(ts_t			*_tree_screen
     : QWidget(_main_window->vtab_record())	// , _browser(_browser)
       , _tree_screen(_tree_screen)
       , _main_window(_main_window)
-      , _record_hide(new QAction(tr("Hide record view"), this))	// new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this)
+//      , _record_hide(new QAction(tr("Hide record view"), this))	// move to main_window::_vtab_record->tabBar()->tabBarClicked// new QAction(_main_window->h_tree_splitter()->sizes()[0] == 0 ? tr("Show tree view") : tr("Hide tree view"), this)
 //      , _save_in_new_branch(new QAction(tr("Save in new branch manually"), this))
 #ifdef USE_BUTTON_PIN
       , _pin(new QAction(tr("Pin note"), this))
@@ -289,23 +289,20 @@ void rs_t::save_in_new_branch(bool checked){
 
 // Настройка возможных действий
 void rs_t::setup_actions(void){
-//    QList<int>	sizes		= _main_window->h_tree_splitter()->sizes();
-    QString _hide_tree_text = tr("Hide record view");	// sizes[0] == 0 ? tr("Show record view") : tr("Hide record view");
-    _record_hide->setText(_hide_tree_text);
-    _record_hide->setToolTip(_hide_tree_text);
-    _record_hide->setStatusTip(_hide_tree_text);
-    QIcon _hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");	// sizes[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg");
-    _record_hide->setIcon(_hide_tree_icon);
-
+////    QList<int>	sizes		= _main_window->h_tree_splitter()->sizes();
+//    QString _hide_tree_text = tr("Hide record view");	// sizes[0] == 0 ? tr("Show record view") : tr("Hide record view");
+//    _record_hide->setText(_hide_tree_text);
+//    _record_hide->setToolTip(_hide_tree_text);
+//    _record_hide->setStatusTip(_hide_tree_text);
+//    QIcon _hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");	// sizes[0] == 0 ? QIcon(":/resource/pic/butterfly-right.svg") : QIcon(":/resource/pic/butterfly-left.svg");
+//    _record_hide->setIcon(_hide_tree_icon);
 //    assert(_main_window->h_tree_splitter());
 //    connect(_main_window->h_tree_splitter(), &QSplitter::splitterMoved, [&, _hide_tree_text, _hide_tree_icon](int _tree_pos = 0, int index = 0) mutable {
 //	    (void) _tree_pos;
 //	    (void) index;
-
 //	    auto old_tree_sizes = appconfig.h_tree_splitter_sizelist();
 //	    auto h_record_splitter = _main_window->h_record_splitter();
 //	    auto record_sizes = h_record_splitter->sizes();
-
 //	    auto vtab_tree = _main_window->vtab_tree();
 //	    auto bar_width = vtab_tree->tabBar()->geometry().width();
 //	    if(_tree_pos <= bar_width){	// if(bar_width >= sizes[0]){																														// h_left_splitter->widget(0)->width()
@@ -338,79 +335,70 @@ void rs_t::setup_actions(void){
 //	    if(tree_siezes != appconfig.h_tree_splitter_sizelist())appconfig.h_tree_splitter_sizelist(tree_siezes);
 //		//	    }
 //	});
-
-    connect(_record_hide, &QAction::triggered, [&, _hide_tree_text, _hide_tree_icon]() mutable {
-//	    auto h_tree_splitter = _main_window->h_tree_splitter();
-	    auto h_record_splitter = _main_window->h_record_splitter();
-//	    auto h_record_sizes = h_record_splitter->sizes();
-		////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
-		// if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
-		// else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
-		// auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
-		// auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
-		// auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
-		// auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
-		// auto rl = h_right_splitter->geometry().left();  // 142
-	    auto _vtab_record = _main_window->vtab_record();
-	    auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
-//            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
-	    auto h_record_sizes = h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
-////	    QList<int> delta;
-//	    if(h_record_sizes[0] <= bar_width){	// show	// h_left_splitter->widget(0)->width()
-//		auto vtab_tree_min_width = std::max(_vtab_record->minimumSizeHint().width(), _vtab_record->tabBar()->geometry().width());// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
-
-//		// auto h = h_right_splitter->handle(1);
-//		// h->move(lr + shw, h->rect().top());
-
-//		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
-
-//		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
-//		h_record_sizes[0] = tree_size_memory[0] > vtab_tree_min_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : vtab_tree_min_width;
-//		h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
-//		_vtab_record->setMaximumWidth(_main_window->maximumWidth());	// just a very big number
-//		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-
-////		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
-////		sizes[1] = size_memory[0] + size_memory[1] - sizes[0];		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
-
-//////            h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
-
-////		_hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
-////		_hide_tree_text = tr("Hide tree view");
-
-//////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
-//	    }else{	// hide
-//			// h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
-
-	    h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
-	    h_record_sizes[0] = bar_width;	// 0;
-//		vtab_tree->resize(bar_width, vtab_tree->height());
-//		vtab_tree->setMaximumWidth(bar_width);
-//	    for(int i = 0; i < _vtab_record->count(); i ++)_vtab_record->widget(i)->hide();
-	    emit _vtab_record->_hide_action->setChecked(true);	// _vtab_record->setMinimumWidth(bar_width);
-	    _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
-////		_hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
-////		_hide_tree_text = tr("Show tree view");
+//    // move to main_window::_vtab_record->tabBar()->tabBarClicked
+//    connect(_record_hide, &QAction::triggered, [&, _hide_tree_text, _hide_tree_icon]() mutable {
+////	    auto h_tree_splitter = _main_window->h_tree_splitter();
+//	    auto _h_record_splitter = _main_window->h_record_splitter();
+////	    auto h_record_sizes = h_record_splitter->sizes();
+//		////        if(_tree_screen->isHidden()) _tree_screen->show(); else _tree_screen->hide();
+//		// if(h_left_splitter->width() != 0) h_left_splitter->resize(0, h_left_splitter->height());//adjustSize();
+//		// else h_left_splitter->resize(h_left_splitter->sizeHint().width(), h_left_splitter->height());
+//		// auto h_left_splitter = globalparameters.mainwindow()->h_left_splitter();
+//		// auto h_right_splitter = globalparameters.mainwindow()->h_right_splitter();
+//		// auto ll = h_left_splitter->geometry().left();   // 0 // width();  // 1366
+//		// auto lr = h_left_splitter->handle(1)->geometry().right();  // 143
+//		// auto rl = h_right_splitter->geometry().left();  // 142
+//	    auto _vtab_record = _main_window->vtab_record();
+//	    auto bar_width = _vtab_record->tabBar()->geometry().width();	// same as tabRect(0).width()
+////            auto bar_width_ = _main_window->vtab_tree()->tabBar()->tabRect(0).width();	// width = large; minimumWidth() == 0;
+//	    auto h_record_sizes = _h_record_splitter->sizes();	// auto h_tree_sizes = h_tree_splitter->sizes();
+//////	    QList<int> delta;
+////	    if(h_record_sizes[0] <= bar_width){	// show	// h_left_splitter->widget(0)->width()
+////		auto vtab_tree_min_width = std::max(_vtab_record->minimumSizeHint().width(), _vtab_record->tabBar()->geometry().width());// _tree_screen->minimumSizeHint().width();     // globalparameters.entrance()->activated_browser()->record_screen()->minimumSizeHint().width();           // 6xx   // h_right_splitter->widget(0)->width();    // 0    // sizeHint().width();    // 23
+////		// auto h = h_right_splitter->handle(1);
+////		// h->move(lr + shw, h->rect().top());
+////		auto tree_size_memory = appconfig.h_tree_splitter_sizelist();
+////		auto tree_sum = tree_size_memory[0] + tree_size_memory[1];
+////		h_record_sizes[0] = tree_size_memory[0] > vtab_tree_min_width ? tree_size_memory[0] < tree_sum ? tree_size_memory[0] : tree_sum * 15 / 100 : vtab_tree_min_width;
+////		h_record_sizes[1] = tree_sum - h_record_sizes[0] > 0 ? tree_sum - h_record_sizes[0] : tree_sum * 85 / 100;
+////		_vtab_record->setMaximumWidth(_main_window->maximumWidth());	// just a very big number
+////		_vtab_record->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);	// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+//////		sizes[0] = size_memory[0] > vtab_tree_min_width ? size_memory[0] : vtab_tree_min_width;
+//////		sizes[1] = size_memory[0] + size_memory[1] - sizes[0];		// sizes[1] > size_memory[1] ? size_memory[1] : sizes[1];
+////////            h_left_splitter->moveSplitter(sizes[0], 1);   // protected member
+//////		_hide_tree_icon = QIcon(":/resource/pic/butterfly-left.svg");
+//////		_hide_tree_text = tr("Hide tree view");
+////////            h_right_splitter->resize(h_right_splitter->sizeHint().width(), h_right_splitter->height());
+////	    }else{	// hide
+////			// h_right_splitter->resize(h_left_splitter->sizeHint().width(), h_right_splitter->height());
+//	    h_record_sizes[1] = h_record_sizes[0] + h_record_sizes[1] - bar_width;
+//	    h_record_sizes[0] = bar_width;	// 0;
+////		vtab_tree->resize(bar_width, vtab_tree->height());
+////		vtab_tree->setMaximumWidth(bar_width);
+////	    for(int i = 0; i < _vtab_record->count(); i ++)_vtab_record->widget(i)->hide();
+//	    emit _vtab_record->_hide_action->setChecked(true);	// _vtab_record->setMinimumWidth(bar_width);
+//	    _vtab_record->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Expanding);
+//////		_hide_tree_icon = QIcon(":/resource/pic/butterfly-right.svg");
+//////		_hide_tree_text = tr("Show tree view");
+////	    }
+//////	    delta << h_tree_splitter->sizes()[0] - h_tree_sizes[0];
+////////	    delta[1] = h_tree_splitter->sizes()[1] - h_tree_splitter_sizes[1];
+//	    if(h_record_sizes != _h_record_splitter->sizes()){
+//		_h_record_splitter->setSizes(h_record_sizes);	//
+//		emit _h_record_splitter->splitterMoved(h_record_sizes[0], 1);
 //	    }
-////	    delta << h_tree_splitter->sizes()[0] - h_tree_sizes[0];
-//////	    delta[1] = h_tree_splitter->sizes()[1] - h_tree_splitter_sizes[1];
-	    if(h_record_sizes != h_record_splitter->sizes()){
-		h_record_splitter->setSizes(h_record_sizes);	//
-		emit h_record_splitter->splitterMoved(h_record_sizes[0], 1);
-	    }
-//	    h_record_sizes[0] = h_record_sizes[0] - delta[0];
-//	    h_record_sizes[1] = h_record_sizes[1] + delta[0];
-//	    if(h_record_sizes != h_record_splitter->sizes()){
-//		h_record_splitter->setSizes(h_record_sizes);
-//		emit h_record_splitter->splitterMoved(h_record_sizes[0], 1);
-//	    }
-////	    _tree_hide->setIcon(_hide_tree_icon);
-////	    _tree_hide->setToolTip(_hide_tree_text);
-////	    _tree_hide->setStatusTip(_hide_tree_text);
-////	    _tree_hide->setText(_hide_tree_text);
-
-//////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
-	});
+////	    h_record_sizes[0] = h_record_sizes[0] - delta[0];
+////	    h_record_sizes[1] = h_record_sizes[1] + delta[0];
+////	    if(h_record_sizes != h_record_splitter->sizes()){
+////		h_record_splitter->setSizes(h_record_sizes);
+////		emit h_record_splitter->splitterMoved(h_record_sizes[0], 1);
+////	    }
+//////	    _tree_hide->setIcon(_hide_tree_icon);
+//////	    _tree_hide->setToolTip(_hide_tree_text);
+//////	    _tree_hide->setStatusTip(_hide_tree_text);
+//////	    _tree_hide->setText(_hide_tree_text);
+////////	    emit _tree_screen->_actionlist[action_show_hide_record_screen]->triggered();
+//	});
     if(_tree_screen->_actionlist[action_hide_tree_screen]->text() == tr("Show record screen"))emit _main_window->h_record_splitter()->splitterMoved(_main_window->h_record_splitter()->sizes()[0], 1);
 // emit _tree_hide->triggered();
 
@@ -709,7 +697,7 @@ void rs_t::setup_ui(void){
 	append_action_as_button<QToolButton>(_toolsline, _back);
 	_toolsline->addSeparator();
     }
-    append_action_as_button<QToolButton>(_toolsline, _record_hide);
+//    append_action_as_button<QToolButton>(_toolsline, _record_hide);	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 #ifdef USE_BUTTON_PIN
     append_action_as_button<QToolButton>(_toolsline, _pin);
 #endif
@@ -1138,5 +1126,5 @@ browser::Browser *rs_t::browser(){return _browser;}
 
 ts_t *rs_t::tree_screen(){return _tree_screen;}
 
-QAction *rs_t::record_hide(){return _record_hide;}
+//QAction *rs_t::record_hide(){return _record_hide;}	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 

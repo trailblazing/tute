@@ -1210,11 +1210,14 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index
 
 	// auto _item = _know_root->item(_parent_index);
 
-    auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
-    if(v){
-	auto ctrl = v->tabmanager()->record_controller();
-	if(ctrl)RecordIndex::synchronize([&] {return ctrl->source_model();}, _item);
-    }
+//    auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), _item->field<home_type>().toStdString());});
+//    if(v){
+//	auto	ctrl			= v->tabmanager()->record_controller();
+//	auto	alternative_item	= v->page()->host();
+//	if(ctrl)
+    RecordIndex::synchronize(_item);	// alternative_item
+//    }
+	//
 //    _item->binder() ? _item->binder()->page() ? _item->binder()->page()->record_controller() ? [&] {
 //	auto record_controller = _item->binder()->page()->record_controller();
 //	// if(_record_controller->view()->selection_first<IdType>() != _item->field("id")) {
@@ -1457,10 +1460,10 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
 		    auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
 			    return browser->bind(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// item_bind_();
 			};
-//		if(record_index && ! result_item->binder())v = browser_bind_activate(record_index);// browser->item_bind(record_index)->activate();   // item_bind_();
-//		else	// if(record_index && result_item->binder() && ! result_item->binder()->page())// !result_item->binder()->integrity_internal()){
-		    v = browser_bind_activate(record_index);		// browser->item_bind(record_index)->activate();   // item_bind_();
-//		else v = result_item->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+		    if(record_index && ! result_item->binder())v = browser_bind_activate(record_index);	// browser->item_bind(record_index)->activate();   // item_bind_();
+		    else if(record_index && result_item->binder() && ! result_item->binder()->page())	// !result_item->binder()->integrity_internal()){
+				v = browser_bind_activate(record_index);		// browser->item_bind(record_index)->activate();   // item_bind_();
+		    else v = result_item->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}else v = activated_view;
 	    }
 	}else{

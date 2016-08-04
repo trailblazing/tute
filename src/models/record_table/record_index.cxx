@@ -81,13 +81,19 @@ index_source RecordIndex::sibling_index() const {return _sibling_index;}
 
 boost::intrusive_ptr<TreeItem> RecordIndex::host() const {return _host;}
 
-boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_) noexcept {
+boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(boost::intrusive_ptr<TreeItem>  host_) noexcept {// const std::function<RecordModel *()> &current_model_,
     boost::intrusive_ptr<TreeItem>	_found_item(nullptr);
     if(host_){
-	auto url = host_->field<url_type>();
-	if(url != "" && url != browser::Browser::_defaulthome){
-	    rctrl_t *ctrl = current_model_()->reocrd_controller();
-	    _found_item = ctrl->synchronize(new RecordIndex(current_model_, nullptr, host_));
+	auto v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<home_type>().toStdString(), host_->field<home_type>().toStdString());});
+	if(v){
+	    auto	ctrl			= v->tabmanager()->record_controller();
+	    auto	current_model_		= [&] {return ctrl->source_model();};
+	    auto	alternative_item	= v->page()->host();
+	    auto	url			= alternative_item->field<url_type>();	// host_->field<url_type>();
+	    if(url != "" && url != browser::Browser::_defaulthome){
+//		rctrl_t *ctrl = current_model_()->reocrd_controller();
+		_found_item = ctrl->synchronize(new RecordIndex(current_model_, nullptr, alternative_item));	// host_
+	    }
 	}
     }
     return _found_item;	// _record;

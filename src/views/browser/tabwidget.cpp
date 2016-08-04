@@ -1366,7 +1366,7 @@ namespace browser {
 
 
 	// if(!_record_controller->source_model()->find(item))
-	RecordIndex::synchronize([&] {return _record_controller->source_model();}, result);	// _record_controller->addnew_item_fat(result);
+	RecordIndex::synchronize(result);	// _record_controller->addnew_item_fat(result);
 
 	// item->activate(); // activate after initialization of browser
 
