@@ -248,11 +248,11 @@ namespace browser {
 	    auto	_vtab_record		= globalparameters.main_window()->vtab_record();
 	    auto	browser			= _vtab_record->activated_browser();
 	    auto	record_controller	= browser->record_screen()->record_controller();
-	    auto	tab_brother		= record_controller->view()->current_item();
+//	    auto	tab_brother		= record_controller->view()->current_item();
 ////	    auto	child_linkers		= result_item->child_linkers();
 //	    auto _total_progress_counter = 0;
 	    for(auto it : child_items){	// move to search result
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, it);
+		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return record_controller->source_model();}, it);	// tab_brother
 		//                            if(record_index){
 		//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
 		//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
@@ -323,8 +323,8 @@ namespace browser {
 	auto					_vtab_record		= globalparameters.main_window()->vtab_record();
 	auto					browser			= _vtab_record->activated_browser();
 	auto					record_controller	= browser->record_screen()->record_controller();
-	auto					tab_brother		= record_controller->view()->current_item();	// acrosss thread
-	boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, tab_brother, element);
+//	auto					tab_brother		= record_controller->view()->current_item();	// acrosss thread
+	boost::intrusive_ptr<RecordIndex>	record_index		= RecordIndex::instance([&] {return record_controller->source_model();}, element);	// tab_brother
 	//                            if(record_index){
 	//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
 	//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})

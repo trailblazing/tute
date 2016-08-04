@@ -1011,6 +1011,7 @@ namespace browser {
 
 
 	    _lineedits->setCurrentIndex(index);
+
 	    emit	loadProgress(view_current->progress());
 	    emit	showStatusBarMessage(view_current->lastStatusBarText());
 	    if(view_current->page()->url().isEmpty())_lineedits->currentWidget()->setFocus();
@@ -1561,7 +1562,9 @@ namespace browser {
 		// int source_model_size = _record_controller->source_model()->size();
 
 	    assert(count() == _tabbar->count());
-	    assert(_record_controller->source_model()->size() == _tabbar->count());
+//	    auto source_model_ = _record_controller->source_model();
+//	    assert(_record_controller->source_model()->size() == _tabbar->count());
+	    _record_controller->on_recordtable_configchange();
 		// if(count() == 0)
 	    if(_tabbar->count() == 0)emit lastTabClosed();
 	}
@@ -1926,7 +1929,7 @@ namespace browser {
 	if(count() > 0 && it){
 	    auto	v	= it->binder()->page()->view();
 	    auto	index	= webViewIndex(v) - 1;
-	    if(index < 0)index = count() - 1;		// if(index != - 1 && index > 0)
+	    if(index < 0)index = 0;	// count() - 1;		// if(index != - 1 && index > 0)
 	    r = webView(index)->page()->binder()->host();
 	}
 	return r;

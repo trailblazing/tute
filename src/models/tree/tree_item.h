@@ -340,7 +340,7 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 
 
 	bool					is_empty() const;
-	boost::intrusive_ptr<const TreeItem>	is_ancestor_of(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const;
+
 	boost::intrusive_ptr<TreeItem>		delete_permanent(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal);
 	boost::intrusive_ptr<TreeItem>		delete_permanent_recursive(std::function<bool (boost::intrusive_ptr<const TreeItem>)> condition);
 // boost::intrusive_ptr<TreeItem> delete_permanent_recursive_empty();

@@ -1007,7 +1007,7 @@ void rctrl_t::paste(void){
     for(int i = 0; i < nList; i ++){
 	auto it = clipboard_records->record(i);
 //	it->field<id_type>(get_unical_id());
-	addnew_item(RecordIndex::instance([&] {return _source_model;}, _view->current_item(), it), add_new_record_to_end);
+	addnew_item(RecordIndex::instance([&] {return _source_model;}, it), add_new_record_to_end);
     }
 	// Обновление на экране ветки, на которой стоит засветка,
 	// так как количество хранимых в ветке записей поменялось
@@ -1179,7 +1179,7 @@ browser::WebView *rctrl_t::addnew_blank(int mode){
     DiskHelper::remove_directory(directory);
 
 	// Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addnew_item(RecordIndex::instance([&] {return _source_model;}, _view->current_item(), it), mode);
+    return addnew_item(RecordIndex::instance([&] {return _source_model;}, it), mode);
 }
 
 // Вызов окна добавления данных в таблицу конечных записей
@@ -1246,36 +1246,36 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     qDebug() << "In add_new()";
     browser::WebView *v = nullptr;
 
-	// Получение Source-индекса первой выделенной строки
-    index_source source_position_index = index<index_source>(_view->current_item());	// selection_first<IndexSource>();
-	// if(!position_index.isValid()) {
-	// position_index = _view->currentIndex();   // very wrong!
-	// }
-    if(! ((QModelIndex) source_position_index).isValid() && _source_model->size() > 0){
-	// if(0 == _source_model->tree_item()->size()) {
-	// _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
-	// }
+//	// Получение Source-индекса первой выделенной строки
+//    index_source source_position_index = index<index_source>(_view->current_item());	// selection_first<IndexSource>();
+//	// if(!position_index.isValid()) {
+//	// position_index = _view->currentIndex();   // very wrong!
+//	// }
+//    if(! ((QModelIndex) source_position_index).isValid() && _source_model->size() > 0){
+//	// if(0 == _source_model->tree_item()->size()) {
+//	// _source_model->tree_item(globalparameters.entrance()->shadow_branch()->root());
+//	// }
 
-	source_position_index = _source_model->createIndex(_source_model->size() - 1
-							  , 0
-							  , static_cast<void *>(_source_model->item(pos_source(_source_model->size() - 1)).get())
-		);
-    }
-    assert(((QModelIndex) source_position_index).row() < _source_model->size());
-	// assert(position_index.isValid());
+//	source_position_index = _source_model->createIndex(_source_model->size() - 1
+//							  , 0
+//							  , static_cast<void *>(_source_model->item(pos_source(_source_model->size() - 1)).get())
+//		);
+//    }
+//    assert(((QModelIndex) source_position_index).row() < _source_model->size());
+//	// assert(position_index.isValid());
 
-	// if(!position_index.isValid()) {
-	// position_index = view->getFirstSelectionProxyIndex();
-	// }
+//	// if(!position_index.isValid()) {
+//	// position_index = view->getFirstSelectionProxyIndex();
+//	// }
 
-	// if(position_index.isValid() //   // do not need? but if it is invalid, the sequence will be changed. hughvonyoung@gmail.com
-	////       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
-	// ) {
+//	// if(position_index.isValid() //   // do not need? but if it is invalid, the sequence will be changed. hughvonyoung@gmail.com
+//	////       && item.getNaturalFieldSource("url") != browser::DockedWindow::_defaulthome
+//	// ) {
 
     pos_source selected_source_position(- 1);
 	// Вставка новых данных, возвращаемая позиция - это позиция в Source данных
     if(! _source_model->item(item_target->field<id_type>())){
-	v				= _source_model->insert_new_item(source_position_index, item_target, mode);
+	v				= _source_model->insert_new_item(item_target, mode);	// source_position_index,
 	selected_source_position	= _tabmanager->webViewIndex(v);
     }else{
 	selected_source_position	= _source_model->position(item_target->id());

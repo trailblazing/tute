@@ -1166,13 +1166,10 @@ namespace browser {
 	// #include "webview.moc"
 
     QWebEnginePage *WebPage::createWindow(QWebEnginePage::WebWindowType type){
-	// QString url = "";
-	QString script = "location.href";	// "document.title";  //"JavaScript:function(){return this.href;}();";
-	runJavaScript(script, [&](const QVariant &var){
-		QString url = var.toString();
-		assert(url != "");
-	    });
-
+//	QString url_	= "";
+//	QString script	= "location.href";	// "document.title";  //"JavaScript:function(){return this.href;}();";
+//	runJavaScript(script, [&](const QVariant &var){url_ = var.toString();assert(url_ != "");});
+//	assert(url_ != "");
 	QUrl target_url = QUrl(_hovered_url);
 	if(! target_url.isValid())target_url = Browser::_defaulthome;
 	// assert(url != "");
@@ -1190,33 +1187,29 @@ namespace browser {
 	assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->host())).isValid());
 	auto parent = this->host() ? this->host()->parent() : nullptr;
 	assert(parent);
-	auto parent_parent = parent->parent();
-// auto create_tree_index = [&] {
-// boost::intrusive_ptr<TreeIndex> tree_modelindex(nullptr);
+//	auto parent_parent = parent->parent();
 
-
-	boost::intrusive_ptr<TreeIndex> this_index = parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
+	boost::intrusive_ptr<TreeIndex> this_index = TreeIndex::instance([&] {return tree_view->source_model();}, this->host());// parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
 	if(type == QWebEnginePage::WebBrowserWindow){
 	    WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
 	    if(v)v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 	    Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
-// auto tree_index = create_tree_index();
-// assert(tree_index);
+
 	    auto it = this_index->register_index(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
 			return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());	// return it_->field<url_type>() == target_url.toString();
 		    });																																// Browser::_defaulthome
 
 
-	    page = _browser->bind(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, nullptr, it))->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
+	    page = _browser->bind(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, it))->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
 
 
 	    assert(page);
-	}else
+	}else if(type == WebBrowserBackgroundTab)
 
 #ifdef USE_POPUP_WINDOW
-	if(	// _openinnewtab ||
-	    type == QWebEnginePage::WebBrowserTab)
-#endif	// USE_POPUP_WINDOW
+		if(	// _openinnewtab ||
+		    type == QWebEnginePage::WebBrowserTab)
+#endif		// USE_POPUP_WINDOW
 
 	{
 		//// should I think about always open new window in new tab
@@ -1227,6 +1220,39 @@ namespace browser {
 	    WebView *view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
 		// return b->host()->field<url_type>() == target_url.toString();
 //	    auto tree_view = _tree_screen->view();
+	    if(view){
+		page = view->page();
+//		auto _item = page->host();
+//		if(_item){
+//		    auto _index = tree_view->source_model()->index(_item);
+//		    if(static_cast<QModelIndex>(_index).isValid())_item->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// tree_view->index_invoke(TreeIndex::instance([&] {return tree_view->source_model();}, _item, _item->parent()));	// view,
+//		}
+		assert(page->binder() && page->binder()->integrity_external(page->host(), page));
+		assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->host())).isValid());
+		assert(page);
+	    }else{
+		// WebPage *page = this->dockedwindow()->tabWidget()->new_view(new_record, true)->page();
+		// already create window, why do this? -- refer to demo browser
+		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
+
+		auto it = this_index->bind(target_url
+					  , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)						// std::placeholders::_1
+					  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
+			);
+//		page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page() : nullptr;
+		page = it ? it->page() : nullptr;
+		assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+	    }
+	    assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+	}else if(type == WebBrowserTab){
+		//// should I think about always open new window in new tab
+		//// _openinnewtab = false;  // true
+		// QUrl current = url();
+		// QUrl requestedurl = requestedUrl(); //equal to current page url
+
+	    WebView *view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
+		// return b->host()->field<url_type>() == target_url.toString();
+		//	    auto tree_view = _tree_screen->view();
 	    if(view){
 		page = view->page();
 		auto _item = page->host();
@@ -1251,8 +1277,6 @@ namespace browser {
 	    }
 	    assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
 	}
-	assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
-
 #ifdef USE_POPUP_WINDOW
 	else{
 	    PopupWindow *popup = new PopupWindow(
@@ -1272,37 +1296,30 @@ namespace browser {
 		// page =
 	    return popup->page();
 	}
-
-#endif	// USE_POPUP_WINDOW
-
-	// }
-
-	// if(page) {
-
-	//// not realy needed for each time
-	// connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
-	// boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
-
-	// if(_current_item->field("url") != url.toString()) {
-	// _current_item->field("url", url.toString());
-	// page->load(_current_item); // record->generate();
-	// page->activate();     // record->active();
-	// } else
-	// page->activate();
-	// });
-
-	// connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::load, [&](const QUrl & url) {
-	// boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
-
-	// if(_current_item->field("url") != url.toString()) {
-	// _current_item->field("url", url.toString());
-	// page->load(_current_item); // record->generate();
-	// page->activate();     // record->active();
-	// } else
-	// page->activate();
-	// });
-	// }
-
+#endif		// USE_POPUP_WINDOW
+		// }
+		// if(page) {
+		//// not realy needed for each time
+		// connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::setUrl, [&](const QUrl & url) {
+		// boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
+		// if(_current_item->field("url") != url.toString()) {
+		// _current_item->field("url", url.toString());
+		// page->load(_current_item); // record->generate();
+		// page->activate();     // record->active();
+		// } else
+		// page->activate();
+		// });
+		// connect(static_cast<QWebEnginePage *const>(page), &QWebEnginePage::load, [&](const QUrl & url) {
+		// boost::intrusive_ptr<TreeItem> _current_item = page->_binder->item();
+		// if(_current_item->field("url") != url.toString()) {
+		// _current_item->field("url", url.toString());
+		// page->load(_current_item); // record->generate();
+		// page->activate();     // record->active();
+		// } else
+		// page->activate();
+		// });
+		// }
+	assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
 
 	return page;
     }
@@ -1505,8 +1522,8 @@ namespace browser {
 	       , [=](QWebEnginePage::RenderProcessTerminationStatus termStatus, int statusCode){
 		const char *status = "";
 		switch(termStatus){
-		    case QWebEnginePage::NormalTerminationStatus:
-			status = "(normal exit)";
+		    case QWebEnginePage::NormalTerminationStatus
+			: status = "(normal exit)";
 			break;
 
 		    case QWebEnginePage::AbnormalTerminationStatus:
@@ -2170,7 +2187,7 @@ namespace browser {
 	    _page->record_info_update(_page->url(), _page->title());
 		// }
 
-	    recovery_global_consistency();
+
 	    auto	ti	= _page->binder()->host();
 	    auto	v	= _page->_tree_screen->view();
 	    auto	items	= v->source_model()->children([&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<url_type>().toStdString(), ti->field<url_type>().toStdString()) || it_->id() == ti->id() || it_ == ti;});
@@ -2186,6 +2203,7 @@ namespace browser {
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 		}
 	    }
+	    recovery_global_consistency();
 	    _load_finished = true;
 	}
 	_progress = 0;
@@ -2689,9 +2707,9 @@ namespace browser {
 //		}
 //	    }
 //	}
-	auto _current_item_in_browser = _page->binder()->host();
-	if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser));
-	if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->select_as_current(_record_controller->index<pos_proxy>(_current_item_in_browser));
+	auto _target_in_browser = _page->binder()->host();
+	if(_target_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _target_in_browser));
+	if((_record_controller->view()->current_item() != _target_in_browser) || (_tabmanager->currentWebView() != this))_record_controller->select_as_current(_record_controller->index<pos_proxy>(_target_in_browser));
     }
 
 	// void WebView::switch_show()

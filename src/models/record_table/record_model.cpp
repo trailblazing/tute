@@ -38,15 +38,15 @@ extern FixedParameters	fixedparameters;
 extern AppConfig	appconfig;
 extern GlobalParameters globalparameters;
 
-pages_container::pages_container(browser::TabWidget *_tabmanager)
-    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
-	// , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
-{}
+//pages_container::pages_container(browser::TabWidget *_tabmanager)
+//    : _tabmanager(_tabmanager)	// new browser::TabWidget(_browser, _record_controller)
+//	// , _browser_pages(new ItemsFlat())      //    , _table(new RecordTable(_tree_item, QDomElement()))
+//{}
 
 
-pages_container::~pages_container(){
-    _tabmanager = nullptr;	// delete _browser_pages;
-}
+//pages_container::~pages_container(){
+//    _tabmanager = nullptr;	// delete _browser_pages;
+//}
 
 // void pages_container::browser_pages(ItemsFlat *_browser_pages)
 // {
@@ -555,12 +555,12 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-browser::WebView *RecordModel::insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _target_item, int mode){
+browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _target_item, int mode){	// const index_source source_pos_index,
     pos_source		returned_position(- 1);
     browser::WebView	*view		= nullptr;
-    auto		insert_new_tab	= [&](pos_source &returned_position, const pos_source source_insert_pos, boost::intrusive_ptr<TreeItem> _item){
+    auto		insert_new_tab	= [&](pos_source &returned_position, boost::intrusive_ptr<TreeItem> _item){	// , const pos_source source_insert_pos
 		// if(selected_position == -1) {
-	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, _record_controller->tabmanager()->count() > 0 ? _record_controller->tabmanager()->webView((int) source_insert_pos)->page()->binder()->host() : nullptr, _item);
+	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return this;}, _item);	// , _record_controller->tabmanager()->count() > 0 ? _record_controller->tabmanager()->webView((int) source_insert_pos)->page()->binder()->host() : nullptr
 //	    if(record_index)
 	    view = _record_controller->tabmanager()->newTab(record_index);			// , _item->field("name")
 //	    else{
@@ -574,10 +574,10 @@ browser::WebView *RecordModel::insert_new_item(const index_source source_pos_ind
 	    return view;
 	};
     if(_target_item){
-	pos_source source_insert_pos = _record_controller->index<pos_source>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
+//	pos_source source_insert_pos = _record_controller->index<pos_source>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
 	Q_UNUSED(mode)	// to be used
-	if(- 1 == (int) source_insert_pos)source_insert_pos = 0;
-	auto brother = item(source_insert_pos);
+//	if(- 1 == (int) source_insert_pos)source_insert_pos = 0;
+	auto brother = current_item();	// item(source_insert_pos);
 	beginResetModel();	// Подумать, возможно нужно заменить на beginInsertRows
 	if(_target_item->binder()){
 //            if(_item->binder()->page()){
@@ -588,11 +588,11 @@ browser::WebView *RecordModel::insert_new_item(const index_source source_pos_ind
 		    v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 //		    if(selected_position == - 1)
 //		    selected_position =
-		    view = insert_new_tab(returned_position, source_insert_pos, _target_item);
+		    view = insert_new_tab(returned_position, _target_item);	// , source_insert_pos
 		}else returned_position = position(id_value(_target_item->field<id_type>()));	// pos_source(_record_controller->tabmanager()->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
 	    }else{
 //		selected_position =
-		view = insert_new_tab(returned_position, source_insert_pos, _target_item);
+		view = insert_new_tab(returned_position, _target_item);	// , source_insert_pos
 	    }
 		// Вставка новых данных в таблицу конечных записей
 		// accomplished by TabWidget::addTab in TabWidget::newTab?
@@ -608,7 +608,7 @@ browser::WebView *RecordModel::insert_new_item(const index_source source_pos_ind
 			return url_equal((it_->field<home_type>()).toStdString(), target_url.toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toStdString());	// return it_->field<url_type>() == target_url.toString();
 		    });
 
-	    view = insert_new_tab(returned_position, source_insert_pos, _target_item);
+	    view = insert_new_tab(returned_position, _target_item);	// , source_insert_pos
 	    assert(returned_position != - 1);
 	    assert(view);
 	}
@@ -777,6 +777,8 @@ boost::intrusive_ptr<TreeItem> RecordModel::item_fat(const pos_source index){
     return item;
 }
 
+rctrl_t *RecordModel::reocrd_controller() const {return _record_controller;}
+
 // bool RecordModel::remove_child(int index)
 // {
 // bool r = false;
@@ -833,6 +835,10 @@ boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
 	if(binder)result = binder->host();
     }
     return result;	// _tabmanager->currentWebView()->page()->binder()->host();
+}
+
+index_source RecordModel::current_index() const {
+    return index(current_item());
 }
 
 void RecordModel::position(pos_source _index){_record_controller->tabmanager()->setCurrentIndex((int) _index);}

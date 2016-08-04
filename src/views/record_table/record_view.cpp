@@ -791,6 +791,7 @@ void rv_t::restore_header_state(void){
 
 // Слот клика по записи. Принимает индекс Proxy модели
 void rv_t::on_click(const QModelIndex &proxy_index){
+//    setSelectionMode(QAbstractItemView::SingleSelection);// ExtendedSelection
     if(proxy_index.isValid() && _previous_index != proxy_index){
 	_previous_index = proxy_index;
 	_record_controller->index_invoke(index_proxy(proxy_index));
@@ -979,7 +980,7 @@ boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
     auto it = _record_controller->source_model()->current_item();
     if(it){
 	auto	posproxy	= _record_controller->index<pos_proxy>(it);
-	auto	index		= static_cast<QModelIndex>(_record_controller->index<index_proxy>(it));
+	auto	index		= static_cast<QModelIndex>(_record_controller->index<index_proxy>(posproxy));
 	if(index != selectionModel()->currentIndex())_record_controller->select_as_current(posproxy);
     }
     return it;
@@ -1061,7 +1062,7 @@ void rv_t::mousePressEvent(QMouseEvent *event){
 //    ts_t * = globalparameters.tree_screen();		// static_cast<TreeScreen *>(this->parent());
 ////    // get the buttons type
 ////    Qt::MouseButtons mouse_button = event->buttons();
-
+//    setSelectionMode(QAbstractItemView::ExtendedSelection);
     _mouse_start_position = event->pos();
     QModelIndex next_index = indexAt(_mouse_start_position);
     if(next_index.isValid() && ! _is_field_type_column(boost::mpl::c_str<rating_type>::value, next_index.column())){

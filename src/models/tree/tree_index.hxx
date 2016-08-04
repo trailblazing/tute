@@ -19,7 +19,7 @@ struct Linker;
 class tkm_t;
 struct TreeIndex;
 class tv_t;
-
+struct RecordModel;
 
 BOOST_STRONG_TYPEDEF(QModelIndex, index_tree)
 
@@ -77,7 +77,7 @@ struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_
 	//                                             , const KnowView::paste_strategy &_view_paste_strategy
 	//                                             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
 	//                                            );
-
+	static boost::intrusive_ptr<const TreeItem>	is_ancestor_of(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> reference);
     protected:
 
     private:

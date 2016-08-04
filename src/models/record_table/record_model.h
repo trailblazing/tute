@@ -63,23 +63,22 @@ namespace browser {
 }
 
 
-struct pages_container {
-    public:
-	explicit pages_container(browser::TabWidget *_tabmanager);
-	~pages_container();
-	browser::TabWidget      *tabmanager(){return _tabmanager;}
+// struct pages_container {
+//    public:
+//	explicit pages_container(browser::TabWidget *_tabmanager);
+//	~pages_container();
+//	browser::TabWidget      *tabmanager(){return _tabmanager;}
 
-	// void browser_pages(ItemsFlat *_browser_pages);
-	// ItemsFlat *browser_pages();
-	// ItemsFlat *browser_pages()const;
+//	// void browser_pages(ItemsFlat *_browser_pages);
+//	// ItemsFlat *browser_pages();
+//	// ItemsFlat *browser_pages()const;
 
-    protected:
-	browser::TabWidget  *_tabmanager;
-	// ItemsFlat           *_browser_pages;
-};
+//    protected:
+//	browser::TabWidget  *_tabmanager;
+//	// ItemsFlat           *_browser_pages;
+// };
 
-class RecordModel : public QAbstractTableModel
-//		  , public pages_container
+class RecordModel : public QAbstractTableModel	// , public pages_container
 {
 #if QT_VERSION == 0x050600
     W_OBJECT(RecordModel)
@@ -157,13 +156,14 @@ class RecordModel : public QAbstractTableModel
 	// void init_source_model(RecordController *_record_controller, RecordScreen *_record_screen, MainWindow *main_window, MetaEditor *_editor_screen);
 
 	// ItemsFlat *browser_pages()const {return pages_container::browser_pages();}
-	rctrl_t *reocrd_controller() const {return _record_controller;}
+	rctrl_t *reocrd_controller() const;
 
 
 	int count() const;	// {return _tabmanager->count();}
 
-	boost::intrusive_ptr<TreeItem>	sibling(boost::intrusive_ptr<TreeItem> it) const;
+	boost::intrusive_ptr<TreeItem>	sibling(boost::intrusive_ptr<TreeItem> it) const;// override
 	boost::intrusive_ptr<TreeItem>	current_item() const;
+	index_source			current_index() const;
 
 	void position(pos_source _index);
 	// PosSource position()const;
@@ -191,7 +191,7 @@ class RecordModel : public QAbstractTableModel
 	void on_table_config_changed(void);
 
 	// Добавление записей
-	browser::WebView	*insert_new_item(const index_source source_pos_index, boost::intrusive_ptr<TreeItem> _target_item, int mode = add_new_record_after);
+	browser::WebView	*insert_new_item(boost::intrusive_ptr<TreeItem> _target_item, int mode = add_new_record_after);
 	bool			removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 	void			remove_child(boost::intrusive_ptr<TreeItem> it);
 

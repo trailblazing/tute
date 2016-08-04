@@ -211,7 +211,7 @@ namespace browser {
 	    QStatusBar				*statusBar() = delete;
 	    QStatusBar				*status_bar();
 	    QStatusBar				*status_bar() const;
-	    boost::intrusive_ptr<TreeItem>	bind(boost::intrusive_ptr<RecordIndex> record_index);
+	    boost::intrusive_ptr<TreeItem>	bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current = true);
 		//        boost::intrusive_ptr<TreeItem> item_bind(boost::intrusive_ptr<TreeItem> item);
 	    rs_t	*record_screen();
 	    Entrance	*entrance();

@@ -1250,9 +1250,12 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 		result = parent_of_delete->delete_permanent(equal_linker);
 		browser::WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host() == result;});
 		if(v)v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
-//		auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-//		update_index(parent_index);
-//		view->update(parent_index);
+		auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
+
+		update_index(parent_index);
+		layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(parent_index));
+
+		view->update(parent_index);
 		endRemoveRows();
 		globalparameters.main_window()->setEnabled(true);
 	    }
@@ -1340,9 +1343,12 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 
 			//            remove_target->self_remove_from_parent();
 		    result = host_parent()->delete_permanent(equal_linker);
-//		    auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
-//		    update_index(parent_index);
-//		    view->update(parent_index);
+		    auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
+
+		    update_index(parent_index);
+		    layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(parent_index));
+
+		    view->update(parent_index);
 		    endRemoveRows();
 		    globalparameters.main_window()->setEnabled(true);
 		}

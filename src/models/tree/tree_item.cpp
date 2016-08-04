@@ -1169,44 +1169,6 @@ boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(boost::intrusive_ptr<co
 	// return result;
 }
 
-boost::intrusive_ptr<const TreeItem> TreeItem::is_ancestor_of(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
-    boost::intrusive_ptr<const TreeItem>  result(nullptr);
-	//    TreeModel::item(const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal) const {
-    std::function<boost::intrusive_ptr<const TreeItem>(boost::intrusive_ptr<const TreeItem>, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &, int)>
-    item_recurse	// boost::intrusive_ptr<TreeItem>(*item_by_name_recurse)(boost::intrusive_ptr<TreeItem> item, QString name, int mode);
-	= [&](boost::intrusive_ptr<const TreeItem> _it
-	     , const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal
-	     , int mode
-	    ){
-	    static boost::intrusive_ptr<const TreeItem> find_item;
-	    if(mode == 0){
-		find_item = nullptr;
-
-		return find_item;	// nullptr;
-	    }
-	    if(find_item)return find_item;
-	    if(_equal(_it)){
-		find_item = _it;
-
-		return find_item;
-	    }else{
-		for(int i = 0; i < _it->count_direct(); i ++)item_recurse(_it->child_direct(i), _equal, 1);
-		return find_item;
-	    }
-	};
-
-	// Инициализация поиска
-    item_recurse(this, _equal, 0);	// QUrl()
-
-	// Запуск поиска и возврат результата
-    result = item_recurse(this, _equal, 1);
-
-    return result == this ? nullptr : result;	// _find_url
-//    }
-
-//    return it->path_list().contains(this->id());
-}
-
 boost::intrusive_ptr<TreeItem> TreeItem::delete_permanent(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal){
     return ItemsFlat::delete_permanent(_equal);
 }

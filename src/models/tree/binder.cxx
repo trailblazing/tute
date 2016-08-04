@@ -309,10 +309,10 @@ browser::WebPage *Binder::page() const {
 	browser::WebView	*v	= nullptr;
 	auto			browser = globalparameters.main_window()->vtab_record()->activated_browser();
 
-	boost::intrusive_ptr<TreeItem> record_previous_item = browser->tabmanager()->currentWebView()->page()->binder()->host();
+//	boost::intrusive_ptr<TreeItem> record_previous_item = browser->tabmanager()->currentWebView()->page()->binder()->host();
 
-//	record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
-	boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, record_previous_item, _host);;
+////	record_previous_item = browser->record_screen()->record_controller()->source_model()->item(pos_source(browser->record_screen()->record_controller()->view()->previous_index().row()));
+	boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, _host);	// , record_previous_item
 
 	auto browser_bind_activate = [&](boost::intrusive_ptr<RecordIndex> _record_index) -> browser::WebView * {
 		return browser->bind(_record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));// item_bind_();

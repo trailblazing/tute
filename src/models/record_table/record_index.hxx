@@ -35,18 +35,18 @@ struct RecordIndex : public boost::intrusive_ref_counter<RecordIndex, boost::thr
 //    boost::intrusive_ptr<TreeItem> target_sibling() const;
 	boost::intrusive_ptr<TreeItem> host() const;
 
-	static boost::intrusive_ptr<RecordIndex>		instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem> sibling_item_, boost::intrusive_ptr<TreeItem>  host_);
-	static boost::intrusive_ptr<RecordIndex>		instance(const std::function<RecordModel *()> &current_model_, const index_source &sibling_index, boost::intrusive_ptr<TreeItem>  host_);
+	static boost::intrusive_ptr<RecordIndex>		instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_ = nullptr);
+//	static boost::intrusive_ptr<RecordIndex>		instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, const index_source &sibling_index);
 	static boost::intrusive_ptr<TreeItem>			synchronize(boost::intrusive_ptr<TreeItem>  host_) noexcept;
-	static boost::intrusive_ptr<TreeItem>			bind(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem> sibling_item_, boost::intrusive_ptr<TreeItem>  host_) noexcept;
+	static boost::intrusive_ptr<TreeItem>			bind(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_, bool make_current = true) noexcept;
     private:
-	RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> sibling_item, boost::intrusive_ptr<TreeItem>  target_item);
-	RecordIndex(const std::function<RecordModel *()> &current_model, const index_source &sibling_index, boost::intrusive_ptr<TreeItem>  target_item);
+	RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem>  target_item, boost::intrusive_ptr<TreeItem> sibling_item);
+	RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem>  target_item, const index_source &sibling_index);
 	std::function<RecordModel *()>  _current_model;
 //	boost::intrusive_ptr<TreeItem>  _target_sibling;
 	// QModelIndex                     _current_index;
-	index_source			_sibling_index;
 	boost::intrusive_ptr<TreeItem>	_host;
+	index_source			_sibling_index;
 };
 
 

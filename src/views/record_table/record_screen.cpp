@@ -955,7 +955,7 @@ void rs_t::tools_update(){
     rv_t		*_view			= _record_controller->view();
     QItemSelectionModel *item_selection_model	= _view->selectionModel();
 
-    int		selected_rows	= item_selection_model->selectedIndexes().size();	// (item_selection_model->selectedRows()).size();// always crash because tabmanager inaccessible
+//    int		selected_rows	= item_selection_model->selectedIndexes().size();	// (item_selection_model->selectedRows()).size();// always crash because tabmanager inaccessible
     bool	has_selection	= item_selection_model->hasSelection();
     bool	sorting_enabled = _view->isSortingEnabled();
 #ifdef USE_BLANK_ITEM
@@ -985,7 +985,7 @@ void rs_t::tools_update(){
 	// едактирование записи
 	// едактировать можно только тогда, когда выбрана только одна строка
     if(  has_selection	// item_selection_model->hasSelection()
-      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
+//      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
 	)_edit_field->setEnabled(true);
 	// Удаление записи
 	// Пункт активен только если запись (или записи) выбраны в списке
@@ -1030,7 +1030,7 @@ void rs_t::tools_update(){
 	// и указатель стоит не на начале списка
 	// и не включена сортировка
     if(  has_selection	// item_selection_model->hasSelection()
-      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
+//      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && _view->is_selected_set_to_top() == false
 	)_action_move_up->setEnabled(true);
@@ -1039,7 +1039,7 @@ void rs_t::tools_update(){
 	// и указатель стоит не в конце списка
 	// и не включена сортировка
     if(  has_selection	// item_selection_model->hasSelection()
-      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
+//      && 1 == selected_rows										// (item_selection_model->selectedRows()).size() == 1
       && false == sorting_enabled										// view->isSortingEnabled() == false
       && _view->is_selected_set_to_bottom() == false
 	)_action_move_dn->setEnabled(true);

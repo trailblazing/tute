@@ -1577,7 +1577,7 @@ namespace browser {
 
     QStatusBar *Browser::status_bar() const {return globalparameters.status_bar();}
 
-    boost::intrusive_ptr<TreeItem> Browser::bind(boost::intrusive_ptr<RecordIndex> record_index){
+    boost::intrusive_ptr<TreeItem> Browser::bind(boost::intrusive_ptr<RecordIndex> record_index, bool make_current){
 //	boost::intrusive_ptr<TreeItem> result(nullptr);
 //        boost::intrusive_ptr<TreeItem> tab_brother = record_index->target_sibling();
 	boost::intrusive_ptr<TreeItem> result = record_index->host();
@@ -1639,7 +1639,7 @@ namespace browser {
 		////            }
 		// else {
 
-	    view	= _tabmanager->newTab(record_index);	// , false
+	    view	= _tabmanager->newTab(record_index, make_current);	// , false
 	    result	= view->page()->binder()->host();
 		//// auto load
 		// }
@@ -1652,7 +1652,7 @@ namespace browser {
 	// assert(dp.first);
 	if(_entrance->widget() != this)_entrance->setWidget(this);
 	auto _vtab_record = _main_window->vtab_record();
-	if(_vtab_record->currentWidget() != _record_screen)_vtab_record->setCurrentWidget(_record_screen);
+	if(_vtab_record->currentWidget() != _record_screen && make_current)_vtab_record->setCurrentWidget(_record_screen);
 	assert(view);
 	assert(result->binder()->integrity_external(result, view->page()));
 

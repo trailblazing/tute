@@ -860,7 +860,7 @@ void sapp_t::newLocalSocketConnection(){
 //            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
 //            try {
-	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, browser->record_screen()->record_controller()->source_model()->sibling(it), it);
+	    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, it);	// , browser->record_screen()->record_controller()->source_model()->sibling(it)
 //            } catch(std::exception &) {}
 //            if(record_index){
 	    browser->bind(record_index)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));	// tabmanager()->newTab(tree_view->session_root_item()->item_direct(0), it);
