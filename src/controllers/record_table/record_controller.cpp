@@ -194,9 +194,12 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 //    select_as_current(index<pos_proxy>(index_proxy_));	// ?
 
     result = source_model()->item(pos_source_);
-
+//    auto	ov	= result->page()->view();
+//    auto v =
     force_update ? result->binder()->activate() : result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
-
+//    assert(v == ov);
+//    assert(v->page()->host() == result);
+//    v->recovery_global_consistency();
     _record_screen->tools_update();
 	// sychronize_metaeditor_to_record(source_pos);  // means update editor(source_pos);
     if(((QModelIndex) source_index).isValid()){

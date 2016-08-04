@@ -2203,7 +2203,7 @@ namespace browser {
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 		}
 	    }
-	    recovery_global_consistency();
+//	    recovery_global_consistency();
 	    _load_finished = true;
 	}
 	_progress = 0;

@@ -720,12 +720,13 @@ namespace browser {
 	    _tabbar
 	       , &TabBar::newTab
 	       , [&, tree_view, parent, current_item](){
-		TreeIndex::activate([&] {return tree_view->source_model();}
-				   , current_item
-				   , QUrl(Browser::_defaulthome)
-				   , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-				   , [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
+		auto it = TreeIndex::activate([&] {return tree_view->source_model();}
+					     , current_item
+					     , QUrl(Browser::_defaulthome)
+					     , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+					     , [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
 		);
+		if(currentWebView() != it->page()->view())setCurrentIndex(webViewIndex(it->page()->view()));
 	    });
 
 	connect(_tabbar, &TabBar::closeTabSignal, this, &TabWidget::requestCloseTab);
@@ -734,6 +735,7 @@ namespace browser {
 	connect(_tabbar, &TabBar::closeOtherTabsSignal, this, &TabWidget::closeOtherTabs);
 	connect(_tabbar, &TabBar::reloadTabSignal, this, &TabWidget::reloadTab);
 	connect(_tabbar, &TabBar::reloadAllTabs, this, &TabWidget::reloadAllTabs);
+	connect(_record_controller->view(), &rv_t::tabMoved, this, &TabWidget::moveTab);
 	connect(_tabbar, &TabBar::tabMoved, this, &TabWidget::moveTab);
 
 	connect(this, &TabWidget::tabsChanged, this, &TabWidget::onTabsChanged);
@@ -757,12 +759,13 @@ namespace browser {
 	       , [&, tree_view, parent, current_item](bool make_current){
 		Q_UNUSED(make_current)
 
-		TreeIndex::activate([&] {return tree_view->source_model();}
-				   , current_item
-				   , QUrl(Browser::_defaulthome)
-				   , std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-				   , [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
+		auto it = TreeIndex::activate([&] {return tree_view->source_model();}
+					     , current_item
+					     , QUrl(Browser::_defaulthome)
+					     , std::bind(&tv_t::move, _tree_screen->view(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+					     , [](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), Browser::_defaulthome);}
 		);
+		if(currentWebView() != it->page()->view())setCurrentIndex(webViewIndex(it->page()->view()));
 	    });
 
 	// _closetabaction = ;
@@ -903,8 +906,8 @@ namespace browser {
 		view_current->setFocus();
 
 		// auto controller = webView->recordtablecontroller();
-		auto _current_item_in_browser = view_current->page()->host();
-		if(_current_item_in_browser){	// controller != nullptr &&
+		auto _target_in_browser = view_current->page()->host();
+		if(_target_in_browser){	// controller != nullptr &&
 			// QModelIndex proxyindex = controller->convertIdToProxyIndex(record->getField("id"));
 			// int position = controller->convertProxyIndexToPos(proxyindex);
 			// RecordTableView *recordtableview = controller->getView();
@@ -912,15 +915,15 @@ namespace browser {
 		    view_current->setFocus();
 
 		    auto	_tree_view	= _tree_screen->view();
-		    QModelIndex	index_on_tree	= _tree_view->source_model()->index(_current_item_in_browser);
+		    QModelIndex	index_on_tree	= _tree_view->source_model()->index(_target_in_browser);
 		    if(! index_on_tree.isValid()){
-			_tree_view->cursor_follow_up(_current_item_in_browser);
-			index_on_tree = _tree_view->source_model()->index(_current_item_in_browser);
+			_tree_view->cursor_follow_up(_target_in_browser);
+			index_on_tree = _tree_view->source_model()->index(_target_in_browser);
 			assert(index_on_tree.isValid());
 		    }
 		    if(index_on_tree.isValid()){
-			if(_current_item_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _current_item_in_browser));
-			if(_record_controller->view()->current_item() != _current_item_in_browser)_record_controller->select_as_current(_record_controller->index<pos_proxy>(_current_item_in_browser));
+			if(_target_in_browser != _tree_view->current_item())_tree_view->select_as_current(TreeIndex::instance([&] {return _tree_view->source_model();}, _target_in_browser));
+			if((_record_controller->view()->current_item() != _target_in_browser) || (currentWebView() != _target_in_browser->page()->view()))_record_controller->select_as_current(_record_controller->index<pos_proxy>(_target_in_browser));
 		    }
 //                    else{
 //                        auto _tree_it_current = _tree_view->current_item();
@@ -945,7 +948,7 @@ namespace browser {
 		    if(! _mainwindow->windowTitle().contains(view_current->page()->title()))_mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title());	// webView->setFocus();
 		    MetaEditor *metaeditor = globalparameters.meta_editor();		// find_object<MetaEditor>(meta_editor_singleton_name);
 		    assert(metaeditor);
-		    if(metaeditor->item() != _current_item_in_browser)view_current->page()->metaeditor_sychronize();		// metaeditor->bind(record);
+		    if(metaeditor->item() != _target_in_browser)view_current->page()->metaeditor_sychronize();		// metaeditor->bind(record);
 		}
 	    };
 
@@ -1359,6 +1362,11 @@ namespace browser {
 //            if(_i != _tree_view->current_index() && result->binder()->integrity_external(result, view->page()))_tree_view->selectionModel()->select(_i, QItemSelectionModel::SelectionFlag::Select);	// _tree_view->selectionModel()->select(_i, QItemSelectionModel::SelectionFlag::Deselect);
 //            if(_record_controller->view()->current_item() != result) _record_controller->cursor_to_index(_record_controller->index<PosProxy>(result));
 		// _tree_view->select_and_current(_record_binder->bounded_item());
+
+		// if(!_record_controller->source_model()->find(item))
+	    RecordIndex::synchronize(result);	// _record_controller->addnew_item_fat(result);
+
+		// item->activate(); // activate after initialization of browser
 	}
 	assert(view);
 	// assert(item->page_valid() && item->unique_page());
@@ -1366,10 +1374,7 @@ namespace browser {
 
 
 
-	// if(!_record_controller->source_model()->find(item))
-	RecordIndex::synchronize(result);	// _record_controller->addnew_item_fat(result);
 
-	// item->activate(); // activate after initialization of browser
 
 
 	// view_no_pinned();
@@ -1732,6 +1737,7 @@ namespace browser {
 	int next = currentIndex() + 1;
 	if(next == count())next = 0;
 	setCurrentIndex(next);
+	_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source(next)));
     }
 
     WebView *TabWidget::sibling(WebView *v) const {
@@ -1744,6 +1750,7 @@ namespace browser {
 	int next = currentIndex() - 1;
 	if(next < 0)next = count() - 1;
 	setCurrentIndex(next);
+	_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source(next)));
     }
 
     static const qint32 TabWidgetMagic = 0xaa;

@@ -254,7 +254,7 @@ class rv_t : public QTableView {
 
 	std::function<int()> rating_width;
     signals:
-
+	void tabMoved(int from, int to);
 	// void list_selection_changed(const QItemSelection &selected, const QItemSelection &deselected);
 	void tap_and_hold_gesture_finished(const QPoint &p)
 #if QT_VERSION == 0x050600

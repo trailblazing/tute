@@ -226,7 +226,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::item_register(const QUrl              
 //		    _tree_screen->session_root_id(_result->id());
 			assert(_result != _tree_view->know_model_board()->root_item());
 
-			_result = _tree_view->cursor_follow_up(_result);
+			_result = _tree_view->cursor_follow_up(_result).second;
 			assert(_result != _tree_view->know_model_board()->root_item());
 			assert(_result);
 

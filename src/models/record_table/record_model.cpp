@@ -890,6 +890,7 @@ int RecordModel::move_up(const pos_source pos, const pos_source target){
     if(pos > 0){
 	new_pos = - 1 == target ? pos_source((int) pos - 1) : target;
 	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+	emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
     }
     endResetModel();
 
@@ -903,6 +904,7 @@ int RecordModel::move_dn(const pos_source pos){
     if(pos < count() - 1){
 	new_pos = pos_source((int) pos + 1);
 	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+	emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
     }
     endResetModel();
 

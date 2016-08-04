@@ -453,7 +453,7 @@ int Linker::move_dn(void){
 	// Выясняется номер данного элемента в списке родителя
     int num = sibling_order();
 	// Если двигать вниз некуда, ничего делать ненужно
-    if(num > 0 && num < (_host_parent->count_direct())){				// if(num >= (_parent_item->count_direct()))return false;
+    if(num > 0 && num < (_host_parent->count_direct() - 1)){					// if(num >= (_parent_item->count_direct()))return false;
 	row = 1;
 	// Элемент перемещается вниз по списку
 	(_host_parent->_child_linkers).swap(num, num + row);

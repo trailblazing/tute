@@ -197,8 +197,8 @@ class tv_t : public QTreeView {
 	// Действия при клике на ветку дерева
 	void				cursor_step_into(const index_tree &_index);
 	browser::WebView		*index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index);	// browser::WebView *view, const index_tree &_index
-	boost::intrusive_ptr<TreeItem>	cursor_follow_up(boost::intrusive_ptr<TreeItem> _new_session_root_item);
-	boost::intrusive_ptr<TreeItem>	cursor_follow_up(void);
+	std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > cursor_follow_up(boost::intrusive_ptr<TreeItem> to_be_contained);
+	std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > cursor_follow_up(void);
 	boost::intrusive_ptr<TreeItem>	cursor_follow_root(void);
 	boost::intrusive_ptr<TreeItem>	intercept(boost::intrusive_ptr<TreeItem> result);
 
