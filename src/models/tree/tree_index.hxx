@@ -77,7 +77,7 @@ struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_
 	//                                             , const KnowView::paste_strategy &_view_paste_strategy
 	//                                             , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
 	//                                            );
-	static boost::intrusive_ptr<const TreeItem>	is_ancestor_of(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> reference);
+	static boost::intrusive_ptr<const TreeItem>	is_ancestor_of(boost::intrusive_ptr<const TreeItem> target, boost::intrusive_ptr<const TreeItem> reference);
     protected:
 
     private:
