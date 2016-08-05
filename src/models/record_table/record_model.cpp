@@ -304,6 +304,9 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	// Если запрашивается текст строки для отрисовки или для редактирования
     if(role == Qt::DisplayRole || role == Qt::EditRole || role == SORT_ROLE || role == Qt::UserRole){
 	QStringList show_fields = appconfig.record_table_show_fields();
+
+	auto	pos	= pos_source(index.row());
+	auto	it	= item(pos);
 	// Если длина списка показываемых столбцов меньше или равна номеру запрашиваемого столбца
 	if(index.column() < show_fields.size()){
 	    QString field_name = show_fields.value(index.column());
@@ -316,7 +319,8 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 //		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
 		if(appconfig.enable_custom_datetime_format() == false)return field;	// fieldDateTime.toString(Qt::SystemLocaleDate);
 		else return field;	// fieldDateTime.toString(appconfig.custom_datetime_format());
-	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){	// "hasAttach"   // Наличие аттачей
+	    }	// else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < name_type >::value)return "<b>" + it->field<name_type>() + "</b>";
+	    else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){		// "hasAttach"   // Наличие аттачей
 		if(field == "0")return "";	// Если аттачей нет, выводится пустая строка. Это повышает читабельность
 		else return tr("Yes");	// На русский перевести как "Есть"
 	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < attach_count_type >::value){	// "attachCount"   // Количество аттачей

@@ -1195,9 +1195,10 @@ namespace browser {
 	    if(v)v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 	    Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 
-	    auto it = this_index->register_index(target_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
-			return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());	// return it_->field<url_type>() == target_url.toString();
-		    });																																// Browser::_defaulthome
+	    auto it = this_index->register_index(target_url
+						, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+						, [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());});	// return it_->field<url_type>() == target_url.toString();
+		// Browser::_defaulthome
 
 
 	    page = _browser->bind(RecordIndex::instance([&] {return _browser->record_screen()->record_controller()->source_model();}, it))->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page();
@@ -2199,7 +2200,7 @@ namespace browser {
 				if(! others_same.contains(it_))others_same << it_;
 		}
 		for(auto _it : others_same){
-		    auto it_ = TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti), _it, v)->merge();	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+		    auto it_ = TreeLevel::instance(TreeIndex::instance([&] {return v->source_model();}, ti), _it)->merge();	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
 		}
 	    }

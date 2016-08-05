@@ -1123,6 +1123,10 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 
 #endif
 
+boost::intrusive_ptr<TreeItem>	TreeItem::contains_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &&_equal) const{
+    return ItemsFlat::contains_direct(std::forward<const std::function<bool (boost::intrusive_ptr<const Linker>)> &&>(_equal));
+}
+
 boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const {
     return ItemsFlat::contains_direct(std::forward<boost::intrusive_ptr<const TreeItem> >(_item));				// result;
 

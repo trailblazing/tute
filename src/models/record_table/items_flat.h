@@ -105,6 +105,7 @@ class ItemsFlat {
 
 
 	void				fields(int pos, QMap<QString, QString> edit_fields);
+	boost::intrusive_ptr<TreeItem>	contains_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &&_equal) const;
 	boost::intrusive_ptr<TreeItem>	contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const;
 	boost::intrusive_ptr<TreeItem>	contains_direct(boost::intrusive_ptr<const Linker> &&_item_linker) const;
 
@@ -135,8 +136,9 @@ class ItemsFlat {
 	void check_and_create_textfile(int pos, QString fullFileName);
 	//    QList< boost::intrusive_ptr<TreeItem> > &items() {return _child_items;}
 
-	bool	crypt(){return _is_crypt;}
-	void	crypt(const bool _is_crypt);		// {this->_is_crypt = _is_crypt;}
+	bool crypt(){return _is_crypt;}
+
+	void crypt(const bool _is_crypt);		// {this->_is_crypt = _is_crypt;}
 
 
 
@@ -174,8 +176,8 @@ class ItemsFlat {
 	//    std::shared_ptr<RecordTable>            _record_table;    // = std::make_shared<TableData>();
 
 	// Number of entries with which the user works  // Номер записи, с которой работал пользователь
-	bool	_is_crypt = false;
-	int	_workpos = - 1;
+	bool	_is_crypt	= false;
+	int	_workpos	= - 1;
 
 	friend class MetaEditor;
 	friend class TreeItem;

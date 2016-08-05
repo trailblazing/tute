@@ -258,6 +258,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
     auto	header_title			= _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
     auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
     auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
+    auto	title_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<name_type>::value)[boost::mpl::c_str < name_type > ::value];
     if(it && header_title == rating_field_description){			// index.column() == 0
 #ifdef USE_STAR_RATING
 	StarRating *starRating = it->star_rating();	// qvariant_cast<StarRating>(index.data());
@@ -345,6 +346,54 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 
 #endif
+    }else if(it && header_title == title_field_description && it == _view->current_item()){
+#ifdef USE_STAR_RATING
+
+
+#elif defined USE_TEXT_AS_BUTTON
+////        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
+//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+////        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
+
+//	QStyleOptionButton opt;
+//	opt.state |= QStyle::State_Enabled;
+//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+//	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
+//	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+////	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
+//	opt.text = "<b>" + it->field<name_type>() + "</b>";	// trUtf8("Button text");
+//	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+
+	QStyleOptionViewItem optionV4 = option;
+	optionV4.state |= QStyle::State_Enabled;
+	initStyleOption(&optionV4, index);
+
+	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	optionV4.rect = option.rect.adjusted(1, 1, - 1, - 1);
+	QTextDocument doc;
+	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
+	optionV4.text = "<b>" + optionV4.text + "</b>";
+	doc.setHtml(optionV4.text);
+
+	/// Painting item without text
+	optionV4.text = QString();
+	style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+
+	QAbstractTextDocumentLayout::PaintContext ctx;
+	// Highlighting text if item is selected
+	if(optionV4.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+	if(0 == it->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
+	QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+
+	painter->save();
+	painter->translate(textRect.topLeft());
+	painter->setClipRect(textRect.translated(- textRect.topLeft()));
+	doc.documentLayout()->draw(painter, ctx);
+#else
+
+
+#endif
     }else QStyledItemDelegate::paint(painter, option, index);
 // drawFocus(painter, option, displayRect);
 
@@ -362,7 +411,16 @@ QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelI
     }else
 #endif
 
-    return QStyledItemDelegate::sizeHint(option, index);
+    QStyleOptionViewItem optionV4 = option;	// remove cosntant attribute
+    initStyleOption(&optionV4, index);
+
+    QTextDocument doc;
+    doc.setHtml(optionV4.text);
+    doc.setTextWidth(optionV4.rect.width());
+
+    return QSize(doc.idealWidth(), doc.size().height());
+
+//    return QStyledItemDelegate::sizeHint(option, index);
 }
 
 QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const {

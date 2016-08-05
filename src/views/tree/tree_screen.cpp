@@ -414,7 +414,7 @@ void ts_t::setup_actions(void){
 
 		    QMutableListIterator<boost::intrusive_ptr<TreeItem> > it(_alternative_items);
 		    result = it.next();
-		    while(it.hasNext())result = TreeLevel::instance(TreeIndex::instance(_current_model, result), it.next(), _tree_view)->merge();	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
+		    while(it.hasNext())result = TreeLevel::instance(TreeIndex::instance(_current_model, result), it.next())->merge();	// TreeIndex::instance(_current_model, result, result->parent()), it.next());
 			// children_transfer(_new_item, _current_model);
 		}else{
 			// Вставка новых данных в модель дерева записей

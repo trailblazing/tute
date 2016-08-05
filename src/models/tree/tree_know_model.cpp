@@ -1276,7 +1276,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 	    if(result != linker_first->host()){
 		tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 		assert(tree_view);
-		result = merge(TreeLevel::instance(TreeIndex::instance([&] {return this;}, result), linker_first->host(), view), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
+		result = merge(TreeLevel::instance(TreeIndex::instance([&] {return this;}, result), linker_first->host()), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
 	    }
 	    assert(result->linker()->integrity_external(result, delete_linker->host_parent()));
 //            bTreeIndex([&] {return view->source_model(); }, result)oost::intrusive_ptr<TreeIndex> tree_index_first;

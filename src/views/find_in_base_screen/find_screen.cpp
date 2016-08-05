@@ -886,7 +886,8 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 }
 
 boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> &final_result, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> _start_item){
-	// auto tree_view = _tree_screen->tree_view();
+    auto	tree_view_	= _tree_screen->view();
+    auto	current_model_	= [&]{return tree_view_->source_model();};
 	////    // Если была нажата отмена поиска
 	////    if(_cancel_flag == 1)return _result_item;
     if(_cancel_flag != 1){
@@ -1003,7 +1004,10 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 //				auto result = browser->page_instantiate(record_index);
 //				result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 //			    }
-			    if(! final_result->contains_direct(std::forward<boost::intrusive_ptr<const TreeItem> >(candidate)))final_result << candidate;		// result->linker();
+
+			    auto alternative = final_result->contains_direct([&](boost::intrusive_ptr<const Linker> il){return il->host() == candidate || il->host()->field<id_type>() == candidate->field<id_type>() || url_equal(il->host()->field<home_type>().toStdString(), candidate->field<home_type>().toStdString()) || url_equal(il->host()->field<url_type>().toStdString(), candidate->field<url_type>().toStdString());});
+			    if(! alternative)final_result << candidate;		// result->linker();
+			    else if(alternative != candidate)TreeLevel::instance(TreeIndex::instance(current_model_, alternative), candidate)->merge();
 //                            }
 //                            }else{
 //                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));

@@ -1320,7 +1320,7 @@ namespace browser {
 		// assert(result->binder()->integrity_external(result, view->page()));
 
 		auto item_with_same_url = view->page()->host();
-		if(item_with_same_url != result)result = TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_url), result, _tree_screen->view())->merge();	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+		if(item_with_same_url != result)result = TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_url), result)->merge();	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //		result = page_item;	// target;
@@ -1331,7 +1331,7 @@ namespace browser {
 	    assert(result->binder()->integrity_external(result, view->page()));
 	}else{	// id is equal
 	    auto item_with_same_id = view->page()->host();
-	    if(item_with_same_id != result)result = TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_id), result, _tree_screen->view())->merge();	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+	    if(item_with_same_id != result)result = TreeLevel::instance(TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, item_with_same_id), result)->merge();	// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //	    result = page_item;	// target;

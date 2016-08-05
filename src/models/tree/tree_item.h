@@ -207,6 +207,7 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 	//// Добавление нового подчиненного элемента
 	//// в конец списка подчиненных элементов
 	// boost::intrusive_ptr<TreeItem> child_add_new(int pos, QString id, QString name);
+	boost::intrusive_ptr<TreeItem>	contains_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &&_equal) const;
 	boost::intrusive_ptr<TreeItem>	contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const;
 	boost::intrusive_ptr<TreeItem>	contains_direct(boost::intrusive_ptr<const Linker> &&_item_linker) const;
 	// boost::intrusive_ptr<TreeItem> add_child(boost::intrusive_ptr<Record> item);

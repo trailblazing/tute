@@ -779,6 +779,20 @@ void ItemsFlat::fields(int pos, QMap<QString, QString> edit_fields){
 //    return result;
 // }
 
+boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &&_equal) const {
+    boost::intrusive_ptr<TreeItem> result(nullptr);
+    for(auto il : _child_linkers){
+	if(il && _equal(il)){												// && _item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this))  // recursive call
+//	  && static_cast<ItemsFlat *>(_item_linker->host_parent().get()) == this											// _item_linker->host_parent() == this
+
+		// assert(_item_linker->integrity_external(_item_linker->host(), static_cast<const TreeItem *>(this)));
+	    result = il->host();
+	    break;
+	}
+    }
+    return result;
+}
+
 boost::intrusive_ptr<TreeItem> ItemsFlat::contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     if(_item){
