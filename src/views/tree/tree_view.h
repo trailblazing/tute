@@ -195,11 +195,11 @@ class tv_t : public QTreeView {
 	void	know_model_reload(void);
 	void	session_root_manual(bool checked = true);
 	// Действия при клике на ветку дерева
-	void				cursor_step_into(const index_tree &_index);
-	browser::WebView		*index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index);	// browser::WebView *view, const index_tree &_index
-	std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > cursor_follow_up(boost::intrusive_ptr<TreeItem> to_be_contained);
-	std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > cursor_follow_up(void);
-	boost::intrusive_ptr<TreeItem>	cursor_follow_root(void);
+	void										cursor_step_into(const index_tree &_index);
+	browser::WebView								*index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index);	// browser::WebView *view, const index_tree &_index
+	std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> >	cursor_follow_up(boost::intrusive_ptr<TreeItem> to_be_contained = nullptr);
+//	std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > cursor_follow_up(void);
+//	boost::intrusive_ptr<TreeItem>	cursor_follow_up(void);
 	boost::intrusive_ptr<TreeItem>	intercept(boost::intrusive_ptr<TreeItem> result);
 
 	void	synchronized(bool _synchronized);

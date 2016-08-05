@@ -869,7 +869,7 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 #ifdef SHOW_PROCESS_DIALOG
     close_progressbar();
 #else
-    globalparameters.status_bar()->showMessage("searched node(s) : " + QString::number(_total_progress_counter), 2000);// across thread message
+    globalparameters.status_bar()->showMessage("searched node(s) : " + QString::number(_total_progress_counter), 2000);	// across thread message
 #endif
 
 //	// } else {
@@ -1003,8 +1003,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 //				auto result = browser->page_instantiate(record_index);
 //				result->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 //			    }
-
-			    final_result << candidate;		// result->linker();
+			    if(! final_result->contains_direct(std::forward<boost::intrusive_ptr<const TreeItem> >(candidate)))final_result << candidate;		// result->linker();
 //                            }
 //                            }else{
 //                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));

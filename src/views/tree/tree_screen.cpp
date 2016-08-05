@@ -335,7 +335,7 @@ void ts_t::setup_actions(void){
     ac = new QAction(tr("Return to absolute root"), this);
     ac->setStatusTip(tr("Return to absolute root"));
     ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-    connect(ac, &QAction::triggered, _tree_view, &tv_t::cursor_follow_root);
+    connect(ac, &QAction::triggered, [&] {_tree_view->cursor_follow_up(_tree_view->know_model_board()->root_item());});
     _actionlist[action_cursor_follow_root] = ac;
 
 

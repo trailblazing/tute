@@ -3552,214 +3552,217 @@ void tv_t::cursor_step_into(const index_tree &_index){
 QModelIndex tv_t::previous_index() const {return _previous_index;}
 
 std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t::cursor_follow_up(boost::intrusive_ptr<TreeItem> to_be_contained){	// _new_session_root_item
-//    auto	absolute_root_	= _know_model_board->root_item();
+    auto	source_model_	= [&](){return source_model();};
     auto	current_root_	= source_model()->root_item();
     auto	current_item_	= current_item();
+    auto	absolute_root_	= _know_model_board->root_item();
+	//
+    std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> >	result {current_root_, current_item_};
+	//
+    auto cursor_follow_up_impl = [&](void) -> std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > {		// std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t::cursor_follow_up(void){
+//	    boost::intrusive_ptr<TreeItem>		current_root_(nullptr);
+	    boost::intrusive_ptr<TreeItem>		current(nullptr);
+		// auto _tree_screen = static_cast<TreeScreen *>(parent());
+	    std::function<bool (boost::intrusive_ptr<const TreeItem>)>
+	    _check_crypt_conflict = [&](boost::intrusive_ptr<const TreeItem> current_root){
+		    bool _result = false;
+			// Вначале все инструменты работы с веткой включаются
+		    QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
+		    while(i.hasNext()){
+			i.next();
+			i.value()->setEnabled(true);
+		    }
+			// Проверяется, происходит ли клик по зашифрованной ветке
+		    if(current_root->field<url_type>() == "1"){
+			// Если пароль доступа к зашифрованным данным не вводился в этой сессии
+			if(globalparameters.crypt_key().length() == 0){
+				// Запрашивается пароль
+			    Password password;
+			    if(password.retrievePassword() == false){
+				// Устанавливаем пустые данные для отображения таблицы конечных записей
 
-    std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > result {current_root_, current_item_};
-    while(! TreeIndex::is_ancestor_of([&] {return _know_root;}, current_root_, to_be_contained)){// while(TreeIndex::is_ancestor_of([&] {return _know_root;}, to_be_contained, current_item_)){		// current_root// && _new_session_root_item->id() != _current_item->id()		// current_root->id()
-	// reset();
-	// source_model(_new_session_root_item->parent());
+				// find_object<RecordController>("table_screen_controller")
+
+				// current_root->unique_page()->view()->record_controller()->source_model()->clear();
+
+				// _know_branch
+				// current_treemodel
+				source_model()->clear();																																	// root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
+
+				// init_source_model(
+				// nullptr
+				// , current_root->unique_page()->view()->record_controller()
+				// , current_root->unique_page()->view()->record_controller()->record_screen()
+				// , globalparameters.mainwindow()
+				// , globalparameters.meta_editor()
+				//// , result_item->unique_page()->view()->record_controller()->record_screen()
+				// );
+
+				// reset_tabledata(nullptr);
+
+				// Все инструменты работы с веткой отключаются
+				QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
+				while(i.hasNext()){
+				    i.next();
+				    i.value()->setEnabled(false);
+				}
+				// return current_root; // Программа дальше не идет, доделать...
+			    }else _result = true;}
+		    }
+		    return _result;
+		};
+
+		// Сохраняется текст в окне редактирования в соответсвующий файл
+	    globalparameters.main_window()->save_text_area();
+
+//	    auto	source_model_	= [&](){return source_model();};
+//	    auto	current_item_	= current_item();
+	    int		origin_count	= source_model_()->count_records_all();
+//	    current_root_ = source_model_()->root_item();
+
+
+
+	    auto root_up_input = [&](boost::intrusive_ptr<TreeItem> &root_item){
+		    boost::intrusive_ptr<TreeItem> r(nullptr);
+		    root_item = root_item->parent();
+		    if(root_item && ! _check_crypt_conflict(root_item)){																// && _root_item->parent() != _know_model_board->root_item()
+			r = root_item;
+			if(0 == root_item->count_direct())tree_empty_controll();		// boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, _root_up); } catch(std::exception &e) {throw e; } return tree_index; } ();
+			intercept(root_item);		// TreeIndex::instance(current_model, _root_up, _root_up->parent())
+			if(! TreeIndex::is_ancestor_of(source_model_, current_item_->parent(), root_item))current_item_ = current_item_->parent();		// if(! current_item_->parent()->path_list().contains(root_item->field<id_type>()))
+			select_as_current(TreeIndex::instance([&] {return _know_root;}, current_item_));
+
+			// Получаем указатель на данные таблицы конечных записей
+
+			assert(source_model()->count_records_all() >= origin_count);
+			// Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
+			if(appconfig.interface_mode() == "mobile"){
+			    QStringList path = root_item->path_list("name");
+
+				// Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+			    int emptyStringIndex = path.indexOf("");
+			    path.removeAt(emptyStringIndex);
+
+				// find_object<RecordScreen>(table_screen_singleton_name)
+			    globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+			}
+			// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
+			resizeColumnToContents(0);
+		    }
+		    return r;
+		};
+	    if(current_item_){
+		auto parent_ = current_item_->parent();
+		if(parent_ && parent_ != current_root_ && ! TreeIndex::is_ancestor_of(source_model_, parent_, current_root_)){		// current_item_->parent()->path_list().size() > root_to_update->path_list().size()
+		    current = parent_;
+
+		    select_as_current(TreeIndex::instance([&] {return _know_root;}, current));
+		}else if(parent_ == current_root_)current_root_ = root_up_input(current_root_);
+	    }else if(current_root_->count_direct() == current_root_->count_children_all())current_root_ = root_up_input(current_root_);
+		// auto try_root_up    = current_model()->root_item()->parent();
+		// boost::intrusive_ptr<TreeItem> _root_up = try_root_up ? try_root_up : current_model()->root_item();
+		// assert(_root_up);
+
+		// if(!_check_crypt_conflict(_root_up)) {
+		// resetup_model(_root_item);  // _know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
+
+		// if(_root_up != _know_model_board->root_item()) {
+
+		// if(!_check_crypt_conflict(_root_up)) {
+
+
+		//// Получаем указатель на данные таблицы конечных записей
+
+		// assert(source_model()->count_records_all() >= origin_count);
+
+		//// Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
+		// if(appconfig.interface_mode() == "mobile") {
+
+		// QStringList path = _root_up->path_absolute_as_name();
+
+		//// Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
+		// int emptyStringIndex = path.indexOf("");
+		// path.removeAt(emptyStringIndex);
+
+		////            find_object<RecordScreen>(table_screen_singleton_name)
+		// globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
+
+		// }
+
+		//// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
+		// resizeColumnToContents(0);
+		// }
+
+		// } else if(current_item->parent()) { // _root_item == _know_model_board->root_item()
+		// current_item = current_item->parent();
+
+		// if(current_item->parent()) {
+		// _root_up = current_item->parent();
+
+		// if(!_check_crypt_conflict(_root_up)) {
+		// resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
+		// }
+		// } else {
+		// _root_up = _know_model_board->root_item();
+
+		// if(!_check_crypt_conflict(_root_up)) {
+		// resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
+		// }
+		// }
+
+		// select_as_current(current_item);
+
+		// } else {    // _root_item == _know_model_board->root_item() && (current_item->parent() == _know_model_board->root_item())?
+		// if(!_check_crypt_conflict(_root_up)) {
+		// _root_up = cursor_follow_up_to_root();
+		// }
+		// }
+
+		// enable_up_action();
+		// }
+
+	    _tree_screen->enable_up_action();
+
+	    return {current_root_, current_item()};		// current_item();	// root_updated;
+	};
+    if(! to_be_contained)result	= cursor_follow_up_impl();
+    else if(to_be_contained != absolute_root_){
+	while(! TreeIndex::is_ancestor_of(source_model_, current_root_, to_be_contained)){	// while(TreeIndex::is_ancestor_of([&] {return _know_root;}, to_be_contained, current_item_)){		// current_root// && _new_session_root_item->id() != _current_item->id()		// current_root->id()
+		// reset();
+		// source_model(_new_session_root_item->parent());
 // current_root =
-	result		= cursor_follow_up();	// current_item();
-	current_root_	= result.first;
-	current_item_	= result.second;
+	    result		= cursor_follow_up_impl();	// current_item();
+	    current_root_	= result.first;
+	    current_item_	= result.second;
 //    }
-    }
-    assert(static_cast<QModelIndex>(source_model()->index(result.second)).isValid());
-    assert(TreeIndex::is_ancestor_of([&] {return _know_root;}, current_root_, to_be_contained));
+	}
+	assert(static_cast<QModelIndex>(source_model()->index(result.second)).isValid());
+	assert(TreeIndex::is_ancestor_of(source_model_, current_root_, to_be_contained));
 // auto result = _new_session_root_item;
 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex([&] {return _know_root;}, result->parent(), result->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il) {return il == result->linker() && il->host() == result && result->parent() == il->host_parent();}));} catch(std::exception &e) {throw e;} return tree_index;}();
 // select_as_current(tree_index);
-
-    return result;						// _new_session_root_item;
-}
-
-std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t::cursor_follow_up(void){
-    boost::intrusive_ptr<TreeItem>	root_to_update(nullptr);
-    boost::intrusive_ptr<TreeItem>	current(nullptr);
+    }else{	// to_be_contained != absolute_root
+//	boost::intrusive_ptr<TreeItem> tv_t::cursor_follow_up(void){
+//	boost::intrusive_ptr<TreeItem>		absolute_root;
+//	auto source_model_ = [&](){return source_model();};
+//	auto	current_item_	= current_item();
 	// auto _tree_screen = static_cast<TreeScreen *>(parent());
-    std::function<bool (boost::intrusive_ptr<const TreeItem>)>
-    _check_crypt_conflict = [&](boost::intrusive_ptr<const TreeItem> current_root){
-	    bool _result = false;
-		// Вначале все инструменты работы с веткой включаются
-	    QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
-	    while(i.hasNext()){
-		i.next();
-		i.value()->setEnabled(true);
-	    }
-		// Проверяется, происходит ли клик по зашифрованной ветке
-	    if(current_root->field<url_type>() == "1"){
-		// Если пароль доступа к зашифрованным данным не вводился в этой сессии
-		if(globalparameters.crypt_key().length() == 0){
-			// Запрашивается пароль
-		    Password password;
-		    if(password.retrievePassword() == false){
-			// Устанавливаем пустые данные для отображения таблицы конечных записей
+//	absolute_root = _know_model_board->root_item();
+	if(source_model_()->root_item() != absolute_root_){
+		// boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, absolute_root); } catch(std::exception &e) {throw e; } return tree_index; } ();
+	    source_model_()->intercept(absolute_root_);
+	}								// _know_branch->intercept(know_root()->root_item());
+	if(current_item_){
+	    while(current_item_->parent()->parent())current_item_ = current_item_->parent();
+	    select_as_current(TreeIndex::instance(source_model_, current_item_));
+	}
+	_tree_screen->enable_up_action();
 
-			// find_object<RecordController>("table_screen_controller")
-
-			// current_root->unique_page()->view()->record_controller()->source_model()->clear();
-
-			// _know_branch
-			// current_treemodel
-			source_model()->clear();																																// root_item(boost::intrusive_ptr<TreeItem>(new TreeItem(QMap<QString, QString>(), nullptr)));
-
-			// init_source_model(
-			// nullptr
-			// , current_root->unique_page()->view()->record_controller()
-			// , current_root->unique_page()->view()->record_controller()->record_screen()
-			// , globalparameters.mainwindow()
-			// , globalparameters.meta_editor()
-			//// , result_item->unique_page()->view()->record_controller()->record_screen()
-			// );
-
-			// reset_tabledata(nullptr);
-
-			// Все инструменты работы с веткой отключаются
-			QMapIterator<QString, QAction *> i(_tree_screen->_actionlist);
-			while(i.hasNext()){
-			    i.next();
-			    i.value()->setEnabled(false);
-			}
-			// return current_root; // Программа дальше не идет, доделать...
-		    }else _result = true;}
-	    }
-	    return _result;
-	};
-
-	// Сохраняется текст в окне редактирования в соответсвующий файл
-    globalparameters.main_window()->save_text_area();
-
-    auto	current_model_	= [&](){return source_model();};
-    auto	current_item_	= current_item();
-    int		origin_count	= current_model_()->count_records_all();
-    root_to_update = current_model_()->root_item();
-
-
-
-    auto root_up_input = [&](boost::intrusive_ptr<TreeItem> &root_item){
-	    boost::intrusive_ptr<TreeItem> r(nullptr);
-	    root_item = root_item->parent();
-	    if(root_item && ! _check_crypt_conflict(root_item)){															// && _root_item->parent() != _know_model_board->root_item()
-		r = root_item;
-		if(0 == root_item->count_direct())tree_empty_controll();	// boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, _root_up); } catch(std::exception &e) {throw e; } return tree_index; } ();
-		intercept(root_item);	// TreeIndex::instance(current_model, _root_up, _root_up->parent())
-		if(! TreeIndex::is_ancestor_of(current_model_, current_item_->parent(), root_item))current_item_ = current_item_->parent();	// if(! current_item_->parent()->path_list().contains(root_item->field<id_type>()))
-		select_as_current(TreeIndex::instance([&] {return _know_root;}, current_item_));
-
-		// Получаем указатель на данные таблицы конечных записей
-
-		assert(source_model()->count_records_all() >= origin_count);
-		// Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
-		if(appconfig.interface_mode() == "mobile"){
-		    QStringList path = root_item->path_list("name");
-
-			// Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
-		    int emptyStringIndex = path.indexOf("");
-		    path.removeAt(emptyStringIndex);
-
-			// find_object<RecordScreen>(table_screen_singleton_name)
-		    globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->tree_path(path.join(" > "));
-		}
-		// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
-		resizeColumnToContents(0);
-	    }
-	    return r;
-	};
-    if(current_item_){
-	auto parent_ = current_item_->parent();
-	if(parent_ && parent_ != root_to_update && ! TreeIndex::is_ancestor_of(current_model_, parent_, root_to_update)){	// current_item_->parent()->path_list().size() > root_to_update->path_list().size()
-	    current = parent_;
-
-	    select_as_current(TreeIndex::instance([&] {return _know_root;}, current));
-	}else if(parent_ == root_to_update)root_to_update = root_up_input(root_to_update);
-    }else if(root_to_update->count_direct() == root_to_update->count_children_all())root_to_update = root_up_input(root_to_update);
-	// auto try_root_up    = current_model()->root_item()->parent();
-	// boost::intrusive_ptr<TreeItem> _root_up = try_root_up ? try_root_up : current_model()->root_item();
-	// assert(_root_up);
-
-	// if(!_check_crypt_conflict(_root_up)) {
-	// resetup_model(_root_item);  // _know_branch->intercept(current_root->parent());     //? dangerous to do this!!!
-
-	// if(_root_up != _know_model_board->root_item()) {
-
-	// if(!_check_crypt_conflict(_root_up)) {
-
-
-	//// Получаем указатель на данные таблицы конечных записей
-
-	// assert(source_model()->count_records_all() >= origin_count);
-
-	//// Set the text path to the final table entries for the mobile interface options    // Устанавливается текстовый путь в таблице конечных записей для мобильного варианта интерфейса
-	// if(appconfig.interface_mode() == "mobile") {
-
-	// QStringList path = _root_up->path_absolute_as_name();
-
-	//// Remove the empty element, if it exists (this can be the root, it has no name)    // Убирается пустой элемент, если он есть (это может быть корень, у него нет названия)
-	// int emptyStringIndex = path.indexOf("");
-	// path.removeAt(emptyStringIndex);
-
-	////            find_object<RecordScreen>(table_screen_singleton_name)
-	// globalparameters.entrance()->activated_browser()->record_screen()->tree_path(path.join(" > "));
-
-	// }
-
-	//// Ширина колонки дерева устанавливается так чтоб всегда вмещались данные
-	// resizeColumnToContents(0);
-	// }
-
-	// } else if(current_item->parent()) { // _root_item == _know_model_board->root_item()
-	// current_item = current_item->parent();
-
-	// if(current_item->parent()) {
-	// _root_up = current_item->parent();
-
-	// if(!_check_crypt_conflict(_root_up)) {
-	// resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
-	// }
-	// } else {
-	// _root_up = _know_model_board->root_item();
-
-	// if(!_check_crypt_conflict(_root_up)) {
-	// resetup_model(_root_up);  // _know_branch->intercept(know_root()->root_item());
-	// }
-	// }
-
-	// select_as_current(current_item);
-
-	// } else {    // _root_item == _know_model_board->root_item() && (current_item->parent() == _know_model_board->root_item())?
-	// if(!_check_crypt_conflict(_root_up)) {
-	// _root_up = cursor_follow_up_to_root();
-	// }
-	// }
-
-	// enable_up_action();
-	// }
-
-    _tree_screen->enable_up_action();
-
-    return {root_to_update, current_item()};	// current_item();	// root_updated;
-}
-
-boost::intrusive_ptr<TreeItem> tv_t::cursor_follow_root(void){
-    boost::intrusive_ptr<TreeItem>	absolute_root;
-    auto				_source_model	= [&](){return source_model();};
-    auto				_current_item	= current_item();
-	// auto _tree_screen = static_cast<TreeScreen *>(parent());
-
-    absolute_root = _know_model_board->root_item();
-    if(_source_model()->root_item() != absolute_root){
-	// boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, absolute_root); } catch(std::exception &e) {throw e; } return tree_index; } ();
-	_source_model()->intercept(absolute_root);
-    }								// _know_branch->intercept(know_root()->root_item());
-    if(_current_item){
-	while(_current_item->parent()->parent())_current_item = _current_item->parent();
-	select_as_current(TreeIndex::instance([&] {return _know_root;}, _current_item));
+	result.first	= absolute_root_;	// return absolute_root;
+	result.second	= current_item_;
+//	}
     }
-    _tree_screen->enable_up_action();
-
-    return absolute_root;
+    return result;						// _new_session_root_item;
 }
 
 boost::intrusive_ptr<TreeItem> tv_t::intercept(boost::intrusive_ptr<TreeItem> result){	// boost::intrusive_ptr<TreeIndex> modelindex){   // QString id
