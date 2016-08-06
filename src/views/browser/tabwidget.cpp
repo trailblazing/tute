@@ -917,7 +917,7 @@ namespace browser {
 		    auto	_tree_view	= _tree_screen->view();
 		    QModelIndex	index_on_tree	= _tree_view->source_model()->index(_target_in_browser);
 		    if(! index_on_tree.isValid()){
-			_tree_view->cursor_follow_up(_target_in_browser);
+			_tree_view->cursor_focus(_target_in_browser);
 			index_on_tree = _tree_view->source_model()->index(_target_in_browser);
 			assert(index_on_tree.isValid());
 		    }

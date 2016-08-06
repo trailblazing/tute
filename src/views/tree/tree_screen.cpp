@@ -335,7 +335,7 @@ void ts_t::setup_actions(void){
     ac = new QAction(tr("Return to absolute root"), this);
     ac->setStatusTip(tr("Return to absolute root"));
     ac->setIcon(QIcon(":/resource/pic/pentalpha.svg"));
-    connect(ac, &QAction::triggered, [&] {_tree_view->cursor_follow_up(_tree_view->know_model_board()->root_item());});
+    connect(ac, &QAction::triggered, [&] {_tree_view->cursor_focus(_tree_view->know_model_board()->root_item());});
     _actionlist[action_cursor_follow_root] = ac;
 
 
@@ -346,7 +346,7 @@ void ts_t::setup_actions(void){
     ac->setIcon(QIcon(":/resource/pic/mobile_up.svg"));	// ":/resource/pic/streamline_home.svg"
 	// style()->standardIcon(QStyle::SP_ArrowUp, 0, this)
 
-    connect(ac, &QAction::triggered, [&]() mutable -> void {_tree_view->cursor_follow_up();});
+    connect(ac, &QAction::triggered, [&]() mutable -> void {_tree_view->cursor_focus();});
     _actionlist[action_cursor_follow_up] = ac;
 
 

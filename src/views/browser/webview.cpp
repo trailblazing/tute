@@ -126,10 +126,12 @@ namespace browser {
     W_OBJECT_IMPL(PopupPage)
 #endif
 
-    PopupPage::PopupPage(Profile *profile, QObject *parent)
-	: QWebEnginePage(profile, parent)
-	  , m_keyboardModifiers(Qt::NoModifier)
-	  , m_pressedButtons(Qt::NoButton){
+    PopupPage::PopupPage(PopupView *view_, Browser *browser_, Profile *profile_)
+	: QWebEnginePage(profile_, view_)
+	  , _view(view_)
+	  , _browser(browser_)
+	  , _keyboard_modifiers(Qt::NoModifier)
+	  , _pressed_buttons(Qt::NoButton){
 #if defined(QWEBENGINEPAGE_SETNETWORKACCESSMANAGER)
 	setNetworkAccessManager(BrowserApplication::networkAccessManager());
 #endif
@@ -141,19 +143,20 @@ namespace browser {
     }
 
     Browser *PopupPage::browser(){
-	QObject *w = this->parent();
-	while(w){
-	    if(Browser *mw = qobject_cast<Browser *>(w))return mw;
-	    w = w->parent();
-	}
-	return _entrance->equip_registered().first;	// BrowserApplication::instance()->mainWindow();
+	return _browser;
+//	QObject *w = this->parent();
+//	while(w){
+//	    if(Browser *mw = qobject_cast<Browser *>(w))return mw;
+//	    w = w->parent();
+//	}
+//	return _entrance->equip_registered().first;	// BrowserApplication::instance()->mainWindow();
     }
 
     bool PopupPage::acceptNavigationRequest(const QUrl &url, NavigationType type, bool isMainFrame){
 	Q_UNUSED(type);
 	if(isMainFrame){
-	    m_loadingUrl = url;
-	    emit loadingUrl(m_loadingUrl);
+	    _loading_url = url;
+	    emit loadingUrl(_loading_url);
 	}
 	return true;
     }
@@ -258,27 +261,27 @@ namespace browser {
 #endif
 
     void PopupPage::authenticationRequired(const QUrl &requestUrl, QAuthenticator *auth){
-	Browser *mainWindow = _entrance->activiated_registered().first;
+//	Browser *_browser = _entrance->activiated_registered().first;
 
-	QDialog dialog(mainWindow);
+	QDialog dialog(_browser);
 	dialog.setWindowFlags(Qt::Sheet);
 
 	Ui::PasswordDialog passwordDialog;
 	passwordDialog.setupUi(&dialog);
 
 	passwordDialog.iconLabel->setText(QString());
-	passwordDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+	passwordDialog.iconLabel->setPixmap(_browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser).pixmap(32, 32));
 
 	QString introMessage = tr("<qt>Enter username and password for \"%1\" at %2</qt>");
 	introMessage = introMessage.arg(auth->realm()).arg(requestUrl.toString().toHtmlEscaped());
 	passwordDialog.introLabel->setText(introMessage);
 	passwordDialog.introLabel->setWordWrap(true);
 	if(dialog.exec() == QDialog::Accepted){
-	    QByteArray key = QtSingleApplication::authenticationKey(requestUrl, auth->realm());
+	    QByteArray key = sapp_t::authenticationKey(requestUrl, auth->realm());
 	    auth->setUser(passwordDialog.userNameLineEdit->text());
 	    auth->setPassword(passwordDialog.passwordLineEdit->text());
 	    auth->setOption("key", key);
-	    QtSingleApplication::instance()->setLastAuthenticator(auth);
+	    sapp_t::instance()->setLastAuthenticator(auth);
 	}else{
 		// Set authenticator null if dialog is cancelled
 	    *auth = QAuthenticator();
@@ -287,16 +290,16 @@ namespace browser {
 
     void PopupPage::proxyAuthenticationRequired(const QUrl &requestUrl, QAuthenticator *auth, const QString &proxyHost){
 	Q_UNUSED(requestUrl);
-	Browser *mainWindow = _entrance->activiated_registered().first;
+//	Browser *_browser = _entrance->activiated_registered().first;
 
-	QDialog dialog(mainWindow);
+	QDialog dialog(_browser);
 	dialog.setWindowFlags(Qt::Sheet);
 
 	Ui::ProxyDialog proxyDialog;
 	proxyDialog.setupUi(&dialog);
 
 	proxyDialog.iconLabel->setText(QString());
-	proxyDialog.iconLabel->setPixmap(mainWindow->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, mainWindow).pixmap(32, 32));
+	proxyDialog.iconLabel->setPixmap(_browser->style()->standardIcon(QStyle::SP_MessageBoxQuestion, 0, _browser).pixmap(32, 32));
 
 	QString introMessage = tr("<qt>Connect to proxy \"%1\" using:</qt>");
 	introMessage = introMessage.arg(proxyHost.toHtmlEscaped());
@@ -304,11 +307,11 @@ namespace browser {
 	proxyDialog.introLabel->setWordWrap(true);
 	if(dialog.exec() == QDialog::Accepted){
 	    QString	user	= proxyDialog.userNameLineEdit->text();
-	    QByteArray	key	= QtSingleApplication::proxyAuthenticationKey(user, proxyHost, auth->realm());
+	    QByteArray	key	= sapp_t::proxyAuthenticationKey(user, proxyHost, auth->realm());
 	    auth->setUser(user);
 	    auth->setPassword(proxyDialog.passwordLineEdit->text());
 	    auth->setOption("key", key);
-	    QtSingleApplication::instance()->setLastProxyAuthenticator(auth);
+	    sapp_t::instance()->setLastProxyAuthenticator(auth);
 	}else{
 		// Set authenticator null if dialog is cancelled
 	    *auth = QAuthenticator();
@@ -331,6 +334,7 @@ namespace browser {
 		    , rctrl_t                *record_controller
 		    , WebView               *parent)
 	: QWebEnginePage(profile, parent)
+	  , _profile(profile)
 	  , _tree_screen(tree_screen)
 	  , _editor_screen(editor_screen)
 	  , _entrance(entrance)
@@ -1205,14 +1209,7 @@ namespace browser {
 
 
 	    assert(page);
-	}else if(type == WebBrowserBackgroundTab)
-
-#ifdef USE_POPUP_WINDOW
-		if(	// _openinnewtab ||
-		    type == QWebEnginePage::WebBrowserTab)
-#endif		// USE_POPUP_WINDOW
-
-	{
+	}else if(type == WebBrowserBackgroundTab){
 		//// should I think about always open new window in new tab
 		//// _openinnewtab = false;  // true
 		// QUrl current = url();
@@ -1245,7 +1242,11 @@ namespace browser {
 		assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
 	    }
 	    assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
-	}else if(type == WebBrowserTab){
+	}else
+#ifdef USE_POPUP_WINDOW
+	if(type == WebBrowserTab)
+#endif
+	{
 		//// should I think about always open new window in new tab
 		//// _openinnewtab = false;  // true
 		// QUrl current = url();
@@ -1280,15 +1281,14 @@ namespace browser {
 	}
 #ifdef USE_POPUP_WINDOW
 	else{
-	    PopupWindow *popup = new PopupWindow(
-		// view()->tabmanager()
-		// ,
-		profile()
-		// , QUrl(Browser::_defaulthome)
-		// , _record_controller
-		// , _page_controller
-		// , view()->tabmanager()->browser()
-		);
+	    PopupWindow *popup = new PopupWindow(_browser
+			// view()->tabmanager()
+						, _profile
+			// , QUrl(Browser::_defaulthome)
+			// , _record_controller
+			// , _page_controller
+			// , view()->tabmanager()->browser()
+		    );
 
 	    popup->setAttribute(Qt::WA_DeleteOnClose);
 	    popup->show();
@@ -1320,7 +1320,7 @@ namespace browser {
 		// page->activate();
 		// });
 		// }
-	assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
+	assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "" || type == WebDialog);
 
 	return page;
     }
@@ -1514,9 +1514,9 @@ namespace browser {
 
     PopupView::PopupView(QWidget *parent)
 	: QWebEngineView(parent)
-	  , m_progress(0)
-	  , m_page(0)
-	  , m_iconReply(0){
+	  , _progress(0)
+	  , _page(0)
+	  , _icon_reply(0){
 	connect(this, &PopupView::loadProgress, this, &PopupView::setProgress);
 	connect(this, &QWebEngineView::loadFinished, this, &PopupView::loadFinished);
 	connect(this, &QWebEngineView::renderProcessTerminated
@@ -1544,14 +1544,14 @@ namespace browser {
 	    });
     }
 
-    void PopupView::setPage(PopupPage *_page){
-	if(m_page)m_page->deleteLater();
-	m_page = _page;
-	QWebEngineView::setPage(_page);
+    void PopupView::setPage(PopupPage *page_){
+	if(_page)_page->deleteLater();
+	_page = page_;
+	QWebEngineView::setPage(page_);
 #if defined(QWEBENGINEPAGE_STATUSBARMESSAGE)
 	connect(page(), &PopupPage::statusBarMessage, &PopupView::setStatusBarText);
 #endif
-	connect(page(), &PopupPage::loadingUrl, this, &PopupView::urlChanged);
+	connect(_page, &PopupPage::loadingUrl, this, &PopupView::urlChanged);
 	connect(page(), &PopupPage::iconUrlChanged, this, &PopupView::onIconUrlChanged);
 	connect(page(), &PopupPage::featurePermissionRequested, this, &PopupView::onFeaturePermissionRequested);
 #if defined(QWEBENGINEPAGE_UNSUPPORTEDCONTENT)
@@ -1601,83 +1601,85 @@ namespace browser {
     }
 
     void PopupView::setProgress(int progress){
-	m_progress = progress;
+	_progress = progress;
     }
 
     void PopupView::loadFinished(bool success){
-	if(success && 100 != m_progress){
+	if(success && 100 != _progress){
 	    qWarning()	<< "Received finished signal while progress is still:" << progress()
 			<< "Url:" << url();
 	}
-	m_progress = 0;
+	_progress = 0;
     }
 
     void PopupView::loadUrl(const QUrl &url){
-	m_initialUrl = url;
+	_initial_url = url;
 	load(url);
     }
 
     QString PopupView::lastStatusBarText() const {
-	return m_statusBarText;
+	return _statusbar_text;
     }
 
     QUrl PopupView::url() const {
 	QUrl url = QWebEngineView::url();
 	if(! url.isEmpty())return url;
-	return m_initialUrl;
+	return _initial_url;
     }
 
     QIcon PopupView::icon() const {
-	if(! m_icon.isNull())return m_icon;
-	return QtSingleApplication::instance()->defaultIcon();
+	if(! _icon.isNull())return _icon;
+	return sapp_t::instance()->defaultIcon();
     }
 
     void PopupView::onIconUrlChanged(const QUrl &url){
 	QNetworkRequest iconRequest(url);
-	m_iconReply = QtSingleApplication::networkAccessManager()->get(iconRequest);
-	m_iconReply->setParent(this);
-	connect(m_iconReply, &QNetworkReply::finished, this, &PopupView::iconLoaded);
+	_icon_reply = sapp_t::networkAccessManager()->get(iconRequest);
+	_icon_reply->setParent(this);
+	connect(_icon_reply, &QNetworkReply::finished, this, &PopupView::iconLoaded);
     }
 
     void PopupView::iconLoaded(){
-	m_icon = QIcon();
-	if(m_iconReply){
-	    QByteArray	data = m_iconReply->readAll();
+	_icon = QIcon();
+	if(_icon_reply){
+	    QByteArray	data = _icon_reply->readAll();
 	    QPixmap	pixmap;
 	    pixmap.loadFromData(data);
-	    m_icon.addPixmap(pixmap);
-	    m_iconReply->deleteLater();
-	    m_iconReply = 0;
+	    _icon.addPixmap(pixmap);
+	    _icon_reply->deleteLater();
+	    _icon_reply = 0;
 	}
 	emit iconChanged();
     }
 
     void PopupView::mousePressEvent(QMouseEvent *event){
-	m_page->m_pressedButtons	= event->buttons();
-	m_page->m_keyboardModifiers	= event->modifiers();
+	_page->_pressed_buttons	= event->buttons();
+	_page->_keyboard_modifiers	= event->modifiers();
 	QWebEngineView::mousePressEvent(event);
     }
 
     void PopupView::mouseReleaseEvent(QMouseEvent *event){
 	QWebEngineView::mouseReleaseEvent(event);
-	if(! event->isAccepted() && (m_page->m_pressedButtons & Qt::MidButton)){
+	if(! event->isAccepted() && (_page->_pressed_buttons & Qt::MidButton)){
 	    QUrl url(QApplication::clipboard()->text(QClipboard::Selection));
 	    if(! url.isEmpty() && url.isValid() && ! url.scheme().isEmpty())setUrl(url);
 	}
     }
 
     void PopupView::setStatusBarText(const QString &string){
-	m_statusBarText = string;
+	_statusbar_text = string;
     }
 
 #if QT_VERSION == 0x050600
     W_OBJECT_IMPL(PopupWindow)
 #endif
 
-    PopupWindow::PopupWindow(Profile *profile)
-	: QWidget(), _addressbar(new QLineEdit(this))
+    PopupWindow::PopupWindow(Browser *browser_, Profile *profile_)
+	: QWidget(browser_)
+	  , _browser(browser_)
+	  , _addressbar(new QLineEdit(this))
 	  , _view(new PopupView(this)){
-	_view->setPage(new PopupPage(profile, _view));
+	_view->setPage(new PopupPage(_view, browser_, profile_));
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->setMargin(0);
 	setLayout(layout);

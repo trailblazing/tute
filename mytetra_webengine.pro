@@ -24,6 +24,7 @@ DEFINES +=  "TARGET_OS=$${TARGET_OS}"
 #DEFINES    +=  "QT_NO_VERSION_TAGGING"
 
 #DEFINES +=  QWEBENGINESETTINGS_PATHS
+DEFINES    += "USE_POPUP_WINDOW"
 
 message(Building running in Qt major version: $${QT_MAJOR_VERSION})
 message(Building running in Qt version: $${QT_VERSION})

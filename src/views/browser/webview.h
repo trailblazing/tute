@@ -101,15 +101,23 @@ namespace browser {
     class TabWidget;
 
 #ifdef USE_POPUP_WINDOW
-
+    class PopupView;
     class PopupPage : public QWebEnginePage {
+#if QT_VERSION == 0x050600
 	W_OBJECT(PopupPage)
-
+#else
+	Q_OBJECT
+#endif
 	signals:
-	    void loadingUrl(const QUrl &url) W_SIGNAL(loadingUrl, (const QUrl &), url)	// ;
+	    void loadingUrl(const QUrl &url)
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(loadingUrl, (const QUrl &), url)	//
+#else
+	    ;
 
+#endif
 	public:
-	    PopupPage(Profile *profile, QObject *parent = 0);
+	    PopupPage(PopupView *view_, Browser  *browser_, Profile *profile_);
 	    Browser *browser();
 
 	protected:
@@ -132,9 +140,11 @@ namespace browser {
 	    friend class PopupView;
 
 // set the webview mousepressedevent
-	    Qt::KeyboardModifiers	m_keyboardModifiers;
-	    Qt::MouseButtons		m_pressedButtons;
-	    QUrl			m_loadingUrl;
+	    PopupView			*_view;
+	    Browser			*_browser;
+	    Qt::KeyboardModifiers	_keyboard_modifiers;
+	    Qt::MouseButtons		_pressed_buttons;
+	    QUrl			_loading_url;
 	    bool			_certificate_ignored = false;
     };
 
@@ -291,12 +301,13 @@ namespace browser {
 	    void	onTitleChanged(const QString &title);
 
 	private:
-	    ts_t	*_tree_screen;
-	    MetaEditor	*_editor_screen;
-	    Entrance	*_entrance;
-	    Browser	*_browser;
-	    TabWidget	*_tabmanager;
-	    rctrl_t	*_record_controller;
+	    Profile			*_profile;
+	    ts_t			*_tree_screen;
+	    MetaEditor			*_editor_screen;
+	    Entrance			*_entrance;
+	    Browser			*_browser;
+	    TabWidget			*_tabmanager;
+	    rctrl_t			*_record_controller;
 //        std::map<QString, boost::intrusive_ptr<TreeItem> > _items;
 
 	    WebView *_view;
@@ -341,20 +352,23 @@ namespace browser {
 #ifdef USE_POPUP_WINDOW
 
     class PopupView : public QWebEngineView {
+#if QT_VERSION == 0x050600
 	W_OBJECT(PopupView)
-
+#else
+	Q_OBJECT
+#endif
 	public:
 	    PopupView(QWidget *parent = 0);
-	    PopupPage	*webPage() const {return m_page;}
+	    PopupPage	*webPage() const {return _page;}
 
-	    void setPage(PopupPage *page);
+	    void setPage(PopupPage *page_);
 
 	    void	loadUrl(const QUrl &url);
 	    QUrl	url() const;
 	    QIcon	icon() const;
 
 	    QString lastStatusBarText() const;
-	    inline int progress() const {return m_progress;}
+	    inline int progress() const {return _progress;}
 
 	protected:
 	    void	mousePressEvent(QMouseEvent *event);
@@ -363,8 +377,12 @@ namespace browser {
 	    void	wheelEvent(QWheelEvent *event);
 
 	signals:
-	    void iconChanged() W_SIGNAL(iconChanged)	// ;
-
+	    void iconChanged()
+#if QT_VERSION == 0x050600
+	    W_SIGNAL(iconChanged)	//
+#else
+	    ;
+#endif
 	private slots:
 	    void	setProgress(int progress);
 	    void	loadFinished(bool success);
@@ -375,12 +393,12 @@ namespace browser {
 	    void	iconLoaded();
 
 	private:
-	    QString		m_statusBarText;
-	    QUrl		m_initialUrl;
-	    int			m_progress;
-	    PopupPage		*m_page;
-	    QIcon		m_icon;
-	    QNetworkReply	*m_iconReply;
+	    QString		_statusbar_text;
+	    QUrl		_initial_url;
+	    int			_progress;
+	    PopupPage		*_page;
+	    QIcon		_icon;
+	    QNetworkReply	*_icon_reply;
     };
 
 #endif	// USE_POPUP_WINDOW
@@ -495,9 +513,13 @@ namespace browser {
 #ifdef USE_POPUP_WINDOW
 
     class PopupWindow : public QWidget {
+#if QT_VERSION == 0x050600
 	W_OBJECT(PopupWindow)
+#else
+	Q_OBJECT
+#endif
 	public:
-	    PopupWindow(Profile *profile);
+	    PopupWindow(Browser *browser_, Profile *profile_);
 //		: QWidget(), _addressbar(new QLineEdit(this)),
 //		  _view(new PopupView(this)){
 //		_view->setPage(new PopupPage(profile, _view));
@@ -529,6 +551,7 @@ namespace browser {
 //		setGeometry(newGeometry.adjusted(x1, y1 - _addressbar->height(), x2, y2));
 //	    }
 	private:
+	    Browser	*_browser;
 	    QLineEdit	*_addressbar;
 	    PopupView	*_view;
     };

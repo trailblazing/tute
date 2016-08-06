@@ -1194,7 +1194,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
     if(it){
 	if(! static_cast<QModelIndex>(source_model()->index(it)).isValid()){
 		// boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(know_model_board, it); } catch(std::exception &e) {throw e; } return tree_index; } ();
-	    _tree_view->cursor_follow_up(it);
+	    _tree_view->cursor_focus(it);
 	    _tree_screen->view()->intercept(it);	// TreeIndex::instance(know_model_board, it, it->parent())
 	}
 	if(it != know_model_board()->root_item()){

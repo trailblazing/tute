@@ -667,7 +667,7 @@ namespace browser {
     void Browser::save(){
 	sapp_t::instance()->saveSession();
 
-	QSettings settings;
+	QSettings settings;	// (_work_directory + "/mode.ini", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = save_state(false);
 	settings.setValue(QLatin1String("default_state"), data);

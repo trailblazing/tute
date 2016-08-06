@@ -367,10 +367,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	QStyleOptionViewItem optionV4 = option;
 	optionV4.state |= QStyle::State_Enabled;
 	initStyleOption(&optionV4, index);
-
-	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+//	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-	optionV4.rect = option.rect.adjusted(1, 1, - 1, - 1);
+	optionV4.rect = option.rect.adjusted(-2, -2, - 1, - 1);
 	QTextDocument doc;
 	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
 	optionV4.text = "<b>" + optionV4.text + "</b>";
@@ -378,13 +377,15 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 	/// Painting item without text
 	optionV4.text = QString();
-	style->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+//	style->
+	_view->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
 
 	QAbstractTextDocumentLayout::PaintContext ctx;
 	// Highlighting text if item is selected
 	if(optionV4.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
 	if(0 == it->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
-	QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+	QRect textRect =// style->
+	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
 
 	painter->save();
 	painter->translate(textRect.topLeft());

@@ -178,7 +178,7 @@ index_tree tm_t::index(const std::function<bool (boost::intrusive_ptr<const Link
 			find_index = _index_child;
 			break;
 		    }else{
-			find_index = index_recursive(_index_child, _equal, 1);
+			index_recursive(_index_child, _equal, 1);
 			if(find_index.isValid())
 				if(_equal(item(find_index)->linker()))break;
 		    }
@@ -381,7 +381,7 @@ index_tree tm_t::index(boost::intrusive_ptr<const TreeItem> _item) const {
 			break;
 		    }else{
 			// return
-			find_index = index_recursive(child, _item, 1);		// _index_child , 1
+			index_recursive(child, _item, 1);		// _index_child , 1
 			// is_find = find_index.isValid();
 			if(find_index.isValid())if(_item.get() == static_cast<TreeItem *>(find_index.internalPointer()))break;			// same as find_index.isValid()
 		    }

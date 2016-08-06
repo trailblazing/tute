@@ -1295,7 +1295,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 	    tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 	    while((deleted_item = host_parent->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){return it->is_empty();}))){
 		host_parent = host_parent->parent();
-		tree_view->cursor_follow_up();
+		tree_view->cursor_focus();
 		if(! host_parent)break;
 	    }
 	}
@@ -1500,7 +1500,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent_recursive(boost::intrusiv
 	    tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 	    while((deleted_root_item = parent->delete_permanent_recursive([&](boost::intrusive_ptr<const TreeItem> it){return it->is_empty();}))){
 		parent = parent->parent();
-		tree_view->cursor_follow_up();
+		tree_view->cursor_focus();
 		if(! parent)break;
 	    }
 	}
@@ -2402,8 +2402,8 @@ QStringList tkm_t::path_list(const id_value &record_id) const {
 		}else{
 			// Иначе перебираются подветки
 		    for(auto il : _it->child_linkers()){
-			if(! is_found)record_path_recurse(il->host(), current_path, record_id_, 1);
-			else break;
+			record_path_recurse(il->host(), current_path, record_id_, 1);
+			if(is_found)break;
 		    }
 		}
 	    }
