@@ -52,7 +52,6 @@ boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<Reco
     if(! result)throw std::runtime_error(formatter() << "construct record index failed");
     return result;
 }
-
 // boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, const index_source &sibling_index){
 //    boost::intrusive_ptr<RecordIndex>	result(nullptr);
 //    boost::intrusive_ptr<TreeItem>	sibling_item = current_model_()->item(pos_source(static_cast<const QModelIndex>(sibling_index).row()));
@@ -65,13 +64,19 @@ boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<Reco
 //    return result;
 // }
 
-RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem>  target_item, const index_source &sibling_index) : _current_model(current_model), _host(target_item), _sibling_index(sibling_index){}
+RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem>  target_item, const index_source &sibling_index)
+    : _current_model(current_model)
+      , _host(target_item)
+      , _sibling_index(sibling_index){}
 
 RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, boost::intrusive_ptr<TreeItem> target_item, boost::intrusive_ptr<TreeItem> sibling_item)
     : _current_model(current_model)
       , _host(target_item)
-      , _sibling_index([&] {QModelIndex sibling_index = static_cast<QModelIndex>(current_model()->index(sibling_item));if(! sibling_index.isValid()) sibling_index = current_model()->index(0, 0, QModelIndex());return sibling_index;}
-
+      , _sibling_index([&] {
+	      QModelIndex sibling_index = static_cast<QModelIndex>(current_model()->index(sibling_item));
+	      if(! sibling_index.isValid())sibling_index = current_model()->index(0, 0, QModelIndex());
+	      return sibling_index;
+	  }
 	  ()){}
 
 std::function<RecordModel *()> RecordIndex::current_model() const {return _current_model;}
@@ -101,4 +106,3 @@ boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(boost::intrusive_ptr<Tre
     }
     return _found_item;	// _record;
 }
-

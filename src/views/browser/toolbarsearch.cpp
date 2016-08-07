@@ -267,7 +267,11 @@ namespace browser {
 		//                            }else{
 		// auto previous_item = _source_model()->item(tree_view->previous_index());
 		auto result = browser->bind(record_index);
-//		result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+#ifdef USE_LOAD_ON_FOUND
+		result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+#else
+
+#endif
 ////		std::thread(&TreeItem::activate, result, std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)).join();
 //		globalparameters.status_bar()->showMessage("added node(s) : " + QString::number(++ _total_progress_counter), 1000);	// across thread message
 	    }

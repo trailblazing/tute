@@ -196,14 +196,15 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	bool			removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 	void			remove_child(boost::intrusive_ptr<TreeItem> it);
 
-	int	move_up(const pos_source pos, const pos_source target = pos_source(-1));
+	int	move_up(const pos_source pos, const pos_source target = pos_source (- 1));
 	int	move_dn(const pos_source pos);
 
 	// protected:
 
 	// Указатель на таблицу конечных записей
 	// std::shared_ptr<RecordTable>  _table; // flat one
-	// TreeModelKnow *_browser_pages;  // boost::intrusive_ptr<TreeItem> _shadow_branch_root; // keep it flat
+	// TreeModelKnow *_browser_pages;  //
+//	boost::intrusive_ptr<TreeItem> _shadow_branch_root;	// keep it flat
 
 	rctrl_t    *_record_controller;
 	friend class rs_t;

@@ -274,7 +274,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	opt.state |= QStyle::State_Enabled;
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+	opt.rect	= (it == _view->current_item()) ? option.rect.adjusted(- 2, - 2, - 1, - 1) : option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
 	opt.text = QChar(0x274C);// for ❌//QChar(0x274E);	// for "❎"; "X";			// title;         // trUtf8("Button text");
 	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);	//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
@@ -336,7 +336,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	opt.state |= QStyle::State_Enabled;
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+	opt.rect	= (it == _view->current_item()) ? option.rect.adjusted(- 2, - 2, - 1, - 1) : option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
 	opt.text = QChar(0x221A);// for √ // title;// trUtf8("Button text");
 	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
@@ -368,8 +368,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	optionV4.state |= QStyle::State_Enabled;
 	initStyleOption(&optionV4, index);
 //	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-	optionV4.rect = option.rect.adjusted(-2, -2, - 1, - 1);
+	optionV4.rect = option.rect.adjusted(- 2, - 2, - 1, - 1);
 	QTextDocument doc;
 	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
 	optionV4.text = "<b>" + optionV4.text + "</b>";
@@ -414,6 +415,12 @@ QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelI
 
     QStyleOptionViewItem optionV4 = option;	// remove cosntant attribute
     initStyleOption(&optionV4, index);
+
+    optionV4.state |= QStyle::State_Enabled;
+    initStyleOption(&optionV4, index);
+//	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+    _view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
+    optionV4.rect = option.rect.adjusted(- 2, - 2, - 1, - 1);
 
     QTextDocument doc;
     doc.setHtml(optionV4.text);
@@ -811,9 +818,7 @@ rv_t::~rv_t(){
 rctrl_t *rv_t::record_controller(){return _record_controller;}
 
 
-QModelIndex rv_t::previous_index() const {
-    return _previous_index;
-}
+QModelIndex rv_t::previous_index() const {return _previous_index;}
 
 void rv_t::restore_header_state(void){
 	// Видимость горизонтальных заголовков
@@ -1179,7 +1184,7 @@ void rv_t::mousePressEvent(QMouseEvent *event){
 	////call the parents function
 	// QTableView::mousePressEvent(event);
 	// }
-
+    _record_controller->select_as_current(_record_controller->index<pos_proxy>(index_proxy(next_index)));
     QTableView::mousePressEvent(event);
 }
 

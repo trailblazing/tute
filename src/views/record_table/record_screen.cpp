@@ -658,8 +658,8 @@ void rs_t::setup_actions(void){
 		// Сохранение дерева веток
 		// find_object<TreeScreen>(tree_screen_singleton_name)
 	    globalparameters.tree_screen()->view()->know_model_save();
-	}																				// _record_controller, &RecordController::move_dn
-	);																				// connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
+	});	// _record_controller, &RecordController::move_dn
+		// connect(_action_move_dn, &QAction::triggered, _tabmanager, &browser::TabWidget::move_dn);
 
 	// Поиск по базе (клик связывается с действием в MainWindow)
 	// _find_in_base = new QAction(tr("Find in base"), this);

@@ -747,7 +747,7 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id){
 }
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
-    boost::intrusive_ptr<TreeItem> r = nullptr;
+    boost::intrusive_ptr<TreeItem> r(nullptr);
     for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
 	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
 	if(it->id() == id){
@@ -759,13 +759,13 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
 }
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index){
-    boost::intrusive_ptr<TreeItem> r = nullptr;
+    boost::intrusive_ptr<TreeItem> r(nullptr);
     if(_index >= 0 && _index < size())r = _record_controller->tabmanager()->webView((int) _index)->page()->host();
     return r;
 }
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index) const {
-    boost::intrusive_ptr<TreeItem> r = nullptr;
+    boost::intrusive_ptr<TreeItem> r(nullptr);
     if(_index >= 0 && _index < size()){
 	assert(_record_controller->tabmanager()->webView((int) _index)->page()->binder());
 	r = _record_controller->tabmanager()->webView((int) _index)->page()->binder()->host();
@@ -828,21 +828,41 @@ rctrl_t *RecordModel::reocrd_controller() const {return _record_controller;}
 
 
 boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeItem> it) const {
+// #ifdef USE_LOAD_ON_FOUND
     return _record_controller->tabmanager()->sibling(it);
+// #else
+//    index_source	cur	= index(it);
+//    QModelIndex		cur_	= static_cast<QModelIndex>(cur);
+//    cur_ = createIndex(cur_.row() > 0 ? cur_.row() - 1 : 0, cur_.column(), cur_.internalPointer());
+//    index_source tar(cur_);
+//    return item(_record_controller->index<pos_source>(tar));
+// #endif
 }
 
 boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
     boost::intrusive_ptr<TreeItem>	result(nullptr);
-    auto				page = _record_controller->tabmanager()->currentWebView() ? _record_controller->tabmanager()->currentWebView()->page() : nullptr;
+// #ifdef USE_LOAD_ON_FOUND
+    auto page =
+	_record_controller->tabmanager()->currentWebView() ? _record_controller->tabmanager()->currentWebView()->page() : nullptr;
     if(page){
 	auto binder = page->binder();
 	if(binder)result = binder->host();
     }
+// #else
+//    result = item(_record_controller->index<pos_source>(current_index()));
+
+// #endif
+
     return result;	// _tabmanager->currentWebView()->page()->binder()->host();
 }
 
 index_source RecordModel::current_index() const {
-    return index(current_item());
+    return
+// #ifdef USE_LOAD_ON_FOUND
+	index(current_item());
+// #else
+//	index_source(_record_controller->view()->selectionModel()->currentIndex());	//
+// #endif
 }
 
 void RecordModel::position(pos_source _index){_record_controller->tabmanager()->setCurrentIndex((int) _index);}

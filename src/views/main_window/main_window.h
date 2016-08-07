@@ -118,24 +118,23 @@ class wn_t
 	void	go_walk_history_previous(void);
 	void	go_walk_history_next(void);
 
-	void save_text_area(void);
+	void	save_text_area(void);
+	void	save_all_state(void);
 
-	void save_all_state(void);
+	HidableTabWidget	*vtab_record() const;
+	ts_t			*tree_screen() const;
 
-	HidableTabWidget	*vtab_record();
-	HidableTabWidget	*vtab_tree();
-
-	QMenu			*file_menu();
-	QMenu			*edit_menu();
-	QMenu			*view_menu();
-	browser::HistoryMenu	*histry_menu();
-	browser::BookmarksMenu	*bookmark_menu();
-	QMenu			*window_menu();
-	QMenu			*tools_menu();
-	QMenu			*help_menu();
-	QSplitter		*find_splitter();
-	QSplitter		*h_record_splitter();
-	QSplitter		*h_tree_splitter();
+	QMenu			*file_menu() const;
+	QMenu			*edit_menu() const;
+	QMenu			*view_menu() const;
+	browser::HistoryMenu	*histry_menu() const;
+	browser::BookmarksMenu	*bookmark_menu() const;
+	QMenu			*window_menu() const;
+	QMenu			*tools_menu() const;
+	QMenu			*help_menu() const;
+	QSplitter		*find_splitter() const;
+	QSplitter		*h_record_splitter() const;
+	QSplitter		*h_tree_splitter() const;
 //	std::vector<tsv_t *>	tree_viewers() const;
     public slots:
 	void	application_exit(void);

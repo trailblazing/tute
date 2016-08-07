@@ -1289,12 +1289,23 @@ QModelIndex tv_t::select_as_current(boost::intrusive_ptr<TreeIndex> _tree_index
     else _result = _host_index;
 	// assert(_aim_to_be_current_index == selectionModel()->currentIndex());
     assert(_result == selectionModel()->currentIndex());
-
 	// }else{
 	// qDebug() << "index to root item";
 	// throw std::exception();
 	// }
-
+    if(_item){
+	auto	vr	= globalparameters.main_window()->vtab_record();
+	auto	v	= vr->find([&](boost::intrusive_ptr<const Binder> b){return b->host() == _item;});
+	if(v){
+	    auto p = v->page();
+	    if(p){
+		if(p->tabmanager()->current_item() != _item)p->tabmanager()->select_as_current(v);
+		auto ctrl = p->record_controller();
+		if(ctrl->view()->current_item() != _item)ctrl->select_as_current(ctrl->index<pos_proxy>(ctrl->source_model()->index(_item)));
+		//
+	    }
+	}
+    }
     return _result;
 }
 

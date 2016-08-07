@@ -173,8 +173,11 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	_view->scrollTo(_view->currentIndex());	// QAbstractItemView::PositionAtCenter
 
 	// this->setFocus();   // ?
-	pos_source	ps	= index<pos_source>(pos_proxy_);
-	auto		it	= index<boost::intrusive_ptr<TreeItem> >(ps);
+	pos_source	pos_source_	= index<pos_source>(pos_proxy_);
+	auto		it		= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
+	if(_tabmanager->currentIndex() != static_cast<int>(pos_source_))_tabmanager->select_as_current(it->page()->view());	// setCurrentIndex(static_cast<int>(pos_source_));
+	auto tree_screen = globalparameters.main_window()->tree_screen();
+	if(tree_screen->view()->current_item() != it)tree_screen->view()->select_as_current(TreeIndex::instance([&] {return tree_screen->view()->source_model();}, it));
 	if(it)if(it->page())it->page()->metaeditor_sychronize();
     }
     _record_screen->tools_update();
@@ -554,13 +557,9 @@ void rctrl_t::sychronize_attachtable_to_item(const pos_source pos){
 // reset_tabledata(rtData);
 // }
 
-RecordModel *rctrl_t::source_model(){
-    return _source_model;
-}
+RecordModel *rctrl_t::source_model(){return _source_model;}
 
-RecordProxyModel *rctrl_t::proxy_model(){
-    return _proxy_model;
-}
+RecordProxyModel *rctrl_t::proxy_model(){return _proxy_model;}
 
 // void RecordController::init_source_model(TreeModelKnow *_shadow_branch, MainWindow *main_window, MetaEditor *_editor_screen)
 // {

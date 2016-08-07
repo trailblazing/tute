@@ -746,7 +746,7 @@ namespace browser {
 
 
 	{
-	    _tabbar->hide();		// _tabbar->show();
+//	    _tabbar->hide();		// _tabbar->show();
 	}
 
 
@@ -883,9 +883,20 @@ namespace browser {
 	_actions.append(new WebActionMapper(action, webAction, this));
     }
 
-    QLineEdit *TabWidget::currentLineEdit() const {
-	return lineEdit(_lineedits->currentIndex());
+
+
+    WebView *TabWidget::select_as_current(WebView *v){
+	auto index = webViewIndex(v);
+	setCurrentIndex(index);
+	auto	tree_screen	= globalparameters.main_window()->tree_screen();
+	auto	it		= v->page()->host();
+	if(tree_screen->view()->current_item() != it)tree_screen->view()->select_as_current(TreeIndex::instance([&] {return tree_screen->view()->source_model();}, it));
+	if(_record_controller->view()->current_item() != it)_record_controller->select_as_current(_record_controller->index<pos_proxy>(pos_source(index)));
+	return currentWebView();
     }
+
+    boost::intrusive_ptr<TreeItem> TabWidget::current_item() const {return currentWebView()->page()->host();}
+
 
     WebView *TabWidget::currentWebView() const {
 //        WebView *v = nullptr;
@@ -1039,10 +1050,12 @@ namespace browser {
 	return _lineedits;
     }
 
-// void TabWidget::lineEditStack(QStackedWidget *lineedits)
-// {
-// _lineedits = lineedits;
-// }
+    QLineEdit *TabWidget::currentLineEdit() const {return lineEdit(_lineedits->currentIndex());}
+
+	// void TabWidget::lineEditStack(QStackedWidget *lineedits)
+	// {
+	// _lineedits = lineedits;
+	// }
 
 
 

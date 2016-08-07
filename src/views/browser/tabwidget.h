@@ -526,13 +526,15 @@ namespace browser {
 	    QAction	*previousTabAction() const;
 
 		// QWidget *
-	    QStackedWidget *lineEditStack() const;
 		// void lineEditStack(QStackedWidget *lineedits);
-	    QLineEdit	*currentLineEdit() const;
-	    WebView	*currentWebView() const;
-	    WebView	*webView(int index) const;
-	    QLineEdit	*lineEdit(int index) const;
-	    int		webViewIndex(WebView *webView) const;
+	    QStackedWidget			*lineEditStack() const;
+	    QLineEdit				*currentLineEdit() const;
+	    WebView				*select_as_current(WebView *v);
+	    boost::intrusive_ptr<TreeItem>	current_item() const;
+	    WebView				*currentWebView() const;
+	    WebView				*webView(int index) const;
+	    QLineEdit				*lineEdit(int index) const;
+	    int					webViewIndex(WebView *webView) const;
 
 	    QByteArray	saveState() const;
 	    bool	restoreState(const QByteArray &state);
@@ -541,8 +543,8 @@ namespace browser {
 	    WebView	*find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;		//= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
 		// WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
-	    WebView	*find_nopin() const;
-	    Browser	*browser();
+	    WebView		*find_nopin() const;
+	    Browser		*browser();
 
 
 
