@@ -746,7 +746,7 @@ namespace browser {
 
 
 	{
-//	    _tabbar->hide();		// _tabbar->show();
+	    _tabbar->hide();		// _tabbar->show();
 	}
 
 
