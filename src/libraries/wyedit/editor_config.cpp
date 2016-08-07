@@ -34,8 +34,10 @@ EditorConfig::EditorConfig(QString config_file_name, QWidget *parent) : QWidget(
 	// Проверяется, есть ли файл конфигурации
     if(fileinfo->exists() == false){
 	// critical_error("Editor config file " + config_file_name + " not found.");
-	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.editorconf());
-	assert(succedded);
+	if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/editorconf.ini", full_current_path + "/editorconf.ini")) throw std::runtime_error("Can not copy editorconf.ini");
+	else	    QFile::setPermissions(full_current_path + "/editorconf.ini", QFile::ReadUser | QFile::WriteUser);
+//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.editorconf());//editorconf.ini
+//	assert(succedded);
 	fileinfo = std::make_shared<QFileInfo>(config_file_name);
     }
 	// Проверяется, доступен ли файл конфигурации на чтение или запись

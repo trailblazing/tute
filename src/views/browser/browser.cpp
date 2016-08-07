@@ -642,7 +642,7 @@ namespace browser {
     }
 
     void Browser::load_default_state(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = settings.value(QLatin1String("default_state")).toByteArray();
 	restore_state(data);
@@ -667,7 +667,7 @@ namespace browser {
     void Browser::save(){
 	sapp_t::instance()->saveSession();
 
-	QSettings settings;	// (_work_directory + "/mode.ini", QSettings::IniFormat);
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("browser"));
 	QByteArray data = save_state(false);
 	settings.setValue(QLatin1String("default_state"), data);

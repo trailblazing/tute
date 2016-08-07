@@ -353,7 +353,12 @@ int AppConfigPageMain::apply_changes(void){
 	difficultChanges = 1;
     }
     if(globalparameters.application_mode() != application_mode_option->currentText()){
-	if(! globalparameters.is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());assert(succedded);}
+	if(! globalparameters.is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){
+	    if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
+	    else    QFile::setPermissions(full_current_path + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
+//	    bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
+//	    assert(succedded);
+	}
 	globalparameters.application_mode(application_mode_option->currentText());
 	QMessageBox message;
 	message.setText("The changes of application mode will take effect after restart the application.");	// You have to restart Mytetra for the configuration changes to take effect.

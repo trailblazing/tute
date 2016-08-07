@@ -128,9 +128,9 @@ class GlobalParameters : public QObject {
 	AttachTableController	*attachtable_controller();
 	void			attachtable_controller(AttachTableController *_attachtable_controller);
 	bool			is_mytetra_ini_config_exist(QString filename);
-	QMap<QString, QString>	config_ini() const;
-	QMap<QString, QString>	mytetra_xml() const;
-	QMap<QString, QString>	editorconf() const;
+//	QMap<QString, QString>	config_ini() const;
+//	QMap<QString, QString>	mytetra_xml() const;
+//	QMap<QString, QString>	editorconf() const;
     private:
 
 	void	init_workdirectory(void);

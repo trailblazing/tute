@@ -83,9 +83,7 @@ bool AppConfig::tetra_dir(QString dirName){
 }
 
 // Получение имени директории с данными (в которой находится mytetra.xml)
-QString AppConfig::tetra_dir(void) const {
-    return get_parameter("tetradir");
-}
+QString AppConfig::tetra_dir(void) const {return get_parameter("tetradir");}
 
 // Установка имени директории с корзиной
 bool AppConfig::trash_dir(QString dirName){
@@ -98,14 +96,10 @@ bool AppConfig::trash_dir(QString dirName){
 }
 
 // Получение имени директории с корзиной
-QString AppConfig::trash_dir(void) const {
-    return get_parameter("trashdir");
-}
+QString AppConfig::trash_dir(void) const {return get_parameter("trashdir");}
 
 // Получение максимального размера директории корзины в мегабайтах
-unsigned int AppConfig::trash_size(void) const {
-    return get_parameter("trashsize").toInt();
-}
+unsigned int AppConfig::trash_size(void) const {return get_parameter("trashsize").toInt();}
 
 // Установка максимального размера директории корзины в мегабайтах
 bool AppConfig::trash_size(unsigned int mbSize){
@@ -117,9 +111,7 @@ bool AppConfig::trash_size(unsigned int mbSize){
 }
 
 // Получение максимально допустимого числа файлов в корзине
-int AppConfig::trash_max_file_count(void) const {
-    return get_parameter("trashmaxfilecount").toInt();
-}
+int AppConfig::trash_max_file_count(void) const {return get_parameter("trashmaxfilecount").toInt();}
 
 // Установка максимально допустимого числа файлов в корзине
 bool AppConfig::trash_max_file_count(int count){
@@ -130,9 +122,7 @@ bool AppConfig::trash_max_file_count(int count){
     }else return false;
 }
 
-bool AppConfig::cut_branch_confirm(void) const {
-    return _app_conf->value("cutbranchconfirm").toBool();
-}
+bool AppConfig::cut_branch_confirm(void) const {return _app_conf->value("cutbranchconfirm").toBool();}
 
 bool AppConfig::cut_branch_confirm(bool confirm){
     _app_conf->setValue("cutbranchconfirm", confirm);
@@ -140,9 +130,7 @@ bool AppConfig::cut_branch_confirm(bool confirm){
     return true;
 }
 
-bool AppConfig::print_debug_messages(void) const {
-    return _app_conf->value("printdebugmessages").toBool();
-}
+bool AppConfig::print_debug_messages(void) const {return _app_conf->value("printdebugmessages").toBool();}
 
 bool AppConfig::print_debug_messages(bool isPrint){
     _app_conf->setValue("printdebugmessages", isPrint);
@@ -163,9 +151,7 @@ bool AppConfig::interface_language(QString language){
     return true;
 }
 
-QString AppConfig::add_new_record_expand_info(void) const {
-    return get_parameter("addnewrecord_expand_info");
-}
+QString AppConfig::add_new_record_expand_info(void) const {return get_parameter("addnewrecord_expand_info");}
 
 void AppConfig::add_new_record_expand_info(QString state){
     if(state == "0" || state == "1")_app_conf->setValue("addnewrecord_expand_info", state);
@@ -227,29 +213,17 @@ void AppConfig::mainwin_geometry(int x, int y, int w, int h){
     _app_conf->setValue("mainwingeometry", result);
 }
 
-void AppConfig::h_tree_splitter_sizelist(QList<int> list){
-    splitter_sizelist("h_tree_splitter", list);
-}
+void AppConfig::h_tree_splitter_sizelist(QList<int> list){splitter_sizelist("h_tree_splitter", list);}
 
-QList<int> AppConfig::h_tree_splitter_sizelist(){
-    return splitter_sizelist("h_tree_splitter");
-}
+QList<int> AppConfig::h_tree_splitter_sizelist(){return splitter_sizelist("h_tree_splitter");}
 
-void AppConfig::h_record_splitter_sizelist(QList<int> list){
-    splitter_sizelist("h_record_splitter", list);
-}
+void AppConfig::h_record_splitter_sizelist(QList<int> list){splitter_sizelist("h_record_splitter", list);}
 
-QList<int> AppConfig::h_record_splitter_sizelist(){
-    return splitter_sizelist("h_record_splitter");
-}
+QList<int> AppConfig::h_record_splitter_sizelist(){return splitter_sizelist("h_record_splitter");}
 
-QList<int> AppConfig::v_right_splitter_sizelist(void) const {
-    return splitter_sizelist("v_right_splitter");
-}
+QList<int> AppConfig::v_right_splitter_sizelist(void) const {return splitter_sizelist("v_right_splitter");}
 
-void AppConfig::v_right_splitter_sizelist(QList<int> list){
-    splitter_sizelist("v_right_splitter", list);
-}
+void AppConfig::v_right_splitter_sizelist(QList<int> list){splitter_sizelist("v_right_splitter", list);}
 
 // QList<int> AppConfig::hspl_sizelist(void)const
 // {
@@ -263,9 +237,7 @@ void AppConfig::v_right_splitter_sizelist(QList<int> list){
 // }
 
 
-QList<int> AppConfig::findsplitter_sizelist(void) const {
-    return splitter_sizelist("find_splitter");
-}
+QList<int> AppConfig::findsplitter_sizelist(void) const {return splitter_sizelist("find_splitter");}
 
 void AppConfig::findsplitter_sizelist(QList<int> list){
     qDebug() << "Config set find splitter list to " << list;
@@ -300,115 +272,63 @@ void AppConfig::tree_position(QString view_root_id, QStringList current_item_abs
 }
 
 // ID записи в таблице конечных записей, которая выделена на экране
-QString AppConfig::recordtable_selected_record_id(void) const {
-    return _app_conf->value("recordtableSelectedRecordId", 0).toString();
-}
+QString AppConfig::recordtable_selected_record_id(void) const {return _app_conf->value("recordtableSelectedRecordId", 0).toString();}
 
 // ID записи в таблице конечных записей, которая выделена на экране
-void AppConfig::recordtable_selected_record_id(QString id){
-    _app_conf->setValue("recordtableSelectedRecordId", id);
-}
+void AppConfig::recordtable_selected_record_id(QString id){_app_conf->setValue("recordtableSelectedRecordId", id);}
 
-int AppConfig::findscreen_wordregard(void) const {
-    return _app_conf->value("findscreen_wordregard", 0).toInt();
-}
+int AppConfig::findscreen_wordregard(void) const {return _app_conf->value("findscreen_wordregard", 0).toInt();}
 
-void AppConfig::findscreen_wordregard(int pos){
-    _app_conf->setValue("findscreen_wordregard", pos);
-}
+void AppConfig::findscreen_wordregard(int pos){_app_conf->setValue("findscreen_wordregard", pos);}
 
-int AppConfig::findscreen_howextract(void) const {
-    return _app_conf->value("findscreen_howextract", 0).toInt();
-}
+int AppConfig::findscreen_howextract(void) const {return _app_conf->value("findscreen_howextract", 0).toInt();}
 
-void AppConfig::findscreen_howextract(int pos){
-    _app_conf->setValue("findscreen_howextract", pos);
-}
+void AppConfig::findscreen_howextract(int pos){_app_conf->setValue("findscreen_howextract", pos);}
 
-int AppConfig::find_screen_tree_search_area(void) const {
-    return _app_conf->value("findScreenTreeSearchArea", 0).toInt();
-}
+int AppConfig::find_screen_tree_search_area(void) const {return _app_conf->value("findScreenTreeSearchArea", 0).toInt();}
 
-void AppConfig::find_screen_tree_search_area(int pos){
-    _app_conf->setValue("findScreenTreeSearchArea", pos);
-}
+void AppConfig::find_screen_tree_search_area(int pos){_app_conf->setValue("findScreenTreeSearchArea", pos);}
 
-bool AppConfig::findscreen_find_in_field(QString fieldName) const {
-    return _app_conf->value("findscreen_find_in_" + fieldName, 0).toBool();
-}
+bool AppConfig::findscreen_find_in_field(QString fieldName) const {return _app_conf->value("findscreen_find_in_" + fieldName, 0).toBool();}
 
-void AppConfig::findscreen_find_in_field(QString fieldName, bool isChecked){
-    _app_conf->setValue("findscreen_find_in_" + fieldName, isChecked);
-}
+void AppConfig::findscreen_find_in_field(QString fieldName, bool isChecked){_app_conf->setValue("findscreen_find_in_" + fieldName, isChecked);}
 
-bool AppConfig::findscreen_show(void) const {
-    return _app_conf->value("findscreen_show", 0).toBool();
-}
+bool AppConfig::findscreen_show(void) const {return _app_conf->value("findscreen_show", 0).toBool();}
 
-void AppConfig::findscreen_show(bool isShow){
-    _app_conf->setValue("findscreen_show", isShow);
-}
+void AppConfig::findscreen_show(bool isShow){_app_conf->setValue("findscreen_show", isShow);}
 
-bool AppConfig::editor_show(void) const {
-    return _app_conf->value("editor_show", 0).toBool();
-}
+bool AppConfig::editor_show(void) const {return _app_conf->value("editor_show", 0).toBool();}
 
-void AppConfig::editor_show(bool isShow){
-    _app_conf->setValue("editor_show", isShow);
-}
+void AppConfig::editor_show(bool isShow){_app_conf->setValue("editor_show", isShow);}
 
-QString AppConfig::howpassrequest(void) const {
-    return get_parameter("howpassrequest");
-}
+QString AppConfig::howpassrequest(void) const {return get_parameter("howpassrequest");}
 
 void AppConfig::howpassrequest(QString mode){
     if(mode == "atClickOnCryptBranch" || mode == "atStartProgram")_app_conf->setValue("howpassrequest", mode);
     else critical_error("Set unavailable value for howpassrequest " + mode);
 }
 
-bool AppConfig::auto_close_password_enable(void) const {
-    return _app_conf->value("autoClosePasswordEnable", 0).toBool();
-}
+bool AppConfig::auto_close_password_enable(void) const {return _app_conf->value("autoClosePasswordEnable", 0).toBool();}
 
-void AppConfig::auto_close_password_enable(bool flag){
-    _app_conf->setValue("autoClosePasswordEnable", flag);
-}
+void AppConfig::auto_close_password_enable(bool flag){_app_conf->setValue("autoClosePasswordEnable", flag);}
 
-int AppConfig::auto_close_password_delay(void) const {
-    return _app_conf->value("autoClosePasswordDelay", 0).toInt();
-}
+int AppConfig::auto_close_password_delay(void) const {return _app_conf->value("autoClosePasswordDelay", 0).toInt();}
 
-void AppConfig::auto_close_password_delay(int delay){
-    _app_conf->setValue("autoClosePasswordDelay", delay);
-}
+void AppConfig::auto_close_password_delay(int delay){_app_conf->setValue("autoClosePasswordDelay", delay);}
 
-bool AppConfig::run_in_minimized_window(void) const {
-    return _app_conf->value("runinminimizedwindow").toBool();
-}
+bool AppConfig::run_in_minimized_window(void) const {return _app_conf->value("runinminimizedwindow").toBool();}
 
-void AppConfig::run_in_minimized_window(bool flag){
-    _app_conf->setValue("runinminimizedwindow", flag);
-}
+void AppConfig::run_in_minimized_window(bool flag){_app_conf->setValue("runinminimizedwindow", flag);}
 
-QString AppConfig::synchro_command(void) const {
-    return get_parameter("synchrocommand");
-}
+QString AppConfig::synchro_command(void) const {return get_parameter("synchrocommand");}
 
-void AppConfig::synchro_command(QString command){
-    _app_conf->setValue("synchrocommand", command);
-}
+void AppConfig::synchro_command(QString command){_app_conf->setValue("synchrocommand", command);}
 
-bool AppConfig::synchro_on_startup(void) const {
-    return _app_conf->value("synchroonstartup").toBool();
-}
+bool AppConfig::synchro_on_startup(void) const {return _app_conf->value("synchroonstartup").toBool();}
 
-void AppConfig::synchro_on_startup(bool flag){
-    _app_conf->setValue("synchroonstartup", flag);
-}
+void AppConfig::synchro_on_startup(bool flag){_app_conf->setValue("synchroonstartup", flag);}
 
-bool AppConfig::synchro_on_exit(void) const {
-    return _app_conf->value("synchroonexit").toBool();
-}
+bool AppConfig::synchro_on_exit(void) const {return _app_conf->value("synchroonexit").toBool();}
 
 void AppConfig::synchro_on_exit(bool flag){
     _app_conf->setValue("synchroonexit", flag);

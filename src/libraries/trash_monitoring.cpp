@@ -20,17 +20,19 @@ TrashMonitoring::~TrashMonitoring(void)
 {}
 
 void TrashMonitoring::recover_from_trash(){
-    auto	_main_program_file = globalparameters.main_program_file();
-    QFileInfo	main_program_file_info(_main_program_file);
-    QString	full_current_path = main_program_file_info.absolutePath();
+//    auto	_main_program_file = globalparameters.main_program_file();
+//    QFileInfo	main_program_file_info(_main_program_file);
+//    QString	full_current_path = main_program_file_info.absolutePath();
     if(_files_table.size() == 0){
-	//
-	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
-	assert(succedded);
-	add_file(globalparameters.mytetra_xml().keys()[0]);
+	if(! QFile::copy(QString(":/resource/standartdata/") + "/mytetra.xml", appconfig.trash_dir() + "/mytetra.xml"))throw std::runtime_error("Can not copy mytetra.xml");
+	else        QFile::setPermissions(appconfig.trash_dir() + "/mytetra.xml", QFile::ReadUser | QFile::WriteUser);
+//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
+//	assert(succedded);
+	add_file("mytetra.xml");// globalparameters.mytetra_xml().keys()[0]
+    }else{
+	auto file_data = _files_table.first();
+	DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._file_name);
     }
-    auto file_data = _files_table.first();
-    DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._file_name);
 }
 
 void TrashMonitoring::init(QString _trash_path){

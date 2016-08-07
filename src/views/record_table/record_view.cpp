@@ -270,14 +270,14 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 //        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
-	QStyleOptionButton opt;
-	opt.state |= QStyle::State_Enabled;
+	QStyleOptionButton optionV4;
+	optionV4.state |= QStyle::State_Enabled;
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-	opt.rect	= (it == _view->current_item()) ? option.rect.adjusted(- 2, - 2, - 1, - 1) : option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+	optionV4.features	= optionV4.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
+	optionV4.rect		= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-	opt.text = QChar(0x274C);// for ❌//QChar(0x274E);	// for "❎"; "X";			// title;         // trUtf8("Button text");
-	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);	//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+	optionV4.text = QChar(0x274C);	// for ❌//QChar(0x274E);	// for "❎"; "X";			// title;         // trUtf8("Button text");
+	_view->style()->drawControl(QStyle::CE_PushButton, &optionV4, painter, 0);	//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
 //	it->star_rating()->paint(painter, option.rect, option.palette, StarRating::Editable);
 
 //        QApplication::style()->drawControl(QStyle::CE_PushButton, &option, painter);
@@ -332,14 +332,14 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 //        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
-	QStyleOptionButton opt;
-	opt.state |= QStyle::State_Enabled;
+	QStyleOptionButton optionV4;
+	optionV4.state |= QStyle::State_Enabled;
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-	opt.rect	= (it == _view->current_item()) ? option.rect.adjusted(- 2, - 2, - 1, - 1) : option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+	optionV4.features	= optionV4.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
+	optionV4.rect		= option.rect.adjusted(1, 1, - 1, - 1);		// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-	opt.text = QChar(0x221A);// for √ // title;// trUtf8("Button text");
-	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+	optionV4.text = QChar(0x221A);	// for √ // title;// trUtf8("Button text");
+	_view->style()->drawControl(QStyle::CE_PushButton, &optionV4, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
 
 
 #else
@@ -368,9 +368,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	optionV4.state |= QStyle::State_Enabled;
 	initStyleOption(&optionV4, index);
 //	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
-	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
+//	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-	optionV4.rect = option.rect.adjusted(- 2, - 2, - 1, - 1);
+	optionV4.rect = option.rect.adjusted(0, 0, - 1, - 1);
 	QTextDocument doc;
 	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
 	optionV4.text = "<b>" + optionV4.text + "</b>";
@@ -389,7 +389,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
 
 	painter->save();
-	painter->translate(textRect.topLeft());
+	painter->translate(QPoint(textRect.topLeft().x(), textRect.topLeft().y() - 2));
 	painter->setClipRect(textRect.translated(- textRect.topLeft()));
 	doc.documentLayout()->draw(painter, ctx);
 #else
@@ -419,8 +419,8 @@ QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelI
     optionV4.state |= QStyle::State_Enabled;
     initStyleOption(&optionV4, index);
 //	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
-    _view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
-    optionV4.rect = option.rect.adjusted(- 2, - 2, - 1, - 1);
+//    _view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
+    optionV4.rect = option.rect.adjusted(1, 1, - 1, - 1);
 
     QTextDocument doc;
     doc.setHtml(optionV4.text);

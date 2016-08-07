@@ -263,7 +263,12 @@ bool GlobalParameters::find_workdirectory(void){
     qDebug() << "Check full current path " << full_current_path;
     QSettings	setting(full_current_path + "/mode.ini", QSettings::IniFormat);
     QString	mode = setting.value("application_mode").toString();
-    if(! is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());assert(succedded);}
+    if(! is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){
+	if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
+	else	QFile::setPermissions(full_current_path + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
+//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
+//	assert(succedded);
+    }
     if((mode != "Standard") && is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){		// mode == "Portable"||
 	qDebug() << "Work directory set to path " << full_current_path;
 
@@ -483,131 +488,131 @@ void GlobalParameters::main_window(wn_t *mainwindow){_mainwindow = mainwindow;}
 void GlobalParameters::crypt_key(QByteArray hash){_password_hash = hash;}
 
 QByteArray GlobalParameters::crypt_key(void){return _password_hash;}
+//// deprecated
+//QMap<QString, QString>  GlobalParameters::config_ini() const {
+//    QMap<QString, QString>	result;
+//    QString			content =
+//	"[General]\r\n"
+//	"addnewrecord_expand_info=1\r\n"
+//	"application_mode=Portable\r\n"
+//	"attachAppendDir=\r\n"
+//	"attachSaveAsDir=\r\n"
+//	"autoClosePasswordDelay=10\r\n"
+//	"autoClosePasswordEnable=false\r\n"
+//	"customDateTimeFormat=\r\n"
+//	"cutbranchconfirm=true\r\n"
+//	"editorCursorPosition=0\r\n"
+//	"editorScrollBarPosition=0\r\n"
+//	"editor_show=false\r\n"
+//	"enableCustomDateTimeFormat=false\r\n"
+//	"enableDecryptFileToTrashDirectory=false\r\n"
+//	"findInBaseExpand=false\r\n"
+//	"findScreenTreeSearchArea=0\r\n"
+//	"find_splitter_sizelist=\"657,23\"\r\n"
+//	"findscreen_find_in_author=true\r\n"
+//	"findscreen_find_in_home=true\r\n"
+//	"findscreen_find_in_name=true\r\n"
+//	"findscreen_find_in_pin=true\r\n"
+//	"findscreen_find_in_tags=true\r\n"
+//	"findscreen_find_in_text=false\r\n"
+//	"findscreen_find_in_url=true\r\n"
+//	"findscreen_find_inauthor=true\r\n"
+//	"findscreen_find_inname=true\r\n"
+//	"findscreen_find_intags=true\r\n"
+//	"findscreen_find_intext=true\r\n"
+//	"findscreen_find_inurl=false\r\n"
+//	"findscreen_howextract=1\r\n"
+//	"findscreen_show=true\r\n"
+//	"findscreen_wordregard=0\r\n"
+//	"focusWidget=\r\n"
+//	"h_left_splitter_sizelist=\"28,161\"\r\n"
+//	"h_record_splitter_sizelist=\"245,1121\"\r\n"
+//	"h_right_splitter_sizelist=\"189,1177\"\r\n"
+//	"h_tree_splitter_sizelist=\"0,1366\"\r\n"
+//	"hideEditorTools=\r\n"
+//	"horizontal_scrollbar_style_sheet=\"QTabWidget::pane { border: 0 px; } \"\r\n"
+//	"howpassrequest=atClickOnCryptBranch\r\n"
+//	"interfaceMode=desktop\r\n"
+//	"interfacelanguage=en\r\n"
+//	"mainwingeometry=\"0,29,1366,702\"\r\n"
+//	"passwordMiddleHash=\r\n"
+//	"passwordSaveFlag=false\r\n"
+//	"printdebugmessages=true\r\n"
+//	"programm=mytetra\r\n"
+//	"recordTableFieldsWidth=\"25,130,40\"\r\n"
+//	"recordTableShowFields=\"pin,name,rating\"\r\n"
+//	"recordTableShowHorizontalHeaders=true\r\n"
+//	"recordTableShowVerticalHeaders=true\r\n"
+//	"recordtableSelectedRecordId=\r\n"
+//	"rememberCursorAtHistoryNavigation=true\r\n"
+//	"rememberCursorAtOrdinarySelection=true\r\n"
+//	"runinminimizedwindow=false\r\n"
+//	"showSplashScreen=false\r\n"
+//	"synchrocommand=\r\n"
+//	"synchroonexit=false\r\n"
+//	"synchroonstartup=false\r\n"
+//	"syncroConsoleDetails=false\r\n"
+//	"tetradir=./data\r\n"
+//	"trashdir=./trash\r\n"
+//	"trashmaxfilecount=200\r\n"
+//	"trashsize=5\r\n"
+//	"tree_intercept=0\r\n"
+//	"tree_position=\"0,1447724759fsuoi32m8z,1469866853dm12nml5fr,1469881278ob68v7s2fr,146986679219xpkvopqs,14697021199iiwq4betd,1469940289r3z03xcy0q,1469941751igm3m3tqrq\"\r\n"
+//	"uglyQssReplaceHeightForTableView=0\r\n"
+//	"v_left_splitter_sizelist=\"146,1220\"\r\n"
+//	"v_right_sizelist=\"614,0\"\r\n"
+//	"v_right_splitter_sizelist=\"657,0\"\r\n"
+//	"version=27\r\n"
+//	"vertical_scrollbar_style_sheet=\"QTabWidget::pane { border: 0 px; } \"\r\n"
+//	"vspl_sizelist=\"614,0\"\r\n";
+//    result.insert("conf.ini", content);
 
-QMap<QString, QString>  GlobalParameters::config_ini() const {
-    QMap<QString, QString>	result;
-    QString			content =
-	"[General]\r\n"
-	"addnewrecord_expand_info=1\r\n"
-	"application_mode=Portable\r\n"
-	"attachAppendDir=\r\n"
-	"attachSaveAsDir=\r\n"
-	"autoClosePasswordDelay=10\r\n"
-	"autoClosePasswordEnable=false\r\n"
-	"customDateTimeFormat=\r\n"
-	"cutbranchconfirm=true\r\n"
-	"editorCursorPosition=0\r\n"
-	"editorScrollBarPosition=0\r\n"
-	"editor_show=false\r\n"
-	"enableCustomDateTimeFormat=false\r\n"
-	"enableDecryptFileToTrashDirectory=false\r\n"
-	"findInBaseExpand=false\r\n"
-	"findScreenTreeSearchArea=0\r\n"
-	"find_splitter_sizelist=\"657,23\"\r\n"
-	"findscreen_find_in_author=true\r\n"
-	"findscreen_find_in_home=true\r\n"
-	"findscreen_find_in_name=true\r\n"
-	"findscreen_find_in_pin=true\r\n"
-	"findscreen_find_in_tags=true\r\n"
-	"findscreen_find_in_text=false\r\n"
-	"findscreen_find_in_url=true\r\n"
-	"findscreen_find_inauthor=true\r\n"
-	"findscreen_find_inname=true\r\n"
-	"findscreen_find_intags=true\r\n"
-	"findscreen_find_intext=true\r\n"
-	"findscreen_find_inurl=false\r\n"
-	"findscreen_howextract=1\r\n"
-	"findscreen_show=true\r\n"
-	"findscreen_wordregard=0\r\n"
-	"focusWidget=\r\n"
-	"h_left_splitter_sizelist=\"28,161\"\r\n"
-	"h_record_splitter_sizelist=\"245,1121\"\r\n"
-	"h_right_splitter_sizelist=\"189,1177\"\r\n"
-	"h_tree_splitter_sizelist=\"0,1366\"\r\n"
-	"hideEditorTools=\r\n"
-	"horizontal_scrollbar_style_sheet=\"QTabWidget::pane { border: 0 px; } \"\r\n"
-	"howpassrequest=atClickOnCryptBranch\r\n"
-	"interfaceMode=desktop\r\n"
-	"interfacelanguage=en\r\n"
-	"mainwingeometry=\"0,29,1366,702\"\r\n"
-	"passwordMiddleHash=\r\n"
-	"passwordSaveFlag=false\r\n"
-	"printdebugmessages=true\r\n"
-	"programm=mytetra\r\n"
-	"recordTableFieldsWidth=\"25,130,40\"\r\n"
-	"recordTableShowFields=\"pin,name,rating\"\r\n"
-	"recordTableShowHorizontalHeaders=true\r\n"
-	"recordTableShowVerticalHeaders=true\r\n"
-	"recordtableSelectedRecordId=\r\n"
-	"rememberCursorAtHistoryNavigation=true\r\n"
-	"rememberCursorAtOrdinarySelection=true\r\n"
-	"runinminimizedwindow=false\r\n"
-	"showSplashScreen=false\r\n"
-	"synchrocommand=\r\n"
-	"synchroonexit=false\r\n"
-	"synchroonstartup=false\r\n"
-	"syncroConsoleDetails=false\r\n"
-	"tetradir=./data\r\n"
-	"trashdir=./trash\r\n"
-	"trashmaxfilecount=200\r\n"
-	"trashsize=5\r\n"
-	"tree_intercept=0\r\n"
-	"tree_position=\"0,1447724759fsuoi32m8z,1469866853dm12nml5fr,1469881278ob68v7s2fr,146986679219xpkvopqs,14697021199iiwq4betd,1469940289r3z03xcy0q,1469941751igm3m3tqrq\"\r\n"
-	"uglyQssReplaceHeightForTableView=0\r\n"
-	"v_left_splitter_sizelist=\"146,1220\"\r\n"
-	"v_right_sizelist=\"614,0\"\r\n"
-	"v_right_splitter_sizelist=\"657,0\"\r\n"
-	"version=27\r\n"
-	"vertical_scrollbar_style_sheet=\"QTabWidget::pane { border: 0 px; } \"\r\n"
-	"vspl_sizelist=\"614,0\"\r\n";
-    result.insert("conf.ini", content);
+//    return result;
+//}
 
-    return result;
-}
+//QMap<QString, QString>  GlobalParameters::mytetra_xml() const {
+//    QMap<QString, QString>	result;
+//    QString			content =
+//	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
+//	"<!DOCTYPE mytetradoc>\r\n"
+//	"<root>\r\n"
+//	"   <format subversion=\"2\" version=\"1\"/>\r\n"
+//	"   <content>\r\n"
+////  <node name="Rename me" id="1">
+//	"   <recordtable>\r\n"
+//	"	<record name=\"Google\" dir=\"0000000001\" pin=\"1\" tags=\"MyTetra, Qt\" ctime=\"20081210124656\" url=\"https://www.google.com/?gws_rd=ssl\" file=\"text.html\" id=\"1\" author=\"\"/>\r\n"
+//	"   </recordtable>\r\n"
+////  </node>
+//	"   </content>\r\n"
+//	"</root>\r\n";
+//    result.insert("mytetra.xml", content);
 
-QMap<QString, QString>  GlobalParameters::mytetra_xml() const {
-    QMap<QString, QString>	result;
-    QString			content =
-	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-	"<!DOCTYPE mytetradoc>\r\n"
-	"<root>\r\n"
-	"   <format subversion=\"2\" version=\"1\"/>\r\n"
-	"   <content>\r\n"
-//  <node name="Rename me" id="1">
-	"   <recordtable>\r\n"
-	"	<record name=\"Google\" dir=\"0000000001\" pin=\"1\" tags=\"MyTetra, Qt\" ctime=\"20081210124656\" url=\"https://www.google.com/?gws_rd=ssl\" file=\"text.html\" id=\"1\" author=\"\"/>\r\n"
-	"   </recordtable>\r\n"
-//  </node>
-	"   </content>\r\n"
-	"</root>\r\n";
-    result.insert("mytetra.xml", content);
+//    return result;
+//}
 
-    return result;
-}
+//QMap<QString, QString>  GlobalParameters::editorconf() const {
+//    QMap<QString, QString>	result;
+//    QString			content =
+//	"[General]\r\n"
+//	"    code_font=\"Courier New,12,-1,5,50,0,0,0,0,0\"\r\n"
+//	"    code_font_color=#6a1009\r\n"
+//	"    code_font_size=10\r\n"
+//	"    code_font_size_apply=1\r\n"
+//	"    code_indent_size=20\r\n"
+//	"    code_indent_size_apply=1\r\n"
+//	"    default_font=\"DejaVu Sans,12,-1,5,50,0,0,0,0,0\"\r\n"
+//	"    default_font_size=10\r\n"
+//	"    expand_tools_lines=1\r\n"
+//	"    finddialog_geometry=\"286,100,235,154\"\r\n"
+//	"    indent_step=10\r\n"
+//	"    monospace_font=\"Courier New,12,-1,5,50,0,0,0,0,0\"\r\n"
+//	"    monospace_font_size=11\r\n"
+//	"    monospace_font_size_apply=1\r\n"
+//	"    tools_line_1=\"freeze_browser_view,clear,bold,italic,underline,monospace,code,separator,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,separator,showformatting,findtext,showhtml,insert_image_from_file,settings,expand_edit_area,expand_tools_lines,attach\"\r\n"
+//	"    tools_line_2=\"fontselect,fontsize,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell,show_text\"\r\n"
+//	"    version=8\r\n";
+//    result.insert("editorconf.ini", content);
 
-QMap<QString, QString>  GlobalParameters::editorconf() const {
-    QMap<QString, QString>	result;
-    QString			content =
-	"[General]\r\n"
-	"    code_font=\"Courier New,12,-1,5,50,0,0,0,0,0\"\r\n"
-	"    code_font_color=#6a1009\r\n"
-	"    code_font_size=10\r\n"
-	"    code_font_size_apply=1\r\n"
-	"    code_indent_size=20\r\n"
-	"    code_indent_size_apply=1\r\n"
-	"    default_font=\"DejaVu Sans,12,-1,5,50,0,0,0,0,0\"\r\n"
-	"    default_font_size=10\r\n"
-	"    expand_tools_lines=1\r\n"
-	"    finddialog_geometry=\"286,100,235,154\"\r\n"
-	"    indent_step=10\r\n"
-	"    monospace_font=\"Courier New,12,-1,5,50,0,0,0,0,0\"\r\n"
-	"    monospace_font_size=11\r\n"
-	"    monospace_font_size_apply=1\r\n"
-	"    tools_line_1=\"freeze_browser_view,clear,bold,italic,underline,monospace,code,separator,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,separator,showformatting,findtext,showhtml,insert_image_from_file,settings,expand_edit_area,expand_tools_lines,attach\"\r\n"
-	"    tools_line_2=\"fontselect,fontsize,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell,show_text\"\r\n"
-	"    version=8\r\n";
-    result.insert("editorconf.ini", content);
-
-    return result;
-}
+//    return result;
+//}
 

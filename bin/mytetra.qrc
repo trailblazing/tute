@@ -139,5 +139,6 @@
         <file>resource/pic/folder.svg</file>
         <file>resource/pic/butterfly-right.svg</file>
         <file>resource/pic/butterfly-left.svg</file>
+        <file>resource/standartconfig/any/browser.conf</file>
     </qresource>
 </RCC>
