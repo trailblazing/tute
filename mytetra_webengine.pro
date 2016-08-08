@@ -478,7 +478,13 @@ DISTFILES   +=          \
     README.md \
     doc/up_linker.png \
     doc/binder.png \
-    bin/browser.conf
+    bin/browser.conf \
+    bin/resource/standartconfig/android/browser.conf \
+    bin/resource/standartconfig/android/entrance.ini \
+    bin/resource/standartconfig/android/mode.ini \
+    bin/resource/standartconfig/meego/browser.conf \
+    bin/resource/standartconfig/meego/entrance.ini \
+    bin/resource/standartconfig/meego/mode.ini
 
 FORMS       +=              \
     src/views/browser/addbookmarkdialog.ui \
