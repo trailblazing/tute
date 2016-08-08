@@ -274,9 +274,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	optionV4.state |= QStyle::State_Enabled;
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 	optionV4.features	= optionV4.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-	optionV4.rect		= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+	optionV4.rect		= option.rect.adjusted(0, 0, 0, 0);	// adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-	optionV4.text = QChar(0x274C);	// for ❌//QChar(0x274E);	// for "❎"; "X";			// title;         // trUtf8("Button text");
+	optionV4.text = QChar(0x274C);		// for ❌//QChar(0x274E);	// for "❎"; "X";			// title;         // trUtf8("Button text");
 	_view->style()->drawControl(QStyle::CE_PushButton, &optionV4, painter, 0);	//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
 //	it->star_rating()->paint(painter, option.rect, option.palette, StarRating::Editable);
 
@@ -336,9 +336,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	optionV4.state |= QStyle::State_Enabled;
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
 	optionV4.features	= optionV4.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-	optionV4.rect		= option.rect.adjusted(1, 1, - 1, - 1);		// QRect(50, 25, 100, 50);//
+	optionV4.rect		= option.rect.adjusted(0, 0, 0, 0);	// adjusted(1, 1, - 1, - 1);		// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-	optionV4.text = QChar(0x221A);	// for √ // title;// trUtf8("Button text");
+	optionV4.text = QChar(0x221A);		// for √ // title;// trUtf8("Button text");
 	_view->style()->drawControl(QStyle::CE_PushButton, &optionV4, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
 
 
@@ -612,10 +612,10 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 				////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
 				////            _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
 				//            auto cur = current_item();
-				auto	_record_controller	= _view->record_controller();
-				auto	pos			= _record_controller->source_model()->item(_record_controller->index<pos_source>(_record_controller->index<pos_proxy>(index_proxy(index))));
+				auto	_record_ctrl	= _view->record_controller();
+				auto	pos		= _record_ctrl->source_model()->item(_record_ctrl->index<pos_source>(_record_ctrl->index<pos_proxy>(index_proxy(index))));
 				//            assert(cur == pos);
-				_record_controller->remove(pos->id());
+				_record_ctrl->remove(pos->id());
 			    }
 			}
 	}else if(it && header_title == pin_field_description){
