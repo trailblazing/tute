@@ -48,7 +48,7 @@
 #include <QWidget>
 #include <QtCore/QSettings>
 #include <QtCore/QTextStream>
-
+#include <QFileInfo>
 
 #include "views/browser/browser.h"
 #include "views/browser/tabwidget.h"
@@ -433,12 +433,16 @@ void sapp_t::browser_init(){
 	//        , _privateProfile(0)
 	//        , _privateBrowsing(false)
 	// {
-    if(! QFile::exists(_globalparameters.work_directory() + "browser.conf")){
+//    auto test_string = _globalparameters.work_directory();
+    QFileInfo check_file(_globalparameters.work_directory() + "browser.conf");
+    if(check_file.exists() && check_file.isFile()){	// if(! QFile::exists(_globalparameters.work_directory() + "browser.conf")){
 //	QFile	file(_globalparameters.work_directory() + "/browser.conf");
 //	auto conf_name = QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf";
-	// Файл перемещается в корзину
-	if(! QFile::copy(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.work_directory() + "/browser.conf"))throw std::runtime_error("Can not copy browser.conf");	// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
-	else	QFile::setPermissions(_globalparameters.work_directory() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);	//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+	if(QFile::exists(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf")){
+		// Файл перемещается в корзину
+	    if(! QFile::copy(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.work_directory() + "/browser.conf"))throw std::runtime_error("Can not copy browser.conf");	// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
+	    else    QFile::setPermissions(_globalparameters.work_directory() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);		//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+	}
     }
     QDesktopServices::setUrlHandler(QLatin1String("http"), this, "openUrl");
     QString localSysName = QLocale::system().name();
