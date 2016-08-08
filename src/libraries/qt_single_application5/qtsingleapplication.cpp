@@ -1093,8 +1093,8 @@ void sapp_t::saveSession(){
     if(_private_browsing)return;
 	//    globalparameters.entrance()->clean();
 
-    QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
-    settings.beginGroup(QLatin1String("sessions"));
+    std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+    settings->beginGroup(QLatin1String("sessions"));
 
     QByteArray	data;
     QBuffer	buffer(&data);
@@ -1105,8 +1105,8 @@ void sapp_t::saveSession(){
 
     stream << static_cast<uint>(_browsers.size());
     for(auto &browser : _browsers)stream << browser->save_state();
-    settings.setValue(QLatin1String("lastSession"), data);
-    settings.endGroup();
+    settings->setValue(QLatin1String("lastSession"), data);
+    settings->endGroup();
 }
 
 bool sapp_t::canRestoreSession() const {

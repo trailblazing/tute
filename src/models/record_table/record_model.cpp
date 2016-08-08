@@ -333,6 +333,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 		// pixmap.load(":/resource/pic/butterfly-right.svg");
 		return QVariant::fromValue(star_rating);// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
 #endif
+		return field;
 	    }else return field;
 	}
     }

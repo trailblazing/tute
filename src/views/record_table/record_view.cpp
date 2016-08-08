@@ -266,9 +266,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	starRating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
 #elif defined USE_TEXT_AS_BUTTON
-//        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
-	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-//        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
+////        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
+//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+////        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
 	QStyleOptionButton optionV4;
 	optionV4.state |= QStyle::State_Enabled;
@@ -328,9 +328,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 
 #elif defined USE_TEXT_AS_BUTTON
-//        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
-	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-//        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
+////        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
+//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+////        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
 	QStyleOptionButton optionV4;
 	optionV4.state |= QStyle::State_Enabled;
@@ -346,64 +346,115 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 
 #endif
-    }else if(it && header_title == title_field_description && it == _view->current_item()){
+    }
+//    else if(it && header_title == title_field_description && it == _view->current_item()){
+// #ifdef USE_STAR_RATING
+// #elif defined USE_TEXT_AS_BUTTON
+//////        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
+////	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+//////        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
+////	QStyleOptionButton opt;
+////	opt.state |= QStyle::State_Enabled;
+////	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+////	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
+////	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+//////	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
+////	opt.text = "<b>" + it->field<name_type>() + "</b>";	// trUtf8("Button text");
+////	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+//	QStyleOptionViewItem optionV4 = option;
+//	optionV4.state |= QStyle::State_Enabled;
+//	initStyleOption(const_cast<QStyleOptionViewItem *>(&option), index);	// initStyleOption(&optionV4, index);
+//////	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+//////	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
+//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+//	optionV4.rect = option.rect.adjusted(0, 0, - 1, - 1);
+//	QTextDocument doc;
+//	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
+//	optionV4.text = "<b>" + optionV4.text + "</b>";
+//	doc.setHtml(optionV4.text);	// optionV4.text
+//	/// Painting item without text
+//	optionV4.text = QString();
+////	style->
+//	_view->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+//	QAbstractTextDocumentLayout::PaintContext ctx;
+//	// Highlighting text if item is selected
+//	if(optionV4.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
+//	if(0 == it->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
+//	QRect textRect =// style->
+//	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
+////	painter->restore();
+//	painter->save();
+//	painter->translate(QPoint(textRect.topLeft().x(), textRect.topLeft().y() - 2));
+//	painter->setClipRect(textRect.translated(- textRect.topLeft()));
+//	doc.documentLayout()->draw(painter, ctx);
+//	painter->restore();
+// #else
+// #endif
+//    }
+    else if(it && header_title == title_field_description){
+//	//
+//	try{
+//	    QStyledItemDelegate::paint(painter, option, index);		// may crash?
+//	}catch(std::exception &e){
+//	    qDebug() << "QStyledItemDelegate::paint(painter, option, index) : " << e.what();
+//	}
+////	drawFocus(painter, option, displayRect);
+
 #ifdef USE_STAR_RATING
 
 
 #elif defined USE_TEXT_AS_BUTTON
-////        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
-//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-////        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
-
-//	QStyleOptionButton opt;
-//	opt.state |= QStyle::State_Enabled;
-//	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-//	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
-//	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
-////	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
-//	opt.text = "<b>" + it->field<name_type>() + "</b>";	// trUtf8("Button text");
-//	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
-
-	QStyleOptionViewItem optionV4 = option;
-	optionV4.state |= QStyle::State_Enabled;
-	initStyleOption(&optionV4, index);
-//	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
-//	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
+//////        StarRating *star_rating = it->star_rating(); // = qvariant_cast<StarRating>(index.data());
+////	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+//////        star_rating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
+////	QStyleOptionButton opt;
+////	opt.state |= QStyle::State_Enabled;
+////	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+////	opt.features	= opt.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
+////	opt.rect	= option.rect.adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
+//////	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
+////	opt.text = "<b>" + it->field<name_type>() + "</b>";	// trUtf8("Button text");
+////	_view->style()->drawControl(QStyle::CE_PushButton, &opt, painter, 0);		//	opt.paint(painter, option.rect, option.palette, QStyleOptionButton::ReadOnly);
+//	std::shared_ptr<QStyleOptionViewItem> optionV4 = std::make_shared<QStyleOptionViewItem>();	// = option;
+//	optionV4->state |= QStyle::State_Enabled;
+//	initStyleOption(optionV4.get(), index);	// initStyleOption(&optionV4, index);	// terrible crash!
+//////	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+//////	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
 	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
-	optionV4.rect = option.rect.adjusted(0, 0, - 1, - 1);
+//	optionV4->rect = option.rect.adjusted(0, 0, - 1, - 1);
 	QTextDocument doc;
-	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
-	optionV4.text = "<b>" + optionV4.text + "</b>";
-	doc.setHtml(optionV4.text);
+//	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
+//	optionV4->text = (it == _view->current_item()) ? "<b>" + it->field<name_type>() + "</b>" : it->field<name_type>();	// (it == _view->current_item()) ? "<b>" + option.text + "</b>" : option.text;
+	doc.setHtml((it == _view->current_item()) ? "<b>" + it->field<name_type>() + "</b>" : it->field<name_type>());	// doc.setHtml(optionV4.text);
 
-	/// Painting item without text
-	optionV4.text = QString();
-//	style->
-	_view->style()->drawControl(QStyle::CE_ItemViewItem, &optionV4, painter);
+//	/// Painting item without text
+//	optionV4->text = QString();
+////	style->
+	_view->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);	// _view->style()->drawControl(QStyle::CE_ItemViewItem, optionV4.get(), painter);
 
 	QAbstractTextDocumentLayout::PaintContext ctx;
 	// Highlighting text if item is selected
-	if(optionV4.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
-	if(0 == it->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
+	if(option.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
+	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
 	QRect textRect =// style->
-	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
-
+	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &option);// _view->style()->subElementRect(QStyle::SE_ItemViewItemText, optionV4.get());
+//	painter->restore();
 	painter->save();
 	painter->translate(QPoint(textRect.topLeft().x(), textRect.topLeft().y() - 2));
 	painter->setClipRect(textRect.translated(- textRect.topLeft()));
 	doc.documentLayout()->draw(painter, ctx);
+	painter->restore();
 #else
 
 
 #endif
-    }else QStyledItemDelegate::paint(painter, option, index);
-// drawFocus(painter, option, displayRect);
-
+    }
 	// done
     painter->restore();
 }
 
 QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const {
+    (void) index;
 #ifdef USE_STAR_RATING
 
     auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
@@ -413,18 +464,17 @@ QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelI
     }else
 #endif
 
-    QStyleOptionViewItem optionV4 = option;	// remove cosntant attribute
-    initStyleOption(&optionV4, index);
-
-    optionV4.state |= QStyle::State_Enabled;
-    initStyleOption(&optionV4, index);
-//	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
-//    _view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
-    optionV4.rect = option.rect.adjusted(1, 1, - 1, - 1);
+//    QStyleOptionViewItem optionV4 = option;	// remove cosntant attribute
+//    optionV4.state |= QStyle::State_Enabled;
+//    initStyleOption(const_cast<QStyleOptionViewItem *>(&option), index);	// initStyleOption(&optionV4, index);
+////    QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
+////    _view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
+////    if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+//    optionV4.rect = option.rect.adjusted(1, 1, - 1, - 1);
 
     QTextDocument doc;
-    doc.setHtml(optionV4.text);
-    doc.setTextWidth(optionV4.rect.width());
+    doc.setHtml(option.text);	// doc.setHtml(optionV4.text);
+    doc.setTextWidth(option.rect.width());	// doc.setTextWidth(optionV4.rect.width());
 
     return QSize(doc.idealWidth(), doc.size().height());
 
@@ -435,6 +485,14 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
     (void) parent;
     (void) option;
     (void) index;
+    QWidget *result = nullptr;
+
+//    auto	it		= _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
+//    auto	header_title	= _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
+//    auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
+//    auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
+//    auto title_field_description = fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<name_type>::value)[boost::mpl::c_str < name_type > ::value];
+
 #ifdef USE_STAR_RATING
 
     auto it = _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
@@ -450,9 +508,13 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 
 	return editor;
     }else
+#elif defined USE_TEXT_AS_BUTTON
+//    if(it && header_title == title_field_description)result = new QLabel();
+#else
+
 #endif
 
-    return nullptr;	//    return QStyledItemDelegate::createEditor(parent, option, index);
+		return result;		//    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {

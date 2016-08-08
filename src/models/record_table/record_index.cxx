@@ -43,11 +43,14 @@ boost::intrusive_ptr<TreeItem> RecordIndex::bind(const std::function<RecordModel
 
 boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_){
     boost::intrusive_ptr<RecordIndex> result(nullptr);
-    if(sibling_item_ == host_)throw std::runtime_error(formatter() << "_sibling_item == _target_item; _target_item has already been inside the record view");
+    if(sibling_item_ == host_){
+	sibling_item_ = current_model_()->sibling(sibling_item_);
+//	if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_ == host_; host_ has already been inside the record view");
+    }
     index_source sibling_index_;
     sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
     if(! static_cast<QModelIndex>(sibling_index_).isValid()){sibling_index_ = index_source(current_model_()->fake_index(host_));assert(! static_cast<QModelIndex>(current_model_()->index(host_)).isValid());}	// index(0, 0, QModelIndex())
-    if(! static_cast<QModelIndex>(sibling_index_).isValid())throw std::runtime_error(formatter() << "_sibling_index isn\'t valid");
+    if(! static_cast<QModelIndex>(sibling_index_).isValid())throw std::runtime_error(formatter() << "sibling_index_ isn\'t valid");
     result = new RecordIndex(current_model_, host_, sibling_index_);
     if(! result)throw std::runtime_error(formatter() << "construct record index failed");
     return result;

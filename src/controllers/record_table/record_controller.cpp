@@ -1965,6 +1965,9 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
     index_proxy proxy_index = index<index_proxy>(index<pos_proxy>(source_position));
     _view->dataChanged((QModelIndex) proxy_index, (QModelIndex) proxy_index);
 
+    _view->restore_column_width();
+    _view->restore_header_state();
+
 //    select_as_current(index<pos_proxy>(_found_item));
 //// }item
 

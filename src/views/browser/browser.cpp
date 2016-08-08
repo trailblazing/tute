@@ -666,12 +666,12 @@ namespace browser {
 
     void Browser::save(){
 	sapp_t::instance()->saveSession();
-
-	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
-	settings.beginGroup(QLatin1String("browser"));
+	std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+//	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
+	settings->beginGroup(QLatin1String("browser"));
 	QByteArray data = save_state(false);
-	settings.setValue(QLatin1String("default_state"), data);
-	settings.endGroup();
+	settings->setValue(QLatin1String("default_state"), data);
+	settings->endGroup();
     }
 
     static const qint32 browser_magic = 0xba;

@@ -1089,7 +1089,7 @@ namespace browser {
 	// ));
 
 	assert(result->binder());
-
+	record_view_synchronize(result);
 	return result;
     }
 
@@ -1653,7 +1653,7 @@ namespace browser {
     }
 
     void PopupView::mousePressEvent(QMouseEvent *event){
-	_page->_pressed_buttons	= event->buttons();
+	_page->_pressed_buttons		= event->buttons();
 	_page->_keyboard_modifiers	= event->modifiers();
 	QWebEngineView::mousePressEvent(event);
     }
