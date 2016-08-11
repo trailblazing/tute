@@ -594,7 +594,10 @@ browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
 //		    if(selected_position == - 1)
 //		    selected_position =
 		    view = insert_new_tab(returned_position, _target_item);	// , source_insert_pos
-		}else returned_position = position(id_value(_target_item->field<id_type>()));	// pos_source(_record_controller->tabmanager()->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+		}else{
+		    returned_position	= position(id_value(_target_item->field<id_type>()));	// pos_source(_record_controller->tabmanager()->indexOf(view));	// _tabmanager->insertTab(pos_index.row(), _item, mode);   // _table
+		    view		= v;
+		}
 	    }else{
 //		selected_position =
 		view = insert_new_tab(returned_position, _target_item);	// , source_insert_pos

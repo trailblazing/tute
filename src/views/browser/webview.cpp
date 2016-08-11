@@ -331,7 +331,7 @@ namespace browser {
 		    , Entrance              *entrance
 		    , Browser               *browser
 		    , TabWidget             *tabmanager
-		    , rctrl_t                *record_controller
+		    , rctrl_t               *record_controller
 		    , WebView               *parent)
 	: QWebEnginePage(profile, parent)
 	  , _profile(profile)
@@ -616,9 +616,11 @@ namespace browser {
 
 		data_changed = true;
 		// metaeditor->setName(title);
-		auto _mainwindow = globalparameters.main_window();
-		if(! _mainwindow->windowTitle().contains(title))_mainwindow->setWindowTitle(QString(application_name) + " : " + title);	// table->setWorkPos(pos);
-		if(is_current)_editor_screen->name(title);
+		if(is_current){
+		    auto _mainwindow = globalparameters.main_window();
+		    if(! _mainwindow->windowTitle().contains(title)) _mainwindow->setWindowTitle(QString(application_name) + " : " + title);	// table->setWorkPos(pos);
+		    _editor_screen->name(title);
+		}
 	    }
 	    if(url.toString() != ""){
 		_binder->host()->field<url_type>(url.toString());	// "url",

@@ -77,7 +77,7 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<tkm_t *(
 	}else if(host_ == current_root() && host_ != absolute_root){
 //	    auto tree_view_ = dynamic_cast<tv_t *>(static_cast<QObject *>(current_model_())->parent());
 	    assert(tree_view_);
-	    tree_view_->intercept(host_->parent());	// static_cast<km_t *>(current_model())->intercept(_host->parent());
+	    if(host_parent_)tree_view_->intercept(host_parent_);	// static_cast<km_t *>(current_model())->intercept(_host->parent());
 	    index = static_cast<tkm_t *>(current_model_())->index(host_);
 	}else index = static_cast<tkm_t *>(current_model_())->index(host_);
 	if(! static_cast<QModelIndex>(index).isValid()){
@@ -97,6 +97,11 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<tkm_t *(
     host_index_ = host_index_valid();
     if(! static_cast<QModelIndex>(host_index_).isValid()){
 	auto target_url	= QUrl(host_->field<home_type>() != "" ? host_->field<home_type>() : host_->field<url_type>());
+	if(target_url == QUrl()){
+	    target_url = browser::Browser::_defaulthome;
+	    host_->field<home_type>(browser::Browser::_defaulthome);
+	    host_->field<url_type>(browser::Browser::_defaulthome);
+	}
 	//	result = new TreeIndex(current_model_, host_, host_index_, sibling_order_);
 	host_ = TreeIndex::instance(current_model_, tree_view_->current_item())->register_index(target_url
 											       , std::bind(&tv_t::move, tree_view_, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)											// std::placeholders::_1
@@ -858,7 +863,7 @@ boost::intrusive_ptr<const TreeItem> TreeIndex::is_ancestor_of(boost::intrusive_
 //    }
 //    if(static_cast<QModelIndex>(current_model_()->index(target)).isValid() && static_cast<QModelIndex>(current_model_()->index(reference)).isValid()){
 	//
-    if(reference->path_list().contains(target->field<id_type>())){
+    if(reference->path_list().contains(target->field<id_type>()) && reference != target){
 	//
 	result = reference;
     }

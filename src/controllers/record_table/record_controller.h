@@ -235,6 +235,7 @@ class rctrl_t : public QObject {
 
 	//    friend Record *register_record(const QUrl &_url);
 	friend struct RecordIndex;
+	friend class browser::TabWidget;
 };
 
 template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14

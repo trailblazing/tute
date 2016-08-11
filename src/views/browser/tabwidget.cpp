@@ -1299,6 +1299,7 @@ namespace browser {
 		//
 		int index = insertTab(pre_index + 1, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
 //		_tabbar->setTabButton(index, QTabBar::RightSide, new FlatToolButton(_tabbar));
+		_record_controller->addnew_item_fat(record_index);
 		//
 
 		setTabToolTip(index, result->field<name_type>());
@@ -1513,7 +1514,7 @@ namespace browser {
 		// }
 
 		removeTab(index);
-
+		_record_controller->remove(it->id());
 		emit _view_to_close->close_requested();	// _record_controller->remove_child(to_be_closed_view->page()->current_item()->id());
 		// delete to_be_closed_view;
 		_view_to_close->deleteLater();
