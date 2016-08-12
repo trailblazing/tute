@@ -1299,7 +1299,7 @@ namespace browser {
 		//
 		int index = insertTab(pre_index + 1, view, icon, title);	// index = _tabbar->insertPage(pre_index, view, icon, title);  //
 //		_tabbar->setTabButton(index, QTabBar::RightSide, new FlatToolButton(_tabbar));
-		_record_controller->addnew_item_fat(record_index);
+		_record_controller->addnew_item_fat(record_index, make_current);
 		//
 
 		setTabToolTip(index, result->field<name_type>());

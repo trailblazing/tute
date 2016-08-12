@@ -1009,7 +1009,7 @@ void rctrl_t::paste(void){
     for(int i = 0; i < nList; i ++){
 	auto it = clipboard_records->record(i);
 //	it->field<id_type>(get_unical_id());
-	addnew_item(RecordIndex::instance([&] {return _source_model;}, it), add_new_record_to_end);
+	addnew_item(RecordIndex::instance([&] {return _source_model;}, it), true, add_new_record_to_end);
     }
 	// Обновление на экране ветки, на которой стоит засветка,
 	// так как количество хранимых в ветке записей поменялось
@@ -1181,12 +1181,12 @@ browser::WebView *rctrl_t::addnew_blank(int mode){
     DiskHelper::remove_directory(directory);
 
 	// Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addnew_item(RecordIndex::instance([&] {return _source_model;}, it), mode);
+    return addnew_item(RecordIndex::instance([&] {return _source_model;}, it), true, mode);
 }
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, const int mode){
+browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current, const int mode){
     boost::intrusive_ptr<TreeItem> item = record_index_->host();
     qDebug() << "In add_new_record()";
 
@@ -1238,12 +1238,12 @@ browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> rec
     DiskHelper::remove_directory(directory);
 
 	// Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addnew_item(record_index_, mode);
+    return addnew_item(record_index_, make_current, mode);
 }
 
 // Функция добавления новой записи в таблицу конечных записей
 // Принимает полный формат записи
-browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, const int mode){
+browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current, const int mode){
     boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
     qDebug() << "In add_new()";
     browser::WebView *v = nullptr;
@@ -1287,8 +1287,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
     assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
 	// assert(_source_model->child(selected_position) == item);
-
-    select_as_current(index<pos_proxy>(selected_source_position));	// , mode // modify _source_model? yeah
+    if(make_current)select_as_current(index<pos_proxy>(selected_source_position));	// , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)

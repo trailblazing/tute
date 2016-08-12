@@ -68,9 +68,9 @@ class rctrl_t : public QObject {
 	//    typedef TreeItem::bind_helper       bind_helper;
 	//    typedef TreeItem::activate_helper   active_helper;
 	rctrl_t(MetaEditor *_editor_screen
-	      , browser::TabWidget *_tabmanager
-	      , rs_t *_record_screen
-	      , wn_t *_main_window);
+	       , browser::TabWidget *_tabmanager
+	       , rs_t *_record_screen
+	       , wn_t *_main_window);
 	virtual ~rctrl_t();
 
 	//    void init(void);
@@ -211,8 +211,8 @@ class rctrl_t : public QObject {
 	MetaEditor		*_editor_screen;
 	wn_t			*_main_window;
 
-	browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, const int mode = add_new_record_after);	// add_new_record_after
-	browser::WebView		*addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, const int mode = add_new_record_after);
+	browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true, const int mode = add_new_record_after);		// add_new_record_after
+	browser::WebView		*addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true, const int mode = add_new_record_after);
 	boost::intrusive_ptr<TreeItem>	synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
 	void				edit_field(pos_source pos
 						  , QString pin
@@ -258,11 +258,11 @@ template<>index_proxy rctrl_t::	index<index_proxy>(const index_source &) const;
 template<>index_proxy rctrl_t::	index<index_proxy>(const id_value &) const;
 template<>index_proxy rctrl_t::	index<index_proxy>(const boost::intrusive_ptr<TreeItem> &) const;
 
-template<>index_source rctrl_t:: index<index_source>(const pos_source &) const;
-template<>index_source rctrl_t:: index<index_source>(const index_proxy &) const;
-template<>index_source rctrl_t:: index<index_source>(const pos_proxy &) const;
-template<>index_source rctrl_t:: index<index_source>(const id_value &) const;
-template<>index_source rctrl_t:: index<index_source>(const boost::intrusive_ptr<TreeItem> &) const;
+template<>index_source rctrl_t::	index<index_source>(const pos_source &) const;
+template<>index_source rctrl_t::	index<index_source>(const index_proxy &) const;
+template<>index_source rctrl_t::	index<index_source>(const pos_proxy &) const;
+template<>index_source rctrl_t::	index<index_source>(const id_value &) const;
+template<>index_source rctrl_t::	index<index_source>(const boost::intrusive_ptr<TreeItem> &) const;
 
 template<>id_value rctrl_t::	index<id_value>(const pos_source &) const;
 template<>id_value rctrl_t::	index<id_value>(const index_proxy &) const;
