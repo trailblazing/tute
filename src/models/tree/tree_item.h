@@ -266,8 +266,8 @@ class TreeItem	// : public std::enable_shared_from_this<TreeItem>
 	QList<QStringList> path_children_all(QString field_name = "id") const;
 
 	// Получение идентификатора элемента
-	id_value	id() const;
-	QString		name() const;
+//	id_value	id() const;
+//	QString		name() const;
 
 	// Получение идентификатора родительской ветки
 	id_value parent_id() const;

@@ -10,20 +10,20 @@
 
 #include "fixed_parameters.h"
 
-//const char *id_field = "id";
-//const char *pin_field = "pin";
-//const char *rating_field = "rating";
-//const char *name_field = "name";
-//const char *author_field = "author";
-//const char *home_field = "home";
-//const char *url_field = "url";
-//const char *tags_field = "tags";
-//const char *ctime_field = "ctime";
-//const char *dir_field = "dir";
-//const char *file_field = "file";
-//const char *crypt_field = "crypt";
-//const char *has_attach_field = "hstch";     // "hasAttach";
-//const char *attach_count_field = "tchcnt";  // "attachCount";
+// const char *id_field = "id";
+// const char *pin_field = "pin";
+// const char *rating_field = "rating";
+// const char *name_field = "name";
+// const char *author_field = "author";
+// const char *home_field = "home";
+// const char *url_field = "url";
+// const char *tags_field = "tags";
+// const char *ctime_field = "ctime";
+// const char *dir_field = "dir";
+// const char *file_field = "file";
+// const char *crypt_field = "crypt";
+// const char *has_attach_field = "hstch";     // "hasAttach";
+// const char *attach_count_field = "tchcnt";  // "attachCount";
 
 
 
@@ -36,83 +36,100 @@ W_OBJECT_IMPL(FixedParameters)
 
 // Получение описаний набора полей
 QMap<QString, QString> FixedParameters::record_field_description(QStringList list) const {
-    QMap<QString, QString> names;
+    QMap<QString, QString> description;
 
-    names[boost::mpl::c_str < id_type > ::value] = tr("ID");
-    names[boost::mpl::c_str < pin_type > ::value] = tr("Pin");
-    names[boost::mpl::c_str < rating_type > ::value] = tr("Rating");
-    names[boost::mpl::c_str < name_type > ::value] = tr("Title");
-    names[boost::mpl::c_str < author_type > ::value] = tr("Author");
-    names[boost::mpl::c_str < home_type > ::value] = tr("Home");
-    names[boost::mpl::c_str < url_type > ::value] = tr("Url");
-    names[boost::mpl::c_str < tags_type > ::value] = tr("Tags");
-    names[boost::mpl::c_str < ctime_type > ::value] = tr("Create time");
-    names[boost::mpl::c_str < dir_type > ::value] = tr("Directory name");
-    names[boost::mpl::c_str < file_type > ::value] = tr("File name");
-    names[boost::mpl::c_str < crypt_type > ::value] = tr("Is crypt");
-    names[boost::mpl::c_str < has_attach_type > ::value] = tr("Has attachs");
-    names[boost::mpl::c_str < attach_count_type > ::value] = tr("Attachs count");
-    names[boost::mpl::c_str < dynamic_name_type > ::value] = tr("Dynamic name");
+//    _description[boost::mpl::c_str < id_type > ::value]			= tr("ID");
+//    _description[boost::mpl::c_str < pin_type > ::value]		= tr("Pin");
+//    _description[boost::mpl::c_str < rating_type > ::value]		= tr("Rating");
+//    _description[boost::mpl::c_str < name_type > ::value]		= tr("Title");
+//    _description[boost::mpl::c_str < author_type > ::value]		= tr("Author");
+//    _description[boost::mpl::c_str < home_type > ::value]		= tr("Home");
+//    _description[boost::mpl::c_str < url_type > ::value]		= tr("Url");
+//    _description[boost::mpl::c_str < tags_type > ::value]		= tr("Tags");
+//    _description[boost::mpl::c_str < ctime_type > ::value]		= tr("Create time");
+//    _description[boost::mpl::c_str < dir_type > ::value]		= tr("Directory name");
+//    _description[boost::mpl::c_str < file_type > ::value]		= tr("File name");
+//    _description[boost::mpl::c_str < crypt_type > ::value]		= tr("Is crypt");
+//    _description[boost::mpl::c_str < has_attach_type > ::value]		= tr("Has attachs");
+//    _description[boost::mpl::c_str < attach_count_type > ::value]	= tr("Attachs count");
+//    _description[boost::mpl::c_str < dynamic_name_type > ::value]	= tr("Dynamic name");
 
-    // Удаляются строчки, которых нет в переданном списке
-    QMutableMapIterator<QString, QString> iterator(names);
+	// Удаляются строчки, которых нет в переданном списке
+    QMapIterator<QString, QString> iterator(_description);	// QMutableMapIterator<QString, QString> iterator(_description);
     while(iterator.hasNext()){
-        iterator.next();
-        if(list.contains(iterator.key()) == false)iterator.remove();
+	iterator.next();
+	if(list.contains(iterator.key()))description[iterator.key()] = _description[iterator.key()];	// if(list.contains(iterator.key()) == false)iterator.remove();
     }
-    return names;
+    return description;
 }
 
 FixedParameters::FixedParameters(QObject *parent) : QObject(parent){
     Q_UNUSED(parent);
+//    QMap<QString, QString> _description;
 
-    _record_field = (QStringList()                     \
-        << boost::mpl::c_str<id_type>::value           \
-        << boost::mpl::c_str<pin_type>::value          \
-        << boost::mpl::c_str<rating_type>::value       \
-        << boost::mpl::c_str<name_type>::value         \
-        << boost::mpl::c_str<author_type>::value       \
-        << boost::mpl::c_str<home_type>::value         \
-        << boost::mpl::c_str<url_type>::value          \
-        << boost::mpl::c_str<tags_type>::value         \
-        << boost::mpl::c_str<ctime_type>::value        \
-        << boost::mpl::c_str<dir_type>::value          \
-        << boost::mpl::c_str<file_type>::value         \
-        << boost::mpl::c_str<crypt_type>::value        \
-        << boost::mpl::c_str<has_attach_type>::value   \
-        << boost::mpl::c_str<attach_count_type>::value \
-        << boost::mpl::c_str<dynamic_name_type>::value \
-        );
+    _description[boost::mpl::c_str < id_type > ::value]			= tr("ID");
+    _description[boost::mpl::c_str < pin_type > ::value]		= tr("Pin");
+    _description[boost::mpl::c_str < rating_type > ::value]		= tr("Rating");
+    _description[boost::mpl::c_str < name_type > ::value]		= tr("Title");
+    _description[boost::mpl::c_str < author_type > ::value]		= tr("Author");
+    _description[boost::mpl::c_str < home_type > ::value]		= tr("Home");
+    _description[boost::mpl::c_str < url_type > ::value]		= tr("Url");
+    _description[boost::mpl::c_str < tags_type > ::value]		= tr("Tags");
+    _description[boost::mpl::c_str < ctime_type > ::value]		= tr("Create time");
+    _description[boost::mpl::c_str < dir_type > ::value]		= tr("Directory name");
+    _description[boost::mpl::c_str < file_type > ::value]		= tr("File name");
+    _description[boost::mpl::c_str < crypt_type > ::value]		= tr("Is crypt");
+    _description[boost::mpl::c_str < has_attach_type > ::value]		= tr("Has attachs");
+    _description[boost::mpl::c_str < attach_count_type > ::value]	= tr("Attachs count");
+    _description[boost::mpl::c_str < dynamic_name_type > ::value]	= tr("Dynamic name");
 
-    _record_natural_field = (QStringList()       \
-        << boost::mpl::c_str<id_type>::value     \
-        << boost::mpl::c_str<pin_type>::value    \
-        << boost::mpl::c_str<rating_type>::value \
-        << boost::mpl::c_str<name_type>::value   \
-        << boost::mpl::c_str<author_type>::value \
-        << boost::mpl::c_str<home_type>::value   \
-        << boost::mpl::c_str<url_type>::value    \
-        << boost::mpl::c_str<tags_type>::value   \
-        << boost::mpl::c_str<ctime_type>::value  \
-        << boost::mpl::c_str<dir_type>::value    \
-        << boost::mpl::c_str<file_type>::value   \
-        << boost::mpl::c_str<crypt_type>::value  \
-        );
+    _record_field = (QStringList()		       \
+	<< boost::mpl::c_str<id_type>::value	       \
+	<< boost::mpl::c_str<pin_type>::value	       \
+	<< boost::mpl::c_str<rating_type>::value       \
+	<< boost::mpl::c_str<name_type>::value	       \
+	<< boost::mpl::c_str<author_type>::value       \
+	<< boost::mpl::c_str<home_type>::value	       \
+	<< boost::mpl::c_str<url_type>::value	       \
+	<< boost::mpl::c_str<tags_type>::value	       \
+	<< boost::mpl::c_str<ctime_type>::value	       \
+	<< boost::mpl::c_str<dir_type>::value	       \
+	<< boost::mpl::c_str<file_type>::value	       \
+	<< boost::mpl::c_str<crypt_type>::value	       \
+	<< boost::mpl::c_str<has_attach_type>::value   \
+	<< boost::mpl::c_str<attach_count_type>::value \
+	<< boost::mpl::c_str<dynamic_name_type>::value \
+	);
 
-    _record_calculable_field = (QStringList()          \
-        << boost::mpl::c_str<has_attach_type>::value   \
-        << boost::mpl::c_str<attach_count_type>::value \
-        << boost::mpl::c_str<dynamic_name_type>::value \
-        );
+    _record_natural_field = (QStringList()	 \
+	<< boost::mpl::c_str<id_type>::value	 \
+	<< boost::mpl::c_str<pin_type>::value	 \
+	<< boost::mpl::c_str<rating_type>::value \
+	<< boost::mpl::c_str<name_type>::value	 \
+	<< boost::mpl::c_str<author_type>::value \
+	<< boost::mpl::c_str<home_type>::value	 \
+	<< boost::mpl::c_str<url_type>::value	 \
+	<< boost::mpl::c_str<tags_type>::value	 \
+	<< boost::mpl::c_str<ctime_type>::value	 \
+	<< boost::mpl::c_str<dir_type>::value	 \
+	<< boost::mpl::c_str<file_type>::value	 \
+	<< boost::mpl::c_str<crypt_type>::value	 \
+	);
 
-    _record_field_crypted = (QStringList()       \
-        << boost::mpl::c_str<pin_type>::value    \
-        << boost::mpl::c_str<name_type>::value   \
-        << boost::mpl::c_str<author_type>::value \
-        << boost::mpl::c_str<home_type>::value   \
-        << boost::mpl::c_str<url_type>::value    \
-        << boost::mpl::c_str<tags_type>::value   \
-        );
+    _record_calculable_field = (QStringList()	       \
+	<< boost::mpl::c_str<has_attach_type>::value   \
+	<< boost::mpl::c_str<attach_count_type>::value \
+	<< boost::mpl::c_str<dynamic_name_type>::value \
+	);
+
+    _record_field_crypted = (QStringList()	 \
+	<< boost::mpl::c_str<pin_type>::value	 \
+	<< boost::mpl::c_str<name_type>::value	 \
+	<< boost::mpl::c_str<author_type>::value \
+	<< boost::mpl::c_str<home_type>::value	 \
+	<< boost::mpl::c_str<url_type>::value	 \
+	<< boost::mpl::c_str<tags_type>::value	 \
+	);
 }
 
 
@@ -167,19 +184,19 @@ FixedParameters::~FixedParameters()
 */
 
 bool FixedParameters::is_record_field_available(QString name) const {
-    // if(_record_field.contains(name))
-    // return true;
-    // else
-    // return false;
+	// if(_record_field.contains(name))
+	// return true;
+	// else
+	// return false;
     return _record_field.contains(name);
 }
 
 
 bool FixedParameters::is_record_field_natural(QString name) const {
-    // if(_record_natural_field.contains(name))
-    // return true;
-    // else
-    // return false;
+	// if(_record_natural_field.contains(name))
+	// return true;
+	// else
+	// return false;
 
     return _record_natural_field.contains(name);
 }
@@ -187,10 +204,10 @@ bool FixedParameters::is_record_field_natural(QString name) const {
 
 
 bool FixedParameters::is_record_field_calculable(QString name) const {
-    // if(_record_calculable_field.contains(name))
-    // return true;
-    // else
-    // return false;
+	// if(_record_calculable_field.contains(name))
+	// return true;
+	// else
+	// return false;
 
     return _record_calculable_field.contains(name);
 }

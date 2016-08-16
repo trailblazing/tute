@@ -81,6 +81,8 @@ class AttachTableData;
 class QDomElement;
 class QDomDocument;
 class StarRating;
+struct id_value;
+
 
 class Record
     : public boost::intrusive_ref_counter<Record, boost::thread_safe_counter>
@@ -216,8 +218,12 @@ class Record
 
 	// browser::WebView *bind();
 	// browser::WebView *active();
-	bool	dir_exists();
-	bool	file_exists();
+	bool		dir_exists();
+	bool		file_exists();
+	id_value	id() const;
+	QString		name() const;
+	size_t		rating() const;
+	size_t		add_rating();
 #ifdef USE_STAR_RATING
 	StarRating	*star_rating(){return _star_rating;}
 #endif

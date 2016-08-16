@@ -97,7 +97,7 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<tkm_t *(
     host_index_ = host_index_valid();
     if(! static_cast<QModelIndex>(host_index_).isValid()){
 	auto target_url	= QUrl(host_->field<home_type>() != "" ? host_->field<home_type>() : host_->field<url_type>());
-	if(target_url == QUrl()){
+	if(target_url == QUrl() || ! target_url.isValid()){
 	    target_url = browser::Browser::_defaulthome;
 	    host_->field<home_type>(browser::Browser::_defaulthome);
 	    host_->field<url_type>(browser::Browser::_defaulthome);

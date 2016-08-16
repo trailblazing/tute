@@ -196,7 +196,7 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	bool			removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
 	void			remove_child(boost::intrusive_ptr<TreeItem> it);
 
-	int	move_up(const pos_source pos, const pos_source target = pos_source (- 1));
+	int	move(const pos_source pos, const pos_source target = pos_source (- 1));
 	int	move_dn(const pos_source pos);
 
 	// protected:

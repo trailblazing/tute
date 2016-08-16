@@ -695,8 +695,8 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 // при наличии ссылки на данный объект
 // Причина в том, что одни и те же QAction используются в двух местах -
 // в RecordTableScreen и здесь в контекстном меню
-    auto init = [&](void) -> void {		// RecordView::
-	    auto setup_signals = [&](void) -> void {					// RecordView::
+    auto init = [&, this](void) -> void {		// RecordView::
+	    auto setup_signals = [&, this](void) -> void {					// RecordView::
 			// Сигнал чтобы показать контекстное меню по правому клику на списке записей
 		    connect(this, &rv_t::customContextMenuRequested, this, &rv_t::on_custom_context_menu_requested);
 
@@ -740,10 +740,11 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 
 		    connect(this->horizontalHeader(), &QHeaderView::sectionMoved, this, &rv_t::on_section_moved);
 		    connect(this->horizontalHeader(), &QHeaderView::sectionResized, this, &rv_t::on_section_resized);
+		    connect(this->horizontalHeader(), &QHeaderView::sortIndicatorChanged, _record_controller, &rctrl_t::on_sort_request);
 		};
 
 
-	    auto assembly_context_menu = [&](void) -> void				// RecordView::
+	    auto assembly_context_menu = [&, this](void) -> void				// RecordView::
 		{
 			//// Конструирование меню
 			// _context_menu = new QMenu(this);
@@ -846,7 +847,7 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
     setObjectName(record_view_multi_instance_name);		// screen_name + "_view"
 
 // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
-    this->setSortingEnabled(false);
+    this->setSortingEnabled(true);	// this->setSortingEnabled(false);
 
 // Настройка области виджета для кинетической прокрутки
     set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));
@@ -1489,23 +1490,39 @@ void rv_t::resizeEvent(QResizeEvent *e){
 	for(int i = 0; i < show_fields.size(); i ++){
 	    if(required_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
 		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, _pin_width);
-		if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width());
-		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
-		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
-//		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
-		}
+		else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width());
+		else if(! _is_field_type_column(boost::mpl::c_str<name_type>::value, i))suggest_others_width += columnWidth(i);
+//		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+//		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
+////		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+//		}
 	    }else{
 		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, _pin_width);
-		if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width());
-		real_capacity = this->contentsRect().width();
-//            if(real_capacity >= 300){
-//                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
-//            }else{
+		else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width());
+		else if(! _is_field_type_column(boost::mpl::c_str<name_type>::value, i))suggest_others_width += columnWidth(i);
+//		real_capacity = this->contentsRect().width();
+////            if(real_capacity >= 300){
+////                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
+////            }else{
+//		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+//		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
+////		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+//		}
+////            }
+	    }
+	}
+	for(int i = 0; i < show_fields.size(); i ++){
+	    if(required_width >= real_capacity){
 		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
 		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
-//		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+			//		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 		}
-//            }
+	    }else{
+		real_capacity = this->contentsRect().width();
+		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
+		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
+			//		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
+		}
 	    }
 	}
 //	for(int j = 0; j < horizontalHeader()->count(); j ++)

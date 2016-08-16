@@ -1052,28 +1052,28 @@ id_value TreeItem::parent_id() const {
     return id;
 }
 
-id_value TreeItem::id() const {
-    if(_field_data.contains("id"))return id_value(_field_data["id"]);
-    else{
-	// critical_error("In TreeItem data getting field with unavailable name 'id'");
+//id_value TreeItem::id() const {
+//    if(_field_data.contains("id"))return id_value(_field_data["id"]);
+//    else{
+//	// critical_error("In TreeItem data getting field with unavailable name 'id'");
 
-	// exit(1);
-	auto dir = const_cast<TreeItem *>(this)->_field_data["dir"];
-	const_cast<TreeItem *>(this)->_field_data["id"] = dir.length() > 0 ? dir : get_unical_id();
+//	// exit(1);
+//	auto dir = const_cast<TreeItem *>(this)->_field_data["dir"];
+//	const_cast<TreeItem *>(this)->_field_data["id"] = dir.length() > 0 ? dir : get_unical_id();
 
-	return id_value(_field_data["id"]);
-    }
-}
+//	return id_value(_field_data["id"]);
+//    }
+//}
 
-QString TreeItem::name() const {
-    if(_field_data.contains("name"))return _field_data["name"];
-    else{
-	// critical_error("In TreeItem data getting field with unavailable name 'name'");
+//QString TreeItem::name() const {
+//    if(_field_data.contains("name"))return _field_data["name"];
+//    else{
+//	// critical_error("In TreeItem data getting field with unavailable name 'name'");
 
-	// exit(1);
-	return "";
-    }
-}
+//	// exit(1);
+//	return "";
+//    }
+//}
 
 #ifdef _with_record_table
 

@@ -197,6 +197,7 @@ class rctrl_t : public QObject {
 
 	void select_as_current(pos_proxy pos_proxy_);	// , const int mode = add_new_record_after
 	//    void cursor_to_index(boost::intrusive_ptr<TreeItem> it);
+	void on_sort_request(int logicalIndex, Qt::SortOrder order);
     protected:
 
 

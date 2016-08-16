@@ -757,17 +757,17 @@ boost::intrusive_ptr<TreeItem> tv_t::current_item(){
     auto				index_result = current_index();
     if(index_result.isValid())item_result = _know_root->child(index_result);										// selectionModel()->currentIndex()
     else{
-	if(_previous_index.isValid()){
-	    item_result = _know_root->child(_previous_index);
-	    if(item_result)index_result = select_as_current(TreeIndex::instance([&](){return _know_root;}, item_result));
-	}else{
-	    auto	vtab_record_	= globalparameters.main_window()->vtab_record();
-	    auto	view_		= vtab_record_->activated_browser()->tabmanager()->currentWebView();
-	    if(view_){
-		item_result = view_->page()->host();
-		if(item_result)index_result = select_as_current(TreeIndex::instance([&](){return _know_root;}, item_result));
-	    }
-	}
+//	if(_previous_index.isValid()){
+//	    item_result = _know_root->child(_previous_index);
+//	    if(item_result)index_result = select_as_current(TreeIndex::instance([&](){return _know_root;}, item_result));
+//	}else{
+//	    auto	vtab_record_	= globalparameters.main_window()->vtab_record();
+//	    auto	view_		= vtab_record_->activated_browser()->tabmanager()->currentWebView();
+//	    if(view_){
+//		item_result = view_->page()->host();
+//		if(item_result)index_result = select_as_current(TreeIndex::instance([&](){return _know_root;}, item_result));
+//	    }
+//	}
 	if(! item_result && selectionModel()->selectedIndexes().size() > 0){
 	    item_result = _know_root->child(selectionModel()->selectedIndexes().last());
 		// boost::intrusive_ptr<TreeIndex> tree_index;
@@ -880,6 +880,15 @@ boost::intrusive_ptr<TreeItem> tv_t::current_item(){
 // Get the index of the current element on which the cursor is positioned   // Получение индекса текущего элемента на котором стоит курсор
 QModelIndex tv_t::current_index(void) const {
     QModelIndex result = selectionModel()->currentIndex();
+    if(! result.isValid()){
+	boost::intrusive_ptr<TreeItem>		item_result(nullptr);
+	auto					vtab_record_	= globalparameters.main_window()->vtab_record();
+	auto					view_		= vtab_record_->activated_browser()->tabmanager()->currentWebView();
+	if(view_){
+	    item_result = view_->page()->host();
+	    if(item_result) result = _know_root->index(item_result);	// select_as_current(TreeIndex::instance([&](){return _know_root;}, item_result));
+	}
+    }
 	// if(!selectionModel()->currentIndex().isValid()) {
 
 	// boost::intrusive_ptr<TreeItem> _item = nullptr;

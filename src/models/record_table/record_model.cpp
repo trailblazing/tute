@@ -334,6 +334,9 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 		return QVariant::fromValue(star_rating);// pixmap.scaled(16, 16, Qt::KeepAspectRatio, Qt::FastTransformation);
 #endif
 		return field;
+	    }else if(role == SORT_ROLE){
+		if(field_name == boost::mpl::c_str<rating_type>::value)return field.toULongLong();
+		return field;
 	    }else return field;
 	}
     }
@@ -656,9 +659,9 @@ void RecordModel::fields(int pos, QMap<QString, QString> data){
 QModelIndex RecordModel::index(int row, int column, const QModelIndex &parent) const {
 //    (void) parent;
     QModelIndex result;
-    auto	tab = _record_controller->record_screen()->browser()->tabmanager();
-    assert(tab);
-    assert(_record_controller->tabmanager());
+//    auto	tab = _record_controller->record_screen()->browser()->tabmanager();
+//    assert(tab);// this will encounter failures under debug buid when copy paste codes
+//    assert(_record_controller->tabmanager());
     if(column >= 0 && column < _record_controller->tabmanager()->count()){
 	auto it = item(pos_source(column));
 	result = createIndex(row, column, static_cast<void *>(it.get()));
@@ -911,14 +914,22 @@ int RecordModel::count() const {return _record_controller->tabmanager()->count()
 
 int RecordModel::size() const {return _record_controller->tabmanager()->count();}
 
-int RecordModel::move_up(const pos_source pos, const pos_source target){
+int RecordModel::move(const pos_source pos, const pos_source target){
     beginResetModel();
 
     pos_source new_pos = pos;
-    if(pos > 0){
-	new_pos = - 1 == target ? pos_source((int) pos - 1) : target;
-	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
-	emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
+    if(target < pos){	// move up
+	if(pos > 0){
+	    new_pos = (- 1 == target) ? pos_source((int) pos - 1) : target;
+	    _record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+	    emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
+	}
+    }else if(target > pos){		// move down
+	if(pos < count() - 1){
+	    new_pos = (target == 1 && pos != 0) ? pos_source((int) pos + 1) : target;
+	    _record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+	    emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
+	}
     }
     endResetModel();
 

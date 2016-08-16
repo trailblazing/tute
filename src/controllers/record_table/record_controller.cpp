@@ -57,6 +57,7 @@
 
 
 extern GlobalParameters globalparameters;
+extern FixedParameters	fixedparameters;
 extern AppConfig	appconfig;
 extern WalkHistory	walkhistory;
 
@@ -1776,7 +1777,8 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 	// find_object<MetaEditor>(meta_editor_singleton_name)
 	globalparameters.meta_editor()->clear_all();
     }
-    qobject_cast<rs_t *>(parent())->tools_update();
+//    qobject_cast<rs_t *>(parent())
+    _record_screen->tools_update();
 }
 
 //// Удаление одной записи по идентификатору
@@ -1851,6 +1853,89 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 // globalparameters.tree_screen()->tree_view()->know_model_save();
 // }
 
+void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
+//    _proxy_model->setDynamicSortFilter(true);
+    _proxy_model->setFilterKeyColumn(logicalIndex);
+    _proxy_model->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+
+    auto current = _view->current_item();// selection_first<boost::intrusive_ptr<TreeItem>>();
+
+
+
+//    _record_controller->proxy_model()->sort(logicalIndex, order);
+    auto	header_title			= _source_model->headerData(logicalIndex, Qt::Horizontal, Qt::DisplayRole).toString();
+    auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
+    auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
+    auto	title_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<name_type>::value)[boost::mpl::c_str < name_type > ::value];
+
+    std::vector<browser::WebView *> v_list;
+    for(int index_ = 0; index_ < _tabmanager->count(); index_ ++)v_list.push_back(_tabmanager->webView(index_));
+    if(order == Qt::AscendingOrder){
+	if(header_title == pin_field_description){
+//	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+//		    return v0->page()->host()->field<pin_type>() == "" ? v1->page()->host()->field<pin_type>() != "" ? true : false : false;
+//		});
+//	    int t = 0;
+	    for(auto v : v_list){
+		if(v->page()->host()->field<pin_type>() != "")_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(_tabmanager->count() - 1));	// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
+//		t ++;
+	    }
+	}else if(header_title == title_field_description){
+	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+		    return v0->page()->host()->field<name_type>() < v1->page()->host()->field<name_type>();
+		});
+	    int t = 0;
+	    for(auto v : v_list){
+		_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+		t ++;
+	    }
+	}else if(header_title == rating_field_description){
+	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+		    return v0->page()->host()->field<rating_type>().toULongLong() < v1->page()->host()->field<rating_type>().toULongLong();
+		});
+	    int t = 0;
+	    for(auto v : v_list){
+		_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+		t ++;
+	    }
+	}
+    }else{
+	if(header_title == pin_field_description){
+//	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+//		    return v0->page()->host()->field<pin_type>() != "" ? v1->page()->host()->field<pin_type>() == "" ? true : false : false;
+//		});
+//	    int t = 0;
+	    for(auto v : v_list){
+		if(v->page()->host()->field<pin_type>() != "")_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));
+//		t ++;
+	    }		//
+	}else if(header_title == title_field_description){
+	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+		    return v0->page()->host()->field<name_type>() > v1->page()->host()->field<name_type>();
+		});
+	    int t = 0;
+	    for(auto v : v_list){
+		_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+		t ++;
+	    }
+	}else if(header_title == rating_field_description){
+	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
+		    return v0->page()->host()->field<rating_type>().toULongLong() > v1->page()->host()->field<rating_type>().toULongLong();
+		});
+	    int t = 0;
+	    for(auto v : v_list){
+		_source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(t));
+		t ++;
+	    }
+	}
+    }
+    select_as_current(index<pos_proxy>(_source_model->index(current)));
+	// Сохранение дерева веток
+	// find_object<TreeScreen>(tree_screen_singleton_name)
+    globalparameters.tree_screen()->view()->know_model_save();
+}
+
 
 // Клик по пункту "Сортировка" в контекстном меню
 void rctrl_t::on_sort_click(void){
@@ -1865,10 +1950,10 @@ void rctrl_t::on_sort_click(void){
 	// Включается сортировка по нужному столбцу
 	int n = record_screen->_sort->data().toInt();	// В actionSort хранится номер столбца, по которому нужно сортировать
 	qDebug() << "Sort column number " << n;
-	_proxy_model->sort(n);
+	_proxy_model->sort(n, Qt::DescendingOrder);
 
 	// Треугольничек сортировки переставляется на нужный столбец
-	_view->horizontalHeader()->setSortIndicator(n, Qt::AscendingOrder);
+	_view->horizontalHeader()->setSortIndicator(n, Qt::DescendingOrder);	// Qt::AscendingOrder
 
 	// Запрещается передвижение заголовков столбцов
 	// так как после переноса неправильно устанавливается треугольничек сортировки, он остается на том же по счету столбце
@@ -1882,7 +1967,8 @@ void rctrl_t::on_sort_click(void){
 	// азрешается передвижение заголовков столбцов
 	// horizontalHeader()->setSectionsMovable(true);
     }
-    qobject_cast<rs_t *>(parent())->tools_update();
+//    qobject_cast<rs_t *>(parent())
+    _record_screen->tools_update();
 }
 
 // Слот, срабатывающий при вызове настроек

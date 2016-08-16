@@ -598,7 +598,7 @@ void rs_t::setup_actions(void){
 		// auto item = _source_model->browser_pages();
 	    pos_proxy pos_target = pos_proxy(0);
 		// Перемещение текущей записи вверх
-	    _record_controller->source_model()->move_up(_record_controller->index<pos_source>(pos_proxy_), _record_controller->index<pos_source>(pos_target));
+	    _record_controller->source_model()->move(_record_controller->index<pos_source>(pos_proxy_), _record_controller->index<pos_source>(pos_target));
 
 		// Установка засветки на перемещенную запись
 	    _record_controller->select_as_current(pos_target);
@@ -624,7 +624,7 @@ void rs_t::setup_actions(void){
 		// auto item = _source_model->browser_pages();
 
 		// Перемещение текущей записи вверх
-	    _record_controller->source_model()->move_up(_record_controller->index<pos_source>(pos_proxy_));
+	    _record_controller->source_model()->move(_record_controller->index<pos_source>(pos_proxy_));
 
 		// Установка засветки на перемещенную запись
 	    _record_controller->select_as_current(pos_proxy((int) pos_proxy_ - 1));
@@ -694,11 +694,9 @@ void rs_t::setup_actions(void){
 
 	// Действия по сортировке
 	// _sort = new QAction(tr("Toggle sorting"), this);
-    _sort->setStatusTip(tr("Enable/disable sorting by column"));
+    _sort->setStatusTip(tr("Sorting by column"));// Enable/disable
     _sort->setIcon(QIcon(":/resource/pic/sort.svg"));
-    connect(_sort, &QAction::triggered, _record_controller, &rctrl_t::on_sort_click);
-	// _tabmanager
-	// &browser::TabWidget::on_sort_click
+//    connect(_sort, &QAction::triggered, _record_controller, &rctrl_t::on_sort_click);
 
 
 	// Кнопка вызова печати таблицы конечных записей
@@ -754,7 +752,7 @@ void rs_t::setup_ui(void){
 
     _toolsline->addSeparator();
 
-    append_action_as_button<QToolButton>(_toolsline, _sort);
+//    append_action_as_button<QToolButton>(_toolsline, _sort);
     append_action_as_button<QToolButton>(_toolsline, _print);
     append_action_as_button<QToolButton>(_toolsline, _settings);
 	// _extra_toolsline = new QToolBar(this);

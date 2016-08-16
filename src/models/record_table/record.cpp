@@ -9,6 +9,7 @@
 #include "main.h"
 #include "record.h"
 
+#include "models/record_table/record_index.hxx"
 #include "models/app_config/app_config.h"
 #include "libraries/fixed_parameters.h"
 #include "libraries/global_parameters.h"
@@ -1177,3 +1178,39 @@ void Record::check_and_create_text_file(){
 ////    else
 ////        return _page->view();
 // }
+
+id_value Record::id() const {
+    if(_field_data.contains("id"))return id_value(_field_data["id"]);
+    else{
+	// critical_error("In TreeItem data getting field with unavailable name 'id'");
+
+	// exit(1);
+	auto dir = const_cast<Record *>(this)->_field_data["dir"];
+	const_cast<Record *>(this)->_field_data["id"] = dir.length() > 0 ? dir : get_unical_id();
+
+	return id_value(_field_data["id"]);
+    }
+}
+
+QString Record::name() const {
+    if(_field_data.contains("name"))return _field_data["name"];
+    else{
+	// critical_error("In TreeItem data getting field with unavailable name 'name'");
+
+	// exit(1);
+	return "";
+    }
+}
+
+size_t Record::rating() const {
+    auto rating_ = _field_data[boost::mpl::c_str < rating_type > ::value];
+    return rating_.toULongLong();
+}
+
+size_t Record::add_rating(){
+    auto	rating_ = _field_data[boost::mpl::c_str < rating_type > ::value];
+    auto	number	= rating_.toULongLong();
+    number ++;
+    _field_data[boost::mpl::c_str < rating_type > ::value] = QString::number(number);
+    return number;
+}
