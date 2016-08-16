@@ -922,13 +922,16 @@ int RecordModel::move(const pos_source pos, const pos_source target){
 	if(pos > 0){
 	    new_pos = (- 1 == target) ? pos_source((int) pos - 1) : target;
 	    _record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
-	    emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
+//	    auto source_index = static_cast<QModelIndex>(_record_controller->index<index_source>(pos));
+//	    auto target_index = static_cast<QModelIndex>(_record_controller->index<index_source>(new_pos));
+//	    this->moveRow(source_index.parent(), source_index.row(), target_index.parent(), target_index.row());
+////	    emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
 	}
     }else if(target > pos){		// move down
 	if(pos < count() - 1){
 	    new_pos = (target == 1 && pos != 0) ? pos_source((int) pos + 1) : target;
 	    _record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
-	    emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
+//	    emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
 	}
     }
     endResetModel();
@@ -936,17 +939,17 @@ int RecordModel::move(const pos_source pos, const pos_source target){
     return new_pos;
 }
 
-int RecordModel::move_dn(const pos_source pos){
-    beginResetModel();
+// int RecordModel::move_dn(const pos_source pos){
+//    beginResetModel();
 
-    pos_source new_pos = pos;
-    if(pos < count() - 1){
-	new_pos = pos_source((int) pos + 1);
-	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
-	emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
-    }
-    endResetModel();
+//    pos_source new_pos = pos;
+//    if(pos < count() - 1){
+//	new_pos = pos_source((int) pos + 1);
+//	_record_controller->tabmanager()->tabbar()->moveTab((int) pos, (int) new_pos);		// moveTab(pos, new_pos);
+//	emit _record_controller->view()->tabMoved(static_cast<int>(pos), static_cast<int>(new_pos));
+//    }
+//    endResetModel();
 
-    return new_pos;
-}
+//    return new_pos;
+// }
 

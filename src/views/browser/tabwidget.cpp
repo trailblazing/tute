@@ -82,7 +82,7 @@
 #include "models/record_table/record.h"
 #include "models/record_table/record_index.hxx"
 #include "models/tree/tree_index.hxx"
-#include "models/record_table/record_index.hxx"
+//#include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "models/record_table/items_flat.h"
 #include "views/record_table/record_view.h"
@@ -101,6 +101,11 @@
 #include "views/tree/tree_view.h"
 #include "libraries/disk_helper.h"
 #include "models/tree/binder.hxx"
+//#include "models/record_table/record_index.hxx"
+#include "controllers/record_table/record_controller.h"
+
+
+
 
 extern const char *custom_hidabletabwidget_style;
 
@@ -924,6 +929,10 @@ namespace browser {
 
 	_lineedits->removeWidget(lineEdit);
 	_lineedits->insertWidget(toIndex, lineEdit);
+
+	auto source_index = static_cast<QModelIndex>(_record_controller->index<index_source>(pos_source(fromIndex)));
+	auto target_index = static_cast<QModelIndex>(_record_controller->index<index_source>(pos_source(toIndex)));
+	_record_controller->source_model()->moveRow(source_index.parent(), source_index.row(), target_index.parent(), target_index.row());
     }
 
 //    void TabWidget::setCurrentIndex(int index){

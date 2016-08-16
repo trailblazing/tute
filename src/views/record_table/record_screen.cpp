@@ -648,9 +648,9 @@ void rs_t::setup_actions(void){
 
 		// Выясняется ссылка на таблицу конечных данных
 		// auto item = _source_model->browser_pages();
-
+	    pos_proxy target = static_cast<int>(pos_proxy_) < _record_controller->tabmanager()->count() - 1 ? pos_proxy((int) pos_proxy_ + 1) : pos_proxy(_record_controller->tabmanager()->count() - 1);
 		// Перемещение текущей записи вниз
-	    _record_controller->source_model()->move_dn(_record_controller->index<pos_source>(pos_proxy_));
+	    _record_controller->source_model()->move(_record_controller->index<pos_source>(pos_proxy_), _record_controller->index<pos_source>(target));
 
 		// Установка засветки на перемещенную запись
 	    _record_controller->select_as_current(pos_proxy((int) pos_proxy_ + 1));

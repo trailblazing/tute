@@ -847,7 +847,7 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
     setObjectName(record_view_multi_instance_name);		// screen_name + "_view"
 
 // Изначально сортировка запрещена (заголовки столбцов не будут иметь треугольнички)
-    this->setSortingEnabled(true);	// this->setSortingEnabled(false);
+    this->setSortingEnabled(false);
 
 // Настройка области виджета для кинетической прокрутки
     set_kinetic_scrollarea(qobject_cast<QAbstractItemView *>(this));

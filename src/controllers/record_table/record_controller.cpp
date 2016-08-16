@@ -1869,6 +1869,10 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
     auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
     auto	title_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<name_type>::value)[boost::mpl::c_str < name_type > ::value];
 
+    _view->setSortingEnabled(true);
+
+    _proxy_model->setSortRole(SORT_ROLE);
+
     std::vector<browser::WebView *> v_list;
     for(int index_ = 0; index_ < _tabmanager->count(); index_ ++)v_list.push_back(_tabmanager->webView(index_));
     if(order == Qt::AscendingOrder){
@@ -1930,10 +1934,17 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 	    }
 	}
     }
+    _view->reset();
+    _proxy_model->setSourceModel(_source_model);
+    _view->setModel(_proxy_model);
+    _view->setSortingEnabled(false);
+    _proxy_model->setSortRole(Qt::InitialSortOrderRole);
+    _proxy_model->invalidate();
     select_as_current(index<pos_proxy>(_source_model->index(current)));
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
     globalparameters.tree_screen()->view()->know_model_save();
+    _record_screen->tools_update();
 }
 
 
