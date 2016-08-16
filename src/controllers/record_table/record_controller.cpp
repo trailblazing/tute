@@ -1950,7 +1950,9 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 
 // Клик по пункту "Сортировка" в контекстном меню
 void rctrl_t::on_sort_click(void){
-    rs_t *record_screen = qobject_cast<rs_t *>(parent());
+//    rs_t	*_record_screen	= qobject_cast<rs_t *>(parent());
+    int	index_ = _record_screen->_sort->data().toInt();
+//    if(_view->horizontalHeader()->sortIndicatorOrder())
 	// Если сортировка еще не включена
     if(! _view->isSortingEnabled()){
 	// Включается сортировка
@@ -1959,7 +1961,7 @@ void rctrl_t::on_sort_click(void){
 	_proxy_model->setSortRole(SORT_ROLE);	// Qt::DisplayRole
 
 	// Включается сортировка по нужному столбцу
-	int n = record_screen->_sort->data().toInt();	// В actionSort хранится номер столбца, по которому нужно сортировать
+	int n = _record_screen->_sort->data().toInt();	// В actionSort хранится номер столбца, по которому нужно сортировать
 	qDebug() << "Sort column number " << n;
 	_proxy_model->sort(n, Qt::DescendingOrder);
 

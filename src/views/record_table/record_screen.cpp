@@ -696,7 +696,17 @@ void rs_t::setup_actions(void){
 	// _sort = new QAction(tr("Toggle sorting"), this);
     _sort->setStatusTip(tr("Sorting by column"));// Enable/disable
     _sort->setIcon(QIcon(":/resource/pic/sort.svg"));
-//    connect(_sort, &QAction::triggered, _record_controller, &rctrl_t::on_sort_click);
+    connect(_sort, &QAction::triggered, [&](bool){
+	    auto indicator = _sort->data().toInt();
+	    auto horizontal_header = _record_controller->view()->horizontalHeader();
+	    if(horizontal_header->sortIndicatorOrder() == Qt::AscendingOrder){
+		horizontal_header->setSortIndicator(indicator, Qt::DescendingOrder);
+		_record_controller->on_sort_request(indicator, Qt::DescendingOrder);
+	    }else{
+		horizontal_header->setSortIndicator(indicator, Qt::AscendingOrder);
+		_record_controller->on_sort_request(indicator, Qt::AscendingOrder);
+	    }
+	});		// _record_controller, &rctrl_t::on_sort_click);
 
 
 	// Кнопка вызова печати таблицы конечных записей

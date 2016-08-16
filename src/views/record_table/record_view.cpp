@@ -1011,9 +1011,11 @@ void rv_t::on_custom_context_menu_requested(const QPoint &pos){
 	// RecordTableScreen *parentPointer = qobject_cast<RecordTableScreen *>(parent());
 	// RecordTableScreen *parentPointer = static_cast<RecordTableScreen *>(p);
 	// RecordTableScreen *_recordtablescreen = globalparameters.getRecordTableScreen();
-	// Устанавливается надпись для пункта сортировки
-    if(! this->isSortingEnabled())_record_screen->_sort->setText(tr("Enable sorting"));
-    else _record_screen->_sort->setText(tr("Disable sorting"));
+
+//	// Устанавливается надпись для пункта сортировки
+//    if(! this->isSortingEnabled())_record_screen->_sort->setText(tr("Enable sorting"));
+//    else _record_screen->_sort->setText(tr("Disable sorting"));
+
 	// Запоминается номер колонки, по которой был произведен клик (номер колонки будет правильный, даже если записей мало и клик произошел под записями)
     int n = this->horizontalHeader()->logicalIndexAt(pos);
     qDebug() << "Click on column number " << n;
