@@ -1950,8 +1950,8 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 
 // Клик по пункту "Сортировка" в контекстном меню
 void rctrl_t::on_sort_click(void){
-//    rs_t	*_record_screen	= qobject_cast<rs_t *>(parent());
-    int	index_ = _record_screen->_sort->data().toInt();
+
+//    int	index_ = _record_screen->_sort->data().toInt();
 //    if(_view->horizontalHeader()->sortIndicatorOrder())
 	// Если сортировка еще не включена
     if(! _view->isSortingEnabled()){

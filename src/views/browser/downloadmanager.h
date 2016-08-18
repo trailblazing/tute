@@ -66,6 +66,7 @@ QT_END_NAMESPACE
 
 //    QT_BEGIN_NAMESPACE
 
+class HidableTabWidget;
 
 namespace browser {
     class TabWidget;
@@ -126,6 +127,8 @@ namespace browser {
 	//    class QFileIconProvider;
 	//    QT_END_NAMESPACE
 
+
+
     class DownloadManager
 	: public QDialog
 	  , public Ui_download_dialog {
@@ -151,7 +154,7 @@ namespace browser {
 
 	public:
 
-	    DownloadManager(QString object_name, QWidget *parent = 0);
+	    DownloadManager(QString object_name, HidableTabWidget *vtab_record_);
 	    ~DownloadManager();
 	    int activeDownloads() const;
 
@@ -168,12 +171,14 @@ namespace browser {
 	    void	updateItemCount();
 	    void	load();
 
+	    HidableTabWidget				*_vtab_record;
 	    AutoSaver					*_autosaver;
 	    DownloadModel				*_model;
 	    QFileIconProvider				*_iconprovider;
 	    QList<std::shared_ptr<DownloadWidget> >	_downloads;
 	    RemovePolicy				_removepolicy;
 	    bool					_prompt_store_position = false;
+
 
 	    friend class DownloadModel;
 	    friend class DownloadWidget;

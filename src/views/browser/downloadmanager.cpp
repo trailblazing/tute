@@ -51,7 +51,7 @@
 #include "libraries/qt_single_application5/qtsingleapplication.h"
 #include "networkaccessmanager.h"
 #include "views/browser/tabwidget.h"
-
+#include "views/main_window/hidable_tabwidget.h"
 
 #include <math.h>
 
@@ -320,8 +320,9 @@ namespace browser {
 	    It is a basic download manager.  It only downloads the file, doesn't do BitTorrent,
 	    extract zipped files or anything fancy.
 	 */
-    DownloadManager::DownloadManager(QString object_name, QWidget *parent)
-	: QDialog(parent)
+    DownloadManager::DownloadManager(QString object_name, HidableTabWidget *vtab_record_)
+	: QDialog(vtab_record_)
+	  , _vtab_record(vtab_record_)
 	  , _autosaver(new AutoSaver(this))
 	  , _model(new DownloadModel(this))
 	  , _iconprovider(0)
@@ -337,6 +338,8 @@ namespace browser {
 	//        _model = new DownloadModel(this);
 	downloadsView->setModel(_model);
 	connect(cleanupButton, &FlatToolButton::clicked, this, &DownloadManager::cleanup);
+	if(_vtab_record->indexOf(this) == - 1)_vtab_record->addTab(static_cast<QWidget *>(this), QIcon(":/resource/pic/apple.svg"), "Download");
+	if(globalparameters.download_manager() != this)globalparameters.download_manager(this);
 	load();
     }
 
@@ -346,6 +349,12 @@ namespace browser {
 	_autosaver->changeOccurred();
 	_autosaver->saveIfNeccessary();
 	if(_iconprovider)delete _iconprovider;
+	auto index_ = _vtab_record->indexOf(this);
+	if(index_ != - 1){
+	    _vtab_record->removeTab(index_);
+//	    if(_vtab_record->tabText(index_) == download_manager_singleton_name)
+	}
+	if(globalparameters.download_manager() == this)globalparameters.download_manager(nullptr);
     }
 
     int DownloadManager::activeDownloads() const {

@@ -212,7 +212,7 @@ Q_SIGNALS:
 
 	static browser::HistoryManager		*historyManager();
 	static browser::CookieJar		*cookieJar();
-	static browser::DownloadManager		*downloadManager();
+	static browser::DownloadManager		*request_download_manager();
 	static QNetworkAccessManager		*networkAccessManager();
 	static browser::BookmarksManager	*bookmarksManager();
 

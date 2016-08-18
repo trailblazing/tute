@@ -1184,7 +1184,7 @@ namespace browser {
 //    }
 
     void Browser::slotDownloadManager(){
-	sapp_t::downloadManager()->show();
+	sapp_t::request_download_manager()->show();
     }
 
     void Browser::slotSelectLineEdit(){

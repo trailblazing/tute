@@ -120,8 +120,9 @@ class GlobalParameters : public QObject {
 
 	void				style_source(const QString &source);
 	QString				style_source() const;
+	browser::DownloadManager	*request_download_manager();
 	void				download_manager(browser::DownloadManager *dm);
-	browser::DownloadManager	*download_manager();
+	browser::DownloadManager	*download_manager() const;
 
 	void			editor_config(EditorConfig *dialog);
 	EditorConfig		*editor_config();

@@ -1283,14 +1283,14 @@ browser::CookieJar *sapp_t::cookieJar(){
 #endif
 }
 
-browser::DownloadManager *sapp_t::downloadManager(){
+browser::DownloadManager *sapp_t::request_download_manager(){
 	//    if(!_downloadmanager) {
 	//        _downloadmanager = new browser::DownloadManager();
 	//    }
 
 	//    return _downloadmanager;
 
-    return globalparameters.download_manager();
+    return globalparameters.request_download_manager();
 }
 
 QNetworkAccessManager *sapp_t::networkAccessManager(){

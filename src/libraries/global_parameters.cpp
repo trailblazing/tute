@@ -264,7 +264,7 @@ bool GlobalParameters::find_workdirectory(void){
     QSettings	setting(full_current_path + "/mode.ini", QSettings::IniFormat);
     QString	mode = setting.value("application_mode").toString();
     if(! is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){
-	if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
+	if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini"))throw std::runtime_error("Can not copy conf.ini");
 	else	QFile::setPermissions(full_current_path + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
 //	assert(succedded);
@@ -431,15 +431,23 @@ HidableTabWidget *GlobalParameters::vtab_record(){return _vtab_record;}
 //    return _vtab_tree;
 // }
 
-browser::DownloadManager *GlobalParameters::download_manager(){
-    if(! _download_manager)_download_manager = new browser::DownloadManager(download_manager_singleton_name, _vtab_record);
-    if(_vtab_record->indexOf(_download_manager) == - 1){
-	_vtab_record->addTab(static_cast<QWidget *>(_download_manager), QIcon(":/resource/pic/apple.svg"), "Download");
-//	connect(_vtab_record, &::HidableTabWidget::tabCloseRequested, [&](int index){_vtab_record->removeTab(index);});
+browser::DownloadManager *GlobalParameters::request_download_manager(){
+    bool found = false;
+    for(int i = 0; i < _vtab_record->count(); i ++){
+	auto widget_ = _vtab_record->widget(i);
+	if(widget_->objectName() == download_manager_singleton_name){
+	    _download_manager	= dynamic_cast<browser::DownloadManager *>(widget_);
+	    found		= true;
+	    break;
+	}
     }
+    if(! found)_download_manager = new browser::DownloadManager(download_manager_singleton_name, _vtab_record);
+//    if(! _download_manager)_download_manager = new browser::DownloadManager(download_manager_singleton_name, _vtab_record);
     if(_vtab_record->currentIndex() != _vtab_record->indexOf(_download_manager))_vtab_record->setCurrentWidget(static_cast<QWidget *>(_download_manager));
     return _download_manager;
 }
+
+browser::DownloadManager *GlobalParameters::download_manager() const {return _download_manager;}
 
 void GlobalParameters::editor_config(EditorConfig *dialog){_editor_config = dialog;}
 
@@ -489,7 +497,7 @@ void GlobalParameters::crypt_key(QByteArray hash){_password_hash = hash;}
 
 QByteArray GlobalParameters::crypt_key(void){return _password_hash;}
 //// deprecated
-//QMap<QString, QString>  GlobalParameters::config_ini() const {
+// QMap<QString, QString>  GlobalParameters::config_ini() const {
 //    QMap<QString, QString>	result;
 //    QString			content =
 //	"[General]\r\n"
@@ -568,9 +576,9 @@ QByteArray GlobalParameters::crypt_key(void){return _password_hash;}
 //    result.insert("conf.ini", content);
 
 //    return result;
-//}
+// }
 
-//QMap<QString, QString>  GlobalParameters::mytetra_xml() const {
+// QMap<QString, QString>  GlobalParameters::mytetra_xml() const {
 //    QMap<QString, QString>	result;
 //    QString			content =
 //	"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
@@ -588,9 +596,9 @@ QByteArray GlobalParameters::crypt_key(void){return _password_hash;}
 //    result.insert("mytetra.xml", content);
 
 //    return result;
-//}
+// }
 
-//QMap<QString, QString>  GlobalParameters::editorconf() const {
+// QMap<QString, QString>  GlobalParameters::editorconf() const {
 //    QMap<QString, QString>	result;
 //    QString			content =
 //	"[General]\r\n"
@@ -614,5 +622,5 @@ QByteArray GlobalParameters::crypt_key(void){return _password_hash;}
 //    result.insert("editorconf.ini", content);
 
 //    return result;
-//}
+// }
 

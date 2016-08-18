@@ -665,6 +665,12 @@ void wn_t::setup_signals(void){
 	    }
 	});
 
+//    connect(_vtab_record->tabBar(), &QTabBar::tabCloseRequested, [&](int index){
+////	    if(_vtab_record->widget(index)->objectName() == download_manager_singleton_name)
+//	    if(_vtab_record->tabText(index) == download_manager_singleton_name)	globalparameters.download_manager(nullptr);
+//	});
+
+
 //    connect(_vtab_record->tabBar(), &QTabBar::tabBarDoubleClicked, [&](int index){
 //	    (void) index;
 
@@ -982,27 +988,27 @@ HidableTabWidget *wn_t::vtab_record() const {return _vtab_record;}
 
 ts_t *wn_t::tree_screen() const {return _tree_screen;}
 
-QMenu *wn_t::file_menu()const{return _filemenu;}
+QMenu *wn_t::file_menu() const {return _filemenu;}
 
-QMenu *wn_t::edit_menu() const{return _editmenu;}
+QMenu *wn_t::edit_menu() const {return _editmenu;}
 
-QMenu *wn_t::view_menu() const{return _viewmenu;}
+QMenu *wn_t::view_menu() const {return _viewmenu;}
 
-browser::HistoryMenu *wn_t::histry_menu() const{return _histrymenu;}
+browser::HistoryMenu *wn_t::histry_menu() const {return _histrymenu;}
 
-browser::BookmarksMenu *wn_t::bookmark_menu() const{return _bookmarkmenu;}
+browser::BookmarksMenu *wn_t::bookmark_menu() const {return _bookmarkmenu;}
 
-QMenu *wn_t::window_menu() const{return _windowmenu;}
+QMenu *wn_t::window_menu() const {return _windowmenu;}
 
-QMenu *wn_t::tools_menu() const{return _toolsmenu;}
+QMenu *wn_t::tools_menu() const {return _toolsmenu;}
 
-QMenu *wn_t::help_menu() const{return _helpmenu;}
+QMenu *wn_t::help_menu() const {return _helpmenu;}
 
-QSplitter *wn_t::find_splitter() const{return _v_find_splitter;}
+QSplitter *wn_t::find_splitter() const {return _v_find_splitter;}
 
-QSplitter *wn_t::h_record_splitter() const{return _h_record_splitter;}
+QSplitter *wn_t::h_record_splitter() const {return _h_record_splitter;}
 
-QSplitter *wn_t::h_tree_splitter() const{return _h_tree_splitter;}
+QSplitter *wn_t::h_tree_splitter() const {return _h_tree_splitter;}
 
 
 // Слот, срабатывающий когда происходит выход из оконной системы
