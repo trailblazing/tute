@@ -1710,7 +1710,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 		}
 		pre = sort_delete(pre);
 //		browser::WebView	*_first_delete	= nullptr;
-		int			_new_index	= 0;
+		int _new_index = 0;
 		for(size_t i = 0; i < pre.size(); i ++){
 		    id_value id = pre[i];
 			// QModelIndex idx = id_to_proxyindex(id);
@@ -1729,7 +1729,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 			    changed = true;
 			    if(0 == i){
 //				_first_delete	= v;
-				_new_index	= index - 1;
+				_new_index = 0 >= index ? 0 : index - 1;
 			    }
 			    sorted_delete_ids << id;
 			}
