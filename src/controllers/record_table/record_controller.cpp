@@ -2,6 +2,9 @@
 
 
 #include <cassert>
+// #include <iostream>
+#include <vector>
+#include <algorithm>
 
 #if QT_VERSION == 0x050600
 #include <wobjectimpl.h>
@@ -1659,18 +1662,57 @@ void rctrl_t::remove(id_value delete_id){
 // Удаление одной записи по идентификатору
 void rctrl_t::remove(QVector<id_value> delete_ids){
 	// Remove records for the specified list of identifiers // Удаление записей по указанному списку идентификаторов
-    auto
-    pages_remove_from_browser
+    auto pages_remove_from_browser
 	= [&](QVector<id_value> delete_ids) -> browser::WebView * {
-	    browser::WebView *_new_view = nullptr;
+	    browser::WebView	*_new_view = nullptr;
+
 	    qDebug() << "Remove rows by ID list: " << delete_ids;
-	    QVector<id_value> real_delete_ids;
+	    QVector<id_value> sorted_delete_ids;
+
+
+
+	    auto sort_delete = [&](std::vector<id_value> &y) -> std::vector<id_value> {
+		    std::sort(std::begin(y)
+			     , std::end(y)
+			     , [&](id_value i1, id_value i2){
+			    auto item1 = _source_model->item(i1);
+			    auto item2 = _source_model->item(i2);
+			    bool result = false;
+			    if(item1 && item2){
+				browser::WebView *v1 = nullptr;
+				browser::WebView *v2 = nullptr;
+				if(  (v1 = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item1->field<url_type>().toStdString()) && b->host()->id() == item1->id();}))
+				  && (v2 = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item2->field<url_type>().toStdString()) && b->host()->id() == item1->id();}))
+				){
+				    assert(v1->page()->binder()->host() == item1);
+				    assert(v2->page()->binder()->host() == item2);
+				    auto index1 = _tabmanager->webViewIndex(v1);
+				    assert(index1 != - 1);
+				    auto index2 = _tabmanager->webViewIndex(v2);
+				    assert(index2 != - 1);
+				    result = index1 < index2;
+				}
+			    }
+			    return result;
+			}
+			);
+//		    for(auto v : y)std::cout << v << ' ';
+		    return y;
+		};
 		// Выясняется ссылка на таблицу конечных данных
 		// auto _browser_pages = _source_model->browser_pages();
-	    if(_source_model->count() > 0){	// return nullptr;	// if(!_browser_pages)
-		bool changed = false;
+	    if(_source_model->count() > 0){		// return nullptr;	// if(!_browser_pages)
+		bool			changed = false;
+		std::vector<id_value>	pre;
 		for(int i = 0; i < delete_ids.count(); i ++){
-		    id_value id = delete_ids[i];
+		    id_value id	= delete_ids[i];
+		    pre.push_back(id);
+		}
+		pre = sort_delete(pre);
+//		browser::WebView	*_first_delete	= nullptr;
+		int			_new_index	= 0;
+		for(size_t i = 0; i < pre.size(); i ++){
+		    id_value id = pre[i];
 			// QModelIndex idx = id_to_proxyindex(id);
 		    auto item = _source_model->item(id);
 		    if(item){
@@ -1685,11 +1727,16 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 				// _source_model->remove_child(item);  // doing nothing
 			    _tabmanager->closeTab(index);				// _tabmanager->indexOf(item->bounded_page()->view())
 			    changed = true;
-			    real_delete_ids << id;
+			    if(0 == i){
+//				_first_delete	= v;
+				_new_index	= index - 1;
+			    }
+			    sorted_delete_ids << id;
 			}
 		    }
 			// globalparameters.find_screen()->remove_id(id);  // ?
 		}
+//		_new_view = _tabmanager->sibling(_first_delete);
 		if(changed){
 			// Удаляется строка в Proxy модели
 			// Proxy модель сама должна уведомить вид о своем изменении, так как именно она подключена к виду
@@ -1698,20 +1745,23 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 		    _proxy_model->setSourceModel(_source_model);
 		    _view->setModel(_proxy_model);
 		    if(_tabmanager->count() > 0){
-			auto v = _tabmanager->currentWebView();
-			if(v){
-			    auto	it	= v->page()->binder()->host();
+			_new_view = _tabmanager->webView(_new_index);
+			if(_new_view != _tabmanager->currentWebView())_tabmanager->select_as_current(_new_view);
+//			_new_view = _tabmanager->currentWebView();
+			auto _binder = _new_view->page()->binder();
+			if(_new_view && _binder){
+			    auto	it	= _binder->host();
 			    auto	index_	= index<pos_proxy>(it->id());
-			    if(_view->current_item() != it)select_as_current(index_);
-//		    for(auto id:real_delete_ids){
-//			IndexProxy index_ = index<IndexProxy>(id);  // invalid
-//			emit _view->dataChanged(index_, index_);
-//		    }
+			    if(_view->current_item() != it)this->select_as_current(index_);
+//			    for(auto id : real_delete_ids){
+//				IndexProxy index_ = index<IndexProxy>(id);	// invalid
+//				emit _view->dataChanged(index_, index_);
+//			    }
 			}
 		    }
 		}
 	    }
-	    if(_tabmanager->count() > 0)_new_view = _tabmanager->currentWebView();
+//	    if(_tabmanager->count() > 0)_new_view = _tabmanager->currentWebView();
 	    return _new_view;
 	};
 
@@ -1755,22 +1805,23 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
     globalparameters.meta_editor()->clear_all();
 
 	// Вызывается удаление отмеченных записей
-    browser::WebView *v = pages_remove_from_browser(delete_ids);
-    if(v){
-	auto binder = v->page()->binder();
-	if(binder)
-		if(binder->host() != _view->current_item())select_as_current(index<pos_proxy>(binder->host()));
-    }
-//        //// Сохранение дерева веток
-//        ////    find_object<TreeScreen>(tree_screen_singleton_name)
-//        // globalparameters.tree_screen()->save_knowtree();
-//        //// Обновление на экране ветки, на которой стоит засветка,
-//        //// так как количество хранимых в ветке записей поменялось
-//        ////    find_object<TreeScreen>(tree_screen_singleton_name)
-//        // globalparameters.tree_screen()->update_selected();
-//        // Установка курсора на нужную позицию
-//    if(selection_row_num >= 0 && selection_row_num < _proxy_model->rowCount())_view->selectRow(selection_row_num);
-//        // Если таблица конечных записей пуста
+//    browser::WebView *v =
+    pages_remove_from_browser(delete_ids);
+//    if(v){
+//	auto binder = v->page()->binder();
+//	if(binder)
+//		if(binder->host() != _view->current_item())this->select_as_current(index<pos_proxy>(binder->host()));
+//    }
+////        //// Сохранение дерева веток
+////        ////    find_object<TreeScreen>(tree_screen_singleton_name)
+////        // globalparameters.tree_screen()->save_knowtree();
+////        //// Обновление на экране ветки, на которой стоит засветка,
+////        //// так как количество хранимых в ветке записей поменялось
+////        ////    find_object<TreeScreen>(tree_screen_singleton_name)
+////        // globalparameters.tree_screen()->update_selected();
+////        // Установка курсора на нужную позицию
+////    if(selection_row_num >= 0 && selection_row_num < _proxy_model->rowCount())_view->selectRow(selection_row_num);
+////        // Если таблица конечных записей пуста
     if(_proxy_model->rowCount() == 0){
 	// Нужно очистить поле редактирования чтобы невидно было текста
 	// последней удаленной записи
@@ -1950,7 +2001,6 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 
 // Клик по пункту "Сортировка" в контекстном меню
 void rctrl_t::on_sort_click(void){
-
 //    int	index_ = _record_screen->_sort->data().toInt();
 //    if(_view->horizontalHeader()->sortIndicatorOrder())
 	// Если сортировка еще не включена

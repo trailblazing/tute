@@ -82,7 +82,7 @@
 #include "models/record_table/record.h"
 #include "models/record_table/record_index.hxx"
 #include "models/tree/tree_index.hxx"
-//#include "models/record_table/record_index.hxx"
+// #include "models/record_table/record_index.hxx"
 #include "models/record_table/record_model.h"
 #include "models/record_table/items_flat.h"
 #include "views/record_table/record_view.h"
@@ -101,7 +101,7 @@
 #include "views/tree/tree_view.h"
 #include "libraries/disk_helper.h"
 #include "models/tree/binder.hxx"
-//#include "models/record_table/record_index.hxx"
+// #include "models/record_table/record_index.hxx"
 #include "controllers/record_table/record_controller.h"
 
 
@@ -930,8 +930,8 @@ namespace browser {
 	_lineedits->removeWidget(lineEdit);
 	_lineedits->insertWidget(toIndex, lineEdit);
 
-	auto source_index = static_cast<QModelIndex>(_record_controller->index<index_source>(pos_source(fromIndex)));
-	auto target_index = static_cast<QModelIndex>(_record_controller->index<index_source>(pos_source(toIndex)));
+	auto	source_index	= static_cast<QModelIndex>(_record_controller->index<index_source>(pos_source(fromIndex)));
+	auto	target_index	= static_cast<QModelIndex>(_record_controller->index<index_source>(pos_source(toIndex)));
 	_record_controller->source_model()->moveRow(source_index.parent(), source_index.row(), target_index.parent(), target_index.row());
     }
 
@@ -1006,6 +1006,12 @@ namespace browser {
 		    auto	_tree_view	= _tree_screen->view();
 		    QModelIndex	index_on_tree	= _tree_view->source_model()->index(_target_in_browser);
 		    if(! index_on_tree.isValid()){
+			if(! static_cast<QModelIndex>(_tree_view->know_model_board()->index(_target_in_browser)).isValid()){
+			    auto _url = QUrl(_target_in_browser->field<url_type>());	//
+			    _target_in_browser = TreeIndex::instance([&] {return _tree_view->source_model();}, _tree_view->current_item())->register_index(_target_in_browser->field<url_type>()
+																			  , std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+																			  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toString().toStdString());});
+			}
 			_tree_view->cursor_focus(_target_in_browser);
 			index_on_tree = _tree_view->source_model()->index(_target_in_browser);
 			assert(index_on_tree.isValid());

@@ -113,7 +113,17 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::instance(const std::function<tkm_t *(
     if(static_cast<QModelIndex>(host_index_).isValid()){
 	sibling_order_ = host_->parent() ? host_->parent()->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == host_->linker() && il->host() == host_ && il->host_parent() == host_->parent();}) : 0;
 	assert(sibling_order_ >= 0);
-	if(host_parent_)if(! host_parent_->contains_direct(host_))throw std::runtime_error("_host_parent does not contains _host");
+	if(host_parent_){
+		//
+	    if(! host_parent_->contains_direct(host_)){
+		tree_view_->move(TreeIndex::instance(current_model_, host_parent_)
+				, host_
+				, [&](boost::intrusive_ptr<const Linker> il) -> bool {return url_equal(host_->field<url_type>().toStdString(), il->host()->field<url_type>().toStdString()) && il->host()->id() == host_->id() && il == host_->linker() && il->host_parent() == host_->parent();}
+				, true
+		    );
+//		throw std::runtime_error("_host_parent does not contains _host");
+	    }
+	}
 	if(! static_cast<QModelIndex>(static_cast<tkm_t *>(current_model_())->index(host_)).isValid() && host_ != static_cast<tkm_t *>(current_model_())->root_item())throw std::runtime_error("! current_model()->index(_host).isValid()");
 //	if(_sibling_order < 0){throw std::runtime_error(formatter() << "sibling_order < 0");}
 //	auto count_direct = _host_parent->count_direct();

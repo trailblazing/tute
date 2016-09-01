@@ -253,9 +253,9 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	// prepare
     painter->save();
 
-	//
-    auto	it				= _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
-    auto	header_title			= _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
+    auto	_record_ctrl			= _view->record_controller();
+    auto	it				= _record_ctrl->source_model()->item(_record_ctrl->index<pos_source>(_record_ctrl->index<pos_proxy>(index_proxy(index))));	// pos_source(pos_proxy(index.row()))
+    auto	header_title			= _record_ctrl->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
     auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
     auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
     auto	title_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<name_type>::value)[boost::mpl::c_str < name_type > ::value];
@@ -580,9 +580,9 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
     (void) model;
     (void) option;
     (void) index;
-
-    auto	it				= _view->record_controller()->source_model()->item(pos_source(pos_proxy(index.row())));
-    auto	header_title			= _view->record_controller()->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
+    auto	_record_ctrl			= _view->record_controller();
+    auto	it				= _record_ctrl->source_model()->item(_record_ctrl->index<pos_source>(_record_ctrl->index<pos_proxy>(index_proxy(index))));	// pos_source(pos_proxy(index.row()))
+    auto	header_title			= _record_ctrl->source_model()->headerData(index.column(), Qt::Horizontal, Qt::DisplayRole).toString();			// DisplayRole?UserRole
     auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
     auto	pin_field_description		= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<pin_type>::value)[boost::mpl::c_str < pin_type > ::value];
 
@@ -612,10 +612,10 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 				////                connect(widget, &FlatToolButton::clicked, _record_controller, &RecordController::close_context);
 				////            _record_controller->source_model()->setData(next_index, QVariant(true), Qt::EditRole);
 				//            auto cur = current_item();
-				auto	_record_ctrl	= _view->record_controller();
-				auto	pos		= _record_ctrl->source_model()->item(_record_ctrl->index<pos_source>(_record_ctrl->index<pos_proxy>(index_proxy(index))));
+//				auto	_record_ctrl	= _view->record_controller();
+//				auto it_pos = _record_ctrl->source_model()->item(_record_ctrl->index<pos_source>(_record_ctrl->index<pos_proxy>(index_proxy(index))));
 				//            assert(cur == pos);
-				_record_ctrl->remove(pos->id());
+				_record_ctrl->remove(it->id());	// it_pos->id()
 			    }
 			}
 	}else if(it && header_title == pin_field_description){

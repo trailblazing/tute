@@ -1180,7 +1180,8 @@ void Record::check_and_create_text_file(){
 // }
 
 id_value Record::id() const {
-    if(_field_data.contains("id"))return id_value(_field_data["id"]);
+    id_value result;
+    if(_field_data.contains("id"))result = id_value(_field_data["id"]);	// return id_value(_field_data["id"]);
     else{
 	// critical_error("In TreeItem data getting field with unavailable name 'id'");
 
@@ -1188,8 +1189,9 @@ id_value Record::id() const {
 	auto dir = const_cast<Record *>(this)->_field_data["dir"];
 	const_cast<Record *>(this)->_field_data["id"] = dir.length() > 0 ? dir : get_unical_id();
 
-	return id_value(_field_data["id"]);
+	result = id_value(_field_data["id"]);	// return id_value(_field_data["id"]);
     }
+    return result;
 }
 
 QString Record::name() const {

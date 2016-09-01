@@ -251,30 +251,32 @@ namespace browser {
 	    auto	_vtab_record	= globalparameters.main_window()->vtab_record();
 	    auto	browser		= _vtab_record->activated_browser();
 	    auto	ctrl		= browser->record_screen()->record_controller();
-//	    auto	last		= ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
-	    auto current_item_ = ctrl->view()->current_item();	// source_model()->item(pos_source(0));
+	    auto	last		= ctrl->source_model()->item(pos_source(ctrl->source_model()->count() - 1));
+//	    auto	current_item_	= ctrl->view()->current_item();	// source_model()->item(pos_source(0));
 ////	    auto	child_linkers		= result_item->child_linkers();
 //	    auto _total_progress_counter = 0;
 	    for(auto it : child_items){	// move to search result
-		boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return ctrl->source_model();}, it, current_item_);	// last
-		current_item_ = it;	//		last = it;
-					//                            if(record_index){
-					//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
-					//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
-					//                                ){
-					//                                auto result = browser->item_bind(record_index);
-					//                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
-					//                                _result_list << result->linker();																												//
-					//                            }else{
-					// auto previous_item = _source_model()->item(tree_view->previous_index());
-		auto result = browser->bind(record_index);
+		if(! ctrl->source_model()->item(it)){
+		    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return ctrl->source_model();}, it, last);	// current_item_
+		    last = it;		// current_item_ = it;	//
+			//                            if(record_index){
+			//                            if(  (candidate->parent() != _session_root_item->parent())		// _current_item->parent())
+			//                              && ! _session_root_item->item_direct([&](boost::intrusive_ptr<const Linker> il){return il == candidate->linker();})
+			//                                ){
+			//                                auto result = browser->item_bind(record_index);
+			//                                result->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));
+			//                                _result_list << result->linker();																												//
+			//                            }else{
+			// auto previous_item = _source_model()->item(tree_view->previous_index());
+		    auto result = browser->bind(record_index);
 #ifdef USE_LOAD_ON_FOUND
-		result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
+		    result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 #else
 
 #endif
 ////		std::thread(&TreeItem::activate, result, std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)).join();
 //		globalparameters.status_bar()->showMessage("added node(s) : " + QString::number(++ _total_progress_counter), 1000);	// across thread message
+		}
 	    }
 	    auto _view = ctrl->view();
 	    _view->reset();

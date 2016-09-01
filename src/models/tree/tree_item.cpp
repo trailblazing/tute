@@ -1052,7 +1052,7 @@ id_value TreeItem::parent_id() const {
     return id;
 }
 
-//id_value TreeItem::id() const {
+// id_value TreeItem::id() const {
 //    if(_field_data.contains("id"))return id_value(_field_data["id"]);
 //    else{
 //	// critical_error("In TreeItem data getting field with unavailable name 'id'");
@@ -1063,9 +1063,9 @@ id_value TreeItem::parent_id() const {
 
 //	return id_value(_field_data["id"]);
 //    }
-//}
+// }
 
-//QString TreeItem::name() const {
+// QString TreeItem::name() const {
 //    if(_field_data.contains("name"))return _field_data["name"];
 //    else{
 //	// critical_error("In TreeItem data getting field with unavailable name 'name'");
@@ -1073,7 +1073,7 @@ id_value TreeItem::parent_id() const {
 //	// exit(1);
 //	return "";
 //    }
-//}
+// }
 
 #ifdef _with_record_table
 
@@ -1123,8 +1123,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
 
 #endif
 
-boost::intrusive_ptr<TreeItem>	TreeItem::contains_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &&_equal) const{
-    return ItemsFlat::contains_direct(std::forward<const std::function<bool (boost::intrusive_ptr<const Linker>)> &&>(_equal));
+boost::intrusive_ptr<TreeItem>	TreeItem::contains_direct(const std::function<bool (boost::intrusive_ptr<const Linker>)> &&_equal) const {
+    return ItemsFlat::contains_direct(std::forward < const std::function<bool (boost::intrusive_ptr<const Linker>)> && > (_equal));
 }
 
 boost::intrusive_ptr<TreeItem> TreeItem::contains_direct(boost::intrusive_ptr<const TreeItem> &&_item) const {
@@ -1593,44 +1593,9 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
 	auto	pic		= cut->picture_files();
 	auto	this_pic	= picture_files();
 	if(pic.size() > 0){
-	    for(auto i : pic.keys())										// auto new_pic = this_pic.merge(pic);
-			if(this_pic[i].isEmpty())this_pic[i] = pic[i];
+	    for(auto i : pic.keys())if(this_pic[i].isEmpty())this_pic[i] = pic[i];										// auto new_pic = this_pic.merge(pic);
 	    picture_files(this_pic);
 	}
-    }
-    int merge_count			= 0;
-    int linkers_count			= cut->count_direct();
-    int origin_child_linkers_size	= _child_linkers.size();
-    int new_count			= 0;
-    for(auto cut_child_linker : cut->_child_linkers){
-	// if(!_child_items.contains(i)) {
-	bool				found = false;
-	boost::intrusive_ptr<TreeItem>	found_item_keep(nullptr);
-	boost::intrusive_ptr<TreeItem>	found_item_remove(nullptr);
-	for(auto keep_child : _child_linkers){
-	    if(keep_child->host()->id() == cut_child_linker->host()->id()){
-		found_item_keep		= keep_child->host();
-		found_item_remove	= cut_child_linker->host();
-		found			= true;
-
-		break;
-	    }
-	}
-	if(! found){
-	    auto r = cut_child_linker->parent(this);										// _child_items << i;
-	    if(r){merge_count ++;new_count ++;}
-	}else{
-	    auto r = found_item_keep->merge(found_item_remove);
-	    if(r)merge_count ++;
-	}
-//	for(auto j : _child_items){
-//	    if(i->id() == j->id()){
-//		j->merge(i);
-//		count ++;
-//	    }else{}
-//	}
-	assert(merge_count <= linkers_count);							// ?
-	// }
     }
     if(! _linker){
 	if(cut->linker()){
@@ -1645,6 +1610,52 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
 //	};
 //    if(! _binder)try_cut_page_rebind(this, cut);
 //    else if(! _binder->page())try_cut_page_rebind(this, cut);
+
+    int							merge_count			= 0;
+    int							linkers_count			= cut->count_direct();
+    int							origin_child_linkers_size	= _child_linkers.size();
+    int							new_count			= 0;
+    QMutableListIterator<boost::intrusive_ptr<Linker> >	iterator_linker(cut->_child_linkers);
+    while(iterator_linker.hasNext()){
+	auto cut_child_linker = iterator_linker.next();
+//	for(auto cut_child_linker : cut->_child_linkers){
+	// if(!_child_items.contains(i)) {
+	bool					found = false;
+	boost::intrusive_ptr<TreeItem>		found_item_keep(nullptr);
+	boost::intrusive_ptr<TreeItem>		found_item_remove(nullptr);
+	for(auto keep_child : _child_linkers){
+	    if(keep_child->host()->id() == cut_child_linker->host()->id()){
+		found_item_keep		= keep_child->host();
+		found_item_remove	= cut_child_linker->host();
+		found			= true;
+
+		break;
+	    }
+	}
+	if(! found){
+	    auto r = cut_child_linker->parent(this);											// _child_items << i;
+	    if(r){
+//		merge_count ++;
+		new_count ++;
+	    }
+	}else{		// if(found)
+	    auto r = found_item_keep->merge(found_item_remove);
+	    cut->_child_linkers.removeOne(cut_child_linker);
+	    if(r){
+		merge_count ++;
+//		new_count --;
+	    }
+	}
+//	    for(auto j : _child_items){
+//		if(i->id() == j->id()){
+//		    j->merge(i);
+//		    count ++;
+//		}else{}
+//	    }
+	assert(merge_count <= linkers_count);								// ?
+	// }
+//	}
+    }
     assert(_child_linkers.size() == origin_child_linkers_size + new_count);
     cut->clear();
 
