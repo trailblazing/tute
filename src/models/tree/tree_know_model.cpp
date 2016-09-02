@@ -31,10 +31,13 @@
 #include "views/browser/entrance.h"
 #include "views/main_window/hidable_tabwidget.h"
 #include "views/main_window/main_window.h"
+#include "libraries/disk_helper.h"
+#include "libraries/trash_monitoring.h"
 
 extern GlobalParameters globalparameters;
 extern const char	*clipboard_items_root;
 extern AppConfig	appconfig;
+extern TrashMonitoring	trashmonitoring;
 const char		*global_root_id = "0";
 // const char *global_root_parent_id = "-1";
 
@@ -69,9 +72,14 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent) : tm_t(parent){	/
     init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);		// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
     if(all_count <= 0){
-//	throw std::runtime_error("database load failure");
-	AppConfigDialog dialog(nullptr);	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
-	dialog.show();
+	assert(trashmonitoring.is_inited());
+	trashmonitoring.recover_from_trash();
+////	throw std::runtime_error("database load failure");
+//	AppConfigDialog dialog(nullptr);	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+//	dialog.show();
+	init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);
+	all_count = count_records_all();
+	if(all_count <= 0)throw std::runtime_error("database load failure");
     }
     synchronized(true);
 }
@@ -1252,7 +1260,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 		if(v)v->page()->tabmanager()->closeTab(v->page()->tabmanager()->webViewIndex(v));
 		auto view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
 
-		update_index(parent_index);
+//		update_index(parent_index);
 		layoutChanged(QList<QPersistentModelIndex>() << static_cast<QModelIndex>(parent_index));
 
 		view->update(parent_index);

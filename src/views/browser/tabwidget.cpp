@@ -1469,12 +1469,10 @@ namespace browser {
 	assert(view);
 	// assert(item->page_valid() && item->unique_page());
 	assert(! result->is_lite());
-
-
-
-
-
-
+	if(result->field<name_type>() == ""){
+//	    result->field<name_type>(result->field<url_type>());
+	    result->binder()->page()->record_info_update(result->field<url_type>(), result->field<url_type>());
+	}
 	// view_no_pinned();
 
 	return view;	// TabWidget::newTabFull::WebView *
@@ -2030,7 +2028,7 @@ namespace browser {
 
 	// will fail if count()==0 or it not inside current tabmanager
     boost::intrusive_ptr<TreeItem> TabWidget::sibling(boost::intrusive_ptr<TreeItem> it) const {
-	boost::intrusive_ptr<TreeItem> r;
+	boost::intrusive_ptr<TreeItem> r(nullptr);
 	if(count() > 0 && it){
 	    auto	v	= it->binder()->page()->view();
 	    auto	index	= webViewIndex(v) - 1;

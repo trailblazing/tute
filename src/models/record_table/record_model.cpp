@@ -717,9 +717,9 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url) const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
     for(int i = 0; i < count(); i ++){
-	auto		it		= item(pos_source(i));
-	std::string	difference	= url_difference((it->field<url_type>()).toStdString(), _url.toString().toStdString());
-	if(difference.size() == 0 || difference == "/"){
+	auto it	= item(pos_source(i));
+//	std::string	difference	= url_difference((it->field<url_type>()).toStdString(), _url.toString().toStdString());
+	if(url_equal((it->field<url_type>()).toStdString(), _url.toString().toStdString())){	// if(difference.size() == 0 || difference == "/"){
 	    result = it;
 	    break;
 	}

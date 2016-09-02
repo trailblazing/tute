@@ -20,17 +20,27 @@ TrashMonitoring::~TrashMonitoring(void)
 {}
 
 void TrashMonitoring::recover_from_trash(){
+    auto	_file_name		= "mytetra.xml";
+    auto	file_name_fullpath	= appconfig.tetra_dir() + "/" + _file_name;
+//    if(QFile::exists(appconfig.tetra_dir() + "/" + _file_name))remove_oldest_file(_file_name);
+    if(QFile::exists(file_name_fullpath)){
+	if(! QFile::remove(file_name_fullpath)){// Файл физически удаляется
+//	}else{
+	    critical_error("Can not delete file " + file_name_fullpath);
+	    exit(0);
+	}
+    }
 //    auto	_main_program_file = globalparameters.main_program_file();
 //    QFileInfo	main_program_file_info(_main_program_file);
 //    QString	full_current_path = main_program_file_info.absolutePath();
     if(_files_table.size() == 0){
-	if(! QFile::copy(QString(":/resource/standartdata/") + "/mytetra.xml", appconfig.trash_dir() + "/mytetra.xml"))throw std::runtime_error("Can not copy mytetra.xml");
-	else        QFile::setPermissions(appconfig.trash_dir() + "/mytetra.xml", QFile::ReadUser | QFile::WriteUser);
+	if(! QFile::copy(QString(":/resource/standartdata/") + "/" + _file_name, appconfig.trash_dir() + "/" + _file_name))throw std::runtime_error("Can not copy mytetra.xml");
+	else        QFile::setPermissions(appconfig.trash_dir() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
 //	assert(succedded);
-	add_file("mytetra.xml");// globalparameters.mytetra_xml().keys()[0]
+	add_file(_file_name);	// globalparameters.mytetra_xml().keys()[0]
     }else{
-	auto file_data = _files_table.first();
+	auto file_data = [&] {FileData r;for(auto f : _files_table)if(f._file_size > r._file_size)r = f;return r;} ();	// _files_table.first();
 	DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._file_name);
     }
 }
@@ -110,8 +120,32 @@ void TrashMonitoring::update(void){
     }
 }
 
-void TrashMonitoring::remove_oldest_file(void){
-    QString _file_name = _path + "/" + _files_table.last()._file_name;
+void TrashMonitoring::remove_file_fullpath(QString file_name_){
+//    QString _file_name = got ? _path + "/" + _files_table.last()._file_name : _path + "/" + found._file_name;
+
+    qDebug() << "Remove file " << file_name_;
+    if(QFile::exists(file_name_)){
+	if(! QFile::remove(file_name_)){// Файл физически удаляется
+	    critical_error("Can not delete file " + file_name_);
+	    exit(0);
+	}
+    }
+}
+
+
+void TrashMonitoring::remove_oldest_file(QString file_name_){
+    FileData	found;
+    bool	got = false;
+    if(file_name_ != ""){
+	for(auto f : _files_table){
+	    if(file_name_ == f._file_name){
+		found	= f;
+		got	= true;
+		break;
+	    }
+	}
+    }
+    QString _file_name = got ? _path + "/" + found._file_name : _path + "/" + _files_table.last()._file_name;
 
     qDebug() << "Remove file " << _file_name << " from trash";
     if(QFile::exists(_file_name)){

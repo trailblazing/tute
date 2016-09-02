@@ -24,18 +24,30 @@
 #include "models/record_table/record_model_proxy.h"
 
 
-boost::intrusive_ptr<TreeItem> RecordIndex::bind(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_, bool make_current) noexcept {
+boost::intrusive_ptr<TreeItem> RecordIndex::bind(
+	// const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_,
+    bool make_current) noexcept {
     boost::intrusive_ptr<TreeItem>	result(nullptr);
-    rctrl_t				*ctrl		= current_model_()->reocrd_controller();
+    rctrl_t				*ctrl		= _current_model()->reocrd_controller();	// current_model_()
     browser::Browser			*browser_	= ctrl->tabmanager()->browser();
-    if(host_){
-	auto url = host_->field<url_type>();
+
+    assert(_host);
+    if(_host){
+	auto url = _host->field<url_type>();
 	if(url != "" && url != browser::Browser::_defaulthome){
-	    if(sibling_item_ != host_){
-		index_source sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
-		if(! static_cast<QModelIndex>(sibling_index_).isValid()){sibling_index_ = index_source(current_model_()->fake_index(host_));assert(! static_cast<QModelIndex>(current_model_()->index(host_)).isValid());}	// index(0, 0, QModelIndex())
-		if(static_cast<QModelIndex>(sibling_index_).isValid())result = browser_->bind(new RecordIndex(current_model_, host_, sibling_item_), make_current);
-	    }else result = sibling_item_;
+//	    if(sibling_item_ != _host){
+//		index_source sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
+//		if(! static_cast<QModelIndex>(sibling_index_).isValid()){
+//		    sibling_index_ = index_source(current_model_()->fake_index(_host));
+//		    assert(! static_cast<QModelIndex>(current_model_()->index(_host)).isValid());
+//		    assert(static_cast<QModelIndex>(sibling_index_).isValid());
+//		}	// index(0, 0, QModelIndex())
+//		if(static_cast<QModelIndex>(sibling_index_).isValid())result = browser_->bind(new RecordIndex(current_model_, _host, sibling_item_), make_current);
+//	    }else result = sibling_item_;
+
+	    result = browser_->bind(this, make_current);
+	    assert(result->binder());
+	    assert(result->page());
 	}
     }
     return result;
@@ -43,13 +55,18 @@ boost::intrusive_ptr<TreeItem> RecordIndex::bind(const std::function<RecordModel
 
 boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, boost::intrusive_ptr<TreeItem> sibling_item_){
     boost::intrusive_ptr<RecordIndex> result(nullptr);
+    assert(host_);
     if(sibling_item_ == host_){
 	sibling_item_ = current_model_()->sibling(sibling_item_);
 //	if(! sibling_item_)throw std::runtime_error(formatter() << "sibling_item_ == host_; host_ has already been inside the record view");
     }
     index_source sibling_index_;
     sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
-    if(! static_cast<QModelIndex>(sibling_index_).isValid()){sibling_index_ = index_source(current_model_()->fake_index(host_));assert(! static_cast<QModelIndex>(current_model_()->index(host_)).isValid());}	// index(0, 0, QModelIndex())
+    if(! static_cast<QModelIndex>(sibling_index_).isValid()){
+	sibling_index_ = index_source(current_model_()->fake_index(host_));
+	assert(! static_cast<QModelIndex>(current_model_()->index(host_)).isValid());
+	assert(static_cast<QModelIndex>(sibling_index_).isValid());
+    }		// index(0, 0, QModelIndex())
     if(! static_cast<QModelIndex>(sibling_index_).isValid())throw std::runtime_error(formatter() << "sibling_index_ isn\'t valid");
     result = new RecordIndex(current_model_, host_, sibling_index_);
     if(! result)throw std::runtime_error(formatter() << "construct record index failed");

@@ -900,9 +900,9 @@ void sapp_t::newLocalSocketConnection(){
 }
 
 sapp_t::~sapp_t(){
-    if(_profile){
-	_profile->deleteLater();_profile = nullptr;
-    }
+//    if(_profile){
+//	_profile->deleteLater();_profile = nullptr;
+//    }
 	// delete
     _downloadmanager->deleteLater();
 

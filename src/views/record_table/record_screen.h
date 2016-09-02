@@ -177,7 +177,7 @@ class rs_t : public QWidget {
 	void	assembly(void);
 
 	void	disable_all_actions(void);
-	void	save_in_new_branch(bool checked = false);
+//	void	save_in_new_branch(bool checked = false);
 	friend class rv_t;
 	friend class rctrl_t;
 	friend class wn_t;

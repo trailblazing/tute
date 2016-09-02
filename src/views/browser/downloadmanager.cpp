@@ -68,7 +68,8 @@
 #include <QWebEngineSettings>
 #include <QWebEngineDownloadItem>
 
-extern std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
+//extern std::string	url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
+extern bool		url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 namespace browser {
 	/*!
@@ -108,8 +109,8 @@ namespace browser {
 
 		auto	path		= _download->path();
 		auto	file_path	= path.mid(0, path.lastIndexOf('/') + 1);
-		auto	difference	= url_difference(file_path.toStdString(), download_directory.toStdString());
-		if(! (difference == "" || difference == "/")){
+//		auto	difference	= url_difference(file_path.toStdString(), download_directory.toStdString());
+		if(! url_equal(file_path.toStdString(), download_directory.toStdString())){	// if(! (difference == "" || difference == "/")){
 		    auto file_name = path.mid(path.lastIndexOf('/'));
 		    *file_name.begin() != '/' ? file_name.prepend('/') : "";
 		    *download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1);	// *download_directory.rbegin() != '/' ? download_directory += '/' : "";
@@ -375,8 +376,8 @@ namespace browser {
 
 	    auto	path		= download->path();
 	    auto	file_path	= path.mid(0, path.lastIndexOf('/') + 1);
-	    auto	difference	= url_difference(file_path.toStdString(), download_directory.toStdString());
-	    if(! (difference == "" || difference == "/")){
+//	    auto	difference	= url_difference(file_path.toStdString(), download_directory.toStdString());
+	    if(! url_equal(file_path.toStdString(), download_directory.toStdString())){	// if(! (difference == "" || difference == "/")){
 		auto file_name = path.mid(path.lastIndexOf('/'));
 		*file_name.begin() != '/' ? file_name.prepend('/') : "";
 		*download_directory.rbegin() != '/' ? "" : download_directory.remove(download_directory.size() - 1, 1);	// *download_directory.rbegin() != '/' ? download_directory += '/' : "";

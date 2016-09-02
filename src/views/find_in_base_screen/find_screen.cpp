@@ -882,12 +882,34 @@ boost::intrusive_ptr<TreeItem> FindScreen::find_start(void){
 //	// output(_result_item);
 
 ////    if(_result_list.size() > 0)for(auto it : _result_list)final_result << it->host();	//= _result_list.at(0)->host();
-    return final_result;			// ->record_table();
+
+    std::vector<boost::intrusive_ptr<TreeItem> > pre;
+    pre.reserve(final_result->count_direct());
+    for(auto il : final_result->child_linkers()){
+	auto it = il->host();
+	pre.push_back(it);
+    }
+    std::sort(std::begin(pre), std::end(pre), [&](boost::intrusive_ptr<TreeItem> t1, boost::intrusive_ptr<TreeItem> t2){return t1->rating() > t2->rating();});
+    QMap<QString, QString> data_;
+
+//    QDateTime	ctime_dt	= QDateTime::currentDateTime();
+    QString ctime_ = get_qtime();
+    data_["id"]		= get_unical_id();
+    data_["name"]	= ctime_;
+    data_["ctime"]	= ctime_;
+    data_["dir"]	= data_["id"];
+    data_["file"]	= "text.html";
+    boost::intrusive_ptr<TreeItem> _final_result = TreeItem::dangle_instance(data_);
+//    if(pre.size() > 0)_final_result << pre[0];
+    for(std::vector<boost::intrusive_ptr<TreeItem> >::size_type i = 0; i < pre.size(); i ++){
+	if(i < 10)_final_result << pre[i];else break;
+    }
+    return _final_result;			// ->record_table();
 }
 
 boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<TreeItem> &final_result, boost::intrusive_ptr<TreeItem> _session_root_item, boost::intrusive_ptr<TreeItem> _start_item){
     auto	tree_view_	= _tree_screen->view();
-    auto	current_model_	= [&]{return tree_view_->source_model();};
+    auto	current_model_	= [&] {return tree_view_->source_model();};
 	////    // Если была нажата отмена поиска
 	////    if(_cancel_flag == 1)return _result_item;
     if(_cancel_flag != 1){
