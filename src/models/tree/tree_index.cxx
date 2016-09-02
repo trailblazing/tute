@@ -735,8 +735,10 @@ boost::intrusive_ptr<TreeItem> TreeIndex::bind(const QUrl               &_find_u
 
 
     result = RecordIndex::instance([&] {return browser_->record_screen()->record_controller()->source_model();}, it, _current_item)->bind(false);
-    assert(result->binder());
-    assert(result->page());
+    if(result){
+	assert(result->binder());
+	assert(result->page());
+    }
     return result;
 }
 
