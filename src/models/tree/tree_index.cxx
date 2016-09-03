@@ -810,28 +810,7 @@ boost::intrusive_ptr<TreeItem> TreeLevel::move(){
     return (_to_be_operated == _tree_index->host()) ? _to_be_operated : static_cast<tkm_t *>(_tree_view->source_model())->move(this);
 }
 
-boost::intrusive_ptr<TreeItem> TreeLevel::move_impl(const int pos, const int mode){
-//    auto	_parent = _tree_index->host_parent();
-    auto _parent = _tree_index->host();
-    if(_parent){
-	auto _linker = _to_be_operated->linker();// _parent->linker();
-	if(! _linker){
-	    _to_be_operated->linker(boost::intrusive_ptr<Linker>(new Linker(_parent, _to_be_operated)));								// , pos, mode
-	    _linker = _to_be_operated->linker();
-	    auto link_result = _linker->parent(_parent, pos, mode);
-	    assert(link_result == _linker);
-	    assert(_linker->integrity_external(_to_be_operated, _parent));
-	}else if(_linker && _linker->host_parent() != _parent){
-	    auto parent = _linker->host_parent();
-	    if(parent && parent != _parent)parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == _to_be_operated->id() && il == _linker;});
-	    if(_linker->host() != _to_be_operated)_linker->host(std::forward<boost::intrusive_ptr<TreeItem> >(_to_be_operated));							// std::move(boost::intrusive_ptr<TreeItem>(this))
-	    auto link_result = _linker->parent(_parent, pos, mode);	// _linker->host_parent()->release(this->linker());
-	    assert(link_result == _linker);
-	    assert(_linker->integrity_external(_to_be_operated, _parent));
-	}
-    }
-    return _to_be_operated;
-}
+
 
 boost::intrusive_ptr<TreeLevel> TreeLevel::instance(boost::intrusive_ptr<TreeIndex> _tree_index, boost::intrusive_ptr<TreeItem> _to_be_merged){
     auto	current_model_	= _tree_index->current_model();
