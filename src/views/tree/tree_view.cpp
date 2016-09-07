@@ -1348,9 +1348,7 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
 	auto result_item = source_model()->child(_index);
 
 	auto merge_by_url = [&](){
-		auto duplicated_items_list_on_board_by_url = _source_model()->children([&](boost::intrusive_ptr<const TreeItem> it){
-			    return (url_equal(it->field<home_type>().toStdString(), result_item->field<home_type>().toStdString())) && (it->field<home_type>() != browser::Browser::_defaulthome);
-			});																																									// source_model()
+		auto duplicated_items_list_on_board_by_url = _source_model()->children([&](boost::intrusive_ptr<const TreeItem> it){return (url_equal(it->field<home_type>().toStdString(), result_item->field<home_type>().toStdString())) && (it->field<home_type>() != browser::Browser::_defaulthome);});																																										// source_model()
 		if(duplicated_items_list_on_board_by_url.size() > 1){
 		    for(auto _i : duplicated_items_list_on_board_by_url){
 			auto duplicated_item = _i;

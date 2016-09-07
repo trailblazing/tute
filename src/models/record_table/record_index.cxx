@@ -34,7 +34,7 @@ boost::intrusive_ptr<TreeItem> RecordIndex::bind(
     assert(_host);
     if(_host){
 	auto url = _host->field<url_type>();
-	if(url != "" && url != browser::Browser::_defaulthome){
+	if(url != ""){	// && url != browser::Browser::_defaulthome
 //	    if(sibling_item_ != _host){
 //		index_source sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
 //		if(! static_cast<QModelIndex>(sibling_index_).isValid()){
@@ -118,7 +118,7 @@ boost::intrusive_ptr<TreeItem> RecordIndex::synchronize(boost::intrusive_ptr<Tre
 	    auto	current_model_		= [&] {return ctrl->source_model();};
 	    auto	alternative_item	= v->page()->host();
 	    auto	url			= alternative_item->field<url_type>();	// host_->field<url_type>();
-	    if(url != "" && url != browser::Browser::_defaulthome){
+	    if(url != ""){	// && url != browser::Browser::_defaulthome
 //		rctrl_t *ctrl = current_model_()->reocrd_controller();
 		_found_item = ctrl->synchronize(new RecordIndex(current_model_, alternative_item, nullptr));	// host_
 	    }

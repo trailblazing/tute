@@ -1137,12 +1137,7 @@ void sapp_t::restoreLastSession(){
 
 	browser::Browser *browser = globalparameters.main_window()->vtab_record()->activated_browser();
 
-	//        if(!browser) {
-	//            std::pair<browser::Browser *, browser::WebView *> dp = _globalparameters.entrance()->new_browser(QUrl(browser::Browser::_defaulthome));
-	//            browser = dp.first;
-	//        }
-
-	assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
+//	assert(browser->currentTab()->page()->url() == QUrl() || browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome));
 	if(  globalparameters.main_window()->vtab_record()->record_screens().size() == 1
 	  && browser->tabWidget()->count() == 1
 	  && browser->currentTab()->page()->url() == QUrl(browser::Browser::_defaulthome)	// ?

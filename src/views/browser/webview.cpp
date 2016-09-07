@@ -622,10 +622,13 @@ namespace browser {
 		    _editor_screen->name(title);
 		}
 	    }
-	    if(url.toString() != ""){
-		_binder->host()->field<url_type>(url.toString());	// "url",
+	    auto url_str = url.toString();
+	    if(url_str != ""){
+		auto _host = _binder->host();
+		_host->field<url_type>(url_str);	// "url",
+		if(_host->field<home_type>() == Browser::_defaulthome && url_str != Browser::_defaulthome)_host->field<home_type>(url_str);
 		data_changed = true;
-		if(is_current)_editor_screen->url(url.toString());
+		if(is_current)_editor_screen->url(url_str);
 	    }
 	    if(data_changed){
 		record_view_synchronize(_binder->host());
@@ -970,7 +973,7 @@ namespace browser {
 	QString _url_str	= _binder->host()->field<url_type>();
 	QUrl	_url		= QUrl(_url_str);
 	if(  _view	// && _loadingurl.isValid()     // && url().isValid()    // && url().toString() != _url_str
-	  && _url_str != Browser::_defaulthome		// url() may be nothing
+//	  && _url_str != Browser::_defaulthome		// url() may be nothing
 	  && _url != _loadingurl			// lead loading stop
 	    ){
 		// triggerAction(QWebEnginePage::Stop);
@@ -992,23 +995,23 @@ namespace browser {
 	    auto	it		= _binder->host();
 	    auto	tree_view	= _tree_screen->view();
 	    if(it != tree_view->current_item())tree_view->select_as_current(TreeIndex::instance([&] {return tree_view->source_model();}, it));
-	    if(_url_str != Browser::_defaulthome){	// && _loadingurl.isValid()   // && _loadingurl == _url
-		if(_record_controller->view()->current_item() != _binder->host() || _view->tabmanager()->currentWebView() != _view){
-		    _tabmanager->setCurrentWidget(_view);
-		    _view->show();
-			// if(checked) // globalparameters.mainwindow()
-		    _view->setFocus();	// make upate validate
-		    _binder->host()->add_rating();
-			// assert(_lineedits);
+//	    if(_url_str != Browser::_defaulthome){	// && _loadingurl.isValid()   // && _loadingurl == _url
+	    if(_record_controller->view()->current_item() != _binder->host() || _view->tabmanager()->currentWebView() != _view){
+		_tabmanager->setCurrentWidget(_view);
+		_view->show();
+		// if(checked) // globalparameters.mainwindow()
+		_view->setFocus();	// make upate validate
+		_binder->host()->add_rating();
+		// assert(_lineedits);
 
-			// if(_lineedits) {
-		    QLineEdit *line_edit = _tabmanager->currentLineEdit();	// qobject_cast<QLineEdit *>(_lineedits->currentWidget());
-		    if(line_edit)line_edit->setText(_url_str);
-			// }
-		    if(_record_controller->view()->current_item() != _binder->host())	// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field<id_type>()){
-				_record_controller->select_as_current(_record_controller->index<pos_proxy>(_binder->host()));	// IdType(_binder->item()->field("id"))
-		}
+		// if(_lineedits) {
+		QLineEdit *line_edit = _tabmanager->currentLineEdit();		// qobject_cast<QLineEdit *>(_lineedits->currentWidget());
+		if(line_edit)line_edit->setText(_url_str);
+		// }
+		if(_record_controller->view()->current_item() != _binder->host())	// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field<id_type>()){
+			_record_controller->select_as_current(_record_controller->index<pos_proxy>(_binder->host()));	// IdType(_binder->item()->field("id"))
 	    }
+//	    }
 	}
 	if(_view){
 	    _browser->adjustSize();

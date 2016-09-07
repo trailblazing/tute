@@ -1127,7 +1127,7 @@ void rctrl_t::paste(void){
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
 browser::WebView *rctrl_t::addnew_blank(int mode){
-    qDebug() << "In add_new_record()";
+    qDebug() << "In addnew_blank()";
 
 	//// Создается окно ввода данных
 	//// При клике Ok внутри этого окна, будет создана временная директория
@@ -1249,7 +1249,7 @@ browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> rec
 // Принимает полный формат записи
 browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current, const int mode){
     boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
-    qDebug() << "In add_new()";
+    qDebug() << "In addnew_item()";
     browser::WebView *v = nullptr;
 
 //	// Получение Source-индекса первой выделенной строки

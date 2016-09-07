@@ -114,8 +114,8 @@ namespace browser {
     void SettingsDialog::loadFromSettings(){
 	QSettings settings;
 	settings.beginGroup(QLatin1String("MainWindow"));
-	const QString defaultHome = QLatin1String(Browser::_defaulthome);
-	homeLineEdit->setText(settings.value(QLatin1String("home"), defaultHome).toString());
+	const QString default_home_ = QLatin1String(Browser::_defaulthome);
+	homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
 	settings.endGroup();
 
 	settings.beginGroup(QLatin1String("history"));
