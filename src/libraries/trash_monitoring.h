@@ -30,9 +30,10 @@ class TrashMonitoring {
 	unsigned int	_dir_size;
 
 	struct FileData {
-	    QString		_file_name;
-	    unsigned int	_file_time;
-	    unsigned int	_file_size;
+	    QString		_name;
+	    unsigned int	_time;
+	    unsigned int	_size;
+	    friend bool operator ==(const FileData &fd0, const FileData &fd1){return fd0._name == fd1._name && fd0._time == fd1._time && fd0._size == fd1._size;}
 	};
 
 	QList<FileData>		_files_table;

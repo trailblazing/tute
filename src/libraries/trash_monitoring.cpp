@@ -40,8 +40,8 @@ void TrashMonitoring::recover_from_trash(){
 //	assert(succedded);
 	add_file(_file_name);	// globalparameters.mytetra_xml().keys()[0]
     }else{
-	auto file_data = [&] {FileData r;for(auto f : _files_table)if(f._file_size > r._file_size)r = f;return r;} ();	// _files_table.first();
-	DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._file_name);
+	auto file_data = [&] {FileData r;for(auto f : _files_table)if(f._size > r._size)r = f;return r;} ();	// _files_table.first();
+	DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._name);
     }
 }
 
@@ -75,9 +75,9 @@ void TrashMonitoring::init(QString _trash_path){
 
 	// Информация о файле добавляется в таблицу
 	FileData currentFileData;
-	currentFileData._file_name	= _file_name;
-	currentFileData._file_time	= _file_time;
-	currentFileData._file_size	= _file_size;
+	currentFileData._name	= _file_name;
+	currentFileData._time	= _file_time;
+	currentFileData._size	= _file_size;
 	_files_table << currentFileData;
     }
 	// qDebug() << "In init trash " << filesTable.size() << "files";
@@ -99,9 +99,9 @@ void TrashMonitoring::add_file(QString _file_name){
 
 	// Информация о файле добавляется в таблицу
     FileData currentfiledata;
-    currentfiledata._file_name	= _file_name;
-    currentfiledata._file_time	= _file_time;
-    currentfiledata._file_size	= _file_size;
+    currentfiledata._name	= _file_name;
+    currentfiledata._time	= _file_time;
+    currentfiledata._size	= _file_size;
     _files_table.insert(0, currentfiledata);
 
     update();
@@ -114,7 +114,7 @@ void TrashMonitoring::update(void){
     while(_files_table.size() > appconfig.trash_max_file_count() ||
 	_dir_size > appconfig.trash_size() * 1000000
 	){
-	if(_files_table.size() <= 1)	// Оставляется последний файл, какого бы размера он не был
+	if(_files_table.size() <= 10)	// Оставляется последний файл, какого бы размера он не был
 		break;
 	else remove_oldest_file();
     }
@@ -138,27 +138,32 @@ void TrashMonitoring::remove_oldest_file(QString file_name_){
     bool	got = false;
     if(file_name_ != ""){
 	for(auto f : _files_table){
-	    if(file_name_ == f._file_name){
+	    if(file_name_ == f._name){
 		found	= f;
 		got	= true;
 		break;
 	    }
 	}
     }
-    QString _file_name = got ? _path + "/" + found._file_name : _path + "/" + _files_table.last()._file_name;
+    QString _file_found = got ? _path + "/" + found._name : _path + "/" + _files_table.last()._name;
 
-    qDebug() << "Remove file " << _file_name << " from trash";
-    if(QFile::exists(_file_name)){
-	if(QFile::remove(_file_name)){	// Файл физически удаляется
+    qDebug() << "Remove file " << _file_found << " from trash";
+    if(QFile::exists(_file_found)){
+	if(QFile::remove(_file_found)){	// Файл физически удаляется
 		// Расчетный размер директории уменьшается на размер файла
-	    _dir_size = _dir_size - _files_table.last()._file_size;
-
+	    _dir_size = _dir_size - _files_table.last()._size;
+		//
+	    QMutableListIterator<FileData> iter(_files_table);
+	    while(iter.hasNext()){
+		auto it = iter.next();
+		if(it._name == _file_found)_files_table.removeOne(it);
+	    }
 		// Файл удаляется из списка
-	    _files_table.removeLast();
+//	    _files_table.removeLast();
 	}else{
-	    critical_error("In trash monitoring can not delete file " + _file_name);
+	    critical_error("In trash monitoring can not delete file " + _file_found);
 	    exit(0);
 	}
-    }else _files_table.removeLast();
+    }else if(_files_table.size() > 10)_files_table.removeLast();
 }
 
