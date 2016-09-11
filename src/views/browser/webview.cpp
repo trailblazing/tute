@@ -1285,7 +1285,7 @@ namespace browser {
 	    assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
 	}
 #ifdef USE_POPUP_WINDOW
-	else{
+	else{	// type == WebDialog
 	    PopupWindow *popup = new PopupWindow(_browser
 			// view()->tabmanager()
 						, _profile
@@ -1684,6 +1684,7 @@ namespace browser {
 	  , _browser(browser_)
 	  , _addressbar(new QLineEdit(this))
 	  , _view(new PopupView(this)){
+	setWindowFlags(Qt::Dialog);	// Qt::Window |
 	_view->setPage(new PopupPage(_view, browser_, profile_));
 	QVBoxLayout *layout = new QVBoxLayout;
 	layout->setMargin(0);
@@ -1694,8 +1695,7 @@ namespace browser {
 
 	connect(_view, &PopupView::titleChanged, this, &QWidget::setWindowTitle);
 	connect(_view, &PopupView::urlChanged, this, &PopupWindow::setUrl);
-	connect(page(), &PopupPage::geometryChangeRequested, this
-	       , &PopupWindow::adjustGeometry);
+	connect(page(), &PopupPage::geometryChangeRequested, this, &PopupWindow::adjustGeometry);
 	connect(page(), &PopupPage::windowCloseRequested, this, &QWidget::close);
     }
 
