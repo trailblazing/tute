@@ -114,7 +114,7 @@ UI_DIR      =   build
 VERSION     =   0.0.1
 DEFINES     +=  APP_VERSION=\\\"$$VERSION\\\"
 
-TARGET      =   mytetra
+TARGET      =   mytetra_webengine
 RESOURCES   =   bin/mytetra.qrc     \
     src/views/browser/data/data.qrc \
     src/views/browser/htmls/htmls.qrc
