@@ -35,8 +35,8 @@ bool XmlTree::load(QString _file_name){
         AppConfigDialog dialog(nullptr, "pageRecordTable");
         dialog.changePage("pageMain");
         dialog.show();
-	assert(trashmonitoring.is_inited());
-	trashmonitoring.recover_from_trash();
+        assert(trashmonitoring.is_inited());
+        trashmonitoring.recover_from_trash();
     }
 	// Загрузка файла дерева разделов
     QFile xmlFile(_file_name);
