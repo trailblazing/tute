@@ -16,7 +16,7 @@
 #include "views/find_in_base_screen/find_screen.h"
 
 extern GlobalParameters globalparameters;
-extern const char	*global_root_id;
+extern const char		*global_root_id;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(AppConfig)
@@ -44,7 +44,7 @@ void AppConfig::init(void){
 
 	// Проверяется, есть ли файл конфигурации
     QFile confFile(configFileName);
-    if(! confFile.exists())critical_error("File " + configFileName + " not found.");
+    if(! confFile.exists()) critical_error("File " + configFileName + " not found.");
 	// Создается указатель на объект хранилища конфигурации
     _app_conf = new QSettings(configFileName, QSettings::IniFormat);
 
@@ -67,7 +67,7 @@ void AppConfig::sync(void){
 
 // Получение параметра по имени в виде строки с проверкой его существования
 QString AppConfig::get_parameter(QString name) const {
-    if(_app_conf->contains(name))return _app_conf->value(name).toString();
+    if(_app_conf->contains(name)) return _app_conf->value(name).toString();
     else critical_error("In config not found parameter " + name);
     return QString();
 }
@@ -76,9 +76,9 @@ QString AppConfig::get_parameter(QString name) const {
 bool AppConfig::tetra_dir(QString dirName){
     QDir directory(dirName);
     if(directory.exists() && directory.isReadable()){
-	_app_conf->setValue("tetradir", dirName);
+        _app_conf->setValue("tetradir", dirName);
 
-	return true;
+        return true;
     }else return false;
 }
 
@@ -89,9 +89,9 @@ QString AppConfig::tetra_dir(void) const {return get_parameter("tetradir");}
 bool AppConfig::trash_dir(QString dirName){
     QDir directory(dirName);
     if(directory.exists() && directory.isReadable()){
-	_app_conf->setValue("trashdir", dirName);
+        _app_conf->setValue("trashdir", dirName);
 
-	return true;
+        return true;
     }else return false;
 }
 
@@ -104,9 +104,9 @@ unsigned int AppConfig::trash_size(void) const {return get_parameter("trashsize"
 // Установка максимального размера директории корзины в мегабайтах
 bool AppConfig::trash_size(unsigned int mbSize){
     if(mbSize > 0){
-	_app_conf->setValue("trashsize", mbSize);
+        _app_conf->setValue("trashsize", mbSize);
 
-	return true;
+        return true;
     }else return false;
 }
 
@@ -116,9 +116,9 @@ int AppConfig::trash_max_file_count(void) const {return get_parameter("trashmaxf
 // Установка максимально допустимого числа файлов в корзине
 bool AppConfig::trash_max_file_count(int count){
     if(count > 0){
-	_app_conf->setValue("trashmaxfilecount", count);
+        _app_conf->setValue("trashmaxfilecount", count);
 
-	return true;
+        return true;
     }else return false;
 }
 
@@ -154,7 +154,7 @@ bool AppConfig::interface_language(QString language){
 QString AppConfig::add_new_record_expand_info(void) const {return get_parameter("addnewrecord_expand_info");}
 
 void AppConfig::add_new_record_expand_info(QString state){
-    if(state == "0" || state == "1")_app_conf->setValue("addnewrecord_expand_info", state);
+    if(state == "0" || state == "1") _app_conf->setValue("addnewrecord_expand_info", state);
     else critical_error("Set unavailable value for addnewrecord_expand_info " + state);
 }
 
@@ -187,8 +187,8 @@ void AppConfig::add_new_record_expand_info(QString state){
 // }
 
 QRect AppConfig::mainwin_geometry(void) const {
-    QRect	rect;
-    QString	rectString;
+    QRect		rect;
+    QString		rectString;
     QStringList rectParameter;
 
     rectString = _app_conf->value("mainwingeometry", "0,0,500,400").toString();
@@ -249,20 +249,20 @@ QList<int> AppConfig::splitter_sizelist(QString name) const {
     QList<int>	list;
 
     line_list = (_app_conf->value(name + "_sizelist", "100,100")).toString().split(",");
-    for(int i = 0; i < line_list.size(); ++ i)list.append(line_list.at(i).toInt());
+    for(int i = 0; i < line_list.size(); ++ i) list.append(line_list.at(i).toInt());
     return list;
 }
 
 void AppConfig::splitter_sizelist(QString name, QList<int> list){
     QStringList line_list;
-    for(int i = 0; i < list.size(); ++ i)line_list.append(QString::number(list.at(i)));
+    for(int i = 0; i < list.size(); ++ i) line_list.append(QString::number(list.at(i)));
     _app_conf->setValue(name + "_sizelist", line_list.join(","));
 }
 
 std::pair<QString, QStringList> AppConfig::tree_position(void) const {
     return std::make_pair(
-	_app_conf->value("tree_intercept", global_root_id).toString(), _app_conf->value("tree_position", "1").toString().split(",")
-	);
+        _app_conf->value("tree_intercept", global_root_id).toString(), _app_conf->value("tree_position", "1").toString().split(",")
+        );
 }
 
 void AppConfig::tree_position(QString view_root_id, QStringList current_item_absolute_path){
@@ -304,7 +304,7 @@ void AppConfig::editor_show(bool isShow){_app_conf->setValue("editor_show", isSh
 QString AppConfig::howpassrequest(void) const {return get_parameter("howpassrequest");}
 
 void AppConfig::howpassrequest(QString mode){
-    if(mode == "atClickOnCryptBranch" || mode == "atStartProgram")_app_conf->setValue("howpassrequest", mode);
+    if(mode == "atClickOnCryptBranch" || mode == "atStartProgram") _app_conf->setValue("howpassrequest", mode);
     else critical_error("Set unavailable value for howpassrequest " + mode);
 }
 
@@ -406,7 +406,7 @@ QStringList AppConfig::record_table_show_fields(void) const {
 
 void AppConfig::record_table_show_fields(QStringList fields){
 	// Не должно быть так, чтобы был пустой список
-    if(fields.size() == 0)fields << "name";
+    if(fields.size() == 0) fields << "name";
     _app_conf->setValue("recordTableShowFields", fields.join(","));
 }
 
@@ -433,9 +433,9 @@ QStringList AppConfig::record_table_fields_width(void) const {
 
 void AppConfig::record_table_fields_width(QStringList fields){
 	// В списке с одним элементом должна стоять стандартная величина (всеравно она не влияет, и начнет влиять только после появления второй колонки)
-    if(fields.size() == 1)fields[0] = "256";
+    if(fields.size() == 1) fields[0] = "256";
 	// Не должно быть так, чтобы был пустой список
-    if(fields.size() == 0)fields << "256";
+    if(fields.size() == 0) fields << "256";
     _app_conf->setValue("recordTableFieldsWidth", fields.join(","));
 }
 
@@ -481,15 +481,15 @@ void AppConfig::hide_editor_tools(QStringList toolsNames){
 
 bool AppConfig::find_in_base_expand(void) const {
     return _app_conf->value(
-	FindScreen::_find_in_base_expand		// "findInBaseExpand"
-	).toBool();
+        FindScreen::_find_in_base_expand		// "findInBaseExpand"
+        ).toBool();
 }
 
 void AppConfig::find_in_base_expand(bool state){
     _app_conf->setValue(
-	FindScreen::_find_in_base_expand	// "findInBaseExpand"
-		       , state
-	);
+        FindScreen::_find_in_base_expand	// "findInBaseExpand"
+                       , state
+        );
 }
 
 // Разрешено ли использовать собственный формат вывода даты и времени
@@ -542,7 +542,7 @@ void AppConfig::enable_decrypt_file_to_trash_directory(bool state){
 // --------------------
 
 int AppConfig::config_version(void) const {
-    if(_app_conf->contains("version"))return _app_conf->value("version").toInt();
+    if(_app_conf->contains("version")) return _app_conf->value("version").toInt();
     else return 0;
 }
 
@@ -553,16 +553,16 @@ void AppConfig::config_version(int i){
 QStringList AppConfig::remove_parameter_from_table(QString removeName, QStringList table){
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-	// Выясняется имя параметра
-	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-	// Если имя совпадает с удаляемым
-	if(name == removeName){
-		// Удаляются данные об элементе (удаляется ячейка с одним и тем же номером
-		// столько раз, сколько полей в таблице)
-	    for(int j = 0; j < MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD; j ++)table.removeAt(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-	    break;
+        // Выясняется имя параметра
+        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+        // Если имя совпадает с удаляемым
+        if(name == removeName){
+            // Удаляются данные об элементе (удаляется ячейка с одним и тем же номером
+            // столько раз, сколько полей в таблице)
+            for(int j = 0; j < MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD; j ++) table.removeAt(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+            break;
+        }
 	}
-    }
     return table;
 }
 
@@ -570,9 +570,9 @@ QStringList AppConfig::remove_parameter_from_table(QString removeName, QStringLi
 QString AppConfig::parameter_type_from_table(QString parameterName, QStringList table) const {
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-	// Выясняется имя параметра
-	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-	if(name == parameterName)return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1);
+        // Выясняется имя параметра
+        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+        if(name == parameterName) return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1);
     }
     return "";
 }
@@ -581,9 +581,9 @@ QString AppConfig::parameter_type_from_table(QString parameterName, QStringList 
 QString AppConfig::parameter_value_from_table(QString parameterName, QStringList table) const {
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-	// Выясняется имя параметра
-	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-	if(name == parameterName)return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2);
+        // Выясняется имя параметра
+        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+        if(name == parameterName) return table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2);
     }
     return "";
 }
@@ -592,16 +592,16 @@ QString AppConfig::parameter_value_from_table(QString parameterName, QStringList
 QStringList AppConfig::replace_parameter_in_table(QString replaceName, QString replaceType, QString replaceValue, QStringList table){
 	// Перебираются параметры в таблице
     for(int i = 0; i < MYTETRA_CONFIG_PARAM_NUM; i ++){
-	// Выясняется имя параметра
-	QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
-	// Если имя совпадает с заменяемым
-	if(name == replaceName){
-	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1]	= replaceType;
-	    table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2]	= replaceValue;
+        // Выясняется имя параметра
+        QString name = table.at(i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD);
+        // Если имя совпадает с заменяемым
+        if(name == replaceName){
+            table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 1]	= replaceType;
+            table[i * MYTETRA_CONFIG_PARAM_FIELDS_AT_RECORD + 2]	= replaceValue;
 
-	    break;
+            break;
+        }
 	}
-    }
     return table;
 }
 
@@ -617,32 +617,32 @@ void AppConfig::update_version_process(void){
 
     int fromVersion = config_version();
 	// Последняя версия на данный момент - 26
-    if(fromVersion <= 1)updater.update_version(1, 2, parameter_table<0>(), parameter_table<1>());
-    if(fromVersion <= 2)updater.update_version(2, 3, parameter_table<1>(), parameter_table<2>());
-    if(fromVersion <= 3)updater.update_version(3, 4, parameter_table<2>(), parameter_table<3>());
-    if(fromVersion <= 4)updater.update_version(4, 5, parameter_table<3>(), parameter_table<4>());
-    if(fromVersion <= 5)updater.update_version(5, 6, parameter_table<4>(), parameter_table<5>());
-    if(fromVersion <= 6)updater.update_version(6, 7, parameter_table<5>(), parameter_table<6>());
-    if(fromVersion <= 7)updater.update_version(7, 8, parameter_table<6>(), parameter_table<7>());
-    if(fromVersion <= 8)updater.update_version(8, 9, parameter_table<7>(), parameter_table<8>());
-    if(fromVersion <= 9)updater.update_version(9, 10, parameter_table<8>(), parameter_table<9>());
-    if(fromVersion <= 10)updater.update_version(10, 11, parameter_table<9>(), parameter_table<10>());
-    if(fromVersion <= 11)updater.update_version(11, 12, parameter_table<10>(), parameter_table<11>());
-    if(fromVersion <= 12)updater.update_version(12, 13, parameter_table<11>(), parameter_table<12>());
-    if(fromVersion <= 13)updater.update_version(13, 14, parameter_table<12>(), parameter_table<13>());
-    if(fromVersion <= 14)updater.update_version(14, 15, parameter_table<13>(), parameter_table<14>());
-    if(fromVersion <= 15)updater.update_version(15, 16, parameter_table<14>(), parameter_table<15>());
-    if(fromVersion <= 16)updater.update_version(16, 17, parameter_table<15>(), parameter_table<16>());
-    if(fromVersion <= 17)updater.update_version(17, 18, parameter_table<16>(), parameter_table<17>());
-    if(fromVersion <= 18)updater.update_version(18, 19, parameter_table<17>(), parameter_table<18>());
-    if(fromVersion <= 19)updater.update_version(19, 20, parameter_table<18>(), parameter_table<19>());
-    if(fromVersion <= 20)updater.update_version(20, 21, parameter_table<19>(), parameter_table<20>());
-    if(fromVersion <= 21)updater.update_version(21, 22, parameter_table<20>(), parameter_table<21>());
-    if(fromVersion <= 22)updater.update_version(22, 23, parameter_table<21>(), parameter_table<22>());
-    if(fromVersion <= 23)updater.update_version(23, 24, parameter_table<22>(), parameter_table<23>());
-    if(fromVersion <= 24)updater.update_version(24, 25, parameter_table<23>(), parameter_table<24>());
-    if(fromVersion <= 25)updater.update_version(25, 26, parameter_table<24>(), parameter_table<25>());
-    if(fromVersion <= 26)updater.update_version(26, 27, parameter_table<25>(), parameter_table<26>());
+    if(fromVersion <= 1) updater.update_version(1, 2, parameter_table<0>(), parameter_table<1>());
+    if(fromVersion <= 2) updater.update_version(2, 3, parameter_table<1>(), parameter_table<2>());
+    if(fromVersion <= 3) updater.update_version(3, 4, parameter_table<2>(), parameter_table<3>());
+    if(fromVersion <= 4) updater.update_version(4, 5, parameter_table<3>(), parameter_table<4>());
+    if(fromVersion <= 5) updater.update_version(5, 6, parameter_table<4>(), parameter_table<5>());
+    if(fromVersion <= 6) updater.update_version(6, 7, parameter_table<5>(), parameter_table<6>());
+    if(fromVersion <= 7) updater.update_version(7, 8, parameter_table<6>(), parameter_table<7>());
+    if(fromVersion <= 8) updater.update_version(8, 9, parameter_table<7>(), parameter_table<8>());
+    if(fromVersion <= 9) updater.update_version(9, 10, parameter_table<8>(), parameter_table<9>());
+    if(fromVersion <= 10) updater.update_version(10, 11, parameter_table<9>(), parameter_table<10>());
+    if(fromVersion <= 11) updater.update_version(11, 12, parameter_table<10>(), parameter_table<11>());
+    if(fromVersion <= 12) updater.update_version(12, 13, parameter_table<11>(), parameter_table<12>());
+    if(fromVersion <= 13) updater.update_version(13, 14, parameter_table<12>(), parameter_table<13>());
+    if(fromVersion <= 14) updater.update_version(14, 15, parameter_table<13>(), parameter_table<14>());
+    if(fromVersion <= 15) updater.update_version(15, 16, parameter_table<14>(), parameter_table<15>());
+    if(fromVersion <= 16) updater.update_version(16, 17, parameter_table<15>(), parameter_table<16>());
+    if(fromVersion <= 17) updater.update_version(17, 18, parameter_table<16>(), parameter_table<17>());
+    if(fromVersion <= 18) updater.update_version(18, 19, parameter_table<17>(), parameter_table<18>());
+    if(fromVersion <= 19) updater.update_version(19, 20, parameter_table<18>(), parameter_table<19>());
+    if(fromVersion <= 20) updater.update_version(20, 21, parameter_table<19>(), parameter_table<20>());
+    if(fromVersion <= 21) updater.update_version(21, 22, parameter_table<20>(), parameter_table<21>());
+    if(fromVersion <= 22) updater.update_version(22, 23, parameter_table<21>(), parameter_table<22>());
+    if(fromVersion <= 23) updater.update_version(23, 24, parameter_table<22>(), parameter_table<23>());
+    if(fromVersion <= 24) updater.update_version(24, 25, parameter_table<23>(), parameter_table<24>());
+    if(fromVersion <= 25) updater.update_version(25, 26, parameter_table<24>(), parameter_table<25>());
+    if(fromVersion <= 26) updater.update_version(26, 27, parameter_table<25>(), parameter_table<26>());
 }
 
 template<>QStringList AppConfig::parameter_table<0>(bool withEndSignature){	// QStringList AppConfig::parameter_table_1(bool withEndSignature) const
@@ -673,7 +673,7 @@ template<>QStringList AppConfig::parameter_table<0>(bool withEndSignature){	// Q
     table << "v_right_splitter_sizelist" << "QString" << "614,0";
     table << "findscreen_find_inauthor" << "bool" << "true";
     table << "findscreen_find_inurl" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -687,7 +687,7 @@ template<>QStringList AppConfig::parameter_table<1>(bool withEndSignature){	// Q
 
 	// Новый параметр
     table << "cutbranchconfirm" << "bool" << "true";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -701,7 +701,7 @@ template<>QStringList AppConfig::parameter_table<2>(bool withEndSignature){	// Q
 
 	// Новый параметр
     table << "printdebugmessages" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -716,7 +716,7 @@ template<>QStringList AppConfig::parameter_table<3>(bool withEndSignature){	// Q
 	// Новые параметры
     table << "interfacelanguage" << "QString" << "en";
     table << "programm" << "QString" << "mytetra";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -732,7 +732,7 @@ template<>QStringList AppConfig::parameter_table<4>(bool withEndSignature){	// Q
     table	= remove_parameter_from_table("lastidnum", table);
     table	= remove_parameter_from_table("lastnotenum", table);
     table	= remove_parameter_from_table("lastprefixnum", table);
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -746,7 +746,7 @@ template<>QStringList AppConfig::parameter_table<5>(bool withEndSignature){	// Q
 
 	// Новые параметры
     table << "howpassrequest" << "QString" << "atClickOnCryptBranch";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -760,7 +760,7 @@ template<>QStringList AppConfig::parameter_table<6>(bool withEndSignature){	// Q
 
 	// Новые параметры
     table << "runinminimizedwindow" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -776,7 +776,7 @@ template<>QStringList AppConfig::parameter_table<7>(bool withEndSignature){	// Q
     table << "synchrocommand" << "QString" << "";
     table << "synchroonstartup" << "bool" << "false";
     table << "synchroonexit" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -790,7 +790,7 @@ template<>QStringList AppConfig::parameter_table<8>(bool withEndSignature){	// Q
 
 	// Новые параметры
     table << "syncroConsoleDetails" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -805,7 +805,7 @@ template<>QStringList AppConfig::parameter_table<9>(bool withEndSignature){	// Q
 	// Новые параметры
     table << "autoClosePasswordEnable" << "bool" << "false";
     table << "autoClosePasswordDelay" << "int" << "10";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -820,7 +820,7 @@ template<>QStringList AppConfig::parameter_table<10>(bool withEndSignature){	// 
 	// Новые параметры
     table << "editorCursorPosition" << "int" << "0";
     table << "editorScrollBarPosition" << "int" << "0";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -835,7 +835,7 @@ template<>QStringList AppConfig::parameter_table<11>(bool withEndSignature){	// 
 	// Новые параметры
     table << "passwordMiddleHash" << "QString" << "";
     table << "passwordSaveFlag" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -850,7 +850,7 @@ template<>QStringList AppConfig::parameter_table<12>(bool withEndSignature){	// 
 	// Новые параметры
     table << "rememberCursorAtHistoryNavigation" << "bool" << "true";
     table << "rememberCursorAtOrdinarySelection" << "bool" << "true";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -864,7 +864,7 @@ template<>QStringList AppConfig::parameter_table<13>(bool withEndSignature){	// 
 
 	// Новые параметры
     table << "findScreenTreeSearchArea" << "int" << "0";// Область поиска. Искать во всем дереве - 0, искать в текущей ветке - 1
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -876,9 +876,9 @@ template<>QStringList AppConfig::parameter_table<14>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 14
     table << parameter_table<13>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android")table << "uglyQssReplaceHeightForTableView" << "int" << "35";	// Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
+    if(globalparameters.target_os() == "android") table << "uglyQssReplaceHeightForTableView" << "int" << "35";																																											// Так как не все параметры можно стилизовать через QSS, здесь задается высота ячейки таблицы
     else table << "uglyQssReplaceHeightForTableView" << "int" << "0";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -895,7 +895,7 @@ template<>QStringList AppConfig::parameter_table<15>(bool withEndSignature){	// 
     table << "recordTableFieldsWidth" << "QString" << "256,128";
     table << "recordTableShowHorizontalHeaders" << "bool" << "true";
     table << "recordTableShowVerticalHeaders" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -907,9 +907,9 @@ template<>QStringList AppConfig::parameter_table<16>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 16
     table << parameter_table<15>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android")table << "showSplashScreen" << "bool" << "true";	// В Андроид долгий запуск, нужно показывать сплешскрин
-    else table << "showSplashScreen" << "bool" << "false";	// На десктопе быстрый запуск, сплешскрин только мешает
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(globalparameters.target_os() == "android") table << "showSplashScreen" << "bool" << "true";																																							// В Андроид долгий запуск, нужно показывать сплешскрин
+    else table << "showSplashScreen" << "bool" << "false";																								// На десктопе быстрый запуск, сплешскрин только мешает
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -921,9 +921,9 @@ template<>QStringList AppConfig::parameter_table<17>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 17
     table << parameter_table<16>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android")table << "interfaceMode" << "QString" << "mobile";	// В Андроид должен быть мобильный интерфейс
-    else table << "interfaceMode" << "QString" << "desktop";	// На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(globalparameters.target_os() == "android") table << "interfaceMode" << "QString" << "mobile";																																								// В Андроид должен быть мобильный интерфейс
+    else table << "interfaceMode" << "QString" << "desktop";																									// На десктопе должен быть интерфейс адоптированный для работы на рабочем столе
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -937,7 +937,7 @@ template<>QStringList AppConfig::parameter_table<18>(bool withEndSignature){	// 
 
 	// Новые параметры
     table << "focusWidget" << "QString" << "";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -949,9 +949,9 @@ template<>QStringList AppConfig::parameter_table<19>(bool withEndSignature){	// 
 	// Старые параметры, аналогичные версии 19
     table << parameter_table<18>(false);
 	// Новые параметры
-    if(globalparameters.target_os() == "android")table << "hideEditorTools" << "QString" << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";	// В Андроид прячутся инструменты сложного форматирования текста
-    else table << "hideEditorTools" << "QString" << "";	// На десктопе скрываемых кнопок редактора нет
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(globalparameters.target_os() == "android") table << "hideEditorTools" << "QString" << "italic,underline,monospace,alignleft,aligncenter,alignright,alignwidth,numericlist,dotlist,indentplus,indentminus,showformatting,showhtml,fontcolor,expand_edit_area,save,createtable,table_add_row,table_remove_row,table_add_col,table_remove_col,table_merge_cells,table_split_cell";																																																																																																																																														// В Андроид прячутся инструменты сложного форматирования текста
+    else table << "hideEditorTools" << "QString" << "";																						// На десктопе скрываемых кнопок редактора нет
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -964,9 +964,9 @@ template<>QStringList AppConfig::parameter_table<20>(bool withEndSignature){	// 
     table << parameter_table<19>(false);
 
     table	<<
-	FindScreen::_find_in_base_expand	// "findInBaseExpand"
-		<< "bool" << "true";
-    if(withEndSignature)table << "0" << "0" << "0";
+        FindScreen::_find_in_base_expand	// "findInBaseExpand"
+            << "bool" << "true";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -979,7 +979,7 @@ template<>QStringList AppConfig::parameter_table<21>(bool withEndSignature){	// 
     table << parameter_table<20>(false);
 
     table << "recordtableSelectedRecordId" << "QString" << "";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -993,7 +993,7 @@ template<>QStringList AppConfig::parameter_table<22>(bool withEndSignature){	// 
 
 	// Исключаются ненужные в новой версии параметры
     table = remove_parameter_from_table("recordtable_position", table);
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -1007,7 +1007,7 @@ template<>QStringList AppConfig::parameter_table<23>(bool withEndSignature){	// 
 
     table << "enableCustomDateTimeFormat" << "bool" << "false";
     table << "customDateTimeFormat" << "QString" << "";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -1021,7 +1021,7 @@ template<>QStringList AppConfig::parameter_table<24>(bool withEndSignature){	// 
 
     table << "attachAppendDir" << "QString" << "";
     table << "attachSaveAsDir" << "QString" << "";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -1034,7 +1034,7 @@ template<>QStringList AppConfig::parameter_table<25>(bool withEndSignature){	// 
     table << parameter_table<24>(false);
 
     table << "enableDecryptFileToTrashDirectory" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 
@@ -1054,7 +1054,7 @@ template<>QStringList AppConfig::parameter_table<26>(bool withEndSignature){	// 
     table << "horizontal_scrollbar_style_sheet" << "QString" << "QTabWidget::pane { border: 0 px; } ";
     table << "application_mode" << "QString" << "Portable";
 	//    table << "enableDecryptFileToTrashDirectory" << "bool" << "false";
-    if(withEndSignature)table << "0" << "0" << "0";
+    if(withEndSignature) table << "0" << "0" << "0";
     return table;
 }
 

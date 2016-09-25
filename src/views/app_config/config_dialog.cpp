@@ -102,7 +102,7 @@ QListWidgetItem *ConfigDialog::create_items(QString name){
 
 // Приватный слот, переключение виджета настройки при клике по списку настроечных виджетов
 void ConfigDialog::change_page(QListWidgetItem *current, QListWidgetItem *previous){
-    if(! current)current = previous;
+    if(! current) current = previous;
     pagesWidget->setCurrentIndex(contentsWidget->row(current));
 
 	// scrollArea->adjustSize();
@@ -125,17 +125,17 @@ void ConfigDialog::apply_changes(void){
     int difficult_flag = 0;
 	// Перебираются виджеты настройки
     for(int i = 0; i < pagesWidget->count(); i ++){
-	// Выясняется указатель на виджет
-	ConfigPage *cnpg = qobject_cast<ConfigPage *>(pagesWidget->widget(i));
-	// Вызывается метод apply_changes() для текущего перебираемого виджета
-	if(cnpg->apply_changes() == 1)difficult_flag = 1;
+        // Выясняется указатель на виджет
+        ConfigPage *cnpg = qobject_cast<ConfigPage *>(pagesWidget->widget(i));
+        // Вызывается метод apply_changes() для текущего перебираемого виджета
+        if(cnpg->apply_changes() == 1) difficult_flag = 1;
     }
 	// Если требуется перезапустить программу для принятия изменений
     if(difficult_flag == 1){
-	QMessageBox::warning(this, tr("Warning")
-			    , tr("The program will have to be restarted for changes to take effect.")
-			    , QMessageBox::Ok);
-	exit(0);
+        QMessageBox::warning(this, tr("Warning")
+                            , tr("The program will have to be restarted for changes to take effect.")
+                            , QMessageBox::Ok);
+        exit(0);
     }
 	// Диалог настройки закрывается
     close();
