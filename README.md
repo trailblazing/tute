@@ -38,12 +38,27 @@ Let's say the directory of your current project is named "working":
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
 
     /opt/Qt/5.7
+    but it's not a must
 
-* Or some user installation is up to you (update the line
+* Environment in ~/.profile
 
-        PROJECT_QT_VERSION      = /path-to-qt-installation/gcc_64
+    QT5DIR=/path-to-qt-installation/gcc_64
 
-in mytetra_webengine.pro).
+    export QT5DIR
+
+    if ! echo ${PATH} | /bin/grep -q $QT5DIR/bin ; then
+        PATH=$QT5DIR/bin:${PATH}
+        PKG_CONFIG_PATH=$QT5DIR/lib/pkgconfig:${PKG_CONFIG_PATH}
+    fi
+
+    QT5INC="$QT5DIR/include"
+    QT5LIB="$QT5DIR/lib"
+    QT5LIB=$QT5DIR/plugins/platforms:${QT5LIB}
+    PATH=$QT5INC:${PATH}
+    PATH=$QT5LIB:${PATH}
+
+    export QT5DIR QT5INC QT5LIB PATH
+
 * Do not recommend to mix it up with system installation of Qt
 
 1.4 Clone the repo to your workbench
