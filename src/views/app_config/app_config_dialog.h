@@ -35,6 +35,7 @@ class AppConfigDialog : public QWidget {
 	QListWidgetItem *pageMisc;
 	rctrl_t		*_record_controller;
 	void		changePage(QString name);
+    friend class XmlTree;
 };
 
 #endif	// _APPCONFIGDIALOG_H_

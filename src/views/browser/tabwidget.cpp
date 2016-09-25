@@ -1711,7 +1711,7 @@ namespace browser {
 	if(- 1 != index)setTabText(index, _real_title);
 	if(currentIndex() == index)emit setCurrentTitle(_real_title);	// "test"
 	//
-	if(_real_title != "")webView->page()->record_info_update(webView->page()->url(), _real_title);
+	if(_real_title != "")webView->page()->record_info_update(webView->page()->url(), title);
 	sapp_t::historyManager()->updateHistoryItem(webView->page()->url(), title);
     }
 

@@ -13,6 +13,7 @@
 #include "models/record_table/items_flat.h"
 #include "libraries/disk_helper.h"
 #include "libraries/trash_monitoring.h"
+#include "views/app_config/app_config_dialog.h"
 
 extern TrashMonitoring trashmonitoring;
 
@@ -31,6 +32,9 @@ XmlTree::~XmlTree(void){
 
 bool XmlTree::load(QString _file_name){
     if(! QFile::exists(_file_name)){
+        AppConfigDialog dialog(nullptr, "pageRecordTable");
+        dialog.changePage("pageMain");
+        dialog.show();
 	assert(trashmonitoring.is_inited());
 	trashmonitoring.recover_from_trash();
     }

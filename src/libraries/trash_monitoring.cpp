@@ -34,7 +34,7 @@ void TrashMonitoring::recover_from_trash(){
 //    QFileInfo	main_program_file_info(_main_program_file);
 //    QString	full_current_path = main_program_file_info.absolutePath();
     if(_files_table.size() == 0){
-	if(! QFile::copy(QString(":/resource/standartdata/") + "/" + _file_name, appconfig.trash_dir() + "/" + _file_name))throw std::runtime_error("Can not copy mytetra.xml");
+    if(! QFile::copy(QString(":/resource/standartdata/") + _file_name, appconfig.trash_dir() + "/" + _file_name))throw std::runtime_error("Can not copy mytetra.xml");
 	else        QFile::setPermissions(appconfig.trash_dir() + "/" + _file_name, QFile::ReadUser | QFile::WriteUser);
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
 //	assert(succedded);

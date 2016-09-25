@@ -64,13 +64,10 @@ CONFIG  +=  gnu++14
 QMAKE_CXXFLAGS += -std=c++14 -std=gnu++14
 
 
-
 # http://blog.qt.io/blog/2011/10/28/rpath-and-runpath/
 
 
-#PROJECT_QT_VERSION  = /usr
-PROJECT_QT_VERSION      = /opt/Qt/5.7/gcc_64
-#PROJECT_QT_VERSION      = $$PWD/../../GUI/Qt/5.7/gcc_64
+PROJECT_QT_VERSION      = $$(QT5DIR)
 
 #PROJECT_QT_LIBS      = PROJECT_QT_VERSION/lib64
 #PROJECT_QT_LIBS      = PROJECT_QT_VERSION/lib
