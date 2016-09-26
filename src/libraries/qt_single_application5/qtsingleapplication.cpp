@@ -440,8 +440,8 @@ void sapp_t::browser_init(){
 //	auto conf_name = QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf";
         if(QFile::exists(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf")){
             // Файл перемещается в корзину
-            if(! QFile::copy(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.work_directory() + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																											// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
-            else QFile::setPermissions(_globalparameters.work_directory() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																					//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+            if(! QFile::copy(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.work_directory() + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																													// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
+            else QFile::setPermissions(_globalparameters.work_directory() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																																																																																							//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
         }
 	}
     QDesktopServices::setUrlHandler(QLatin1String("http"), this, "openUrl");
@@ -513,7 +513,7 @@ void sapp_t::main_window(){
     _globalparameters.main_window(_window);
 
     _window->setWindowTitle(application_name);
-    if(_globalparameters.target_os() == "android") _window->show();																																																				// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    if(_globalparameters.target_os() == "android") _window->show();																																																																																						// В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else{
         if(_appconfig.run_in_minimized_window() == false) _window->show();
         else _window->hide();
@@ -832,7 +832,7 @@ void sapp_t::newLocalSocketConnection(){
     QTextStream stream(socket);
     QString		_url;
     stream >> _url;
-    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																	//    browser::DockedWindow *w = nullptr;
+    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																	//    browser::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
 
@@ -847,7 +847,7 @@ void sapp_t::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto	current_item	= tree_view->current_item();
     auto	parent			= current_item->parent();
-    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																							// std::exception();
+    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																											// std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
@@ -863,7 +863,7 @@ void sapp_t::newLocalSocketConnection(){
             boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-            it = TreeIndex::instance([&] {return tree_view->source_model();}, tree_view->current_item())->register_index(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});
+            it = TreeIndex::treeitem_from_url(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});	// instance([&] {return tree_view->source_model();}, tree_view->current_item())->
 
 //            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 
@@ -1341,7 +1341,7 @@ void sapp_t::setPrivateBrowsing(bool privateBrowsing){
     _private_browsing = privateBrowsing;
     auto browsers = [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
     if(privateBrowsing){
-        if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																											// new QWebEngineProfile(this);
+        if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																													// new QWebEngineProfile(this);
         for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
     }else{
         for(auto &browser : browsers){
