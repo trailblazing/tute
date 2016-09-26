@@ -1304,12 +1304,12 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //            assert(tree_index);
 
 //            if(tree_index) {
-            auto result = view->move(TreeIndex::treeindex_from_item([&] {return view->source_model();}, host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
+            auto result = view->move(TreeIndex::create_treeindex_from_item([&] {return view->source_model();}, host_parent), linker_first->host(), [&](boost::intrusive_ptr<const Linker> il) -> bool {return il->host()->id() == linker_first->host()->id();});
             assert(result->id() == linker_first->host()->id());
             if(result != linker_first->host()){
                 tv_t *tree_view = static_cast<tv_t *>(static_cast<QObject *>(this)->parent());
                 assert(tree_view);
-                result = merge(TreeLevel::instance(TreeIndex::treeindex_from_item([&] {return this;}, result), linker_first->host()), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
+                result = merge(TreeLevel::instance(TreeIndex::create_treeindex_from_item([&] {return this;}, result), linker_first->host()), std::bind(&tv_t::delete_permanent, tree_view, [&] {return this;}, QList<boost::intrusive_ptr<TreeItem> >() << linker_first->host(), &tkm_t::delete_permanent, "cut", false));
             }
             assert(result->linker()->integrity_external(result, delete_linker->host_parent()));
 //            bTreeIndex([&] {return view->source_model(); }, result)oost::intrusive_ptr<TreeIndex> tree_index_first;
@@ -1317,7 +1317,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::delete_permanent(boost::intrusive_ptr<Link
 //            assert(tree_index_first);
 //            if(tree_index_first) {
             for(auto &il : host->child_linkers()){
-                view->move(TreeIndex::treeindex_from_item([&] {return view->source_model();}, result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
+                view->move(TreeIndex::create_treeindex_from_item([&] {return view->source_model();}, result), il->host(), [&](boost::intrusive_ptr<const Linker> link) -> bool {return il->host()->id() == link->host()->id();});
             }
 //            }
 //            }

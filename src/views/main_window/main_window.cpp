@@ -1211,7 +1211,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
 
             // Курсор устанавливается в нужную позицию
 
-            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::treeindex_from_item([&] {return _tree_view->source_model();}, it);
+            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, it);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it->parent(), it->parent()->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
 // })); } catch(std::exception &e) {throw e; }
@@ -1222,7 +1222,7 @@ void wn_t::set_tree_position(QString current_root_id, QStringList current_item_a
             boost::intrusive_ptr<TreeItem> r(nullptr);
             if(it->count_direct() == 0) r = _tree_view->tree_empty_controll();
             else r = it->child_direct(0);
-            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::treeindex_from_item([&] {return _tree_view->source_model();}, r);
+            boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, r);
 // try {tree_index = new TreeIndex([&] {return tree_view->source_model(); }, it, 0); } catch(std::exception &e) {throw e; }
 
             _tree_view->select_as_current(tree_index);

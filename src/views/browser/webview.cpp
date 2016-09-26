@@ -656,7 +656,7 @@ namespace browser {
             auto	it			= _binder->host();
             auto	tree_view	= _tree_screen->view();
             if(is_current){	// globalparameters.mainwindow()
-                if(tree_view->current_item() != it) tree_view->select_as_current(TreeIndex::treeindex_from_item([&] {return tree_view->source_model();}, it));
+                if(tree_view->current_item() != it) tree_view->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, it));
                 if(_record_controller->view()->current_item() != it) _record_controller->select_as_current(_record_controller->index<pos_proxy>(it));																																					// IdType(_binder->item()->field("id"))
             }
             // if(_record->_active_request) {
@@ -994,7 +994,7 @@ namespace browser {
             if(_vtab_record->currentWidget() != _record_screen) _vtab_record->setCurrentWidget(_record_screen);
             auto	it			= _binder->host();
             auto	tree_view	= _tree_screen->view();
-            if(it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::treeindex_from_item([&] {return tree_view->source_model();}, it));
+            if(it != tree_view->current_item()) tree_view->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, it));
 //	    if(_url_str != Browser::_defaulthome){	// && _loadingurl.isValid()   // && _loadingurl == _url
             if(_record_controller->view()->current_item() != _binder->host() || _view->tabmanager()->currentWebView() != _view){
                 _tabmanager->setCurrentWidget(_view);
@@ -1198,7 +1198,7 @@ namespace browser {
         assert(parent);
 //	auto parent_parent = parent->parent();
 
-        boost::intrusive_ptr<TreeIndex> this_index = TreeIndex::treeindex_from_item([&] {return tree_view->source_model();}, this->host());// parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
+        boost::intrusive_ptr<TreeIndex> this_index = TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, this->host());// parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
         if(type == QWebEnginePage::WebBrowserWindow){
             WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
             if(v) v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
@@ -2197,18 +2197,18 @@ namespace browser {
             // }
 
 
-            auto	ti		= _page->binder()->host();
+            auto	target		= _page->binder()->host();
             auto	v		= _page->_tree_screen->view();
-            auto	items	= v->source_model()->children([&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<url_type>().toStdString(), ti->field<url_type>().toStdString()) || it_->id() == ti->id() || it_ == ti;});
+            auto	items	= v->source_model()->children([&](boost::intrusive_ptr<const TreeItem> it_){return url_equal(it_->field<url_type>().toStdString(), target->field<url_type>().toStdString()) || it_->id() == target->id() || it_ == target;});
 //                    || (it_->field<home_type>() != "" && ti->field<home_type>() != "" && url_equal(it_->field<home_type>().toStdString(), ti->field<home_type>().toStdString()))
-            if(ti && items.size() > 1){
+            if(target && items.size() > 1){
                 QList<boost::intrusive_ptr<TreeItem> > others_same;
                 for(auto it_ : items){
-                    if(it_ != ti)
+                    if(it_ != target)
                             if(! others_same.contains(it_)) others_same << it_;
                 }
                 for(auto _it : others_same){
-                    auto it_ = TreeLevel::instance(TreeIndex::treeindex_from_item([&] {return v->source_model();}, ti), _it)->merge();	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
+                    auto it_ = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&] {return v->source_model();}, target), _it)->merge();	// TreeIndex::instance([&] {return v->source_model();}, ti, ti->parent()), _it);
 //                    std::thread(&KnowView::view_merge, v, TreeIndex::instance([&] {return v->source_model();}, it->parent(), it), j_).join();
                 }
             }
@@ -2717,7 +2717,7 @@ namespace browser {
 //	    }
 //	}
         auto _target_in_browser = _page->binder()->host();
-        if(_target_in_browser != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::treeindex_from_item([&] {return _tree_view->source_model();}, _target_in_browser));
+        if(_target_in_browser != _tree_view->current_item()) _tree_view->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_view->source_model();}, _target_in_browser));
         if((_record_controller->view()->current_item() != _target_in_browser) || (_tabmanager->currentWebView() != this)) _record_controller->select_as_current(_record_controller->index<pos_proxy>(_target_in_browser));
     }
 

@@ -152,7 +152,7 @@ namespace browser {
 	ts_t				*_tree_screen	= globalparameters.tree_screen();
 	auto				tree_view	= _tree_screen->view();
 	auto				current_item	= tree_view->current_item();
-	boost::intrusive_ptr<TreeIndex> tree_index	= TreeIndex::treeindex_from_item([&] {return tree_view->source_model();}, current_item);
+	boost::intrusive_ptr<TreeIndex> tree_index	= TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, current_item);
 //	if(result_item){
 	if(0 >= result_item->count_direct()){
 	    QUrl url = QUrl(search_text);

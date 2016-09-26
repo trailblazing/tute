@@ -634,7 +634,7 @@ namespace browser {
 	    if(! _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return b->host()->id() == _tree_screen->view()->current_item()->id();})){
 		auto it = _record_screen->record_controller()->view()->current_item();
 		if(it){
-		    _tree_screen->view()->select_as_current(TreeIndex::treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+		    _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
 		}
 	    }
 	}

@@ -181,7 +181,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
         auto		it			= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
         if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																// setCurrentIndex(static_cast<int>(pos_source_));
         auto tree_screen = globalparameters.main_window()->tree_screen();
-        if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
+        if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
         if(it) if(it->page()) it->page()->metaeditor_sychronize();
     }
     _record_screen->tools_update();

@@ -240,7 +240,7 @@ tv_t::tv_t(QString _name, ts_t *_tree_screen)
 	// connect(this, &KnowView::pressed, this, &KnowView::on_pressed);
     if(appconfig.interface_mode() == "mobile") connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){cursor_focus(source_model()->item(index));});																																									// (index_tree(index));
     if(appconfig.interface_mode() == "desktop"){
-        connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){auto _item = _know_root->child(index);if(_item) index_invoke(TreeIndex::treeindex_from_item([&] {return _know_root;}, _item));});		// globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(),
+        connect(this, &tv_t::clicked, this, [&](const QModelIndex &index){auto _item = _know_root->child(index);if(_item) index_invoke(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, _item));});		// globalparameters.main_window()->vtab_record()->activated_browser()->tabmanager()->currentWebView(),
         // [&](const QModelIndex index) {
         ////            collapse(index);
         ////            expand(index);
@@ -496,7 +496,7 @@ void tv_t::mousePressEvent(QMouseEvent *event){	// Q_DECL_OVERRIDE
             // {
             // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
             // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, it));
+            select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, it));
 
             //// start the context menu
             // QModelIndexList select_indexes(selectedIndexes());
@@ -638,7 +638,7 @@ void tv_t::dropEvent(QDropEvent *event){
 
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex([&] (){return _know_root;}, tree_item_drop, 0); } catch(std::exception &e) {throw e; } return tree_index; } ();
                 // Добавление записи в базу
-                TreeLevel::instance(TreeIndex::treeindex_from_item([&](){return _know_root;}, tree_item_drop), tree_item_drag)->move();	// _know_root// tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
+                TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _know_root;}, tree_item_drop), tree_item_drag)->move();	// _know_root// tree_item_drop->child_insert(0, record, ADD_NEW_RECORD_TO_END);
 
                 auto index_from = _know_root->index(tree_item_drag);
                 // Обновление исходной ветки чтобы было видно что записей убавилось
@@ -720,7 +720,7 @@ boost::intrusive_ptr<TreeItem> tv_t::session_root_auto(){
 	// (void)board_session_id_defined;
     auto fix_root = [&] {
         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, find_root()); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        _current_model()->session_id(TreeIndex::treeindex_from_item(_current_model, find_root()));
+        _current_model()->session_id(TreeIndex::create_treeindex_from_item(_current_model, find_root()));
         know_model_save();
         assert(view_session_id_defined());
     };
@@ -745,7 +745,7 @@ void tv_t::session_root_manual(bool checked){
     auto _source_model = [&](){return source_model();};
 	// boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_source_model, _source_model()->item(current_index())); } catch(std::exception &e) {throw e; } return tree_index; } ();
     auto it = _source_model()->item(current_index());
-    _source_model()->session_id(TreeIndex::treeindex_from_item(_source_model, it));
+    _source_model()->session_id(TreeIndex::create_treeindex_from_item(_source_model, it));
 }
 
 boost::intrusive_ptr<TreeItem> tv_t::current_item(){
@@ -770,7 +770,7 @@ boost::intrusive_ptr<TreeItem> tv_t::current_item(){
             // try {tree_index = new TreeIndex([&] {return _know_root; }, r->parent(), r->linker()->sibling_order()); } catch(std::exception &e) {}
 
             // if(tree_index)
-            index_result = select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, item_result));
+            index_result = select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, item_result));
         }
         if(! index_result.isValid()){
             item_result = session_root_auto();
@@ -791,7 +791,7 @@ boost::intrusive_ptr<TreeItem> tv_t::current_item(){
                     // tree_root_index = new TreeIndex([&] () -> KnowModel* {return _know_root;}, _know_root->root_item(), 0);
                     // } catch(std::exception &e) {throw e; }
 
-                    item_result = TreeIndex::treeindex_from_item([&]() -> tkm_t * {return _know_root;}, new TreeItem(item_result))
+                    item_result = TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _know_root;}, new TreeItem(item_result))
                         ->bind(QUrl(browser::Browser::_defaulthome)
                               , std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                               , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), browser::Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), browser::Browser::_defaulthome);});
@@ -844,7 +844,7 @@ boost::intrusive_ptr<TreeItem> tv_t::current_item(){
             // {
             // return il == it->linker() && il->host() == it && it->parent() == il->host_parent();
             // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            index_result = select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, item_result));
+            index_result = select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, item_result));
             // result = selectionModel()->currentIndex();
 
             assert(index_result.isValid());																	// this line is to be recovery
@@ -1352,7 +1352,7 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
                 if(duplicated_items_list_on_board_by_url.size() > 1){
                     for(auto _i : duplicated_items_list_on_board_by_url){
                         auto duplicated_item = _i;
-                        if(duplicated_item != result_item) result_item = TreeLevel::instance(TreeIndex::treeindex_from_item(_source_model, result_item), duplicated_item)->merge();																																																																										// (duplicated_item->id() != result_item->id()) ||
+                        if(duplicated_item != result_item) result_item = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_source_model, result_item), duplicated_item)->merge();																																																																										// (duplicated_item->id() != result_item->id()) ||
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
                     }
                 }
@@ -1365,7 +1365,7 @@ browser::WebView *tv_t::index_invoke(boost::intrusive_ptr<TreeIndex> _tree_index
         if(duplicated_items_list_on_board_by_id.size() > 1){
             for(auto _i : duplicated_items_list_on_board_by_id){
                 auto duplicated_item = _i;
-                if(duplicated_item != result_item) result_item = TreeLevel::instance(TreeIndex::treeindex_from_item(_source_model, result_item), duplicated_item)->merge();																																																																		// (duplicated_item->id() != result_item->id()) ||
+                if(duplicated_item != result_item) result_item = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_source_model, result_item), duplicated_item)->merge();																																																																		// (duplicated_item->id() != result_item->id()) ||
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_source_model, result_item); } catch(std::exception &e) {throw e; } return tree_index; } ();
             }
 		}
@@ -1599,7 +1599,7 @@ QItemSelection tv_t::LocalLizeInitializer::operator ()(){
                     }
                     // TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
                     if(found && duplicated_item && found != duplicated_item){
-                        found = static_cast<tkm_t *>(_source_model())->merge(TreeLevel::instance(TreeIndex::treeindex_from_item(_source_model, found), duplicated_item)
+                        found = static_cast<tkm_t *>(_source_model())->merge(TreeLevel::instance(TreeIndex::create_treeindex_from_item(_source_model, found), duplicated_item)
                                                                             , std::bind(&tv_t::delete_permanent, _tree_view, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent_recursive, "cut", false)																																				// , std::placeholders::_4, std::placeholders::_5
                                 );
                     }
@@ -1887,7 +1887,7 @@ boost::intrusive_ptr<TreeItem> tv_t::new_child(boost::intrusive_ptr<TreeIndex> _
             auto _it = it.next();
             if(_it->id() == result->id()){																	// prevent error merge
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                result = TreeLevel::instance(TreeIndex::treeindex_from_item(_current_model, result), _it)->merge();	// TreeIndex::instance(_current_model, result, result->parent()), _it);
+                result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_current_model, result), _it)->merge();	// TreeIndex::instance(_current_model, result, result->parent()), _it);
             }
         }
         // result = _name_same_no_child_first ? _name_same_no_child_first : _items_with_same_name[0];
@@ -1912,7 +1912,7 @@ boost::intrusive_ptr<TreeItem> tv_t::new_child(boost::intrusive_ptr<TreeIndex> _
 	// {
 	// return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
 	// })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-    select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, result));
+    select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, result));
 	// selectionModel()->select(setto, current_tree_selection_mode);
 	// selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -1952,7 +1952,7 @@ boost::intrusive_ptr<TreeItem> tv_t::tree_empty_controll(void){
 //		 , std::bind(&km_t::new_child, _know_root, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3)						// std::placeholders::_1    // std::placeholders::_3
 
 //	    );
-        result = TreeIndex::treeindex_from_item([&]() -> tkm_t * {return _know_root;}, new TreeItem(it))
+        result = TreeIndex::create_treeindex_from_item([&]() -> tkm_t * {return _know_root;}, new TreeItem(it))
             ->bind(QUrl(browser::Browser::_defaulthome)
                   , std::bind(&tv_t::move, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                   , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), browser::Browser::_defaulthome) || url_equal(it_->field<url_type>().toStdString(), browser::Browser::_defaulthome);});
@@ -2044,7 +2044,7 @@ boost::intrusive_ptr<TreeItem> tv_t::new_item(boost::intrusive_ptr<TreeIndex> _m
                     auto _it = it.next();
                     if(_it->id() == result->id()){																													// prevent error merge
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try {tree_index = new TreeIndex(_current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                        result = TreeLevel::instance(TreeIndex::treeindex_from_item(_current_model, result), _it)->merge();
+                        result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_current_model, result), _it)->merge();
                     }
                 }
             }else{
@@ -2062,7 +2062,7 @@ boost::intrusive_ptr<TreeItem> tv_t::new_item(boost::intrusive_ptr<TreeIndex> _m
             // {
             // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
             // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-            select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, result));
+            select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, result));
             // , insert_sibling_branch
 		}
 	}
@@ -2171,7 +2171,7 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::move_children(boost::intrusive_ptr<
                 // {
                 // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
                 // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, result[0]));																							// setto
+                select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, result[0]));																							// setto
                 // selectionModel()->select(setto, current_tree_selection_mode);
                 // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
 
@@ -2610,12 +2610,12 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
                     assert(result);
                     while(it.hasNext()){
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                        result = TreeLevel::instance(TreeIndex::treeindex_from_item(current_model, result), it.next())->merge();
+                        result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(current_model, result), it.next())->merge();
                         assert(result);
                         assert(current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();}));
                     }
                     // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, result); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                    result = TreeLevel::instance(TreeIndex::treeindex_from_item(current_model, result), _source_item)->merge();
+                    result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(current_model, result), _source_item)->merge();
                     assert(result);
                     if(result){
                         assert(current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();}));
@@ -2637,7 +2637,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
                     assert(result != _know_model_board->root_item());
                 }else{
                     // Вставка новых данных в модель дерева записей
-                    result = TreeLevel::instance(TreeIndex::treeindex_from_item(current_model, current_parent), _source_item)->move();	// static_cast<tkm_t *>(current_model())// TreeIndex(current_model, current_parent, _modelindex.sibling_order())
+                    result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(current_model, current_parent), _source_item)->move();	// static_cast<tkm_t *>(current_model())// TreeIndex(current_model, current_parent, _modelindex.sibling_order())
 
                     assert(current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();}));
                     assert(result != _know_model_board->root_item());
@@ -2660,7 +2660,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
 //		know_model_save();
 
 
-                select_as_current(TreeIndex::treeindex_from_item(current_model, result));
+                select_as_current(TreeIndex::create_treeindex_from_item(current_model, result));
                 assert(
                     (_source_item == result) ||
                     substitute_condition_(result->linker())																													// (_source_item->name() == result->name())
@@ -2722,7 +2722,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
                 // if(current_item->count_direct() > 0) {
                 // assert(current_item->item_direct(0) != _source_item);
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, _child); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                result = paste_sibling(TreeIndex::treeindex_from_item(current_model, _child), _source_item, _substitute_condition);									// _current_model, _current_model()->index(current_item->item_direct(0))
+                result = paste_sibling(TreeIndex::create_treeindex_from_item(current_model, _child), _source_item, _substitute_condition);									// _current_model, _current_model()->index(current_item->item_direct(0))
                 assert(result);
             }else{
                 // Получение ссылки на узел, который соответствует выделенной строке
@@ -2748,7 +2748,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
 
                 // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, host_parent, _modelindex->sibling_order()); } catch(std::exception &e) {throw e; } return tree_index; } ();
                 // Вставка новых данных в модель дерева записей
-                result = TreeLevel::instance(TreeIndex::treeindex_from_item(current_model, host), _source_item)->move();
+                result = TreeLevel::instance(TreeIndex::create_treeindex_from_item(current_model, host), _source_item)->move();
                 assert(result);
                 assert(result != _know_model_board->root_item());
                 // Установка курсора на только что созданную позицию
@@ -2760,7 +2760,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
                 // {
                 // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
                 // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-                select_as_current(TreeIndex::treeindex_from_item(current_model, result));																						// setto
+                select_as_current(TreeIndex::create_treeindex_from_item(current_model, result));																						// setto
                 // selectionModel()->select(setto, current_tree_selection_mode);
                 // selectionModel()->setCurrentIndex(setto, current_tree_current_index_mode);   // ClearAndSelect
                 // А можно было установить курсор на нужную позицию и так
@@ -2786,7 +2786,7 @@ boost::intrusive_ptr<TreeItem> tv_t::move(boost::intrusive_ptr<TreeIndex>       
                 result = _source_item;
         assert(result);
 
-        select_as_current(TreeIndex::treeindex_from_item(current_model, result));
+        select_as_current(TreeIndex::create_treeindex_from_item(current_model, result));
     }
     return result;
 }
@@ -2873,7 +2873,7 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
             for(auto it : _items)
                     // QModelIndex index = _index_list.at(i);
                     if(it->parent() == _item_common_parent){																							// if(index.isValid() && index.parent() == _index_common_parent) {
-                        if(it->id() == _current_model()->session_id()) _current_model()->session_id(TreeIndex::treeindex_from_item(_current_model, _item_common_parent));////        keep = source; remove = target;
+                        if(it->id() == _current_model()->session_id()) _current_model()->session_id(TreeIndex::create_treeindex_from_item(_current_model, _item_common_parent));////        keep = source; remove = target;
                         // boost::intrusive_ptr<TreeIndex> tree_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(_current_model, _item_common_parent); } catch(std::exception &e) {throw e; } return tree_index; } ();
                         // auto it = _current_model()->item(index);
                         branches_name << it->field<name_type>();
@@ -2930,7 +2930,7 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
                     // _source_model->beginRemoveRows(_index_common_parent, _index_list.first().row(), _index_list.last().row());
                     // Вызов удаления веток
                     for(auto it : items_candidate){																													// for(int i = 0; i < _result.size(); ++i) {
-                        if(it->id() == static_cast<tkm_t *>(_current_model())->session_id()) static_cast<tkm_t *>(_current_model())->session_id(TreeIndex::treeindex_from_item(_current_model, it->parent()));
+                        if(it->id() == static_cast<tkm_t *>(_current_model())->session_id()) static_cast<tkm_t *>(_current_model())->session_id(TreeIndex::create_treeindex_from_item(_current_model, it->parent()));
                         if(it->linker()->host() && it->linker()->host_parent()){
                             auto result = (static_cast<tkm_t *>(_current_model())->*_delete_strategy)(it->linker());
                             // just for counting, result.get() == 0 is fine
@@ -3011,7 +3011,7 @@ QList<boost::intrusive_ptr<TreeItem> > tv_t::delete_permanent(const std::functio
                                 assert(setto.isValid());
                             }else left_sibling_item = get_left_sibling_from_tree();
                         }else left_sibling_item = get_left_sibling_from_tree();
-                        select_as_current(TreeIndex::treeindex_from_item(_current_model, left_sibling_item));
+                        select_as_current(TreeIndex::create_treeindex_from_item(_current_model, left_sibling_item));
                         qDebug() << "Delete finish";
 
                         // update_model(_current_know_branch);
@@ -3232,7 +3232,7 @@ QModelIndexList tv_t::copy(void){	// const
 
         // item->field("id", _clipboard_root_parent_id);
         // Добавление корневой ветки
-        _sub_branch->branch_push(TreeIndex::treeindex_from_item(_source_model, current_item()), items);											// , _clipboard_root_parent_id
+        _sub_branch->branch_push(TreeIndex::create_treeindex_from_item(_source_model, current_item()), items);											// , _clipboard_root_parent_id
         // _current_item_absolute_path
         // branch_add_to_clipboard(branch_clipboard_data, _source_model_cur_item_absolute_path);   // , true
 
@@ -3332,7 +3332,7 @@ boost::intrusive_ptr<TreeItem> tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree
 //	}
         if(result){
             if(result != _to_be_operated){											// && target_on_tree
-                if(_to_be_operated->id() == static_cast<tkm_t *>(_current_model())->session_id()) static_cast<tkm_t *>(_current_model())->session_id(TreeIndex::treeindex_from_item(_current_model, result));
+                if(_to_be_operated->id() == static_cast<tkm_t *>(_current_model())->session_id()) static_cast<tkm_t *>(_current_model())->session_id(TreeIndex::create_treeindex_from_item(_current_model, result));
                 globalparameters.main_window()->setDisabled(true);
                 result = static_cast<tkm_t *>(_current_model())->merge(TreeLevel::instance(tree_index, _to_be_operated)	// target_on_tree  // keep// remove   // std::bind(_know_model_board, this)
                                                                       , std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent_recursive, "cut", false)																					//
@@ -3361,7 +3361,7 @@ void tv_t::on_current_changed(const QModelIndex &current, const QModelIndex &pre
         // {
         // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
         // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, result));
+        select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, result));
     }
 }
 
@@ -3391,7 +3391,7 @@ void tv_t::on_current_row_changed(const QModelIndex &current, const QModelIndex 
         // {
         // return il == result->linker() && il->host() == result && result->parent() == il->host_parent();
         // })); } catch(std::exception &e) {throw e; } return tree_index; } ();
-        select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, result));
+        select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, result));
     }
 	// index_invoke(current_index());    // current
 
@@ -3667,7 +3667,7 @@ std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t:
                         if(0 == root_item->count_direct()) tree_empty_controll();																				// boost::intrusive_ptr<TreeIndex> tree_absolute_index = [&] {boost::intrusive_ptr<TreeIndex> tree_index; try{tree_index = new TreeIndex(current_model, _root_up); } catch(std::exception &e) {throw e; } return tree_index; } ();
                         intercept(root_item);		// TreeIndex::instance(current_model, _root_up, _root_up->parent())
                         if(! TreeIndex::is_ancestor_of(current_item_->parent(), root_item)) current_item_ = current_item_->parent();																																// if(! current_item_->parent()->path_list().contains(root_item->field<id_type>()))
-                        select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, current_item_));
+                        select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, current_item_));
 
                         // Получаем указатель на данные таблицы конечных записей
 
@@ -3695,7 +3695,7 @@ std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t:
                 if(parent_ && parent_ != current_root_ && ! TreeIndex::is_ancestor_of(parent_, current_root_)){		// current_item_->parent()->path_list().size() > root_to_update->path_list().size()
                     current = parent_;
 
-                    select_as_current(TreeIndex::treeindex_from_item([&] {return _know_root;}, current));
+                    select_as_current(TreeIndex::create_treeindex_from_item([&] {return _know_root;}, current));
                 }else if(parent_ == current_root_ && current_root_) current_root_ = root_up_input(current_root_);
             }else if(current_root_->count_direct() == current_root_->count_children_all() && current_root_) current_root_ = root_up_input(current_root_);
             // auto try_root_up    = current_model()->root_item()->parent();
@@ -3794,7 +3794,7 @@ std::pair<boost::intrusive_ptr<TreeItem>, boost::intrusive_ptr<TreeItem> > tv_t:
         }								// _know_branch->intercept(know_root()->root_item());
         if(current_item_){
             while(current_item_->parent()->parent()) current_item_ = current_item_->parent();
-            select_as_current(TreeIndex::treeindex_from_item(source_model_, current_item_));
+            select_as_current(TreeIndex::create_treeindex_from_item(source_model_, current_item_));
         }
         _tree_screen->enable_up_action();
 
