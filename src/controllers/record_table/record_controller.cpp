@@ -2037,6 +2037,7 @@ void rctrl_t::on_sort_click(void){
 // Слот, срабатывающий при вызове настроек
 void rctrl_t::settings(void){
     AppConfigDialog dialog(this, "pageRecordTable");
+    dialog.changePage("pageMain");
     dialog.show();
 
 	// Todo: Возвращение фокуса почему-то не работает, надо разбираться

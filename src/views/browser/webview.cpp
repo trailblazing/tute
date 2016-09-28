@@ -1205,7 +1205,7 @@ namespace browser {
             Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 
             auto it =	// this_index->
-                TreeIndex::treeitem_from_url(target_url
+                TreeIndex::create_treeitem_from_url(target_url
                                          , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
                                          , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal((it_->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toString().toStdString());});	// return it_->field<url_type>() == target_url.toString();
             // Browser::_defaulthome

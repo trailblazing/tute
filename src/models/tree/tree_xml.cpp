@@ -13,10 +13,14 @@
 #include "models/record_table/items_flat.h"
 #include "libraries/disk_helper.h"
 #include "libraries/trash_monitoring.h"
+#include "views/browser/browser.h"
 #include "views/app_config/app_config_dialog.h"
+#include "views/main_window/main_window.h"
+#include "views/record_table/record_screen.h"
+#include "libraries/global_parameters.h"
 
 extern TrashMonitoring trashmonitoring;
-
+extern GlobalParameters globalparameters;
 
 #if QT_VERSION == 0x050600
 W_OBJECT_IMPL(XmlTree)
@@ -32,7 +36,7 @@ XmlTree::~XmlTree(void){
 
 bool XmlTree::load(QString _file_name){
     if(! QFile::exists(_file_name)){
-        AppConfigDialog dialog(nullptr, "pageRecordTable");
+	AppConfigDialog dialog(globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller(), "pageRecordTable");
         dialog.changePage("pageMain");
         dialog.show();
         assert(trashmonitoring.is_inited());

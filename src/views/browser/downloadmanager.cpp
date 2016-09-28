@@ -68,8 +68,8 @@
 #include <QWebEngineSettings>
 #include <QWebEngineDownloadItem>
 
-//extern std::string	url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
-extern bool		url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
+// extern std::string	url_difference(const std::string &url_compare_stored, const std::string &url_compare_get);
+extern bool url_equal(const std::string &url_compare_stored, const std::string &url_compare_get);
 
 namespace browser {
 	/*!
@@ -187,7 +187,10 @@ namespace browser {
 	stopButton->setEnabled(false);
 	stopButton->hide();
 	setUpdatesEnabled(true);
-	if(_download)_download->cancel();
+	if(_download){
+	    _download->cancel();
+	    fileNameLabel->setText(QString("Download canceled: ") + _download->path());
+	}
 	emit statusChanged();
     }
 
@@ -390,18 +393,18 @@ namespace browser {
 	}
     }
 
-    void DownloadManager::addItem(std::shared_ptr<DownloadWidget> widget){
-	connect(widget.get(), &DownloadWidget::statusChanged, this, &DownloadManager::updateRow);
+    void DownloadManager::addItem(std::shared_ptr<DownloadWidget> downloadwidget){
+	connect(downloadwidget.get(), &DownloadWidget::statusChanged, this, &DownloadManager::updateRow);
 	int row = _downloads.count();
 	_model->beginInsertRows(QModelIndex(), row, row);
-	_downloads.append(widget);
+	_downloads.append(downloadwidget);
 	_model->endInsertRows();
 	updateItemCount();
 	if(row == 0)show();
-	downloadsView->setIndexWidget(_model->index(row, 0), widget.get());
+	downloadsView->setIndexWidget(_model->index(row, 0), downloadwidget.get());
 	QIcon icon = style()->standardIcon(QStyle::SP_FileIcon);
-	widget->fileIcon->setPixmap(icon.pixmap(48, 48));
-	downloadsView->setRowHeight(row, widget->sizeHint().height());
+	downloadwidget->fileIcon->setPixmap(icon.pixmap(48, 48));
+	downloadsView->setRowHeight(row, downloadwidget->sizeHint().height());
     }
 
     void DownloadManager::updateRow(){

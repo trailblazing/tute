@@ -87,8 +87,8 @@ namespace browser {
 
 	public:
 	    DownloadWidget(QWebEngineDownloadItem   *_download
-			  , TabWidget                         *_tab_manager
-			  , DownloadManager                   *_parent = 0		//    QWidget *parent = 0
+			  , TabWidget               *_tab_manager
+			  , DownloadManager         *_parent = 0		//    QWidget *parent = 0
 		);
 	    bool	downloading() const;
 	    bool	downloadedSuccessfully() const;
@@ -167,7 +167,7 @@ namespace browser {
 	    void	updateRow();
 
 	private:
-	    void	addItem(std::shared_ptr<DownloadWidget> item);
+	    void	addItem(std::shared_ptr<DownloadWidget> downloadwidget);
 	    void	updateItemCount();
 	    void	load();
 

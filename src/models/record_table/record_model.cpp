@@ -615,7 +615,7 @@ browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
             auto	_tree_view		= globalparameters.tree_screen()->view();//			auto	this_index		= TreeIndex::instance([&] {return _tree_view->source_model();}, brother);
             auto	target_url		= _target_item->field<url_type>();
             auto	_target_item	=	// this_index->
-                TreeIndex::treeitem_from_url(target_url, std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
+                TreeIndex::create_treeitem_from_url(target_url, std::bind(&tv_t::move, _tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {
                         return url_equal((it_->field<home_type>()).toStdString(), target_url.toStdString()) || url_equal((it_->field<url_type>()).toStdString(), target_url.toStdString());	// return it_->field<url_type>() == target_url.toString();
                     });
 

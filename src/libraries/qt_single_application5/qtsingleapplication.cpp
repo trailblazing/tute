@@ -863,7 +863,7 @@ void sapp_t::newLocalSocketConnection(){
             boost::intrusive_ptr<TreeItem> it;
 
 //            if(tree_index)
-            it = TreeIndex::treeitem_from_url(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});	// instance([&] {return tree_view->source_model();}, tree_view->current_item())->
+            it = TreeIndex::create_treeitem_from_url(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it) -> bool {return url_equal(it->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it->field<url_type>().toStdString(), _url.toStdString());});	// instance([&] {return tree_view->source_model();}, tree_view->current_item())->
 
 //            boost::intrusive_ptr<RecordIndex> record_index(nullptr);
 

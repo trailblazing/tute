@@ -363,6 +363,7 @@ int AppConfigPageMain::apply_changes(void){
 	QMessageBox message;
 	message.setText("The changes of application mode will take effect after restart the application.");	// You have to restart Mytetra for the configuration changes to take effect.
 	message.exec();
+	exit(0);
     }
     return difficultChanges;
 }

@@ -60,7 +60,7 @@ struct TreeIndex : public boost::intrusive_ref_counter<TreeIndex, boost::thread_
         int								sibling_order() const;
 //	static boost::intrusive_ptr<TreeIndex> instance(const std::function<km_t *()> &current_model, boost::intrusive_ptr<TreeItem> host_parent, int sibling_order = 0);
         static boost::intrusive_ptr<TreeIndex>				create_treeindex_from_item(const std::function<tkm_t *()> &current_model_, boost::intrusive_ptr<TreeItem> host_);
-        static boost::intrusive_ptr<TreeItem>				treeitem_from_url(const QUrl              &find_url_
+        static boost::intrusive_ptr<TreeItem>				create_treeitem_from_url(const QUrl              &find_url_
                                                                              , const insert_strategy  &tree_view_insert_strategy_
                                                                              , equal_url equal_);
 
