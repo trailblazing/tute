@@ -187,7 +187,7 @@ namespace browser {
 	    fileNameLabel->setText(_file.fileName());
 	    auto _new_path = QFileInfo(_new_filename).absolutePath();	// _new_filename.truncate(_new_filename.lastIndexOf('/'));
 
-	    settings.setValue(QLatin1String("downloadDirectory"), _new_filename);
+	    settings.setValue(QLatin1String("downloadDirectory"), _new_path);
 	}
 	settings.endGroup();
 
