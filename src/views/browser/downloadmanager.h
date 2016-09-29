@@ -94,7 +94,7 @@ namespace browser {
 	    bool	downloadedSuccessfully() const;
 
 	    void	init();
-	    bool	getFileName(bool prompt_for_filename = false);
+	    bool	getFileName(bool prompt_for_filename = true);
 	    TabWidget	*tab_manager() const;
 	private slots:
 	    void	stop();
@@ -177,7 +177,7 @@ namespace browser {
 	    QFileIconProvider				*_iconprovider;
 	    QList<std::shared_ptr<DownloadWidget> >	_downloads;
 	    RemovePolicy				_removepolicy;
-	    bool					_prompt_store_position = false;
+	    bool					_prompt_store_position = true;
 
 
 	    friend class DownloadModel;

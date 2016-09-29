@@ -1950,8 +1950,9 @@ namespace browser {
 	    if(state == QWebEngineDownloadItem::DownloadRequested || state == QWebEngineDownloadItem::DownloadInProgress){
 		// download->accept();  // default in construction
 		if(state == QWebEngineDownloadItem::DownloadRequested)sapp_t::request_download_manager()->download(this, download);
-	    }else																																			// if(state == QWebEngineDownloadItem::DownloadCompleted || state == QWebEngineDownloadItem::DownloadCancelled || state == QWebEngineDownloadItem::DownloadInterrupted) {
-			_current_download_acceptance.second = false;
+	    }
+//	    else																																			// if(state == QWebEngineDownloadItem::DownloadCompleted || state == QWebEngineDownloadItem::DownloadCancelled || state == QWebEngineDownloadItem::DownloadInterrupted) {
+//			_current_download_acceptance.second = false;
 	}else{
 	    download->cancel();
 //	    fileNameLabel->setText(QString("Download canceled: ") + download->path());

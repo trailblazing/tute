@@ -152,29 +152,43 @@ namespace browser {
     }
 
     bool DownloadWidget::getFileName(bool prompt_for_filename){
+	(void) prompt_for_filename;
 	QSettings settings;
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
+	//
 	if(_file.absoluteDir().exists())defaultLocation = _file.absolutePath();
-	QString download_directory = settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
-	if(! download_directory.isEmpty())download_directory += QLatin1Char('/');
-	QString _default_filename	= QFileInfo(download_directory, _file.fileName()).absoluteFilePath();
-	QString filename		= _default_filename;
-	if(prompt_for_filename){
-	    filename = QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename);
-	    if(filename.isEmpty()){
-		if(_download)_download->cancel();
-		fileNameLabel->setText(tr("Download canceled: %1").arg(QFileInfo(_default_filename).fileName()));
+	//
+	QString download_directory	= settings.value(QLatin1String("downloadDirectory"), defaultLocation).toString();
+	QString _default_filename	= QFileInfo(download_directory, _file.fileName()).exists() ? QFileInfo(download_directory, _file.fileName()).absoluteFilePath() : "";
+	QString _new_filename		= _default_filename;
+//	if(! download_directory.isEmpty())download_directory += QLatin1Char('/');
+//	else{
+//	    {
+//	    _default_filename	= QFileInfo(defaultLocation, _file.fileName()).absoluteFilePath();
+//	    _new_filename	= QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename);
+//	}
+//	if(prompt_for_filename)
+	if(_default_filename.isEmpty())_default_filename = QFileInfo(defaultLocation, _file.fileName()).absoluteFilePath();
+	_new_filename = QFileDialog::getSaveFileName(this, tr("Save File"), _default_filename);
+	if(_new_filename.isEmpty()){
+	    if(_download)_download->cancel();
+	    fileNameLabel->setText(tr("Download canceled: %1").arg(QFileInfo(_default_filename).fileName()));
 
-		return false;
-	    }
+	    return false;
+	}else{
+//	}
+		//
+	    _file.setFile(_new_filename);
+
+	    auto download_state = _download->state();
+	    assert(download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress);
+	    if(_download && (download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress))_download->setPath(_file.absoluteFilePath());
+	    fileNameLabel->setText(_file.fileName());
+	    auto _new_path = QFileInfo(_new_filename).absolutePath();	// _new_filename.truncate(_new_filename.lastIndexOf('/'));
+
+	    settings.setValue(QLatin1String("downloadDirectory"), _new_filename);
 	}
-	_file.setFile(filename);
-
-	auto download_state = _download->state();
-	assert(download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress);
-	if(_download && (download_state == QWebEngineDownloadItem::DownloadRequested || download_state == QWebEngineDownloadItem::DownloadInProgress))_download->setPath(_file.absoluteFilePath());
-	fileNameLabel->setText(_file.fileName());
 	settings.endGroup();
 
 	return true;
