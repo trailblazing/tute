@@ -411,7 +411,7 @@ void FindScreen::setup_signals(void){
     connect(_close_button, &FlatToolButton::clicked, this, &FindScreen::widget_hide);
     connect(_close_button, &FlatToolButton::clicked, [] {
 	    auto browser = globalparameters.main_window()->vtab_record()->activated_browser();
-		// if(win)
+
 	    browser->updateToolbarActionText(false);
 	});
 
@@ -1029,7 +1029,7 @@ boost::intrusive_ptr<TreeItem> &FindScreen::find_recursive(boost::intrusive_ptr<
 
 			    auto alternative = final_result->contains_direct([&](boost::intrusive_ptr<const Linker> il){return il->host() == candidate || il->host()->field<id_type>() == candidate->field<id_type>() || url_equal(il->host()->field<home_type>().toStdString(), candidate->field<home_type>().toStdString()) || url_equal(il->host()->field<url_type>().toStdString(), candidate->field<url_type>().toStdString());});
 			    if(! alternative)final_result << candidate;		// result->linker();
-                else if(alternative != candidate)TreeLevel::instance(TreeIndex::create_treeindex_from_item(current_model_, alternative), candidate)->merge();
+			    else if(alternative != candidate) TreeLevel::instance(TreeIndex::create_treeindex_from_item(current_model_, alternative), candidate)->merge();
 //                            }
 //                            }else{
 //                                candidate->activate(std::bind(&browser::Entrance::find, globalparameters.entrance(), std::placeholders::_1));

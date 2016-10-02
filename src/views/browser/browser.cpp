@@ -179,6 +179,7 @@ namespace browser {
 	// const char *DockedWindow::_defaulthome = "about:blank";
 
     Browser::~Browser(){
+	save();
 	for(int i = 0; i < _tabmanager->count(); i ++)_tabmanager->webView(i)->close();
 //	std::set<Browser *> &_browsers = _entrance->browsers();
 //	if(_browsers.find(this) != _browsers.end()){
@@ -743,9 +744,11 @@ namespace browser {
 
 	status_bar()->setVisible(showStatusbar);
 	update_statusbar_action_text(showStatusbar);
-	if(! tabWidget()->restoreState(tabState))return false;
+	if(! _tabmanager->restoreState(tabState))return false;
 	return true;
     }
+
+    QAction *Browser::action_restore_last_session(){return _restorelastsession;}
 
     void Browser::runScriptOnOpenViews(const QString &source){
 	for(int i = 0; i < tabWidget()->count(); ++ i){
@@ -960,9 +963,9 @@ namespace browser {
 
 #if defined(QWEBENGINEHISTORY_RESTORESESSION)
 	_restorelastsession = new QAction(tr("Restore Last Session"), this);
-	connect(_restorelastsession, &QAction::triggered, QtSingleApplication::instance(), &QtSingleApplication::restoreLastSession);
-	_restorelastsession->setEnabled(QtSingleApplication::instance()->canRestoreSession());
-	historyActions.append(_tabwidget->recentlyClosedTabsAction());
+	connect(_restorelastsession, &QAction::triggered, sapp_t::instance(), &sapp_t::restoreLastSession);
+	_restorelastsession->setEnabled(sapp_t::instance()->canRestoreSession());
+	historyActions.append(_tabmanager->recentlyClosedTabsAction());
 	historyActions.append(_restorelastsession);
 #endif
 
@@ -1394,7 +1397,7 @@ namespace browser {
 
 	// deprecated by record::preoperty::home
     void Browser::slotHome(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	QString home		= settings.value(QLatin1String("home"), QLatin1String(_defaulthome)).toString();
 	auto	tree_view	= _tree_screen->view();

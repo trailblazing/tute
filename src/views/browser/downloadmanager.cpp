@@ -101,7 +101,7 @@ namespace browser {
 	if(_download){
 	    assert(_download->state() == QWebEngineDownloadItem::DownloadRequested || _download->state() == QWebEngineDownloadItem::DownloadInProgress);
 	    if(_download->state() == QWebEngineDownloadItem::DownloadRequested || _download->state() == QWebEngineDownloadItem::DownloadInProgress){
-		QSettings settings;
+		QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 		settings.beginGroup(QLatin1String("downloadmanager"));
 		QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
 		settings.endGroup();
@@ -153,7 +153,7 @@ namespace browser {
 
     bool DownloadWidget::getFileName(bool prompt_for_filename){
 	(void) prompt_for_filename;
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QString defaultLocation = QStandardPaths::writableLocation(QStandardPaths::DesktopLocation);
 	//
@@ -385,7 +385,7 @@ namespace browser {
     void DownloadManager::download(TabWidget *_tab_manager, QWebEngineDownloadItem *download){
 	assert(download->state() == QWebEngineDownloadItem::DownloadRequested || download->state() == QWebEngineDownloadItem::DownloadInProgress);
 	if(download->state() == QWebEngineDownloadItem::DownloadRequested){
-	    QSettings settings;
+	    QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	    settings.beginGroup(QLatin1String("downloadmanager"));
 	    QString download_directory = settings.value(QLatin1String("downloadDirectory")).toString();
 	    settings.endGroup();
@@ -451,7 +451,7 @@ namespace browser {
     }
 
     void DownloadManager::save() const {
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QMetaEnum removePolicyEnum = staticMetaObject.enumerator(staticMetaObject.indexOfEnumerator("RemovePolicy"));
 	settings.setValue(QLatin1String("removeDownloadsPolicy"), QLatin1String(removePolicyEnum.valueToKey(_removepolicy)));
@@ -476,7 +476,7 @@ namespace browser {
     }
 
     void DownloadManager::load(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("downloadmanager"));
 	QSize size = settings.value(QLatin1String("size")).toSize();
 	if(size.isValid())resize(size);

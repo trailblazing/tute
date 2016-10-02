@@ -1410,9 +1410,9 @@ namespace browser {
 	// return bv;
 	// }
 
-    bool Entrance::restore_state(const QByteArray &state){
-	return _main_window->vtab_record()->activated_browser()->restore_state(state);
-    }
+//    bool Entrance::restore_state(const QByteArray &state){
+//	return _main_window->vtab_record()->activated_browser()->restore_state(state);
+//    }
 
 	// std::pair<DockedWindow *, WebView *> Entrance::active_record(Record *const record)
 	// {

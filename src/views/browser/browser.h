@@ -199,6 +199,7 @@ namespace browser {
 	    WebView		*currentTab() const;
 	    QByteArray		save_state(bool withTabs = true) const;
 	    bool		restore_state(const QByteArray &state);
+	    QAction		*action_restore_last_session();
 //	    Q_INVOKABLE
 	    void			runScriptOnOpenViews(const QString &);
 	    void			setWebAttribute(QWebEngineSettings::WebAttribute attribute, bool enabled);
@@ -347,7 +348,7 @@ namespace browser {
 	    TabWidget		*_tabmanager;
 	    Entrance		*_entrance;
 
-	    friend class QtSingleApplication;
+	    friend class sapp_t;// QtSingleApplication;
 	    friend class Entrance;
 	    friend class WebView;
     };

@@ -12,8 +12,10 @@
 #include <QToolButton>
 #include <QLayout>
 #include "libraries/global_parameters.h"
+#include "views/tree/tree_view.h"
 #include "views/browser/entrance.h"
 #include "models/tree/binder.hxx"
+#include "models/tree/tree_index.hxx"
 #include "views/main_window/main_window.h"
 
 
@@ -147,6 +149,21 @@ HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
 	    }
 	    w = nullptr;
 	});
+
+    connect(this, &::HidableTabWidget::currentChanged, [&](int index){
+	    auto w = widget(index);
+	    if(w->objectName() == record_screen_multi_instance_name){
+//		auto rs = dynamic_cast<rs_t *>(w);
+		auto _browser = dynamic_cast<rs_t *>(w)->browser();
+		if(_browser){
+//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+		    auto v = _browser->currentTab();
+		    auto it = v->page()->host();
+		    if(_tree_screen->view()->current_item()->id() != it->id())_tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+		}
+	    }
+	    w = nullptr;
+	});
     setUsesScrollButtons(true);
 	//    setStyleSheet("QTabBar::tab { max-width: 200px; padding: 2px; margin-left: 2px; }");
 //    setStyleSheet("QTabWidget::pane { border: 0 px; } QTabBar::tab { max-width: 200px; padding: 0 px; margin-left: 2 px; margin-right: 0 px;} QTabWidget::tab-bar { max-width: 200px; align: left; text-align: left; margin-left: 2 px; padding: 0 px; margin-right: 0 px;}");    // QWidget{border: 0px;}
@@ -215,7 +232,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 	if(w->objectName() == record_screen_multi_instance_name){
 	    auto rs = dynamic_cast<rs_t *>(w);
 //	    auto	browser_	= dynamic_cast<rs_t *>(w)->browser();
-	    if(rs)if(result.find(rs) != result.end())result.insert(rs);	// if(*i){	// && *i != widget()=>for entrance
+	    if(rs)if(result.find(rs) == result.end())result.insert(rs);	// if(*i){	// && *i != widget()=>for entrance
 	}
     }
     return result;	// _record_screens;

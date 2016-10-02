@@ -1827,7 +1827,7 @@ namespace browser {
 		if(! parent)throw std::runtime_error(formatter() << typeid(decltype(&TabWidget::loadUrlInCurrentTab)).name() << "! parent");
 		auto	it	= TreeIndex::create_treeitem_from_url(_url, std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toString().toStdString());});	// instance([&] {return tree_view->source_model();}, current_item)->
 		auto	r	= webView->page()->bind(it);	// _record_controller
-		r->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		r->activate(std::bind(&TabWidget::find, this, std::placeholders::_1));
 	    }
 	}
     }
@@ -1896,27 +1896,28 @@ namespace browser {
 
 	    boost::intrusive_ptr<TreeIndex> tree_index = TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, tree_view->current_item());
 	    if(tree_index){
-		if(i != 0){
-		    auto ti = tree_index->bind(_url
-					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
-					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toStdString());}
-			    );
-		    if(ti)ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
-		}else{
-		    if(webView(0)->page()->url() != _url){
-			// webView(0)->load(_record);    //loadUrl(_url);
-			// auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
-			auto it =	// tree_index->
-			    TreeIndex::create_treeitem_from_url(QUrl(_url), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toStdString());});
-			// boost::intrusive_ptr<RecordModel::ModelIndex> record_index(nullptr);
+//		if(i != 0){
+		auto ti = tree_index->bind(_url
+					  , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
+					  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toStdString());}
+					  , _browser
+			);
+		if(ti)ti->activate(std::bind(&TabWidget::find, this, std::placeholders::_1));	// std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1)
+//		}else{
+//		    if(webView(0)->page()->url() != _url){
+//			// webView(0)->load(_record);    //loadUrl(_url);
+//			// auto ar = boost::make_shared<WebPage::ActiveRecordBinder>(webView(0)->page());
+//			auto it =	// tree_index->
+//			    TreeIndex::create_treeitem_from_url(QUrl(_url), std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4), [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), _url.toStdString()) || url_equal(it_->field<url_type>().toStdString(), _url.toStdString());});
+//			// boost::intrusive_ptr<RecordModel::ModelIndex> record_index(nullptr);
 
-			// try {
-			// record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(it), it);
-			// } catch(std::exception &e) {}
+//			// try {
+//			// record_index = new RecordModel::ModelIndex([&] {return _record_controller->source_model();}, _record_controller->source_model()->sibling(it), it);
+//			// } catch(std::exception &e) {}
 
-			webView(0)->page()->bind(it)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
-		    }
-		}
+//			webView(0)->page()->bind(it)->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+//		    }
+//		}
 	    }
 	}
 	int currentTab;
