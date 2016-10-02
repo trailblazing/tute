@@ -157,9 +157,16 @@ HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
 		auto _browser = dynamic_cast<rs_t *>(w)->browser();
 		if(_browser){
 //		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
-		    auto v = _browser->currentTab();
-		    auto it = v->page()->host();
-		    if(_tree_screen->view()->current_item()->id() != it->id())_tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+		    if(_browser->tabmanager()->count() > 0){
+			auto v = _browser->currentTab();
+			if(v){
+			    auto p = v->page();
+			    if(p){
+				auto it = p->host();
+				if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+			    }
+			}
+		    }
 		}
 	    }
 	    w = nullptr;

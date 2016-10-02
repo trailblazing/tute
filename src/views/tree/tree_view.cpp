@@ -97,10 +97,11 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
 
     auto		source_model	= [&] {return _tree_view->source_model();};
-    auto		current_item	= source_model()->item(index);
+    auto		index_item_	= source_model()->item(index);
     QTextDocument	doc;
 //    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
-    if(current_item->id() == source_model()->session_id())optionV4.text = "<b>" + optionV4.text + "</b>";
+    if(index_item_->id() == _tree_view->current_item()->id()	// source_model()->session_id()
+	)optionV4.text = "<b>" + optionV4.text + "</b>";
     doc.setHtml(optionV4.text);
 
 	/// Painting item without text
@@ -110,7 +111,7 @@ void HtmlDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, 
     QAbstractTextDocumentLayout::PaintContext ctx;
 	// Highlighting text if item is selected
     if(optionV4.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Active, QPalette::HighlightedText));
-    if(0 == current_item->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
+    if(0 == index_item_->count_direct() && ! (optionV4.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4.palette.color(QPalette::Inactive, QPalette::Shadow));
     QRect textRect = style->subElementRect(QStyle::SE_ItemViewItemText, &optionV4);
 
     painter->save();
