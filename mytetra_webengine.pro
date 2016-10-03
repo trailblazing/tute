@@ -78,20 +78,20 @@ PROJECT_QT_LIBS      = $$PROJECT_QT_VERSION/lib
 
 
 
-TARGETDEPS += $$PROJECT_QT_LIBS/libQt5Svg.so            \
-        $$PROJECT_QT_LIBS/libQt5WebEngineWidgets.so     \
-        $$PROJECT_QT_LIBS/libQt5PrintSupport.so         \
-        $$PROJECT_QT_LIBS/libQt5Widgets.so              \
-        $$PROJECT_QT_LIBS/libQt5WebEngineCore.so        \
-        $$PROJECT_QT_LIBS/libQt5Quick.so                \
-        $$PROJECT_QT_LIBS/libQt5Gui.so                  \
-        $$PROJECT_QT_LIBS/libQt5Xml.so                  \
-        $$PROJECT_QT_LIBS/libQt5Qml.so                  \
-        $$PROJECT_QT_LIBS/libQt5Network.so              \
-        $$PROJECT_QT_LIBS/libQt5WebChannel.so           \
-        $$PROJECT_QT_LIBS/libQt5Core.so                 \
-        $$PROJECT_QT_LIBS/libQt5WebEngine.so            \
-        $$PROJECT_QT_LIBS/libQt5Positioning.so
+#TARGETDEPS += $$PROJECT_QT_LIBS/libQt5Svg.so            \
+#        $$PROJECT_QT_LIBS/libQt5WebEngineWidgets.so     \
+#        $$PROJECT_QT_LIBS/libQt5PrintSupport.so         \
+#        $$PROJECT_QT_LIBS/libQt5Widgets.so              \
+#        $$PROJECT_QT_LIBS/libQt5WebEngineCore.so        \
+#        $$PROJECT_QT_LIBS/libQt5Quick.so                \
+#        $$PROJECT_QT_LIBS/libQt5Gui.so                  \
+#        $$PROJECT_QT_LIBS/libQt5Xml.so                  \
+#        $$PROJECT_QT_LIBS/libQt5Qml.so                  \
+#        $$PROJECT_QT_LIBS/libQt5Network.so              \
+#        $$PROJECT_QT_LIBS/libQt5WebChannel.so           \
+#        $$PROJECT_QT_LIBS/libQt5Core.so                 \
+#        $$PROJECT_QT_LIBS/libQt5WebEngine.so            \
+#        $$PROJECT_QT_LIBS/libQt5Positioning.so
 
 
 INCLUDEPATH     += $$PROJECT_QT_VERSION/include

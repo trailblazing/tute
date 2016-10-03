@@ -7,7 +7,7 @@
 *****************************************************************************/
 
 static const unsigned char qt_resource_data[] = {
-  // /_home/beunprepared/working/knowledge management/mytetra_webengine/src/views/browser/htmls/notfound.html
+  // /_home/beimprovised/working/knowledge management/mytetra_webengine/src/views/browser/htmls/notfound.html
   0x0,0x0,0x4,0xa9,
   0x3c,
   0x68,0x74,0x6d,0x6c,0x3e,0xa,0x3c,0x68,0x65,0x61,0x64,0x3e,0xa,0x3c,0x74,0x69,
