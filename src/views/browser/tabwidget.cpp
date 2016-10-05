@@ -1042,10 +1042,10 @@ namespace browser {
 //                        }
 //                    }
 		    auto _mainwindow = globalparameters.main_window();
-		    if(! _mainwindow->windowTitle().contains(view_current->page()->title())) _mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title());																																																																																																																																																																																																																																																																																																																																																																																																																									// webView->setFocus();
+		    if(! _mainwindow->windowTitle().contains(view_current->page()->title())) _mainwindow->setWindowTitle(QString(application_name) + " : " + view_current->page()->title());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									// webView->setFocus();
 		    MetaEditor *metaeditor = globalparameters.meta_editor();		// find_object<MetaEditor>(meta_editor_singleton_name);
 		    assert(metaeditor);
-		    if(metaeditor->item() != _target_in_browser) view_current->page()->metaeditor_sychronize();																																																																																																																																																																																																																																																																																																																																																																																																																																																		// metaeditor->bind(record);
+		    if(metaeditor->item() != _target_in_browser) view_current->page()->metaeditor_sychronize();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										// metaeditor->bind(record);
 		}
 	    };
 
@@ -1420,7 +1420,7 @@ namespace browser {
 		// assert(result->binder()->integrity_external(result, view->page()));
 
 		auto item_with_same_url = view->page()->host();
-		if(item_with_same_url != result) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _tree_screen->view()->source_model();}, item_with_same_url), result)->merge();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																			// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+		if(item_with_same_url != result) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _tree_screen->view()->source_model();}, item_with_same_url), result)->merge();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //		result = page_item;	// target;
@@ -1431,7 +1431,7 @@ namespace browser {
 	    assert(result->binder()->integrity_external(result, view->page()));
 	}else{	// id is equal
 	    auto item_with_same_id = view->page()->host();
-	    if(item_with_same_id != result) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _tree_screen->view()->source_model();}, item_with_same_id), result)->merge();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																										// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
+	    if(item_with_same_id != result) result = TreeLevel::instance(TreeIndex::create_treeindex_from_item([&](){return _tree_screen->view()->source_model();}, item_with_same_id), result)->merge();																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		// TreeIndex::instance([&](){return _tree_screen->view()->source_model();}, page_item, page_item->parent()), target);
 		// if(!target->binder())target->binder(std::forward<boost::intrusive_ptr<TreeItem::coupler>>(view->page()->binder()));
 
 //	    result = page_item;	// target;
@@ -1441,7 +1441,7 @@ namespace browser {
 	assert(result == view->page()->binder()->host());	// old one choosed
 	assert(result == result || result->field<url_type>() == result->field<url_type>());
 	// assert(result->record_binder()->bounded_page());
-	if(! result->binder()->page()) result->binder()->page(view->page());																																																																																																																																																																																																																																																																																																																						// result->bind();   // this is recursively call
+	if(! result->binder()->page()) result->binder()->page(view->page());																																																																																																																																																																																																																																																																																																																																																														// result->bind();   // this is recursively call
 	assert(result->binder()->host());	// 0
 	assert(result->binder()->page());	// 1
 	assert(view->page()->binder());	// 8
@@ -1711,7 +1711,7 @@ namespace browser {
 	int	index		= webViewIndex(webView);
 	auto	_real_title	= title.leftJustified(5, '.', true);
 	if(- 1 != index) setTabText(index, _real_title);
-	if(currentIndex() == index) emit setCurrentTitle(_real_title);																																																																																																																																																																																																																																																																																							// "test"
+	if(currentIndex() == index) emit setCurrentTitle(_real_title);																																																																																																																																																																																																																																																																																																																											// "test"
 	//
 	if(_real_title != "") webView->page()->record_info_update(webView->page()->url(), title);
 	sapp_t::historyManager()->updateHistoryItem(webView->page()->url(), title);
@@ -1863,15 +1863,22 @@ namespace browser {
 	stream << qint32(version);
 
 	QStringList tabs_url;
-	for(int i = 0; i < count(); ++ i){
-	    if(WebView *view = qobject_cast<WebView *>(widget(i))){
-		auto url = view->page()->url().toString();
-		if(  url != "" && url != Browser::_defaulthome
-		  && (  view->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]
-		     || view == currentWebView())
-		    ) tabs_url.append(url);
-	    }
-		// else tabs_url.append(QString::null);
+
+	auto _count = _record_controller->row_count();	// count();
+	for(int i = 0; i < _count; ++ i){
+//	    if(WebView *view = qobject_cast<WebView *>(widget(i))){
+//		auto url = view->page()->url().toString();
+//		if(  url != "" && url != Browser::_defaulthome
+//		  && (  view->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]
+//		     || view == currentWebView())
+//		    ) tabs_url.append(url);
+//	    }
+//		// else tabs_url.append(QString::null);
+	    auto	it	= _record_controller->index<boost::intrusive_ptr<TreeItem> >(pos_proxy(i));
+	    auto	url	= it->field<url_type>();
+	    if(  url != "" && url != Browser::_defaulthome
+	      && (it->field<pin_type>() != _string_from_check_state[Qt::Unchecked] || (it->page() && it->page()->view() == currentWebView()))
+		) tabs_url.append(url);
 	}
 	stream << tabs_url;
 	stream << currentWebView()->page()->host()->field<id_type>();	// currentIndex();
@@ -2044,7 +2051,7 @@ namespace browser {
 	if(count() > 0 && it){
 	    auto	v	= it->binder()->page()->view();
 	    auto	index	= webViewIndex(v) - 1;
-	    if(index < 0) index = 0;																																																																																						// count() - 1;		// if(index != - 1 && index > 0)
+	    if(index < 0) index = 0;																																																																																																										// count() - 1;		// if(index != - 1 && index > 0)
 	    r = webView(index)->page()->binder()->host();
 	}
 	return r;

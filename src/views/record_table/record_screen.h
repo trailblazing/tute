@@ -88,7 +88,7 @@ class rs_t : public QWidget {
 	// void    select_pos(PosProxy pos_proxy_);
 	// void    select_id(IdType id);
 
-	void	tree_path(QString path);
+	void tree_path(QString path);
 	QString tree_path(void);
 
 	rctrl_t *record_controller();
@@ -99,6 +99,7 @@ class rs_t : public QWidget {
 	ts_t			*tree_screen();
 //	QAction			*record_hide();	// move to main_window::_vtab_record->tabBar()->tabBarClicked
 //	void			restore_menubar();
+
     public slots:
 
 	// Обновление панели инструментов
@@ -109,10 +110,10 @@ class rs_t : public QWidget {
 	void resizeEvent(QResizeEvent *e);
     private slots:
 
-	void	on_syncro_click(void);	// W_SLOT(on_syncro_click, W_Access::Private)
-	void	on_walkhistory_previous_click(void);
-	void	on_walkhistory_next_click(void);
-	void	on_back_click(void);
+	void on_syncro_click(void);	// W_SLOT(on_syncro_click, W_Access::Private)
+	void on_walkhistory_previous_click(void);
+	void on_walkhistory_next_click(void);
+	void on_back_click(void);
 
     private:
 	// bool                _inited = false;
@@ -159,7 +160,7 @@ class rs_t : public QWidget {
 	QToolBar		*_extra_toolsline;
 
 	QLabel			*_treepathlabel;//	FlatToolButton		*_treepath_button;
-	QString			_treepath;
+	QString	_treepath;
 
 
 	browser::Browser	*_browser;
@@ -171,12 +172,12 @@ class rs_t : public QWidget {
 	// QHBoxLayout             *_recordtree_searchlayout;
 	QVBoxLayout         *_records_screenlayout;
 
-	void	setup_ui(void);
-	void	setup_signals(void);
-	void	setup_actions(void);
-	void	assembly(void);
+	void setup_ui(void);
+	void setup_signals(void);
+	void setup_actions(void);
+	void assembly(void);
 
-	void	disable_all_actions(void);
+	void disable_all_actions(void);
 //	void	save_in_new_branch(bool checked = false);
 	friend class rv_t;
 	friend class rctrl_t;
