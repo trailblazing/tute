@@ -71,15 +71,19 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent) : tm_t(parent){	/
 
     init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);		// _know_branch->intercept(know_root_holder::know_root()->root_item());    // init_from_xml(xml);  //
     int all_count = count_records_all();
-    if(all_count <= 0){
+    while(all_count <= 0){
 	assert(trashmonitoring.is_inited());
-	trashmonitoring.recover_from_trash();
+	if(trashmonitoring.recover_from_trash()){
 ////	throw std::runtime_error("database load failure");
-//	AppConfigDialog dialog(nullptr);	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
-//	dialog.show();
-	init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);
-	all_count = count_records_all();
-	if(all_count <= 0) throw std::runtime_error("database load failure");
+
+	    init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);
+	    all_count = count_records_all();
+	}else{
+	    AppConfigDialog dialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+	    dialog.show();
+//		// if(all_count <= 0)
+//	    throw std::runtime_error("database load failure");
+	}
     }
     synchronized(true);
 }
@@ -94,13 +98,27 @@ tkm_t::~tkm_t(){}	//    delete rootItem;
 
 
 
-std::shared_ptr<XmlTree> tkm_t::init_from_xml(QString file_name){
-    _xml_file_name = file_name;
-
+std::shared_ptr<XmlTree> tkm_t::init_from_xml(QString _file_name){
+    while(! QFile::exists(_file_name)){
+//	AppConfigDialog dialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+//			      , "pageMain"	// "pageRecordTable"
+//	    );
+////	dialog.changePage("pageMain");
+//	dialog.show();
+	assert(trashmonitoring.is_inited());
+	if(trashmonitoring.recover_from_trash()){
+//	    _file_name		=;
+	    _xml_file_name	= _file_name;
+	}else{
+	    AppConfigDialog dialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+	    dialog.show();
+//	    _file_name =;
+	}
+    }
+    _xml_file_name	= _file_name;
 	// Загрузка файла и преобразование его в DOM модель
     std::shared_ptr<XmlTree> xmlt = std::make_shared<XmlTree>();
-    if(! xmlt->load(_xml_file_name)) return xmlt;
-    init(xmlt->dom_model());
+    if(xmlt->load(_xml_file_name)) init(xmlt->dom_model());																																																																																																	// return xmlt;
 
     return xmlt;
 }
@@ -427,7 +445,7 @@ bool tkm_t::format_check(QDomElement elementFormat){
 	// В настоящий момент поддерживается формат 1.2
 	// В настоящий момент предполагается, что номер версии всегда 1, поэтому вся работа идет по номеру подверсии
     if(baseSubVersion <= 1)
-		if(update_sub_version_from_1_to_2() == false)																																																								// Смена формата с 1.1 на 1.2
+		if(update_sub_version_from_1_to_2() == false)																																																																																																																																																																																								// Смена формата с 1.1 на 1.2
 			return false;
 	// На будущее, для перехода с подверии 2 на подверсию 3, эти строки надо добавлять к существующим (а не заменять)
 	// if(baseSubVersion<=2)
@@ -531,7 +549,7 @@ void tkm_t::dom_from_treeitem(std::shared_ptr<QDomDocument> doc, QDomElement &xm
     QDomElement item_flat_dom = curr_item->dom_from_treeitem_impl(doc);		//
 	// Dom дерево таблицы конечных записей добавляется
 	// как подчиненный элемент к текущему элементу
-    if(! item_flat_dom.isNull()) xml_data.appendChild(item_flat_dom);																																																																		// .cloneNode()
+    if(! item_flat_dom.isNull()) xml_data.appendChild(item_flat_dom);																																																																																																																																																																																																																		// .cloneNode()
 	//    }
 
 
@@ -822,7 +840,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree
 		}else if(_linker && _linker->host_parent() != _parent){
 		    auto old_parent = _linker->host_parent();
 		    if(old_parent && old_parent != _parent) old_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == _to_be_operated->id() && il == _linker;});
-		    if(_linker->host() != _to_be_operated) _linker->host(std::forward<boost::intrusive_ptr<TreeItem> >(_to_be_operated));																																																																																																																																		// std::move(boost::intrusive_ptr<TreeItem>(this))
+		    if(_linker->host() != _to_be_operated) _linker->host(std::forward<boost::intrusive_ptr<TreeItem> >(_to_be_operated));																																																																																																																																																																																																																																																																																																																																																																																																																																		// std::move(boost::intrusive_ptr<TreeItem>(this))
 		    auto link_result = _linker->parent(_parent, pos, mode);	// _linker->host_parent()->release(this->linker());
 		    assert(link_result == _linker);
 		    assert(_linker->integrity_external(_to_be_operated, _parent));
@@ -903,7 +921,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::move(boost::intrusive_ptr<TreeLevel> _tree
 	    }
 //		//	    if(! static_cast<QModelIndex>(index(result)).isValid())throw std::runtime_error("move_child index invalid");
 //	    assert(static_cast<QModelIndex>(index(_to_be_operated)).isValid());	// maybe merged? not need a real tree member?second one
-	}else _to_be_operated = move_impl(pos, mode);																																																	// should not use?	// source_item->parent(host, pos, mode)->host();				// 1-3
+	}else _to_be_operated = move_impl(pos, mode);																																																																																																																																																																	// should not use?	// source_item->parent(host, pos, mode)->host();				// 1-3
 	assert(_to_be_operated->linker()->integrity_external(_to_be_operated, to_be_host));
 	if(to_be_host->field<crypt_type>() == "1" && _to_be_operated){
 		// Новая ветка превращается в зашифрованную
@@ -1221,7 +1239,7 @@ QModelIndex tkm_t::move_up_dn(const QModelIndex &_index
 	// Получение QModelIndex расположенного над или под элементом index
 	QModelIndex swap_index = _index.sibling(_index.row() + move_distance, 0);			// _index.sibling(_index.row() - direction, 0);
 	// Проверяется допустимость индекса элемента, куда будет сделано перемещение
-	if(! swap_index.isValid()) return QModelIndex();																																																							// Возвращается пустой указатель
+	if(! swap_index.isValid()) return QModelIndex();																																																																																																																																																																																							// Возвращается пустой указатель
 
 	// Запоминаются параметры для абсолютного позиционирования засветки
 	// после перемещения ветки
@@ -1237,7 +1255,7 @@ QModelIndex tkm_t::move_up_dn(const QModelIndex &_index
 	emit layoutChanged();
 	// Возвращается указатель на перемещенную ветку
 	if(move_distance != 0) _new_index = tm_t::index(swpidx_row, swpidx_column, swpidx_parent);
-	else _new_index = _index;																																				// QModelIndex(); // Возвращается пустой указатель
+	else _new_index = _index;																																																																																																																				// QModelIndex(); // Возвращается пустой указатель
     }
     return _new_index;
 }
@@ -2050,12 +2068,12 @@ void TreeModelKnow::record_to_item(){
 
 	    item->records_to_children();
 		// Перебираются подветки
-	    for(int i = 0; i < item->size(); i ++) record_to_item_recurse(item->child(i));																																																																																															// , item
+	    for(int i = 0; i < item->size(); i ++) record_to_item_recurse(item->child(i));																																																																																																																																																																																																																																																																																															// , item
 	};
 
     _root_item->records_to_children();
 	//    if(_root_item->child_count() > 0) {
-    for(int i = 0; i < _root_item->size(); i ++) record_to_item_recurse(_root_item->child(i));																																																																																							// , _root_item
+    for(int i = 0; i < _root_item->size(); i ++) record_to_item_recurse(_root_item->child(i));																																																																																																																																																																																																																																																																																							// , _root_item
 	//    }
 }
 
@@ -2684,7 +2702,7 @@ boost::intrusive_ptr<TreeItem> tkm_t::synchronize(boost::intrusive_ptr<TreeItem>
 	//    int pos = parent ? parent->list_position(result) : 0;
     globalparameters.main_window()->setDisabled(true);
     if(parent){
-	if(result) result.reset();																																				// ->clear_children();
+	if(result) result.reset();																																																																																																																				// ->clear_children();
 
 	result = boost::intrusive_ptr<TreeItem>(new TreeItem(parent));
     }

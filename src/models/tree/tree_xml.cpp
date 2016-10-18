@@ -35,14 +35,7 @@ XmlTree::~XmlTree(void){
 }
 
 bool XmlTree::load(QString _file_name){
-    if(! QFile::exists(_file_name)){
-	AppConfigDialog dialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
-			      , "pageRecordTable");
-	dialog.changePage("pageMain");
-	dialog.show();
-	assert(trashmonitoring.is_inited());
-	trashmonitoring.recover_from_trash();
-    }
+
 	// Загрузка файла дерева разделов
     QFile xmlFile(_file_name);
 	// Если файл не может быть открыт
