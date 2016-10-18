@@ -97,7 +97,7 @@ StarRating::StarRating(int starCount, int maxStarCount){
     _max_star_count	= maxStarCount;
 
     _star_polygon << QPointF(1.0, 0.5);
-    for(int i = 1; i < 5; ++ i)_star_polygon << QPointF(0.5 + 0.5 * std::cos(0.8 * i * 3.14), 0.5 + 0.5 * std::sin(0.8 * i * 3.14));
+    for(int i = 1; i < 5; ++ i) _star_polygon << QPointF(0.5 + 0.5 * std::cos(0.8 * i * 3.14), 0.5 + 0.5 * std::sin(0.8 * i * 3.14));
     _diamond_polygon	<< QPointF(0.4, 0.5) << QPointF(0.5, 0.4)
 			<< QPointF(0.6, 0.5) << QPointF(0.5, 0.6)
 			<< QPointF(0.4, 0.5);
@@ -118,14 +118,14 @@ void StarRating::paint(QPainter *painter, const QRect &rect, const QPalette &pal
 
     painter->setRenderHint(QPainter::Antialiasing, true);
     painter->setPen(Qt::NoPen);
-    if(mode == Editable)painter->setBrush(palette.highlight());
+    if(mode == Editable) painter->setBrush(palette.highlight());
     else painter->setBrush(palette.foreground());
     int yOffset = (rect.height() - _painting_scale_factor) / 2;
     painter->translate(rect.x(), rect.y() + yOffset);
     painter->scale(_painting_scale_factor, _painting_scale_factor);
     for(int i = 0; i < _max_star_count; ++ i){
-	if(i < _star_count)painter->drawPolygon(_star_polygon, Qt::WindingFill);
-	else if(mode == Editable)painter->drawPolygon(_diamond_polygon, Qt::WindingFill);
+	if(i < _star_count) painter->drawPolygon(_star_polygon, Qt::WindingFill);
+	else if(mode == Editable) painter->drawPolygon(_diamond_polygon, Qt::WindingFill);
 	painter->translate(1.0, 0.0);
     }
     painter->restore();
@@ -191,7 +191,7 @@ void ButtonColumnDelegate::paint(QPainter *painter, const QStyleOptionViewItem &
     if(index.model()->headerData(index.column(), Qt::Horizontal, Qt::UserRole).toInt() == 1){
 	_button->setGeometry(option.rect);
 	_button->setText(index.data().toString());
-	if(option.state == QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	if(option.state == QStyle::State_Selected) painter->fillRect(option.rect, option.palette.highlight());
 	QPixmap map = QPixmap::grabWidget(_button);
 	painter->drawPixmap(option.rect.x(), option.rect.y(), map);
     }else QStyledItemDelegate::paint(painter, option, index);
@@ -206,7 +206,7 @@ void ButtonColumnDelegate::updateEditorGeometry(QWidget *editor, const QStyleOpt
 // cellEntered
 void ButtonColumnDelegate::cellEntered(const QModelIndex &index){
     if(index.model()->headerData(index.column(), Qt::Horizontal, Qt::UserRole) == 1){
-	if(_is_one_cell_in_edit_mode)_view->closePersistentEditor(_current_edited_cell_index);
+	if(_is_one_cell_in_edit_mode) _view->closePersistentEditor(_current_edited_cell_index);
 	_view->openPersistentEditor(index);
 	_is_one_cell_in_edit_mode	= true;
 	_current_edited_cell_index	= index;
@@ -236,7 +236,7 @@ ViewDelegation::ViewDelegation(rv_t *view)
 	auto	header_title			= _view->record_controller()->source_model()->headerData(i, Qt::Horizontal, Qt::DisplayRole).toString();					// DisplayRole?UserRole
 	auto	rating_field_description	= fixedparameters.record_field_description(QStringList() << boost::mpl::c_str<rating_type>::value)[boost::mpl::c_str < rating_type > ::value];
 	if(header_title == rating_field_description)
-		for(int j = 0; j < _view->record_controller()->source_model()->rowCount(); j ++)_view->openPersistentEditor(_view->record_controller()->source_model()->index(j, i, QModelIndex()));
+		for(int j = 0; j < _view->record_controller()->source_model()->rowCount(); j ++) _view->openPersistentEditor(_view->record_controller()->source_model()->index(j, i, QModelIndex()));
     }
 }
 
@@ -262,7 +262,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
     if(it && header_title == rating_field_description){			// index.column() == 0
 #ifdef USE_STAR_RATING
 	StarRating *starRating = it->star_rating();	// qvariant_cast<StarRating>(index.data());
-	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	if(option.state & QStyle::State_Selected) painter->fillRect(option.rect, option.palette.highlight());
 	starRating->paint(painter, option.rect, option.palette, StarRating::ReadOnly);
 
 #elif defined USE_TEXT_AS_BUTTON
@@ -272,7 +272,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 	QStyleOptionButton optionV4;
 	optionV4.state |= QStyle::State_Enabled;
-	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	if(option.state & QStyle::State_Selected) painter->fillRect(option.rect, option.palette.highlight());
 	optionV4.features	= optionV4.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
 	optionV4.rect		= option.rect.adjusted(0, 0, 0, 0);	// adjusted(1, 1, - 1, - 1);	// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
@@ -334,7 +334,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 	QStyleOptionButton optionV4;
 	optionV4.state |= QStyle::State_Enabled;
-	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	if(option.state & QStyle::State_Selected) painter->fillRect(option.rect, option.palette.highlight());
 	optionV4.features	= optionV4.features | QStyleOptionButton::ButtonFeature::Flat | QStyleOptionButton::ButtonFeature::CommandLinkButton;
 	optionV4.rect		= option.rect.adjusted(0, 0, 0, 0);	// adjusted(1, 1, - 1, - 1);		// QRect(50, 25, 100, 50);//
 //	//        auto title = _view->record_controller()->source_model()->item(PosSource(PosProxy(index.row())))->field<name_type>();
@@ -420,7 +420,7 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 //	initStyleOption(optionV4.get(), index);	// initStyleOption(&optionV4, index);	// terrible crash!
 //////	QStyle *style = optionV4.widget ? optionV4.widget->style() : QApplication::style();
 //////	_view->setStyle(optionV4.widget ? optionV4.widget->style() : QApplication::style());
-	if(option.state & QStyle::State_Selected)painter->fillRect(option.rect, option.palette.highlight());
+	if(option.state & QStyle::State_Selected) painter->fillRect(option.rect, option.palette.highlight());
 //	optionV4->rect = option.rect.adjusted(0, 0, - 1, - 1);
 	QTextDocument doc;
 //	//    if(index == static_cast<QModelIndex>(source_model()->index([&](boost::intrusive_ptr<const Linker> it){return it->host()->id() == source_model()->session_id();})))optionV4.text = "<b>" + optionV4.text + "</b>";
@@ -434,8 +434,8 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 	QAbstractTextDocumentLayout::PaintContext ctx;
 	// Highlighting text if item is selected
-	if(option.state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
-	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
+	if(option.state & QStyle::State_Selected) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));																					// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
+	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected)) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));																								// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
 	QRect textRect =// style->
 	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &option);// _view->style()->subElementRect(QStyle::SE_ItemViewItemText, optionV4.get());
 //	painter->restore();
@@ -514,7 +514,7 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 
 #endif
 
-		return result;		//    return QStyledItemDelegate::createEditor(parent, option, index);
+		return result;										//    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
@@ -619,7 +619,7 @@ bool ViewDelegation::editorEvent(QEvent *event, QAbstractItemModel *model, const
 			    }
 			}
 	}else if(it && header_title == pin_field_description){
-	    if(it->field<pin_type>() != _string_from_check_state[Qt::Unchecked])it->field<pin_type>(_string_from_check_state[Qt::Unchecked]);
+	    if(it->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) it->field<pin_type>(_string_from_check_state[Qt::Unchecked]);
 	    else it->field<pin_type>(_string_from_check_state[Qt::Checked]);
 	}
     }
@@ -721,7 +721,7 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 			// Сигналы для обновления панели инструментов при изменении в selectionModel()
 		    connect(this->selectionModel(), &QItemSelectionModel::currentChanged, [&](const QModelIndex &current, const QModelIndex &previous){
 			    (void) current;
-			    if(previous.isValid())_previous_index = previous;
+			    if(previous.isValid()) _previous_index = previous;
 			    _record_screen->tools_update();
 			});
 		    connect(this->selectionModel(), &QItemSelectionModel::selectionChanged, [&](const QItemSelection &selected, const QItemSelection &deselected){
@@ -829,8 +829,8 @@ rv_t::rv_t(rs_t *record_screen_, rctrl_t *record_controller_)
 		// При задании высоты вертикального заголовка, высота применяется и для всех ячеек в строке.
 	    verticalHeader()->setDefaultSectionSize(verticalHeader()->minimumSectionSize());
 	    int height = appconfig.ugly_qss_replace_height_for_table_view();
-	    if(height != 0)verticalHeader()->setDefaultSectionSize(height);
-	    if(appconfig.interface_mode() == "mobile")verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
+	    if(height != 0) verticalHeader()->setDefaultSectionSize(height);
+	    if(appconfig.interface_mode() == "mobile") verticalHeader()->setDefaultSectionSize(calculate_iconsize_px());
 	    setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);			// setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn); // ScrollBarAsNeeded  //ScrollBarAlwaysOff
 
 	    restore_column_width();
@@ -885,10 +885,10 @@ QModelIndex rv_t::previous_index() const {return _previous_index;}
 
 void rv_t::restore_header_state(void){
 	// Видимость горизонтальных заголовков
-    if(appconfig.record_table_show_horizontal_headers() == false)horizontalHeader()->hide();
+    if(appconfig.record_table_show_horizontal_headers() == false) horizontalHeader()->hide();
     else horizontalHeader()->show();
 	// Видимость вертикальных заголовков
-    if(appconfig.record_table_show_vertical_headers() == false)verticalHeader()->hide();
+    if(appconfig.record_table_show_vertical_headers() == false) verticalHeader()->hide();
     else verticalHeader()->show();
 }
 
@@ -949,7 +949,7 @@ void rv_t::on_doubleclick(const QModelIndex &index){
 // Слот, срабатывающий после того, как был передвинут горизонтальный заголовок
 void rv_t::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex){
     Q_UNUSED(logicalIndex);
-    if(! _enable_move_section)return;
+    if(! _enable_move_section) return;
 	// Если была включена сортировка
 	/*
 	   if( this->isSortingEnabled() )
@@ -973,7 +973,7 @@ void rv_t::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualI
 	// После это кода logicalIindex=visualIndex для всех полей
     for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx ++){
 	int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
-	if(visualIdx != logicalIdx)horizontalHeader()->moveSection(visualIdx, logicalIdx);			// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
+	if(visualIdx != logicalIdx) horizontalHeader()->moveSection(visualIdx, logicalIdx);																											// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
     }
     _enable_move_section = true;
 
@@ -1035,7 +1035,7 @@ void rv_t::edit_field_context(void){
     QModelIndexList	selectItems = selectionModel()->selectedIndexes();
     index_proxy		proxy_index;
     for(auto &si : selectItems)
-		if(0 == si.column())proxy_index = index_proxy(si);			// selectItems.at(0);
+		if(0 == si.column()) proxy_index = index_proxy(si);																					// selectItems.at(0);
     auto current_index = currentIndex();
 
 	// auto _index0 = _record_controller->proxyindex_to_sourceindex(proxy_index);
@@ -1111,7 +1111,7 @@ boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
     if(it){
 	auto	posproxy	= _record_controller->index<pos_proxy>(it);
 	auto	index		= static_cast<QModelIndex>(_record_controller->index<index_proxy>(posproxy));
-	if(index != selectionModel()->currentIndex())_record_controller->select_as_current(posproxy);
+	if(index != selectionModel()->currentIndex()) _record_controller->select_as_current(posproxy);
     }
     return it;
 }
@@ -1157,25 +1157,29 @@ bool rv_t::is_selected_set_to_bottom(void){return (int) selection_first<pos_prox
 // }
 
 bool rv_t::eventFilter(QObject *obj, QEvent *event){
-    if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton)on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
+    if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton) on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
     return QTableView::eventFilter(obj, event);
 }
 
 // Обработчик событий, нужен только для QTapAndHoldGesture (долгое нажатие)
 bool rv_t::event(QEvent *event){
-    if(event->type() == QEvent::Gesture){
-	qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
+    if(! event->spontaneous()){
+	if(event->type() == QEvent::Gesture){
+	    qDebug() << "In gesture event(): " << event << " Event type: " << event->type();
 
-	return gesture_event(static_cast<QGestureEvent *>(event));
-    }else if(event->type() == QEvent::MouseButtonDblClick)on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
-    return QTableView::event(event);
+	    return gesture_event(static_cast<QGestureEvent *>(event));
+	}else if(event->type() == QEvent::MouseButtonDblClick){
+	    on_doubleclick(indexAt(static_cast<QMouseEvent *>(event)->pos()));
+	    return true;
+	}else return QTableView::event(event);
+    }else return false;
 }
 
 // Обработчик жестов
 // Вызывается из обработчика событий
 bool rv_t::gesture_event(QGestureEvent *event){
     qDebug() << "In gestureEvent()" << event;
-    if(QGesture *gesture = event->gesture(Qt::TapAndHoldGesture))tap_and_hold_gesture_triggered(static_cast<QTapAndHoldGesture *>(gesture));
+    if(QGesture *gesture = event->gesture(Qt::TapAndHoldGesture)) tap_and_hold_gesture_triggered(static_cast<QTapAndHoldGesture *>(gesture));
     return true;
 }
 
@@ -1184,7 +1188,7 @@ bool rv_t::gesture_event(QGestureEvent *event){
 void rv_t::tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture){
     qDebug() << "In tapAndHoldGestureTriggered()" << gesture;
     if(gesture->state() == Qt::GestureFinished)
-		if(globalparameters.target_os() == "android")emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
+		if(globalparameters.target_os() == "android") emit tap_and_hold_gesture_finished(mapFromGlobal(gesture->position().toPoint()));
 }
 
 // еакция на нажатие кнопок мышки
@@ -1259,7 +1263,7 @@ void rv_t::mouseMoveEvent(QMouseEvent *event){
     if(event->buttons() & Qt::LeftButton){
 	// Выясняется расстояние от места начала нажатия
 	int distance = (event->pos() - _mouse_start_position).manhattanLength();
-	if(distance >= QApplication::startDragDistance() * 2)start_drag();
+	if(distance >= QApplication::startDragDistance() * 2) start_drag();
     }
     QTableView::mouseMoveEvent(event);
 }
@@ -1356,14 +1360,14 @@ ClipboardRecords *rv_t::get_selected_records(void){
 	iterator.next();
 
 	QModelIndex index = iterator.value();
-	if(index.column() > 0)iterator.remove();
+	if(index.column() > 0) iterator.remove();
     }
 	// Список возвращается в произвольном порядке, не в таком как на экране
 	// поэтому его нужно отсортировать по QModelIndex
     qSort(indexes_for_copy.begin(), indexes_for_copy.end());
 
     qDebug() << "Get selected records";
-    for(int i = 0; i < indexes_for_copy.size(); ++ i)qDebug() << indexes_for_copy.at(i).data().toString();
+    for(int i = 0; i < indexes_for_copy.size(); ++ i) qDebug() << indexes_for_copy.at(i).data().toString();
 	// Объект с данными для заполнения буфера обмена
     ClipboardRecords *clipboardRecords = new ClipboardRecords();
     clipboardRecords->clear();
@@ -1407,7 +1411,7 @@ void rv_t::restore_column_width(void){
 	// qDebug() << "Restore column width " << columnWidthList;
 	// Восстанавливается ширина всех колонок без последней
 	// Чтобы последняя растягивалась по месту
-    for(int i = 0; i < columnWidthList.size() - 1; i ++)setColumnWidth(i, columnWidthList[i].toInt());
+    for(int i = 0; i < columnWidthList.size() - 1; i ++) setColumnWidth(i, columnWidthList[i].toInt());
     resizeEvent(nullptr);
 }
 
@@ -1485,23 +1489,23 @@ void rv_t::resizeEvent(QResizeEvent *e){
 	auto	show_fields_width	= appconfig.record_table_fields_width();
 //	if(show_fields.contains("row number"))
 //	QMutableListIterator<QString> it(show_fields);
-	for(auto it : show_fields)if(it == "row number")show_fields.removeOne(it);
+	for(auto it : show_fields) if(it == "row number") show_fields.removeOne(it);
 	int required_width = row_number_width;
 //	int	i		= 0;
-	for(auto w : show_fields_width)required_width += w.toInt();	// columnWidth(i ++);
+	for(auto w : show_fields_width) required_width += w.toInt();																			// columnWidth(i ++);
 	for(int i = 0; i < show_fields.size(); i ++){
 	    if(required_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
-		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, _pin_width);
-		else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width());
-		else if(! _is_field_type_column(boost::mpl::c_str<name_type>::value, i))suggest_others_width += columnWidth(i);
+		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
+		else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i)) setColumnWidth(i, rating_width());
+		else if(! _is_field_type_column(boost::mpl::c_str<name_type>::value, i)) suggest_others_width += columnWidth(i);
 //		if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i)){
 //		    setColumnWidth(i, (real_capacity >= suggest_others_width) ? real_capacity - suggest_others_width : columnWidth(i));
 ////		    horizontalHeader()->setSectionResizeMode(i, QHeaderView::Stretch);
 //		}
 	    }else{
-		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i))setColumnWidth(i, _pin_width);
-		else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i))setColumnWidth(i, rating_width());
-		else if(! _is_field_type_column(boost::mpl::c_str<name_type>::value, i))suggest_others_width += columnWidth(i);
+		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
+		else if(_is_field_type_column(boost::mpl::c_str<rating_type>::value, i)) setColumnWidth(i, rating_width());
+		else if(! _is_field_type_column(boost::mpl::c_str<name_type>::value, i)) suggest_others_width += columnWidth(i);
 //		real_capacity = this->contentsRect().width();
 ////            if(real_capacity >= 300){
 ////                if(_is_field_type_column(boost::mpl::c_str<name_type>::value, i))setColumnWidth(i, 300 - adjust_width);					// restoreColumnWidth();
@@ -1536,8 +1540,8 @@ void rv_t::resizeEvent(QResizeEvent *e){
 template<>pos_proxy rv_t::selection_first<pos_proxy>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty())return pos_proxy(- 1);		// Если ничего не выделено
-    else return pos_proxy((selectItems.at(0)).row());			// Номер первого выделенного элемента
+    if(selectItems.isEmpty()) return pos_proxy(- 1);																// Если ничего не выделено
+    else return pos_proxy((selectItems.at(0)).row());																	// Номер первого выделенного элемента
 }
 
 template<>pos_source rv_t::selection_first<pos_source>() const {
@@ -1549,14 +1553,14 @@ template<>pos_source rv_t::selection_first<pos_source>() const {
 template<>id_value rv_t::selection_first<id_value>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty())return id_value("");		// Если ничего не выделено
+    if(selectItems.isEmpty()) return id_value("");																// Если ничего не выделено
 
     return id_value(selectItems.at(0).data(RECORD_ID_ROLE).toString());
 }
 
 template<>index_proxy rv_t::selection_first<index_proxy>() const {
     pos_proxy pos_proxy_ = selection_first<pos_proxy>();
-    if(pos_proxy_ == - 1)return index_proxy(QModelIndex());
+    if(pos_proxy_ == - 1) return index_proxy(QModelIndex());
 	// QModelIndex index = recordProxyModel->index( pos, 0 );
     index_proxy index = _record_controller->index<index_proxy>(pos_proxy(pos_proxy_));
 
@@ -1565,7 +1569,7 @@ template<>index_proxy rv_t::selection_first<index_proxy>() const {
 
 template<>index_source rv_t::selection_first<index_source>() const {
     index_proxy proxy_index = selection_first<index_proxy>();
-    if(! ((QModelIndex) proxy_index).isValid())return index_source(QModelIndex());
+    if(! ((QModelIndex) proxy_index).isValid()) return index_source(QModelIndex());
 	// QModelIndex index = recordProxyModel->mapToSource( proxyIndex );
     index_source index = _record_controller->index<index_source>(proxy_index);
 

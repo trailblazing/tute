@@ -2587,7 +2587,7 @@ browser::WebView *TreeItem::activate(const std::function<browser::WebView *(cons
     browser::WebView	*v		= nullptr;
     auto		check_view	= find_activated([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return b->host()->id() == id();});
     if(check_view){
-	if(this != check_view->page()->host() || ! _binder){
+	if(this != check_view->page()->host().get() || ! _binder){
 	    bind();
 	    v = _binder->activate();
 	}else if(! check_view->load_finished())v = _binder->activate();

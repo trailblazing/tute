@@ -167,7 +167,7 @@ Q_SIGNALS:
 
 
     private:
-	void	sys_init();
+	void	sys_init(char **argv);
 	void	main_window();
 	void	browser_init();
 

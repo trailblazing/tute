@@ -1947,7 +1947,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 	    }
 	}else if(header_title == rating_field_description){
 	    std::sort(v_list.begin(), v_list.end(), [&](browser::WebView *v0, browser::WebView *v1){
-		    return v0->page()->host()->field<rating_type>().toULongLong() < v1->page()->host()->field<rating_type>().toULongLong();
+		    return v0->page()->host()->field<rating_type>().toULongLong() > v1->page()->host()->field<rating_type>().toULongLong();
 		});
 	    int t = 0;
 	    for(auto v : v_list){
@@ -2580,7 +2580,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::find(const QUrl &_url){
 // }
 
 template<>pos_proxy rctrl_t::index<pos_proxy>(const pos_source &source_pos) const {
-    assert((int) source_pos != - 1);
+//    assert((int) source_pos != - 1);
     QModelIndex source_index = _source_model->index((int) source_pos, 0, QModelIndex());
 //    auto it = _source_model->item(source_pos);
 //    QModelIndex source_index = _source_model->createIndex((int)source_pos, 0, static_cast<void *>(it.get()));

@@ -208,6 +208,7 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 
 	rctrl_t    *_record_controller;
 	friend class rs_t;
+	friend class browser::TabWidget;
 };
 
 #endif	// __RECORDTABLEMODEL_H__

@@ -261,8 +261,8 @@ namespace browser {
 	public:
 	    CustomTabStyle();
 
-	    QSize	SizeFromContents(ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const;
-	    void	drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
+	    QSize SizeFromContents(ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const;
+	    void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
     };
 
 
@@ -325,23 +325,23 @@ namespace browser {
 		TabBar(QWidget *parent = 0);
 
 	    protected:
-		void	mousePressEvent(QMouseEvent *event);
-		void	mouseMoveEvent(QMouseEvent *event);
+		void mousePressEvent(QMouseEvent *event);
+		void mouseMoveEvent(QMouseEvent *event);
 
 	    private slots:
-		void	selectTabAction();
-		void	cloneTab();
-		void	closeTab();
-		void	closeOtherTabs();
-		void	reloadTab();
-		void	contextMenuRequested(const QPoint &position);
+		void selectTabAction();
+		void cloneTab();
+		void closeTab();
+		void closeOtherTabs();
+		void reloadTab();
+		void contextMenuRequested(const QPoint &position);
 
 	    private:
 		QList<QShortcut *> _tabshortcuts;
 		friend class browser::TabWidget;
 
-		QPoint	_dragstartpos;
-		int	_dragcurrentindex;
+		QPoint _dragstartpos;
+		int _dragcurrentindex;
 	};
     }
 
@@ -374,20 +374,20 @@ namespace browser {
 
 	public:
 	    WebActionMapper(QAction *root, QWebEnginePage::WebAction webAction, QObject *parent);
-	    QWebEnginePage::WebAction	webAction() const;
-	    void			addChild(QAction *action);
-	    void			updateCurrent(QWebEnginePage *currentParent);
+	    QWebEnginePage::WebAction webAction() const;
+	    void addChild(QAction *action);
+	    void updateCurrent(QWebEnginePage *currentParent);
 
 	private slots:
-	    void	rootTriggered();
-	    void	childChanged();
-	    void	rootDestroyed();
-	    void	currentDestroyed();
+	    void rootTriggered();
+	    void childChanged();
+	    void rootDestroyed();
+	    void currentDestroyed();
 
 	private:
 	    QWebEnginePage		*_currentparent;
 	    QAction			*_root;
-	    QWebEnginePage::WebAction	_webaction;
+	    QWebEnginePage::WebAction _webaction;
     };
 
 	// #include <QtCore/QUrl>
@@ -516,8 +516,8 @@ namespace browser {
 		// typedef typename Binder::page_helper     page_helper;
 
 	    ~TabWidget();
-	    void	clear();
-	    void	addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
+	    void clear();
+	    void addWebAction(QAction *action, QWebEnginePage::WebAction webAction);
 
 	    QAction	*newTabAction() const;
 	    QAction	*closeTabAction() const;
@@ -534,12 +534,12 @@ namespace browser {
 	    WebView				*currentWebView() const;
 	    WebView				*webView(int index) const;
 	    QLineEdit				*lineEdit(int index) const;
-	    int					webViewIndex(WebView *webView) const;
+	    int	webViewIndex(WebView *webView) const;
 
-	    QByteArray	saveState() const;
-	    bool	restoreState(const QByteArray &state);
+	    QByteArray saveState() const;
+	    bool restoreState(const QByteArray &state);
 
-	    void	setProfile(Profile *profile);
+	    void setProfile(Profile *profile);
 	    WebView	*find(const std::function<bool (boost::intrusive_ptr<const ::Binder>)> &_equal) const;		//= [](boost::intrusive_ptr<TreeItem> it, const QUrl &_url) ->bool {return it->field("url") == _url.toString();}
 
 		// WebView *find(boost::intrusive_ptr<const TreeItem> it_find)const;
@@ -647,16 +647,16 @@ namespace browser {
 // }
 
 	    boost::intrusive_ptr<TreeItem>	sibling(boost::intrusive_ptr<TreeItem> it) const;
-	    void				current_download_acceptance(std::pair<QUrl, bool> policy);
-	    std::pair<QUrl, bool>		current_download_acceptance() const;
+//	    void current_download_acceptance(std::pair<QUrl, bool> policy);
+//	    std::pair<QUrl, bool>		current_download_acceptance() const;
 	    WebView				*sibling(WebView *v) const;
 
 // int insertTab(int index, QWidget *w, const QIcon& icon, const QString &label);
 	protected:
-	    void	mouseDoubleClickEvent(QMouseEvent *event);
-	    void	contextMenuEvent(QContextMenuEvent *event);
-	    void	mouseReleaseEvent(QMouseEvent *event);
-	    void	resizeEvent(QResizeEvent *);	// Q_DECL_OVERRIDE;
+	    void mouseDoubleClickEvent(QMouseEvent *event);
+	    void contextMenuEvent(QContextMenuEvent *event);
+	    void mouseReleaseEvent(QMouseEvent *event);
+	    void resizeEvent(QResizeEvent *);	// Q_DECL_OVERRIDE;
 
 	public slots:
 	    void loadUrlInCurrentTab(const QUrl &_url);
@@ -669,29 +669,29 @@ namespace browser {
 		// void new_view(bool make_current = false);    //true
 
 		// void cloneTab(int index = -1);
-	    void	requestCloseTab(int index = - 1);
-	    void	closeTab(int index = - 1);
-	    void	closeOtherTabs(int index);
-	    void	reloadTab(int index = - 1);
-	    void	reloadAllTabs();
-	    void	nextTab();
-	    void	previousTab();
-	    void	moveTab(int fromIndex, int toIndex);
+	    void requestCloseTab(int index = - 1);
+	    void closeTab(int _previous_index = - 1);	// , bool sychronize_to_record_view = true
+	    void closeOtherTabs(int index);
+	    void reloadTab(int index = - 1);
+	    void reloadAllTabs();
+	    void nextTab();
+	    void previousTab();
+	    void moveTab(int fromIndex, int toIndex);
 //            void setCurrentIndex(int index);
 	private slots:
-	    void	currentChanged(int index);
-	    void	aboutToShowRecentTabsMenu();
-	    void	aboutToShowRecentTriggeredAction(QAction *action);
-	    void	downloadRequested(QWebEngineDownloadItem *download);
-	    void	webViewLoadStarted();
-	    void	webViewIconChanged();
-	    void	webViewTitleChanged(const QString &title);
-	    void	webViewUrlChanged(const QUrl &url);
-	    void	lineEditReturnPressed();
-	    void	windowCloseRequested();
+	    void currentChanged(int index);
+	    void aboutToShowRecentTabsMenu();
+	    void aboutToShowRecentTriggeredAction(QAction *action);
+	    void downloadRequested(QWebEngineDownloadItem *download);
+	    void webViewLoadStarted();
+	    void webViewIconChanged();
+	    void webViewTitleChanged(const QString &title);
+	    void webViewUrlChanged(const QUrl &url);
+	    void lineEditReturnPressed();
+	    void windowCloseRequested();
 		// void moveTab(int fromIndex, int toIndex);
-	    void	onTabsChanged();
-	    void	fullScreenRequested(QWebEngineFullScreenRequest request);
+	    void onTabsChanged();
+	    void fullScreenRequested(QWebEngineFullScreenRequest request);
 	    WebView	*view_no_pinned();
 	private:
 	    ts_t		*_tree_screen;
@@ -709,7 +709,7 @@ namespace browser {
 	    QAction		*_previoustabaction;
 
 	    QMenu		*_recentlyclosedtabsmenu;
-	    static const int	_recentlyclosedtabssize = 10;
+	    static const int _recentlyclosedtabssize = 10;
 
 	    QList<QUrl>			_recentlyclosedtabs;
 	    QList<WebActionMapper *>	_actions;
@@ -723,6 +723,7 @@ namespace browser {
 	    QWebEngineView		*_fullscreenview;
 	    FullScreenNotification	*_fullscreennotification;
 	    std::pair<QUrl, bool>	_current_download_acceptance;
+	    int _previous_index = - 1;
 
 	protected:
 

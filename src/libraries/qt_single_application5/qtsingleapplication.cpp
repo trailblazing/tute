@@ -328,7 +328,7 @@ static void set_user_style_sheet(QWebEngineProfile *profile
     QString			scriptName(QStringLiteral("userStyleSheet"));
     QWebEngineScript		script;
     QList<QWebEngineScript>	styleSheets = profile->scripts()->findScripts(scriptName);
-    if(! styleSheets.isEmpty())script = styleSheets.first();
+    if(! styleSheets.isEmpty()) script = styleSheets.first();
     Q_FOREACH(const QWebEngineScript &s, styleSheets) profile->scripts()->remove(s);
     if(script.isNull()){
 	script.setName(scriptName);
@@ -361,7 +361,197 @@ W_OBJECT_IMPL(QT_QTSINGLEAPPLICATION_EXPORT sapp_t)
 #endif
 
 
-void sapp_t::sys_init(){
+void sapp_t::sys_init(char * *argv){
+	// Начальные инициализации основных объектов
+
+	// Запоминается имя файла запущенного бинарника
+	// Файл запущенной программы (нулевой аргумент функции main)
+	// Store the file name running binaries
+	// File running program (a zero argument to main)
+    QString mainProgramFile = QString::fromLatin1(argv[0]);		// Todo: This code must not work correctly with ways to UTF 8   // todo: Этот код наверно некорректно работает с путями в UTF8
+    qDebug() << "Set main program file to " << mainProgramFile;
+    globalparameters.main_program_file(mainProgramFile);
+
+	// Перехват отладочных сообщений
+    set_debug_message_handler();
+
+
+	//    QtSingleApplication application(argc, argv);
+
+	//    // Do not run another copy    // Не запущен ли другой экземпляр
+	//    if(application.isRunning() || !application.isTheOnlyBrowser()) {
+	//        QString message = "Another MyTetra exemplar is running.\n";
+
+	//        printf(message.toLocal8Bit());
+
+	//        QMessageBox msgBox;
+	//        msgBox.setIcon(QMessageBox::Warning);
+	//        msgBox.setText(message);
+	//        msgBox.exec();
+
+	//        exit(0);
+	//    }
+
+#if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
+	// Установка увеличенного разрешения для дисплеев с большим DPI (Retina)
+	// Set the increased resolution for displays with lots DPI (Retina)
+    if(sapp_t::instance()->devicePixelRatio() > 1.0) sapp_t::instance()->setAttribute(Qt::AA_UseHighDpiPixmaps);
+#endif
+
+#if QT_VERSION < 0x050000
+	// Установка кодека текстов
+    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF - 8"));
+#endif
+
+	//    // Инициализация глобальных параметров,
+	//    // внутри происходит установка рабочей директории
+	//    // Initialize global parameters,
+	//    // Is being installed inside the working directory
+	//    globalparameters.init();
+
+	//    // Initialize the main program of configurable variables    // Инициализация основных конфигурирующих программу переменных
+	//    appconfig.init();
+
+	//    // Инициализация переменных, отвечающих за хранилище данных
+	//    databaseconfig.init();
+
+	//    QtSingleApplication application(argc, argv, globalparameters, appconfig, databaseconfig);
+
+	//    // Do not run another copy    // Не запущен ли другой экземпляр
+	//    if(application.isRunning()) {
+	//        QString message = "Another MyTetra exemplar is running.\n";
+
+	//        printf(message.toLocal8Bit());
+
+	//        QMessageBox msgBox;
+	//        msgBox.setIcon(QMessageBox::Warning);
+	//        msgBox.setText(message);
+	//        msgBox.exec();
+
+	//        exit(0);
+	//    }
+
+	//    // Установка CSS-оформления
+	//    setCssStyle();
+
+	//    // Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
+	//    QSplashScreen splash(QPixmap(": / resource / pic / mytetra_splash.png"));
+
+	//    if(mytetraConfig.getShowSplashScreen())
+	//        splash.show();
+
+
+	//    //    // Подключение перевода интерфейса
+	//    //    // QString langFileName=globalParameters.getWorkDirectory()+" / resource / translations / mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
+	//    //    QString langFileName = ": / resource / translations / mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
+	//    //    qDebug() << "Use language file " << langFileName;
+
+	//    //    //QTranslator langTranslator;
+	//    //    //langTranslator.load(langFileName);
+	//    //    application.installTranslator(
+	//    //        langFileName    //&langTranslator
+	//    //    );
+
+
+	//    // Создание объекта главного окна
+	//    MainWindow win;
+	//    win.setWindowTitle("MyTetra");
+
+	//    if(globalParameters.getTargetOs() == "android")
+	//        win.show(); // В Андроиде нет десктопа, на нем нельзя сворачивать окно
+	//    else {
+	//        if(mytetraConfig.get_runinminimizedwindow() == false)
+	//            win.show();
+	//        else
+	//            win.hide();
+	//    }
+
+	//    // win.setObjectName("mainwindow");
+	//    // pMainWindow=&win; // Запоминается указатель на основное окно
+
+	//    // После создания окна восстанавливается вид окна в предыдущий запуск
+	//    // Эти действия нельзя делать в конструкторе главного окна,
+	//    // т.к. окно еще не создано
+	//    globalParameters.getWindowSwitcher()->disableSwitch();
+	//    win.restoreFindOnBaseVisible();
+	//    win.restoreGeometry();
+	//    win.restoreTreePosition();
+	//    win.restoreRecordTablePosition();
+	//    win.restoreEditorCursorPosition();
+	//    win.restoreEditorScrollBarPosition();
+	//    globalParameters.getWindowSwitcher()->enableSwitch();
+
+	//    if(mytetraConfig.getInterfaceMode() == "mobile")
+	//        globalParameters.getWindowSwitcher()->restoreFocusWidget();
+
+	//    qDebug() << "Restore session succesfull";
+
+	//    // После восстановления последней редактируемой записи
+	//    // история перехода очищается, так как в не может попасть
+	//    // первая запись в востаналиваемой ветке и сама восстанавливаемая запись
+	//    walkHistory.clear();
+
+
+	//    // Если в конфиге настроено, что нужно синхронизироваться при старте
+	//    // И задана команда синхронизации
+	//    if(mytetraConfig.get_synchroonstartup())
+	//        if(mytetraConfig.get_synchrocommand().trimmed().length() > 0)
+	//            win.synchronization();
+
+
+	//    // Если настроено в конфиге, сразу запрашивается пароль доступа
+	//    // к зашифрованным данным
+	//    // И если есть хоть какие-то зашифрованные данные
+	//    if(mytetraConfig.get_howpassrequest() == "atStartProgram")
+	//        if(globalParameters.getCryptKey().length() == 0)
+	//            if(dataBaseConfig.get_crypt_mode() > 0) {
+	//                // Запрашивается пароль только в том случае, если ветка,
+	//                // на которую установливается курсор при старте, незашифрована
+	//                // Если ветка зашифрована, пароль и так будет запрошен автоматически
+	//                if(win.isTreePositionCrypt() == false) {
+	//                    Password password;
+	//                    password.retrievePassword();
+	//                }
+	//            }
+
+
+	//    // Если в общем конфиге стоит опция хранения пароля
+	//    // И хранимый пароль (точнее его хеш) заполнен
+	//    if(globalParameters.getCryptKey().length() == 0)
+	//        if(dataBaseConfig.get_crypt_mode() > 0)
+	//            if(mytetraConfig.getPasswordSaveFlag())
+	//                if(mytetraConfig.getPasswordMiddleHash().length() > 0) {
+	//                    // При запросе пароля ключ шифрования будет восстановлен автоматически
+	//                    Password password;
+	//                    password.retrievePassword();
+	//                }
+
+	//    // Распечатывается дерево сгенерированных объектов
+	//    // print_object_tree();
+
+	//    // Проверяется наличие системного трея
+	//    /*
+	//    if(!QSystemTrayIcon::isSystemTrayAvailable()) {
+	//     QMessageBox::critical(0, QObject::tr("Systray"),
+	//                           QObject::tr("I couldn't detect any system tray on this system."));
+	//     exit(1);
+	//    }
+	//    */
+
+	//    // При закрытии окна не выходить из программы.
+	//    // Окно программы может быть снова открыто из трея
+	//    QApplication::setQuitOnLastWindowClosed(false);
+
+
+	//    // win.show();
+	//    application.connect(&application, SIGNAL(lastWindowClosed()), &application, SLOT(quit()));
+
+	//    // app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win.commitData(QSessionManager)));
+
+	//    // Окно сплеш-скрина скрывается
+	//    if(mytetraConfig.getShowSplashScreen())
+	//        splash.finish(&win);
+
 	// Инициализация глобальных параметров,
 	// внутри происходит установка рабочей директории
 	// Initialize global parameters,
@@ -379,6 +569,9 @@ void sapp_t::sys_init(){
 	// Инициализация переменных, отвечающих за хранилище данных
     _databaseconfig.init();
 
+
+
+
     QString version = QString::number(APPLICATION_RELEASE_VERSION) + "." + QString::number(APPLICATION_RELEASE_SUBVERSION) + "." + QString::number(APPLICATION_RELEASE_MICROVERSION);
     QCoreApplication::setOrganizationName(QLatin1String("mytetra"));
     QCoreApplication::setApplicationName(QLatin1String(application_name));
@@ -392,7 +585,7 @@ void sapp_t::sys_init(){
     if(socket.waitForConnected(500)){
 	QTextStream	stream(&socket);
 	QStringList	args = QCoreApplication::arguments();
-	if(args.count() > 1)stream << args.last();
+	if(args.count() > 1) stream << args.last();
 	else stream << QString();
 	stream.flush();
 	socket.waitForBytesWritten();
@@ -440,8 +633,8 @@ void sapp_t::browser_init(){
 //	auto conf_name = QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf";
 	if(QFile::exists(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf")){
 		// Файл перемещается в корзину
-	    if(! QFile::copy(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.work_directory() + "/browser.conf"))throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																													// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
-	    else QFile::setPermissions(_globalparameters.work_directory() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																																																																																							//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
+	    if(! QFile::copy(QString(":/resource/standartconfig/") + _globalparameters.target_os() + "/browser.conf", _globalparameters.work_directory() + "/browser.conf")) throw std::runtime_error("Can not copy browser.conf");																																																																																																																																																																																																																																																																																																																																																							// if(! file.open(QIODevice::WriteOnly))throw std::runtime_error("Can not open browser.conf");
+	    else QFile::setPermissions(_globalparameters.work_directory() + "/browser.conf", QFile::ReadUser | QFile::WriteUser);																																																																																																																																																																																																									//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 	}
     }
     QDesktopServices::setUrlHandler(QLatin1String("http"), this, "openUrl");
@@ -470,7 +663,7 @@ void sapp_t::browser_init(){
 #endif
 
     QTimer::singleShot(0, this, &sapp_t::postLaunch);
-    if(canRestoreSession())restoreLastSession();
+    if(canRestoreSession()) restoreLastSession();
 	// }
 }
 
@@ -493,7 +686,7 @@ void sapp_t::main_window(){
 
 	// Экран загрузки, показывается только в Андроид версии (так как загрузка идет ~10 сек, и без сплешскрина непонятно что происходит)
     QSplashScreen splash(QPixmap(":/resource/pic/mytetra_splash.png"));
-    if(_appconfig.show_splash_screen())splash.show();
+    if(_appconfig.show_splash_screen()) splash.show();
 	//    // Подключение перевода интерфейса
 	//    // QString langFileName=globalParameters.getWorkDirectory()+"/resource/translations/mytetra_"+mytetraconfig.get_interfacelanguage()+".qm";
 	//    QString langFileName = ":/resource/translations/mytetra_" + mytetraConfig.get_interfacelanguage() + ".qm";
@@ -512,9 +705,9 @@ void sapp_t::main_window(){
     _globalparameters.main_window(_window);
 
     _window->setWindowTitle(application_name);
-    if(_globalparameters.target_os() == "android")_window->show();																																																																																						// В Андроиде нет десктопа, на нем нельзя сворачивать окно
+    if(_globalparameters.target_os() == "android") _window->show();																																																																																																								// В Андроиде нет десктопа, на нем нельзя сворачивать окно
     else{
-	if(_appconfig.run_in_minimized_window() == false)_window->show();
+	if(_appconfig.run_in_minimized_window() == false) _window->show();
 	else _window->hide();
     }
 	// win->setObjectName("mainwindow");
@@ -531,7 +724,7 @@ void sapp_t::main_window(){
     _window->restore_editor_cursor_position();
     _window->restore_editor_scrollbar_position();
     _globalparameters.window_switcher()->enable();
-    if(_appconfig.interface_mode() == "mobile")_globalparameters.window_switcher()->restore_focus_widget();
+    if(_appconfig.interface_mode() == "mobile") _globalparameters.window_switcher()->restore_focus_widget();
     qDebug() << "Restore session succesfull";
 
 	// После восстановления последней редактируемой записи
@@ -541,7 +734,7 @@ void sapp_t::main_window(){
 	// Если в конфиге настроено, что нужно синхронизироваться при старте
 	// И задана команда синхронизации
     if(_appconfig.synchro_on_startup())
-		if(_appconfig.synchro_command().trimmed().length() > 0)_window->synchronization();
+		if(_appconfig.synchro_command().trimmed().length() > 0) _window->synchronization();
 	// Если настроено в конфиге, сразу запрашивается пароль доступа
 	// к зашифрованным данным
 	// И если есть хоть какие-то зашифрованные данные
@@ -590,7 +783,7 @@ void sapp_t::main_window(){
     connect(this, &sapp_t::lastWindowClosed, this, &sapp_t::quit);
 	// app.connect(&app, SIGNAL(app.commitDataRequest(QSessionManager)), SLOT(win->commitData(QSessionManager)));
 	// Окно сплеш-скрина скрывается
-    if(_appconfig.show_splash_screen())splash.finish(_window);
+    if(_appconfig.show_splash_screen()) splash.finish(_window);
 }
 
 /*!
@@ -620,7 +813,7 @@ sapp_t::sapp_t(int &argc
       , _globalparameters(globalparameters)
       , _appconfig(appconfig)
       , _databaseconfig(databaseconfig){
-    sys_init();
+    sys_init(argv);
 
 	//    _app = new ThreadedApplication(argc, argv, GUIenabled);
 	//    boost::thread appThread(boost::ref(*_app));
@@ -653,7 +846,7 @@ sapp_t::sapp_t(const QString &appId
       , _globalparameters(globalparameters)
       , _appconfig(appconfig)
       , _databaseconfig(databaseconfig){
-    sys_init();
+    sys_init(argv);
     main_window();
     browser_init();
 }
@@ -767,7 +960,7 @@ QString sapp_t::id() const {
 
 void sapp_t::setActivationWindow(QWidget *aw, bool activateOnMessage){
     _act_window = aw;
-    if(activateOnMessage)connect(_peer, &QtLocalPeer::messageReceived, this, &sapp_t::activateWindow);
+    if(activateOnMessage) connect(_peer, &QtLocalPeer::messageReceived, this, &sapp_t::activateWindow);
     else disconnect(_peer, &QtLocalPeer::messageReceived, this, &sapp_t::activateWindow);
 }
 
@@ -826,12 +1019,12 @@ sapp_t *sapp_t::instance(){
 
 void sapp_t::newLocalSocketConnection(){
     QLocalSocket *socket = _peer->server()->nextPendingConnection();
-    if(! socket)return;
+    if(! socket) return;
     socket->waitForReadyRead(1000);
     QTextStream stream(socket);
     QString	_url;
     stream >> _url;
-    if(_url.isEmpty())_url = browser::Browser::_defaulthome;																																																																																	//    browser::DockedWindow *w = nullptr;
+    if(_url.isEmpty()) _url = browser::Browser::_defaulthome;																																																																																																	//    browser::DockedWindow *w = nullptr;
 
 	// if(!url.isEmpty()) {
 
@@ -846,7 +1039,7 @@ void sapp_t::newLocalSocketConnection(){
 //    boost::intrusive_ptr<TreeIndex> _tree_modelindex(nullptr);
     auto	current_item	= tree_view->current_item();
     auto	parent		= current_item->parent();
-    if(! parent)throw std::runtime_error(formatter() << "! parent");																																																																																											// std::exception();
+    if(! parent) throw std::runtime_error(formatter() << "! parent");																																																																																																													// std::exception();
 //    try {
 //        _tree_modelindex = new TreeIndex([&] {return tree_view->source_model(); }, parent, parent->sibling_order([&] (boost::intrusive_ptr<const Linker> il) {
 //            return il == current_item->linker() && il->host() == current_item && parent == il->host_parent();
@@ -941,14 +1134,14 @@ sapp_t::~sapp_t(){
 void QtSingleApplication::quitBrowser(){
     clean();
     int tabCount = 0;
-    for(int i = 0; i < _mainwindows.count(); ++ i)tabCount += _mainwindows.at(i)->tabWidget()->count();
+    for(int i = 0; i < _mainwindows.count(); ++ i) tabCount += _mainwindows.at(i)->tabWidget()->count();
     if(tabCount > 1){
 	int ret = QMessageBox::warning(mainWindow(), QString()
 				      ,	tr("There are %1 windows and %2 tabs open\n"
 					   "Do you want to quit anyway?").arg(_mainwindows.count()).arg(tabCount)
 				      ,	QMessageBox::Yes | QMessageBox::No
 				      ,	QMessageBox::No);
-	if(ret == QMessageBox::No)return;
+	if(ret == QMessageBox::No) return;
     }
     exit(0);
 }
@@ -960,7 +1153,7 @@ void QtSingleApplication::quitBrowser(){
  */
 void sapp_t::postLaunch(){
     QString directory = _globalparameters.work_directory();	// QStandardPaths::writableLocation(QStandardPaths::DataLocation);
-    if(directory.isEmpty())directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
+    if(directory.isEmpty()) directory = QDir::homePath() + QLatin1String("/.") + QCoreApplication::applicationName();
 #if defined(QWEBENGINESETTINGS_PATHS)
     QWebEngineSettings::setIconDatabasePath(directory);
     QWebEngineSettings::setOfflineStoragePath(directory);
@@ -1025,7 +1218,7 @@ void sapp_t::loadSettings(){
     defaultSettings->setAttribute(QWebEngineSettings::FullScreenSupportEnabled, true);
 
     QString css = settings.value(QLatin1String("userStyleSheet")).toString();
-    if(css == "" && _style != "")css = _style;
+    if(css == "" && _style != "") css = _style;
     else css = instance()->styleSheet();
     set_user_style_sheet(_profile, css, _globalparameters.entrance());	// ->main_window(register_record(QUrl(browser::DockedWindow::_defaulthome)))
 
@@ -1058,7 +1251,7 @@ void sapp_t::loadSettings(){
     settings.beginGroup(QLatin1String("proxy"));
     QNetworkProxy proxy;
     if(settings.value(QLatin1String("enabled"), false).toBool()){
-	if(settings.value(QLatin1String("type"), 0).toInt() == 0)proxy = QNetworkProxy::Socks5Proxy;
+	if(settings.value(QLatin1String("type"), 0).toInt() == 0) proxy = QNetworkProxy::Socks5Proxy;
 	else proxy = QNetworkProxy::HttpProxy;
 	proxy.setHostName(settings.value(QLatin1String("hostName")).toString());
 	proxy.setPort(settings.value(QLatin1String("port"), 1080).toInt());
@@ -1089,7 +1282,7 @@ void sapp_t::loadSettings(){
 // }
 
 void sapp_t::saveSession(){
-    if(_private_browsing)return;
+    if(_private_browsing) return;
 	//    globalparameters.entrance()->clean();
 
     std::shared_ptr<QSettings> settings = std::make_shared<QSettings>(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
@@ -1103,7 +1296,7 @@ void sapp_t::saveSession(){
     auto	_browsers	= [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
     uint	count_win	= static_cast<uint>(_browsers.size());;
     stream << count_win;// static_cast<uint>(_browsers.size());
-    for(auto &browser : _browsers)stream << browser->save_state();
+    for(auto &browser : _browsers) stream << browser->save_state();
     settings->setValue(QLatin1String("lastSession"), data);
     settings->endGroup();
 }
@@ -1170,7 +1363,7 @@ bool QtSingleApplication::event(QEvent *event){
 	    clean();
 	    if(! _mainwindows.isEmpty()){
 		BrowserWindow *mw = mainWindow();
-		if(mw && ! mw->isMinimized())mainWindow()->show();
+		if(mw && ! mw->isMinimized()) mainWindow()->show();
 		return true;
 	    }
 	}
@@ -1311,19 +1504,19 @@ QNetworkAccessManager *sapp_t::networkAccessManager(){
 }
 
 browser::HistoryManager *sapp_t::historyManager(){
-    if(! _historymanager)_historymanager = new browser::HistoryManager();
+    if(! _historymanager) _historymanager = new browser::HistoryManager();
     return _historymanager;
 }
 
 browser::BookmarksManager *sapp_t::bookmarksManager(){
-    if(! _bookmarksmanager)_bookmarksmanager = new browser::BookmarksManager();
+    if(! _bookmarksmanager) _bookmarksmanager = new browser::BookmarksManager();
     return _bookmarksmanager;
 }
 
 QIcon sapp_t::icon(const QUrl &url) const {
 #if defined(QTWEBENGINE_ICONDATABASE)
     QIcon icon = QWebEngineSettings::iconForUrl(url);
-    if(! icon.isNull())return icon.pixmap(16, 16);
+    if(! icon.isNull()) return icon.pixmap(16, 16);
 #else
     Q_UNUSED(url);
 #endif
@@ -1332,17 +1525,17 @@ QIcon sapp_t::icon(const QUrl &url) const {
 }
 
 QIcon sapp_t::defaultIcon() const {
-    if(_default_icon.isNull())_default_icon = QIcon(QLatin1String(":defaulticon.png"));
+    if(_default_icon.isNull()) _default_icon = QIcon(QLatin1String(":defaulticon.png"));
     return _default_icon;
 }
 
 void sapp_t::setPrivateBrowsing(bool privateBrowsing){
-    if(_private_browsing == privateBrowsing)return;
+    if(_private_browsing == privateBrowsing) return;
     _private_browsing = privateBrowsing;
-    auto browsers = [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens())bs.insert(rs->browser());return bs;} ();
+    auto browsers = [] {set<browser::Browser *> bs;for(auto rs : globalparameters.main_window()->vtab_record()->record_screens()) bs.insert(rs->browser());return bs;} ();
     if(privateBrowsing){
-	if(! _private_profile)_private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																													// new QWebEngineProfile(this);
-	for(auto &browser : browsers)browser->tabWidget()->setProfile(_private_profile);
+	if(! _private_profile) _private_profile = new browser::Profile(profile_storage_name, this);																																																																																																																																																							// new QWebEngineProfile(this);
+	for(auto &browser : browsers) browser->tabWidget()->setProfile(_private_profile);
     }else{
 	for(auto &browser : browsers){
 	    browser->tabWidget()->setProfile(_profile	// QWebEngineProfile::defaultProfile()
@@ -1389,20 +1582,20 @@ void sapp_t::setLastProxyAuthenticator(QAuthenticator *authenticator){
 }
 
 void sapp_t::authenticationRequired(QNetworkReply *reply, QAuthenticator *authenticator){
-    if(_last_authenticator.isNull())return;
+    if(_last_authenticator.isNull()) return;
     Q_ASSERT(_last_authenticator.option("key").isValid());
     QByteArray	lastKey = _last_authenticator.option("key").toByteArray();
     QByteArray	key	= sapp_t::authenticationKey(reply->url(), authenticator->realm());
-    if(lastKey == key)*authenticator = _last_authenticator;
+    if(lastKey == key) *authenticator = _last_authenticator;
 }
 
 void sapp_t::proxyAuthenticationRequired(const QNetworkProxy &proxy, QAuthenticator *authenticator){
-    if(_last_proxy_authenticator.isNull())return;
+    if(_last_proxy_authenticator.isNull()) return;
     QNetworkProxy::ProxyType proxyType = proxy.type();
-    if(proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy)return;
+    if(proxyType != QNetworkProxy::HttpProxy || proxyType != QNetworkProxy::HttpCachingProxy) return;
     Q_ASSERT(_last_proxy_authenticator.option("host").isValid());
     QByteArray	lastKey = _last_proxy_authenticator.option("key").toByteArray();
     QByteArray	key	= sapp_t::proxyAuthenticationKey(proxy, authenticator->realm());
-    if(lastKey == key)*authenticator = _last_authenticator;
+    if(lastKey == key) *authenticator = _last_authenticator;
 }
 

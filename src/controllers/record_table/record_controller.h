@@ -239,7 +239,7 @@ class rctrl_t : public QObject {
 	friend class browser::TabWidget;
 };
 
-template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14
+//template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14
 
 template<>pos_proxy rctrl_t::	index<pos_proxy>(const pos_source &) const;
 template<>pos_proxy rctrl_t::	index<pos_proxy>(const index_proxy &) const;

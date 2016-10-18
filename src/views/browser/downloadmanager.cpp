@@ -298,19 +298,19 @@ namespace browser {
 		    break;
 
 		case QWebEngineDownloadItem::DownloadCompleted:
-		    _tab_manager->current_download_acceptance({_download->url(), false});
+//		    _tab_manager->current_download_acceptance({_download->url(), false});
 		    break;
 
 		case QWebEngineDownloadItem::DownloadCancelled:
 		    message	= QStringLiteral("Download cancelled");
 		    interrupted	= true;
-		    _tab_manager->current_download_acceptance({_download->url(), false});
+//		    _tab_manager->current_download_acceptance({_download->url(), false});
 		    break;
 
 		case QWebEngineDownloadItem::DownloadInterrupted:
 		    message	= QStringLiteral("Download interrupted");
 		    interrupted	= true;
-		    _tab_manager->current_download_acceptance({_download->url(), false});
+//		    _tab_manager->current_download_acceptance({_download->url(), false});
 		    break;
 	    }
 	    if(interrupted){
@@ -511,9 +511,9 @@ namespace browser {
 
     void DownloadManager::cleanup(){
 	if(_downloads.isEmpty())return;
-	for(auto &download : _downloads){
-	    download->tab_manager()->current_download_acceptance({QUrl(), false});
-	}
+//	for(auto &download : _downloads){
+//	    download->tab_manager()->current_download_acceptance({QUrl(), false});
+//	}
 	_model->removeRows(0, _downloads.count());
 	updateItemCount();
 	if(_downloads.isEmpty() && _iconprovider){
