@@ -1602,7 +1602,7 @@ QItemSelection tv_t::LocalLizeInitializer::operator ()(){
 			// TreeScreen *_tree_screen = static_cast<TreeScreen *>(this->parent());
 		    if(found && duplicated_item && found != duplicated_item){
 			found = static_cast<tkm_t *>(_source_model())->merge(TreeLevel::instance(TreeIndex::create_treeindex_from_item(_source_model, found), duplicated_item)
-									    , std::bind(&tv_t::delete_permanent, _tree_view, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent_recursive, "cut", false)																																				// , std::placeholders::_4, std::placeholders::_5
+									    , std::bind(&tv_t::delete_permanent, _tree_view, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent, "cut", false)																																				// , std::placeholders::_4, std::placeholders::_5
 				);
 		    }
 		}
@@ -3337,7 +3337,7 @@ boost::intrusive_ptr<TreeItem> tv_t::merge(boost::intrusive_ptr<TreeLevel> _tree
 		if(_to_be_operated->id() == static_cast<tkm_t *>(_current_model())->session_id()) static_cast<tkm_t *>(_current_model())->session_id(TreeIndex::create_treeindex_from_item(_current_model, result));
 		globalparameters.main_window()->setDisabled(true);
 		result = static_cast<tkm_t *>(_current_model())->merge(TreeLevel::instance(tree_index, _to_be_operated)	// target_on_tree  // keep// remove   // std::bind(_know_model_board, this)
-								      , std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent_recursive, "cut", false)																					//
+								      , std::bind(&tv_t::delete_permanent, this, std::placeholders::_1, std::placeholders::_2, &tkm_t::delete_permanent, "cut", false)																					//
 			);
 		assert(_current_model()->item([=](boost::intrusive_ptr<const TreeItem> t){return t->id() == result->id();}));
 		know_model_save();
