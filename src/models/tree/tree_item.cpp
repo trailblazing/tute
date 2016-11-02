@@ -33,7 +33,7 @@ TreeItem::TreeItem(boost::intrusive_ptr<TreeItem>   _parent_item
       , ItemsFlat(_dom_element, _parent_item)
       , _parent_item([&](){
 	      if(_parent_item){
-		  if(_parent_item->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1")this->to_encrypt();
+		  if(_parent_item->_field_data[boost::mpl::c_str < crypt_type > ::value] == "1") this->to_encrypt();
 		  else this->to_decrypt();
 	      }
 	      return _parent_item;
@@ -370,7 +370,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::dangle_instance(QMap<QString, QString> 
 #ifdef _with_record_table
 
 void TreeItem::records_to_children(){
-    for(int i = 0; i < _record_table->size(); i ++)this->add_child(_record_table->record(i));
+    for(int i = 0; i < _record_table->size(); i ++) this->add_child(_record_table->record(i));
 }
 
 #endif
@@ -508,7 +508,7 @@ void TreeItem::isolate(void){
 	////    //        _parent_item->remove_child(boost::intrusive_ptr<TreeItem>(this));
 	////    _parent_item.reset();
 	////    //    }
-    if(_linker)_linker->dangle();
+    if(_linker) _linker->dangle();
 }
 
 int TreeItem::field_count() const {return _field_data.count();}
@@ -1038,7 +1038,7 @@ QStringList TreeItem::field_name_for_crypt_list(void) const {
 
 boost::intrusive_ptr<TreeItem> TreeItem::parent() const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
-    if(_linker)result = _linker->host_parent();
+    if(_linker) result = _linker->host_parent();
     return result;				// _parent_item;
 }
 
@@ -1048,7 +1048,7 @@ id_value TreeItem::parent_id() const {
 	// return _parent_item->field("id");
 	// } else
 	// return "";
-    if(_linker)id = _linker->host_parent()->id();
+    if(_linker) id = _linker->host_parent()->id();
     return id;
 }
 
@@ -1083,7 +1083,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::add_child(boost::intrusive_ptr<Record> 
     for(auto it = _child_items.begin(); it != _child_items.end(); it ++){
 	if(it->get()->id() == record->field("id")){
 	    found ++;
-	    if(found == 1)item = *it;
+	    if(found == 1) item = *it;
 	    else _child_items.erase(it);
 	}
     }
@@ -1257,9 +1257,9 @@ void TreeItem::traverse_direct(const std::function< void (boost::intrusive_ptr<L
 
 boost::intrusive_ptr<Linker> TreeItem::dangle(){
     auto _parent = _linker->host_parent();
-    if(_parent)_parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});	// delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});
+    if(_parent) _parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});																																																																																																																																									// delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});
 //	p->_child_linkers.removeOne(_linker);
-    if(_linker->host_parent())_linker->host_parent(nullptr);
+    if(_linker->host_parent()) _linker->host_parent(nullptr);
     return _linker;
 }
 
@@ -1560,7 +1560,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::sibling() const {
     auto				p = parent();
     if(p){
 	auto sibling_order_this = p->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == this->linker() && il->host() == this && il->host_parent() == p;});
-	if(sibling_order_this != 0 && sibling_order_this != - 1)r = p->child_direct(sibling_order_this - 1);
+	if(sibling_order_this != 0 && sibling_order_this != - 1) r = p->child_direct(sibling_order_this - 1);
     }
     return r;
 }
@@ -1581,8 +1581,8 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
 
     QString text = cut->is_lite() ? cut->text_from_lite_direct() : cut->text_from_fat();
     if(is_lite()){
-	if(! text_from_lite_direct().contains(text))text_to_direct(text_from_lite_direct() + text);
-    }else if(! text_from_fat().contains(text))text_to_fat(text_from_fat() + text);
+	if(! text_from_lite_direct().contains(text)) text_to_direct(text_from_lite_direct() + text);
+    }else if(! text_from_fat().contains(text)) text_to_fat(text_from_fat() + text);
     auto	attach		= cut->attach_table();
     auto	this_attach	= attach_table();
     if(! attach->is_empty()){
@@ -1593,7 +1593,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
 	auto	pic		= cut->picture_files();
 	auto	this_pic	= picture_files();
 	if(pic.size() > 0){
-	    for(auto i : pic.keys())if(this_pic[i].isEmpty())this_pic[i] = pic[i];										// auto new_pic = this_pic.merge(pic);
+	    for(auto i : pic.keys()) if(this_pic[i].isEmpty()) this_pic[i] = pic[i];																																																																																																		// auto new_pic = this_pic.merge(pic);
 	    picture_files(this_pic);
 	}
     }
@@ -1805,7 +1805,7 @@ int TreeItem::move_up(void){
 	//// Элемент перемещается вверх по списку
 	// (_parent_item->_child_items).swap(num, num + row);
 	// }
-    if(_linker)row = _linker->move_up();
+    if(_linker) row = _linker->move_up();
     return row;
 }
 
@@ -1819,7 +1819,7 @@ int TreeItem::move_dn(void){
 	//// Элемент перемещается вниз по списку
 	// (_parent_item->_child_items).swap(num, num + row);
 	// }
-    if(_linker)row = _linker->move_dn();
+    if(_linker) row = _linker->move_dn();
     return row;
 }
 
@@ -1845,7 +1845,7 @@ QStringList TreeItem::path_list(QString field_name) const {
 	// Rotate backwards array identifiers advance   // Поворот массива идентификаторов задом наперед
     int k	= path.size() - 1;
     int j	= path.size() / 2;
-    for(int i = 0; i < j; ++ i)path.swap(i, k - i);
+    for(int i = 0; i < j; ++ i) path.swap(i, k - i);
     return path;
 	// };
 	// return path_absolute_as_field(field_name);  // "id", "name"
@@ -1919,7 +1919,7 @@ QList<QStringList> TreeItem::path_children_all(QString field_name) const {
 		path_list << path;
 		path_children_all_as_field_impl(it, field_name, 1);													// 2?
 	    }
-	    if(mode == 1)return path_list;
+	    if(mode == 1) return path_list;
 	    else return QList<QStringList>();
 	};
 
@@ -1967,7 +1967,7 @@ void TreeItem::to_encrypt(void){
 		<< _field_data["id"]
     ;
 	// Если ветка оказалось заашифрованной ее нельзя зашифровывать второй раз
-    if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1")return;
+    if(_field_data[boost::mpl::c_str < crypt_type > ::value] == "1") return;
 	// Устанавливается поле, что ветка зашифрована
     _field_data[boost::mpl::c_str < crypt_type > ::value] = "1";
 
@@ -1979,8 +1979,8 @@ void TreeItem::to_encrypt(void){
 	// _record_table->
     ItemsFlat::to_encrypt();
 	// Шифрация подветок
-    for(int i = 0; i < count_direct(); i ++)child_direct(i)->to_encrypt();
-    if(is_lite())Record::to_encrypt_and_save_lite();
+    for(int i = 0; i < count_direct(); i ++) child_direct(i)->to_encrypt();
+    if(is_lite()) Record::to_encrypt_and_save_lite();
     else Record::to_encrypt_and_save_fat();
 }
 
@@ -1995,7 +1995,7 @@ void TreeItem::to_decrypt(void){
     ;
 	// Если ветка оказалось незашифрованной, нечего расшифровывать
     if(_field_data[boost::mpl::c_str < crypt_type > ::value].length() == 0 ||
-	_field_data[boost::mpl::c_str < crypt_type > ::value] == "0")return;
+	_field_data[boost::mpl::c_str < crypt_type > ::value] == "0") return;
 	// Устанавливается поле, что ветка не зашифрована
     _field_data[boost::mpl::c_str < crypt_type > ::value] = "0";
 
@@ -2007,8 +2007,8 @@ void TreeItem::to_decrypt(void){
 	// _record_table->
     ItemsFlat::to_decrypt();
 	// Дешифрация подветок
-    for(int i = 0; i < count_direct(); i ++)child_direct(i)->to_decrypt();
-    if(is_lite())Record::to_decrypt_and_save_lite();
+    for(int i = 0; i < count_direct(); i ++) child_direct(i)->to_decrypt();
+    if(is_lite()) Record::to_decrypt_and_save_lite();
     else Record::to_decrypt_and_save_fat();
 }
 
@@ -2497,13 +2497,13 @@ QDomElement TreeItem::dom_from_treeitem(){
 
 boost::intrusive_ptr<TreeItem> TreeItem::host() const {
     boost::intrusive_ptr<TreeItem> result(nullptr);
-    if(_binder)result = _binder->host();
+    if(_binder) result = _binder->host();
     return result;
 }
 
 browser::WebPage *TreeItem::page() const {
     browser::WebPage *page = nullptr;
-    if(_binder)page = _binder->page();
+    if(_binder) page = _binder->page();
 	////    if(_page) {
 	////        if(_page->record() == this)
 	////            page = _page;
@@ -2575,7 +2575,7 @@ browser::WebView *TreeItem::bind(){
 	  || ! _binder->host()
 	  || (_binder->host() && _binder->host().get() != this)
 	  || (_binder->page() && _binder->page()->binder() != _binder)
-	    )view = _binder->bind();		// boost::intrusive_ptr<TreeItem>(this)
+	    ) view = _binder->bind();																																										// boost::intrusive_ptr<TreeItem>(this)
 	else view = _binder->page()->view();
 	assert(view);
     }
@@ -2590,8 +2590,8 @@ browser::WebView *TreeItem::activate(const std::function<browser::WebView *(cons
 	if(this != check_view->page()->host().get() || ! _binder){
 	    bind();
 	    v = _binder->activate();
-	}else if(! check_view->load_finished())v = _binder->activate();
-	else v = check_view;	// _binder->page()->view();
+	}else if(! check_view->load_finished()) v = _binder->activate();
+	else v = check_view;																																	// _binder->page()->view();
     }else{
 	bind();
 	v = _binder->activate();
@@ -2670,7 +2670,7 @@ const boost::intrusive_ptr<Binder> && TreeItem::binder() const {return std::forw
 void TreeItem::binder(boost::intrusive_ptr<Binder> &&binder_){
     if(binder_){
 	binder_->host(this);
-	if(binder_ != _binder)this->_binder = std::forward<boost::intrusive_ptr<Binder> >(binder_);
+	if(binder_ != _binder) this->_binder = std::forward<boost::intrusive_ptr<Binder> >(binder_);
     }else if(_binder){
 	_binder->page(nullptr);
 	_binder = nullptr;
@@ -2684,7 +2684,7 @@ const boost::intrusive_ptr<Linker> && TreeItem::linker() const {return std::forw
 void TreeItem::linker(boost::intrusive_ptr<Linker> &&up_linker_){
     if(up_linker_){
 	up_linker_->host(this);
-	if(up_linker_ != _linker)this->_linker = std::forward<boost::intrusive_ptr<Linker> >(up_linker_);
+	if(up_linker_ != _linker) this->_linker = std::forward<boost::intrusive_ptr<Linker> >(up_linker_);
     }else if(_linker){
 	_linker->host_parent(nullptr);
 	_linker = nullptr;
@@ -2704,7 +2704,7 @@ int TreeItem::count_children_all(){
 	    static int size = 0;
 	    if(mode == 0){size = 0;return size;}
 	    size += it->count_direct();
-	    for(auto i : it->_child_linkers)count_all_recursive(i->host(), 1);
+	    for(auto i : it->_child_linkers) count_all_recursive(i->host(), 1);
 	    return size;
 	};
 
@@ -2805,3 +2805,23 @@ void TreeItem::binder_reset(){
     }
 }
 
+boost::intrusive_ptr<const TreeItem> TreeItem::is_ancestor_of(boost::intrusive_ptr<const TreeItem> reference){	// const std::function<tkm_t *()> &current_model_, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal
+    boost::intrusive_ptr<const TreeItem>	result(nullptr);
+    if(reference->path_list().contains(this->field<id_type>()) && reference != this) result = reference;
+    return result;
+}
+
+int TreeItem::distance(boost::intrusive_ptr<const TreeItem> reference){	// const std::function<tkm_t *()> &current_model_, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal
+//    boost::intrusive_ptr<const TreeItem>	result(nullptr);
+    int						distance_ = - 1;
+    if(reference != this){
+	if(reference->path_list().contains(this->field<id_type>())){
+//	    result	= reference;
+	    distance_	= reference->path_list().indexOf(this->field<id_type>());
+	}else if(path_list().contains(reference->field<id_type>())){
+//	    result	= this;
+	    distance_	= path_list().indexOf(reference->field<id_type>());
+	}
+    }else distance_ = 0;
+    return distance_;
+}

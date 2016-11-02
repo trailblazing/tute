@@ -66,19 +66,19 @@ void DiskHelper::remove_directory_to_trash(QString nameDirFrom){
 }
 
 // Удаление файла с копированием его копии в корзину
-void DiskHelper::remove_file_to_trash(QString fileNameFrom){
+void DiskHelper::remove_file_to_trash(QString file_name_from){
 	// Получение короткого имени исходного файла
-    QFileInfo	fileInfo(fileNameFrom);
-    QString	fileNameFromShort = fileInfo.fileName();
+    QFileInfo	file_info(file_name_from);
+    QString	file_name_from_short = file_info.fileName();
 
 	// Получение имени файла для сохранения в корзине
-    QString	fileNameToShort = get_unical_id() + "_" + fileNameFromShort;
-    QString	fileNameTo	= appconfig.trash_dir() + "/" + fileNameToShort;
+    QString	file_name_to_short = get_unical_id() + "_" + file_name_from_short;
+    QString	file_name_to	= appconfig.trash_dir() + "/" + file_name_to_short;
 
-    qDebug() << "Move file from " << fileNameFrom << " to " << fileNameTo;
-    if(QFile::exists(fileNameFrom)){
+    qDebug() << "Move file from " << file_name_from << " to " << file_name_to;
+    if(QFile::exists(file_name_from)){
 	// Файл перемещается в корзину
-	if(QFile::rename(fileNameFrom, fileNameTo) == true)trashmonitoring.add_file(fileNameToShort);	// Оповещение что в корзину добавлен файл
+	if(QFile::rename(file_name_from, file_name_to) == true)trashmonitoring.add_file(file_name_to_short);	// Оповещение что в корзину добавлен файл
 	else{
 		//        critical_error("Can not remove file\n" + fileNameFrom + "\nto reserve file\n" + fileNameTo);
 	}
