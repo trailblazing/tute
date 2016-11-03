@@ -1257,7 +1257,7 @@ void TreeItem::traverse_direct(const std::function< void (boost::intrusive_ptr<L
 
 boost::intrusive_ptr<Linker> TreeItem::dangle(){
     auto _parent = _linker->host_parent();
-    if(_parent) _parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});																																																																																																																																									// delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});
+    if(_parent) _parent->release([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});																																																																																																																																																																											// delete_permanent([&](boost::intrusive_ptr<const Linker> il){return il->host()->id() == this->id() && il == _linker;});
 //	p->_child_linkers.removeOne(_linker);
     if(_linker->host_parent()) _linker->host_parent(nullptr);
     return _linker;
@@ -1593,7 +1593,7 @@ boost::intrusive_ptr<TreeItem> TreeItem::merge(boost::intrusive_ptr<TreeItem> cu
 	auto	pic		= cut->picture_files();
 	auto	this_pic	= picture_files();
 	if(pic.size() > 0){
-	    for(auto i : pic.keys()) if(this_pic[i].isEmpty()) this_pic[i] = pic[i];																																																																																																		// auto new_pic = this_pic.merge(pic);
+	    for(auto i : pic.keys()) if(this_pic[i].isEmpty()) this_pic[i] = pic[i];																																																																																																																								// auto new_pic = this_pic.merge(pic);
 	    picture_files(this_pic);
 	}
     }
@@ -2575,7 +2575,7 @@ browser::WebView *TreeItem::bind(){
 	  || ! _binder->host()
 	  || (_binder->host() && _binder->host().get() != this)
 	  || (_binder->page() && _binder->page()->binder() != _binder)
-	    ) view = _binder->bind();																																										// boost::intrusive_ptr<TreeItem>(this)
+	    ) view = _binder->bind();																																																				// boost::intrusive_ptr<TreeItem>(this)
 	else view = _binder->page()->view();
 	assert(view);
     }
@@ -2591,7 +2591,7 @@ browser::WebView *TreeItem::activate(const std::function<browser::WebView *(cons
 	    bind();
 	    v = _binder->activate();
 	}else if(! check_view->load_finished()) v = _binder->activate();
-	else v = check_view;																																	// _binder->page()->view();
+	else v = check_view;																																									// _binder->page()->view();
     }else{
 	bind();
 	v = _binder->activate();
@@ -2813,15 +2813,17 @@ boost::intrusive_ptr<const TreeItem> TreeItem::is_ancestor_of(boost::intrusive_p
 
 int TreeItem::distance(boost::intrusive_ptr<const TreeItem> reference){	// const std::function<tkm_t *()> &current_model_, const std::function<bool (boost::intrusive_ptr<const TreeItem>)> &_equal
 //    boost::intrusive_ptr<const TreeItem>	result(nullptr);
-    int						distance_ = - 1;
-    if(reference != this){
-	if(reference->path_list().contains(this->field<id_type>())){
+    int	distance_ = - 1;
+    if(reference){
+	if(reference != this){
+	    if(reference->path_list().contains(this->field<id_type>())){
 //	    result	= reference;
-	    distance_	= reference->path_list().indexOf(this->field<id_type>());
-	}else if(path_list().contains(reference->field<id_type>())){
+		distance_ = reference->path_list().indexOf(this->field<id_type>());
+	    }else if(path_list().contains(reference->field<id_type>())){
 //	    result	= this;
-	    distance_	= path_list().indexOf(reference->field<id_type>());
-	}
-    }else distance_ = 0;
+		distance_ = path_list().indexOf(reference->field<id_type>());
+	    }
+	}else distance_ = 0;
+    }
     return distance_;
 }
