@@ -564,7 +564,7 @@ namespace browser {
 	    RecordModel *source_model = _record_controller->source_model();	// tab_manager->source_model();
 	    assert(host_);
 		// assert((item->page_valid() && item->unique_page() == this) || !item->page_valid());
-	    if(source_model->item(id_value(host_->field<id_type>()))) _record_controller->remove(host_->id());																																																																																																																																													// && record->unique_page() == this
+	    if(source_model->item(id_value(host_->field<id_type>()))) _record_controller->remove(host_->id());																																																																																																																																																																																																																			// && record->unique_page() == this
 	}
     }
 
@@ -612,13 +612,13 @@ namespace browser {
 	      && title != _binder->host()->field<name_type>()){	// && ! QUrl(title).isValid()
 //		assert(QUrl(title).isValid());	// always true
 //		assert(title.contains("://"));	// not always true
-		if(_binder->host()->field<name_type>().size() == 0 || (_binder->host()->field<name_type>().size() > 0 && ! title.contains("://"))) _binder->host()->field<name_type>(title);																																																																																																																																																																																																																																															// "name",
+		if(_binder->host()->field<name_type>().size() == 0 || (_binder->host()->field<name_type>().size() > 0 && ! title.contains("://"))) _binder->host()->field<name_type>(title);																																																																																																																																																																																																																																																																																																																																																																							// "name",
 
 		data_changed = true;
 		// metaeditor->setName(title);
 		if(is_current){
 		    auto _mainwindow = globalparameters.main_window();
-		    if(! _mainwindow->windowTitle().contains(title)) _mainwindow->setWindowTitle(QString(application_name) + " : " + title);																																																																																																																															// table->setWorkPos(pos);
+		    if(! _mainwindow->windowTitle().contains(title)) _mainwindow->setWindowTitle(QString(application_name) + " : " + title);																																																																																																																																																																																																																									// table->setWorkPos(pos);
 		    _editor_screen->name(title);
 		}
 	    }
@@ -657,7 +657,7 @@ namespace browser {
 	    auto	tree_view	= _tree_screen->view();
 	    if(is_current){	// globalparameters.mainwindow()
 		if(tree_view->current_item() != it) tree_view->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, it));
-		if(_record_controller->view()->current_item() != it) _record_controller->select_as_current(_record_controller->index<pos_proxy>(it));																																																																																																																																																																																													// IdType(_binder->item()->field("id"))
+		if(_record_controller->view()->current_item() != it) _record_controller->select_as_current(_record_controller->index<pos_proxy>(it));																																																																																																																																																																																																																																																																																												// IdType(_binder->item()->field("id"))
 	    }
 		// if(_record->_active_request) {
 		// if(_record->_openlinkinnewwindow == 1) {
@@ -753,8 +753,8 @@ namespace browser {
 	globalparameters.main_window()->save_text_area();
 	// Для новой выбраной записи выясняется директория и основной файл
 	if(current_item->field<id_type>().length() == 0) current_item->field<id_type>(current_item->field<dir_type>().length() > 0 ? current_item->field<dir_type>() : get_unical_id());// "id",	// || current_item->field("url") == Browser::_defaulthome
-	if(current_item->field<url_type>() == "") current_item->field<dir_type>(current_item->id());																																																																																												// "dir",
-	if(current_item->field<file_type>() == "") current_item->field<file_type>("text.html");																																																																																																																								// "file",
+	if(current_item->field<url_type>() == "") current_item->field<dir_type>(current_item->id());																																																																																																																																																													// "dir",
+	if(current_item->field<file_type>() == "") current_item->field<file_type>("text.html");																																																																																																																																																																																				// "file",
 	QString current_dir	= current_item->field<dir_type>();	// table->field(pos, "dir");
 	QString current_file	= current_item->field<file_type>();		// table->field(pos, "file");
 	QString full_dir	= appconfig.tetra_dir() + "/base/" + current_dir;
@@ -829,9 +829,9 @@ namespace browser {
 	    _editor_screen->scrollbar_position(walkhistory.scrollbar_position(id));
 	}
 	// Обновление иконки аттачей
-	if(current_item->attach_table()->size() == 0)																																																																						// table->record(pos)->getAttachTablePointer()->size()
-		_editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_not_exists);																																																																																																																							// Если нет приаттаченных файлов
-	else _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_exists);																																																																																																														// Есть приаттаченные файлы
+	if(current_item->attach_table()->size() == 0)																																																																																																									// table->record(pos)->getAttachTablePointer()->size()
+		_editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_not_exists);																																																																																																																																																																																			// Если нет приаттаченных файлов
+	else _editor_screen->_to_attach->setIcon(_editor_screen->_icon_attach_exists);																																																																																																																																																																					// Есть приаттаченные файлы
 
 	// }
     }
@@ -1010,7 +1010,7 @@ namespace browser {
 		QLineEdit *line_edit = _tabmanager->currentLineEdit();		// qobject_cast<QLineEdit *>(_lineedits->currentWidget());
 		if(line_edit) line_edit->setText(_url_str);
 		// }
-		if(_record_controller->view()->current_item() != _binder->host()) _record_controller->select_as_current(_record_controller->index<pos_proxy>(_binder->host()));	// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field<id_type>()){
+		if(_record_controller->view()->current_item() != _binder->host()) _record_controller->select_as_current(_record_controller->index<pos_proxy>(_binder->host()));																																																																																																															// if(_record_controller->view()->selection_first<IdType>() != _binder->host()->field<id_type>()){
 		// IdType(_binder->item()->field("id"))
 	    }
 //	    }
@@ -1200,9 +1200,13 @@ namespace browser {
 	assert(parent);
 //	auto parent_parent = parent->parent();
 
-	boost::intrusive_ptr<TreeIndex> this_index = TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, this->host());	// parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
+	boost::intrusive_ptr<TreeIndex> this_treeindex	= TreeIndex::create_treeindex_from_item([&] {return tree_view->source_model();}, this->host());		// parent_parent ? TreeIndex::instance([&] {return tree_view->source_model();}, parent) : TreeIndex::instance([&] {return tree_view->source_model();}, this->host());
+	auto				find_binder	= [&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());};
+	auto				find_target	= [&](){
+		return globalparameters.main_window()->vtab_record()->find(find_binder);
+	    };
 	if(type == QWebEnginePage::WebBrowserWindow){
-	    WebView *v = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString());});
+	    WebView *v = find_target();
 	    if(v) v->tabmanager()->closeTab(v->tabmanager()->indexOf(v));
 	    Browser *_browser = globalparameters.main_window()->vtab_record()->new_browser();			// QtSingleApplication::instance()->newMainWindow();
 
@@ -1223,7 +1227,7 @@ namespace browser {
 		// QUrl current = url();
 		// QUrl requestedurl = requestedUrl(); //equal to current page url
 
-	    WebView *view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
+	    WebView *view = find_target();
 		// return b->host()->field<url_type>() == target_url.toString();
 //	    auto tree_view = _tree_screen->view();
 	    if(view){
@@ -1241,9 +1245,9 @@ namespace browser {
 		// already create window, why do this? -- refer to demo browser
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
-		auto it = this_index->bind(target_url
-					  , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)						// std::placeholders::_1
-					  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
+		auto it = this_treeindex->bind(target_url
+					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)							// std::placeholders::_1
+					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
 			);
 //		page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page() : nullptr;
 		page = it ? it->page() : nullptr;
@@ -1260,7 +1264,7 @@ namespace browser {
 		// QUrl current = url();
 		// QUrl requestedurl = requestedUrl(); //equal to current page url
 
-	    WebView *view = globalparameters.main_window()->vtab_record()->find([&](boost::intrusive_ptr<const ::Binder> b) -> bool {return url_equal((b->host()->field<home_type>()).toStdString(), target_url.toString().toStdString()) || url_equal((b->host()->field<url_type>()).toStdString(), target_url.toString().toStdString());});
+	    WebView *view = find_target();
 		// return b->host()->field<url_type>() == target_url.toString();
 		//	    auto tree_view = _tree_screen->view();
 	    if(view){
@@ -1268,7 +1272,7 @@ namespace browser {
 		auto _item = page->host();
 		if(_item){
 		    auto _index = tree_view->source_model()->index(_item);
-		    if(static_cast<QModelIndex>(_index).isValid()) _item->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));																																																																																																																																																																																																																																															// tree_view->index_invoke(TreeIndex::instance([&] {return tree_view->source_model();}, _item, _item->parent()));	// view,
+		    if(static_cast<QModelIndex>(_index).isValid()) _item->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));																																																																																																																																																																																																																																																																																																																																																																							// tree_view->index_invoke(TreeIndex::instance([&] {return tree_view->source_model();}, _item, _item->parent()));	// view,
 		}
 		assert(page->binder() && page->binder()->integrity_external(page->host(), page));
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(page->host())).isValid());
@@ -1278,11 +1282,12 @@ namespace browser {
 		// already create window, why do this? -- refer to demo browser
 		assert(static_cast<QModelIndex>(tree_view->source_model()->index(this->_binder->host())).isValid());
 
-		auto it = this_index->bind(target_url
-					  , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)						// std::placeholders::_1
-					  , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
+		auto it = this_treeindex->bind(target_url
+					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)							// std::placeholders::_1
+					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), target_url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), target_url.toString().toStdString());}
 			);
-		page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1))->page() : nullptr;
+		page = it ? it->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), find_binder)	// std::placeholders::_1
+			)->page() : nullptr;
 		assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
 	    }
 	    assert(page || _hovered_url == Browser::_defaulthome || _hovered_url == "");
@@ -2560,7 +2565,7 @@ namespace browser {
 	////        _record_ontroller->getView()->setSelectionToPos(position);
 	setFocus();
 	// globalparameters.mainwindow()
-	if(_record_controller->view()->selection_first<id_value>() != _page->host()->field<id_type>()) _record_controller->select_as_current(_record_controller->index<pos_proxy>(_page->host()));																																																																																																																																																																																																																																																									// IdType(_page->item()->field("id"))
+	if(_record_controller->view()->selection_first<id_value>() != _page->host()->field<id_type>()) _record_controller->select_as_current(_record_controller->index<pos_proxy>(_page->host()));																																																																																																																																																																																																																																																																																																																																																																																						// IdType(_page->item()->field("id"))
 
 	// }
     }
@@ -2698,7 +2703,7 @@ namespace browser {
 // auto _tabmanager = v->tabmanager();
 	auto index = _tabmanager->webViewIndex(this);
 // auto _record_controller = _tabmanager->record_controller();
-	if(index != _tabmanager->currentIndex()) _tabmanager->setCurrentIndex(index);																																		// c->index<PosSource>(c->source_model()->index(_binder->item()))
+	if(index != _tabmanager->currentIndex()) _tabmanager->setCurrentIndex(index);																																																																																									// c->index<PosSource>(c->source_model()->index(_binder->item()))
 	if(! _browser->isVisible()){
 	    _browser->raise();
 	    _browser->activateWindow();
@@ -2767,7 +2772,7 @@ namespace browser {
 		// ;
 	    }
 	    _page->bind(_item);
-	    if(_page->url().toString() != _item->field<url_type>()) _page->setUrl(QUrl(_item->field<url_type>()));																																																																																																																									// _bounded_page = view->page();
+	    if(_page->url().toString() != _item->field<url_type>()) _page->setUrl(QUrl(_item->field<url_type>()));																																																																																																																																																																																																				// _bounded_page = view->page();
 		// MetaEditor *_editor_screen = globalparameters.meta_editor();    // find_object<MetaEditor>(meta_editor_singleton_name);
 	    assert(_page->_editor_screen);
 	    if(_page->_editor_screen->item() != _item) _page->metaeditor_sychronize();
