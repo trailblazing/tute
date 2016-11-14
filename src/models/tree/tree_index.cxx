@@ -54,7 +54,7 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::create_treeindex_from_item(const std:
 		}
 		// _current_index = _current_model()->index(current_item());
 		// assert(_current_index.isValid());
-	    }else if(host_parent == current_root()) result = true;																																																																																																																																				// assert(_current_index.isValid());
+	    }else if(host_parent == current_root()) result = true;																																																																																																																																																																																										// assert(_current_index.isValid());
 	    else{
 		// assert(_current_index.isValid());
 		result = (static_cast<QModelIndex>(current_model_()->index(host_parent)).isValid())
@@ -77,7 +77,7 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::create_treeindex_from_item(const std:
 	}else if(host_ == current_root() && host_ != absolute_root){
 //	    auto tree_view_ = dynamic_cast<tv_t *>(static_cast<QObject *>(current_model_())->parent());
 	    assert(tree_view_);
-	    if(host_parent_) tree_view_->intercept(host_parent_);																																																																																																																																	// static_cast<km_t *>(current_model())->intercept(_host->parent());
+	    if(host_parent_) tree_view_->intercept(host_parent_);																																																																																																																																																																																							// static_cast<km_t *>(current_model())->intercept(_host->parent());
 	    index = static_cast<tkm_t *>(current_model_())->index(host_);
 	}else index = static_cast<tkm_t *>(current_model_())->index(host_);
 	if(! static_cast<QModelIndex>(index).isValid()){
@@ -93,7 +93,7 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::create_treeindex_from_item(const std:
     int		sibling_order_ = - 1;
 //    try{
 //	if(! _host_parent){throw std::runtime_error(formatter() << "! _host_parent");}
-    if(! parent_is_valid(host_parent_)) throw std::runtime_error(formatter() << "! parent_is_valid");																																																																																																																																																																																																						// assert(current_parent_valid);
+    if(! parent_is_valid(host_parent_)) throw std::runtime_error(formatter() << "! parent_is_valid");																																																																																																																																																																																																																																																																																				// assert(current_parent_valid);
     host_index_ = host_index_valid();
     if(! static_cast<QModelIndex>(host_index_).isValid()){
 	auto target_url	= QUrl(host_->field<home_type>() != "" ? host_->field<home_type>() : host_->field<url_type>());
@@ -132,7 +132,7 @@ boost::intrusive_ptr<TreeIndex> TreeIndex::create_treeindex_from_item(const std:
 //	if(_sibling_order >= count_direct){throw std::runtime_error(formatter() << "sibling_order >= count_direct");}
 //	_host_parent_index = _current_model()->index(_host_parent);
 //	auto link = _host->linker();
-	if(! host_->linker()) throw std::runtime_error(formatter() << "! host_linker");																																																																																																																																																																						//	_host = link->host();
+	if(! host_->linker()) throw std::runtime_error(formatter() << "! host_linker");																																																																																																																																																																																																																																								//	_host = link->host();
 //	if(! _host){throw std::runtime_error(formatter() << "! _host");}
 //	_host_index = _current_model()->index(_host);
 //	if(! _host_index.isValid()){throw std::runtime_error(formatter() << "! _host_index.isValid()");}
@@ -255,7 +255,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl   
 		    _result = _tree_view_insert_strategy_impl(_treeindex, _result, _substitute_condition, true);	// it->insert_new_item(it->current_count() - 1, _result);
 		    assert(_result);
 		    assert(_check_url(_result) || _result->field<url_type>() == browser::Browser::_defaulthome || _find_url.toString() == browser::Browser::_defaulthome);
-		    if(_result->field<url_type>() == browser::Browser::_defaulthome && _find_url.toString() != browser::Browser::_defaulthome) _result->field<url_type>(_find_url.toString());																																																																																																																																																																																																																																																																																																																																																																								// item->field("url")
+		    if(_result->field<url_type>() == browser::Browser::_defaulthome && _find_url.toString() != browser::Browser::_defaulthome) _result->field<url_type>(_find_url.toString());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								// item->field("url")
 		    _tree_view->synchronized(false);
 		    assert(equal_(_result));
 		}else if(_current_item != _result){
@@ -313,7 +313,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl   
 		assert(equal_(in_browser));			// assert(_result->url<url_type>() == url_type()(_find_url));
 		assert(equal_(in_tree));			// assert(_source_item->url<url_type>() == url_type()(_find_url));
 		boost::intrusive_ptr<TreeItem> result_(in_browser);
-		if(in_browser != in_tree) result_ = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_current_model, in_tree), in_browser)->merge();																																																																																																					// TreeLevel::instance(TreeIndex::treeindex_from_item(_current_model, in_browser), in_tree)->merge();
+		if(in_browser != in_tree) result_ = TreeLevel::instance(TreeIndex::create_treeindex_from_item(_current_model, in_tree), in_browser)->merge();																																																																																																																																																																																																																													// TreeLevel::instance(TreeIndex::treeindex_from_item(_current_model, in_browser), in_tree)->merge();
 		_result = result_;
 		if(_result->is_lite()) _result->to_fat();
 		if(_result->field<id_type>() == "") _result->field<id_type>(_result->field<dir_type>().length() > 0 ? _result->field<dir_type>() : get_unical_id());
@@ -393,7 +393,7 @@ boost::intrusive_ptr<TreeItem> TreeIndex::create_treeitem_from_url(const QUrl   
 	if(_result->field<file_type>() == "") _result->field<file_type>("text.html");
 	assert(equal_(_result) || _result->field<url_type>() == browser::Browser::_defaulthome || find_url_.toString() == browser::Browser::_defaulthome);
 	if(_result->field<url_type>() == browser::Browser::_defaulthome && find_url_.toString() != browser::Browser::_defaulthome) _result->field<url_type>(find_url_.toString());
-	if(_result->field<home_type>() == "") _result->field<home_type>(_result->field<url_type>());																																																																																																																																																																																																			// for history reason
+	if(_result->field<home_type>() == "") _result->field<home_type>(_result->field<url_type>());																																																																																																																																																																																																																																																																																	// for history reason
 //	assert(_result->binder());
     }
     return _result;
@@ -720,24 +720,26 @@ boost::intrusive_ptr<TreeItem> TreeIndex::bind(const QUrl               &_find_u
     boost::intrusive_ptr<TreeItem>	result(nullptr);
     auto				_tree_view = globalparameters.tree_screen()->view();	// static_cast<tv_t *>(static_cast<QObject *>(_current_model())->parent());
 //    auto				_current_model	= [&] {return _tree_view->source_model();};
-    auto	_current_item	= _tree_view->current_item();
-    auto	it		= TreeIndex::create_treeitem_from_url(_find_url, _view_insert_strategy, _equal);
-    if(it){
+    auto		_current_item	= _tree_view->current_item();
+    browser::WebView	*view		= nullptr;
+    auto		binder		= _current_item ? _current_item->binder() : nullptr;
+    if(binder){
+	auto	host_	= binder->host();
+	auto	_equal	= [&](boost::intrusive_ptr<const Binder> b){return b->host() == host_ && b == binder && host_->parent() == b->host()->parent() && b->host()->id() == host_->id();};
+	view = _recommend_browser ? _recommend_browser->tabmanager()->find(_equal) : globalparameters.main_window()->vtab_record()->find(_equal);
+    }
+    auto browser_ = _recommend_browser ? _recommend_browser : view ? view->page()->browser() : globalparameters.main_window()->vtab_record()->activated_browser();
+    _current_item = browser_->tabmanager()->current_item();		// _tree_view->current_item();
+
+    auto target_ = TreeIndex::create_treeitem_from_url(_find_url, _view_insert_strategy, _equal);
+    if(target_){
 	// assert(tab_brother != it);
-	browser::WebView	*view	= nullptr;
-	auto			binder	= _current_item ? _current_item->binder() : nullptr;
-	if(binder){
-	    auto	host_	= binder->host();
-	    auto	_equal	= [&](boost::intrusive_ptr<const Binder> b){return b->host() == host_ && b == binder && host_->parent() == b->host()->parent() && b->host()->id() == host_->id();};
-	    view = _recommend_browser ? _recommend_browser->tabmanager()->find(_equal) : globalparameters.main_window()->vtab_record()->find(_equal);
-	}
-	auto browser_ = _recommend_browser ? _recommend_browser : view ? view->page()->browser() : globalparameters.main_window()->vtab_record()->activated_browser();
 
 //    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return browser->record_screen()->record_controller()->source_model();}, tab_brother, it);	// tab_brother ? tab_brother->binder()->page()->record_controller()->source_model() :   // tab_brother does not guarantee the browser exists
 //    assert(record_index);
 
 
-	result = RecordIndex::instance([&] {return browser_->record_screen()->record_controller()->source_model();}, it, _current_item)->bind(false);
+	result = RecordIndex::instance([&] {return browser_->record_screen()->record_controller()->source_model();}, target_, _current_item)->bind(false);
 	if(result){
 	    assert(result->binder());
 	    assert(result->page());
