@@ -122,8 +122,8 @@ class rctrl_t : public QObject {
 	//    void    select(IdType id);
 
 
-	void	remove(id_value delete_id);
-	void	remove(QVector<id_value> delete_ids);
+	void remove(id_value delete_id);
+	void remove(QVector<id_value> delete_ids);
 
 	boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
@@ -138,7 +138,7 @@ class rctrl_t : public QObject {
 	//    void sychronize_metaeditor_to_item(const PosSource pos_source_);
 	void sychronize_attachtable_to_item(const pos_source pos);
 
-	browser::WebView *addnew_blank(int mode);
+	browser::WebView *addnew_blank();// int mode
 
 	//    int new_record_from_url(const QUrl &url, const int mode = add_new_record_after);
 
@@ -212,16 +212,16 @@ class rctrl_t : public QObject {
 	MetaEditor		*_editor_screen;
 	wn_t			*_main_window;
 
-	browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true, const int mode = add_new_record_after);		// add_new_record_after
-	browser::WebView		*addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true, const int mode = add_new_record_after);
+//	browser::WebView		*addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true);	// , const int mode = add_new_record_after	// add_new_record_after
+	browser::WebView		*addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current = true);// , const int mode = add_new_record_after
 	boost::intrusive_ptr<TreeItem>	synchronize(boost::intrusive_ptr<RecordIndex> record_index_);
-	void				edit_field(pos_source pos
-						  , QString pin
-						  , QString name
-						  , QString author
-						  , QString home
-						  , QString url
-						  , QString tags);
+	void edit_field(pos_source pos
+		       , QString pin
+		       , QString name
+		       , QString author
+		       , QString home
+		       , QString url
+		       , QString tags);
 
 	// Methods of removing records transferred to public access, because through them removed from Dunn when DragAndDrop KnowTreeView   // Методы удаления записей перенесены в открытый доступ, так как через них удаляются даннные из KnowTreeView при DragAndDrop
 
@@ -239,7 +239,7 @@ class rctrl_t : public QObject {
 	friend class browser::TabWidget;
 };
 
-//template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14
+// template<typename return_type, typename parameter_type>  std::function<return_type(const parameter_type &)> index_object;	// -std=c++14
 
 template<>pos_proxy rctrl_t::	index<pos_proxy>(const pos_source &) const;
 template<>pos_proxy rctrl_t::	index<pos_proxy>(const index_proxy &) const;

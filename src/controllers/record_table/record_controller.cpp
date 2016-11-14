@@ -170,7 +170,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
 	// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
 	// Therefore, the recording must be made a virtual click to fill the final table of records
-	if(appconfig.interface_mode() == "mobile") emit _view->clicked((QModelIndex)index_proxy_);																																																																// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+	if(appconfig.interface_mode() == "mobile") emit _view->clicked((QModelIndex)index_proxy_);																																																																																																																																																																																																		// QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
 	// emit this->clicked(index);
 	assert(_view->currentIndex() == (QModelIndex) index_proxy_);
@@ -179,7 +179,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	// this->setFocus();   // ?
 	pos_source	pos_source_	= index<pos_source>(pos_proxy_);
 	auto		it		= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
-	if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																// setCurrentIndex(static_cast<int>(pos_source_));
+	if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																// setCurrentIndex(static_cast<int>(pos_source_));
 	auto tree_screen = globalparameters.main_window()->tree_screen();
 	if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
 	if(it) if(it->page()) it->page()->metaeditor_sychronize();
@@ -1013,7 +1013,7 @@ void rctrl_t::paste(void){
     for(int i = 0; i < nList; i ++){
 	auto it = clipboard_records->record(i);
 //	it->field<id_type>(get_unical_id());
-	addnew_item(RecordIndex::instance([&] {return _source_model;}, it), true, add_new_record_to_end);
+	addnew_item(RecordIndex::instance([&] {return _source_model;}, it), true);	// , add_new_record_to_end
     }
 	// Обновление на экране ветки, на которой стоит засветка,
 	// так как количество хранимых в ветке записей поменялось
@@ -1126,7 +1126,7 @@ void rctrl_t::paste(void){
 
 // Вызов окна добавления данных в таблицу конечных записей
 // Call window to add data to a table of final entries
-browser::WebView *rctrl_t::addnew_blank(int mode){
+browser::WebView *rctrl_t::addnew_blank(){	// int mode
     qDebug() << "In addnew_blank()";
 
 	//// Создается окно ввода данных
@@ -1185,13 +1185,72 @@ browser::WebView *rctrl_t::addnew_blank(int mode){
     DiskHelper::remove_directory(directory);
 
 	// Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addnew_item(RecordIndex::instance([&] {return _source_model;}, it), true, mode);
+    return addnew_item(RecordIndex::instance([&] {return _source_model;}, it), true);	// , mode
 }
 
-// Вызов окна добавления данных в таблицу конечных записей
-// Call window to add data to a table of final entries
-browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current, const int mode){
-    boost::intrusive_ptr<TreeItem> item = record_index_->host();
+//// Вызов окна добавления данных в таблицу конечных записей
+//// Call window to add data to a table of final entries
+// browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current){	// , const int mode
+//    boost::intrusive_ptr<TreeItem> item = record_index_->host();
+//    qDebug() << "In add_new_record()";
+
+//	//// Создается окно ввода данных
+//	//// При клике Ok внутри этого окна, будет создана временная директория
+//	//// с картинками, содержащимися в тексте
+//	// AddNewRecord addNewRecordWin;
+
+//	// int i = addNewRecordWin.exec();
+
+
+//	// if(i == QDialog::Rejected)
+//	// return; // Была нажата отмена, ничего ненужно делать
+
+//	// Имя директории, в которой расположены файлы картинок, используемые в тексте и приаттаченные файлы
+//    QString directory = DiskHelper::create_temp_directory();	//
+//	// addNewRecordWin.getImagesDirectory();
+//	// todo: сделать заполнение таблицы приаттаченных файлов
+//	// Record record;
+//	// if(record.isLite())record.switchToFat();
+//    if(item->is_lite()) item->to_fat();																																																																		// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
+//    assert(! item->is_lite());
+
+//	// record.setText(addNewRecordWin.getField("text"));
+//	// record.setField("pin",   addNewRecordWin.getField("pin"));
+//	// record.setField("name",   addNewRecordWin.getField("name"));
+//	// record.setField("author", addNewRecordWin.getField("author"));
+//	// record.setField("url",    addNewRecordWin.getField("url"));
+//	// record.setField("tags",   addNewRecordWin.getField("tags"));
+
+//	// record.setText("");
+//	// record.setField("pin",   _check_state[Qt::Unchecked]);
+//	// record.setField("name",   "");
+//	// record.setField("author", "");
+//	// record.setField("home",   url.toString());
+//	// record.setField("url",    url.toString());
+//	// record.setField("tags",   "");
+
+//    item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
+
+//	// record->generator(generator);
+
+//	// Пока что принята концепция, что файлы нельзя приаттачить в момент создания записи
+//	// Запись должна быть создана, потом можно аттачить файлы.
+//	// Это ограничение для "ленивого" программинга, но пока так
+//	// record->setAttachFiles(DiskHelper::getFilesFromDirectory(directory, "*.bin"));
+
+//	// Временная директория с картинками и приаттаченными файлами удаляется
+//    DiskHelper::remove_directory(directory);
+
+//	// Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
+//    return addnew_item(record_index_, make_current);	// , mode
+// }
+
+// Функция добавления новой записи в таблицу конечных записей
+// Принимает полный формат записи
+browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current){	// , const int mode
+//    boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
+
+    boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
     qDebug() << "In add_new_record()";
 
 	//// Создается окно ввода данных
@@ -1211,8 +1270,8 @@ browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> rec
 	// todo: сделать заполнение таблицы приаттаченных файлов
 	// Record record;
 	// if(record.isLite())record.switchToFat();
-    if(item->is_lite()) item->to_fat();																										// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
-    assert(! item->is_lite());
+    if(item_target->is_lite()) item_target->to_fat();																																																																																		// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
+    assert(! item_target->is_lite());
 
 	// record.setText(addNewRecordWin.getField("text"));
 	// record.setField("pin",   addNewRecordWin.getField("pin"));
@@ -1229,7 +1288,7 @@ browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> rec
 	// record.setField("url",    url.toString());
 	// record.setField("tags",   "");
 
-    item->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
+    item_target->picture_files(DiskHelper::get_files_from_directory(directory, "*.png"));
 
 	// record->generator(generator);
 
@@ -1241,14 +1300,8 @@ browser::WebView *rctrl_t::addnew_item_fat(boost::intrusive_ptr<RecordIndex> rec
 	// Временная директория с картинками и приаттаченными файлами удаляется
     DiskHelper::remove_directory(directory);
 
-	// Введенные данные добавляются (все только что введенные данные передаются в функцию addNew() незашифрованными)
-    return addnew_item(record_index_, make_current, mode);
-}
 
-// Функция добавления новой записи в таблицу конечных записей
-// Принимает полный формат записи
-browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_index_, bool make_current, const int mode){
-    boost::intrusive_ptr<TreeItem> item_target = record_index_->host();
+
     qDebug() << "In addnew_item()";
     browser::WebView *v = nullptr;
 
@@ -1279,9 +1332,10 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 //	// ) {
 
     pos_source selected_source_position(- 1);
+//    assert(_source_model->item(item_target->field<id_type>()));
 	// Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    if(! _source_model->item(item_target->field<id_type>())){
-	v				= _source_model->insert_new_item(item_target, mode);	// source_position_index,
+    if(! _source_model->item(item_target)){
+	v				= _source_model->insert_new_item(item_target);	// , mode	// source_position_index,
 	selected_source_position	= _tabmanager->webViewIndex(v);
     }else{
 	selected_source_position	= _source_model->position(item_target->id());
@@ -1291,7 +1345,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
     assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
 	// assert(_source_model->child(selected_position) == item);
-    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																							// , mode // modify _source_model? yeah
+    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																					// , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1568,7 +1622,7 @@ void rctrl_t::close_context(void){
 	}
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																	// }
+    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																	// }
 }
 
 void rctrl_t::remove(id_value delete_id){
@@ -1933,7 +1987,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 //		});
 //	    int t = 0;
 	    for(auto v : v_list){
-		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																							// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
+		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																													// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
 //		t ++;
 	    }
 	}else if(header_title == title_field_description){

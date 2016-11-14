@@ -111,8 +111,8 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	// std::shared_ptr<RecordTable> table_data() {return _table;}
 
 	// Интерфейс модели, сколько записей в таблице
-	int	rowCount(const QModelIndex &parent = QModelIndex()) const;
-	int	size() const;	// {return rowCount();}
+	int rowCount(const QModelIndex &parent = QModelIndex()) const;
+	int size() const;	// {return rowCount();}
 	// Интерфейс модели, сколько столбцов в таблице
 	int columnCount(const QModelIndex &parent = QModelIndex()) const;
 
@@ -123,9 +123,9 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 // QString field(int pos, QString name);
 	void fields(int pos, QMap<QString, QString> data);
 
-	QModelIndex	index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
-	index_source	index(boost::intrusive_ptr<TreeItem> it) const;
-	index_source	fake_index(boost::intrusive_ptr<TreeItem> it) const;
+	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const;
+	index_source index(boost::intrusive_ptr<TreeItem> it) const;
+	index_source fake_index(boost::intrusive_ptr<TreeItem> it) const;
 	// for multi items link with unique page
 //	boost::intrusive_ptr<TreeItem>	item_bounded(boost::intrusive_ptr<TreeItem> it) const;
 	boost::intrusive_ptr<TreeItem>	item(boost::intrusive_ptr<TreeItem> it) const;
@@ -164,7 +164,7 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 
 	boost::intrusive_ptr<TreeItem>	sibling(boost::intrusive_ptr<TreeItem> it) const;// override
 	boost::intrusive_ptr<TreeItem>	current_item() const;
-	index_source			current_index() const;
+	index_source current_index() const;
 
 	void position(pos_source _index);
 	// PosSource position()const;
@@ -192,11 +192,12 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	void on_table_config_changed(void);
 
 	// Добавление записей
-	browser::WebView	*insert_new_item(boost::intrusive_ptr<TreeItem> _target_item, int mode = add_new_record_after);
-	bool			removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
-	void			remove_child(boost::intrusive_ptr<TreeItem> it);
+	browser::WebView	*insert_new_item(boost::intrusive_ptr<TreeItem> _target_item	// , int mode = add_new_record_after
+	    );
+	bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex());
+	void remove_child(boost::intrusive_ptr<TreeItem> it);
 
-	int	move(const pos_source pos, const pos_source target = pos_source (- 1));
+	int move(const pos_source pos, const pos_source target = pos_source (- 1));
 //	int	move_dn(const pos_source pos);
 
 	// protected:

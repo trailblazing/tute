@@ -31,6 +31,7 @@ struct RecordIndex : public boost::intrusive_ref_counter<RecordIndex, boost::thr
 
 	std::function<RecordModel *()>	current_model() const;
 	index_source			sibling_index() const;
+	void				sibling_index(const QModelIndex &si);
 //	QModelIndex current_index() const;
 //    boost::intrusive_ptr<TreeItem> target_sibling() const;
 	boost::intrusive_ptr<TreeItem> host() const;

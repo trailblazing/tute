@@ -296,7 +296,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	// if(count() == 0)    // if(!browser_pages())    // if(!_table)
 	// return QVariant();
 	// Если таблица пустая
-    if(0 == count())																						// if(_table->size() == 0)
+    if(0 == count())																															// if(_table->size() == 0)
 		return QVariant();
 	// Если индекс недопустимый, возвращается пустой объект
     if(! index.isValid()) return QVariant();
@@ -317,14 +317,14 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	    if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < ctime_type >::value){
 		// Преобразование временного штампа в дату и время
 //		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
-		if(appconfig.enable_custom_datetime_format() == false) return field;	// fieldDateTime.toString(Qt::SystemLocaleDate);
-		else return field;																															// fieldDateTime.toString(appconfig.custom_datetime_format());
+		if(appconfig.enable_custom_datetime_format() == false) return field;																																		// fieldDateTime.toString(Qt::SystemLocaleDate);
+		else return field;																																														// fieldDateTime.toString(appconfig.custom_datetime_format());
 	    }	// else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < name_type >::value)return "<b>" + it->field<name_type>() + "</b>";
 	    else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){		// "hasAttach"   // Наличие аттачей
-		if(field == "0") return "";																																						// Если аттачей нет, выводится пустая строка. Это повышает читабельность
-		else return tr("Yes");																																		// На русский перевести как "Есть"
+		if(field == "0") return "";																																																								// Если аттачей нет, выводится пустая строка. Это повышает читабельность
+		else return tr("Yes");																																																	// На русский перевести как "Есть"
 	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < attach_count_type >::value){	// "attachCount"   // Количество аттачей
-		if(field == "0") return "";																																						// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
+		if(field == "0") return "";																																																								// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
 		else return field;
 	    }else if(role == Qt::UserRole || role == Qt::EditRole){	// just a test
 #ifdef USE_STAR_RATING
@@ -358,7 +358,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	// if(!browser_pages())    // if(!_table)
 	// return false;
 	// Если таблица пустая
-    if(0 == count())																						// if(_table->size() == 0)
+    if(0 == count())																															// if(_table->size() == 0)
 		return false;
 	// Если индекс недопустимый
     if(! index.isValid()) return false;
@@ -380,7 +380,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	    if(_record_controller->view()->is_field_type_column<rating_type>(index.column())){
 //                _record_controller->view()->edit(index);
 //                _record_controller->close_context();
-	    }else emit dataChanged(index, index);																																														// Посылается сигнал что данные были изменены
+	    }else emit dataChanged(index, index);																																																																			// Посылается сигнал что данные были изменены
 
 	    return true;
 	}
@@ -563,7 +563,8 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 
 // Добавление данных
 // Функция возвращает позицию нового добавленного элемента
-browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _target_item, int mode){	// const index_source source_pos_index,
+browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _target_item){	// , int mode
+	// const index_source source_pos_index,
     pos_source		returned_position(- 1);
     browser::WebView	*view		= nullptr;
     auto		insert_new_tab	= [&](pos_source &returned_position, boost::intrusive_ptr<TreeItem> _item){	// , const pos_source source_insert_pos
@@ -583,7 +584,7 @@ browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
 	};
     if(_target_item){
 //	pos_source source_insert_pos = _record_controller->index<pos_source>(source_pos_index);	// Q_UNUSED(pos_index) // to be used
-	Q_UNUSED(mode)	// to be used
+//	Q_UNUSED(mode)	// to be used
 //	if(- 1 == (int) source_insert_pos)source_insert_pos = 0;
 	auto brother = current_item();	// item(source_insert_pos);
 	beginResetModel();	// Подумать, возможно нужно заменить на beginInsertRows

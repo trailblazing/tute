@@ -67,9 +67,9 @@ boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<Reco
 	assert(! static_cast<QModelIndex>(current_model_()->index(host_)).isValid());
 	assert(static_cast<QModelIndex>(sibling_index_).isValid());
     }		// index(0, 0, QModelIndex())
-    if(! static_cast<QModelIndex>(sibling_index_).isValid())throw std::runtime_error(formatter() << "sibling_index_ isn\'t valid");
+    if(! static_cast<QModelIndex>(sibling_index_).isValid()) throw std::runtime_error(formatter() << "sibling_index_ isn\'t valid");
     result = new RecordIndex(current_model_, host_, sibling_index_);
-    if(! result)throw std::runtime_error(formatter() << "construct record index failed");
+    if(! result) throw std::runtime_error(formatter() << "construct record index failed");
     return result;
 }
 // boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<RecordModel *()> &current_model_, boost::intrusive_ptr<TreeItem>  host_, const index_source &sibling_index){
@@ -94,7 +94,7 @@ RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, bo
       , _host(target_item)
       , _sibling_index([&] {
 	      QModelIndex sibling_index = static_cast<QModelIndex>(current_model()->index(sibling_item));
-	      if(! sibling_index.isValid())sibling_index = current_model()->index(0, 0, QModelIndex());
+	      if(! sibling_index.isValid()) sibling_index = current_model()->index(0, 0, QModelIndex());
 	      return sibling_index;
 	  }
 	  ()){}
@@ -102,6 +102,7 @@ RecordIndex::RecordIndex(const std::function<RecordModel *()> &current_model, bo
 std::function<RecordModel *()> RecordIndex::current_model() const {return _current_model;}
 
 index_source RecordIndex::sibling_index() const {return _sibling_index;}
+void RecordIndex::sibling_index(const QModelIndex &si){_sibling_index = si;}
 
 // QModelIndex RecordModel::ModelIndex::current_index() const {}
 
