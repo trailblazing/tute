@@ -63,7 +63,7 @@ boost::intrusive_ptr<RecordIndex> RecordIndex::instance(const std::function<Reco
     index_source sibling_index_;
     sibling_index_ = sibling_item_ ? current_model_()->index(sibling_item_) : current_model_()->current_index();
     if(! static_cast<QModelIndex>(sibling_index_).isValid()){
-	sibling_index_ = index_source(current_model_()->fake_index(host_));
+	sibling_index_ = index_source(static_cast<RecordModel *>(current_model_())->fake_index(host_));
 	assert(! static_cast<QModelIndex>(current_model_()->index(host_)).isValid());
 	assert(static_cast<QModelIndex>(sibling_index_).isValid());
     }		// index(0, 0, QModelIndex())

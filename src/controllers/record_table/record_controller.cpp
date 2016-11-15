@@ -146,8 +146,9 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	// }
 
 	// PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
-    index_proxy index_proxy_ = index<index_proxy>(pos_proxy_);	// Модельный индекс в Proxy модели
-    pos_proxy	pos_proxy_real(((QModelIndex)index_proxy_).row());
+    index_proxy		index_proxy_	= index<index_proxy>(pos_proxy_);	// Модельный индекс в Proxy модели
+    index_source	index_source_	= index<index_source>(pos_proxy_);
+    pos_proxy		pos_proxy_real(((QModelIndex)index_proxy_).row());
 	// todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
     if((int) pos_proxy_real != (int) pos_proxy_){
 	QMessageBox msg_box;
@@ -155,7 +156,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	msg_box.exec();
     }
 //    int rowCount = row_count();
-    if((int) pos_proxy_real >= 0 && (int) pos_proxy_real < row_count()){		// if(pos_real > (rowCount - 1))return;
+    if((int) pos_proxy_real >= 0 && (int) pos_proxy_real < row_count() && index_source_ != _source_model->current_index()){		// if(pos_real > (rowCount - 1))return;
 	// Простой механизм выбора строки. Похоже, что его использовать не получится
 	_view->selectRow((int) pos_proxy_real);
 
@@ -170,16 +171,17 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
 	// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
 	// Therefore, the recording must be made a virtual click to fill the final table of records
-	if(appconfig.interface_mode() == "mobile") emit _view->clicked((QModelIndex)index_proxy_);																																																																																																																																																																																																		// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+	if(appconfig.interface_mode() == "mobile") emit _view->clicked(static_cast<QModelIndex>(index_proxy_));																																																																																																																																																																																																																																																																																																																																																																																																									// QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
 	// emit this->clicked(index);
-	assert(_view->currentIndex() == (QModelIndex) index_proxy_);
-	_view->scrollTo(_view->currentIndex());	// QAbstractItemView::PositionAtCenter
-
+//	auto real_index = _source_model->current_index();
+//	assert(real_index == index_source_);
+	_view->scrollTo(static_cast<QModelIndex>(index_source_));	// QAbstractItemView::PositionAtCenter
+	_view->update(static_cast<QModelIndex>(index_source_));
 	// this->setFocus();   // ?
 	pos_source	pos_source_	= index<pos_source>(pos_proxy_);
 	auto		it		= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
-	if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																// setCurrentIndex(static_cast<int>(pos_source_));
+	if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// setCurrentIndex(static_cast<int>(pos_source_));
 	auto tree_screen = globalparameters.main_window()->tree_screen();
 	if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
 	if(it) if(it->page()) it->page()->metaeditor_sychronize();
@@ -1270,7 +1272,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 	// todo: сделать заполнение таблицы приаттаченных файлов
 	// Record record;
 	// if(record.isLite())record.switchToFat();
-    if(item_target->is_lite()) item_target->to_fat();																																																																																		// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
+    if(item_target->is_lite()) item_target->to_fat();																																																																																																																																																																																																																																																																																																																																// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
     assert(! item_target->is_lite());
 
 	// record.setText(addNewRecordWin.getField("text"));
@@ -1345,7 +1347,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
     assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
 	// assert(_source_model->child(selected_position) == item);
-    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																					// , mode // modify _source_model? yeah
+    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1622,7 +1624,7 @@ void rctrl_t::close_context(void){
 	}
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																	// }
+    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// }
 }
 
 void rctrl_t::remove(id_value delete_id){
@@ -1780,10 +1782,15 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 			    assert(index != - 1);
 				// _source_model->remove_child(item);  // doing nothing
 			    _tabmanager->closeTab(index);				// _tabmanager->indexOf(item->bounded_page()->view())
-			    changed = true;
-			    if(0 == i){
-//				_first_delete	= v;
-				_new_index = 0 >= index ? 0 : index - 1;
+			    _new_index	= _tabmanager->currentIndex();
+			    changed	= true;
+//			    if(0 == i){
+////				_first_delete	= v;
+//				_new_index = (0 >= index) ? 0 : index - 1;
+//			    }
+			    if(- 1 == _new_index){
+				//
+				_new_index = 0;
 			    }
 			    sorted_delete_ids << id;
 			}
@@ -1987,7 +1994,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 //		});
 //	    int t = 0;
 	    for(auto v : v_list){
-		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																													// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
+		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
 //		t ++;
 	    }
 	}else if(header_title == title_field_description){
@@ -2635,7 +2642,9 @@ boost::intrusive_ptr<TreeItem> rctrl_t::find(const QUrl &_url){
 
 template<>pos_proxy rctrl_t::index<pos_proxy>(const pos_source &source_pos) const {
 //    assert((int) source_pos != - 1);
-    QModelIndex source_index = _source_model->index((int) source_pos, 0, QModelIndex());
+    QModelIndex source_index = _source_model->index(
+	_source_model->item(source_pos)	// (int) source_pos, 0, QModelIndex()
+	);
 //    auto it = _source_model->item(source_pos);
 //    QModelIndex source_index = _source_model->createIndex((int)source_pos, 0, static_cast<void *>(it.get()));
 //    QModelIndex source_index = (QModelIndex)_source_model->index(_source_model->item(source_pos));
@@ -2646,12 +2655,12 @@ template<>pos_proxy rctrl_t::index<pos_proxy>(const pos_source &source_pos) cons
 }
 
 template<>pos_proxy rctrl_t::index<pos_proxy>(const index_proxy &index_) const {
-    if(! ((QModelIndex) index_).isValid()) return pos_proxy(- 1);
-    return pos_proxy(((QModelIndex) index_).row());
+    if(! static_cast<QModelIndex>(index_).isValid()) return pos_proxy(- 1);
+    return pos_proxy(static_cast<QModelIndex>(index_).row());
 }
 
 template<>pos_proxy rctrl_t::index<pos_proxy>(const index_source &is) const {
-    pos_source ps(((QModelIndex)is).row());return index<pos_proxy>(ps);
+    pos_source ps(static_cast<QModelIndex>(is).row());return index<pos_proxy>(ps);
 }
 
 template<>pos_proxy rctrl_t::index<pos_proxy>(const id_value &id) const {
@@ -2665,9 +2674,10 @@ template<>pos_proxy rctrl_t::index<pos_proxy>(const boost::intrusive_ptr<TreeIte
 }
 
 template<>pos_source rctrl_t::index<pos_source>(const pos_proxy &pos_proxy_) const {
-    QModelIndex sourceIndex = _proxy_model->mapToSource(_proxy_model->index((int) pos_proxy_, 0));
+    if(- 1 == pos_proxy_) return pos_source(- 1);
+    QModelIndex fake_source_index = _proxy_model->mapToSource(_proxy_model->index((int) pos_proxy_, 0));
 
-    return pos_source(sourceIndex.row());
+    return pos_source(fake_source_index.row());
 }
 
 template<>pos_source rctrl_t::index<pos_source>(const index_proxy &ip) const {
@@ -2677,8 +2687,8 @@ template<>pos_source rctrl_t::index<pos_source>(const index_proxy &ip) const {
 }
 
 template<>pos_source rctrl_t::index<pos_source>(const index_source &index_) const {
-    if(! ((QModelIndex) index_).isValid()) return pos_source(- 1);
-    return pos_source(((QModelIndex) index_).row());
+    if(! static_cast<QModelIndex>(index_).isValid()) return pos_source(- 1);
+    return pos_source(static_cast<QModelIndex>(index_).row());
 }
 
 template<>pos_source rctrl_t::index<pos_source>(const id_value &id) const {
@@ -2695,14 +2705,18 @@ template<>index_proxy rctrl_t::index<index_proxy>(const pos_source &pos_source_)
 
 template<>index_proxy rctrl_t::index<index_proxy>(const pos_proxy &pos_proxy_) const {
     if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount()) return index_proxy(QModelIndex());
-    QModelIndex index = _proxy_model->index((int) pos_proxy_, 0);
+    auto	pos_source_	= index<pos_source>(pos_proxy_);
+    auto	it		= _source_model->item(pos_source_);
+    auto	index_source_	= _source_model->index(it);
+    QModelIndex index		= _proxy_model->mapFromSource(index_source_);	// _proxy_model->index((int) pos_proxy_, 0);
 
     return index_proxy(index);
 }
 
-template<>index_proxy rctrl_t::index<index_proxy>(const index_source &sourceIndex) const {
-    if(! ((QModelIndex) sourceIndex).isValid()) return index_proxy(QModelIndex());
-    QModelIndex index_ = _proxy_model->mapFromSource(_source_model->index(((QModelIndex) sourceIndex).row(), 0));// (QModelIndex)sourceIndex
+template<>index_proxy rctrl_t::index<index_proxy>(const index_source &index_source_) const {
+    if(! static_cast<QModelIndex> (index_source_).isValid()) return index_proxy(QModelIndex());
+    QModelIndex index_ = _proxy_model->mapFromSource(index_source_	// ((QModelIndex) sourceIndex).row(), 0)
+	    );	// (QModelIndex)sourceIndex
 
     return index_proxy(index_);
 }
@@ -2723,24 +2737,27 @@ template<>index_proxy rctrl_t::index<index_proxy>(const boost::intrusive_ptr<Tre
 }
 
 template<>index_source rctrl_t::index<index_source>(const pos_source &pos_source_) const {
-    pos_proxy proxy_pos_ = index<pos_proxy>(pos_source_);
-
-    return index<index_source>(proxy_pos_);
+//    pos_proxy	proxy_pos_	= index<pos_proxy>(pos_source_);
+    auto it = _source_model->item(pos_source_);
+    return _source_model->index(it);
 }
 
-template<>index_source rctrl_t::index<index_source>(const index_proxy &proxyIndex) const {
-    if(! ((QModelIndex) proxyIndex).isValid()) return index_source(QModelIndex());
-    QModelIndex index = _proxy_model->mapToSource(_proxy_model->index(((QModelIndex) proxyIndex).row(), 0));
-
-    return index_source(index);
+template<>index_source rctrl_t::index<index_source>(const index_proxy &index_proxy_) const {
+    if(! static_cast<QModelIndex>(index_proxy_).isValid()) return index_source(QModelIndex());
+//    QModelIndex index		= _proxy_model->mapToSource(_proxy_model->index(((QModelIndex) proxyIndex).row(), 0));
+    pos_source	pos_source_	= index<pos_source>(index_proxy_);
+    auto	it		= _source_model->item(pos_source_);
+    return _source_model->index(it);
 }
 
 template<>index_source rctrl_t::index<index_source>(const pos_proxy &pos_proxy_) const {
     if(pos_proxy_ < 0 || pos_proxy_ >= _proxy_model->rowCount()) return index_source(QModelIndex());
 	// IndexProxy proxyIndex = index<IndexProxy>(pos_proxy_);
-    index_source index_(_proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0)));
+//    index_source index_(_proxy_model->mapToSource(_proxy_model->index((int)pos_proxy_, 0)));
 
-    return index_;
+    pos_source	pos_source_	= index<pos_source>(pos_proxy_);
+    auto	it		= _source_model->item(pos_source_);
+    return _source_model->index(it);
 }
 
 template<>index_source rctrl_t::index<index_source>(const id_value &id) const	// Выясняется ссылка на таблицу конечных данных
@@ -2749,11 +2766,14 @@ template<>index_source rctrl_t::index<index_source>(const id_value &id) const	//
     pos_source pos_source_ = _source_model->position(id);
 
 // PosProxy proxy_pos_ = index<PosProxy>(pos_source_);
-    return index_source(_source_model->index((int) pos_source_, 0));
+//    return index_source(_source_model->index((int) pos_source_, 0));
+    auto it = _source_model->item(pos_source_);
+    return _source_model->index(it);
 }
 
 template<>index_source rctrl_t::index<index_source>(const boost::intrusive_ptr<TreeItem> &it) const {
-    return index<index_source>(it->id());
+//    return index<index_source>(it->id());
+    return _source_model->index(it);
 }
 
 template<>id_value rctrl_t::index<id_value>(const pos_source &ps) const {
@@ -2792,7 +2812,7 @@ template<>boost::intrusive_ptr<TreeItem> rctrl_t::index<boost::intrusive_ptr<Tre
     return _source_model->item(index<pos_source>(is));
 }
 
-template<>boost::intrusive_ptr<TreeItem> rctrl_t::index<boost::intrusive_ptr<TreeItem> >(const id_value &it) const {
-    return _source_model->item(index<pos_source>(it));
+template<>boost::intrusive_ptr<TreeItem> rctrl_t::index<boost::intrusive_ptr<TreeItem> >(const id_value &id) const {
+    return _source_model->item(index<pos_source>(id));
 }
 

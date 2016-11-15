@@ -296,7 +296,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	// if(count() == 0)    // if(!browser_pages())    // if(!_table)
 	// return QVariant();
 	// Если таблица пустая
-    if(0 == count())																															// if(_table->size() == 0)
+    if(0 == count())																																																																									// if(_table->size() == 0)
 		return QVariant();
 	// Если индекс недопустимый, возвращается пустой объект
     if(! index.isValid()) return QVariant();
@@ -317,14 +317,14 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	    if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < ctime_type >::value){
 		// Преобразование временного штампа в дату и время
 //		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
-		if(appconfig.enable_custom_datetime_format() == false) return field;																																		// fieldDateTime.toString(Qt::SystemLocaleDate);
-		else return field;																																														// fieldDateTime.toString(appconfig.custom_datetime_format());
+		if(appconfig.enable_custom_datetime_format() == false) return field;																																																																																																																																																																																												// fieldDateTime.toString(Qt::SystemLocaleDate);
+		else return field;																																																																																																																				// fieldDateTime.toString(appconfig.custom_datetime_format());
 	    }	// else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < name_type >::value)return "<b>" + it->field<name_type>() + "</b>";
 	    else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){		// "hasAttach"   // Наличие аттачей
-		if(field == "0") return "";																																																								// Если аттачей нет, выводится пустая строка. Это повышает читабельность
-		else return tr("Yes");																																																	// На русский перевести как "Есть"
+		if(field == "0") return "";																																																																																																																																												// Если аттачей нет, выводится пустая строка. Это повышает читабельность
+		else return tr("Yes");																																																																																																																							// На русский перевести как "Есть"
 	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < attach_count_type >::value){	// "attachCount"   // Количество аттачей
-		if(field == "0") return "";																																																								// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
+		if(field == "0") return "";																																																																																																																																												// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
 		else return field;
 	    }else if(role == Qt::UserRole || role == Qt::EditRole){	// just a test
 #ifdef USE_STAR_RATING
@@ -358,7 +358,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	// if(!browser_pages())    // if(!_table)
 	// return false;
 	// Если таблица пустая
-    if(0 == count())																															// if(_table->size() == 0)
+    if(0 == count())																																																																									// if(_table->size() == 0)
 		return false;
 	// Если индекс недопустимый
     if(! index.isValid()) return false;
@@ -380,7 +380,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	    if(_record_controller->view()->is_field_type_column<rating_type>(index.column())){
 //                _record_controller->view()->edit(index);
 //                _record_controller->close_context();
-	    }else emit dataChanged(index, index);																																																																			// Посылается сигнал что данные были изменены
+	    }else emit dataChanged(index, index);																																																																																																																																																																					// Посылается сигнал что данные были изменены
 
 	    return true;
 	}
@@ -487,7 +487,7 @@ bool RecordModel::removeRows(int row, int count, const QModelIndex &parent){
 	// ids.append(child(i)->id());
 
 	// }
-
+    removeRow(row, parent);
 	// _record_controller->remove_children(ids); // recursive called
 
 	// view->reset();
@@ -579,7 +579,7 @@ browser::WebView *RecordModel::insert_new_item(boost::intrusive_ptr<TreeItem> _t
 //	    }
 	    assert(view);
 	    returned_position = position(id_value(_item->field<id_type>()));	// pos_source(_record_controller->tabmanager()->indexOf(view));
-
+	    insertRow(returned_position, QModelIndex());
 	    return view;
 	};
     if(_target_item){
@@ -850,27 +850,34 @@ boost::intrusive_ptr<TreeItem> RecordModel::sibling(boost::intrusive_ptr<TreeIte
 boost::intrusive_ptr<TreeItem> RecordModel::current_item() const {
     boost::intrusive_ptr<TreeItem>	result(nullptr);
 // #ifdef USE_LOAD_ON_FOUND
-    auto page =
-	_record_controller->tabmanager()->currentWebView() ? _record_controller->tabmanager()->currentWebView()->page() : nullptr;
+    browser::WebView *v = nullptr;
+    v = _record_controller->tabmanager()->currentWebView();
+    auto page =	v ? v->page() : nullptr;
     if(page){
 	auto binder = page->binder();
 	if(binder) result = binder->host();
+	assert(result);
     }
 // #else
 //    result = item(_record_controller->index<pos_source>(current_index()));
 
 // #endif
-
+//    assert(result);
     return result;	// _tabmanager->currentWebView()->page()->binder()->host();
 }
 
 index_source RecordModel::current_index() const {
-    return
-// #ifdef USE_LOAD_ON_FOUND
-	index(current_item());
-// #else
-//	index_source(_record_controller->view()->selectionModel()->currentIndex());	//
-// #endif
+    index_source	result;
+    index_source	proxy_index(_record_controller->view()->selectionModel()->currentIndex());
+    auto		current = current_item();
+    if(static_cast<QModelIndex>(proxy_index).isValid()) result = proxy_index;
+    else if(current) result = index(current);
+    return result;
+//// #ifdef USE_LOAD_ON_FOUND
+//	index(current_item());
+//// #else
+////	index_source(_record_controller->view()->selectionModel()->currentIndex());	//
+//// #endif
 }
 
 void RecordModel::position(pos_source _index){_record_controller->tabmanager()->setCurrentIndex((int) _index);}
