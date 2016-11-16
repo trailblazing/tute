@@ -1,5 +1,5 @@
 
-mytetra_webengine == mytetra webengine == MyTetra WebEngine
+**mytetra_webengine** == **mytetra webengine** == **MyTetra WebEngine**
 
 A knowledge management system equipped with an embedded web browser derived from Qt::WebEngine (Chromium-based). A lightweight browser embedded in a note management application provides an easy way to combine tabs, bookmarks and history management, as well as internal and external search together.
 
@@ -9,79 +9,80 @@ The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
-How to remote synchronize mytetra_webengine
+##How to remote synchronize mytetra_webengine
 _______________________________________________________________________
 
 Currently I choose Dropbox
 
 Move fils to Dropbox:
 
-    ```rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."```
+`rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."`
 
 After that, Change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
-How to build mytetra_webengine
+##How to build mytetra_webengine
 _______________________________________________________________________
 
-1 Linux
+1 Build on Linux
 
 Let's say the directory of your current project is named "working":
 
-    `working`
-    `    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)`
-    `    |       |____src`
-    `    |`
-    `    |____knowledge management (name is whatever)`
-    `            |____mytetra_webengine (created by or synchronized with git)`
+`working`
+`    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)`
+`    |       |____src`
+`    |`
+`    |____knowledge management (name is whatever)`
+`            |____mytetra_webengine (created by or synchronized with git)`
 
 
 1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
 1.2 Install verdigris (for remove qt::moc in Qt 5.6. Two header-only files.)
 
-    `git clone https://github.com/woboq/verdigris.git`
+`git clone https://github.com/woboq/verdigris.git`
 
 1.3 Download and install Qt 5.7
 
-    `wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run`
+`wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run`
 
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
 
-    `/opt/Qt/5.7`
+`/opt/Qt/5.7`
+
     but it's not a must
 
 * Environment in ~/.profile
 
-    `QT5DIR=/path-to-qt-installation/gcc_64`
+`QT5DIR=/path-to-qt-installation/gcc_64`
 
-    `export QT5DIR`
+`export QT5DIR`
 
-    `if ! echo ${PATH} | /bin/grep -q $QT5DIR/bin ; then`
-    `    PATH=$QT5DIR/bin:${PATH}`
-    `    PKG_CONFIG_PATH=$QT5DIR/lib/pkgconfig:${PKG_CONFIG_PATH}`
-    `fi`
+`if ! echo ${PATH} | /bin/grep -q $QT5DIR/bin ; then`
+`    PATH=$QT5DIR/bin:${PATH}`
+`    PKG_CONFIG_PATH=$QT5DIR/lib/pkgconfig:${PKG_CONFIG_PATH}`
+`fi`
 
-    `QT5INC="$QT5DIR/include"`
-    `QT5LIB="$QT5DIR/lib"`
-    `QT5LIB=$QT5DIR/plugins/platforms:${QT5LIB}`
-    `PATH=$QT5INC:${PATH}`
-    `PATH=$QT5LIB:${PATH}`
+`QT5INC="$QT5DIR/include"`
+`QT5LIB="$QT5DIR/lib"`
+`QT5LIB=$QT5DIR/plugins/platforms:${QT5LIB}`
+`PATH=$QT5INC:${PATH}`
+`PATH=$QT5LIB:${PATH}`
 
-    `export QT5DIR QT5INC QT5LIB PATH`
+`export QT5DIR QT5INC QT5LIB PATH`
 
 * Do not recommend to mix it up with system installation of Qt
 
 1.4 Clone the repo to your workbench
 
-    `git clone https://github.com/beimprovised/mytetra_webengine.git`
+`git clone https://github.com/beimprovised/mytetra_webengine.git`
 
 1.5 Compile
 
-    `/path-to-qt-installation/gcc_64/bin/qmake mytetra_webengine.pro`
+`/path-to-qt-installation/gcc_64/bin/qmake mytetra_webengine.pro`
 
-    `make all`
+`make all`
 
-    `sudo make install`
+`sudo make install`
 
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
         Open "mytetra_webengine.pro" under mytetra_webengine in qtcreator
@@ -120,12 +121,12 @@ When writing code to be guided by the following agreements:
 * The header class, after the section is necessary in #include class assignment to write comments.
 * Each header file must have the following structure:
 
-    `````
-    `#ifndef _CLIPBBRANCH_H_`
-    `#define _CLIPBBRANCH_H_`
-    `...`
-    `#endif // _CLIPBBRANCH_H_`
-    `````
+`````
+`#ifndef _CLIPBBRANCH_H_`
+`#define _CLIPBBRANCH_H_`
+`...`
+`#endif // _CLIPBBRANCH_H_`
+`````
 
 * Always use the classes, and classes instead of Qt's containers and containers STL;
 * The program is designed as a cross-platform MyTetra Qt-only application. MyTetra program should not depend on third-party libraries that are not part of Qt. If you need to use a third-party library of its source code to the project.
