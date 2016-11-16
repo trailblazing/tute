@@ -16,7 +16,7 @@ Currently I choose Dropbox
 
 Move fils to Dropbox:
 
-    `rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."`
+    ```rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."```
 
 After that, Change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
@@ -100,6 +100,7 @@ RUS: Основной репозитарий исходников для раз�
 Официальная русскоязычная страница программы MyTetra: [http://webhamster.ru/site/page/index/articles/projectcode/105](http://webhamster.ru/site/page/index/articles/projectcode/105)
 
 Agreement on the coding (registration code)
+
 _______________________________________________________________________
 
 When writing code to be guided by the following agreements:
