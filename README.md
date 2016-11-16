@@ -16,9 +16,7 @@ Currently I choose Dropbox
 
 Move fils to Dropbox:
 
-	```
 	rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."
-	```
 
 After that, Change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
@@ -29,38 +27,30 @@ _______________________________________________________________________
 
 Let's say the directory of your current project is named "working":
 
-	```
 	working
 	    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
 		    |____mytetra_webengine (created by or synchronized with git)
-	```
 
 ####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
 ####1.2 Install verdigris (for remove qt::moc in Qt 5.6. Two header-only files.)
 
-	```
 	git clone https://github.com/woboq/verdigris.git
-	```
 
 ####1.3 Download and install Qt 5.7
 
-	```
 	wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
-	```
 
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
 
-	```
 	/opt/Qt/5.7
-	```
+
 but it's not a must
 
 * Environment in ~/.profile (~/.bash_profile or ~/.bashrc)
-	```
 	QT5DIR=/path-to-qt-installation/gcc_64
 
 	export QT5DIR
@@ -77,23 +67,18 @@ but it's not a must
 	PATH=$QT5LIB:${PATH}
 
 	export QT5DIR QT5INC QT5LIB PATH
-	```
 * Do not recommend to mix it up with system installation of Qt
 
 ####1.4 Clone the repo to your workbench
-	```
 	git clone https://github.com/beimprovised/mytetra_webengine.git
-	```
 
 ####1.5 Compile
 
-	```
 	/path-to-qt-installation/gcc_64/bin/qmake mytetra_webengine.pro
 
 	make all
 
 	sudo make install
-	```
 
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
         Open "mytetra_webengine.pro" under mytetra_webengine in qtcreator
@@ -132,12 +117,10 @@ _______________________________________________________________________
 * The header class, after the section is necessary in #include class assignment to write comments.
 * Each header file must have the following structure:
 
-	```
 	#ifndef _CLIPBBRANCH_H_
 	#define _CLIPBBRANCH_H_
 	...
 	#endif // _CLIPBBRANCH_H_
-	```
 
 * Always use the classes, and classes instead of Qt's containers and containers STL;
 * The program is designed as a cross-platform MyTetra Qt-only application. MyTetra program should not depend on third-party libraries that are not part of Qt. If you need to use a third-party library of its source code to the project.
