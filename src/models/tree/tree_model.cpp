@@ -102,17 +102,17 @@ int tm_t::columnCount(const QModelIndex &parent) const {
 
 QVariant tm_t::data(const QModelIndex &_index, int role) const {
 	// Если индекс невалиден, возвращается несуществующий элемент
-    if(! _index.isValid())return QVariant();
+    if(! _index.isValid()) return QVariant();
 	// Если запрашивается окраска текста элемента
     if(role == Qt::ForegroundRole){
 	boost::intrusive_ptr<TreeItem> it = item(_index);
-	if(it->id() == _session_id && _index != globalparameters.tree_screen()->view()->current_index())return QColor(Qt::red);
-	else if(it->id() == _session_id && _index == globalparameters.tree_screen()->view()->current_index())return QColor(Qt::cyan);
-	else if(it->count_direct() > 0)return QColor(Qt::black);	// Если узел содержит таблицу конечных записей
-	else return QColor(Qt::darkGray);	// Ветка без таблицы конечных записей
+	if(it->id() == _session_id && _index != globalparameters.tree_screen()->view()->current_index()) return QColor(Qt::red);
+	else if(it->id() == _session_id && _index == globalparameters.tree_screen()->view()->current_index()) return QColor(Qt::cyan);
+	else if(it->count_direct() > 0) return QColor(Qt::black);										// Если узел содержит таблицу конечных записей
+	else return QColor(Qt::darkGray);							// Ветка без таблицы конечных записей
     }
     if(role == Qt::BackgroundRole)
-		if(_index == _cursor_over_index)return QColor(Qt::gray);
+		if(_index == _cursor_over_index) return QColor(Qt::gray);
 	// Если запрашивается содержимое текста элемента
     if(role == Qt::DisplayRole || role == Qt::EditRole){
 	boost::intrusive_ptr<TreeItem> it = item(_index);
@@ -125,7 +125,7 @@ QVariant tm_t::data(const QModelIndex &_index, int role) const {
 	// Если ветка зашифрована
 	if(it->field<crypt_type>() == "1"){
 		// Если пароль не введен, доступа к ветке нет
-	    if(globalparameters.crypt_key().length() == 0)return QIcon(":/resource/pic/branch_closed.svg");
+	    if(globalparameters.crypt_key().length() == 0) return QIcon(":/resource/pic/branch_closed.svg");
 	    else return QIcon(":/resource/pic/branch_opened.svg");
 	}
     }
@@ -133,7 +133,7 @@ QVariant tm_t::data(const QModelIndex &_index, int role) const {
 }
 
 Qt::ItemFlags tm_t::flags(const QModelIndex &_index) const {
-    if(! _index.isValid())return Qt::ItemIsEnabled;
+    if(! _index.isValid()) return Qt::ItemIsEnabled;
     return Qt::ItemIsEditable | Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
@@ -148,13 +148,13 @@ QModelIndex tm_t::index(int row, int column, const QModelIndex &current_index) c
 	// if(current_index.isValid() && current_index.column() != 0) {
 	// return QModelIndex();
 	// }
-    if(0 <= current_index.column())assert(current_index.isValid());
+    if(0 <= current_index.column()) assert(current_index.isValid());
 	// if(0 == current_index.column())assert(!current_index.isValid());
     if(! current_index.isValid() || (0 <= current_index.column())){	// if(!current_index.isValid() || (0 == current_index.column())) {
 	boost::intrusive_ptr<TreeItem> current_item = current_index.isValid() ? this->item(current_index) : _root_item;	// || 0 < current_index.column()
 	if(row >= 0 && row < current_item->count_direct()){
 	    boost::intrusive_ptr<TreeItem> child_item = current_item->child_direct(row);
-	    if(child_item)result = createIndex(row, column, static_cast<void *>(child_item.get()));
+	    if(child_item) result = createIndex(row, column, static_cast<void *>(child_item.get()));
 		// else {
 		// return QModelIndex();
 		// }
@@ -180,7 +180,7 @@ index_tree tm_t::index(const std::function<bool (boost::intrusive_ptr<const Link
 		    }else{
 			index_recursive(_index_child, _equal, 1);
 			if(find_index.isValid())
-				if(_equal(item(find_index)->linker()))break;
+				if(_equal(item(find_index)->linker())) break;
 		    }
 		}
 	    }else find_index = QModelIndex();
@@ -383,7 +383,7 @@ index_tree tm_t::index(boost::intrusive_ptr<const TreeItem> _item) const {
 			// return
 			index_recursive(child, _item, 1);		// _index_child , 1
 			// is_find = find_index.isValid();
-			if(find_index.isValid())if(_item.get() == static_cast<TreeItem *>(find_index.internalPointer()))break;			// same as find_index.isValid()
+			if(find_index.isValid()) if(_item.get() == static_cast<TreeItem *>(find_index.internalPointer())) break;																			// same as find_index.isValid()
 		    }
 		}
 	    }else find_index = QModelIndex();
@@ -426,18 +426,18 @@ index_tree tm_t::index(boost::intrusive_ptr<const TreeItem> _item) const {
 	// }
 	// }
     index_recursive(_root_item, _item, 0);
-    if(_item)result = index_tree(index_recursive(_root_item, _item, 1));// QModelIndex()
+    if(_item) result = index_tree(index_recursive(_root_item, _item, 1));// QModelIndex()
 	// assert(result.isValid());
 
 	// return index_recursive(QModelIndex(), _item, 1); // from default index?
     return result;
 }
 
-index_tree tm_t::fake_index(boost::intrusive_ptr<TreeItem> it) const {
-    index_tree result;
-    if(it)result = createIndex(0, 0, static_cast<void *>(it.get()));
-    return result;
-}
+//index_tree tm_t::fake_index(boost::intrusive_ptr<TreeItem> it) const {
+//    index_tree result;
+//    if(it) result = createIndex(0, 0, static_cast<void *>(it.get()));
+//    return result;
+//}
 
 // Обновление на экране ветки и подветок
 void tm_t::update_index(const index_tree &_index){
@@ -504,7 +504,7 @@ boost::intrusive_ptr<TreeItem> tm_t::item(const QModelIndex &_index) const		// ?
 	// boost::intrusive_ptr<TreeItem>(static_cast<TreeItem *>(_index.internalPointer()))
 	////)
 	// ;
-	if(_item)_result = _item;	// qDebug() << "Get tree item " << item->data("name").toString();
+	if(_item) _result = _item;						// qDebug() << "Get tree item " << item->data("name").toString();
 
 	else{
 	    assert(! _index.internalPointer());
@@ -538,7 +538,7 @@ boost::intrusive_ptr<TreeItem> tm_t::item(QStringList path) const {
 	// if(found == 0)
 	// critical_error("Detect bad path in getItem() method " + path.join(","));
     }
-    if(curritem != _root_item || (path.size() == 1 && path[0] == global_root_id))result = curritem;
+    if(curritem != _root_item || (path.size() == 1 && path[0] == global_root_id)) result = curritem;
 	//// Если очередной идентификатор пути не был найден
 	// if(found == 0) {
 	// critical_error("Detect bad path in getItem() method " + path.join(","));
@@ -564,7 +564,7 @@ boost::intrusive_ptr<TreeItem> tm_t::item(const std::function<bool (boost::intru
 //		    return find_item;
 		}else{
 		    for(auto il : _it->child_linkers()){
-			if(! found_item)item_recurse(il->host(), _equal, 1);
+			if(! found_item) item_recurse(il->host(), _equal, 1);
 			else break;
 		    }
 		}
@@ -686,7 +686,7 @@ QModelIndex tm_t::parent(const QModelIndex &_index) const {
 		    auto parent_parent = parent_item->parent();
 		    if(parent_parent){
 			_result = createIndex(parent_parent->sibling_order([&](boost::intrusive_ptr<const Linker> il){return il == parent_item->linker() && il->host() == parent_item && parent_item->parent() == il->host_parent();}), 0, static_cast<void *>(parent_item.get()));
-		    }else _result = QModelIndex();		// index(0, 0, index(parent_item));
+		    }else _result = QModelIndex();									// index(0, 0, index(parent_item));
 		}else _result = QModelIndex();
 	    }
 	}
@@ -729,10 +729,10 @@ bool tm_t::setData(const QModelIndex &_index, const QVariant &value, int role){
 	// The cursor over an element in the neahoditsya Drag and Drop
     if(role == Qt::UserRole){
 	QModelIndex previousIndex = _cursor_over_index;
-	if(value.toBool())_cursor_over_index = _index;
+	if(value.toBool()) _cursor_over_index = _index;
 	else _cursor_over_index = QModelIndex();
-	if(previousIndex.isValid())emit_datachanged_signal(previousIndex);
-	if(_cursor_over_index.isValid())emit_datachanged_signal(_cursor_over_index);
+	if(previousIndex.isValid()) emit_datachanged_signal(previousIndex);
+	if(_cursor_over_index.isValid()) emit_datachanged_signal(_cursor_over_index);
 	return true;
     }
     if(role == Qt::EditRole){
@@ -749,7 +749,7 @@ bool tm_t::setData(const QModelIndex &_index, const QVariant &value, int role){
 }
 
 bool tm_t::setHeaderData(int section, Qt::Orientation orientation, const QVariant &value, int role){
-    if(role != Qt::EditRole || orientation != Qt::Horizontal)return false;
+    if(role != Qt::EditRole || orientation != Qt::Horizontal) return false;
     Q_UNUSED(section);
     _root_item->field<name_type>(value.toString());	// QString("name"),
     return true;

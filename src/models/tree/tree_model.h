@@ -93,7 +93,7 @@ class tm_t : public QAbstractItemModel {
 	//    bool is_item_valid(QStringList path) const;
 	index_tree	index(const std::function<bool (boost::intrusive_ptr<const Linker>)> &_equal) const;
 	index_tree	index(boost::intrusive_ptr<const TreeItem> _item) const;
-	index_tree	fake_index(boost::intrusive_ptr<TreeItem> it) const;
+//	index_tree	fake_index(boost::intrusive_ptr<TreeItem> it) const;
 	void		update_index(const index_tree &_index);
 	//    QModelIndex index(const QUrl &find_url)const;
 	//    QModelIndex index(const QString &id)const;
