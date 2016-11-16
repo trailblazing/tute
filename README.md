@@ -51,22 +51,31 @@ Let's say the directory of your current project is named "working":
 but it's not a must
 
 * Environment in ~/.profile (~/.bash_profile or ~/.bashrc)
+
 	QT5DIR=/path-to-qt-installation/gcc_64
 
 	export QT5DIR
 
 	if ! echo ${PATH} | /bin/grep -q $QT5DIR/bin ; then
+
 	    PATH=$QT5DIR/bin:${PATH}
+
 	    PKG_CONFIG_PATH=$QT5DIR/lib/pkgconfig:${PKG_CONFIG_PATH}
+
 	fi
 
 	QT5INC="$QT5DIR/include"
+
 	QT5LIB="$QT5DIR/lib"
+
 	QT5LIB=$QT5DIR/plugins/platforms:${QT5LIB}
+
 	PATH=$QT5INC:${PATH}
+
 	PATH=$QT5LIB:${PATH}
 
 	export QT5DIR QT5INC QT5LIB PATH
+
 * Do not recommend to mix it up with system installation of Qt
 
 ####1.4 Clone the repo to your workbench
@@ -117,10 +126,10 @@ _______________________________________________________________________
 * The header class, after the section is necessary in #include class assignment to write comments.
 * Each header file must have the following structure:
 
-	#ifndef _CLIPBBRANCH_H_
-	#define _CLIPBBRANCH_H_
+	\#ifndef _CLIPBBRANCH_H_
+	\#define _CLIPBBRANCH_H_
 	...
-	#endif // _CLIPBBRANCH_H_
+	\#endif // _CLIPBBRANCH_H_
 
 * Always use the classes, and classes instead of Qt's containers and containers STL;
 * The program is designed as a cross-platform MyTetra Qt-only application. MyTetra program should not depend on third-party libraries that are not part of Qt. If you need to use a third-party library of its source code to the project.
