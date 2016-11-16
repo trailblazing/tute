@@ -14,7 +14,7 @@ _______________________________________________________________________
 
 Currently I choose Dropbox
 
-Move fils to Dropbox:
+Move files to Dropbox:
 
 	rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."
 
