@@ -26,14 +26,14 @@ _______________________________________________________________________
 ###1 Build on Linux
 
 Let's say the directory of your current project is named "working":
-
+```
 	working
 	    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)
 	    |       |____src
 	    |
 	    |____knowledge management (name is whatever)
 		    |____mytetra_webengine (created by or synchronized with git)
-
+```
 ####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
 ####1.2 Install verdigris (for remove qt::moc in Qt 5.6. Two header-only files.)
