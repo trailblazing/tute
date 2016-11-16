@@ -148,43 +148,54 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 	// PosProxy pos_proxy_ = _record_controller->pos_proxy(pos_proxy_);
     index_proxy		index_proxy_	= index<index_proxy>(pos_proxy_);	// Модельный индекс в Proxy модели
     index_source	index_source_	= index<index_source>(pos_proxy_);
-    pos_proxy		pos_proxy_real(((QModelIndex)index_proxy_).row());
+    pos_proxy		pos_proxy_real(static_cast<QModelIndex>(index_proxy_).row());
 	// todo: Если это условие ни разу не сработает, значит преобразование ipos - pos надо просто убрать
-    if((int) pos_proxy_real != (int) pos_proxy_){
+	// Todo: If this condition is never going to work, then ipos transformation - pos should simply remove
+    if(static_cast<int>(pos_proxy_real) != static_cast<int>(pos_proxy_)){
 	QMessageBox msg_box;
 	msg_box.setText("In RecordView::cursor_to_index() input pos not equal model pos");
 	msg_box.exec();
     }
 //    int rowCount = row_count();
-    if((int) pos_proxy_real >= 0 && (int) pos_proxy_real < row_count() && index_source_ != _source_model->current_index()){		// if(pos_real > (rowCount - 1))return;
-	// Простой механизм выбора строки. Похоже, что его использовать не получится
-	_view->selectRow((int) pos_proxy_real);
+    if((int) pos_proxy_real >= 0 && (int) pos_proxy_real < row_count()){
+	if(index_source_ != _source_model->current_index()){			// if(pos_real > (rowCount - 1))return;
+		// Простой механизм выбора строки. Похоже, что его использовать не получится
+	    _view->selectRow((int) pos_proxy_real);
 
-	// auto recordSourceModel = controller->getRecordTableModel();
-	// QModelIndex selIdx = recordSourceModel->index(pos, 0);
+		// auto recordSourceModel = controller->getRecordTableModel();
+		// QModelIndex selIdx = recordSourceModel->index(pos, 0);
 
-	_view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
-	// Установка засветки на нужный индекс
-	// Set the backlight to the desired index
-	_view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode);	// selIdx   // QItemSelectionModel::Select    // ClearAndSelect
-	// В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
-	// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
-	// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
-	// Therefore, the recording must be made a virtual click to fill the final table of records
-	if(appconfig.interface_mode() == "mobile") emit _view->clicked(static_cast<QModelIndex>(index_proxy_));																																																																																																																																																																																																																																																																																																																																																																																																									// QModelIndex selIdx=recordSourceModel->index(pos, 0);
+	    _view->selectionModel()->select(index_proxy_, current_tree_selection_mode);
+		// Установка засветки на нужный индекс
+		// Set the backlight to the desired index
+	    _view->selectionModel()->setCurrentIndex(index_proxy_, current_tree_current_index_mode);		// selIdx   // QItemSelectionModel::Select    // ClearAndSelect
+	    _view->setCurrentIndex(index_proxy_);
+	    _view->edit(index_proxy_);
+		// В мобильной версии реакции на выбор записи нет (не обрабатывается сигнал смены строки в модели выбора)
+		// Поэтому по записи должен быть сделан виртуальный клик, чтобы заполнилась таблица конечных записей
+		// In response to the mobile version of the record is no choice (not processed signal line change to the selection model)
+		// Therefore, the recording must be made a virtual click to fill the final table of records
+	    if(appconfig.interface_mode() == "mobile") emit _view->clicked(static_cast<QModelIndex>(index_proxy_));
+		// QModelIndex selIdx=recordSourceModel->index(pos, 0);
 
-	// emit this->clicked(index);
-//	auto real_index = _source_model->current_index();
-//	assert(real_index == index_source_);
-	_view->scrollTo(static_cast<QModelIndex>(index_source_));	// QAbstractItemView::PositionAtCenter
-	_view->update(static_cast<QModelIndex>(index_source_));
-	// this->setFocus();   // ?
-	pos_source	pos_source_	= index<pos_source>(pos_proxy_);
-	auto		it		= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
-	if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// setCurrentIndex(static_cast<int>(pos_source_));
-	auto tree_screen = globalparameters.main_window()->tree_screen();
-	if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
-	if(it) if(it->page()) it->page()->metaeditor_sychronize();
+//	emit _view->clicked(static_cast<QModelIndex>(index_proxy_));	// segment error?
+
+	    _view->scrollTo(static_cast<QModelIndex>(index_proxy_));		// QAbstractItemView::PositionAtCenter
+	    _view->update(static_cast<QModelIndex>(index_proxy_));
+//
+	    auto	real_index_source_	= _source_model->current_index();
+	    auto	real_index_proxy_	= index<index_proxy>(real_index_source_);
+	    assert(real_index_proxy_ == index_proxy_);
+
+		// this->setFocus();   // ?
+	    pos_source	pos_source_	= index<pos_source>(pos_proxy_);
+	    auto	it		= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
+	    if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// setCurrentIndex(static_cast<int>(pos_source_));
+	    auto tree_screen = globalparameters.main_window()->tree_screen();
+	    if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
+	    if(it) if(it->page()) it->page()->metaeditor_sychronize();
+	}
+	_view->setFocus();
     }
     _record_screen->tools_update();
 }
@@ -200,7 +211,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
     pos_source pos_source_ = index<pos_source>(index_proxy_);	// (((QModelIndex)source_index).row());
     qDebug() << "rctrl_t::index_invoke() : current item num " << pos_source_;
 
-//    select_as_current(index<pos_proxy>(index_proxy_));	// ?
+    _view->setFocus();	// select_as_current(index<pos_proxy>(pos_source_));	//    select_as_current(index<pos_proxy>(index_proxy_));	// ?
 
     result = source_model()->item(pos_source_);
 //    auto	ov	= result->page()->view();
@@ -215,7 +226,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::index_invoke(const index_proxy &index_pr
 	sychronize_attachtable_to_item(pos_source_);
 	// browser_update(pos_source_); // if new one, create it? no, you can't click a record which does not exist.
     }
-    globalparameters.window_switcher()->recordtable_ro_record();
+    globalparameters.window_switcher()->recordtable_ro_record_editor();
 
     return result;
 }
@@ -1272,7 +1283,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 	// todo: сделать заполнение таблицы приаттаченных файлов
 	// Record record;
 	// if(record.isLite())record.switchToFat();
-    if(item_target->is_lite()) item_target->to_fat();																																																																																																																																																																																																																																																																																																																																// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
+    if(item_target->is_lite()) item_target->to_fat();																																																																																																																																																																																																																																																																																																																																																																																																																																																// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
     assert(! item_target->is_lite());
 
 	// record.setText(addNewRecordWin.getField("text"));
@@ -1347,7 +1358,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
     assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
 	// assert(_source_model->child(selected_position) == item);
-    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , mode // modify _source_model? yeah
+    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1624,7 +1635,7 @@ void rctrl_t::close_context(void){
 	}
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// }
+    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// }
 }
 
 void rctrl_t::remove(id_value delete_id){
@@ -1994,7 +2005,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 //		});
 //	    int t = 0;
 	    for(auto v : v_list){
-		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
+		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
 //		t ++;
 	    }
 	}else if(header_title == title_field_description){

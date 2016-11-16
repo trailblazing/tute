@@ -434,8 +434,8 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 
 	QAbstractTextDocumentLayout::PaintContext ctx;
 	// Highlighting text if item is selected
-	if(option.state & QStyle::State_Selected) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));																																																																																																																																																																																																																																																																																																																																																																																													// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
-	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected)) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));																																																																																																																																																																																																																																																																																																																																																																																																																																																						// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
+	if(option.state & QStyle::State_Selected) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Active, QPalette::HighlightedText));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																													// if(optionV4->state & QStyle::State_Selected)ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Active, QPalette::HighlightedText));
+	if(0 == it->count_direct() && ! (option.state & QStyle::State_Selected) && (it != _view->current_item())) ctx.palette.setColor(QPalette::Text, option.palette.color(QPalette::Inactive, QPalette::Shadow));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																		// if(0 == it->count_direct() && ! (optionV4->state & QStyle::State_Selected))ctx.palette.setColor(QPalette::Text, optionV4->palette.color(QPalette::Inactive, QPalette::Shadow));
 	QRect textRect =// style->
 	    _view->style()->subElementRect(QStyle::SE_ItemViewItemText, &option);// _view->style()->subElementRect(QStyle::SE_ItemViewItemText, optionV4.get());
 //	painter->restore();
@@ -443,7 +443,12 @@ void ViewDelegation::paint(QPainter *painter, const QStyleOptionViewItem &option
 	painter->translate(QPoint(textRect.topLeft().x(), textRect.topLeft().y() - 2));
 	painter->setClipRect(textRect.translated(- textRect.topLeft()));
 	doc.documentLayout()->draw(painter, ctx);
+//	if(it == _view->current_item()){
+////	    _view->setFocus();
+//	    _record_ctrl->select_as_current(_record_ctrl->index<pos_proxy>(it));
+//	}
 	painter->restore();
+
 #else
 
 
@@ -476,7 +481,7 @@ QSize ViewDelegation::sizeHint(const QStyleOptionViewItem &option, const QModelI
     doc.setHtml(option.text);	// doc.setHtml(optionV4.text);
     doc.setTextWidth(option.rect.width());	// doc.setTextWidth(optionV4.rect.width());
 
-    return QSize(doc.idealWidth(), doc.size().height());
+    return QSize(static_cast<int>(doc.idealWidth()), static_cast<int>(doc.size().height()));
 
 //    return QStyledItemDelegate::sizeHint(option, index);
 }
@@ -514,7 +519,7 @@ QWidget *ViewDelegation::createEditor(QWidget *parent, const QStyleOptionViewIte
 
 #endif
 
-		return result;																																																																																		//    return QStyledItemDelegate::createEditor(parent, option, index);
+		return result;																																																																																																																																																		//    return QStyledItemDelegate::createEditor(parent, option, index);
 }
 
 void ViewDelegation::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const {
@@ -918,11 +923,11 @@ void rv_t::restore_header_state(void){
 
 
 // Слот клика по записи. Принимает индекс Proxy модели
-void rv_t::on_click(const QModelIndex &proxy_index){
+void rv_t::on_click(const QModelIndex &index_proxy_){
 //    setSelectionMode(QAbstractItemView::SingleSelection);// ExtendedSelection
-    if(proxy_index.isValid() && _previous_index != proxy_index){
-	_previous_index = proxy_index;
-	_record_controller->index_invoke(index_proxy(proxy_index));
+    if(index_proxy_.isValid() && _previous_index != index_proxy_){
+	_previous_index = index_proxy_;
+	_record_controller->index_invoke(index_proxy(index_proxy_));
     }
 }
 
@@ -973,7 +978,7 @@ void rv_t::on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualI
 	// После это кода logicalIindex=visualIndex для всех полей
     for(int logicalIdx = 0; logicalIdx < showFields.size(); logicalIdx ++){
 	int visualIdx = horizontalHeader()->visualIndex(logicalIdx);
-	if(visualIdx != logicalIdx) horizontalHeader()->moveSection(visualIdx, logicalIdx);																																																																																																																																																																																																																																																			// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
+	if(visualIdx != logicalIdx) horizontalHeader()->moveSection(visualIdx, logicalIdx);																																																																																																																																																																																																																																																																																																																																																																																																																																																			// Этот вызов запустит срабатывание этого же слота sectionMoved(), поэтому нужен enableMoveSection
     }
     _enable_move_section = true;
 
@@ -1035,7 +1040,7 @@ void rv_t::edit_field_context(void){
     QModelIndexList	selectItems = selectionModel()->selectedIndexes();
     index_proxy		proxy_index;
     for(auto &si : selectItems)
-		if(0 == si.column()) proxy_index = index_proxy(si);																																																																																																																																																																																							// selectItems.at(0);
+		if(0 == si.column()) proxy_index = index_proxy(si);																																																																																																																																																																																																																																																																																																																																							// selectItems.at(0);
     auto current_index = currentIndex();
 
 	// auto _index0 = _record_controller->proxyindex_to_sourceindex(proxy_index);
@@ -1109,28 +1114,30 @@ void rv_t::edit_field_context(void){
 boost::intrusive_ptr<TreeItem> rv_t::current_item() const {
     auto it = _record_controller->source_model()->current_item();
     if(it){
-	pos_proxy posproxy = _record_controller->index<pos_proxy>(it);
+	pos_proxy pos_proxy_ = _record_controller->index<pos_proxy>(it);
 ////	pos_source	possource	= _record_controller->index<pos_source>(it);
 ////	auto		index		= static_cast<QModelIndex>(_record_controller->index<index_source>(posproxy));
-//	auto proxy_curi	= selectionModel()->currentIndex();
+//	index_proxy proxy_curi(selectionModel()->currentIndex());
 ////	auto	source_index	= _record_controller->source_model()->current_index();
 ////	auto	proxy_index	= _record_controller->proxy_model()->mapFromSource(static_cast<QModelIndex>(source_index));
 ////	assert(proxy_curi == proxy_index);
-	if(posproxy != static_cast<QModelIndex>(_record_controller->source_model()->current_index()).row()){	// if(posproxy != proxy_curi.row()){	// never equaled	// currentIndex().row()){	// selectionModel()->currentIndex().row()
+	//
+	if(pos_proxy_ != static_cast<QModelIndex>(_record_controller->index<index_proxy>(_record_controller->source_model()->current_index())).row()){	//
+//	if(pos_proxy_ != static_cast<QModelIndex>(proxy_curi).row()){	// never equaled	// currentIndex().row()){	// selectionModel()->currentIndex().row()
 		//
 //	    const_cast<rv_t *>(this)->reset();
 //	    _record_controller->proxy_model()->setSourceModel(_record_controller->source_model());
 //	    const_cast<rv_t *>(this)->setModel(_record_controller->proxy_model());
 
-	    _record_controller->select_as_current(posproxy);
+	    _record_controller->select_as_current(pos_proxy_);
 	}
     }
     return it;
 }
 
-bool rv_t::is_selected_set_to_top(void){return (int) selection_first<pos_proxy>() == pos_proxy(0);}
+bool rv_t::is_selected_set_to_top(void){return selection_first<pos_proxy>() == pos_proxy(0);}
 
-bool rv_t::is_selected_set_to_bottom(void){return (int) selection_first<pos_proxy>() == model()->rowCount() - 1;}
+bool rv_t::is_selected_set_to_bottom(void){return selection_first<pos_proxy>() == pos_proxy(model()->rowCount() - 1);}
 
 //// mode - режим в котором добавлялась новая запись
 //// pos - позиция новой записи в размерности Source модели
@@ -1515,7 +1522,7 @@ void rv_t::resizeEvent(QResizeEvent *e){
 	for(auto it : show_fields) if(it == "row number") show_fields.removeOne(it);
 	int required_width = row_number_width;
 //	int	i		= 0;
-	for(auto w : show_fields_width) required_width += w.toInt();																																																																																																																																																																																					// columnWidth(i ++);
+	for(auto w : show_fields_width) required_width += w.toInt();																																																																																																																																																																																																																																																																																																																																					// columnWidth(i ++);
 	for(int i = 0; i < show_fields.size(); i ++){
 	    if(required_width >= real_capacity){			// if((columnWidth(0) + columnWidth(1)) >= real_width){
 		if(_is_field_type_column(boost::mpl::c_str<pin_type>::value, i)) setColumnWidth(i, _pin_width);
@@ -1563,8 +1570,8 @@ void rv_t::resizeEvent(QResizeEvent *e){
 template<>pos_proxy rv_t::selection_first<pos_proxy>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty()) return pos_proxy(- 1);																																																																																																																																														// Если ничего не выделено
-    else return pos_proxy((selectItems.at(0)).row());																																																																																																																																															// Номер первого выделенного элемента
+    if(selectItems.isEmpty()) return pos_proxy(- 1);																																																																																																																																																																																																																																																														// Если ничего не выделено
+    else return pos_proxy((selectItems.at(0)).row());																																																																																																																																																																																																																																																															// Номер первого выделенного элемента
 }
 
 template<>pos_source rv_t::selection_first<pos_source>() const {
@@ -1576,7 +1583,7 @@ template<>pos_source rv_t::selection_first<pos_source>() const {
 template<>id_value rv_t::selection_first<id_value>() const {
 	// Получение списка выделенных Item-элементов
     QModelIndexList selectItems = selectionModel()->selectedIndexes();
-    if(selectItems.isEmpty()) return id_value("");																																																																																																																																														// Если ничего не выделено
+    if(selectItems.isEmpty()) return id_value("");																																																																																																																																																																																																																																																														// Если ничего не выделено
 
     return id_value(selectItems.at(0).data(RECORD_ID_ROLE).toString());
 }

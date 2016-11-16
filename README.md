@@ -9,6 +9,16 @@ The next step, I aim to append some real-time collaborative editing functions.
 
 Should you need more functions, feel free to contact me: hughvonyoung@gmail.com
 
+How to remote synchronize mytetra_webengine
+_______________________________________________________________________
+
+Currently I choose Dropbox
+
+Move fils to Dropbox:
+
+    `rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."`
+
+After that, Change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
 How to build mytetra_webengine
 _______________________________________________________________________
