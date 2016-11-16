@@ -127,8 +127,11 @@ _______________________________________________________________________
 * Each header file must have the following structure:
 
 	\#ifndef _CLIPBBRANCH_H_
+
 	\#define _CLIPBBRANCH_H_
+
 	...
+
 	\#endif // _CLIPBBRANCH_H_
 
 * Always use the classes, and classes instead of Qt's containers and containers STL;
