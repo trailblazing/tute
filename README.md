@@ -16,73 +16,84 @@ Currently I choose Dropbox
 
 Move fils to Dropbox:
 
-`rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."`
+	```
+	rsync -n -avhSDHAX  --progress --delete --ignore-errors --force --stats "./bin/" "~/dropbox/knowledge\ management/."
+	```
 
 After that, Change settings from contextmenu: Main Menu: Tools: Main Preferences: Main: "Data directory" and "Trash directory". Point them to new "data" and "trash" folders.
 
 ##How to build mytetra_webengine
 _______________________________________________________________________
 
-1 Build on Linux
+###1 Build on Linux
 
 Let's say the directory of your current project is named "working":
 
-`working`
-`    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)`
-`    |       |____src`
-`    |`
-`    |____knowledge management (name is whatever)`
-`            |____mytetra_webengine (created by or synchronized with git)`
+	```
+	working
+	    |____verdigris (created by or synchronized with git) (does not needed for Qt 5.7)
+	    |       |____src
+	    |
+	    |____knowledge management (name is whatever)
+		    |____mytetra_webengine (created by or synchronized with git)
+	```
 
+####1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
 
-1.1 Install C++ Boost library (for boost::intrusive_ptr, boost::MPL, and some others. I installed it from package manager)
+####1.2 Install verdigris (for remove qt::moc in Qt 5.6. Two header-only files.)
 
-1.2 Install verdigris (for remove qt::moc in Qt 5.6. Two header-only files.)
+	```
+	git clone https://github.com/woboq/verdigris.git
+	```
 
-`git clone https://github.com/woboq/verdigris.git`
+####1.3 Download and install Qt 5.7
 
-1.3 Download and install Qt 5.7
-
-`wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run`
+	```
+	wget http://download.qt.io/official_releases/online_installers/qt-unified-linux-x64-online.run
+	```
 
 * Run the installation. Default location for administrator installation (hereafter called "path-to-qt-installation"):
 
-`/opt/Qt/5.7`
+	```
+	/opt/Qt/5.7
+	```
+but it's not a must
 
-    but it's not a must
+* Environment in ~/.profile (~/.bash_profile or ~/.bashrc)
+	```
+	QT5DIR=/path-to-qt-installation/gcc_64
 
-* Environment in ~/.profile
+	export QT5DIR
 
-`QT5DIR=/path-to-qt-installation/gcc_64`
+	if ! echo ${PATH} | /bin/grep -q $QT5DIR/bin ; then
+	    PATH=$QT5DIR/bin:${PATH}
+	    PKG_CONFIG_PATH=$QT5DIR/lib/pkgconfig:${PKG_CONFIG_PATH}
+	fi
 
-`export QT5DIR`
+	QT5INC="$QT5DIR/include"
+	QT5LIB="$QT5DIR/lib"
+	QT5LIB=$QT5DIR/plugins/platforms:${QT5LIB}
+	PATH=$QT5INC:${PATH}
+	PATH=$QT5LIB:${PATH}
 
-`if ! echo ${PATH} | /bin/grep -q $QT5DIR/bin ; then`
-`    PATH=$QT5DIR/bin:${PATH}`
-`    PKG_CONFIG_PATH=$QT5DIR/lib/pkgconfig:${PKG_CONFIG_PATH}`
-`fi`
-
-`QT5INC="$QT5DIR/include"`
-`QT5LIB="$QT5DIR/lib"`
-`QT5LIB=$QT5DIR/plugins/platforms:${QT5LIB}`
-`PATH=$QT5INC:${PATH}`
-`PATH=$QT5LIB:${PATH}`
-
-`export QT5DIR QT5INC QT5LIB PATH`
-
+	export QT5DIR QT5INC QT5LIB PATH
+	```
 * Do not recommend to mix it up with system installation of Qt
 
-1.4 Clone the repo to your workbench
+####1.4 Clone the repo to your workbench
+	```
+	git clone https://github.com/beimprovised/mytetra_webengine.git
+	```
 
-`git clone https://github.com/beimprovised/mytetra_webengine.git`
+####1.5 Compile
 
-1.5 Compile
+	```
+	/path-to-qt-installation/gcc_64/bin/qmake mytetra_webengine.pro
 
-`/path-to-qt-installation/gcc_64/bin/qmake mytetra_webengine.pro`
+	make all
 
-`make all`
-
-`sudo make install`
+	sudo make install
+	```
 
 * Or via GUI (Compile the Qt project file with Qt-Creator which comes with Qt 5.7):
         Open "mytetra_webengine.pro" under mytetra_webengine in qtcreator
@@ -91,7 +102,7 @@ Let's say the directory of your current project is named "working":
 
 _______________________________________________________________________
 
-mytetra_webengine is forked from MyTetra
+##mytetra_webengine is forked from MyTetra
 _______________________________________________________________________
 
 ENG: Central source repository for MyTetra development.
@@ -104,7 +115,7 @@ Agreement on the coding (registration code)
 
 _______________________________________________________________________
 
-When writing code to be guided by the following agreements:
+###When writing code to be guided by the following agreements:
 
 * Source file encoding: UTF-8;
 * Comments in the code allowed the Russian and English languages;
@@ -121,12 +132,12 @@ When writing code to be guided by the following agreements:
 * The header class, after the section is necessary in #include class assignment to write comments.
 * Each header file must have the following structure:
 
-`````
-`#ifndef _CLIPBBRANCH_H_`
-`#define _CLIPBBRANCH_H_`
-`...`
-`#endif // _CLIPBBRANCH_H_`
-`````
+	```
+	#ifndef _CLIPBBRANCH_H_
+	#define _CLIPBBRANCH_H_
+	...
+	#endif // _CLIPBBRANCH_H_
+	```
 
 * Always use the classes, and classes instead of Qt's containers and containers STL;
 * The program is designed as a cross-platform MyTetra Qt-only application. MyTetra program should not depend on third-party libraries that are not part of Qt. If you need to use a third-party library of its source code to the project.
