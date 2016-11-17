@@ -138,7 +138,7 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	boost::intrusive_ptr<TreeItem>	item(const pos_source _index) const;
 	boost::intrusive_ptr<TreeItem>	item(const id_value &id);
 	boost::intrusive_ptr<TreeItem>	item(const id_value &id) const;
-	boost::intrusive_ptr<TreeItem>	item(const QUrl &_url) const;
+//	boost::intrusive_ptr<TreeItem>	item(const QUrl &_url) const;	// lead implicit construct
 	boost::intrusive_ptr<TreeItem>	item_fat(const pos_source index);
 	// boost::intrusive_ptr<TreeItem> item(int pos) {return item(pos);}
 	// boost::intrusive_ptr<TreeItem> item(int pos)const {return item(pos);}

@@ -2233,25 +2233,25 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 // return record_; //_record;
 // }
 
-boost::intrusive_ptr<TreeItem> rctrl_t::find(const QUrl &_url){
-    boost::intrusive_ptr<TreeItem> item = nullptr;
+//boost::intrusive_ptr<TreeItem> rctrl_t::find(const QUrl &_url){
+//    boost::intrusive_ptr<TreeItem> item = nullptr;
 
 
-	// TableController *_record_controller = globalparameters.table_screen()->table_controller();
-	// assert(_record_controller);
+//	// TableController *_record_controller = globalparameters.table_screen()->table_controller();
+//	// assert(_record_controller);
 
-	// if(_record_controller) {
-	// auto browser_pages = this->_source_model->browser_pages();
-    assert(_source_model->count() > 0);
+//	// if(_record_controller) {
+//	// auto browser_pages = this->_source_model->browser_pages();
+//    assert(_source_model->count() > 0);
 
-	// if(browser_pages) {
-    item = _source_model->item(_url);
-	// }
+//	// if(browser_pages) {
+//    item = _source_model->item(_url);
+//	// }
 
-	// }
+//	// }
 
-    return item;
-}
+//    return item;
+//}
 
 // namespace browser {
 // class Browser;

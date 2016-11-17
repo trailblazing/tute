@@ -125,7 +125,7 @@ class rctrl_t : public QObject {
 	void remove(id_value delete_id);
 	void remove(QVector<id_value> delete_ids);
 
-	boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
+//	boost::intrusive_ptr<TreeItem> find(const QUrl &_url);
 
 	//    boost::intrusive_ptr<TreeItem> item_request_from_tree(boost::intrusive_ptr<TreeItem> item);
 
