@@ -296,7 +296,7 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	// if(count() == 0)    // if(!browser_pages())    // if(!_table)
 	// return QVariant();
 	// Если таблица пустая
-    if(0 == count())																																																																																					// if(_table->size() == 0)
+    if(0 == count())																																																																																								// if(_table->size() == 0)
 		return QVariant();
 	// Если индекс недопустимый, возвращается пустой объект
     if(! index.isValid()) return QVariant();
@@ -317,14 +317,14 @@ QVariant RecordModel::data(const QModelIndex &index, int role) const {
 	    if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < ctime_type >::value){
 		// Преобразование временного штампа в дату и время
 //		QDateTime fieldDateTime = QDateTime::fromString(field, "yyyyMMddhhmmss");
-		if(appconfig.enable_custom_datetime_format() == false) return field;																																																																																																																																																																																																																																								// fieldDateTime.toString(Qt::SystemLocaleDate);
-		else return field;																																																																																																																																								// fieldDateTime.toString(appconfig.custom_datetime_format());
+		if(appconfig.enable_custom_datetime_format() == false) return field;																																																																																																																																																																																																																																																			// fieldDateTime.toString(Qt::SystemLocaleDate);
+		else return field;																																																																																																																																													// fieldDateTime.toString(appconfig.custom_datetime_format());
 	    }	// else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < name_type >::value)return "<b>" + it->field<name_type>() + "</b>";
 	    else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < has_attach_type >::value){		// "hasAttach"   // Наличие аттачей
-		if(field == "0") return "";																																																																																																																																																																				// Если аттачей нет, выводится пустая строка. Это повышает читабельность
-		else return tr("Yes");																																																																																																																																											// На русский перевести как "Есть"
+		if(field == "0") return "";																																																																																																																																																																										// Если аттачей нет, выводится пустая строка. Это повышает читабельность
+		else return tr("Yes");																																																																																																																																																// На русский перевести как "Есть"
 	    }else if(role == Qt::DisplayRole && field_name == boost::mpl::c_str < attach_count_type >::value){	// "attachCount"   // Количество аттачей
-		if(field == "0") return "";																																																																																																																																																																				// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
+		if(field == "0") return "";																																																																																																																																																																										// Если количество аттачей нуливое, выводится пустая строка. Это повышает читабельность
 		else return field;
 	    }else if(role == Qt::UserRole || role == Qt::EditRole){	// just a test
 #ifdef USE_STAR_RATING
@@ -358,7 +358,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	// if(!browser_pages())    // if(!_table)
 	// return false;
 	// Если таблица пустая
-    if(0 == count())																																																																																					// if(_table->size() == 0)
+    if(0 == count())																																																																																								// if(_table->size() == 0)
 		return false;
 	// Если индекс недопустимый
     if(! index.isValid()) return false;
@@ -380,7 +380,7 @@ bool RecordModel::setData(const QModelIndex &index, const QVariant &value, int r
 	    if(_record_controller->view()->is_field_type_column<rating_type>(index.column())){
 //                _record_controller->view()->edit(index);
 //                _record_controller->close_context();
-	    }else emit dataChanged(index, index);																																																																																																																																																																																																	// Посылается сигнал что данные были изменены
+	    }else emit dataChanged(index, index);																																																																																																																																																																																																								// Посылается сигнал что данные были изменены
 
 	    return true;
 	}
@@ -708,8 +708,8 @@ index_source RecordModel::fake_index(boost::intrusive_ptr<TreeItem> it) const {
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const std::function<bool (const id_value)> _equal) const {
     boost::intrusive_ptr<TreeItem> result = nullptr;
-    for(int i = 0; i < count(); i ++){
-	auto it = item(pos_source(i));
+    for(int _index = 0; _index < count(); _index ++){
+	auto it = _record_controller->tabmanager()->webView((int) _index)->page()->binder()->host();	// item(pos_source(i));
 	if(_equal(it->id())){
 	    result = it;
 	    break;
@@ -718,15 +718,15 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const std::function<bool (const
     return result;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it) const {
-    boost::intrusive_ptr<TreeItem> result = nullptr;
-    for(int i = 0; i < count(); i ++){
-	if(item(pos_source(i)) == it){
-	    result = it;break;
-	}
-    }
-    return result;
-}
+// boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> it) const {
+//    boost::intrusive_ptr<TreeItem> result = nullptr;
+//    for(int i = 0; i < count(); i ++){
+//	if(item(pos_source(i)) == it){
+//	    result = it;break;
+//	}
+//    }
+//    return result;
+// }
 
 // boost::intrusive_ptr<TreeItem> RecordModel::item(const QUrl &_url) const {	// lead implicit construct
 //    boost::intrusive_ptr<TreeItem> result(nullptr);
@@ -755,35 +755,35 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(boost::intrusive_ptr<TreeItem> 
 // return pos;
 // }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id){
-    boost::intrusive_ptr<TreeItem> r(nullptr);
-    for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
-	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
-	if(it->id() == id){
-	    r = it;
-	    break;
-	}
-    }
-    return r;
-}
+// boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id){
+//    boost::intrusive_ptr<TreeItem> r(nullptr);
+//    for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
+//	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
+//	if(it->id() == id){
+//	    r = it;
+//	    break;
+//	}
+//    }
+//    return r;
+// }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
-    boost::intrusive_ptr<TreeItem> r(nullptr);
-    for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
-	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
-	if(it->id() == id){
-	    r = it;
-	    break;
-	}
-    }
-    return r;
-}
+//boost::intrusive_ptr<TreeItem> RecordModel::item(const id_value &id) const {
+//    boost::intrusive_ptr<TreeItem> r(nullptr);
+//    for(int pos = 0; pos < _record_controller->tabmanager()->count(); pos ++){
+//	auto it = _record_controller->tabmanager()->webView(pos)->page()->host();
+//	if(it->id() == id){
+//	    r = it;
+//	    break;
+//	}
+//    }
+//    return r;
+//}
 
-boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index){
-    boost::intrusive_ptr<TreeItem> r(nullptr);
-    if(_index >= 0 && _index < size()) r = _record_controller->tabmanager()->webView((int) _index)->page()->host();
-    return r;
-}
+// boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index){
+//    boost::intrusive_ptr<TreeItem> r(nullptr);
+//    if(_index >= 0 && _index < size()) r = _record_controller->tabmanager()->webView((int) _index)->page()->host();
+//    return r;
+// }
 
 boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index) const {
     boost::intrusive_ptr<TreeItem> r(nullptr);
@@ -796,11 +796,11 @@ boost::intrusive_ptr<TreeItem> RecordModel::item(const pos_source _index) const 
     return r;
 }
 
-boost::intrusive_ptr<TreeItem> RecordModel::item_fat(const pos_source index){
-    boost::intrusive_ptr<TreeItem> item = _record_controller->tabmanager()->webView((int) index)->page()->host();
-    if(item->is_lite()) item->to_fat();
-    return item;
-}
+// boost::intrusive_ptr<TreeItem> RecordModel::item_fat(const pos_source index){
+//    boost::intrusive_ptr<TreeItem> item = _record_controller->tabmanager()->webView((int) index)->page()->host();
+//    if(item->is_lite()) item->to_fat();
+//    return item;
+// }
 
 rctrl_t *RecordModel::reocrd_controller() const {return _record_controller;}
 

@@ -190,7 +190,7 @@ void rctrl_t::select_as_current(pos_proxy pos_proxy_){	// , const int mode
 		// this->setFocus();   // ?
 	    pos_source	pos_source_	= index<pos_source>(pos_proxy_);
 	    auto	it		= index<boost::intrusive_ptr<TreeItem> >(pos_source_);
-	    if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// setCurrentIndex(static_cast<int>(pos_source_));
+	    if(_tabmanager->currentIndex() != static_cast<int>(pos_source_)) _tabmanager->select_as_current(it->page()->view());																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								// setCurrentIndex(static_cast<int>(pos_source_));
 	    auto tree_screen = globalparameters.main_window()->tree_screen();
 	    if(tree_screen->view()->current_item() != it) tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return tree_screen->view()->source_model();}, it));
 	    if(it) if(it->page()) it->page()->metaeditor_sychronize();
@@ -772,8 +772,8 @@ void rctrl_t::add_items_to_clipboard(ClipboardRecords *clipboardRecords, QModelI
 	index_source index_ = index<index_source>(index_proxy(items_copy.at(i)));
 
 	// The image recording, including all text data (text records, property records list an attached file)        // Образ записи, включающий все текстовые данные (текст записи, свойства записи, перечень приаттаченных файлов)
-	boost::intrusive_ptr<TreeItem> record = _source_model->item_fat(pos_source(((QModelIndex) index_).row()));
-
+	boost::intrusive_ptr<TreeItem> record = _source_model->item(pos_source(((QModelIndex) index_).row()));
+	if(record->is_lite()) record->to_fat();
 	clipboardRecords->add_record(record);
     }
 }
@@ -1283,7 +1283,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
 	// todo: сделать заполнение таблицы приаттаченных файлов
 	// Record record;
 	// if(record.isLite())record.switchToFat();
-    if(item_target->is_lite()) item_target->to_fat();																																																																																																																																																																																																																																																																																																																																																																																																																																																// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
+    if(item_target->is_lite()) item_target->to_fat();																																																																																																																																																																																																																																																																																																																																																																																																																																																																					// I met this!!! but before in, I am sure I called to_fat() already. just at delete?
     assert(! item_target->is_lite());
 
 	// record.setText(addNewRecordWin.getField("text"));
@@ -1347,7 +1347,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     pos_source selected_source_position(- 1);
 //    assert(_source_model->item(item_target->field<id_type>()));
 	// Вставка новых данных, возвращаемая позиция - это позиция в Source данных
-    if(! _source_model->item(item_target)){
+    if(! _source_model->item([&](const id_value id){return id == item_target->id();})){
 	v				= _source_model->insert_new_item(item_target);	// , mode	// source_position_index,
 	selected_source_position	= _tabmanager->webViewIndex(v);
     }else{
@@ -1358,7 +1358,7 @@ browser::WebView *rctrl_t::addnew_item(boost::intrusive_ptr<RecordIndex> record_
     assert(_source_model->item(selected_source_position) == item_target || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
     assert(_source_model->position(item_target->id()) == selected_source_position || item_target->field<url_type>() == "" || item_target->field<url_type>() == browser::Browser::_defaulthome);
 	// assert(_source_model->child(selected_position) == item);
-    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , mode // modify _source_model? yeah
+    if(make_current) select_as_current(index<pos_proxy>(selected_source_position));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// , mode // modify _source_model? yeah
 
 	// Сохранение дерева веток
 	// find_object<TreeScreen>(tree_screen_singleton_name)
@@ -1635,7 +1635,7 @@ void rctrl_t::close_context(void){
 	}
     }
     remove(delete_ids);
-    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// }
+    if(_view->currentIndex().row() != _tabmanager->currentIndex()) select_as_current(pos_proxy(_tabmanager->currentIndex()));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																	// }
 }
 
 void rctrl_t::remove(id_value delete_id){
@@ -1742,8 +1742,8 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 		    std::sort(std::begin(y)
 			     , std::end(y)
 			     , [&](id_value i1, id_value i2){
-			    auto item1 = _source_model->item(i1);
-			    auto item2 = _source_model->item(i2);
+			    auto item1 = _source_model->item([&](const id_value id){return id == i1;});
+			    auto item2 = _source_model->item([&](const id_value id){return id == i2;});
 			    bool result = false;
 			    if(item1 && item2){
 				browser::WebView *v1 = nullptr;
@@ -1781,7 +1781,7 @@ void rctrl_t::remove(QVector<id_value> delete_ids){
 		for(size_t i = 0; i < pre.size(); i ++){
 		    id_value id = pre[i];
 			// QModelIndex idx = id_to_proxyindex(id);
-		    auto item = _source_model->item(id);
+		    auto item = _source_model->item([&](const id_value id_){return id_ == id;});
 		    if(item){
 			browser::WebView *v = nullptr;
 			if((v = _tabmanager->find([&](boost::intrusive_ptr<const ::Binder> b){return url_equal(b->host()->field<url_type>().toStdString(), item->field<url_type>().toStdString()) && b->host()->id() == item->id();}))){	// "url"
@@ -2005,7 +2005,7 @@ void rctrl_t::on_sort_request(int logicalIndex, Qt::SortOrder order){
 //		});
 //	    int t = 0;
 	    for(auto v : v_list){
-		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																											// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
+		if(v->page()->host()->field<pin_type>() != _string_from_check_state[Qt::Unchecked]) _source_model->move(pos_source(_tabmanager->webViewIndex(v)), pos_source(0));																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																// , index<pos_source>(pos_proxy(_tabmanager->count() - 1))
 //		t ++;
 	    }
 	}else if(header_title == title_field_description){
@@ -2138,7 +2138,7 @@ void rctrl_t::on_print_click(void){
 // record url may be empty or browser::Browser::_defaulthome
 boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordIndex> record_index_){
     boost::intrusive_ptr<TreeItem>		it		= record_index_->host();
-    boost::intrusive_ptr<TreeItem>		_found_item	= _source_model->item(it);
+    boost::intrusive_ptr<TreeItem>		_found_item	= _source_model->item([&](const id_value id){return id == it->id();});
     browser::WebView				*v		= nullptr;
     pos_source					source_position(- 1);
 //    if(! _found_item){
@@ -2233,7 +2233,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 // return record_; //_record;
 // }
 
-//boost::intrusive_ptr<TreeItem> rctrl_t::find(const QUrl &_url){
+// boost::intrusive_ptr<TreeItem> rctrl_t::find(const QUrl &_url){
 //    boost::intrusive_ptr<TreeItem> item = nullptr;
 
 
@@ -2251,7 +2251,7 @@ boost::intrusive_ptr<TreeItem> rctrl_t::synchronize(boost::intrusive_ptr<RecordI
 //	// }
 
 //    return item;
-//}
+// }
 
 // namespace browser {
 // class Browser;

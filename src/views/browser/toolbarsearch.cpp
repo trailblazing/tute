@@ -195,11 +195,11 @@ namespace browser {
 					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), url.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), url.toString().toStdString());}
 			    );
-		    if(ti)ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		    if(ti) ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		    assert(_lineedits);
 		    if(_lineedits){
 			QLineEdit *line_edit = qobject_cast<QLineEdit *>(_lineedits->currentWidget());
-			if(line_edit)line_edit->setText(search_text);
+			if(line_edit) line_edit->setText(search_text);
 		    }
 			// globalparameters.entrance()->activebrowser()->tabWidget()->currentLineEdit()->setText(searchText);
 
@@ -211,9 +211,9 @@ namespace browser {
 			// lineedit->returnPressed();
 		}else{
 		    QStringList newList = _stringlistmodel->stringList();
-		    if(newList.contains(search_text))newList.removeAt(newList.indexOf(search_text));
+		    if(newList.contains(search_text)) newList.removeAt(newList.indexOf(search_text));
 		    newList.prepend(search_text);
-		    if(newList.size() >= _maxsavedsearches)newList.removeLast();
+		    if(newList.size() >= _maxsavedsearches) newList.removeLast();
 		    if(! sapp_t::instance()->privateBrowsing()){
 			_stringlistmodel->setStringList(newList);
 			_autosaver->changeOccurred();
@@ -234,7 +234,7 @@ namespace browser {
 					      , std::bind(&tv_t::move, tree_view, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4)
 					      , [&](boost::intrusive_ptr<const TreeItem> it_) -> bool {return url_equal(it_->field<home_type>().toStdString(), search_engine.toString().toStdString()) || url_equal(it_->field<url_type>().toStdString(), search_engine.toString().toStdString());}
 			    );
-		    if(ti)ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
+		    if(ti) ti->activate(std::bind(&HidableTabWidget::find, globalparameters.main_window()->vtab_record(), std::placeholders::_1));
 		}
 	    }
 	}
@@ -262,7 +262,7 @@ namespace browser {
 //	    auto _total_progress_counter = 0;
 	    for(auto it : child_items){	//	    for(auto il : result_item->child_linkers()){//	// move to search result
 //		auto it = il->host();
-		if(! ctrl->source_model()->item(it)){
+		if(! ctrl->source_model()->item([&](const id_value id){return id == it->id();})){
 		    boost::intrusive_ptr<RecordIndex> record_index = RecordIndex::instance([&] {return ctrl->source_model();}, it, last);			// current_item_
 		    last = it;			// current_item_ = it;	//
 			//                            if(record_index){

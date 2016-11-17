@@ -129,18 +129,18 @@ class RecordModel : public QAbstractTableModel	// , public pages_container
 	// for multi items link with unique page
 //	boost::intrusive_ptr<TreeItem>	item_bounded(boost::intrusive_ptr<TreeItem> it) const;
 	boost::intrusive_ptr<TreeItem> item(const std::function<bool (const id_value)> _equal) const;
-	boost::intrusive_ptr<TreeItem> item(boost::intrusive_ptr<TreeItem> it) const;
+//	boost::intrusive_ptr<TreeItem> item(boost::intrusive_ptr<TreeItem> it) const;
 
 	// int item_current(QString find_id);
 	// bool remove_child(QString find_id);
 	// bool remove_child(int index);
 	// boost::intrusive_ptr<TreeItem> tree_item() {return _shadow_branch_root;}
-	boost::intrusive_ptr<TreeItem>	item(const pos_source _index);
+//	boost::intrusive_ptr<TreeItem>	item(const pos_source _index);
 	boost::intrusive_ptr<TreeItem>	item(const pos_source _index) const;
-	boost::intrusive_ptr<TreeItem>	item(const id_value &id);
-	boost::intrusive_ptr<TreeItem>	item(const id_value &id) const;
+//	boost::intrusive_ptr<TreeItem>	item(const id_value &id);
+//	boost::intrusive_ptr<TreeItem>	item(const id_value &id) const;
 //	boost::intrusive_ptr<TreeItem>	item(const QUrl &_url) const;	// lead implicit construct
-	boost::intrusive_ptr<TreeItem>	item_fat(const pos_source index);
+//	boost::intrusive_ptr<TreeItem>	item_fat(const pos_source index);
 	// boost::intrusive_ptr<TreeItem> item(int pos) {return item(pos);}
 	// boost::intrusive_ptr<TreeItem> item(int pos)const {return item(pos);}
 
