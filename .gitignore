@@ -9,6 +9,7 @@ Makefile
 qdevelop-settings.db
 qrc_mytetra.cpp
 mytetra.pro.user*
+mytetra_webengine.pro.user*
 
 /bin/*
 !/bin/resource
