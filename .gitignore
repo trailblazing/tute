@@ -5,10 +5,25 @@
 /release
 /misc
 /qtc-gdbmacros
-Makefile
+Makefile*
 qdevelop-settings.db
 qrc_mytetra.cpp
-mytetra.pro.user*
+Makefile.user*
+
+# Qt-es
+
+/.qmake.cache
+/.qmake.stash
+*.pro.user
+*.pro.user.*
+*.qbs.user
+*.qbs.user.*
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+*build-*
+
 
 /bin/*
 !/bin/resource
@@ -28,7 +43,14 @@ mytetra.pro.user*
 *.lai
 *.la
 *.a
+# C++ objects and libs
 
+*.dll
+*.dylib
+
+
+
+# C++ objects and libs
 # Ignore bash files
 *.sh
 
@@ -38,3 +60,17 @@ mytetra.pro.user*
 
 # Ignore gitignore self
 .gitignore
+data
+trash
+backup
+
+# QtCreator
+
+*.autosave
+
+# QtCtreator Qml
+*.qmlproject.user
+*.qmlproject.user.*
+
+# QtCtreator CMake
+CMakeLists.txt.user*
