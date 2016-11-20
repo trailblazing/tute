@@ -229,7 +229,8 @@ class AppConfig : public QObject {
 
     private:
 
-        std::shared_ptr<QSettings>	_app_conf;	// было static
+//        std::shared_ptr<QSettings>
+        QSettings *_app_conf;	// было static
         QString	get_parameter(QString name) const;
 
         QStringList remove_parameter_from_table(QString removeName, QStringList table);
