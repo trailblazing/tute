@@ -32,10 +32,10 @@ AppConfig::AppConfig(QObject *pobj){
 
 // Деструктор объекта настройки программы
 AppConfig::~AppConfig(){
-    if(is_init_flag){
-        qDebug() << "Save mytetra config file";
-        _app_conf->sync();
-    }
+//    if(is_init_flag){
+//        qDebug() << "Save mytetra config file";
+//        _app_conf->sync();
+//    }
 //    delete _app_conf;
 }
 
