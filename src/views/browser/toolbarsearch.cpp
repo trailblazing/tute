@@ -224,7 +224,7 @@ namespace browser {
 			//                url_query.addQueryItem(QLatin1String("q"), searchText);
 		    url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
 		    url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-		    url_query.addQueryItem(QLatin1String("client"), QLatin1String("mytetra"));
+            url_query.addQueryItem(QLatin1String("client"), QLatin1String(globalparameters.main_program_file().toLatin1()));
 			// urlQuery.addQueryItem();
 
 		    search_engine.setQuery(url_query);

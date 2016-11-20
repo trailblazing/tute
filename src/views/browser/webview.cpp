@@ -618,7 +618,7 @@ namespace browser {
 		// metaeditor->setName(title);
 		if(is_current){
 		    auto _mainwindow = globalparameters.main_window();
-		    if(! _mainwindow->windowTitle().contains(title)) _mainwindow->setWindowTitle(QString(application_name) + " : " + title);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									// table->setWorkPos(pos);
+            if(! _mainwindow->windowTitle().contains(title)) _mainwindow->setWindowTitle(QString(globalparameters.application_name()) + " : " + title);																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																									// table->setWorkPos(pos);
 		    _editor_screen->name(title);
 		}
 	    }

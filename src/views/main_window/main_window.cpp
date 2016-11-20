@@ -1546,9 +1546,9 @@ void wn_t::editor_switch(void){
 
 void wn_t::tools_preferences(void){
 	// Создается окно настроек, после выхода из этой функции окно удалится
-    AppConfigDialog dialog(_vtab_record->activated_browser()->record_screen()->record_controller(), "");
+    AppConfigDialog appconfigdialog(_vtab_record->activated_browser()->record_screen()->record_controller(), "pageMain");
 
-    dialog.show();
+    appconfigdialog.show();
 }
 
 // Слот, срабатывающий при нажатии в редакторе кнопки "распахнуть"

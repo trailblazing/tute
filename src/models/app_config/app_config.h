@@ -2,7 +2,7 @@
 #define __APPCONFIG_H__
 
 
-
+#include <memory>
 
 #include <QDir>
 #include <QSettings>
@@ -229,7 +229,7 @@ class AppConfig : public QObject {
 
     private:
 
-        QSettings	*_app_conf;	// было static
+        std::shared_ptr<QSettings>	_app_conf;	// было static
         QString	get_parameter(QString name) const;
 
         QStringList remove_parameter_from_table(QString removeName, QStringList table);

@@ -141,7 +141,7 @@ QString DiskHelper::create_directory(QString path_name, QString dir_name){
     QDir dir;
 //    QString systemTempDirName = dir.tempPath();
 
-//    QString temp_dir_name = "mytetra" + get_unical_id();
+//    QString temp_dir_name = globalparameters.main_program_file() + get_unical_id();
 
 	// Создается директория
     dir.setPath(path_name);
@@ -159,7 +159,7 @@ QString DiskHelper::create_temp_directory(void){
     QDir	dir;
     QString	systemTempDirName = dir.tempPath();
 
-    QString temp_dir_name = "mytetra" + get_unical_id();
+    QString temp_dir_name = globalparameters.application_name() + get_unical_id();
 
 	// Создается директория
     dir.setPath(systemTempDirName);

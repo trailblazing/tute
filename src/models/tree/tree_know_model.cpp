@@ -79,8 +79,8 @@ tkm_t::tkm_t(const QString &index_xml_file_name, tv_t *parent) : tm_t(parent){	/
 	    init_from_xml(appconfig.tetra_dir() + "/" + index_xml_file_name);
 	    all_count = count_records_all();
 	}else{
-	    AppConfigDialog dialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
-	    dialog.show();
+        AppConfigDialog appconfigdialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+        appconfigdialog.show();
 //		// if(all_count <= 0)
 //	    throw std::runtime_error("database load failure");
 	}
@@ -100,18 +100,18 @@ tkm_t::~tkm_t(){}	//    delete rootItem;
 
 std::shared_ptr<XmlTree> tkm_t::init_from_xml(QString _file_name){
     while(! QFile::exists(_file_name)){
-//	AppConfigDialog dialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+//	AppConfigDialog appconfigdialog(nullptr	// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
 //			      , "pageMain"	// "pageRecordTable"
 //	    );
-////	dialog.changePage("pageMain");
-//	dialog.show();
+////	appconfigdialog.changePage("pageMain");
+//	appconfigdialog.show();
 	assert(trashmonitoring.is_inited());
 	if(trashmonitoring.recover_from_trash()){
 //	    _file_name		=;
 	    _xml_file_name	= _file_name;
 	}else{
-	    AppConfigDialog dialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
-	    dialog.show();
+        AppConfigDialog appconfigdialog(nullptr, "pageMain");		// globalparameters.main_window()->vtab_record()->activated_browser()->record_screen()->record_controller()
+        appconfigdialog.show();
 //	    _file_name =;
 	}
     }

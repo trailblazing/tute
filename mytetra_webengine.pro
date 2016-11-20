@@ -133,7 +133,7 @@ contains(TARGET_OS, ANY_OS) {
 
 contains(TARGET_OS, MEEGO_OS){
  message(Building the MeeGo OS version...)
- SYSTEM_PROGRAM_NAME    =   ru.webhamster.mytetra
+ SYSTEM_PROGRAM_NAME    =   ru.webhamster.mytetra_webengine
  BINARY_INSTALL_PATH    =   /opt/$${SYSTEM_PROGRAM_NAME}/bin
 }
 

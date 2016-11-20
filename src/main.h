@@ -108,7 +108,7 @@ class GlobalParameters;
 
 extern WalkHistory	walkhistory;
 extern GlobalParameters globalparameters;
-extern const char	*application_name;
+//extern const char	*application_name;
 extern const char	*meta_editor_singleton_name;
 extern const char	*record_screen_multi_instance_name;
 extern const char	*tree_screen_singleton_name;

@@ -23,10 +23,10 @@ class AppConfigDialog : public QWidget {
 #endif
 
     public:
-	AppConfigDialog(rctrl_t *_record_controller, QString firstPageName = "");
-	void changePage(QString name);
+    AppConfigDialog(rctrl_t *_record_controller, QString first_page_name = "");
+    void change_page(QString name);
     private:
-	ConfigDialog	*configDialog;
+    ConfigDialog	*config_dialog;
 	QListWidgetItem *pageMain;
 	QListWidgetItem *pageCrypt;
 	QListWidgetItem *pageSynchro;
