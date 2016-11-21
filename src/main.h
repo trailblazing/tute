@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <fstream>
 #include <QApplication>
 #include <QClipboard>
 #include <QObject>
@@ -213,5 +214,7 @@ extern bool		url_equal(const std::string &url_compare_stored, const std::string 
 //                                              , std::shared_ptr<sd::_interface<sd::meta_info<boost::shared_ptr<void>>, browser::WebView *, boost::intrusive_ptr<Record>>> activator);
 
 // boost::intrusive_ptr<Record> equip_registered(boost::intrusive_ptr<Record> record, browser::WebPage *page);
+
+extern std::ifstream::pos_type filesize(const char* filename);
 
 #endif	// __MAIN_H__
