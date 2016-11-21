@@ -112,7 +112,7 @@ namespace browser {
     }
 
     void SettingsDialog::loadFromSettings(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	const QString default_home_ = QLatin1String(Browser::_defaulthome);
 	homeLineEdit->setText(settings.value(QLatin1String("home"), default_home_).toString());
@@ -188,7 +188,7 @@ namespace browser {
     }
 
     void SettingsDialog::saveToSettings(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("MainWindow"));
 	settings.setValue(QLatin1String("home"), homeLineEdit->text());
 	settings.endGroup();
@@ -239,6 +239,7 @@ namespace browser {
 	settings.setValue(QLatin1String("persistentCookiesPolicy"), persistentCookiesPolicy);
 
 	QString pdataPath = persistentDataPath->text();
+
 	settings.setValue(QLatin1String("persistentDataPath"), pdataPath);
 
 	settings.endGroup();
@@ -263,8 +264,20 @@ namespace browser {
     }
 
     void SettingsDialog::accept(){
-	saveToSettings();
-	QDialog::accept();
+	QString pdataPath = persistentDataPath->text();
+	if(QFile::exists(pdataPath)){
+	    saveToSettings();
+	    QDialog::accept();
+	}else{
+	    QMessageBox msgBox;
+	    msgBox.setText(tr("The location can\'t be write."));
+	    msgBox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
+	    msgBox.setDefaultButton(QMessageBox::Cancel);
+//	    int ret =
+	    msgBox.exec();
+//	    if(ret != QMessageBox::Ok) return;
+	    return;
+	}
     }
 
     void SettingsDialog::showCookies(){

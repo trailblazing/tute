@@ -123,7 +123,7 @@ namespace browser {
     }
 
     void NetworkAccessManager::loadSettings(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("proxy"));
 	QNetworkProxy proxy;
 	if(settings.value(QLatin1String("enabled"), false).toBool()){

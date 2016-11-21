@@ -12,8 +12,10 @@
 #include <QToolButton>
 #include <QLayout>
 #include "libraries/global_parameters.h"
+#include "views/tree/tree_view.h"
 #include "views/browser/entrance.h"
 #include "models/tree/binder.hxx"
+#include "models/tree/tree_index.hxx"
 #include "views/main_window/main_window.h"
 
 
@@ -88,23 +90,23 @@ W_OBJECT_IMPL(HidableTabWidget)
 #endif
 
 
-HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
-				  , FindScreen *_find_screen
+HidableTabWidget::HidableTabWidget(ts_t *tree_screen_
+				  , FindScreen *find_screen_
 				  , MetaEditor *_editor_screen
-				  , browser::Entrance *_entrance
-				  , wn_t *_main_window
-				  , browser::Profile *_profile
-				  , QString _style_source)
-    : QTabWidget(_main_window)
+				  , browser::Entrance *entrance_
+				  , wn_t *main_window_
+				  , browser::Profile *profile_
+				  , QString style_source_)
+    : QTabWidget(main_window_)
       , _hide_action(new QAction(tr("▾"), this))
       , _layout(new QStackedLayout(this))
-      , _tree_screen(_tree_screen)
-      , _find_screen(_find_screen)
+      , _tree_screen(tree_screen_)
+      , _find_screen(find_screen_)
       , _editor_screen(_editor_screen)
-      , _entrance(_entrance)
-      , _main_window(_main_window)
-      , _profile(_profile)
-      , _style_source(_style_source){
+      , _entrance(entrance_)
+      , _main_window(main_window_)
+      , _profile(profile_)
+      , _style_source(style_source_){
 //    , _delegate_tab(_delegate_tab)
     _hide_action->setCheckable(true);
     _hide_action->setToolTip("Hide Panels");
@@ -144,6 +146,28 @@ HidableTabWidget::HidableTabWidget(ts_t *_tree_screen
 	    }else{
 		w->close();
 		w->deleteLater();
+	    }
+	    w = nullptr;
+	});
+
+    connect(this, &::HidableTabWidget::currentChanged, [&](int index){
+	    auto w = widget(index);
+	    if(w->objectName() == record_screen_multi_instance_name){
+//		auto rs = dynamic_cast<rs_t *>(w);
+		auto _browser = dynamic_cast<rs_t *>(w)->browser();
+		if(_browser){
+//		    if(_record_screens.find(rs) != _record_screens.end())_record_screens.erase(rs);
+		    if(_browser->tabmanager()->count() > 0){
+			auto v = _browser->currentTab();
+			if(v){
+			    auto p = v->page();
+			    if(p){
+				auto it = p->host();
+				if(_tree_screen->view()->current_item()->id() != it->id()) _tree_screen->view()->select_as_current(TreeIndex::create_treeindex_from_item([&] {return _tree_screen->view()->source_model();}, it));
+			    }
+			}
+		    }
+		}
 	    }
 	    w = nullptr;
 	});
@@ -215,7 +239,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 	if(w->objectName() == record_screen_multi_instance_name){
 	    auto rs = dynamic_cast<rs_t *>(w);
 //	    auto	browser_	= dynamic_cast<rs_t *>(w)->browser();
-	    if(rs)if(result.find(rs) != result.end())result.insert(rs);	// if(*i){	// && *i != widget()=>for entrance
+	    if(rs) if(result.find(rs) == result.end()) result.insert(rs);// if(*i){	// && *i != widget()=>for entrance
 	}
     }
     return result;	// _record_screens;
@@ -223,7 +247,7 @@ std::set<rs_t *> HidableTabWidget::record_screens() const {
 
 void HidableTabWidget::onHideAction(bool checked){
     if(checked){
-	if(this->tabPosition() == North || tabPosition() == South)	// , West, East
+	if(this->tabPosition() == North || tabPosition() == South)																			// , West, East
 		this->setMaximumHeight(this->tabBar()->height());
 	else this->setMaximumWidth(this->tabBar()->width());
 	this->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
@@ -248,7 +272,7 @@ void HidableTabWidget::onTabBarClicked(){_hide_action->setChecked(false);}
 // }
 
 bool HidableTabWidget::eventFilter(QObject *obj, QEvent *event){
-    if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton)emit tabBarDoubleClicked(indexOf(childAt(static_cast<QMouseEvent *>(event)->pos())));
+    if(event->type() == QEvent::MouseButtonDblClick && static_cast<QMouseEvent *>(event)->button() == Qt::LeftButton) emit tabBarDoubleClicked(indexOf(childAt(static_cast<QMouseEvent *>(event)->pos())));
     return QTabWidget::eventFilter(obj, event);
 }
 
@@ -269,7 +293,7 @@ browser::WebView *HidableTabWidget::find(const std::function<bool (boost::intrus
 	    auto browser_ = dynamic_cast<rs_t *>(w)->browser();
 	    if(browser_){
 		v = browser_->tabWidget()->find(_equal);
-		if(v != nullptr)break;
+		if(v != nullptr) break;
 	    }
 	}
     }
@@ -289,7 +313,7 @@ browser::WebView *HidableTabWidget::find(const std::function<bool (boost::intrus
 	    }
 	}
     }
-    if(! found_myself)v = nullptr;
+    if(! found_myself) v = nullptr;
     return v;
 }
 
@@ -312,7 +336,7 @@ browser::Browser *HidableTabWidget::new_browser(){
     bool found = false;
     for(int i = 0; i < count(); i ++){
 	auto r = widget(i);
-	if(r == rs)found = true;
+	if(r == rs) found = true;
     }
     assert(found);
 ////    bool found = false;

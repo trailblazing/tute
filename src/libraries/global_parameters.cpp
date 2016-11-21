@@ -48,9 +48,9 @@ GlobalParameters::~GlobalParameters(){}
 
 void GlobalParameters::main_program_file(QString file){_main_program_file = file;}
 
-QString GlobalParameters::main_program_file(void){return _main_program_file;}
+QString GlobalParameters::main_program_file(void) const {return _main_program_file;}
 
-void GlobalParameters::init(void){
+void GlobalParameters::init(const QString &app_name){
 //    _tree_screen	= nullptr;
 //    _entrance		= nullptr;
 //	//    _table_screens = nullptr;
@@ -59,7 +59,9 @@ void GlobalParameters::init(void){
 //    _meta_editor	= nullptr;
 //    _statusbar		= nullptr;
 //    _window_switcher	= nullptr;
-
+    _main_program_file = app_name;
+    QFileInfo fi(app_name);
+    _application_name = fi.fileName();
     init_workdirectory();	// Инициализация рабочей директории
 }
 
@@ -117,7 +119,7 @@ void GlobalParameters::init_workdirectory(void){
         msgBox.setDefaultButton(QMessageBox::Ok);
         int ret = msgBox.exec();
         if(ret == QMessageBox::Ok) create_standard_programfiles();
-        else exit(0);									// Была нажата отмена
+        else exit(0);																																																																																																																										// Была нажата отмена
     }else{
         // Иначе есть возможность создать как стандартное файловое окружение,
         // так и "переносимое"
@@ -148,7 +150,7 @@ void GlobalParameters::init_workdirectory(void){
         if(ok && ! item.isEmpty()){
             if(item == standartItem) create_standard_programfiles();
             else create_portable_programfiles();
-        }else exit(0);									// Была нажата отмена
+        }else exit(0);																																																																																																																										// Была нажата отмена
     }
 	// Search restarts working directory    // Заново запускается поиск рабочей директории
     _work_directory = "";
@@ -194,15 +196,15 @@ void GlobalParameters::create_first_programfiles(QString dirName){
     dir.mkdir("trash");
 
 	// Создаются файлы конфигурации
-    QString targetOs = target_os();	// "any" или "meego" или "android"
+    QString target_os_ = target_os();	// "any" или "meego" или "android"
 
-    QFile::copy(":/resource/standartconfig/" + targetOs + "/conf.ini", dirName + "/conf.ini");
+    QFile::copy(":/resource/standartconfig/" + target_os_ + "/conf.ini", dirName + "/conf.ini");
     QFile::setPermissions(dirName + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
 
-    QFile::copy(":/resource/standartconfig/" + targetOs + "/editorconf.ini", dirName + "/editorconf.ini");
+    QFile::copy(":/resource/standartconfig/" + target_os_ + "/editorconf.ini", dirName + "/editorconf.ini");
     QFile::setPermissions(dirName + "/editorconf.ini", QFile::ReadUser | QFile::WriteUser);
 
-    QFile::copy(":/resource/standartconfig/" + targetOs + "/entrance.ini", dirName + "/entrance.ini");
+    QFile::copy(":/resource/standartconfig/" + target_os_ + "/entrance.ini", dirName + "/entrance.ini");
     QFile::setPermissions(dirName + "/entrance.ini", QFile::ReadUser | QFile::WriteUser);
 
     create_stylesheet_file(dirName);
@@ -244,67 +246,80 @@ void GlobalParameters::application_mode(const QString &mode){
 // Автоопределение рабочей директории
 // Auto working directory
 bool GlobalParameters::find_workdirectory(void){
-	// Поиск файла conf.ini в той же директории, где находится бинарник
-	// Search conf.ini file in the same directory where the binary
+////    // you can't do this, because your appconfig is not initialized yet.
+////    AppConfigDialog appconfigdialog(nullptr, "pageMain");
+////    appconfigdialog.show();
 
-	// Нужно учесть, что программу могут запускать из другой директории
-	// QDir::currentPath() - выдает директорию, где была выполнена команда запуска
-	// mainProgramFile - содержит путь к бинарнику относительно директории запуска
+//    // Поиск файла conf.ini в той же директории, где находится бинарник
+//    // Search conf.ini file in the same directory where the binary
 
-	// It is necessary to take into account that the program can be run from a different directory
-	// QDir :: currentPath () - provides a directory where you have run run
-	// MainProgramFile - contains the path to the binaries relative to the directory run
+//    // Нужно учесть, что программу могут запускать из другой директории
+//    // QDir::currentPath() - выдает директорию, где была выполнена команда запуска
+//    // mainProgramFile - содержит путь к бинарнику относительно директории запуска
 
-	// Директория, где была выполнена команда запуска
-	// Directory where you have performed command launch
-    QFileInfo	main_program_file_info(_main_program_file);
-    QString		full_current_path = main_program_file_info.absolutePath();
+//    // It is necessary to take into account that the program can be run from a different directory
+//    // QDir :: currentPath () - provides a directory where you have run run
+//    // MainProgramFile - contains the path to the binaries relative to the directory run
 
-    qDebug() << "Check full current path " << full_current_path;
-    QSettings	setting(full_current_path + "/mode.ini", QSettings::IniFormat);
-    QString		mode = setting.value("application_mode").toString();
-    if(! is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){
-        if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
-        else QFile::setPermissions(full_current_path + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
-//	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
-//	assert(succedded);
-    }
-    if((mode != "Standard") && is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){		// mode == "Portable"||
-        qDebug() << "Work directory set to path " << full_current_path;
+//    // Директория, где была выполнена команда запуска
+//    // Directory where you have performed command launch
+//    QFileInfo	main_program_file_info(_main_program_file);
+//    QString		full_current_path = main_program_file_info.absolutePath();
 
-        //	throw std::runtime_error("database load failure");
+//    qDebug() << "Check full current path " << full_current_path;
+//    QSettings	setting(full_current_path + "/mode.ini", QSettings::IniFormat);
+//    QString		mode = setting.value("application_mode").toString();
+//    if(! is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){
+//        if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", full_current_path + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
+//        else QFile::setPermissions(full_current_path + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
+//        //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path, globalparameters.config_ini());
+//        //	assert(succedded);
+//    }
+//    if((mode != "Standard") && is_mytetra_ini_config_exist(full_current_path + "/conf.ini")){		// mode == "Portable"||
+//        qDebug() << "Work directory set to path " << full_current_path;
 
-        // QDir dir=QDir("./");
-        // QDir dir=QDir(QDir::currentPath());
-        // workDirectory=dir.absolutePath();
-        _work_directory = full_current_path;
-	}else{
-        // Если в текущей директории запуска нет conf.ini
+//        //	throw std::runtime_error("database load failure");
 
-        // Поиск файла conf.ini в домашней директории пользователя
-        // в поддиректории ".имя_программы"
-        QString dir = QDir::homePath() + "/." + application_name();
+//        // QDir dir=QDir("./");
+//        // QDir dir=QDir(QDir::currentPath());
+//        // workDirectory=dir.absolutePath();
+//        _work_directory = full_current_path;
+//	}else{
 
-        qDebug() << "Detect home directory " << dir;
-		// Если директория существует и в ней есть настоящий файл конфигурации
-        if(is_mytetra_ini_config_exist(dir + "/conf.ini")){
-            qDebug() << "Config init file success find in home directory " << dir;
-            _work_directory = dir;
+
+    // Если в текущей директории запуска нет conf.ini
+
+    // Поиск файла conf.ini в домашней директории пользователя
+    // в поддиректории ".имя_программы"
+    QString dir = QDir::homePath() + "/." + application_name();
+
+    qDebug() << "Detect home directory " << dir;
+    // Если директория существует и в ней есть настоящий файл конфигурации
+    if(is_mytetra_ini_config_exist(dir + "/conf.ini")){
+        qDebug() << "Config init file success find in home directory " << dir;
+        _work_directory = dir;
+    }else{
+        // Иначе директории "~/.имя_программы" нет
+        // и нужно пробовать найти данные в "~/.config/имя_программы"
+        qDebug() << "File conf.ini can't' find in home directory " << dir;
+
+        dir = QDir::homePath() + "/.config/" + application_name();
+
+        qDebug() << "Try find conf.ini in home subdirectory " << dir;
+        // Если директория существует и в ней есть настоящий файл конфигурации
+        if(is_mytetra_ini_config_exist(dir + "/conf.ini") == true){
+            qDebug() << "Config init file success find in home subdirectory " << dir;
+//            _work_directory = dir;
         }else{
-            // Иначе директории "~/.имя_программы" нет
-            // и нужно пробовать найти данные в "~/.config/имя_программы"
-            qDebug() << "File conf.ini can't' find in home directory " << dir;
-
-            dir = QDir::homePath() + "/.config/" + application_name();
-
-            qDebug() << "Try find conf.ini in home subdirectory " << dir;
-            // Если директория существует и в ней есть настоящий файл конфигурации
-            if(is_mytetra_ini_config_exist(dir + "/conf.ini") == true){
-                qDebug() << "Config init file success find in home subdirectory " << dir;
-                _work_directory = dir;
-            }else qDebug() << "File conf.ini can't' find in home subdirectory " << dir;
+            qDebug() << "File conf.ini can't' find in home subdirectory " << dir;
+            QFileInfo file(dir + "/conf.ini");
+            if(! (file.exists() && file.isFile())) QFile::remove(dir + "/conf.ini");
+            if(! QFile::copy(QString(":/resource/standartconfig/") + globalparameters.target_os() + "/conf.ini", dir + "/conf.ini")) throw std::runtime_error("Can not copy conf.ini");
+            else QFile::setPermissions(dir + "/conf.ini", QFile::ReadUser | QFile::WriteUser);
         }
-	}
+        _work_directory = dir;
+    }
+//	}
 	// Если рабочая директория не определена
     if(_work_directory.length() == 0){
         qDebug() << "Cant find work directory with mytetra data";
@@ -326,8 +341,8 @@ bool GlobalParameters::find_workdirectory(void){
 // Проверка ini-файла
 bool GlobalParameters::is_mytetra_ini_config_exist(QString filename){
     qDebug() << "Check config file " << filename;
-
-    QFileInfo info(filename);
+    bool		result = false;
+    QFileInfo	info(filename);
 	// Если файл существует, надо определить, от MyTetra он или от другой программы
     if(info.exists()){
         qDebug() << "Config file " << filename << " is exists";
@@ -352,17 +367,18 @@ bool GlobalParameters::is_mytetra_ini_config_exist(QString filename){
             if(version <= 3){
                 // В этих версиях небыло переменной programm, поэтому проверяется
                 // переменная tetradir
-                if(app_conf.contains("tetradir")) return true;
-                else return false;
+                if(app_conf.contains("tetradir")) result = true;// return true;
+//                else return false;
             }else{
                 // Иначе номер версии больше 3
                 if(app_conf.contains("programm")){
-                    if(app_conf.value("programm").toString() == "mytetra") return true;
-                    else return false;
-                }else return false;
+                    if(app_conf.value("programm").toString() == globalparameters.application_name()) result = true;																																																																																																																																																																															// return true;
+//                    else return false;
+                }// else return false;
             }
-        }else return false;											// Нет переменной version
-    }else return false;										// Нет указанного файла
+        }// else return false;	// Нет переменной version
+    }// else return false;	// Нет указанного файла
+    return result;
 }
 
 QString GlobalParameters::work_directory(void){return _work_directory;}
@@ -388,13 +404,14 @@ QString GlobalParameters::target_os(void){
 // Используется для создания и поиска каталога с данными пользователя
 QString GlobalParameters::application_name(void){
 	// todo: Подумать и заменить этот код на значения, полученные из PRO-файла
-    QString appName = "";
-    if(target_os() == "any") appName = "mytetra";
-    if(target_os() == "meego") appName = "ru.webhamster.mytetra";
-    if(target_os() == "android") appName = "ru.webhamster.mytetra";
+    QString app_name = "";
+//    auto	to			= target_os();
+    if(target_os() == "any") app_name = _application_name;
+    if(target_os() == "meego") app_name = QString("ru.webhamster") + "." + _application_name;
+    if(target_os() == "android") app_name = QString("ru.webhamster") + "." + _application_name;
 	// qDebug() << "In getApplicationName() return \"" << appName << "\"";
 
-    return appName;
+    return app_name;
 }
 
 browser::Profile *GlobalParameters::profile(){return _profile;}

@@ -34,7 +34,7 @@ public:
     static void record_to_recordtable(void); // Используется как callback из редактора MetaEditor
     void record_to_find_in_base(void);
 
-    void recordtable_ro_record(void);
+    void recordtable_ro_record_editor(void);
     void recordtable_to_find_in_base(void);
     void recordtable_to_tree(void);
 

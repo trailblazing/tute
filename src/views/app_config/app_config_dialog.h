@@ -23,19 +23,19 @@ class AppConfigDialog : public QWidget {
 #endif
 
     public:
-        AppConfigDialog(rctrl_t *_record_controller, QString firstPageName = "");
-
+    AppConfigDialog(rctrl_t *_record_controller, QString first_page_name = "");
+    void change_page(QString name);
     private:
-        ConfigDialog *configDialog;
+    ConfigDialog	*config_dialog;
+	QListWidgetItem *pageMain;
+	QListWidgetItem *pageCrypt;
+	QListWidgetItem *pageSynchro;
+	QListWidgetItem *pageRecordTable;
+	QListWidgetItem *pageMisc;
+	rctrl_t		*_record_controller;
 
-        QListWidgetItem *pageMain;
-        QListWidgetItem *pageCrypt;
-        QListWidgetItem *pageSynchro;
-        QListWidgetItem *pageRecordTable;
-        QListWidgetItem *pageMisc;
-        rctrl_t		*_record_controller;
-        void changePage(QString name);
-        friend class XmlTree;
+//	friend class XmlTree;
+//	friend class rctrl_t;
 };
 
 #endif	// _APPCONFIGDIALOG_H_

@@ -75,8 +75,8 @@ class StarRating {
 
 	explicit StarRating(int star_count = 1, int max_star_count = 5);
 
-	void	paint(QPainter *painter, const QRect &rect, const QPalette &palette, EditMode mode) const;
-	QSize	sizeHint() const;
+	void paint(QPainter *painter, const QRect &rect, const QPalette &palette, EditMode mode) const;
+	QSize sizeHint() const;
 	int star_count() const {return _star_count;}
 
 	int max_star_count() const {return _max_star_count;}
@@ -86,10 +86,10 @@ class StarRating {
 	void max_star_count(int max_star_count_){_max_star_count = max_star_count_;}
 
     private:
-	QPolygonF	_star_polygon;
-	QPolygonF	_diamond_polygon;
-	int		_star_count;
-	int		_max_star_count;
+	QPolygonF _star_polygon;
+	QPolygonF _diamond_polygon;
+	int _star_count;
+	int _max_star_count;
 };
 //! [0]
 
@@ -121,9 +121,9 @@ class FlatToolButtonRating : public FlatToolButton {
 	;
 #endif
     protected:
-	void	paintEvent(QPaintEvent *e);
-	void	mouseMoveEvent(QMouseEvent *event);
-	void	mouseReleaseEvent(QMouseEvent *event);
+	void paintEvent(QPaintEvent *e);
+	void mouseMoveEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
     private:
 
 	StarRating _star_rating;
@@ -164,10 +164,10 @@ class ButtonColumnDelegate : public QStyledItemDelegate {
 //	QTableView		*_view;
 	QPushButton		*_button;
 	rv_t			*_view;
-	const int		_rating_width = 30;
+	const int _rating_width = 30;
 
-	bool			_is_one_cell_in_edit_mode;
-	QPersistentModelIndex	_current_edited_cell_index;
+	bool _is_one_cell_in_edit_mode;
+	QPersistentModelIndex _current_edited_cell_index;
 	friend class rv_t;
 };
 
@@ -186,13 +186,13 @@ class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 	explicit ViewDelegation(rv_t *view = 0);
 
 	// basic function for a read-only delegate, you can draw anything with the painter
-	void	paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-	QSize	sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
 	// for a editable delegate
 	QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-	void	setEditorData(QWidget *editor, const QModelIndex &index) const;
-	void	setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
-	void	updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+	void setEditorData(QWidget *editor, const QModelIndex &index) const;
+	void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const;
+	void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const;
     protected:
 	bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index);
 
@@ -201,9 +201,9 @@ class ViewDelegation : public QStyledItemDelegate	// QItemDelegate
 
     private:
 	rv_t		*_view;
-	const int	_scroll_bar_width	= 10;
-	const int	_rating_width		= 30;
-	int		_x_offset;
+	const int _scroll_bar_width	= 10;
+	const int _rating_width		= 30;
+	int _x_offset;
 	friend class rv_t;
 };
 
@@ -228,8 +228,8 @@ class rv_t : public QTableView {
 	// void record_controller(RecordController *_record_controller);
 	// void init(void);
 
-	void	restore_header_state(void);
-	void	restore_column_width(void);
+	void restore_header_state(void);
+	void restore_column_width(void);
 
 	template<typename return_type>inline return_type selection_first() const;
 
@@ -242,8 +242,8 @@ class rv_t : public QTableView {
 
 	boost::intrusive_ptr<TreeItem> current_item() const;
 
-	bool	is_selected_set_to_top(void);
-	bool	is_selected_set_to_bottom(void);
+	bool is_selected_set_to_top(void);
+	bool is_selected_set_to_bottom(void);
 
 	ClipboardRecords	*get_selected_records(void);
 	rctrl_t			*record_controller();
@@ -271,13 +271,13 @@ class rv_t : public QTableView {
 	void on_custom_context_menu_requested(const QPoint &pos);// W_SLOT(on_custom_context_menu_requested)
 
 	// Слот, срабатывающий после перетаскивания колонки
-	void	on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex);	// W_SLOT(on_section_moved)
-	void	on_section_resized(int logicalIndex, int oldSize, int newSize);	// W_SLOT(on_section_resized)
+	void on_section_moved(int logicalIndex, int oldVisualIndex, int newVisualIndex);	// W_SLOT(on_section_moved)
+	void on_section_resized(int logicalIndex, int oldSize, int newSize);	// W_SLOT(on_section_resized)
 
 	// Вызов действий из контекстного меню или из контроллера для редактирования инфополей записи
-	void		edit_field_context(void);// W_SLOT(edit_field_context)
-	void		on_doubleclick(const QModelIndex &index);// W_SLOT(on_doubleclick)
-	QModelIndex	previous_index() const;	// W_SLOT(previous_index)
+	void edit_field_context(void);	// W_SLOT(edit_field_context)
+	void on_doubleclick(const QModelIndex &index);	// W_SLOT(on_doubleclick)
+	QModelIndex previous_index() const;	// W_SLOT(previous_index)
 
 
     protected slots:
@@ -288,9 +288,9 @@ class rv_t : public QTableView {
 	// Слот, который автоматически срабатыват при изменении selection в списке
 	// Этот слот нигде не надо прописывать через connect(), так как он
 	// является переопределенным, так как его тип virtual protected slot
-	virtual void	selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);	// W_SLOT(selectionChanged, W_Access::Protected)	// ;
-	bool		eventFilter(QObject *obj, QEvent *event);// W_SLOT(eventFilter, W_Access::Protected)// ;
-	void		on_click(const QModelIndex &proxy_index);// W_SLOT(on_click, W_Access::Protected)	// ;
+	virtual void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);	// W_SLOT(selectionChanged, W_Access::Protected)	// ;
+	bool eventFilter(QObject *obj, QEvent *event);	// W_SLOT(eventFilter, W_Access::Protected)// ;
+	void on_click(const QModelIndex &index_proxy_);	// W_SLOT(on_click, W_Access::Protected)	// ;
 
     protected:
 
@@ -300,15 +300,15 @@ class rv_t : public QTableView {
 	VerticalScrollArea	*_vertical_scroll_area = nullptr;
 	QVBoxLayout		*_layout;
 	ViewDelegation		*_delegate;	//	ButtonColumnDelegate	*_delegate;
-	QPoint			_mouse_start_position;
-	bool			_enable_move_section = true;
-	QModelIndex		_previous_index;
+	QPoint _mouse_start_position;
+	bool _enable_move_section = true;
+	QModelIndex _previous_index;
 
 //	int			_vertical_scroll_bar_width	= 0;
-	int		x			= 0;			// test
-	const int	_scroll_bar_width	= 10;
-	const int	_pin_width		= 25;
-	const int	_rating_width		= 30;
+	int x				= 0;			// test
+	const int _scroll_bar_width	= 10;
+	const int _pin_width		= 25;
+	const int _rating_width		= 30;
 
 
 	// void setup_signals(void);
@@ -321,13 +321,13 @@ class rv_t : public QTableView {
 	// The response to the record selection with the mouse or keys
 	// void click_record(const IndexProxy &proxy_index);
 
-	bool	event(QEvent *event);
-	bool	gesture_event(QGestureEvent *event);
-	void	tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture);
+	bool event(QEvent *event);
+	bool gesture_event(QGestureEvent *event);
+	void tap_and_hold_gesture_triggered(QTapAndHoldGesture *gesture);
 
-	void	mousePressEvent(QMouseEvent *event);
-	void	mouseMoveEvent(QMouseEvent *event);
-	void	mouseReleaseEvent(QMouseEvent *event);
+	void mousePressEvent(QMouseEvent *event);
+	void mouseMoveEvent(QMouseEvent *event);
+	void mouseReleaseEvent(QMouseEvent *event);
 // #ifndef QT_NO_WHEELEVENT
 //	void wheelEvent(QWheelEvent *) Q_DECL_OVERRIDE;
 // #endif
@@ -337,7 +337,7 @@ class rv_t : public QTableView {
 
     private:
 	std::function<bool (const QString &, int)>	_is_field_type_column;
-	void						start_drag();
+	void start_drag();
 	friend class rs_t;
 	friend class VerticalScrollArea;
 	friend class rctrl_t;

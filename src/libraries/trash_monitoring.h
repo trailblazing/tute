@@ -18,7 +18,7 @@ class TrashMonitoring {
 	void add_file(QString _file_name);
 
 	void	update(void);
-	void	recover_from_trash();
+	bool recover_from_trash();
 	bool is_inited(){return _is_inited;}
     private:
 

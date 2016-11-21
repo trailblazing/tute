@@ -13,7 +13,7 @@ class DiskHelper {
 	DiskHelper();
 
 	static void				remove_directory_to_trash(QString nameDirFrom);
-	static void				remove_file_to_trash(QString fileNameFrom);
+	static void				remove_file_to_trash(QString file_name_from);
 	static QString				copy_file_to_data(QString file_name_from);
 	static QString				copy_file_to_trash(QString file_name_from);
 	static QString				create_directory(QString path_name, QString dir_name);

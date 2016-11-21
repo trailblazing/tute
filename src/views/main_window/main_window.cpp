@@ -232,7 +232,7 @@ wn_t::~wn_t(){
 }
 
 void wn_t::setup_ui(void){
-    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																						// Для Андроида окно просто разворачивается на весь экран
+    if(_globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																																														// Для Андроида окно просто разворачивается на весь экран
     else{
         QRect rect = _appconfig.mainwin_geometry();
         resize(rect.size());
@@ -1021,7 +1021,7 @@ void wn_t::commit_data(QSessionManager &manager){
 
 // Восстанавливается геометрия окна и позиции основных разделителей
 void wn_t::restore_geometry(void){
-    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																					// Для Андроида окно просто разворачивается на весь экран
+    if(globalparameters.target_os() == "android") setWindowState(Qt::WindowMaximized);																																																																																																																													// Для Андроида окно просто разворачивается на весь экран
     else{
         QRect rect = appconfig.mainwin_geometry();
         resize(rect.size());
@@ -1165,7 +1165,7 @@ void wn_t::save_tree_position(void){
 	//// Получение QModelIndex выделенного в дереве элемента
 	// const QModelIndex index = _tree_screen->tree_view()->current_index();
     auto current_item = _tree_screen->view()->current_item();
-    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																														// _tree_screen->know_model_board()->root_item()->id()
+    if(current_item) appconfig.tree_position(_current_source_model()->root_item()->id(), current_item->path_list());																																																																																																																																																																						// _tree_screen->know_model_board()->root_item()->id()
     else if(item){			// if(index.isValid()) {
         ////    if(index.isValid()) {   // this line is to be remove
         //// Получаем указатель вида TreeItem
@@ -1546,9 +1546,9 @@ void wn_t::editor_switch(void){
 
 void wn_t::tools_preferences(void){
 	// Создается окно настроек, после выхода из этой функции окно удалится
-    AppConfigDialog dialog(_vtab_record->activated_browser()->record_screen()->record_controller(), "");
+    AppConfigDialog appconfigdialog(_vtab_record->activated_browser()->record_screen()->record_controller(), "pageMain");
 
-    dialog.show();
+    appconfigdialog.show();
 }
 
 // Слот, срабатывающий при нажатии в редакторе кнопки "распахнуть"

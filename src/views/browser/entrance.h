@@ -145,7 +145,7 @@ namespace browser {
 		//        //                      , equal_t _equal = [](boost::intrusive_ptr<const TreeItem> it, boost::intrusive_ptr<const TreeItem> target)->bool {return it->id() == target->id();}
 		//        //                     );
 
-	    bool restore_state(const QByteArray &state);
+//	    bool restore_state(const QByteArray &state);
 		//        std::pair<Browser *, WebView *>
 		//        WebView *find(boost::intrusive_ptr<const TreeItem> item) const;
 		//        std::pair<Browser *, WebView *>

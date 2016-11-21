@@ -213,7 +213,7 @@ namespace browser {
 
     void HistoryManager::loadSettings(){
 	// load settings
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("history"));
 	_historylimit = settings.value(QLatin1String("historyLimit"), 30).toInt();
     }
@@ -269,7 +269,7 @@ namespace browser {
     }
 
     void HistoryManager::save(){
-	QSettings settings;
+	QSettings settings(globalparameters.work_directory() + "/browser.conf", QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("history"));
 	settings.setValue(QLatin1String("historyLimit"), _historylimit);
 

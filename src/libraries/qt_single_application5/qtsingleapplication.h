@@ -94,7 +94,7 @@ class QNetworkReply;
 class QWebEngineProfile;
 QT_END_NAMESPACE
 
-extern const char *application_name;
+//extern const char *application_name;
 
 namespace browser {
     class BookmarksManager;
@@ -167,7 +167,7 @@ Q_SIGNALS:
 
 
     private:
-	void	sys_init();
+	void	sys_init(char **argv);
 	void	main_window();
 	void	browser_init();
 

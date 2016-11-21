@@ -31,53 +31,53 @@ class AppConfigPageMain : public ConfigPage {
 #endif
 
     public:
-	AppConfigPageMain(QWidget *parent = 0);
-	~AppConfigPageMain(void);
+        AppConfigPageMain(QWidget *parent = 0);
+        ~AppConfigPageMain(void);
 
-	void	setup_ui(void);
-	void	setup_signals(void);
-	void	assembly(void);
+        void setup_ui(void);
+        void setup_signals(void);
+        void assembly(void);
 
-	int apply_changes(void);
+        int apply_changes(void);
 
     private slots:
-	void	open_tetradir_select_dialog(void);
-	void	open_trashdir_select_dialog(void);
+        void open_tetradir_select_dialog(void);
+        void open_trashdir_select_dialog(void);
 
-	void	onDisableCustomDateTimeFormatToggle(bool checked);
-	void	onEnableCustomDateTimeFormatToggle(bool checked);
-	void	onDateTimeFormatHelpButton(void);
+        void on_disable_custom_datetime_format_toggle(bool checked);
+        void on_enable_custom_datetime_format_toggle(bool checked);
+        void on_datetime_format_help_button(void);
 
     private:
 
-	QLabel		*application_mode_label;
-	MtComboBox	*application_mode_option;
+        QLabel		*_application_mode_label;
+        MtComboBox	*_application_mode_option;
 
-	QLabel		*tetradirLabel;
-	QLineEdit	*tetradirInput;
-	FlatToolButton	*tetradirButton;
+        QLabel		*_tetradir_label;
+        QLineEdit	*_tetradir_input;
+        FlatToolButton	*_tetradir_button;
 
-	QLabel		*trashdirLabel;
-	QLineEdit	*trashdirInput;
-	FlatToolButton	*trashdirButton;
+        QLabel		*_trashdir_label;
+        QLineEdit	*_trashdir_input;
+        FlatToolButton	*_trashdir_button;
 
-	QLabel		*trashsizeLabel;
-	QSpinBox	*trashsizeInput;
-	QLabel		*trashsizeFlexion;
+        QLabel		*_trashsize_label;
+        QSpinBox	*_trashsize_input;
+        QLabel		*_trashsize_flexion;
 
-	QLabel		*trashmaxfilecountLabel;
-	QSpinBox	*trashmaxfilecountInput;
-	QLabel		*trashmaxfilecountFlexion;
+        QLabel		*_trashmaxfilecount_label;
+        QSpinBox	*_trashmaxfilecount_input;
+        QLabel		*_trashmaxfilecount_flexion;
 
-	QLabel		*interfaceLanguageLabel;
-	MtComboBox	*interfaceLanguage;
+        QLabel		*_interface_language_label;
+        MtComboBox	*_interface_language;
 
-	// Настройки отображения даты и времени
-	QGroupBox	*dateTimeFormatBox;
-	QRadioButton	*disableCustomDateTimeFormat;
-	QRadioButton	*enableCustomDateTimeFormat;
-	QLineEdit	*customDateTimeFormat;
-	FlatToolButton	*dateTimeFormatHelpButton;
+        // Настройки отображения даты и времени
+        QGroupBox	*_datetime_format_box;
+        QRadioButton	*_disable_custom_datetime_format;
+        QRadioButton	*_enable_custom_datetime_format;
+        QLineEdit	*custom_datetime_format;
+        FlatToolButton	*_datetime_format_help_button;
 };
 
 

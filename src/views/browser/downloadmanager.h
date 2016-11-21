@@ -87,14 +87,14 @@ namespace browser {
 
 	public:
 	    DownloadWidget(QWebEngineDownloadItem   *_download
-			  , TabWidget                         *_tab_manager
-			  , DownloadManager                   *_parent = 0		//    QWidget *parent = 0
+			  , TabWidget               *_tab_manager
+			  , DownloadManager         *_parent = 0		//    QWidget *parent = 0
 		);
 	    bool	downloading() const;
 	    bool	downloadedSuccessfully() const;
 
 	    void	init();
-	    bool	getFileName(bool prompt_for_filename = false);
+	    bool	getFileName(bool prompt_for_filename = true);
 	    TabWidget	*tab_manager() const;
 	private slots:
 	    void	stop();
@@ -167,7 +167,7 @@ namespace browser {
 	    void	updateRow();
 
 	private:
-	    void	addItem(std::shared_ptr<DownloadWidget> item);
+	    void	addItem(std::shared_ptr<DownloadWidget> downloadwidget);
 	    void	updateItemCount();
 	    void	load();
 
@@ -177,7 +177,7 @@ namespace browser {
 	    QFileIconProvider				*_iconprovider;
 	    QList<std::shared_ptr<DownloadWidget> >	_downloads;
 	    RemovePolicy				_removepolicy;
-	    bool					_prompt_store_position = false;
+	    bool					_prompt_store_position = true;
 
 
 	    friend class DownloadModel;

@@ -42,7 +42,7 @@
    <item row="1" column="0">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>2</number>
      </property>
      <widget class="QWidget" name="tab">
       <attribute name="title">
@@ -395,7 +395,7 @@
           <property name="spacing">
            <number>0</number>
           </property>
-          <item row="0" column="0">
+          <item row="0" column="0" alignment="Qt::AlignLeft">
            <widget class="QLabel" name="label_2">
             <property name="text">
              <string>Persistent Cookie Policy</string>
@@ -424,7 +424,7 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item row="1" column="0" alignment="Qt::AlignLeft">
            <widget class="QLabel" name="label">
             <property name="text">
              <string>Persistent Data Path:</string>

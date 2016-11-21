@@ -16,15 +16,15 @@ Binder::Binder(
 	      , activate_interface _activate_helper
 	      , binder_type_interface _binder_type) : _item_linker_set(_item_linker_set), _page_linker_set(_page_linker_set), _host_linker(_item_linker), _page_linker(_page_linker), _bind_helper(_bind_helper), _activate_helper(_activate_helper), _binder_type(_binder_type), _status(state_impl()){
     auto
-    make_integrity
+	make_integrity
 	= [&]() -> bool {
 	    bool result = true;
 		//    auto il = [&]() {return item_link();}; // 0
 		//    auto pl = [&]() {return page_link();}; // 1
 		//    assert((*std::get<0>(*_state))());  //  = [&]() {return item_link();};  // std::make_shared<item_link_exist>([&]() {return item_link();});
 		//    assert((*std::get<1>(*_state))());  // = [&]() {return page_link();};  // std::make_shared<page_link_exist>([&]() {return page_link();});
-	    if(! std::get<0>(_status)())result = false;
-	    if(! std::get<1>(_status)())result = false;
+	    if(! std::get<0>(_status)()) result = false;
+	    if(! std::get<1>(_status)()) result = false;
 		//    //    if(il() && pl()) {
 
 		//    auto ilb = [&]() {return item_link()->binder();};   // 2
@@ -38,21 +38,21 @@ Binder::Binder(
 	    _item_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 		//    //    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
 		//    assert(item_link()->binder());
-	    if(! std::get<2>(_status)())result = false;
+	    if(! std::get<2>(_status)()) result = false;
 		//    //    if(!std::get<3>(_state)()) {
 		//    (*_page_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
 
 	    _page_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 		//    //    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
 		//    assert(page_link()->binder());
-	    if(! std::get<3>(_status)())result = false;
+	    if(! std::get<3>(_status)()) result = false;
 		//    //    //        if(ilb() && plb()) {
 		//    //    auto ib = [&]() {return item_link()->binder() == this;};    // 4
 		//    //    auto pb = [&]() {return page_link()->binder() == this;};    // 5
 		//    assert((*std::get<4>(*_state))());  // = [&]() {return item_link()->binder().get() == this;};    // std::make_shared<binder_self_reference>([&]() {return item_link()->binder() == this;});
-	    if(! std::get<4>(_status)())result = false;
+	    if(! std::get<4>(_status)()) result = false;
 		//    assert((*std::get<5>(*_state))());  // = [&]() {return page_link()->binder().get() == this;};    // std::make_shared<binder_self_reference>([&]() {return page_link()->binder() == this;});    //            if(ib() && pb()) {result = true;}
-	    if(! std::get<5>(_status)())result = false;
+	    if(! std::get<5>(_status)()) result = false;
 		//    //        }
 		//    //    }
 		//    std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    // std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
@@ -164,8 +164,8 @@ bool Binder::make_integrity(){
 	//    auto pl = [&]() {return page_link();}; // 1
 	//    assert((*std::get<0>(*_state))());  //  = [&]() {return item_link();};  // std::make_shared<item_link_exist>([&]() {return item_link();});
 	//    assert((*std::get<1>(*_state))());  // = [&]() {return page_link();};  // std::make_shared<page_link_exist>([&]() {return page_link();});
-    if(! std::get<0>(_status)())result = false;
-    if(! std::get<1>(_status)())result = false;
+    if(! std::get<0>(_status)()) result = false;
+    if(! std::get<1>(_status)()) result = false;
 	//    //    if(il() && pl()) {
 
 	//    auto ilb = [&]() {return item_link()->binder();};   // 2
@@ -179,21 +179,21 @@ bool Binder::make_integrity(){
     _host_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 	//    //    }; // std::make_shared<binder_exist>([&]() {return item_link()->binder();});
 	//    assert(item_link()->binder());
-    if(! std::get<2>(_status)())result = false;
+    if(! std::get<2>(_status)()) result = false;
 	//    //    if(!std::get<3>(_state)()) {
 	//    (*_page_linker)()->binder(std::move(boost::intrusive_ptr<coupler>(const_cast<coupler *>(this))));
 
     _page_linker()->binder(std::move(boost::intrusive_ptr<Binder>(const_cast<Binder *>(this))));
 	//    //    };  // std::make_shared<binder_exist>([&]() {return page_link()->binder();});
 	//    assert(page_link()->binder());
-    if(! std::get<3>(_status)())result = false;
+    if(! std::get<3>(_status)()) result = false;
 	//    //    //        if(ilb() && plb()) {
 	//    //    auto ib = [&]() {return item_link()->binder() == this;};    // 4
 	//    //    auto pb = [&]() {return page_link()->binder() == this;};    // 5
 	//    assert((*std::get<4>(*_state))());  // = [&]() {return item_link()->binder().get() == this;};    // std::make_shared<binder_self_reference>([&]() {return item_link()->binder() == this;});
-    if(! std::get<4>(_status)())result = false;
+    if(! std::get<4>(_status)()) result = false;
 	//    assert((*std::get<5>(*_state))());  // = [&]() {return page_link()->binder().get() == this;};    // std::make_shared<binder_self_reference>([&]() {return page_link()->binder() == this;});    //            if(ib() && pb()) {result = true;}
-    if(! std::get<5>(_status)())result = false;
+    if(! std::get<5>(_status)()) result = false;
 	//    //        }
 	//    //    }
 	//    std::get<6>(_state) = [&](boost::intrusive_ptr<TreeItem> host) {return host->binder();};    // std::make_shared<item_binder_exist>([&](boost::intrusive_ptr<TreeItem> host) {return host->binder();});
@@ -305,7 +305,7 @@ boost::intrusive_ptr<TreeItem> Binder::host() const {return _host_linker();}
 browser::WebPage *Binder::page() const {
     browser::WebPage	*_page	= _page_linker();
     auto		_host	= _host_linker();
-    if(! integrity_external(_host, _page)){
+    if(! integrity_external(_host, _page) && _host){
 	browser::WebView	*v	= nullptr;
 	auto			browser = globalparameters.main_window()->vtab_record()->activated_browser();
 

@@ -95,10 +95,10 @@ void			init_random(void);
 
 
 
-int	screen_size_x(void);
-int	screen_size_y(void);
-qreal	calculate_iconsize_px(void);
-
+int		screen_size_x(void);
+int		screen_size_y(void);
+qreal		calculate_iconsize_px(void);
+extern void	set_debug_message_handler();
 void		show_message_box(QString message);	// Выдача на экран простого окна с сообщением
 extern QString	set_css_style();
 void		set_kinetic_scrollarea(QAbstractItemView *object);
@@ -108,7 +108,7 @@ class GlobalParameters;
 
 extern WalkHistory	walkhistory;
 extern GlobalParameters globalparameters;
-extern const char	*application_name;
+//extern const char	*application_name;
 extern const char	*meta_editor_singleton_name;
 extern const char	*record_screen_multi_instance_name;
 extern const char	*tree_screen_singleton_name;
@@ -171,7 +171,7 @@ template <class X> inline X *find_object(QString objectName){
 	    exit(1);
 
 	    return nullptr;
-	}else return obj;	// Объект найден нормально
+	}else return obj;					// Объект найден нормально
     }
 }
 

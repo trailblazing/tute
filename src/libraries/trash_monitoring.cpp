@@ -19,7 +19,8 @@ TrashMonitoring::TrashMonitoring(void)
 TrashMonitoring::~TrashMonitoring(void)
 {}
 
-void TrashMonitoring::recover_from_trash(){
+bool TrashMonitoring::recover_from_trash(){
+    bool	result				= false;
     auto	_file_name			= "mytetra.xml";
     auto	file_name_fullpath	= appconfig.tetra_dir() + "/" + _file_name;
 //    if(QFile::exists(appconfig.tetra_dir() + "/" + _file_name))remove_oldest_file(_file_name);
@@ -39,10 +40,13 @@ void TrashMonitoring::recover_from_trash(){
 //	bool succedded = DiskHelper::save_strings_to_directory(full_current_path + "/trash", globalparameters.mytetra_xml());
 //	assert(succedded);
         add_file(_file_name);	// globalparameters.mytetra_xml().keys()[0]
+        result = true;
     }else{
-        auto file_data = [&] {FileData r;for(auto f : _files_table) if(f._size > r._size) r = f;return r;} ();		// _files_table.first();
+        auto file_data = [&] {FileData r;for(auto f : _files_table) if(f._size > r._size) r = f;return r;} ();			// _files_table.first();
         DiskHelper::copy_file_to_data(appconfig.trash_dir() + '/' + file_data._name);
+        result = true;
     }
+    return result;
 }
 
 void TrashMonitoring::init(QString _trash_path){
@@ -111,10 +115,8 @@ void TrashMonitoring::update(void){
 	// Исключается наиболее старый файл пока выполняется
 	// условие что количество файлов слишком велико или
 	// суммарный размер файлов превышает предельно допустимый размер корзины
-    while(_files_table.size() > appconfig.trash_max_file_count() ||
-        _dir_size > appconfig.trash_size() * 1000000
-        ){
-        if(_files_table.size() <= 10)															// Оставляется последний файл, какого бы размера он не был
+    while(_files_table.size() > appconfig.trash_max_file_count() || _dir_size > appconfig.trash_size() * 1000000){
+        if(_files_table.size() <= 10)																																							// Оставляется последний файл, какого бы размера он не был
                 break;
         else remove_oldest_file();
     }

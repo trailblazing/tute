@@ -786,7 +786,7 @@ bool Editor::work_directory(QString dir_name){
 	QString path		= directory.absolutePath();
 	path.remove(child_dir);
 	directory.setPath(path);
-	//        directory.rmdir(child_dir);// "mytetra" + get_unical_id();
+    //        directory.rmdir(child_dir);// globalparameters.main_program_file() + get_unical_id();
 
 	bool result = directory.mkdir(
 	    child_dir	// _work_directory // short_dir()

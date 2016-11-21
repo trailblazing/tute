@@ -52,7 +52,7 @@ class tkm_t : public tm_t {
 	tkm_t(boost::intrusive_ptr<TreeItem> _root_item, tv_t *parent = 0);
 	~tkm_t();
 
-	std::shared_ptr<XmlTree>	init_from_xml(QString file_name);
+	std::shared_ptr<XmlTree>	init_from_xml(QString _file_name);
 	std::shared_ptr<XmlTree>	init_from_xml(std::shared_ptr<XmlTree> xmlt);
 	void				reload(void);
 

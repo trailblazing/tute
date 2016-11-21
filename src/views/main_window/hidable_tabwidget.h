@@ -48,7 +48,7 @@ class HidableTabWidget : public QTabWidget {
 				 , MetaEditor *_editor_screen
 				 , browser::Entrance *_entrance
 				 , wn_t *_main_window
-				 , browser::Profile *_profile, QString _style_source);
+				 , browser::Profile *_profile, QString style_source_);
 	~HidableTabWidget();
 	QAction				*_hide_action;
 	std::set<rs_t *>		record_screens()const;

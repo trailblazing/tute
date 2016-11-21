@@ -115,7 +115,7 @@ void WindowSwitcher::record_to_recordtable(void){
 
 void WindowSwitcher::record_to_find_in_base(void){if(! enableSwitcher)return;}
 
-void WindowSwitcher::recordtable_ro_record(void){
+void WindowSwitcher::recordtable_ro_record_editor(void){
     if(! enableSwitcher)// on desktop, default false
 		return;
 	// Скрываются все прочие области
