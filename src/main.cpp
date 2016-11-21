@@ -96,20 +96,20 @@ bool url_equal(const std::string &url_compare_stored, const std::string &url_com
 std::string url_difference(const std::string &url_compare_stored, const std::string &url_compare_get){
     std::string compare = "";
     if(url_compare_stored.size() >= url_compare_get.size()){
-	for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i))compare += url_compare_stored.at(i);										// url_compare_stored.erase(i, 1);
-	for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++)compare += url_compare_stored.at(i);
+        for(std::string::size_type i = 0; i < url_compare_get.size(); i ++)																								// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+                if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_stored.at(i);																																			// url_compare_stored.erase(i, 1);
+        for(std::string::size_type i = url_compare_get.size(); i < url_compare_stored.size(); i ++) compare += url_compare_stored.at(i);
     }else{
-	// url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
-	for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)						// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
-		if(url_compare_stored.at(i) != url_compare_get.at(i))compare += url_compare_get.at(i);										// url_compare_get.erase(i, 1);
-	for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++)compare += url_compare_get.at(i);
+        // url_compare_get.erase(url_compare_stored.begin(), url_compare_stored.end());
+        for(std::string::size_type i = 0; i < url_compare_stored.size(); i ++)																									// url_compare_stored.erase(url_compare_get.begin(), url_compare_get.end());
+                if(url_compare_stored.at(i) != url_compare_get.at(i)) compare += url_compare_get.at(i);																																		// url_compare_get.erase(i, 1);
+        for(std::string::size_type i = url_compare_stored.size(); i < url_compare_get.size(); i ++) compare += url_compare_get.at(i);
     }
 //    std::string::size_type pos;
 //    while((pos = compare.find_first_of(" ")) != compare.npos)compare.erase(pos, 1);
     compare.erase(std::remove_if(compare.begin(), compare.end()
-				, ::isspace	// [](char ch){return std::isspace<char>(ch, std::locale::classic());}	//
-	), compare.end());
+                                , ::isspace	// [](char ch){return std::isspace<char>(ch, std::locale::classic());}	//
+        ), compare.end());
     return compare;
 }
 
@@ -121,9 +121,9 @@ void log_print(char *lpszText, ...){
     va_start(argList, lpszText);
 	// открываем лог-файл для добавления данных
     if((pFile = fopen("mytetralog.txt", "a+")) == nullptr){
-	printf("\nLog file not writable\n");
+        printf("\nLog file not writable\n");
 
-	return;
+        return;
     }
 	// пишем текст в файл
     vfprintf(pFile, lpszText, argList);
@@ -150,8 +150,8 @@ void critical_error(QString message){
     qDebug() << " ";
 
     QMessageBox::critical(qobject_cast<QWidget *>(mainwindow), "Critical error"
-			 , message + "\n\nProgramm was closed."
-			 , QMessageBox::Ok);
+                         , message + "\n\nProgramm was closed."
+                         , QMessageBox::Ok);
 
     exit(1);
 }
@@ -160,23 +160,23 @@ void critical_error(QString message){
 QString xml_node_to_qstring(QDomNode xmlData){
 	// Если узел представляет собой полностью документ
     if(xmlData.isDocument()){
-	// Значит этот узел можно напрямую преобразовать
+        // Значит этот узел можно напрямую преобразовать
 
-	// в документ, а потом в XML строку
-	return xmlData.toDocument().toString();
+        // в документ, а потом в XML строку
+        return xmlData.toDocument().toString();
     }else{
-	// Иначе узел не является документом, и его нужно обрабатывать по-другому
+        // Иначе узел не является документом, и его нужно обрабатывать по-другому
 
-	// Строка, где будет размещен XML код
-	QString xmlcode;
+        // Строка, где будет размещен XML код
+        QString xmlcode;
 
-	// Поток, связаный со строкой, в который будет направляться XML код узла
-	QTextStream stream(&xmlcode, QIODevice::WriteOnly);
+        // Поток, связаный со строкой, в который будет направляться XML код узла
+        QTextStream stream(&xmlcode, QIODevice::WriteOnly);
 
-	// XML документ записывается в поток, после чего автоматом окажется в строке xmlcode
-	xmlData.save(stream, 1);
+        // XML документ записывается в поток, после чего автоматом окажется в строке xmlcode
+        xmlData.save(stream, 1);
 
-	return xmlcode;
+        return xmlcode;
     }
 }
 
@@ -208,16 +208,16 @@ void print_object_tree_recurse(QObject *pobj){
 
     olist = pobj->children();
     for(int i = 0; i < olist.size(); ++ i){
-	QObject *currobj;
-	currobj = olist.at(i);
+        QObject *currobj;
+        currobj = olist.at(i);
 
-	QString indentline = ".";
-	for(int j = 0; j < indent; j ++)indentline = indentline + ".";
-	if((currobj->objectName()).length() == 0)qDebug("%s%s", qstring_to_char(indentline), currobj->metaObject()->className());
-	else qDebug("%s%s, NAME %s", qstring_to_char(indentline), currobj->metaObject()->className(), qstring_to_char(currobj->objectName()));
-	indent ++;
-	print_object_tree_recurse(currobj);
-	indent --;
+        QString indentline = ".";
+        for(int j = 0; j < indent; j ++) indentline = indentline + ".";
+        if((currobj->objectName()).length() == 0) qDebug("%s%s", qstring_to_char(indentline), currobj->metaObject()->className());
+        else qDebug("%s%s, NAME %s", qstring_to_char(indentline), currobj->metaObject()->className(), qstring_to_char(currobj->objectName()));
+        indent ++;
+        print_object_tree_recurse(currobj);
+        indent --;
     }
 }
 
@@ -258,15 +258,15 @@ void print_object_tree(void){
 // }
 
 std::string get_time(){
-    std::time_t		tt	= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());// std::time(0);// get time now
-    struct tm		*now	= localtime(&tt);
+    std::time_t			tt		= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());// std::time(0);// get time now
+    struct tm			*now	= localtime(&tt);
     std::ostringstream	_current_time;
     _current_time	<< std::setw(4) << std::setfill('0') << (now->tm_year + 1900)	// << '-'
-			<< std::setw(2) << std::setfill('0') << (now->tm_mon + 1)	// << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_mday	// << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_hour	// << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_min	// << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_sec;
+                    << std::setw(2) << std::setfill('0') << (now->tm_mon + 1)	// << '-'
+                    << std::setw(2) << std::setfill('0') << now->tm_mday	// << '-'
+                    << std::setw(2) << std::setfill('0') << now->tm_hour	// << '-'
+                    << std::setw(2) << std::setfill('0') << now->tm_min	// << '-'
+                    << std::setw(2) << std::setfill('0') << now->tm_sec;
 
     return _current_time.str();
 }
@@ -283,16 +283,16 @@ void smart_print_debug_message(QString msg){
 //	QString		ctime		= ctime_dt.toString("yyyyMMddhhmmss");
 
 
-	std::time_t		tt	= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());// std::time(0);// get time now
-	struct tm		*now	= localtime(&tt);
-	std::ostringstream	_current_time;
-	_current_time	<< (now->tm_year + 1900) << '-'
-			<< std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_mday << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_hour << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_min << '-'
-			<< std::setw(2) << std::setfill('0') << now->tm_sec;
-	std::string c_t(_current_time.str());
+        std::time_t			tt		= std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());// std::time(0);// get time now
+        struct tm			*now	= localtime(&tt);
+        std::ostringstream	_current_time;
+        _current_time	<< (now->tm_year + 1900) << '-'
+                        << std::setw(2) << std::setfill('0') << (now->tm_mon + 1) << '-'
+                        << std::setw(2) << std::setfill('0') << now->tm_mday << '-'
+                        << std::setw(2) << std::setfill('0') << now->tm_hour << '-'
+                        << std::setw(2) << std::setfill('0') << now->tm_min << '-'
+                        << std::setw(2) << std::setfill('0') << now->tm_sec;
+        std::string c_t(_current_time.str());
 //	// auto _end = std::chrono::system_clock::now();	// std::chrono::time_point<std::chrono::system_clock>
 //	std::time_t end_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
@@ -303,13 +303,13 @@ void smart_print_debug_message(QString msg){
 //	pt::time_facet		f("%H-%M-%S");	// pt::time_facet * const f = new pt::time_facet("%H-%M-%S");
 //	msg_.imbue(std::locale(msg_.getloc(), &f));
 //	msg_ << now_;
-	auto ctime = QString::fromStdString(_current_time.str());
-	msg = ctime + " " + msg;	// timeText + " " + msg;
+        auto ctime = QString::fromStdString(_current_time.str());
+        msg = ctime + " " + msg;	// timeText + " " + msg;
 
-	unsigned int messageLen = msg.toLocal8Bit().size();
-	// printf("Len of line: %d\n", messageLen);
+        unsigned int messageLen = msg.toLocal8Bit().size();
+        // printf("Len of line: %d\n", messageLen);
 
-	fwrite(msg.toLocal8Bit().data(), sizeof(char), messageLen, stderr);
+        fwrite(msg.toLocal8Bit().data(), sizeof(char), messageLen, stderr);
     }
 	// В Android пока неясно, как смотреть поток ошибок, для андроида qDebug() не переопределяется
 }
@@ -332,32 +332,32 @@ void my_message_output(QtMsgType type, const QMessageLogContext &context, const 
     QString msgText(QString::fromUtf8(msg));
 #endif
     if(! appconfig.is_init()){
-	smart_print_debug_message("[INF] " + msgText + "\n");
+        smart_print_debug_message("[INF] " + msgText + "\n");
 
-	return;
+        return;
     }
 	// Если в конфигурации запрещен вывод отладочных сообщений
-    if(! appconfig.print_debug_messages())return;
+    if(! appconfig.print_debug_messages()) return;
     switch(type){
-	case QtInfoMsg:
-	    smart_print_debug_message("[INF] " + msgText + "\n");
-	    break;
+        case QtInfoMsg:
+            smart_print_debug_message("[INF] " + msgText + "\n");
+            break;
 
-	case QtDebugMsg:
-	    smart_print_debug_message("[DBG] " + msgText + "\n");
-	    break;
+        case QtDebugMsg:
+            smart_print_debug_message("[DBG] " + msgText + "\n");
+            break;
 
-	case QtWarningMsg:
-	    smart_print_debug_message("[WRN] " + msgText + "\n");
-	    break;
+        case QtWarningMsg:
+            smart_print_debug_message("[WRN] " + msgText + "\n");
+            break;
 
-	case QtCriticalMsg:
-	    smart_print_debug_message("[CRERR] " + msgText + "\n");
-	    break;
+        case QtCriticalMsg:
+            smart_print_debug_message("[CRERR] " + msgText + "\n");
+            break;
 
-	case QtFatalMsg:
-	    smart_print_debug_message("[FTERR] " + msgText + "\n");
-	    abort();
+        case QtFatalMsg:
+            smart_print_debug_message("[FTERR] " + msgText + "\n");
+            abort();
     }
 	// #endif
 }
@@ -367,13 +367,13 @@ void set_debug_message_handler(){
 	// Для десктопных операционок можно переустановить обработчик qDebug()
 	// Для Андроида переустановка qDebug() приводит к невозможности получения отладочных сообщений в удаленном отладчике
     if(globalparameters.target_os() == "any" ||
-	globalparameters.target_os() == "meego"){
-	qDebug() << "Set alternative handler my_message_output() for debug message";
+        globalparameters.target_os() == "meego"){
+        qDebug() << "Set alternative handler my_message_output() for debug message";
 
 #if QT_VERSION < 0x050000
-	qInstallMsgHandler(my_message_output);
+        qInstallMsgHandler(my_message_output);
 #else
-	qInstallMessageHandler(my_message_output);
+        qInstallMessageHandler(my_message_output);
 #endif
     }
     qDebug() << "Debug message after set message handler";
@@ -415,16 +415,16 @@ qreal calculate_iconsize_px(void){
 #if QT_VERSION >= 0x040000 && QT_VERSION < 0x050000
     qreal	dpiX	= QtSingleApplication::instance()->desktop()->physicalDpiX();
     qreal	dpiY	= QtSingleApplication::instance()->desktop()->physicalDpiY();
-    qreal	dpi	= (dpiX + dpiY) / 2;
+    qreal	dpi		= (dpiX + dpiY) / 2;
 #endif
 
 #if QT_VERSION >= 0x050000 && QT_VERSION < 0x060000
     qreal dpi = QApplication::screens().at(0)->physicalDotsPerInch();
 #endif
 
-    qreal	iconSizeMm	= 6;			// Размер иконки в миллиметрах (рекомендованный)
+    qreal	iconSizeMm		= 6;			// Размер иконки в миллиметрах (рекомендованный)
     qreal	iconSizeInch	= iconSizeMm / 25.4;			// Размер иконки в дюймах
-    qreal	iconSizePx	= iconSizeInch * dpi;
+    qreal	iconSizePx		= iconSizeInch * dpi;
 
     return iconSizePx;
 }
@@ -446,7 +446,7 @@ QString set_css_style(){
     QString style;
 
     QString	work_directory	= globalparameters.work_directory();
-    auto	target_os	= globalparameters.target_os();
+    auto	target_os		= globalparameters.target_os();
     QString	file_name_to	= work_directory + "/stylesheet.css";
     QString	file_name_from	= work_directory + "/resource/standartconfig/" + target_os + "/stylesheet.css";
 
@@ -458,7 +458,7 @@ QString set_css_style(){
     bool result = css_from.open(QIODevice::ReadOnly | QIODevice::Text);
 	// Если файла не существует
     if(! result){
-	qDebug() << "Stylesheet not found in " << file_name_from;
+        qDebug() << "Stylesheet not found in " << file_name_from;
 //        globalparameters.create_stylesheet_file(globalparameters.work_directory());
     }else size_from = css_from.size();
     css_from.close();	// ?
@@ -470,29 +470,29 @@ QString set_css_style(){
     bool openResult = css.open(QIODevice::ReadOnly | QIODevice::Text);
 	// Если файла не существует
     if(! openResult){
-	qDebug() << "Stylesheet not found in " << file_name_from << ". Create new css file.";
-	globalparameters.create_stylesheet_file(globalparameters.work_directory());
+        qDebug() << "Stylesheet not found in " << file_name_from << ". Create new css file.";
+        globalparameters.create_stylesheet_file(globalparameters.work_directory());
     }else size_to = css.size();
     css.close();	// ?
     if(size_to < size_from){
-	if(! QFile::remove(file_name_to))critical_error("Can not remove file\n" + file_name_to);
-	if(! QFile::copy(file_name_from, file_name_to)){
-		//        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
-		//        }else {
-	    critical_error("Can not copy file\n" + file_name_from + "\nto file\n" + file_name_to);
+        if(! QFile::remove(file_name_to)) critical_error("Can not remove file\n" + file_name_to);
+        if(! QFile::copy(file_name_from, file_name_to)){
+            //        trashmonitoring.add_file(file_name_to_short); // Оповещение что в корзину добавлен файл
+            //        }else {
+            critical_error("Can not copy file\n" + file_name_from + "\nto file\n" + file_name_to);
+        }
 	}
-    }
 	// Заново открывается файл
     if(css.open(QIODevice::ReadOnly | QIODevice::Text)){
-	qDebug() << "Stylesheet success loaded from" << file_name_to;
+        qDebug() << "Stylesheet success loaded from" << file_name_to;
 
 //        QString
-	style = QTextStream(&css).readAll();
+        style = QTextStream(&css).readAll();
 
-	style = replace_css_meta_iconsize(style);
+        style = replace_css_meta_iconsize(style);
 
-	sapp_t::instance()->setStyleSheet(style);
-	css.close();
+        sapp_t::instance()->setStyleSheet(style);
+        css.close();
     }
     return style;
 }
@@ -505,104 +505,104 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
     return;
 
 #else
-    if(object == nullptr)return;
+    if(object == nullptr) return;
     if(globalparameters.target_os() == "android"){
-	// Настройка жестов прокрутки
-	QScroller *scroller = QScroller::scroller(object);
+        // Настройка жестов прокрутки
+        QScroller *scroller = QScroller::scroller(object);
 
-	// For desktop - QScroller::LeftMouseButtonGesture, for Android - QScroller::TouchGesture in doc
-	// TouchGesture по факту на Андроиде не работает, а LeftMouseButtonGesture - почему-то работает
-	scroller->grabGesture(object, QScroller::LeftMouseButtonGesture);
+        // For desktop - QScroller::LeftMouseButtonGesture, for Android - QScroller::TouchGesture in doc
+        // TouchGesture по факту на Андроиде не работает, а LeftMouseButtonGesture - почему-то работает
+        scroller->grabGesture(object, QScroller::LeftMouseButtonGesture);
 
-	// Поведение прокрутки на краях списка (сейчас не пружинит)
-	QScrollerProperties	properties	= scroller->scrollerProperties();
-	QVariant		overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::
-		OvershootWhenScrollable									// OvershootAlwaysOff
-		);
-	properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
-	properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, overshootPolicy);
-	scroller->setScrollerProperties(properties);						// QScrollerProperties::OvershootAlwaysOff
+        // Поведение прокрутки на краях списка (сейчас не пружинит)
+        QScrollerProperties	properties		= scroller->scrollerProperties();
+        QVariant			overshootPolicy = QVariant::fromValue<QScrollerProperties::OvershootPolicy>(QScrollerProperties::
+                OvershootWhenScrollable									// OvershootAlwaysOff
+                );
+        properties.setScrollMetric(QScrollerProperties::VerticalOvershootPolicy, overshootPolicy);
+        properties.setScrollMetric(QScrollerProperties::HorizontalOvershootPolicy, overshootPolicy);
+        scroller->setScrollerProperties(properties);						// QScrollerProperties::OvershootAlwaysOff
 
-	// Горизонтальный скроллинг скрывается
-	object->horizontalScrollBar()->setStyleSheet("QScrollBar {height:0px;}");
+        // Горизонтальный скроллинг скрывается
+        object->horizontalScrollBar()->setStyleSheet("QScrollBar {height:0px;}");
 
-	// QScrollBar::add-line:horizontal { border: none; background: none; } QScrollBar::sub-line:horizontal { border: none; background: none; }
-	// QScrollBar {width:3px;}
-	// QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}
-	// QScrollBar::add-line:vertical { height: 0px; } QScrollBar::sub-line:vertical { height: 0px; }
-	// QScrollBar::add-line:vertical { border: none; background: none; height: 0px; } QScrollBar::sub-line:vertical { border: none; background: none; height: 0px; }
-	// background: transparent; background-color:transparent;
-	// "QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}"
+        // QScrollBar::add-line:horizontal { border: none; background: none; } QScrollBar::sub-line:horizontal { border: none; background: none; }
+        // QScrollBar {width:3px;}
+        // QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}
+        // QScrollBar::add-line:vertical { height: 0px; } QScrollBar::sub-line:vertical { height: 0px; }
+        // QScrollBar::add-line:vertical { border: none; background: none; height: 0px; } QScrollBar::sub-line:vertical { border: none; background: none; height: 0px; }
+        // background: transparent; background-color:transparent;
+        // "QScrollBar::up-arrow, QScrollBar::down-arrow {width: 0px; height: 0px;}"
 
-	object->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {width:3px; border: none; background: transparent; margin: 0;}"
-						   "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
-						   "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
-
-
+        object->verticalScrollBar()->setStyleSheet("QScrollBar:vertical {width:3px; border: none; background: transparent; margin: 0;}"
+                                                   "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {width: 0px; height: 0px; border: none;  background: transparent; image: url(:/resource/pic/transparent_dot.png); }"
+                                                   "QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical { image: url(:/resource/pic/transparent_dot.png); }");
 
 
 
-	//        object->horizontalScrollBar()->setStyleSheet("QScrollBar:horizontal {border: 2px solid black; background: grey; height: 15px;}"
-	//                                                     "QScrollBar::add-line:horizontal {border none; background: none;}"
-	//                                                     "QScrollBar::sub-line:horizontal {border none; background: none;}"
-	//                                                     );
+
+
+        //        object->horizontalScrollBar()->setStyleSheet("QScrollBar:horizontal {border: 2px solid black; background: grey; height: 15px;}"
+        //                                                     "QScrollBar::add-line:horizontal {border none; background: none;}"
+        //                                                     "QScrollBar::sub-line:horizontal {border none; background: none;}"
+        //                                                     );
 
 
 
-	object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+        object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-	//        object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+        //        object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     }else{
-	object->verticalScrollBar()->setStyleSheet(
-	    QString::fromUtf8(
-		"QScrollBar:vertical {"
-		"   border: 1px solid #aaaaaa;"
-		"   background: transparent;"	// "   background: #eeeeee;"                                         // white;"
-		"   width:10px;    "	// "width: 10px;"
-		"   margin: 0px 0px 0px 0px;"	// "margin: 21px 0 21px 0;"
-		"   border-color: rgb(227, 227, 227);"	//                 "   border-width: 1px;"
-		"   border-style: solid;"
-		"   background-color: transparent; "	// "   background-color: rgb(240, 240, 240);"
-		"}"
-		"QScrollBar::handle:vertical {"
-		"   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-		"   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
-		"   min-height: 10px;"	// "min-height: 25px;"
-		"   background-color: #AEA89A;"	// rgb(180, 180, 180)  // 200,200,200
-		"   border: 1px #948B77 solid;"
-		"}"
-		"QScrollBar::add-line:vertical {"
-		"   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-		"   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
-		"   height: 10px;"	// "height: 20px;"
-		"   subcontrol-position: bottom;"	// "subcontrol-position: bottom;"
-		"   subcontrol-origin: margin;"		// "subcontrol-origin: margin;"
-		"   border: 1px solid grey;"
-		"   background-color: rgb(241, 241, 241);"
-		"}"
-		"QScrollBar::sub-line:vertical {"
-		"   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
-		"   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
-		"   height: 10px;"	// "height: 20px;"
-		"   subcontrol-position: top;"	// "subcontrol-position: top;"
-		"   subcontrol-origin: margin;"	// "subcontrol-origin: margin;"
-		"   border: 1px solid grey;"
-		"   background-color: rgb(241, 241, 241);"
-		"}"
-		""
-		"QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {"
-		"   background: none;"
-		"}"
-		"QScrollBar::up-arrow: vertical {"
-		"   image: url(:/BarIcon/Icons/uparrow.png);"
-		"}"
-		"QScrollBar::down-arrow: vertical {"
-		"   image: url(:/BarIcon/Icons/downarrow.png);"
-		"}"
-		"QScrollBar::handle: hover {"
-		"   background-color: rgb(100, 100, 100);"
-		"   width:10px;"
-		"}"
+        object->verticalScrollBar()->setStyleSheet(
+            QString::fromUtf8(
+                "QScrollBar:vertical {"
+                "   border: 1px solid #aaaaaa;"
+                "   background: transparent;"	// "   background: #eeeeee;"                                         // white;"
+                "   width:10px;    "	// "width: 10px;"
+                "   margin: 0px 0px 0px 0px;"	// "margin: 21px 0 21px 0;"
+                "   border-color: rgb(227, 227, 227);"	//                 "   border-width: 1px;"
+                "   border-style: solid;"
+                "   background-color: transparent; "	// "   background-color: rgb(240, 240, 240);"
+                "}"
+                "QScrollBar::handle:vertical {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "   min-height: 10px;"	// "min-height: 25px;"
+                "   background-color: #AEA89A;"	// rgb(180, 180, 180)  // 200,200,200
+                "   border: 1px #948B77 solid;"
+                "}"
+                "QScrollBar::add-line:vertical {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "   height: 10px;"	// "height: 20px;"
+                "   subcontrol-position: bottom;"	// "subcontrol-position: bottom;"
+                "   subcontrol-origin: margin;"		// "subcontrol-origin: margin;"
+                "   border: 1px solid grey;"
+                "   background-color: rgb(241, 241, 241);"
+                "}"
+                "QScrollBar::sub-line:vertical {"
+                "   background: qlineargradient(x1:0, y1:0, x2:1, y2:0,"
+                "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "   height: 10px;"	// "height: 20px;"
+                "   subcontrol-position: top;"	// "subcontrol-position: top;"
+                "   subcontrol-origin: margin;"	// "subcontrol-origin: margin;"
+                "   border: 1px solid grey;"
+                "   background-color: rgb(241, 241, 241);"
+                "}"
+                ""
+                "QScrollBar::add-page: vertical, QScrollBar::sub-page: vertical {"
+                "   background: none;"
+                "}"
+                "QScrollBar::up-arrow: vertical {"
+                "   image: url(:/BarIcon/Icons/uparrow.png);"
+                "}"
+                "QScrollBar::down-arrow: vertical {"
+                "   image: url(:/BarIcon/Icons/downarrow.png);"
+                "}"
+                "QScrollBar::handle: hover {"
+                "   background-color: rgb(100, 100, 100);"
+                "   width:10px;"
+                "}"
 //                "QScrollBar: vertical {"
 //                "border-color: rgb(227, 227, 227);"
 //                "border-width: 1px;"
@@ -630,63 +630,63 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 //                "subcontrol-origin: margin;"
 //                "}"
 
-		)
-	    );
+                )
+            );
 
 
 
-	object->horizontalScrollBar()->setStyleSheet(
-	    QString::fromUtf8(
-		"QScrollBar:horizontal {"
-		"   border: 1px solid #aaaaaa;"
-		"   background: transparent;"	// "   background: #eeeeee;"
-		"   height:10px;    "	// "   height: 10px; "
-		"   margin: 0px 0px 0px 0px;"	// "   margin: 0px 21px 0 21px; "
-		"   border-color: rgb(227, 227, 227);"	// "   border-height: 1px;"
-		"   border-style: solid; "
-		"   background-color: transparent; "	// "   background-color: rgb(240, 240, 240); "
-		"}"
-		"QScrollBar::handle:horizontal {"
-		"   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-		"   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
-		"   min-width: 10px;"	// "   min-width: 25px; "
-		"   background-color: #AEA89A;"	// rgb(180, 180, 180)  // 200,200,200
-		"   border: 1px #948B77 solid;"
-		"}"
-		"QScrollBar::add-line:horizontal {"
-		"   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-		"   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
-		"   width: 10px;"	// "   width: 20px; "   // "    height: px;"
-		"   subcontrol-position: right;"	// "   subcontrol-position: right; "
-		"   subcontrol-origin: margin;"		// "   subcontrol-origin: margin; "
-		"   border: 1px solid grey;"
-		"   background-color: rgb(241, 241, 241); "
-		"}"
-		"QScrollBar::sub-line:horizontal {"
-		"   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
-		"   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
-		"   width: 10px;"	// "   width: 20px; "   // "    height: 0px;"
-		"   subcontrol-position: left;"	// "   subcontrol-position: left; "
-		"   subcontrol-origin: margin;"	// "   subcontrol-origin: margin; "
-		"   border: 1px solid grey; "
-		"   background-color: rgb(241, 241, 241); "
-		"}"
-		"QScrollBar::left-arrow: horizontal"
-		"{"
-		"   image: url(:/BarIcon/Icons/leftarrow.png); "
-		"}"
-		"QScrollBar::right-arrow: horizontal"
-		"{"
-		"   image: url(:/BarIcon/Icons/rightarrow.png); "
-		"}"
-		"QScrollBar::add-page: horizontal, QScrollBar::sub-page: horizontal {"
-		"   background: none; "
-		"}"
-		"QScrollBar::handle: hover {"
-		"   background-color: rgb(100, 100, 100);"
-		"   height:10px;"
-		"}"
-		//                ""
+        object->horizontalScrollBar()->setStyleSheet(
+            QString::fromUtf8(
+                "QScrollBar:horizontal {"
+                "   border: 1px solid #aaaaaa;"
+                "   background: transparent;"	// "   background: #eeeeee;"
+                "   height:10px;    "	// "   height: 10px; "
+                "   margin: 0px 0px 0px 0px;"	// "   margin: 0px 21px 0 21px; "
+                "   border-color: rgb(227, 227, 227);"	// "   border-height: 1px;"
+                "   border-style: solid; "
+                "   background-color: transparent; "	// "   background-color: rgb(240, 240, 240); "
+                "}"
+                "QScrollBar::handle:horizontal {"
+                "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+                "   stop: 0  #666666, stop: 0.5 #666666,  stop:1 #666666);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "   min-width: 10px;"	// "   min-width: 25px; "
+                "   background-color: #AEA89A;"	// rgb(180, 180, 180)  // 200,200,200
+                "   border: 1px #948B77 solid;"
+                "}"
+                "QScrollBar::add-line:horizontal {"
+                "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+                "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "   width: 10px;"	// "   width: 20px; "   // "    height: px;"
+                "   subcontrol-position: right;"	// "   subcontrol-position: right; "
+                "   subcontrol-origin: margin;"		// "   subcontrol-origin: margin; "
+                "   border: 1px solid grey;"
+                "   background-color: rgb(241, 241, 241); "
+                "}"
+                "QScrollBar::sub-line:horizontal {"
+                "   background: qlineargradient(x1:0, y1:0, x2:0, y2:1,"
+                "   stop: 0  #999999, stop: 0.5 #999999,  stop:1 #999999);"						// "    stop: 0  rgb(32, 47, 130), stop: 0.5 rgb(32, 47, 130),  stop:1 rgb(32, 47, 130));"
+                "   width: 10px;"	// "   width: 20px; "   // "    height: 0px;"
+                "   subcontrol-position: left;"	// "   subcontrol-position: left; "
+                "   subcontrol-origin: margin;"	// "   subcontrol-origin: margin; "
+                "   border: 1px solid grey; "
+                "   background-color: rgb(241, 241, 241); "
+                "}"
+                "QScrollBar::left-arrow: horizontal"
+                "{"
+                "   image: url(:/BarIcon/Icons/leftarrow.png); "
+                "}"
+                "QScrollBar::right-arrow: horizontal"
+                "{"
+                "   image: url(:/BarIcon/Icons/rightarrow.png); "
+                "}"
+                "QScrollBar::add-page: horizontal, QScrollBar::sub-page: horizontal {"
+                "   background: none; "
+                "}"
+                "QScrollBar::handle: hover {"
+                "   background-color: rgb(100, 100, 100);"
+                "   height:10px;"
+                "}"
+                //                ""
 //                "QScrollBar:horizontal"
 //                "{"
 //                "    border-color: rgb(227, 227, 227);"
@@ -716,11 +716,11 @@ void set_kinetic_scrollarea(QAbstractItemView *object){
 //                "subcontrol-origin: margin; "
 //                "}"
 
-		)
-	    );
-	object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+                )
+            );
+        object->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-	object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+        object->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
     }
 #endif
 }
@@ -758,7 +758,7 @@ QString get_unical_id(void){
 	// Строка из 10 случайных символов
     QString	symbols = "0123456789abcdefghijklmnopqrstuvwxyz";
     QString	line;
-    for(int i = 0; i < 10; i ++)line += symbols.mid(rand() % symbols.length(), 1);
+    for(int i = 0; i < 10; i ++) line += symbols.mid(rand() % symbols.length(), 1);
     QString result = secondsLine + line;
 
     return result;
@@ -783,8 +783,8 @@ void init_random(void){
     srand(seed1);
 
     unsigned int	delay	= rand() % 1000;
-    unsigned int	r	= 0;
-    for(unsigned int i = 0; i < delay; i ++)r = r + rand();
+    unsigned int	r		= 0;
+    for(unsigned int i = 0; i < delay; i ++) r = r + rand();
     seed1 = seed1 - get_milli_count() + r;
 
     unsigned int	seed2	= time(nullptr);
@@ -805,3 +805,8 @@ int main(int argc, char * *argv){
     return sapp_t(argc, argv, globalparameters, appconfig, databaseconfig).exec();			// application.exec();
 }
 
+std::ifstream::pos_type filesize(const char* filename)
+{
+    std::ifstream in(filename, std::ifstream::ate | std::ifstream::binary);
+    return in.tellg();
+}
