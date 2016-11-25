@@ -57,13 +57,21 @@ std::shared_ptr<QFileInfo> TrashMonitoring::recover_from_trash(std::shared_ptr<Q
 	    result = std::make_shared<QFileInfo>(file_name_fullpath);	// target_file;
 	}
 //    else{
-	auto file_data = [&] {auto r = std::make_shared<FileData> (this, _files_table[0]->_name);
-			      for(auto f : _files_table)
+	auto file_data = [&] {
+	    decltype(_files_table)left;
+	    for(auto f : _files_table)
 //                                    if(f->size() >= r->size()) r = f;
 //                                    else
-					if((f->_time >= r->_time) && (f->size() > 0)) r = f;
-			      return r;} ();			// _files_table.first();
-	result = DiskHelper::copy_file_to_data_folder(file_name_fullpath, appconfig.trash_dir() + '/' + file_data->_name);
+			if(f->size() > 0) left.append(f);// r = f;
+	    std::shared_ptr<FileData> r(nullptr);
+	    if(left.size() > 0){
+		r = std::make_shared<FileData> (this, left[0]->_name);
+		for(auto f : left)
+			if(f->_time >= r->_time) r = f;
+	    }
+	    return r;
+	} ();			// _files_table.first();
+	if(file_data) result = DiskHelper::copy_file_to_data_folder(file_name_fullpath, appconfig.trash_dir() + '/' + file_data->_name);
 //        result = target_file;
 //    }
     }
@@ -138,7 +146,7 @@ void TrashMonitoring::update(void){
 	// условие что количество файлов слишком велико или
 	// суммарный размер файлов превышает предельно допустимый размер корзины
     while(_files_table.size() > appconfig.trash_max_file_count() || _dir_size > appconfig.trash_size() * 1000000){
-	if(_files_table.size() <= 10)																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																								// Оставляется последний файл, какого бы размера он не был
+	if(_files_table.size() <= 10)																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																																												// Оставляется последний файл, какого бы размера он не был
 		break;
 	else remove_oldest_file();
     }
