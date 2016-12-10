@@ -103,21 +103,21 @@ namespace browser {
 	_findtext->setVisible(false);
 
 	QMenu *m = menu();
-	connect(m, &QMenu::aboutToShow, this, &ToolbarSearch::aboutToShowMenu);
-	connect(m, &QMenu::triggered, this, &ToolbarSearch::triggeredMenuAction);
+	connect(m, &QMenu::aboutToShow, this, &ToolbarSearch::show_menu);
+	connect(m, &QMenu::triggered, this, &ToolbarSearch::triggered_menu_action);
 
 	QCompleter *completer = new QCompleter(_stringlistmodel, this);
 	completer->setCompletionMode(QCompleter::InlineCompletion);
 	lineEdit()->setCompleter(completer);
 
 	assert(lineEdit());
-	connect(lineEdit(), &QLineEdit::returnPressed, this, &ToolbarSearch::searchNow);// , [&] {std::thread(&ToolbarSearch::searchNow, this).detach();});	//
+	connect(lineEdit(), &QLineEdit::returnPressed, this, &ToolbarSearch::search_now);// , [&] {std::thread(&ToolbarSearch::searchNow, this).detach();});	//
 
 	connect(this, &SearchLineEdit::textChanged, _findtext, [&](const QString &text){
 		_findtext->setText(text);
 	    });
 	// connect(this, &ToolbarSearch::returnPressed, _tabmanager, &TabManager::lineEditReturnPressed);
-	connect(this, &ToolbarSearch::returnPressed, _findtext, &QLineEdit::returnPressed);
+	connect(this, &ToolbarSearch::return_pressed, _findtext, &QLineEdit::returnPressed);
 
 	setInactiveText(tr("Google"));
 
@@ -145,7 +145,7 @@ namespace browser {
 	settings.endGroup();
     }
 
-    void ToolbarSearch::searchNow(){
+    void ToolbarSearch::search_now(){
 	QString search_text = lineEdit()->text();
 
 	auto							result_item	= globalparameters.find_screen()->find_clicked();
@@ -224,7 +224,9 @@ namespace browser {
 			//                url_query.addQueryItem(QLatin1String("q"), searchText);
 			url_query.addQueryItem(QLatin1String("ie"), QLatin1String("UTF-8"));
 			url_query.addQueryItem(QLatin1String("oe"), QLatin1String("UTF-8"));
-			url_query.addQueryItem(QLatin1String("client"), QLatin1String(globalparameters.main_program_file().toLatin1()));
+			url_query.addQueryItem(QLatin1String("client"), QLatin1String(
+				globalparameters.application_name().toLatin1()	// globalparameters.main_program_file().toLatin1()
+				));
 			// urlQuery.addQueryItem();
 
 			search_engine.setQuery(url_query);
@@ -304,7 +306,7 @@ namespace browser {
 	}
     }
 
-    void ToolbarSearch::aboutToShowMenu(){
+    void ToolbarSearch::show_menu(){
 	lineEdit()->selectAll();
 	QMenu *m = menu();
 	m->clear();
@@ -324,12 +326,12 @@ namespace browser {
 	m->addAction(tr("Clear Recent Searches"), this, &ToolbarSearch::clear);
     }
 
-    void ToolbarSearch::triggeredMenuAction(QAction *action){
+    void ToolbarSearch::triggered_menu_action(QAction *action){
 	QVariant v = action->data();
 	if(v.canConvert<QString>()){
 	    QString text = v.toString();
 	    lineEdit()->setText(text);
-	    searchNow();// std::thread(&ToolbarSearch::searchNow, this).detach();
+	    search_now();// std::thread(&ToolbarSearch::searchNow, this).detach();
 	}
     }
 
@@ -362,7 +364,7 @@ namespace browser {
 	auto result = browser->bind(record_index);
 	result->activate(std::bind(&HidableTabWidget::find, _vtab_record, std::placeholders::_1));
 	_child_items.pop_back();
-	emit resultReady();
+	emit result_ready();
     }
 }
 

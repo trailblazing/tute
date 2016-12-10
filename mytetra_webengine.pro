@@ -459,7 +459,7 @@ win32 {
 mac {
     ICON    =   browser.icns
     QMAKE_INFO_PLIST    =   Info_mac.plist
-    TARGET  =   mytetra
+    TARGET  =   mytetra_engine
 }
 
 ANDROID_PACKAGE_SOURCE_DIR  =   $$PWD/android
