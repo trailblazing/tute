@@ -148,9 +148,9 @@ namespace browser {
 	option->lineWidth	= style()->pixelMetric(QStyle::PM_DefaultFrameWidth, option, this);
 	option->midLineWidth	= 0;
 	option->state		|= QStyle::State_Sunken;
-	if(_lineedit->isReadOnly())option->state |= QStyle::State_ReadOnly;
+	if(_lineedit->isReadOnly()) option->state |= QStyle::State_ReadOnly;
 #ifdef QT_KEYPAD_NAVIGATION
-	if(hasEditFocus())option->state |= QStyle::State_HasEditFocus;
+	if(hasEditFocus()) option->state |= QStyle::State_HasEditFocus;
 #endif
 	option->features = QStyleOptionFrame::None;	// QStyleOptionFrameV2
     }
@@ -187,9 +187,8 @@ namespace browser {
 
     bool ExLineEdit::event(QEvent *event){
 	bool result = false;
-	if(event->type() == QEvent::ShortcutOverride)result = _lineedit->event(event);	// return _lineedit->event(event);
-	result = QWidget::event(event);
-
+	if(event->type() == QEvent::ShortcutOverride) result = _lineedit->event(event);												// return _lineedit->event(event);
+	else result = QWidget::event(event);
 	return result;	// QWidget::event(event);
     }
 
@@ -215,8 +214,8 @@ namespace browser {
 	    WebView *_browserview;
 
 	protected:
-	    void	mousePressEvent(QMouseEvent *event);
-	    void	mouseMoveEvent(QMouseEvent *event);
+	    void mousePressEvent(QMouseEvent *event);
+	    void mouseMoveEvent(QMouseEvent *event);
 
 	private:
 	    QPoint _dragstartpos;
@@ -230,7 +229,7 @@ namespace browser {
     }
 
     void UrlIconLabel::mousePressEvent(QMouseEvent *event){
-	if(event->button() == Qt::LeftButton)_dragstartpos = event->pos();
+	if(event->button() == Qt::LeftButton) _dragstartpos = event->pos();
 	QLabel::mousePressEvent(event);
     }
 
