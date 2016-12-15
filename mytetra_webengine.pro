@@ -127,7 +127,7 @@ INCLUDEPATH     += ../../verdigris/src
 
 contains(TARGET_OS, ANY_OS) {
  message(Building the any OS version...)
- SYSTEM_PROGRAM_NAME    =   mytetra
+ SYSTEM_PROGRAM_NAME    =   mytetra_webengine
  BINARY_INSTALL_PATH    =   /usr/local/bin
 }
 
@@ -139,7 +139,7 @@ contains(TARGET_OS, MEEGO_OS){
 
 contains(TARGET_OS, ANDROID_OS){
  message(Building the Android OS version...)
- SYSTEM_PROGRAM_NAME    =   mytetra
+ SYSTEM_PROGRAM_NAME    =   mytetra_webengine
  BINARY_INSTALL_PATH    =   /
 }
 
